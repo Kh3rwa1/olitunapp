@@ -88,6 +88,7 @@ class AdminModalSheet extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close sheet',
                   icon: Icon(
                     Icons.close_rounded,
                     color: AdminTokens.textSecondary(isDark),

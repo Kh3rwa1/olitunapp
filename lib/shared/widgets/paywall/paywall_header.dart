@@ -6,6 +6,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/categories/domain/entities/category_entity.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class PaywallHeader extends StatelessWidget {
   final CategoryEntity category;
@@ -113,18 +114,20 @@ class PaywallHeader extends StatelessWidget {
                             color: AppColors.primary,
                             borderRadius: AppRadius.borderSm,
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(
+                              const Icon(
                                 Icons.workspace_premium_rounded,
                                 color: Colors.white,
                                 size: 14,
                               ),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'PREMIUM COURSE',
-                                style: TextStyle(
+                                AppLocalizations.of(
+                                  context,
+                                )!.premiumCourseBadge,
+                                style: const TextStyle(
                                   fontSize: 9,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,

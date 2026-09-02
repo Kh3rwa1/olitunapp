@@ -707,4 +707,146 @@ class AppLocalizationsSat extends AppLocalizations {
 
   @override
   String get backButton => 'ᱛᱟᱭᱚᱢ';
+
+  @override
+  String get joharLoading => 'ᱡᱚᱦᱟᱨ... ᱞᱳᱰ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get somethingWentWrong => 'ᱵᱷᱩᱞ ᱦᱚᱭᱮᱱᱟ!';
+
+  @override
+  String get offlineMode => 'ᱚᱯᱷᱞᱟᱭᱱ ᱢᱳᱰ᱾ ᱫᱚᱦᱚ ᱟᱠᱟᱱ ᱵᱤᱪᱟᱨ ᱫᱮᱠᱷᱟᱣ ᱦᱚᱭᱮᱱᱟ᱾';
+
+  @override
+  String get offlineProgressCached => 'ᱚᱯᱷᱞᱟᱭᱱ᱾ ᱯᱨᱟᱜᱟᱛᱤ ᱫᱚᱦᱚ ᱟᱠᱟᱱᱟ᱾';
+
+  @override
+  String get syncingProgress => 'ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get progressSynced => 'ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱮᱱᱟ!';
+
+  @override
+  String get failedToSyncProgress => 'ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱠᱟᱛ ᱵᱟᱸᱜᱚ᱾';
+
+  @override
+  String get processing => 'ᱠᱟᱹᱢᱤ ᱪᱟᱹᱞᱩ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get pleaseLogInToPurchase => 'ᱯᱟᱴ ᱠᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ᱾';
+
+  @override
+  String get creatingSecureOrder => 'ᱥᱟᱨᱵᱷᱟᱨ ᱚᱨᱰᱟᱨ ᱵᱮᱱᱟᱣ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get openingPaymentGateway => 'ᱯᱮᱢᱮᱱᱴ ᱜᱮᱴᱣᱮ ᱠᱷᱩᱞ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get verifyingPayment => 'ᱥᱟᱨᱵᱷᱟᱨ ᱥᱟᱶ ᱯᱮᱢᱮᱱᱴ ᱡᱟᱸᱪ ᱦᱚᱭᱚᱜ...';
+
+  @override
+  String get courseUnlocked => 'ᱯᱟᱴ ᱠᱷᱩᱞ ᱮᱱᱟ!';
+
+  @override
+  String get failedToCreateOrder => 'ᱯᱮᱢᱮᱱᱴ ᱚᱨᱰᱟᱨ ᱵᱮᱱᱟᱣ ᱵᱟᱸᱜᱚ';
+
+  @override
+  String get paymentVerificationFailed => 'ᱯᱮᱢᱮᱱᱴ ᱡᱟᱸᱪ ᱵᱟᱸᱜᱚ';
+
+  @override
+  String checkoutUnexpectedError(String error) {
+    return 'ᱪᱮᱠᱟᱣᱩᱴ ᱨᱮ ᱵᱷᱩᱞ ᱦᱚᱭᱮᱱᱟ: $error';
+  }
+
+  @override
+  String unlockCourse(String amount) {
+    return 'ᱯᱟᱴ ᱠᱷᱩᱞ ᱢᱮ (₹$amount)';
+  }
+
+  @override
+  String get trustBadgeSecureCheckout =>
+      'Razorpay ᱥᱟᱶ 256-bit ᱪᱮᱠᱟᱣᱩᱴ • ᱱᱤᱛᱚᱜ ᱜᱮ ᱯᱟᱴ ᱠᱷᱩᱞ';
+
+  @override
+  String get webMonetizationRestrictedTitle => 'ᱣᱮᱵᱽ ᱨᱮ ᱯᱮᱢᱮᱱᱴ ᱵᱟᱝ ᱦᱩᱭᱩᱜᱼᱟ';
+
+  @override
+  String get webMonetizationNotice =>
+      'Razorpay ᱪᱮᱠᱟᱣᱩᱴ ᱟᱨ App Store ᱧᱮᱞ ᱫᱚ ᱠᱷᱟᱹᱞᱤ Olitun ᱢᱳᱵᱟᱭᱤᱞ ᱮᱯ ᱨᱮ ᱠᱟᱹᱢᱤᱭᱟ᱾ ᱠᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ Android/iOS ᱨᱮ ᱡᱟᱭᱱᱟᱢ ᱢᱮ᱾';
+
+  @override
+  String get aboutThisCourse => 'ᱱᱚᱣᱟ ᱠᱳᱨᱥ ᱵᱟᱵᱚᱛ';
+
+  @override
+  String get courseOutcome => 'ᱠᱳᱨᱥ ᱯᱳᱨᱤᱱᱟᱢ';
+
+  @override
+  String get premiumCourseBadge => 'ᱯᱨᱤᱢᱤᱭᱟᱢ ᱠᱳᱨᱥ';
+
+  @override
+  String get maranJauharTitle => 'ᱢᱟᱨᱟᱱ ᱡᱚᱦᱟᱨ! 🎉';
+
+  @override
+  String get startLearning => 'ᱪᱮᱫ ᱥᱩᱨᱩ ᱢᱮ';
+
+  @override
+  String get paywallValueOfflineTitle => 'ᱡᱚᱛᱚ ᱚᱯᱷᱞᱟᱭᱱ ᱯᱮᱠ ᱢᱮᱱᱟᱜᱼᱟ';
+
+  @override
+  String get paywallValueOfflineSubtitle =>
+      'ᱯᱟᱴ, ᱥᱟᱲᱮ ᱟᱨ ᱠᱩᱭᱤᱡᱽ ᱰᱟᱣᱩᱱᱞᱳᱰ ᱢᱮ — ᱚᱯᱷᱞᱟᱭᱱ ᱨᱮ ᱪᱮᱫ ᱞᱟᱹᱜᱤᱫ᱾';
+
+  @override
+  String get paywallValueAiTitle => 'ᱡᱚᱛᱚ ᱚᱠᱛᱚ AI ᱟᱱᱩᱵᱟᱫ';
+
+  @override
+  String get paywallValueAiSubtitle =>
+      'ᱚᱞ ᱪᱤᱠᱤ ᱟᱱᱩᱵᱟᱫ ᱟᱨ ᱥᱟᱲᱮ ᱫᱮᱠᱷᱟᱣ — ᱞᱤᱢᱤᱴ ᱵᱟᱝ᱾';
+
+  @override
+  String get paywallValueAdFreeTitle => 'ᱮᱰ ᱵᱟᱝ ᱪᱮᱫ';
+
+  @override
+  String get paywallValueAdFreeSubtitle =>
+      'ᱡᱚᱛᱚ ᱵᱤᱪᱟᱨ ᱨᱮ ᱥᱟᱯᱷᱟ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱵᱷᱭᱟᱥ᱾';
+
+  @override
+  String get paywallValueLifetimeTitle => 'ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱵᱮᱵᱷᱟᱨ';
+
+  @override
+  String get paywallValueLifetimeSubtitle =>
+      'ᱢᱤᱫ ᱫᱷᱟᱣ ᱜᱮ ᱴᱟᱠᱟ — ᱟᱨ ᱴᱟᱠᱟ ᱞᱟᱹᱠᱛᱤ ᱵᱟ᱾';
+
+  @override
+  String get navLearn => 'ᱪᱮᱫᱚᱜ';
+
+  @override
+  String get navBakhed => 'ᱵᱟᱠᱷᱮᱬ';
+
+  @override
+  String get navProfile => 'ᱯᱨᱳᱯᱷᱟᱭᱤᱞ';
+
+  @override
+  String navTabSemantics(String label) {
+    return '$label ᱴᱮᱵᱽ';
+  }
+
+  @override
+  String navItemSemantics(String label) {
+    return '$label ᱱᱮᱵᱤᱜᱮᱥᱚᱱ ᱡᱤᱱᱤᱥ';
+  }
+
+  @override
+  String get kudosMistake1 => 'ᱵᱷᱩᱞ ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱮᱱᱟ᱾ ᱱᱚᱝᱠᱟ ᱜᱮ ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾';
+
+  @override
+  String get kudosMistake2 =>
+      'ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣ ᱦᱩᱭ ᱟᱠᱟᱱᱟ! ᱟᱢ ᱵᱷᱩᱞ ᱠᱷᱚᱱ ᱜᱮᱭᱟᱱ ᱵᱮᱱᱟᱣ ᱟᱠᱟᱫᱟ᱾';
+
+  @override
+  String get kudosMistake3 => 'ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮᱜᱮ ᱵᱟᱲᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ᱾';
+
+  @override
+  String get kudosMistake4 =>
+      'ᱵᱷᱟᱞᱚ ᱫᱚᱦᱲᱟ ᱧᱮᱞ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮ ᱟᱢ ᱞᱚᱜᱚᱱ ᱪᱮᱫᱚᱜ ᱠᱟᱱᱟ᱾';
 }

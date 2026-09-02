@@ -387,6 +387,7 @@ class ContentFormIdentitySection extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.add_box_rounded, color: AppColors.primary),
+              tooltip: 'Add tag',
               onPressed: () {
                 onAddTag(tagInputController.text);
                 tagInputController.clear();

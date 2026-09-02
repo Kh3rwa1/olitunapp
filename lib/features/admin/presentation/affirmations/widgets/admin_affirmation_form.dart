@@ -176,6 +176,7 @@ class _AdminAffirmationFormState extends ConsumerState<AdminAffirmationForm> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close form',
                   icon: Icon(
                     Icons.close_rounded,
                     color: isDark ? Colors.white54 : Colors.black45,

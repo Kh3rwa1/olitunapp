@@ -40,6 +40,10 @@ class LearningSemantics {
     return 'Stroke order animation for Ol Chiki character $glyph';
   }
 
+  static String tracingPrompt({required String glyph}) {
+    return 'Trace the Ol Chiki character $glyph';
+  }
+
   static bool _hasValue(String? value) =>
       value != null && value.trim().isNotEmpty;
 

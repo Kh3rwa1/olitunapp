@@ -192,6 +192,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             Icons.arrow_back_ios_new_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
+          tooltip: 'Go back',
           onPressed: () {
             if (_codeSent) {
               setState(() {

@@ -136,6 +136,7 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
               ),
               IconButton(
                 icon: const Icon(Icons.close_rounded),
+                tooltip: 'Close details',
                 onPressed: () => Navigator.pop(context),
               ),
             ],

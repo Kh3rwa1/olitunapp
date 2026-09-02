@@ -9,6 +9,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/lessons/presentation/quiz/quiz_screen.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
@@ -127,7 +128,11 @@ Future<void> pumpQuizScreen(
               Stream<List<ConnectivityResult>>.value([ConnectivityResult.wifi]),
         ),
       ],
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
     ),
   );
   await tester.pump();

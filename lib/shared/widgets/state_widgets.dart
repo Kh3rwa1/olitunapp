@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/network/network_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/shimmer_loading.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/local_settings_provider.dart';
 import '../../features/profile/presentation/providers/profile_providers.dart';
 import 'glass_card.dart';
@@ -101,7 +102,7 @@ class AppLoadingState extends ConsumerWidget {
                       .rotate(duration: 2.seconds),
                 const SizedBox(height: 24),
                 Text(
-                  message ?? 'Johar... Loading',
+                  message ?? AppLocalizations.of(context)!.joharLoading,
                   style: AppTypography.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -269,7 +270,7 @@ class AppErrorState extends ConsumerWidget {
                     .shake(hz: 1.5, duration: 2.seconds),
               const SizedBox(height: 20),
               Text(
-                'Etom Badiyena! (Something went wrong)',
+                AppLocalizations.of(context)!.somethingWentWrong,
                 textAlign: TextAlign.center,
                 style: AppTypography.inter(
                   fontSize: 18,
@@ -295,7 +296,7 @@ class AppErrorState extends ConsumerWidget {
                 },
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
-                  'RETRY',
+                  AppLocalizations.of(context)!.retry.toUpperCase(),
                   style: AppTypography.inter(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -330,6 +331,7 @@ class OfflineStatusBanner extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final connectivityAsync = ref.watch(appConnectivityProvider);
     final reduceEffects = ref.watch(reduceVisualEffectsProvider);
     final isSynced = ref.watch(isStatsSyncedProvider);
@@ -350,10 +352,8 @@ class OfflineStatusBanner extends ConsumerWidget {
         if (isOffline) {
           backgroundColor = AppColors.accentTerracotta.withValues(alpha: 0.9);
           iconData = Icons.cloud_off_rounded;
-          text = isSynced
-              ? 'Offline mode. Showing cached content.'
-              : 'Offline. Progress cached locally.';
-          buttonText = 'RETRY';
+          text = isSynced ? l10n.offlineMode : l10n.offlineProgressCached;
+          buttonText = l10n.retry.toUpperCase();
           onButtonTap = () {
             HapticFeedback.lightImpact();
             ref.invalidate(appConnectivityProvider);
@@ -363,22 +363,22 @@ class OfflineStatusBanner extends ConsumerWidget {
           if (syncStatus == SyncStatus.syncing) {
             backgroundColor = AppColors.primary.withValues(alpha: 0.9);
             iconData = Icons.sync_rounded;
-            text = 'Syncing progress...';
+            text = l10n.syncingProgress;
             buttonText = null;
             onButtonTap = null;
             showProgress = true;
           } else if (syncStatus == SyncStatus.success) {
             backgroundColor = AppColors.accentForest.withValues(alpha: 0.9);
             iconData = Icons.cloud_done_rounded;
-            text = 'Progress synced!';
+            text = l10n.progressSynced;
             buttonText = null;
             onButtonTap = null;
             showProgress = false;
           } else if (syncStatus == SyncStatus.error) {
             backgroundColor = AppColors.accentTerracotta.withValues(alpha: 0.9);
             iconData = Icons.sync_problem_rounded;
-            text = 'Failed to sync progress.';
-            buttonText = 'RETRY';
+            text = l10n.failedToSyncProgress;
+            buttonText = l10n.retry.toUpperCase();
             onButtonTap = () {
               HapticFeedback.mediumImpact();
               ref.read(userStatsProvider.notifier).syncPendingStats();

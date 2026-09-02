@@ -259,6 +259,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
                   color: Colors.white,
                   size: 20,
                 ),
+                tooltip: 'Go back',
                 onPressed:
                     widget.onBackPressed ?? () => Navigator.maybePop(context),
               ),
@@ -352,6 +353,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
                   color: Colors.white,
                   size: 48,
                 ),
+                tooltip: 'Play video',
                 onPressed: () {
                   setState(() {
                     _videoController!.play();

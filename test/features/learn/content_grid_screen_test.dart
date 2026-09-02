@@ -11,6 +11,7 @@ import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Test double for [AudioService]. Tile playback now routes through the
 /// central PlaybackController, which subscribes to the position/duration/
@@ -91,6 +92,8 @@ void main() {
           )).overrideWith((ref) => Completer<List<ContentItem>>().future),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
@@ -116,6 +119,8 @@ void main() {
           )).overrideWith((ref) => []),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
@@ -149,6 +154,8 @@ void main() {
           }),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
@@ -193,6 +200,8 @@ void main() {
           )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
@@ -259,7 +268,11 @@ void main() {
               ],
             ),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
         ),
       );
 
@@ -328,6 +341,8 @@ void main() {
           )).overrideWith((ref) => [mockLetterItemWithAudioAndTracing]),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
@@ -388,7 +403,11 @@ void main() {
             null,
           )).overrideWith((ref) => [mockLetterItemWithAudioAndTracing]),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
 
@@ -461,7 +480,11 @@ void main() {
               'lesson_123',
             )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
         ),
       );
 
@@ -515,7 +538,11 @@ void main() {
               'lesson_123',
             )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
         ),
       );
 
@@ -566,7 +593,11 @@ void main() {
               'lesson_123',
             )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
         ),
       );
 

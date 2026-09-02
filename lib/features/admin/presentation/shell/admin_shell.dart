@@ -121,6 +121,7 @@ class AdminShell extends ConsumerWidget {
               Icons.menu_rounded,
               color: AdminTokens.textPrimary(isDark),
             ),
+            tooltip: 'Open admin menu',
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),

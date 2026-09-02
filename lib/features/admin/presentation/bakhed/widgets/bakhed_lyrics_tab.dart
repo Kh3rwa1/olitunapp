@@ -89,6 +89,9 @@ class _BakhedLyricsTabState extends ConsumerState<BakhedLyricsTab> {
                                       color: AppColors.primary,
                                       size: 36,
                                     ),
+                                    tooltip: playing
+                                        ? 'Pause audio'
+                                        : 'Play audio',
                                     onPressed: () => playing
                                         ? player.pause()
                                         : player.play(),
@@ -484,6 +487,7 @@ class _BakhedLyricsTabState extends ConsumerState<BakhedLyricsTab> {
                                 color: Colors.red,
                                 size: 18,
                               ),
+                              tooltip: 'Delete lyric line',
                               onPressed: () {
                                 lyricsNotifier.removeLine(
                                   line.id,

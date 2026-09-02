@@ -120,6 +120,7 @@ class _TranslationEditDialogState extends State<TranslationEditDialog> {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Close dialog',
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],

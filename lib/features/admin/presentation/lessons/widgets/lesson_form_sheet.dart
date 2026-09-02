@@ -142,6 +142,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
               ),
               IconButton(
                 icon: const Icon(Icons.close_rounded),
+                tooltip: 'Close form',
                 onPressed: () => Navigator.pop(context),
               ),
             ],

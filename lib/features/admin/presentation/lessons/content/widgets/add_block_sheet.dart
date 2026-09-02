@@ -70,6 +70,7 @@ class AddBlockSheet extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
+                tooltip: 'Close block picker',
                 icon: Icon(
                   Icons.close_rounded,
                   color: isDark ? Colors.white54 : Colors.black45,

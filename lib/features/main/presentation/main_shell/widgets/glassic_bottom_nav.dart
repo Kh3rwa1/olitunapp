@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/minimum_tap_target.dart';
 
 class GlassicBottomNav extends StatelessWidget {
@@ -22,6 +23,7 @@ class GlassicBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: EdgeInsets.fromLTRB(
         isTablet ? 32 : 24,
@@ -60,9 +62,19 @@ class GlassicBottomNav extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.school_rounded, 'Learn'),
-                _buildNavItem(1, Icons.music_note_rounded, 'Bakhed'),
-                _buildNavItem(2, Icons.person_rounded, 'Profile'),
+                _buildNavItem(context, 0, Icons.school_rounded, l10n.navLearn),
+                _buildNavItem(
+                  context,
+                  1,
+                  Icons.music_note_rounded,
+                  l10n.navBakhed,
+                ),
+                _buildNavItem(
+                  context,
+                  2,
+                  Icons.person_rounded,
+                  l10n.navProfile,
+                ),
               ],
             ),
           ),
@@ -76,7 +88,12 @@ class GlassicBottomNav extends StatelessWidget {
     );
   }
 
-  Widget _buildNavItem(int index, IconData icon, String label) {
+  Widget _buildNavItem(
+    BuildContext context,
+    int index,
+    IconData icon,
+    String label,
+  ) {
     final isSelected = selectedIndex == index;
 
     return MinimumTapTarget(
@@ -85,7 +102,7 @@ class GlassicBottomNav extends StatelessWidget {
         HapticFeedback.lightImpact();
       },
       selected: isSelected,
-      semanticLabel: '$label tab',
+      semanticLabel: AppLocalizations.of(context)!.navTabSemantics(label),
       borderRadius: BorderRadius.circular(20),
       child: ExcludeSemantics(
         child: Column(

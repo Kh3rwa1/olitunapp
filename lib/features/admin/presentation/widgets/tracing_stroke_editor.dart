@@ -355,6 +355,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                             Icons.delete_outline_rounded,
                             color: Colors.red,
                           ),
+                          tooltip: 'Delete stroke',
                           onPressed: () {
                             setState(() {
                               _strokes.removeAt(idx);

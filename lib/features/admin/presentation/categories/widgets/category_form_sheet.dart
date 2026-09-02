@@ -192,6 +192,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close form',
                   icon: Icon(
                     Icons.close_rounded,
                     color: isDark ? Colors.white54 : Colors.black45,

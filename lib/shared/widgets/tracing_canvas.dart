@@ -1,10 +1,12 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/core/accessibility/learning_semantics.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -192,31 +194,46 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                         constraints.maxHeight,
                       );
 
-                      return GestureDetector(
-                        onPanStart: _isPlayingExample
-                            ? null
-                            : (details) => _onPanStart(details, size),
-                        onPanUpdate: _isPlayingExample
-                            ? null
-                            : (details) => _onPanUpdate(details, size),
-                        onPanEnd: _isPlayingExample
-                            ? null
-                            : (details) => _onPanEnd(details, size),
-                        child: CustomPaint(
-                          size: Size.infinite,
-                          painter: _TracingPainter(
-                            config: widget.config,
-                            activeStrokeIndex: _activeStrokeIndex,
-                            currentRawPoints: _currentRawPoints,
-                            completedStrokes: _completedStrokes,
-                            accentColor: widget.accentColor,
-                            isDark: isDark,
-                            exampleProgress: _isPlayingExample
-                                ? _exampleController.value
-                                : 0.0,
-                            exampleStrokeIndex: _isPlayingExample
-                                ? _exampleStrokeIndex - 1
-                                : -1,
+                      return Semantics(
+                        container: true,
+                        image: true,
+                        label: LearningSemantics.tracingPrompt(
+                          glyph: widget.config.glyph,
+                        ),
+                        hint: 'Double-tap to replay example stroke order',
+                        onTap: _showExample,
+                        customSemanticsActions:
+                            <CustomSemanticsAction, VoidCallback>{
+                              const CustomSemanticsAction(
+                                label: 'Replay example stroke order',
+                              ): _showExample,
+                            },
+                        child: GestureDetector(
+                          onPanStart: _isPlayingExample
+                              ? null
+                              : (details) => _onPanStart(details, size),
+                          onPanUpdate: _isPlayingExample
+                              ? null
+                              : (details) => _onPanUpdate(details, size),
+                          onPanEnd: _isPlayingExample
+                              ? null
+                              : (details) => _onPanEnd(details, size),
+                          child: CustomPaint(
+                            size: Size.infinite,
+                            painter: _TracingPainter(
+                              config: widget.config,
+                              activeStrokeIndex: _activeStrokeIndex,
+                              currentRawPoints: _currentRawPoints,
+                              completedStrokes: _completedStrokes,
+                              accentColor: widget.accentColor,
+                              isDark: isDark,
+                              exampleProgress: _isPlayingExample
+                                  ? _exampleController.value
+                                  : 0.0,
+                              exampleStrokeIndex: _isPlayingExample
+                                  ? _exampleStrokeIndex - 1
+                                  : -1,
+                            ),
                           ),
                         ),
                       );

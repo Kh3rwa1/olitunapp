@@ -145,6 +145,7 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
                   size: 18,
                   color: AdminTokens.textTertiary(isDark),
                 ),
+                tooltip: 'Clear search',
                 onPressed: () {
                   _searchController.clear();
                   setState(() => _currentPage = 0);

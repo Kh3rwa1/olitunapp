@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class PaywallValueProps extends StatelessWidget {
   final bool isDark;
@@ -11,39 +12,36 @@ class PaywallValueProps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildValuePropRow(
           context,
           icon: Icons.offline_pin_rounded,
-          title: 'Full Offline Pack Access',
-          subtitle:
-              'Download lessons, audio pronunciations, and quizzes for anytime offline learning.',
+          title: l10n.paywallValueOfflineTitle,
+          subtitle: l10n.paywallValueOfflineSubtitle,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildValuePropRow(
           context,
           icon: Icons.translate_rounded,
-          title: 'Unlimited AI Translations',
-          subtitle:
-              'Instant Ol Chiki translations and pronunciation guides without query limits.',
+          title: l10n.paywallValueAiTitle,
+          subtitle: l10n.paywallValueAiSubtitle,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildValuePropRow(
           context,
           icon: Icons.block_flipped,
-          title: 'Zero Ad Interruptions',
-          subtitle:
-              'Experience 100% distraction-free language practice across all modules.',
+          title: l10n.paywallValueAdFreeTitle,
+          subtitle: l10n.paywallValueAdFreeSubtitle,
         ),
         const SizedBox(height: AppSpacing.md),
         _buildValuePropRow(
           context,
           icon: Icons.all_inclusive_rounded,
-          title: 'Lifetime Access Guarantee',
-          subtitle:
-              'Pay once with no recurring fees, subscriptions, or hidden charges.',
+          title: l10n.paywallValueLifetimeTitle,
+          subtitle: l10n.paywallValueLifetimeSubtitle,
         ),
       ],
     );

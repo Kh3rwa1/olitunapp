@@ -341,6 +341,7 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                 const SizedBox(width: 16),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close block editor',
                   icon: const Icon(Icons.close_rounded),
                   style: IconButton.styleFrom(
                     backgroundColor: isDark

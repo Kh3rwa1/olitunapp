@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/providers/providers.dart';
 
 class DesktopSidebar extends ConsumerWidget {
@@ -19,6 +20,7 @@ class DesktopSidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final isCurrentlyDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -78,21 +80,21 @@ class DesktopSidebar extends ConsumerWidget {
           // Nav Items
           SidebarNavItem(
             icon: Icons.school_rounded,
-            label: 'Learn',
+            label: l10n.navLearn,
             isSelected: selectedIndex == 0,
             onTap: () => onItemTapped(0),
             isDark: isDark,
           ),
           SidebarNavItem(
             icon: Icons.music_note_rounded,
-            label: 'Bakhed',
+            label: l10n.navBakhed,
             isSelected: selectedIndex == 1,
             onTap: () => onItemTapped(1),
             isDark: isDark,
           ),
           SidebarNavItem(
             icon: Icons.person_rounded,
-            label: 'Profile',
+            label: l10n.navProfile,
             isSelected: selectedIndex == 2,
             onTap: () => onItemTapped(2),
             isDark: isDark,
@@ -125,7 +127,7 @@ class DesktopSidebar extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      isCurrentlyDark ? 'Dark' : 'Light',
+                      isCurrentlyDark ? l10n.dark : l10n.light,
                       style: AppTypography.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -197,7 +199,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
         child: Semantics(
           button: true,
           selected: widget.isSelected,
-          label: '${widget.label} navigation item',
+          label: AppLocalizations.of(context)!.navItemSemantics(widget.label),
           child: ExcludeSemantics(
             child: GestureDetector(
               onTap: widget.onTap,

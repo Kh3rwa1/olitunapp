@@ -10,6 +10,7 @@ import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockLearningAnalyticsService extends Mock
@@ -152,6 +153,8 @@ void main() {
         UncontrolledProviderScope(
           container: container,
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: StatefulRebuilder(
               key: rebuilderKey,
               child: const QuizScreen(quizId: 'test_quiz'),

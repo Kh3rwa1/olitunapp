@@ -43,6 +43,7 @@ class QuizFormHeader extends StatelessWidget {
               ),
               IconButton(
                 onPressed: onClose,
+                tooltip: 'Close quiz editor',
                 icon: const Icon(Icons.close_rounded),
               ),
             ],

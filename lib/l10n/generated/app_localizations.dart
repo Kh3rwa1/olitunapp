@@ -1399,6 +1399,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back'**
   String get backButton;
+
+  /// No description provided for @joharLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Johar... Loading'**
+  String get joharLoading;
+
+  /// No description provided for @somethingWentWrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong!'**
+  String get somethingWentWrong;
+
+  /// No description provided for @offlineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline mode. Showing cached content.'**
+  String get offlineMode;
+
+  /// No description provided for @offlineProgressCached.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline. Progress cached locally.'**
+  String get offlineProgressCached;
+
+  /// No description provided for @syncingProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing progress...'**
+  String get syncingProgress;
+
+  /// No description provided for @progressSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Progress synced!'**
+  String get progressSynced;
+
+  /// No description provided for @failedToSyncProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sync progress.'**
+  String get failedToSyncProgress;
+
+  /// No description provided for @processing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing...'**
+  String get processing;
+
+  /// No description provided for @pleaseLogInToPurchase.
+  ///
+  /// In en, this message translates to:
+  /// **'Please log in to purchase courses.'**
+  String get pleaseLogInToPurchase;
+
+  /// No description provided for @creatingSecureOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating secure server order...'**
+  String get creatingSecureOrder;
+
+  /// No description provided for @openingPaymentGateway.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening payment gateway...'**
+  String get openingPaymentGateway;
+
+  /// No description provided for @verifyingPayment.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying payment with server...'**
+  String get verifyingPayment;
+
+  /// No description provided for @courseUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Course successfully unlocked!'**
+  String get courseUnlocked;
+
+  /// No description provided for @failedToCreateOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create payment order'**
+  String get failedToCreateOrder;
+
+  /// No description provided for @paymentVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment verification failed'**
+  String get paymentVerificationFailed;
+
+  /// No description provided for @checkoutUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Checkout encountered an unexpected error: {error}'**
+  String checkoutUnexpectedError(String error);
+
+  /// No description provided for @unlockCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Course (₹{amount})'**
+  String unlockCourse(String amount);
+
+  /// No description provided for @trustBadgeSecureCheckout.
+  ///
+  /// In en, this message translates to:
+  /// **'256-bit encrypted checkout via Razorpay • Instant access'**
+  String get trustBadgeSecureCheckout;
+
+  /// No description provided for @webMonetizationRestrictedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monetization restricted on Web'**
+  String get webMonetizationRestrictedTitle;
+
+  /// No description provided for @webMonetizationNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Razorpay checkouts and App Store reviews are only supported on the Olitun Mobile Application. Please load this on Android/iOS to unlock.'**
+  String get webMonetizationNotice;
+
+  /// No description provided for @aboutThisCourse.
+  ///
+  /// In en, this message translates to:
+  /// **'About this course'**
+  String get aboutThisCourse;
+
+  /// No description provided for @courseOutcome.
+  ///
+  /// In en, this message translates to:
+  /// **'Course Outcome'**
+  String get courseOutcome;
+
+  /// No description provided for @premiumCourseBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'PREMIUM COURSE'**
+  String get premiumCourseBadge;
+
+  /// No description provided for @maranJauharTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Maran Jauhar! 🎉'**
+  String get maranJauharTitle;
+
+  /// No description provided for @startLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Learning'**
+  String get startLearning;
+
+  /// No description provided for @paywallValueOfflineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Full Offline Pack Access'**
+  String get paywallValueOfflineTitle;
+
+  /// No description provided for @paywallValueOfflineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Download lessons, audio pronunciations, and quizzes for anytime offline learning.'**
+  String get paywallValueOfflineSubtitle;
+
+  /// No description provided for @paywallValueAiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited AI Translations'**
+  String get paywallValueAiTitle;
+
+  /// No description provided for @paywallValueAiSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Instant Ol Chiki translations and pronunciation guides without query limits.'**
+  String get paywallValueAiSubtitle;
+
+  /// No description provided for @paywallValueAdFreeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Ad Interruptions'**
+  String get paywallValueAdFreeTitle;
+
+  /// No description provided for @paywallValueAdFreeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Experience 100% distraction-free language practice across all modules.'**
+  String get paywallValueAdFreeSubtitle;
+
+  /// No description provided for @paywallValueLifetimeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Lifetime Access Guarantee'**
+  String get paywallValueLifetimeTitle;
+
+  /// No description provided for @paywallValueLifetimeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pay once with no recurring fees, subscriptions, or hidden charges.'**
+  String get paywallValueLifetimeSubtitle;
+
+  /// No description provided for @navLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn'**
+  String get navLearn;
+
+  /// No description provided for @navBakhed.
+  ///
+  /// In en, this message translates to:
+  /// **'Bakhed'**
+  String get navBakhed;
+
+  /// No description provided for @navProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get navProfile;
+
+  /// No description provided for @navTabSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} tab'**
+  String navTabSemantics(String label);
+
+  /// No description provided for @navItemSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} navigation item'**
+  String navItemSemantics(String label);
+
+  /// No description provided for @kudosMistake1.
+  ///
+  /// In en, this message translates to:
+  /// **'Mistakes reviewed. That\'s how mastery is built.'**
+  String get kudosMistake1;
+
+  /// No description provided for @kudosMistake2.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery in progress! You transformed mistakes into wisdom.'**
+  String get kudosMistake2;
+
+  /// No description provided for @kudosMistake3.
+  ///
+  /// In en, this message translates to:
+  /// **'Fantastic! Correcting mistakes is the secret to fluency.'**
+  String get kudosMistake3;
+
+  /// No description provided for @kudosMistake4.
+  ///
+  /// In en, this message translates to:
+  /// **'Brilliant review! You are learning faster by refining errors.'**
+  String get kudosMistake4;
 }
 
 class _AppLocalizationsDelegate

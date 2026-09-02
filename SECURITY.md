@@ -35,7 +35,7 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 ### F. Payments & Purchase Integrity
 - Course purchases are verified strictly server-side by `verifyCoursePurchase` using HMAC-SHA256 Razorpay signature validation against backend environment secrets.
 - Double-spend and race condition exploits are prevented by unique composite database indexes on `(user_id, category_id)`.
-- Play Store review unlock benefits are restricted server-side to a maximum of one course per user.
+- The incentivized review-for-unlock flow was **removed** from the client (Google Play incentivized-review policy risk). Legacy `play_store_review` entitlement records remain valid server-side; new unlocks are paid only.
 
 ### G. Content Security Policy (CSP) & Web Isolation
 - **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated. All runtime scripts (boot helpers, PWA install/update flow, auth callback) are externalized files (`web/pwa_runtime.js`, `web/pwa_install.js`, `web/auth_redirect.js`) — no inline scripts exist in any HTML template.

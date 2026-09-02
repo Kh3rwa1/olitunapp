@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/main/presentation/main_shell_screen.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -71,7 +72,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            routerConfig: router,
+          ),
         ),
       );
       await tester.pump(const Duration(milliseconds: 300));

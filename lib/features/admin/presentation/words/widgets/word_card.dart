@@ -155,6 +155,7 @@ class _WordCardState extends State<WordCard> {
                     Icons.chevron_right_rounded,
                     color: AdminTokens.textTertiary(isDark),
                   ),
+                  tooltip: 'Edit word',
                   onPressed: widget.onEdit,
                 ),
             ],

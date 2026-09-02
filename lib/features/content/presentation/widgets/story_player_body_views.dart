@@ -310,6 +310,7 @@ class _ControlButton extends StatelessWidget {
       children: [
         IconButton(
           onPressed: onPressed,
+          tooltip: label,
           icon: Icon(
             icon,
             size: isPrimary ? 34 : 24,

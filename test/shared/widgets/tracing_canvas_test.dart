@@ -148,4 +148,53 @@ void main() {
     await tester.tap(find.byIcon(Icons.refresh_rounded));
     await tester.pump();
   });
+
+  testWidgets('TracingCanvas exposes a semantics label for the traced glyph', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    const config = TracingConfig(
+      glyph: 'ᱚ',
+      strokes: [
+        TracingStroke(
+          id: 'stroke_1',
+          order: 0,
+          path: [TracingPoint(x: 0.1, y: 0.1), TracingPoint(x: 0.9, y: 0.9)],
+        ),
+      ],
+    );
+
+    final semanticsHandle = tester.ensureSemantics();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          audioServiceProvider.overrideWithValue(MockAudioService()),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            MockAnalyticsService(),
+          ),
+        ],
+        child: const MaterialApp(
+          home: Scaffold(body: TracingCanvas(config: config)),
+        ),
+      ),
+    );
+
+    final canvasSemanticsFinder = find.bySemanticsLabel(
+      RegExp('Trace the Ol Chiki character ᱚ'),
+    );
+    expect(canvasSemanticsFinder, findsOneWidget);
+
+    final node = tester.getSemantics(canvasSemanticsFinder);
+    expect(node.label, isNotEmpty);
+    expect(node.hint, 'Double-tap to replay example stroke order');
+
+    semanticsHandle.dispose();
+  });
 }

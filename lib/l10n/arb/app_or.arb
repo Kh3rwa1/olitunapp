@@ -360,5 +360,79 @@
   },
   "downloadStarterAudio": "ଷ୍ଟାର୍ଟର ଅଡ଼ିଓ ଡାଉନଲୋଡ୍ କରନ୍ତୁ",
   "downloadStarterAudioSubtitle": "ପ୍ରଥମ ଦିନରୁ ଅଫଲାଇନ ଶିଖନ୍ତୁ",
-  "backButton": "ପଛକୁ"
+  "backButton": "ପଛକୁ",
+
+  "joharLoading": "ଜୋହାର... ଲୋଡ୍ ହେଉଛି...",
+  "somethingWentWrong": "କିଛି ଭୁଲ ହୋଇଗଲା!",
+  "offlineMode": "ଅଫଲାଇନ ମୋଡ୍। ସଂରକ୍ଷିତ ବିଷୟବସ୍ତୁ ଦେଖାଯାଉଛି।",
+  "offlineProgressCached": "ଅଫଲାଇନ। ପ୍ରଗତି ଡିଭାଇସରେ ସଂରକ୍ଷିତ ହୋଇଛି।",
+  "syncingProgress": "ପ୍ରଗତି ସିଙ୍କ ହେଉଛି...",
+  "progressSynced": "ପ୍ରଗତି ସିଙ୍କ ହୋଇଗଲା!",
+  "failedToSyncProgress": "ପ୍ରଗତି ସିଙ୍କ ହୋଇପାରିଲା ନାହିଁ।",
+
+  "processing": "ପ୍ରକ୍ରିୟା ଚାଲିଛି...",
+  "pleaseLogInToPurchase": "କୋର୍ସ କିଣିବା ପାଇଁ ଦୟାକରି ଲଗ୍ ଇନ୍ କରନ୍ତୁ।",
+  "creatingSecureOrder": "ସୁରକ୍ଷିତ ସର୍ଭର ଅର୍ଡର ତିଆରି ହେଉଛି...",
+  "openingPaymentGateway": "ପେମେଣ୍ଟ ଗେଟୱେ ଖୋଲାଯାଉଛି...",
+  "verifyingPayment": "ସର୍ଭର ସହ ପେମେଣ୍ଟ ଯାଞ୍ଚ ହେଉଛି...",
+  "courseUnlocked": "କୋର୍ସ ସଫଳତାର ସହ ଆନଲକ୍ ହୋଇଗଲା!",
+  "failedToCreateOrder": "ପେମେଣ୍ଟ ଅର୍ଡର ତିଆରି ହୋଇପାରିଲା ନାହିଁ",
+  "paymentVerificationFailed": "ପେମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ",
+  "checkoutUnexpectedError": "ଚେକଆଉଟରେ ଅପ୍ରତ୍ୟାଶିତ ତ୍ରୁଟି: {error}",
+  "@checkoutUnexpectedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "unlockCourse": "କୋର୍ସ ଆନଲକ୍ କରନ୍ତୁ (₹{amount})",
+  "@unlockCourse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trustBadgeSecureCheckout": "Razorpay ଦ୍ୱାରା 256-bit ଏନକ୍ରିପ୍ଟେଡ୍ ଚେକଆଉଟ୍ • ତୁରନ୍ତ ପ୍ରବେଶ",
+  "webMonetizationRestrictedTitle": "ୱେବରେ ମୋନେଟାଇଜେସନ ପ୍ରତିବନ୍ଧିତ",
+  "webMonetizationNotice": "Razorpay ଚେକଆଉଟ୍ ଏବଂ App Store ସମୀକ୍ଷା କେବଳ Olitun ମୋବାଇଲ୍ ଆପ୍‌ରେ ସମର୍ଥିତ। ଆନଲକ୍ କରିବା ପାଇଁ ଏହାକୁ Android/iOS ରେ ଖୋଲନ୍ତୁ।",
+  "aboutThisCourse": "ଏହି କୋର୍ସ ବିଷୟରେ",
+  "courseOutcome": "କୋର୍ସ ଫଳାଫଳ",
+  "premiumCourseBadge": "ପ୍ରିମିୟମ୍ କୋର୍ସ",
+  "maranJauharTitle": "ମରନ ଜୋହାର! 🎉",
+  "startLearning": "ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ",
+  "paywallValueOfflineTitle": "ସମ୍ପୂର୍ଣ୍ଣ ଅଫଲାଇନ ପ୍ୟାକ ପ୍ରବେଶ",
+  "paywallValueOfflineSubtitle": "ଯେକୌଣସି ସମୟ ଅଫଲାଇନ ଶିଖିବା ପାଇଁ ପାଠ, ଉଚ୍ଚାରଣ ଅଡ଼ିଓ ଏବଂ କ୍ୱିଜ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ।",
+  "paywallValueAiTitle": "ଅସୀମିତ AI ଅନୁବାଦ",
+  "paywallValueAiSubtitle": "କୌଣସି କ୍ୱେରି ସୀମା ବିନା ତୁରନ୍ତ ଓଲଚିକି ଅନୁବାଦ ଏବଂ ଉଚ୍ଚାରଣ ମାର୍ଗଦର୍ଶନ।",
+  "paywallValueAdFreeTitle": "ଶୂନ ବିଜ୍ଞାପନ ବାଧା",
+  "paywallValueAdFreeSubtitle": "ସବୁ ମଡ୍ୟୁଲରେ 100% ବିନା ଧ୍ୟାନ ବିଚ୍ୟୁତିର ଭାଷା ଅଭ୍ୟାସ।",
+  "paywallValueLifetimeTitle": "ଆଜୀବନ ପ୍ରବେଶ ଗାରାଣ୍ଟି",
+  "paywallValueLifetimeSubtitle": "ଥରେ ଦାଗିତ — କୌଣସି ପୁନରାବର୍ତ୍ତିତ ଫି, ସବସ୍କ୍ରିପସନ କିମ୍ବା ଲୁଚା ଚାର୍ଜ ନାହିଁ।",
+
+  "navLearn": "ଶିଖନ୍ତୁ",
+  "navBakhed": "ବାଖେଡ଼",
+  "navProfile": "ପ୍ରୋଫାଇଲ୍",
+  "navTabSemantics": "{label} ଟ୍ୟାବ୍",
+  "@navTabSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "navItemSemantics": "{label} ନାଭିଗେସନ୍ ଆଇଟମ୍",
+  "@navItemSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+
+  "kudosMistake1": "ଭୁଲଗୁଡ଼ିକ ସମୀକ୍ଷା ହେଲା। ଏମିତି ହିଁ ଦକ୍ଷତା ଗଢ଼ାଯାଏ।",
+  "kudosMistake2": "ଦକ୍ଷତା ଗଢ଼ୁଅଛି! ଆପଣ ଭୁଲକୁ ଜ୍ଞାନରେ ବଦଳାଇଛନ୍ତି।",
+  "kudosMistake3": "ଅଦ୍ଭୁତ! ଭୁଲ ସଂଶୋଧନ ହିଁ ସାବଲୀଳତାର ରହସ୍ୟ।",
+  "kudosMistake4": "ଅସାଧାରଣ ସମୀକ୍ଷା! ଭୁଲ ସଂଶୋଧନ କରି ଆପଣ ଅଧିକ ଶୀଘ୍ର ଶିଖୁଛନ୍ତି।"
 }

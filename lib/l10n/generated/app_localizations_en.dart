@@ -706,4 +706,148 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backButton => 'Back';
+
+  @override
+  String get joharLoading => 'Johar... Loading';
+
+  @override
+  String get somethingWentWrong => 'Something went wrong!';
+
+  @override
+  String get offlineMode => 'Offline mode. Showing cached content.';
+
+  @override
+  String get offlineProgressCached => 'Offline. Progress cached locally.';
+
+  @override
+  String get syncingProgress => 'Syncing progress...';
+
+  @override
+  String get progressSynced => 'Progress synced!';
+
+  @override
+  String get failedToSyncProgress => 'Failed to sync progress.';
+
+  @override
+  String get processing => 'Processing...';
+
+  @override
+  String get pleaseLogInToPurchase => 'Please log in to purchase courses.';
+
+  @override
+  String get creatingSecureOrder => 'Creating secure server order...';
+
+  @override
+  String get openingPaymentGateway => 'Opening payment gateway...';
+
+  @override
+  String get verifyingPayment => 'Verifying payment with server...';
+
+  @override
+  String get courseUnlocked => 'Course successfully unlocked!';
+
+  @override
+  String get failedToCreateOrder => 'Failed to create payment order';
+
+  @override
+  String get paymentVerificationFailed => 'Payment verification failed';
+
+  @override
+  String checkoutUnexpectedError(String error) {
+    return 'Checkout encountered an unexpected error: $error';
+  }
+
+  @override
+  String unlockCourse(String amount) {
+    return 'Unlock Course (₹$amount)';
+  }
+
+  @override
+  String get trustBadgeSecureCheckout =>
+      '256-bit encrypted checkout via Razorpay • Instant access';
+
+  @override
+  String get webMonetizationRestrictedTitle => 'Monetization restricted on Web';
+
+  @override
+  String get webMonetizationNotice =>
+      'Razorpay checkouts and App Store reviews are only supported on the Olitun Mobile Application. Please load this on Android/iOS to unlock.';
+
+  @override
+  String get aboutThisCourse => 'About this course';
+
+  @override
+  String get courseOutcome => 'Course Outcome';
+
+  @override
+  String get premiumCourseBadge => 'PREMIUM COURSE';
+
+  @override
+  String get maranJauharTitle => 'Maran Jauhar! 🎉';
+
+  @override
+  String get startLearning => 'Start Learning';
+
+  @override
+  String get paywallValueOfflineTitle => 'Full Offline Pack Access';
+
+  @override
+  String get paywallValueOfflineSubtitle =>
+      'Download lessons, audio pronunciations, and quizzes for anytime offline learning.';
+
+  @override
+  String get paywallValueAiTitle => 'Unlimited AI Translations';
+
+  @override
+  String get paywallValueAiSubtitle =>
+      'Instant Ol Chiki translations and pronunciation guides without query limits.';
+
+  @override
+  String get paywallValueAdFreeTitle => 'Zero Ad Interruptions';
+
+  @override
+  String get paywallValueAdFreeSubtitle =>
+      'Experience 100% distraction-free language practice across all modules.';
+
+  @override
+  String get paywallValueLifetimeTitle => 'Lifetime Access Guarantee';
+
+  @override
+  String get paywallValueLifetimeSubtitle =>
+      'Pay once with no recurring fees, subscriptions, or hidden charges.';
+
+  @override
+  String get navLearn => 'Learn';
+
+  @override
+  String get navBakhed => 'Bakhed';
+
+  @override
+  String get navProfile => 'Profile';
+
+  @override
+  String navTabSemantics(String label) {
+    return '$label tab';
+  }
+
+  @override
+  String navItemSemantics(String label) {
+    return '$label navigation item';
+  }
+
+  @override
+  String get kudosMistake1 =>
+      'Mistakes reviewed. That\'s how mastery is built.';
+
+  @override
+  String get kudosMistake2 =>
+      'Mastery in progress! You transformed mistakes into wisdom.';
+
+  @override
+  String get kudosMistake3 =>
+      'Fantastic! Correcting mistakes is the secret to fluency.';
+
+  @override
+  String get kudosMistake4 =>
+      'Brilliant review! You are learning faster by refining errors.';
 }

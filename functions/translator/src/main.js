@@ -4,15 +4,14 @@ import {
   MAX_TRANSLATION_CHARS,
   normalizeLanguage,
   isLanguageSupported,
-  deriveRateLimitIdentifier,
-  verifyAppwriteIdentity,
 } from './security.js';
-import { checkRateLimit } from './shared/rate_limiter.js';
 import { getTranslationProvider } from './providers/translation_provider.js';
 
 const DB_ID = 'olitun_db';
 const CACHE_COLLECTION = 'translation_cache';
-const RATE_COLLECTION = 'rate_limits';
+
+// Translation is a free, unlimited service: identity verification and rate
+// limiting were intentionally removed (see README + SECURITY.md §C).
 
 const ok = (data) => ({ success: true, data });
 const err = (message, code = 'TRANSLATION_ERROR', retryAfter = undefined) => ({
@@ -71,66 +70,6 @@ export default async ({ req, res, log, error }) => {
     .setKey(apiKey);
   const db = new Databases(client);
 
-  // ---- Cryptographic Identity Verification (Zero-Trust Caller Headers) ----
-  const authHeader = req.headers['authorization'] || '';
-  const bearerJwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-  const rawJwt = req.headers['x-appwrite-jwt'] || bearerJwt;
-
-  let verifiedUserId = null;
-  if (rawJwt) {
-    const authVerification = await verifyAppwriteIdentity({
-      jwt: rawJwt,
-      endpoint,
-      projectId,
-    });
-    if (authVerification.isVerified && authVerification.userId) {
-      verifiedUserId = authVerification.userId;
-    }
-  }
-
-  const isAuth = Boolean(verifiedUserId);
-  const clientIp =
-    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.headers['x-real-ip'] ||
-    '127.0.0.1';
-
-  let rateLimitIdentifier;
-  try {
-    rateLimitIdentifier = deriveRateLimitIdentifier({
-      verifiedUserId,
-      clientIp,
-    });
-  } catch (saltErr) {
-    error(JSON.stringify({ event: 'security_misconfiguration', error: saltErr?.message }));
-    return res.json(err('Security configuration error', 'SERVER_MISCONFIGURED'), 500);
-  }
-
-  // ---- Atomic Rate Limit Check (Fail-Closed) ----
-  const rlResult = await checkRateLimit({
-    databases: db,
-    dbId: DB_ID,
-    collectionId: RATE_COLLECTION,
-    identifier: rateLimitIdentifier,
-    isAuth,
-    now: startTime,
-  });
-
-  if (!rlResult.allowed) {
-    log(JSON.stringify({
-      event: 'rate_limited',
-      reason: rlResult.reason,
-      isAuth,
-      durationMs: Date.now() - startTime,
-    }));
-    if (rlResult.reason === 'rate_limit_storage_error') {
-      return res.json(err('Rate limit service temporarily unavailable. Please retry shortly.', 'RATE_LIMIT_ERROR'), 503);
-    }
-    return res.json(
-      err('Rate limit exceeded. Please wait before translating again.', 'RATE_LIMIT_EXCEEDED', rlResult.retryAfterSeconds),
-      429
-    );
-  }
-
   // ---- Cache Lookup (SHA-256 hashed cacheKey) ----
   const cacheKey = createCacheKey({ from, to, text });
   try {
@@ -146,12 +85,7 @@ export default async ({ req, res, log, error }) => {
         to: c.to,
         durationMs: Date.now() - startTime,
       }));
-      return res.json(ok({
-        translatedText: c.translatedText,
-        from: c.from,
-        to: c.to,
-        cached: true,
-      }));
+      return res.json(ok(translationPayload(c.translatedText, c.from, to, true)));
     }
   } catch (cacheErr) {
     log(JSON.stringify({ event: 'cache_lookup_failed', error: cacheErr?.message }));
@@ -183,12 +117,7 @@ export default async ({ req, res, log, error }) => {
       durationMs: Date.now() - startTime,
     }));
 
-    return res.json(ok({
-      translatedText,
-      from: detectedFrom,
-      to,
-      cached: false,
-    }));
+    return res.json(ok(translationPayload(translatedText, detectedFrom, to, false)));
   } catch (upstreamErr) {
     error(JSON.stringify({
       event: 'upstream_translation_failed',
@@ -201,3 +130,21 @@ export default async ({ req, res, log, error }) => {
     return res.json(err('Translation service failed. Please try again later.', 'UPSTREAM_ERROR'), 502);
   }
 };
+
+/**
+ * Neutral response payload. The app reads `translation` + `detectedLanguage`
+ * (lib/core/api/ai_service.dart); `translatedText`/`from`/`to`/`cached` are
+ * kept for older clients and the content pipelines.
+ */
+function translationPayload(translatedText, detectedLanguage, to, cached) {
+  return {
+    translation: translatedText,
+    detectedLanguage,
+    detectedLanguageCode: detectedLanguage,
+    translatedText,
+    from: detectedLanguage,
+    to,
+    cached,
+  };
+}
+

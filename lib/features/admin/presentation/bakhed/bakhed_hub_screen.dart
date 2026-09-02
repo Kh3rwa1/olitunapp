@@ -350,5 +350,4 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
       ),
     );
   }
-
 }

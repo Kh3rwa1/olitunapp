@@ -8,7 +8,11 @@ import '../../../../shared/providers/waitlist_provider.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 
 class ProgressErrorState extends StatelessWidget {
-  const ProgressErrorState({super.key, required this.isDark, required this.onRetry});
+  const ProgressErrorState({
+    super.key,
+    required this.isDark,
+    required this.onRetry,
+  });
 
   final bool isDark;
   final VoidCallback onRetry;

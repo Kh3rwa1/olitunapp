@@ -56,15 +56,16 @@ void main() {
     String bakhedId,
     Either<Failure, List<BakhedLyricLine>> result,
   ) {
-    when(
-      () => repository.getLyrics(bakhedId),
-    ).thenAnswer((_) async => result);
+    when(() => repository.getLyrics(bakhedId)).thenAnswer((_) async => result);
   }
 
   test(
     'ensureLoaded populates original and current lines and reports not dirty',
     () async {
-      stubLyrics('b1', Either.right([line('a', 0, 0, 'A'), line('b', 1, 5000, 'B')]));
+      stubLyrics(
+        'b1',
+        Either.right([line('a', 0, 0, 'A'), line('b', 1, 5000, 'B')]),
+      );
 
       await notifier('b1').ensureLoaded();
 
@@ -97,7 +98,9 @@ void main() {
     () async {
       stubLyrics(
         'b1',
-        Either.left(const ServerFailure(message: 'Failed to load lyrics: boom')),
+        Either.left(
+          const ServerFailure(message: 'Failed to load lyrics: boom'),
+        ),
       );
 
       await notifier('b1').ensureLoaded();
@@ -123,10 +126,9 @@ void main() {
       );
       await notifier('b1').ensureLoaded();
 
-      notifier('b1').updateLines([
-        line('a', 0, 7000, 'A'),
-        line('b', 1, 3000, 'B'),
-      ]);
+      notifier(
+        'b1',
+      ).updateLines([line('a', 0, 7000, 'A'), line('b', 1, 3000, 'B')]);
 
       final updated = state('b1').currentLines;
       expect(updated.map((l) => l.id).toList(), ['b', 'a']);
@@ -158,10 +160,7 @@ void main() {
       final reordered = state('b1').currentLines;
       expect(reordered.map((l) => l.id).toList(), ['a', 'c', 'b']);
       expect(reordered.map((l) => l.lineIndex).toList(), [0, 1, 2]);
-      expect(
-        reordered.map((l) => l.startMs).toList(),
-        [0, 10000, 12500],
-      );
+      expect(reordered.map((l) => l.startMs).toList(), [0, 10000, 12500]);
     },
   );
 

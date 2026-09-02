@@ -546,5 +546,4 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
       ),
     );
   }
-
 }

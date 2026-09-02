@@ -235,14 +235,17 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     try {
       final functions = ref.read(appwriteFunctionsServiceProvider);
       final correctAnswer = _correctAnswerFor(question);
-      await functions.execute('recordMistake', body: {
-        'quizId': quizId,
-        'questionId': '${quizId}_$questionIndex',
-        'questionIndex': questionIndex,
-        'wrongAnswer': wrongAnswer ?? '',
-        'correctAnswer': correctAnswer,
-        'questionSnapshot': question.toMap(),
-      });
+      await functions.execute(
+        'recordMistake',
+        body: {
+          'quizId': quizId,
+          'questionId': '${quizId}_$questionIndex',
+          'questionIndex': questionIndex,
+          'wrongAnswer': wrongAnswer ?? '',
+          'correctAnswer': correctAnswer,
+          'questionSnapshot': question.toMap(),
+        },
+      );
     } catch (e) {
       AppLogger.debug('MistakeNotifier: remote record failed: $e');
     }
@@ -254,11 +257,14 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   }) async {
     try {
       final functions = ref.read(appwriteFunctionsServiceProvider);
-      await functions.execute('markMistakeMastered', body: {
-        'quizId': quizId,
-        'questionId': '${quizId}_$questionIndex',
-        'questionIndex': questionIndex,
-      });
+      await functions.execute(
+        'markMistakeMastered',
+        body: {
+          'quizId': quizId,
+          'questionId': '${quizId}_$questionIndex',
+          'questionIndex': questionIndex,
+        },
+      );
     } catch (e) {
       AppLogger.debug('MistakeNotifier: remote mastery failed: $e');
     }

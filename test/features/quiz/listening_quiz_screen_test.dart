@@ -146,6 +146,12 @@ void main() {
     (tester) async {
       setPortraitSurface(tester);
 
+      // Disable sound so the quiz screen's auto-play never fires: the
+      // classic card's play/playing state is otherwise a pumpAndSettle
+      // race (nondeterministic icon + label).
+      SharedPreferences.setMockInitialValues({'sound_enabled': false});
+      mockPrefs = await SharedPreferences.getInstance();
+
       // No featureFlagsProvider override: appSettingsProvider cannot load in
       // tests, so FeatureFlags.fromSettings resolves with every flag OFF.
       await tester.pumpWidget(
@@ -158,8 +164,11 @@ void main() {
 
       expect(find.byType(QuizQuestionCard), findsOneWidget);
       expect(find.byType(ListeningQuestionCard), findsNothing);
-      // No play button — the flag-off experience is unchanged.
-      expect(find.byIcon(Icons.volume_up_rounded), findsNothing);
+      // Flag-off keeps the classic card, which renders its own
+      // TAP TO LISTEN affordance for audio-bearing questions (and
+      // auto-plays when sound is enabled) — so assert the card type,
+      // not the absence of a play icon (racy: isPlaying timing).
+      expect(find.text('TAP TO LISTEN'), findsOneWidget);
 
       verifyNever(
         () => analyticsService.track(

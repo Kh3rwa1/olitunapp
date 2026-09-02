@@ -12,13 +12,16 @@ import '../../domain/repositories/category_repository.dart';
 // datasources/repositories it constructs so `package:appwrite` never
 // leaks into presentation.
 
-final categoryRemoteDataSourceProvider =
-    Provider<CategoryRemoteDataSource>((ref) {
-      final client = ref.watch(appwriteAuthServiceProvider).client;
-      return CategoryRemoteDataSourceImpl(Databases(client));
-    });
+final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((
+  ref,
+) {
+  final client = ref.watch(appwriteAuthServiceProvider).client;
+  return CategoryRemoteDataSourceImpl(Databases(client));
+});
 
-final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((ref) {
+final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((
+  ref,
+) {
   return CategoryLocalDataSourceImpl();
 });
 

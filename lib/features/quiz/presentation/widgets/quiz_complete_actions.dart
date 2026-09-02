@@ -43,28 +43,20 @@ class QuizCompleteActions extends ConsumerWidget {
                   height: 52,
                   child: OutlinedButton.icon(
                     onPressed: () async {
-                      final rewarded = ref.read(
-                        rewardedAdManagerProvider,
-                      );
+                      final rewarded = ref.read(rewardedAdManagerProvider);
                       final shown = await rewarded.show(
                         context: context,
                         placement: 'quiz_reward_bonus_stars',
                         rewardType: RewardType.stars,
                         amount: 50,
                         onRewardGranted: () {
-                          ScaffoldMessenger.of(
-                            context,
-                          ).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: const Text(
-                                'Bonus 50 Stars Earned! ⭐',
-                              ),
+                              content: const Text('Bonus 50 Stars Earned! ⭐'),
                               backgroundColor: AppColors.success,
                               behavior: SnackBarBehavior.floating,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                  12,
-                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
                             ),
                           );
@@ -78,9 +70,7 @@ class QuizCompleteActions extends ConsumerWidget {
                             ),
                             behavior: SnackBarBehavior.floating,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                12,
-                              ),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                         );

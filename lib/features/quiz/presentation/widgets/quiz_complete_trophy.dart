@@ -45,11 +45,8 @@ class QuizCompleteTrophy extends StatelessWidget {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color:
-                      (isPassing
-                              ? AppColors.success
-                              : AppColors.warning)
-                          .withValues(alpha: 0.35),
+                  color: (isPassing ? AppColors.success : AppColors.warning)
+                      .withValues(alpha: 0.35),
                   blurRadius: 30,
                   offset: const Offset(0, 12),
                 ),
@@ -67,9 +64,7 @@ class QuizCompleteTrophy extends StatelessWidget {
           }
 
           return trophy
-              .animate(
-                onPlay: (c) => c.repeat(reverse: true),
-              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
               .scale(
                 begin: const Offset(1.0, 1.0),
                 end: const Offset(1.06, 1.06),

@@ -25,21 +25,14 @@ void main() {
     });
 
     test('matches the admin host case-insensitively', () {
-      expect(
-        adminHostRedirectFor('Admin.Olitun.IN', '/privacy'),
-        '/admin',
-      );
+      expect(adminHostRedirectFor('Admin.Olitun.IN', '/privacy'), '/admin');
     });
   });
 
   group('fragmentRedirectFor', () {
     test('ignores fragments on non-web platforms', () {
       expect(
-        fragmentRedirectFor(
-          isWeb: false,
-          path: '/',
-          fragment: '/lessons',
-        ),
+        fragmentRedirectFor(isWeb: false, path: '/', fragment: '/lessons'),
         isNull,
       );
     });
@@ -87,10 +80,7 @@ void main() {
     });
 
     test('rejects empty and non-path fragments', () {
-      expect(
-        fragmentRedirectFor(isWeb: true, path: '/', fragment: ''),
-        isNull,
-      );
+      expect(fragmentRedirectFor(isWeb: true, path: '/', fragment: ''), isNull);
       expect(
         fragmentRedirectFor(isWeb: true, path: '/', fragment: 'lessons'),
         isNull,
@@ -111,14 +101,8 @@ void main() {
 
   group('adminAccessRedirectFor', () {
     test('allows public routes for everyone', () {
-      expect(
-        adminAccessRedirectFor(isAdmin: false, path: '/lessons'),
-        isNull,
-      );
-      expect(
-        adminAccessRedirectFor(isAdmin: false, path: '/'),
-        isNull,
-      );
+      expect(adminAccessRedirectFor(isAdmin: false, path: '/lessons'), isNull);
+      expect(adminAccessRedirectFor(isAdmin: false, path: '/'), isNull);
     });
 
     test('always allows the admin login route', () {
@@ -144,10 +128,7 @@ void main() {
     });
 
     test('lets admins through to admin routes', () {
-      expect(
-        adminAccessRedirectFor(isAdmin: true, path: '/admin'),
-        isNull,
-      );
+      expect(adminAccessRedirectFor(isAdmin: true, path: '/admin'), isNull);
       expect(
         adminAccessRedirectFor(isAdmin: true, path: '/admin/review'),
         isNull,

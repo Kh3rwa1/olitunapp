@@ -57,12 +57,8 @@ class QuizCompleteBentoStats extends StatelessWidget {
       children: [
         // 1. Score Bento
         _buildBentoCard(
-          backgroundColor: AppColors.primary.withValues(
-            alpha: 0.10,
-          ),
-          borderColor: AppColors.primary.withValues(
-            alpha: 0.20,
-          ),
+          backgroundColor: AppColors.primary.withValues(alpha: 0.10),
+          borderColor: AppColors.primary.withValues(alpha: 0.20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -77,9 +73,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? Colors.white60
-                      : Colors.black54,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
               const SizedBox(height: 4),
@@ -88,9 +82,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
-                  color: isDark
-                      ? Colors.white
-                      : AppColors.pureBlack,
+                  color: isDark ? Colors.white : AppColors.pureBlack,
                 ),
               ),
             ],
@@ -99,24 +91,16 @@ class QuizCompleteBentoStats extends StatelessWidget {
 
         // 2. Accuracy Bento
         _buildBentoCard(
-          backgroundColor:
-              (isPassing
-                      ? AppColors.success
-                      : AppColors.error)
-                  .withValues(alpha: 0.10),
-          borderColor:
-              (isPassing
-                      ? AppColors.success
-                      : AppColors.error)
-                  .withValues(alpha: 0.20),
+          backgroundColor: (isPassing ? AppColors.success : AppColors.error)
+              .withValues(alpha: 0.10),
+          borderColor: (isPassing ? AppColors.success : AppColors.error)
+              .withValues(alpha: 0.20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.track_changes_rounded,
-                color: isPassing
-                    ? AppColors.success
-                    : AppColors.error,
+                color: isPassing ? AppColors.success : AppColors.error,
                 size: 24,
               ),
               const SizedBox(height: 6),
@@ -125,9 +109,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? Colors.white60
-                      : Colors.black54,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
               const SizedBox(height: 4),
@@ -136,9 +118,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
-                  color: isPassing
-                      ? AppColors.success
-                      : AppColors.error,
+                  color: isPassing ? AppColors.success : AppColors.error,
                 ),
               ),
             ],
@@ -147,12 +127,8 @@ class QuizCompleteBentoStats extends StatelessWidget {
 
         // 3. Stars Bento
         _buildBentoCard(
-          backgroundColor: AppColors.accentGold.withValues(
-            alpha: 0.10,
-          ),
-          borderColor: AppColors.accentGold.withValues(
-            alpha: 0.20,
-          ),
+          backgroundColor: AppColors.accentGold.withValues(alpha: 0.10),
+          borderColor: AppColors.accentGold.withValues(alpha: 0.20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -167,9 +143,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? Colors.white60
-                      : Colors.black54,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
               const SizedBox(height: 4),
@@ -187,12 +161,8 @@ class QuizCompleteBentoStats extends StatelessWidget {
 
         // 4. Streak Bento
         _buildBentoCard(
-          backgroundColor: AppColors.accentOchre.withValues(
-            alpha: 0.10,
-          ),
-          borderColor: AppColors.accentOchre.withValues(
-            alpha: 0.20,
-          ),
+          backgroundColor: AppColors.accentOchre.withValues(alpha: 0.10),
+          borderColor: AppColors.accentOchre.withValues(alpha: 0.20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -207,9 +177,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? Colors.white60
-                      : Colors.black54,
+                  color: isDark ? Colors.white60 : Colors.black54,
                 ),
               ),
               const SizedBox(height: 4),

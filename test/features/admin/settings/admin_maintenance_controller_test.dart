@@ -17,9 +17,7 @@ void main() {
   setUp(() {
     ref = MockWidgetRef();
     authService = MockAppwriteAuthService();
-    when(
-      () => ref.read(appwriteAuthServiceProvider),
-    ).thenReturn(authService);
+    when(() => ref.read(appwriteAuthServiceProvider)).thenReturn(authService);
     controller = AdminMaintenanceController(ref);
   });
 
@@ -33,7 +31,10 @@ void main() {
             confirmation: 'BACKUP CONTENT',
           ),
         ).thenAnswer(
-          (_) async => {'success': true, 'backup': {'fileId': 'file123'}},
+          (_) async => {
+            'success': true,
+            'backup': {'fileId': 'file123'},
+          },
         );
 
         final backupFileId = await controller.backupContent();
@@ -72,13 +73,7 @@ void main() {
 
       expect(
         controller.backupContent(),
-        throwsA(
-          isA<AppwriteException>().having(
-            (e) => e.code,
-            'code',
-            403,
-          ),
-        ),
+        throwsA(isA<AppwriteException>().having((e) => e.code, 'code', 403)),
       );
     });
 
@@ -158,21 +153,18 @@ void main() {
       );
     });
 
-    test(
-      'falls back to a generic message when the failure body is empty',
-      () {
-        expect(
-          () => parseAdminMaintenanceResponse(statusCode: 500, body: ''),
-          throwsA(
-            isA<AppwriteException>().having(
-              (e) => e.message,
-              'message',
-              'Admin maintenance request failed.',
-            ),
+    test('falls back to a generic message when the failure body is empty', () {
+      expect(
+        () => parseAdminMaintenanceResponse(statusCode: 500, body: ''),
+        throwsA(
+          isA<AppwriteException>().having(
+            (e) => e.message,
+            'message',
+            'Admin maintenance request failed.',
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
 
     test('rejects a body that is not a JSON object', () {
       expect(

@@ -95,7 +95,11 @@ class ContentMutationReplay {
       } catch (e) {
         failed++;
         _outbox
-            .recordAttemptFailed(mutation.userId, mutation.operationId, e.toString())
+            .recordAttemptFailed(
+              mutation.userId,
+              mutation.operationId,
+              e.toString(),
+            )
             .catchError((_) {});
       }
     }
@@ -105,11 +109,7 @@ class ContentMutationReplay {
         '[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped dead-lettered.',
       );
     }
-    return ReplaySummary(
-      replayed: replayed,
-      failed: failed,
-      skipped: skipped,
-    );
+    return ReplaySummary(replayed: replayed, failed: failed, skipped: skipped);
   }
 
   ContentItem? _deserialize(PendingMutation mutation) {

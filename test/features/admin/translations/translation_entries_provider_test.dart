@@ -154,17 +154,14 @@ void main() {
       final entries = container.read(translationEntriesProvider);
 
       expect(entries, hasLength(6));
-      expect(
-        entries.map((e) => e.kind).toList(),
-        [
-          TranslationKind.word,
-          TranslationKind.sentence,
-          TranslationKind.lesson,
-          TranslationKind.lesson,
-          TranslationKind.category,
-          TranslationKind.rhyme,
-        ],
-      );
+      expect(entries.map((e) => e.kind).toList(), [
+        TranslationKind.word,
+        TranslationKind.sentence,
+        TranslationKind.lesson,
+        TranslationKind.lesson,
+        TranslationKind.category,
+        TranslationKind.rhyme,
+      ]);
       expect(entries[0].id, 'w1');
       expect(entries[1].id, 's1');
       expect(entries[2].id, 'l1');

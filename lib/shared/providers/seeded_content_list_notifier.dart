@@ -12,7 +12,8 @@ import 'package:itun/core/logging/app_logger.dart';
 /// Subclasses supply the collection id, model mapping, bundled seed, and their
 /// own load policy via [loadList]; the provider lifecycle, remote fetch, CRUD,
 /// and seed backfill live here exactly once.
-abstract class SeededContentListNotifier<T> extends Notifier<AsyncValue<List<T>>> {
+abstract class SeededContentListNotifier<T>
+    extends Notifier<AsyncValue<List<T>>> {
   /// Appwrite collection backing this list.
   String get collectionId;
 
@@ -62,8 +63,12 @@ abstract class SeededContentListNotifier<T> extends Notifier<AsyncValue<List<T>>
 
   /// Decodes a bundled seed asset (`assets/seed/<name>.json`).
   Future<List<T>> loadSeedAsset(String assetPath) async {
-    final raw = jsonDecode(await rootBundle.loadString(assetPath)) as List<dynamic>;
-    return raw.cast<Map<String, dynamic>>().map(fromJson).toList(growable: false);
+    final raw =
+        jsonDecode(await rootBundle.loadString(assetPath)) as List<dynamic>;
+    return raw
+        .cast<Map<String, dynamic>>()
+        .map(fromJson)
+        .toList(growable: false);
   }
 
   /// Emits [items] unless the notifier was disposed mid-flight.

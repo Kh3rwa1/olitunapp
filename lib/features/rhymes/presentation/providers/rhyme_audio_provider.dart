@@ -221,11 +221,14 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
   }) async {
     try {
       final functions = ref.read(appwriteFunctionsServiceProvider);
-      await functions.execute('recordBakhedProgress', body: {
-        'bakhedId': bakhedId,
-        'listenedPercent': listenedPercent,
-        'lastPositionMs': lastPositionMs,
-      });
+      await functions.execute(
+        'recordBakhedProgress',
+        body: {
+          'bakhedId': bakhedId,
+          'listenedPercent': listenedPercent,
+          'lastPositionMs': lastPositionMs,
+        },
+      );
     } catch (e) {
       AppLogger.debug('RhymeAudio: progress sync skipped: $e');
     }

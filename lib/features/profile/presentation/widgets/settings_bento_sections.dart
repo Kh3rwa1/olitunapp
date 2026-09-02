@@ -200,6 +200,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
     );
   }
 }
+
 /// Bento layout of the settings screen for mobile.
 class SettingsBentoMobile extends ConsumerWidget {
   const SettingsBentoMobile({
@@ -351,6 +352,7 @@ class SettingsBentoMobile extends ConsumerWidget {
     );
   }
 }
+
 Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
   final l10n = AppLocalizations.of(context)!;
   return SettingsCard(
@@ -387,6 +389,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
     ],
   );
 }
+
 String _getThemeLabel(BuildContext context, String mode) {
   final l10n = AppLocalizations.of(context)!;
   switch (mode) {

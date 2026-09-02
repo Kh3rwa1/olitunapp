@@ -20,20 +20,20 @@ AdminAnalyticsSnapshot snapshotWith(List<Map<String, dynamic>> rollups) {
 }
 
 void main() {
-  test(
-    'empty input exports metadata and the header row with no data rows',
-    () {
-      final csv = snapshotWith(const []).toRollupsCsv();
-      final lines =
-          csv.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+  test('empty input exports metadata and the header row with no data rows', () {
+    final csv = snapshotWith(const []).toRollupsCsv();
+    final lines = csv
+        .split('\n')
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
 
-      expect(lines.first, startsWith('# Generated At,'));
-      expect(lines, contains('# Date Scope,2026-05-02 to 2026-05-08'));
-      expect(lines, contains('# Data Status,unavailable'));
-      expect(lines, contains('# Total Rollup Rows,0'));
-      expect(lines.last, _expectedHeader);
-    },
-  );
+    expect(lines.first, startsWith('# Generated At,'));
+    expect(lines, contains('# Date Scope,2026-05-02 to 2026-05-08'));
+    expect(lines, contains('# Data Status,unavailable'));
+    expect(lines, contains('# Total Rollup Rows,0'));
+    expect(lines.last, _expectedHeader);
+  });
 
   test(
     'rollup rows are exported in source order under the six fixed columns',
@@ -57,8 +57,11 @@ void main() {
         },
       ]).toRollupsCsv();
 
-      final lines =
-          csv.split('\n').map((l) => l.trim()).where((l) => l.isNotEmpty).toList();
+      final lines = csv
+          .split('\n')
+          .map((l) => l.trim())
+          .where((l) => l.isNotEmpty)
+          .toList();
       final headerIndex = lines.indexOf(_expectedHeader);
 
       expect(headerIndex, greaterThan(0));
@@ -88,10 +91,7 @@ void main() {
         },
       ]).toRollupsCsv();
 
-      expect(
-        csv,
-        contains('"lesson,""ᱥᱟᱹᱨᱤ""\nnext"'),
-      );
+      expect(csv, contains('"lesson,""ᱥᱟᱹᱨᱤ""\nnext"'));
       expect(csv, contains('ᱥᱟᱹᱨᱤ'));
     },
   );
@@ -103,11 +103,11 @@ void main() {
       String? clipboardText;
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(SystemChannels.platform, (call) async {
-        if (call.method == 'Clipboard.setData') {
-          clipboardText = (call.arguments as Map)['text'] as String;
-        }
-        return null;
-      });
+            if (call.method == 'Clipboard.setData') {
+              clipboardText = (call.arguments as Map)['text'] as String;
+            }
+            return null;
+          });
       addTearDown(
         () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(SystemChannels.platform, null),

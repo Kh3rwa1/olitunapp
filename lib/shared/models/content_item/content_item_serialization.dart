@@ -40,6 +40,7 @@ class ContentItemSerialization {
         .whereType<ContentBlock>()
         .toList();
   }
+
   static String? extractFileIdFromUrl(String? url) {
     if (url == null || url.isEmpty) return null;
     final regExp = RegExp(r'/files/([^/]+)/view');

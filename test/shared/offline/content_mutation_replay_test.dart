@@ -106,41 +106,43 @@ void main() {
       );
     });
 
-    test('records failures with retry budget instead of losing the edit', () async {
-      final outbox = MutationOutboxService();
-      final item = buildItem(id: 'word_failcase');
-      await outbox.enqueueMutation(
-        PendingMutation(
-          operationId: 'op_replay_failure',
-          userId: contentMutationQueueUserId,
-          operationType: 'content.upsert',
-          entityId: item.id,
-          payload: {'kind': item.kind.name, 'item': item.toJson()},
-          createdAt: DateTime.now(),
-        ),
-      );
+    test(
+      'records failures with retry budget instead of losing the edit',
+      () async {
+        final outbox = MutationOutboxService();
+        final item = buildItem(id: 'word_failcase');
+        await outbox.enqueueMutation(
+          PendingMutation(
+            operationId: 'op_replay_failure',
+            userId: contentMutationQueueUserId,
+            operationType: 'content.upsert',
+            entityId: item.id,
+            payload: {'kind': item.kind.name, 'item': item.toJson()},
+            createdAt: DateTime.now(),
+          ),
+        );
 
-      final replay = ContentMutationReplay(
-        outbox: outbox,
-        networkInfo: FakeNetworkInfo(connected: true),
-        executeUpsert: (_) async => left(
-          const ServerFailure(message: 'upstream unavailable'),
-        ),
-      );
+        final replay = ContentMutationReplay(
+          outbox: outbox,
+          networkInfo: FakeNetworkInfo(connected: true),
+          executeUpsert: (_) async =>
+              left(const ServerFailure(message: 'upstream unavailable')),
+        );
 
-      final summary = await replay.replayPending();
+        final summary = await replay.replayPending();
 
-      expect(summary.replayed, 0);
-      expect(summary.failed, 1);
+        expect(summary.replayed, 0);
+        expect(summary.failed, 1);
 
-      final pending = await outbox.getPendingMutations(
-        contentMutationQueueUserId,
-      );
-      expect(pending, hasLength(1));
-      expect(pending.single.attemptCount, 1);
-      expect(pending.single.status, MutationStatus.failed);
-      expect(pending.single.lastError, 'upstream unavailable');
-    });
+        final pending = await outbox.getPendingMutations(
+          contentMutationQueueUserId,
+        );
+        expect(pending, hasLength(1));
+        expect(pending.single.attemptCount, 1);
+        expect(pending.single.status, MutationStatus.failed);
+        expect(pending.single.lastError, 'upstream unavailable');
+      },
+    );
 
     test('dead-letters permanently unparseable mutations', () async {
       final outbox = MutationOutboxService();

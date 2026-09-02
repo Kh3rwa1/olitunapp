@@ -21,9 +21,7 @@ class AudioService {
       try {
         _player.setWebCrossOrigin(WebCrossOrigin.anonymous);
       } catch (e) {
-        AppLogger.warning(
-          'AudioService: failed to set web cross-origin: $e',
-        );
+        AppLogger.warning('AudioService: failed to set web cross-origin: $e');
       }
     }
   }

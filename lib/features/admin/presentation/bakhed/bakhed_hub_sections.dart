@@ -11,269 +11,218 @@ extension _BakhedHubSections on _BakhedHubScreenState {
     String categoryName,
     bool hasAudio,
   ) {
-                        return Card(
-                          color: AdminTokens.raised(isDark),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AdminTokens.radiusMd,
-                            ),
-                            side: BorderSide(color: AdminTokens.border(isDark)),
+    return Card(
+      color: AdminTokens.raised(isDark),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        side: BorderSide(color: AdminTokens.border(isDark)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        onTap: () => context.go('/admin/bakhed/editor/${item.id}'),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row: thumb + titles
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Thumbnail
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: AdminTokens.sunken(isDark),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusSm,
                           ),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(
-                              AdminTokens.radiusMd,
-                            ),
-                            onTap: () =>
-                                context.go('/admin/bakhed/editor/${item.id}'),
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // Top row: thumb + titles
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Thumbnail
-                                      Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          Container(
-                                            width: 60,
-                                            height: 60,
-                                            decoration: BoxDecoration(
-                                              color: AdminTokens.sunken(isDark),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AdminTokens.radiusSm,
-                                                  ),
-                                            ),
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                    AdminTokens.radiusSm,
-                                                  ),
-                                              child: CoverThumbnail(
-                                                media: item.heroMedia,
-                                                coverMediaType:
-                                                    item.coverMediaType,
-                                                fallback: const Icon(
-                                                  Icons.music_note_rounded,
-                                                  color: AppColors.primary,
-                                                  size: 28,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Positioned(
-                                            bottom: -4,
-                                            right: -4,
-                                            child: ContentTypeBadge(
-                                              type: resolveBadgeType(
-                                                kind: item.kind,
-                                                categoryId: item.categoryId,
-                                              ),
-                                              size: 24,
-                                              hasShadowRing: true,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 12),
-
-                                      // Titles
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.title,
-                                              style: AdminTokens.cardTitle(
-                                                isDark,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                            if (item.titleOlChiki != null) ...[
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                item.titleOlChiki!,
-                                                style: TextStyle(
-                                                  fontFamily: 'OlChiki',
-                                                  fontSize: 14,
-                                                  color:
-                                                      AdminTokens.textSecondary(
-                                                        isDark,
-                                                      ),
-                                                ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ],
-                                            const SizedBox(height: 6),
-                                            Text(
-                                              categoryName,
-                                              style: AdminTokens.label(isDark)
-                                                  .copyWith(
-                                                    color:
-                                                        AdminTokens.textTertiary(
-                                                          isDark,
-                                                        ),
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-
-                                  // Audio Waveform decorator
-                                  if (hasAudio) ...[
-                                    SizedBox(
-                                      height: 20,
-                                      width: double.infinity,
-                                      child: CustomPaint(
-                                        painter: _AdminWaveformPainter(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.35,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                  ] else ...[
-                                    Text(
-                                      '(No Audio Track Uploaded)',
-                                      style: AdminTokens.label(isDark).copyWith(
-                                        color: AdminTokens.textMuted(isDark),
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                  ],
-
-                                  const Divider(height: 12),
-
-                                  // Status chips + actions row
-                                  Row(
-                                    children: [
-                                      // Status Chip
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 3,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: item.isPublished
-                                              ? Colors.green.withValues(
-                                                  alpha: 0.1,
-                                                )
-                                              : Colors.amber.withValues(
-                                                  alpha: 0.1,
-                                                ),
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                          border: Border.all(
-                                            color: item.isPublished
-                                                ? Colors.green.withValues(
-                                                    alpha: 0.3,
-                                                  )
-                                                : Colors.amber.withValues(
-                                                    alpha: 0.3,
-                                                  ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          item.isPublished
-                                              ? 'Published'
-                                              : 'Draft',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.bold,
-                                            color: item.isPublished
-                                                ? Colors.green
-                                                : Colors.amber[800],
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-
-                                      // Premium Chip
-                                      if (item.isPremium)
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 3,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.1,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              6,
-                                            ),
-                                            border: Border.all(
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.3),
-                                            ),
-                                          ),
-                                          child: const Text(
-                                            'Premium',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.primary,
-                                            ),
-                                          ),
-                                        ),
-                                      const Spacer(),
-
-                                      // Edit button
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.edit_rounded,
-                                          size: 18,
-                                        ),
-                                        color: AdminTokens.textSecondary(
-                                          isDark,
-                                        ),
-                                        onPressed: () => context.go(
-                                          '/admin/bakhed/editor/${item.id}',
-                                        ),
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: AdminTokens.sunken(
-                                            isDark,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 4),
-
-                                      // Delete button
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete_outline_rounded,
-                                          size: 18,
-                                        ),
-                                        color: Colors.red,
-                                        onPressed: () =>
-                                            _confirmDelete(context, ref, item),
-                                        style: IconButton.styleFrom(
-                                          backgroundColor: Colors.red
-                                              .withValues(alpha: 0.08),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusSm,
+                          ),
+                          child: CoverThumbnail(
+                            media: item.heroMedia,
+                            coverMediaType: item.coverMediaType,
+                            fallback: const Icon(
+                              Icons.music_note_rounded,
+                              color: AppColors.primary,
+                              size: 28,
                             ),
                           ),
-                        );
+                        ),
+                      ),
+                      Positioned(
+                        bottom: -4,
+                        right: -4,
+                        child: ContentTypeBadge(
+                          type: resolveBadgeType(
+                            kind: item.kind,
+                            categoryId: item.categoryId,
+                          ),
+                          size: 24,
+                          hasShadowRing: true,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Titles
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.title,
+                          style: AdminTokens.cardTitle(isDark),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (item.titleOlChiki != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            item.titleOlChiki!,
+                            style: TextStyle(
+                              fontFamily: 'OlChiki',
+                              fontSize: 14,
+                              color: AdminTokens.textSecondary(isDark),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        Text(
+                          categoryName,
+                          style: AdminTokens.label(
+                            isDark,
+                          ).copyWith(color: AdminTokens.textTertiary(isDark)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const Spacer(),
+
+              // Audio Waveform decorator
+              if (hasAudio) ...[
+                SizedBox(
+                  height: 20,
+                  width: double.infinity,
+                  child: CustomPaint(
+                    painter: _AdminWaveformPainter(
+                      color: AppColors.primary.withValues(alpha: 0.35),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+              ] else ...[
+                Text(
+                  '(No Audio Track Uploaded)',
+                  style: AdminTokens.label(isDark).copyWith(
+                    color: AdminTokens.textMuted(isDark),
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+
+              const Divider(height: 12),
+
+              // Status chips + actions row
+              Row(
+                children: [
+                  // Status Chip
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: item.isPublished
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.amber.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: item.isPublished
+                            ? Colors.green.withValues(alpha: 0.3)
+                            : Colors.amber.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Text(
+                      item.isPublished ? 'Published' : 'Draft',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: item.isPublished
+                            ? Colors.green
+                            : Colors.amber[800],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Premium Chip
+                  if (item.isPremium)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Text(
+                        'Premium',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  const Spacer(),
+
+                  // Edit button
+                  IconButton(
+                    icon: const Icon(Icons.edit_rounded, size: 18),
+                    color: AdminTokens.textSecondary(isDark),
+                    onPressed: () =>
+                        context.go('/admin/bakhed/editor/${item.id}'),
+                    style: IconButton.styleFrom(
+                      backgroundColor: AdminTokens.sunken(isDark),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+
+                  // Delete button
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                    color: Colors.red,
+                    onPressed: () => _confirmDelete(context, ref, item),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.red.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Future<void> _confirmDelete(
@@ -400,7 +349,6 @@ extension _BakhedHubSections on _BakhedHubScreenState {
   }
 }
 
-
 class _AdminWaveformPainter extends CustomPainter {
   final Color color;
   _AdminWaveformPainter({required this.color});
@@ -458,7 +406,6 @@ class _AdminWaveformPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
 
 class _DeleteConfirmationDialog extends StatefulWidget {
   final ContentItem rhyme;

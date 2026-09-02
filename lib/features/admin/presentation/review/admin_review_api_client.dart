@@ -15,7 +15,10 @@ import 'admin_review_models.dart';
 
 /// Neutral, Appwrite-free view of a function execution.
 class AdminReviewExecution {
-  const AdminReviewExecution({required this.statusCode, required this.responseBody});
+  const AdminReviewExecution({
+    required this.statusCode,
+    required this.responseBody,
+  });
 
   final int statusCode;
   final String responseBody;

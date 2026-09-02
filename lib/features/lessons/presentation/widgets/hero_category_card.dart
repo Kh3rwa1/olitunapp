@@ -11,7 +11,11 @@ class HeroCategoryCard extends ConsumerWidget {
   final dynamic category;
   final bool isDark;
 
-  const HeroCategoryCard({super.key, required this.category, required this.isDark});
+  const HeroCategoryCard({
+    super.key,
+    required this.category,
+    required this.isDark,
+  });
 
   LinearGradient _getGradient(String preset) {
     switch (preset) {

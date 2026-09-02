@@ -78,7 +78,9 @@ class AppwriteFunctionsService {
 }
 
 // Provider
-final appwriteFunctionsServiceProvider = Provider<AppwriteFunctionsService>((ref) {
+final appwriteFunctionsServiceProvider = Provider<AppwriteFunctionsService>((
+  ref,
+) {
   final authService = ref.watch(appwriteAuthServiceProvider);
   return AppwriteFunctionsService(authService.client);
 });

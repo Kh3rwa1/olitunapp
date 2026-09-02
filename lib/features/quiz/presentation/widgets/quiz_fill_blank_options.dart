@@ -37,9 +37,7 @@ class QuizFillBlankOptions extends StatelessWidget {
           alignment: WrapAlignment.center,
           spacing: 12,
           runSpacing: 16,
-          children: List.generate(question.optionsOlChiki.length, (
-            index,
-          ) {
+          children: List.generate(question.optionsOlChiki.length, (index) {
             final isCorrect = index == question.correctIndex;
             final isCurrentSelection = state.selectedAnswer == index;
 
@@ -74,9 +72,7 @@ class QuizFillBlankOptions extends StatelessWidget {
                   width: 1.5,
                 );
               } else {
-                chipColor = isDark
-                    ? AppColors.quizDarkCard
-                    : Colors.white;
+                chipColor = isDark ? AppColors.quizDarkCard : Colors.white;
                 textColor = isDark ? Colors.white : Colors.black87;
                 borderSide = BorderSide(
                   color: isDark ? Colors.white24 : Colors.grey.shade300,
@@ -94,9 +90,7 @@ class QuizFillBlankOptions extends StatelessWidget {
                   value: state.isAnswered
                       ? (isCorrect
                             ? 'Correct answer'
-                            : (isCurrentSelection
-                                  ? 'Incorrect answer'
-                                  : ''))
+                            : (isCurrentSelection ? 'Incorrect answer' : ''))
                       : null,
                   child: ExcludeSemantics(
                     child: GestureDetector(
@@ -113,8 +107,7 @@ class QuizFillBlankOptions extends StatelessWidget {
                           color: chipColor,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.fromBorderSide(borderSide),
-                          boxShadow:
-                              (!state.isAnswered && !isCurrentSelection)
+                          boxShadow: (!state.isAnswered && !isCurrentSelection)
                               ? [
                                   BoxShadow(
                                     color: Colors.black.withValues(
@@ -144,10 +137,7 @@ class QuizFillBlankOptions extends StatelessWidget {
                     'chip-$index-${state.selectedAnswer}-${state.isAnswered}',
                   ),
                 )
-                .scale(
-                  begin: const Offset(0.95, 0.95),
-                  duration: 150.ms,
-                );
+                .scale(begin: const Offset(0.95, 0.95), duration: 150.ms);
           }),
         ),
       ],

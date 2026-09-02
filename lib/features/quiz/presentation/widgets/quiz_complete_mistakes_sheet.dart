@@ -107,8 +107,7 @@ void showQuizMistakesSheet({
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   if (q.promptOlChiki.isNotEmpty)
                                     Text(

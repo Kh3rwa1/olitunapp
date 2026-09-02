@@ -3,7 +3,6 @@ import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/providers/bakhed_content_provider.dart';
 import 'bakhed_editor_controller.dart';
 
-
 class BakhedLyricsState {
   final List<BakhedLyricLine> originalLines;
   final List<BakhedLyricLine> currentLines;

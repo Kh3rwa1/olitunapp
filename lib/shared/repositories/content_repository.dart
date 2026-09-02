@@ -386,9 +386,7 @@ class ContentRepository {
       // No cached, bundled, or remotely fetched data is available: surface the
       // failure so the UI can show its error state instead of fabricated items.
       return left(
-        CacheFailure(
-          message: 'No offline content available for ${kind.name}.',
-        ),
+        CacheFailure(message: 'No offline content available for ${kind.name}.'),
       );
     } catch (e) {
       final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);

@@ -414,7 +414,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                         isDark: isDark,
                       ),
                       const SizedBox(height: 16),
-                      QuizSessionHud(state: state, isDark: isDark),                      const SizedBox(height: 28),
+                      QuizSessionHud(state: state, isDark: isDark),
+                      const SizedBox(height: 28),
                       Expanded(
                         child: SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),

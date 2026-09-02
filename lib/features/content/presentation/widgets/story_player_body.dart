@@ -478,5 +478,4 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
       ),
     );
   }
-
 }

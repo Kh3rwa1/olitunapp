@@ -289,4 +289,3 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
     );
   }
 }
-

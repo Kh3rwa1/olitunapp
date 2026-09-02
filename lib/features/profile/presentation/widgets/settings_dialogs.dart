@@ -127,11 +127,7 @@ void showScriptDialog(BuildContext context, WidgetRef ref, String current) {
   );
 }
 
-void showLanguageDialog(
-  BuildContext context,
-  WidgetRef ref,
-  String current,
-) {
+void showLanguageDialog(BuildContext context, WidgetRef ref, String current) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
     context: context,
@@ -335,9 +331,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 Navigator.pop(context); // Close loading
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(
-                      'Failed to delete account: ${e.toString()}',
-                    ),
+                    content: Text('Failed to delete account: ${e.toString()}'),
                     backgroundColor: AppColors.error,
                   ),
                 );

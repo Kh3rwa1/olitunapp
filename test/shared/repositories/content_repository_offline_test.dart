@@ -56,9 +56,7 @@ void main() {
   setUp(() async {
     CacheService.resetForTesting();
     MutationOutboxService.resetForTesting();
-    await MutationOutboxService().clearQueueForUser(
-      contentMutationQueueUserId,
-    );
+    await MutationOutboxService().clearQueueForUser(contentMutationQueueUserId);
   });
 
   group('ContentRepository.upsert offline behaviour', () {
@@ -90,15 +88,18 @@ void main() {
       expect(rebuilt.title, 'Offline Edit');
     });
 
-    test('still succeeds when no outbox is wired (default constructor)', () async {
-      final repo = ContentRepository(
-        databases: _MockDatabases(),
-        networkInfo: _FakeNetworkInfo(connected: false),
-      );
+    test(
+      'still succeeds when no outbox is wired (default constructor)',
+      () async {
+        final repo = ContentRepository(
+          databases: _MockDatabases(),
+          networkInfo: _FakeNetworkInfo(connected: false),
+        );
 
-      final result = await repo.upsert(_buildItem());
+        final result = await repo.upsert(_buildItem());
 
-      expect(result.isRight(), isTrue);
-    });
+        expect(result.isRight(), isTrue);
+      },
+    );
   });
 }

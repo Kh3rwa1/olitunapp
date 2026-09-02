@@ -22,7 +22,10 @@ class WaitlistSubmissionException implements Exception {
 /// which validates input, rate-limits by caller and phone number, and
 /// deduplicates pending submissions. The collection itself has no public
 /// write access; the function's API key performs the write server-side.
-Future<WaitlistModel> submitWaitlistViaFunction(Ref ref, WaitlistModel entry) async {
+Future<WaitlistModel> submitWaitlistViaFunction(
+  Ref ref,
+  WaitlistModel entry,
+) async {
   final authService = ref.read(appwriteAuthServiceProvider);
   final functions = Functions(authService.client);
 
@@ -57,7 +60,9 @@ Future<WaitlistModel> submitWaitlistViaFunction(Ref ref, WaitlistModel entry) as
   try {
     data = jsonDecode(execution.responseBody) as Map<String, dynamic>;
   } catch (_) {
-    throw const WaitlistSubmissionException('Unexpected waitlist service response.');
+    throw const WaitlistSubmissionException(
+      'Unexpected waitlist service response.',
+    );
   }
 
   if (data['ok'] != true) {

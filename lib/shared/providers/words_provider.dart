@@ -53,8 +53,7 @@ class WordsNotifier extends SeededContentListNotifier<WordModel> {
       for (final r in remote) {
         map[r.id] = r;
       }
-      emit(map.values.toList()
-        ..sort((a, b) => a.order.compareTo(b.order)));
+      emit(map.values.toList()..sort((a, b) => a.order.compareTo(b.order)));
     } catch (_) {
       // Offline or collection unavailable — fall back to bundled content.
       emit(seed);

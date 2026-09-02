@@ -28,6 +28,11 @@ FUNCTIONS = [
     'reconcileOrphanedDeletions',
 ]
 
+# Function IDs may also be passed as argv to deploy an ad-hoc subset,
+# e.g.: python3 scripts/deploy_changed_functions.py delete-account
+if len(sys.argv) > 1:
+    FUNCTIONS = sys.argv[1:]
+
 
 def api(method, path, body=None):
     req = urllib.request.Request(
@@ -128,7 +133,8 @@ def main():
             results.append((fn_id, 'get-failed'))
             continue
 
-        tarball = make_tarball(os.path.join(REPO, 'functions', fn_id))
+        fn_dir = os.path.join(REPO, entry.get('path', f'functions/{fn_id}'))
+        tarball = make_tarball(fn_dir)
         status, dep = multipart_upload(
             ENDPOINT + f'/functions/{fn_id}/deployments',
             {

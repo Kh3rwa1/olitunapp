@@ -7,11 +7,19 @@ import path from "node:path";
 const repoRoot = process.cwd();
 
 // Documented exceptions for direct dependencies held at specific major versions
-// due to external infrastructure constraints (e.g. backend server compatibility).
+// due to external infrastructure constraints (backend server compatibility or Dart SDK floor ^3.9.0).
 const ALLOWED_PIN_EXEMPTIONS = new Map([
   [
     "appwrite",
     "Pinned to 21.x to maintain compatibility with deployed Appwrite 1.6 backend (TablesDB)",
+  ],
+  [
+    "google_mobile_ads",
+    "Constrained to 7.x: GMA 8.0+/9.x requires Dart >=3.10 / Flutter >=3.38; project pins sdk: ^3.9.0",
+  ],
+  [
+    "file_picker",
+    "Constrained to 10.x: file_picker 12.x requires Dart >=3.10; project pins sdk: ^3.9.0",
   ],
 ]);
 

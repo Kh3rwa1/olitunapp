@@ -1,8 +1,13 @@
 # Translator (Appwrite Function)
 
-Wraps Google Translate with per-IP rate limiting and a key/value cache. It
-runs on Appwrite Functions so the platform uses one deployment and secret
-management model.
+Wraps the upstream translation provider with a key/value cache. It runs on
+Appwrite Functions so the platform uses one deployment and secret management
+model.
+
+**Translation is a free, unlimited service** — there is deliberately no rate
+limit and no identity requirement. The cache (SHA-256 hashed keys in the
+`translation_cache` collection) is the only protection upstream traffic
+needs.
 
 ## Endpoints
 
@@ -30,8 +35,7 @@ Successful response:
 ```
 
 `400` is returned when the text is empty or longer than the configured maximum
-(default: 5000 characters). `429` is returned when the per-IP rate limit
-(default: 20/hour) is exceeded.
+(default: 5000 characters). There is no rate limit — translation is free.
 
 ## Setup
 

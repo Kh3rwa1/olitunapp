@@ -15,17 +15,13 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 
 ### B. Cryptographic Identity & Zero-Trust Caller Headers
 - The backend serverless functions never trust caller-supplied JSON `userId` fields; the caller identity comes from the Appwrite runtime-injected `x-appwrite-user-id` header (not readable by clients for authenticated executions).
-- The `translator` function (which accepts anonymous executions) additionally verifies caller identity cryptographically via Appwrite JWT tokens (`Account.get()`). If verification fails or is absent, the caller is handled strictly under the anonymous tier.
+- The `translator` function is a deliberate exception: **translation is a free, unlimited service** — identity verification and rate limiting were intentionally removed (product decision). It keeps JSON/text/language validation, a SHA-256 key/value cache (`translation_cache`), and per-deployment env secrets; abuse protection is the cache plus Appwrite's per-function execution concurrency.
 - Payment functions re-verify every payment amount and order binding against the gateway API and the server-side purchase ledger before granting entitlements.
 
-### C. Concurrency-Safe Translation Rate Limiting
-- **Atomic Slot Reservation:** Distributed workers race to create unique slot documents (deterministic IDs, 1..limit); Appwrite's unique document-ID constraint makes the claim atomic. Occupied slots are probed sequentially; no compare-and-swap loops or backoff are involved.
-- **Fail-Closed Design:** In the event of a rate limiting database outage, the service fails closed (HTTP 503 `RATE_LIMIT_ERROR`) rather than allowing unlimited upstream API exhaustion.
-- **Privacy-Preserving Domain-Separated Identifiers:**
-  - Verified Users: `usr_` + `HMAC-SHA256(RATE_LIMIT_SALT, "translator-rate-limit:user:v1:" + userId)`
-  - Anonymous Networks: `net_` + `HMAC-SHA256(RATE_LIMIT_SALT, "translator-rate-limit:network:v1:" + clientIp)`
-  - Raw IPs, raw user IDs, and secrets are never stored in databases or printed in logs.
-- **Mandatory Salt:** `RATE_LIMIT_SALT` is strictly required in production (`NODE_ENV === 'production'`). Missing secrets cause safe immediate fail-closed startup rejection.
+### C. Translator Service Model
+- **No rate limiting:** There is no per-IP or per-user rate limit on `translator` — translation is absolutely free and unlimited by design. The former `RATE_LIMIT_SALT`/`rate_limits` model was removed from the function; the shared `_shared/rate_limiter.js` module remains for any future need and its unit tests stay green.
+- **Cache-first:** Identical translations (hashed from/to/text key) are served from the `translation_cache` collection, upstream providers only see uncached text.
+- **Fail-open behavior:** Cache lookups are best-effort; a cache outage never blocks a translation — it just falls through to the upstream provider.
 
 ### D. Fail-Closed Production Release Signing
 - Android release builds enforce cryptographic signing credentials in `android/app/build.gradle.kts`.

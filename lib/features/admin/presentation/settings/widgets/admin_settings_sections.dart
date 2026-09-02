@@ -281,39 +281,46 @@ extension _AdminSettingsSections on _AdminSettingsScreenState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: Text(
-                'Global Play Store Review Unlock',
-                style: AdminTokens.bodyStrong(isDark),
-              ),
-              subtitle: Text(
-                'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
-                style: AdminTokens.body(isDark).copyWith(fontSize: 12),
-              ),
-              value: state.globalReviewUnlockEnabled,
-              activeThumbColor: AppColors.primary,
-              onChanged: (val) async {
-                final success = await ref
-                    .read(adminSettingsControllerProvider.notifier)
-                    .saveSetting(
-                      'global_review_unlock_enabled',
-                      val.toString(),
-                    );
-                if (mounted) {
-                  if (success) {
-                    _showSnackBar(
-                      'Monetization settings updated! 🪙',
-                      AppColors.success,
-                    );
-                  } else {
-                    _showSnackBar(
-                      'Failed to update monetization settings.',
-                      AppColors.error,
-                    );
+            // SwitchListTile paints its background and ink on the nearest
+            // Material ancestor; the section card's decorated Container
+            // would hide both (framework assert) — give the tile its own
+            // transparent Material.
+            Material(
+              type: MaterialType.transparency,
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: Text(
+                  'Global Play Store Review Unlock',
+                  style: AdminTokens.bodyStrong(isDark),
+                ),
+                subtitle: Text(
+                  'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
+                  style: AdminTokens.body(isDark).copyWith(fontSize: 12),
+                ),
+                value: state.globalReviewUnlockEnabled,
+                activeThumbColor: AppColors.primary,
+                onChanged: (val) async {
+                  final success = await ref
+                      .read(adminSettingsControllerProvider.notifier)
+                      .saveSetting(
+                        'global_review_unlock_enabled',
+                        val.toString(),
+                      );
+                  if (mounted) {
+                    if (success) {
+                      _showSnackBar(
+                        'Monetization settings updated! 🪙',
+                        AppColors.success,
+                      );
+                    } else {
+                      _showSnackBar(
+                        'Failed to update monetization settings.',
+                        AppColors.error,
+                      );
+                    }
                   }
-                }
-              },
+                },
+              ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),

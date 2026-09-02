@@ -19,7 +19,7 @@ dependencies:
   go_router: ^17.2.3
 
   # Local Storage
-  shared_preferences: 2.5.5
+  shared_preferences: ^2.5.5
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
@@ -37,7 +37,8 @@ dependencies:
 
 
   # Auth
-  appwrite: 21.1.0
+  # Constrained to 21.x to match backend server API (TablesDB) and prevent breaking 22+ SDK changes
+  appwrite: ^21.1.0
 
   # Utils
   uuid: ^4.5.1
@@ -79,8 +80,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
 
-  just_audio_platform_interface: any
-  video_player_platform_interface: any
+  just_audio_platform_interface: ^4.6.0
+  video_player_platform_interface: ^6.7.0
 flutter:
   generate: true
   uses-material-design: true

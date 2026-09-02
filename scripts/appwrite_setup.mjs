@@ -100,12 +100,7 @@ function permissionsForCollection(collectionId) {
     return [];
   }
   if (collectionId === 'binti_guru_waitlist') {
-    return [
-      'create("any")',
-      `read("team:${ADMIN_TEAM_ID}")`,
-      `update("team:${ADMIN_TEAM_ID}")`,
-      `delete("team:${ADMIN_TEAM_ID}")`,
-    ];
+    return adminOnlyPermissions;
   }
   if (userCreateAdminReadCollections.has(collectionId)) {
     return userCreateAdminReadPermissions;
@@ -844,6 +839,7 @@ const collections = [
     indexes: [
       { key: 'idx_submitted', type: 'key', attributes: ['submittedAt'], orders: ['DESC'] },
       { key: 'idx_status', type: 'key', attributes: ['status'] },
+      { key: 'idx_phone_ceremony', type: 'key', attributes: ['phoneNumber', 'ceremonyType'] },
     ],
   },
   {

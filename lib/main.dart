@@ -16,6 +16,7 @@ import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
+import 'shared/offline/content_mutation_replay.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'core/ads/ad_service.dart';
 import 'core/ads/consent_manager.dart';
@@ -185,6 +186,9 @@ class OlitunApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keeps the offline content mutation replay listener alive for the
+    // app's lifetime (startup pass + connectivity-regained replays).
+    ref.watch(mutationReplayInitProvider);
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     final languageCode = ref.watch(appLanguageProvider);

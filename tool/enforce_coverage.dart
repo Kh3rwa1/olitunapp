@@ -12,10 +12,24 @@ const criticalLearningPaths = [
   'lib/features/home/presentation/providers/mission_providers.dart',
 ];
 
+/// Files/patterns exempt from the untested-files gate: generated code,
+/// the app entrypoint, and pure static data tables that carry no logic.
+const untestedExclusionPatterns = [
+  'lib/main.dart',
+  'lib/l10n/generated/',
+  '.g.dart',
+  '.freezed.dart',
+  'lib/features/lessons/data/ol_chiki_strokes.dart',
+  // Bundled Indic dictionary/translation data tables (no logic).
+  'lib/core/languages/indic_translations',
+  'lib/core/languages/ol_chiki_char_maps.dart',
+];
+
 void main(List<String> args) {
   final minimum = _doubleArg(args, '--min=', fallback: 65);
   final enforceAfter = _dateArg(args, '--enforce-after=');
   final pathMinimums = _pathMinimums(args);
+  final untestedEnforceAfter = _dateArg(args, '--enforce-untested-after=');
   final file = File('coverage/lcov.info');
 
   if (!file.existsSync()) {
@@ -51,7 +65,67 @@ void main(List<String> args) {
     );
   }
 
+  // The lcov denominator only contains files imported by at least one test;
+  // never-imported files silently escape every threshold above. Surface them
+  // explicitly so they cannot hide from the coverage gate.
+  failed |= !_checkUntestedFiles(
+    untested: _findUntestedFiles(files),
+    enforce:
+        untestedEnforceAfter != null &&
+        !DateTime.now().toUtc().isBefore(untestedEnforceAfter),
+    enforceAfter: untestedEnforceAfter,
+  );
+
   if (failed) exit(1);
+}
+
+List<String> _findUntestedFiles(Map<String, _LineCoverage> files) {
+  final covered = files.keys.toSet();
+  final untested = <String>[];
+
+  for (final entity in Directory('lib').listSync(recursive: true)) {
+    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    final path = entity.path.replaceAll('\\', '/');
+    if (untestedExclusionPatterns.any(path.contains)) continue;
+    if (!covered.contains(path)) untested.add(path);
+  }
+
+  untested.sort();
+  return untested;
+}
+
+bool _checkUntestedFiles({
+  required List<String> untested,
+  required bool enforce,
+  DateTime? enforceAfter,
+}) {
+  if (untested.isEmpty) {
+    stdout.writeln('Untested files: none (every lib/ file ran under test).');
+    return true;
+  }
+
+  final status = enforce ? 'FAIL' : 'WARN';
+  stdout.writeln(
+    'Untested files: ${untested.length} lib/ file(s) were never imported by '
+    'any test and are invisible to all coverage thresholds [$status]',
+  );
+  for (final path in untested.take(40)) {
+    stderr.writeln('  untested: $path');
+  }
+  if (untested.length > 40) {
+    stderr.writeln('  ... and ${untested.length - 40} more');
+  }
+
+  if (!enforce) {
+    final date = enforceAfter == null ? 'later' : _dateKey(enforceAfter);
+    stdout.writeln('Untested-files gate becomes blocking on $date.');
+    return true;
+  }
+
+  stderr.writeln(
+    '${untested.length} lib/ file(s) have no test coverage at all.',
+  );
+  return false;
 }
 
 Map<String, _LineCoverage> _parseLcov(File file) {

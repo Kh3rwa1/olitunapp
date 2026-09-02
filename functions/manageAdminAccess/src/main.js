@@ -224,7 +224,7 @@ export default async ({ req, res, error }) => {
     error(`manageAdminAccess failed: ${err.message || String(err)}`);
     return json(res, 500, {
       ok: false,
-      message: err.message || 'Admin access operation failed.',
+      message: 'Admin access operation failed. Check function logs for details.',
     });
   }
 };

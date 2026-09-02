@@ -114,7 +114,12 @@ class CacheService {
         if (_box != null) {
           _box!.close();
         }
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning(
+          'CacheService: failed to close corrupt box: $e',
+          name: 'CacheService',
+        );
+      }
       _box = null;
     }
   }
@@ -257,7 +262,11 @@ class CacheService {
           if (entry.isSchemaMismatch || (evictExpiredTtl && entry.isExpired)) {
             keysToDelete.add(key);
           }
-        } catch (_) {
+        } catch (e) {
+          AppLogger.warning(
+            'CacheService: evicting unreadable entry "$key": $e',
+            name: 'CacheService',
+          );
           keysToDelete.add(key);
         }
       }

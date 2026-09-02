@@ -4,7 +4,6 @@ const path = require('path');
 
 const PORT = 5000;
 const WEB_DIR = path.join(__dirname, 'build', 'web');
-
 const MIME_TYPES = {
   '.html': 'text/html',
   '.js': 'application/javascript',
@@ -37,7 +36,28 @@ const server = http.createServer((req, res) => {
     urlPath = '/index.html';
   }
 
+  // Decode percent-encoding and reject traversal attempts (`..`, null bytes)
+  try {
+    urlPath = decodeURIComponent(urlPath);
+  } catch (_) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad request');
+    return;
+  }
+  if (urlPath.includes('\0') || urlPath.split('/').includes('..')) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad request');
+    return;
+  }
+
   let filePath = path.join(WEB_DIR, urlPath);
+
+  // Sandbox check: resolved path must stay inside WEB_DIR
+  if (!path.resolve(filePath).startsWith(path.resolve(WEB_DIR) + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' });
+    res.end('Bad request');
+    return;
+  }
 
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(WEB_DIR, 'index.html');

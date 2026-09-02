@@ -5,8 +5,10 @@ import {
   parseCSV,
   extractLastAffirmationRow,
   generateAffirmationHash,
-  parseBody,
+  appwriteClient,
+  resolveSheetUrl,
   syncAffirmationFromSheet,
+  default as handler,
 } from '../src/main.js';
 
 test('parseCSV handles basic and quoted CSV values correctly', () => {
@@ -82,11 +84,130 @@ test('generateAffirmationHash generates deterministic hash', () => {
   assert.equal(generateAffirmationHash(data1).length, 32);
 });
 
-test('parseBody handles empty, string, and object inputs', () => {
-  assert.deepEqual(parseBody(''), {});
-  assert.deepEqual(parseBody('invalid json'), {});
-  assert.deepEqual(parseBody('{"force":true}'), { force: true });
-  assert.deepEqual(parseBody({ force: true }), { force: true });
+test('appwriteClient never trusts request headers for credentials', () => {
+  const env = {
+    APPWRITE_FUNCTION_API_ENDPOINT: 'https://api.example.test/v1',
+    APPWRITE_FUNCTION_PROJECT_ID: 'proj_test',
+    APPWRITE_FUNCTION_API_KEY: 'server-key',
+  };
+  const client = appwriteClient(env);
+  assert.equal(client.headers['X-Appwrite-Key'], 'server-key');
+  // A request-shaped object is no longer accepted as an argument at all —
+  // passing one yields "missing config" instead of honoring its headers.
+  assert.throws(
+    () => appwriteClient({ headers: { 'x-appwrite-key': 'attacker-supplied-key' } }),
+    /Missing Appwrite/,
+  );
+});
+
+test('appwriteClient throws when endpoint or project id is missing', () => {
+  assert.throws(() => appwriteClient({}), /Missing Appwrite/);
+});
+
+test('resolveSheetUrl uses the configured Google Sheets URL', () => {
+  const url = resolveSheetUrl({ GOOGLE_SHEET_CSV_URL: 'https://docs.google.com/spreadsheets/d/xyz/gviz/tq?tqx=out:csv' });
+  assert.ok(url.startsWith('https://docs.google.com/'));
+});
+
+test('resolveSheetUrl falls back to the built-in default', () => {
+  assert.ok(resolveSheetUrl({}).startsWith('https://docs.google.com/'));
+});
+
+test('resolveSheetUrl rejects non-Google and non-HTTPS URLs (SSRF guard)', () => {
+  assert.throws(() => resolveSheetUrl({ GOOGLE_SHEET_CSV_URL: 'https://evil.example.com/sheet.csv' }), /Google Sheets host/);
+  assert.throws(() => resolveSheetUrl({ GOOGLE_SHEET_CSV_URL: 'http://docs.google.com/sheet.csv' }), /HTTPS/);
+  assert.throws(() => resolveSheetUrl({ GOOGLE_SHEET_CSV_URL: 'not a url' }), /valid URL/);
+});
+
+function mockRes() {
+  const calls = [];
+  return {
+    calls,
+    json(payload, status) {
+      calls.push({ payload, status: status || 200 });
+      return payload;
+    },
+  };
+}
+
+test('handler ignores client-sent sheetUrl and force in the request body', async () => {
+  const fetchCalls = [];
+  const originalFetch = global.fetch;
+  global.fetch = async (url) => {
+    fetchCalls.push(String(url));
+    return {
+      ok: true,
+      text: async () =>
+        `"olChikiText","santaliPhonetic","englishMeaning","category","audioUrl","isPremium"\n` +
+        `"ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ","Sagun daram","Welcome to wisdom","identity","","FALSE"`,
+    };
+  };
+
+  const databases = {
+    listDocuments: async () => ({ documents: [] }),
+    createDocument: async (dbId, colId, docId, payload) => ({ $id: docId, ...payload }),
+  };
+
+  try {
+    const res = mockRes();
+    await handler({
+      req: {
+        body: JSON.stringify({
+          sheetUrl: 'https://evil.example.com/steal.csv',
+          force: true,
+        }),
+        headers: { 'x-appwrite-key': 'attacker-key' },
+      },
+      res,
+      log: () => {},
+      error: () => {},
+      databases,
+    });
+
+    assert.equal(fetchCalls.length, 1, 'exactly one upstream fetch');
+    assert.ok(
+      fetchCalls[0].startsWith('https://docs.google.com/'),
+      `fetch used the allow-listed sheet, got ${fetchCalls[0]}`,
+    );
+    assert.equal(res.calls.length, 1);
+    assert.equal(res.calls[0].payload.ok, true);
+    assert.equal(res.calls[0].payload.synced, true);
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+test('handler performs no fetch and returns 500 when the configured sheet URL is not a Google host', async () => {
+  const fetchCalls = [];
+  const originalFetch = global.fetch;
+  const originalSheetUrl = process.env.GOOGLE_SHEET_CSV_URL;
+  process.env.GOOGLE_SHEET_CSV_URL = 'https://evil.example.com/x.csv';
+  global.fetch = async (url) => {
+    fetchCalls.push(String(url));
+    return { ok: true, text: async () => 'x' };
+  };
+
+  try {
+    const res = mockRes();
+    await handler({
+      req: { body: JSON.stringify({ sheetUrl: 'https://docs.google.com/ok.csv' }), headers: {} },
+      res,
+      log: () => {},
+      error: () => {},
+      databases: { listDocuments: async () => ({ documents: [] }), createDocument: async () => ({}) },
+    });
+
+    assert.equal(fetchCalls.length, 0, 'no upstream fetch for a non-Google configured URL');
+    assert.equal(res.calls[0].status, 500);
+    assert.match(res.calls[0].payload.error, /Google Sheets host/);
+  } finally {
+    global.fetch = originalFetch;
+    if (originalSheetUrl === undefined) {
+      delete process.env.GOOGLE_SHEET_CSV_URL;
+    } else {
+      process.env.GOOGLE_SHEET_CSV_URL = originalSheetUrl;
+    }
+  }
 });
 
 test('syncAffirmationFromSheet skips duplicate insertion if already up to date', async () => {

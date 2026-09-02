@@ -1,8 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../core/logging/app_logger.dart';
@@ -174,10 +173,10 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     required List<MistakeItem> masteredMistakes,
   }) async {
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      final response = await functions.createExecution(
-        functionId: 'completeMistakeReview',
-        body: jsonEncode({
+      final functions = ref.read(appwriteFunctionsServiceProvider);
+      final response = await functions.execute(
+        'completeMistakeReview',
+        body: {
           'questionIds': reviewedMistakes
               .map((item) => '${item.quizId}:${item.questionId}')
               .toList(),
@@ -186,9 +185,9 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
               .toList(),
           'score': score,
           'total': total,
-        }),
+        },
       );
-      if (response.status.name != 'completed') {
+      if (!response.isCompleted) {
         throw Exception('completeMistakeReview did not complete');
       }
     } catch (e) {
@@ -206,14 +205,11 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     if (!isAuth) return;
 
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      final response = await functions.createExecution(
-        functionId: 'getUserMistakes',
-        body: jsonEncode({}),
-      );
-      if (response.status.name != 'completed') return;
-      final data = jsonDecode(response.responseBody);
-      if (data is! Map || data['ok'] != true || data['mistakes'] is! List) {
+      final functions = ref.read(appwriteFunctionsServiceProvider);
+      final response = await functions.execute('getUserMistakes');
+      if (!response.isCompleted) return;
+      final data = response.bodyJson;
+      if (data == null || data['ok'] != true || data['mistakes'] is! List) {
         return;
       }
       final remote = (data['mistakes'] as List)
@@ -237,18 +233,18 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     String? wrongAnswer,
   }) async {
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
+      final functions = ref.read(appwriteFunctionsServiceProvider);
       final correctAnswer = _correctAnswerFor(question);
-      await functions.createExecution(
-        functionId: 'recordMistake',
-        body: jsonEncode({
+      await functions.execute(
+        'recordMistake',
+        body: {
           'quizId': quizId,
           'questionId': '${quizId}_$questionIndex',
           'questionIndex': questionIndex,
           'wrongAnswer': wrongAnswer ?? '',
           'correctAnswer': correctAnswer,
           'questionSnapshot': question.toMap(),
-        }),
+        },
       );
     } catch (e) {
       AppLogger.debug('MistakeNotifier: remote record failed: $e');
@@ -260,14 +256,14 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     required int questionIndex,
   }) async {
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      await functions.createExecution(
-        functionId: 'markMistakeMastered',
-        body: jsonEncode({
+      final functions = ref.read(appwriteFunctionsServiceProvider);
+      await functions.execute(
+        'markMistakeMastered',
+        body: {
           'quizId': quizId,
           'questionId': '${quizId}_$questionIndex',
           'questionIndex': questionIndex,
-        }),
+        },
       );
     } catch (e) {
       AppLogger.debug('MistakeNotifier: remote mastery failed: $e');

@@ -1,5 +1,5 @@
 import { Client, Databases, Users } from 'node-appwrite';
-import { reconcileOrphanedAuthDeletions } from '../../delete-account/src/main.js';
+import { reconcileOrphanedAuthDeletions } from './shared/delete_account_core.js';
 
 export default async ({ req, res, log = console.log, error = console.error }) => {
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;

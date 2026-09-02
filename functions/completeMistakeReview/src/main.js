@@ -85,6 +85,6 @@ export default async ({ req, res, error }) => {
     });
   } catch (err) {
     error('completeMistakeReview error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to complete review. Please try again.' }, 500);
   }
 };

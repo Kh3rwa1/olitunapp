@@ -61,6 +61,6 @@ export default async ({ req, res, error }) => {
     return res.json({ ok: true, mistake: updated });
   } catch (err) {
     error('markMistakeMastered error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to update mistake. Please try again.' }, 500);
   }
 };

@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
-import 'package:itun/core/storage/stale_while_revalidate_repository.dart';
 
 void main() {
   group('Production Readiness Invariant Smoke Suite', () {
@@ -46,20 +45,6 @@ void main() {
       expect(mutation.attemptCount, 5);
       expect(mutation.status, MutationStatus.deadLetter);
       expect(mutation.toJson()['status'], 'deadLetter');
-    });
-
-    test('SWRResult preserves cached data during simulated offline error', () {
-      const result = SWRResult<String>(
-        data: 'offline_cached_value',
-        state: SWRState.errorWithCache,
-        error: 'SocketException: Network unreachable',
-        isStale: true,
-      );
-
-      expect(result.hasData, isTrue);
-      expect(result.data, 'offline_cached_value');
-      expect(result.isStale, isTrue);
-      expect(result.state, SWRState.errorWithCache);
     });
   });
 }

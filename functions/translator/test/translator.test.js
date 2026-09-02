@@ -8,7 +8,7 @@ import {
   deriveRateLimitIdentifier,
   SUPPORTED_LANGUAGES,
 } from '../src/security.js';
-import { checkRateLimit } from '../src/rate_limiter.js';
+import { checkRateLimit } from '../../_shared/rate_limiter.js';
 import {
   BaseTranslationProvider,
   VitaletsTranslationProvider,

@@ -20,7 +20,9 @@ class AudioService {
     if (kIsWeb) {
       try {
         _player.setWebCrossOrigin(WebCrossOrigin.anonymous);
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('AudioService: failed to set web cross-origin: $e');
+      }
     }
   }
 
@@ -134,11 +136,15 @@ class AudioService {
   Future<void> stop() async {
     try {
       await _player.stop();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('AudioService: stop failed: $e');
+    }
     if (kIsWeb) {
       try {
         stopNativeWebAudio();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('AudioService: native web stop failed: $e');
+      }
     }
   }
 
@@ -146,7 +152,9 @@ class AudioService {
     if (kIsWeb) {
       try {
         stopNativeWebAudio();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('AudioService: native web stop failed: $e');
+      }
     }
     _player.dispose();
   }

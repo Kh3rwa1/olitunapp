@@ -1,27 +1,34 @@
 /// Phase 5 — API client for the `reviewContent` Appwrite Function.
 ///
-/// Follows the repo's `executeAdminMaintenance` convention:
-/// Functions(client).createExecution(functionId, body: jsonEncode,
-/// xasync: false, method: POST) then parse responseStatusCode +
-/// responseBody. Kept UI-free so tests can drive it with a fake
+/// Follows the repo's `executeAdminMaintenance` convention: execute
+/// with POST semantics, then parse responseStatusCode + responseBody.
+/// Kept UI-free and Appwrite-free so tests can drive it with a fake
 /// executor.
 library;
 
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
-import 'package:appwrite/models.dart' as appwrite_models;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/api/appwrite_functions_service.dart';
 import 'admin_review_models.dart';
 
+/// Neutral, Appwrite-free view of a function execution.
+class AdminReviewExecution {
+  const AdminReviewExecution({
+    required this.statusCode,
+    required this.responseBody,
+  });
+
+  final int statusCode;
+  final String responseBody;
+}
+
 /// Executes a reviewContent request and returns the decoded
-/// `data` object. Implemented against appwrite's [Functions]
-/// service; fakes in tests return canned responses.
+/// `data` object. Implemented against the core
+/// [AppwriteFunctionsService]; fakes in tests return canned responses.
 abstract class AdminReviewExecutor {
-  Future<appwrite_models.Execution> createExecution(
+  Future<AdminReviewExecution> createExecution(
     String functionId, {
     required String body,
   });
@@ -30,18 +37,22 @@ abstract class AdminReviewExecutor {
 class _FunctionsExecutor implements AdminReviewExecutor {
   _FunctionsExecutor(this._functions);
 
-  final Functions _functions;
+  final AppwriteFunctionsService _functions;
 
   @override
-  Future<appwrite_models.Execution> createExecution(
+  Future<AdminReviewExecution> createExecution(
     String functionId, {
     required String body,
-  }) {
-    return _functions.createExecution(
-      functionId: functionId,
-      body: body,
-      xasync: false,
-      method: ExecutionMethod.pOST,
+  }) async {
+    final payload = jsonDecode(body) as Map<String, dynamic>;
+    final result = await _functions.execute(
+      functionId,
+      body: payload,
+      usePost: true,
+    );
+    return AdminReviewExecution(
+      statusCode: result.statusCode,
+      responseBody: result.responseBody,
     );
   }
 }
@@ -77,7 +88,7 @@ class AdminReviewApiClient {
       body: jsonEncode(payload),
     );
 
-    final statusCode = execution.responseStatusCode;
+    final statusCode = execution.statusCode;
     final rawBody = execution.responseBody.trim();
     Map<String, dynamic>? decoded;
     if (rawBody.isNotEmpty) {
@@ -189,9 +200,8 @@ class AdminReviewApiClient {
 }
 
 /// Riverpod provider wired to the signed-in admin session's
-/// appwrite client (same pattern as the affirmations sync path).
+/// appwrite client via the core functions service.
 final adminReviewApiClientProvider = Provider<AdminReviewApiClient>((ref) {
-  final client = ref.watch(appwriteAuthServiceProvider).client;
-  final functions = Functions(client);
+  final functions = ref.watch(appwriteFunctionsServiceProvider);
   return AdminReviewApiClient(executor: _FunctionsExecutor(functions));
 });

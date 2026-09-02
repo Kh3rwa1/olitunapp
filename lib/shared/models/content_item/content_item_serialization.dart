@@ -9,6 +9,38 @@ import 'tracing_models.dart';
 
 /// Helper parser and serializer for ContentItem to keep model definition focused and clean.
 class ContentItemSerialization {
+  static String _docLabel(Map<String, dynamic> json, String? docId) {
+    final id = docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '';
+    return id.isEmpty ? 'unknown' : id;
+  }
+
+  /// Parses a list of raw block maps, skipping and logging malformed entries
+  /// instead of silently dropping them.
+  static List<ContentBlock> _parseBlocks(
+    List<dynamic> decoded,
+    String docLabel,
+  ) {
+    return decoded
+        .map((e) {
+          try {
+            if (e is Map<String, dynamic>) {
+              return ContentBlock.fromJson(e);
+            }
+            if (e is Map) {
+              return ContentBlock.fromJson(e.cast<String, dynamic>());
+            }
+          } catch (err) {
+            AppLogger.warning(
+              'Skipping malformed block on $docLabel: $err',
+              name: 'ContentItemSerialization',
+            );
+          }
+          return null;
+        })
+        .whereType<ContentBlock>()
+        .toList();
+  }
+
   static String? extractFileIdFromUrl(String? url) {
     if (url == null || url.isEmpty) return null;
     final regExp = RegExp(r'/files/([^/]+)/view');
@@ -40,7 +72,12 @@ class ContentItemSerialization {
             parsedTracing = TracingConfig.fromJson(
               jsonDecode(rawTracing) as Map<String, dynamic>,
             );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'Failed to parse tracing JSON on ${_docLabel(json, docId)}: $e',
+              name: 'ContentItemSerialization',
+            );
+          }
         }
       } else if (rawTracing is Map<String, dynamic>) {
         parsedTracing = TracingConfig.fromJson(rawTracing);
@@ -56,7 +93,12 @@ class ContentItemSerialization {
             parsedHeroMedia = ContentMedia.fromJson(
               jsonDecode(rawHeroMedia) as Map<String, dynamic>,
             );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'Failed to parse hero_media JSON on ${_docLabel(json, docId)}: $e',
+              name: 'ContentItemSerialization',
+            );
+          }
         }
       } else if (rawHeroMedia is Map<String, dynamic>) {
         parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);
@@ -78,41 +120,23 @@ class ContentItemSerialization {
     final rawBlocks = json['blocks'];
     List<ContentBlock> parsedBlocks = const [];
     if (rawBlocks != null) {
+      List<dynamic>? decodedBlocks;
       if (rawBlocks is String) {
         if (rawBlocks.isNotEmpty) {
           try {
-            final decoded = jsonDecode(rawBlocks) as List<dynamic>;
-            parsedBlocks = decoded
-                .map((e) {
-                  try {
-                    if (e is Map<String, dynamic>) {
-                      return ContentBlock.fromJson(e);
-                    }
-                    if (e is Map) {
-                      return ContentBlock.fromJson(e.cast<String, dynamic>());
-                    }
-                  } catch (_) {}
-                  return null;
-                })
-                .whereType<ContentBlock>()
-                .toList();
-          } catch (_) {}
+            decodedBlocks = jsonDecode(rawBlocks) as List<dynamic>;
+          } catch (e) {
+            AppLogger.warning(
+              'Failed to decode blocks JSON on ${_docLabel(json, docId)}: $e',
+              name: 'ContentItemSerialization',
+            );
+          }
         }
       } else if (rawBlocks is List<dynamic>) {
-        parsedBlocks = rawBlocks
-            .map((e) {
-              try {
-                if (e is Map<String, dynamic>) {
-                  return ContentBlock.fromJson(e);
-                }
-                if (e is Map) {
-                  return ContentBlock.fromJson(e.cast<String, dynamic>());
-                }
-              } catch (_) {}
-              return null;
-            })
-            .whereType<ContentBlock>()
-            .toList();
+        decodedBlocks = rawBlocks;
+      }
+      if (decodedBlocks != null) {
+        parsedBlocks = _parseBlocks(decodedBlocks, _docLabel(json, docId));
       }
     }
 
@@ -142,7 +166,12 @@ class ContentItemSerialization {
         try {
           final decoded = jsonDecode(rawTags) as List<dynamic>;
           parsedTags = decoded.map((e) => e.toString()).toList();
-        } catch (_) {
+        } catch (e) {
+          AppLogger.warning(
+            'Failed to parse tags JSON on ${_docLabel(json, docId)}; '
+            'falling back to comma-split: $e',
+            name: 'ContentItemSerialization',
+          );
           parsedTags = rawTags
               .split(',')
               .map((t) => t.trim())
@@ -254,7 +283,13 @@ class ContentItemSerialization {
         if (rawMediaType != null) {
           try {
             legacyMediaKind = ContentMediaKind.fromString(rawMediaType);
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'Unknown heroMediaType "$rawMediaType" on '
+              '${_docLabel(json, docId)}; defaulting to image: $e',
+              name: 'ContentItemSerialization',
+            );
+          }
         }
         legacyMediaKind ??= ContentMediaKind.image;
       } else if (firstString([json['animationUrl']]) != null) {

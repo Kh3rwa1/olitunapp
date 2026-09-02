@@ -1,28 +1,4 @@
-import 'package:appwrite/appwrite.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
-import '../../../../core/network/network_info.dart';
-import '../../domain/repositories/lesson_repository.dart';
-import '../../data/datasources/lesson_local_datasource.dart';
-import '../../data/datasources/lesson_remote_datasource.dart';
-import '../../data/repositories/lesson_repository_impl.dart';
+// Repository wiring lives in the data layer (data/di/lesson_di.dart) so the
+// Appwrite SDK stays out of presentation. Re-exported here for compatibility.
 
-final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
-  final client = ref.watch(appwriteAuthServiceProvider).client;
-  return LessonRemoteDataSourceImpl(Databases(client));
-});
-
-final lessonLocalDataSourceProvider = Provider<LessonLocalDataSource>((ref) {
-  return LessonLocalDataSourceImpl();
-});
-
-final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
-  final remote = ref.watch(lessonRemoteDataSourceProvider);
-  final local = ref.watch(lessonLocalDataSourceProvider);
-  final network = ref.watch(networkInfoProvider);
-  return LessonRepositoryImpl(
-    remoteDataSource: remote,
-    localDataSource: local,
-    networkInfo: network,
-  );
-});
+export '../../data/di/lesson_di.dart';

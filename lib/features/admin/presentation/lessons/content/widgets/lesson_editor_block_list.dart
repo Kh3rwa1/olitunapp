@@ -53,7 +53,11 @@ class LessonEditorBlockList extends StatelessWidget {
         final isHighlighted = index == hoveredOrFocusedIndex;
 
         return Container(
-          key: ValueKey('block_${block.hashCode}_$index'),
+          // Value-keyed (no index suffix): keeps editor state bound to its
+          // block across reorders. LessonBlockEntity has no stable id, so
+          // the Equatable hashCode (stable per content within a session)
+          // is used instead.
+          key: ValueKey('block_${block.hashCode}'),
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),

@@ -99,7 +99,11 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
                     placement: widget.placement,
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'NativeAdWidget: failed to log impression event: $e',
+            );
+          }
         },
         onFailed: (ad, error) {
           AppLogger.debug(
@@ -118,7 +122,11 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
                     errorCode: error.code.toString(),
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'NativeAdWidget: failed to log load-fail event: $e',
+            );
+          }
         },
         onClicked: (ad) {
           try {

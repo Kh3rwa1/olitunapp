@@ -50,6 +50,6 @@ export default async ({ req, res, error }) => {
     return res.json({ ok: true, mistakes });
   } catch (err) {
     error('getUserMistakes error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to load mistakes. Please try again.' }, 500);
   }
 };

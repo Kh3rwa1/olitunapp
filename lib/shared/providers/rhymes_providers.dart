@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -111,7 +110,10 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
         state = AsyncValue.data(cached);
       }
     } catch (e) {
-      debugPrint('❌ rhymes_providers: Failed to load cached rhymes: $e');
+      AppLogger.warning(
+        'Failed to load cached rhymes: $e',
+        name: 'RhymesProviders',
+      );
     }
 
     // 2. Fetch Network
@@ -129,7 +131,10 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
             rhymes.add(rhyme);
           }
         } catch (e) {
-          debugPrint('⚠️ rhymes_providers: Skipping malformed rhyme row: $e');
+          AppLogger.warning(
+            'Skipping malformed rhyme row: $e',
+            name: 'RhymesProviders',
+          );
         }
       }
 
@@ -146,10 +151,10 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
         );
       }
     } catch (e, stack) {
-      // Critical error logging in production
-      debugPrint('❌ rhymes_providers: Error loading rhymes from Appwrite: $e');
-      debugPrint(stack.toString());
-
+      AppLogger.error(
+        'Error loading rhymes from Appwrite: $e',
+        name: 'RhymesProviders',
+      );
       CrashReporting.recordError(e, stack);
       CrashReporting.addAppwriteBreadcrumb(
         operation: 'list',

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { verifyAppwriteIdentity, deriveRateLimitIdentifier } from '../src/security.js';
-import { checkRateLimit } from '../src/rate_limiter.js';
+import { checkRateLimit } from '../../_shared/rate_limiter.js';
 
 class MockAppwriteDatabases {
   constructor() {

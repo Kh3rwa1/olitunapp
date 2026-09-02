@@ -7,7 +7,7 @@ import {
   pruneExpiredRateLimits,
   WINDOW_HOUR_MS,
   WINDOW_MINUTE_MS,
-} from '../src/rate_limiter.js';
+} from '../../_shared/rate_limiter.js';
 import {
   deriveRateLimitIdentifier,
   verifyAppwriteIdentity,

@@ -21,5 +21,7 @@ void stopNativeWebAudio() {
     _currentWebAudio?.pause();
     _currentWebAudio?.remove();
     _currentWebAudio = null;
-  } catch (_) {}
+  } catch (_) {
+    // Best-effort cleanup: element removal can throw if already detached.
+  }
 }

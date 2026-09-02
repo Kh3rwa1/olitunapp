@@ -1,20 +1,26 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
-import '../../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../../../core/api/appwrite_db_service.dart';
+import '../../../../../core/api/appwrite_query_builders.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
+import 'bakhed_lyrics_editor_controller.dart';
+import 'bakhed_notes_editor_controller.dart';
+import 'bakhed_vocabulary_editor_controller.dart';
+
+// The lyrics, vocabulary, and notes editor controllers live in sibling
+// files and are re-exported here so existing imports keep working.
+export 'bakhed_lyrics_editor_controller.dart';
+export 'bakhed_notes_editor_controller.dart';
+export 'bakhed_vocabulary_editor_controller.dart';
 
 enum SaveResult { success, concurrencyConflict, uploadInProgress, failure }
 
 // ==========================================
 // 1. Basics & Audio Editor Controller
 // ==========================================
-
 class BakhedEditorState {
   final AsyncValue<ContentItem> item;
   final bool isDirty;
@@ -296,7 +302,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             await dbService.deleteDocument('bakhed_lyrics', line.id);
           }
           for (final line in toCreate) {
-            final docId = ID.unique();
+            final docId = DbId.unique();
             final idx = lyricsState.currentLines.indexOf(line);
             final derivedEndMs = idx < lyricsState.currentLines.length - 1
                 ? lyricsState.currentLines[idx + 1].startMs
@@ -356,7 +362,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             await dbService.deleteDocument('bakhed_vocabulary', itemVal.id);
           }
           for (final itemVal in toCreate) {
-            final docId = ID.unique();
+            final docId = DbId.unique();
             await dbService.createDocument(
               'bakhed_vocabulary',
               docId,
@@ -412,7 +418,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             );
           }
           for (final note in toCreate) {
-            final docId = ID.unique();
+            final docId = DbId.unique();
             await dbService.createDocument(
               'bakhed_cultural_notes',
               docId,
@@ -562,474 +568,3 @@ final bakhedEditorControllerProvider =
 // ==========================================
 // 2. Lyrics Timeline Editor Controller
 // ==========================================
-
-class BakhedLyricsState {
-  final List<BakhedLyricLine> originalLines;
-  final List<BakhedLyricLine> currentLines;
-  final bool isLoaded;
-  final bool isLoading;
-  final String? error;
-
-  const BakhedLyricsState({
-    this.originalLines = const [],
-    this.currentLines = const [],
-    this.isLoaded = false,
-    this.isLoading = false,
-    this.error,
-  });
-
-  bool get isDirty {
-    if (!isLoaded) return false;
-    if (originalLines.length != currentLines.length) return true;
-    for (int i = 0; i < originalLines.length; i++) {
-      if (originalLines[i] != currentLines[i]) return true;
-    }
-    return false;
-  }
-
-  BakhedLyricsState copyWith({
-    List<BakhedLyricLine>? originalLines,
-    List<BakhedLyricLine>? currentLines,
-    bool? isLoaded,
-    bool? isLoading,
-    String? error,
-  }) {
-    return BakhedLyricsState(
-      originalLines: originalLines ?? this.originalLines,
-      currentLines: currentLines ?? this.currentLines,
-      isLoaded: isLoaded ?? this.isLoaded,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
-}
-
-class BakhedLyricsEditorNotifier
-    extends FamilyNotifier<BakhedLyricsState, String> {
-  late String bakhedId;
-
-  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
-
-  @override
-  BakhedLyricsState build(String arg) {
-    bakhedId = arg;
-    return const BakhedLyricsState();
-  }
-
-  Future<void> ensureLoaded() async {
-    if (state.isLoaded || state.isLoading) return;
-    state = BakhedLyricsState(
-      originalLines: state.originalLines,
-      currentLines: state.currentLines,
-      isLoaded: state.isLoaded,
-      isLoading: true,
-    );
-
-    final res = await _repository.getLyrics(bakhedId);
-    res.fold(
-      (failure) =>
-          state = state.copyWith(isLoading: false, error: failure.message),
-      (lines) {
-        state = BakhedLyricsState(
-          originalLines: List.from(lines),
-          currentLines: List.from(lines),
-          isLoaded: true,
-        );
-      },
-    );
-  }
-
-  void updateLines(List<BakhedLyricLine> lines) {
-    final sorted = List<BakhedLyricLine>.from(lines)
-      ..sort((a, b) => a.startMs.compareTo(b.startMs));
-
-    final updated = List.generate(sorted.length, (index) {
-      return sorted[index].copyWith(lineIndex: index);
-    });
-
-    state = state.copyWith(currentLines: updated);
-    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
-  }
-
-  void reorderLines(int oldIndex, int newIndex) {
-    if (newIndex > oldIndex) newIndex -= 1;
-    final lines = List<BakhedLyricLine>.from(state.currentLines);
-    final item = lines.removeAt(oldIndex);
-    lines.insert(newIndex, item);
-
-    // Adjust startMs to preserve sorting invariant startMs[i] < startMs[i+1]
-    for (int i = 0; i < lines.length; i++) {
-      if (i == 0) {
-        if (lines[i].startMs > (lines.length > 1 ? lines[1].startMs : 0)) {
-          lines[i] = lines[i].copyWith(startMs: 0);
-        }
-      } else {
-        if (lines[i].startMs < lines[i - 1].startMs) {
-          final prevStart = lines[i - 1].startMs;
-          final nextStart = i < lines.length - 1
-              ? lines[i + 1].startMs
-              : prevStart + 5000;
-          final mid = prevStart + (nextStart - prevStart) ~/ 2;
-          lines[i] = lines[i].copyWith(startMs: mid);
-        }
-      }
-    }
-
-    updateLines(lines);
-  }
-
-  void addLine(BakhedLyricLine line) {
-    updateLines([...state.currentLines, line]);
-  }
-
-  void removeLine(String id, int lineIndex) {
-    final updated = state.currentLines.where((e) {
-      if (id.isNotEmpty && e.id == id) return false;
-      return e.lineIndex != lineIndex;
-    }).toList();
-    updateLines(updated);
-  }
-
-  void bulkPaste(String text, {required bool replace}) {
-    final lines = text.split('\n');
-    final parsedLines = <BakhedLyricLine>[];
-    int startIdx = replace ? 0 : state.currentLines.length;
-
-    for (final line in lines) {
-      final trimmed = line.trim();
-      if (trimmed.isEmpty) continue;
-
-      final parts = trimmed.split('|');
-      final olChiki = parts.isNotEmpty ? parts[0].trim() : '';
-      final latin = parts.length > 1 ? parts[1].trim() : '';
-      final meaning = parts.length > 2 ? parts[2].trim() : '';
-
-      parsedLines.add(
-        BakhedLyricLine(
-          id: '',
-          lineIndex: startIdx,
-          startMs: startIdx * 5000,
-          endMs: (startIdx + 1) * 5000,
-          olChiki: olChiki,
-          latin: latin,
-          meaning: meaning,
-        ),
-      );
-      startIdx++;
-    }
-
-    if (replace) {
-      updateLines(parsedLines);
-    } else {
-      updateLines([...state.currentLines, ...parsedLines]);
-    }
-  }
-
-  void markClean() {
-    state = state.copyWith(originalLines: List.from(state.currentLines));
-  }
-}
-
-final bakhedLyricsEditorProvider =
-    NotifierProvider.family<
-      BakhedLyricsEditorNotifier,
-      BakhedLyricsState,
-      String
-    >(BakhedLyricsEditorNotifier.new);
-
-// ==========================================
-// 3. Vocabulary Editor Controller
-// ==========================================
-
-class BakhedVocabularyState {
-  final List<BakhedVocabularyItem> originalItems;
-  final List<BakhedVocabularyItem> currentItems;
-  final bool isLoaded;
-  final bool isLoading;
-  final String? error;
-
-  const BakhedVocabularyState({
-    this.originalItems = const [],
-    this.currentItems = const [],
-    this.isLoaded = false,
-    this.isLoading = false,
-    this.error,
-  });
-
-  bool get isDirty {
-    if (!isLoaded) return false;
-    if (originalItems.length != currentItems.length) return true;
-    for (int i = 0; i < originalItems.length; i++) {
-      if (originalItems[i] != currentItems[i]) return true;
-    }
-    return false;
-  }
-
-  BakhedVocabularyState copyWith({
-    List<BakhedVocabularyItem>? originalItems,
-    List<BakhedVocabularyItem>? currentItems,
-    bool? isLoaded,
-    bool? isLoading,
-    String? error,
-  }) {
-    return BakhedVocabularyState(
-      originalItems: originalItems ?? this.originalItems,
-      currentItems: currentItems ?? this.currentItems,
-      isLoaded: isLoaded ?? this.isLoaded,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
-}
-
-class BakhedVocabularyEditorNotifier
-    extends FamilyNotifier<BakhedVocabularyState, String> {
-  late String bakhedId;
-
-  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
-
-  @override
-  BakhedVocabularyState build(String arg) {
-    bakhedId = arg;
-    return const BakhedVocabularyState();
-  }
-
-  Future<void> ensureLoaded() async {
-    if (state.isLoaded || state.isLoading) return;
-    state = BakhedVocabularyState(
-      originalItems: state.originalItems,
-      currentItems: state.currentItems,
-      isLoaded: state.isLoaded,
-      isLoading: true,
-    );
-
-    final res = await _repository.getVocabulary(bakhedId);
-    res.fold(
-      (failure) =>
-          state = state.copyWith(isLoading: false, error: failure.message),
-      (items) {
-        state = BakhedVocabularyState(
-          originalItems: List.from(items),
-          currentItems: List.from(items),
-          isLoaded: true,
-        );
-      },
-    );
-  }
-
-  void updateItems(List<BakhedVocabularyItem> items) {
-    // Standardize sortOrder values sequentially
-    final updated = List.generate(items.length, (index) {
-      return items[index].copyWith(sortOrder: index);
-    });
-    state = state.copyWith(currentItems: updated);
-    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
-  }
-
-  void addItem(BakhedVocabularyItem item) {
-    updateItems([...state.currentItems, item]);
-  }
-
-  void removeItem(String id, int sortOrder) {
-    final removedItem = state.currentItems.firstWhere(
-      (e) =>
-          (id.isNotEmpty && e.id == id) ||
-          (id.isEmpty && e.sortOrder == sortOrder),
-      orElse: () => const BakhedVocabularyItem(
-        id: '',
-        olChiki: '',
-        latin: '',
-        meaning: '',
-        audioFileId: '',
-        sortOrder: -1,
-      ),
-    );
-    if (removedItem.audioFileId.isNotEmpty) {
-      ref
-          .read(bakhedEditorControllerProvider(bakhedId).notifier)
-          .markForDeletion(removedItem.audioFileId);
-    }
-
-    final updated = state.currentItems.where((e) {
-      if (id.isNotEmpty && e.id == id) return false;
-      return e.sortOrder != sortOrder;
-    }).toList();
-    updateItems(updated);
-  }
-
-  void markClean() {
-    state = state.copyWith(originalItems: List.from(state.currentItems));
-  }
-}
-
-final bakhedVocabularyEditorProvider =
-    NotifierProvider.family<
-      BakhedVocabularyEditorNotifier,
-      BakhedVocabularyState,
-      String
-    >(BakhedVocabularyEditorNotifier.new);
-
-// ==========================================
-// 4. Cultural Notes Editor Controller
-// ==========================================
-
-class BakhedNotesState {
-  final List<BakhedCulturalNote> originalNotes;
-  final List<BakhedCulturalNote> currentNotes;
-  final bool isLoaded;
-  final bool isLoading;
-  final String? error;
-
-  const BakhedNotesState({
-    this.originalNotes = const [],
-    this.currentNotes = const [],
-    this.isLoaded = false,
-    this.isLoading = false,
-    this.error,
-  });
-
-  bool get isDirty {
-    if (!isLoaded) return false;
-    if (originalNotes.length != currentNotes.length) return true;
-    for (int i = 0; i < originalNotes.length; i++) {
-      if (originalNotes[i] != currentNotes[i]) return true;
-    }
-    return false;
-  }
-
-  BakhedNotesState copyWith({
-    List<BakhedCulturalNote>? originalNotes,
-    List<BakhedCulturalNote>? currentNotes,
-    bool? isLoaded,
-    bool? isLoading,
-    String? error,
-  }) {
-    return BakhedNotesState(
-      originalNotes: originalNotes ?? this.originalNotes,
-      currentNotes: currentNotes ?? this.currentNotes,
-      isLoaded: isLoaded ?? this.isLoaded,
-      isLoading: isLoading ?? this.isLoading,
-      error: error ?? this.error,
-    );
-  }
-}
-
-class BakhedNotesEditorNotifier
-    extends FamilyNotifier<BakhedNotesState, String> {
-  late String bakhedId;
-
-  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
-
-  @override
-  BakhedNotesState build(String arg) {
-    bakhedId = arg;
-    return const BakhedNotesState();
-  }
-
-  Future<void> ensureLoaded() async {
-    if (state.isLoaded || state.isLoading) return;
-    state = BakhedNotesState(
-      originalNotes: state.originalNotes,
-      currentNotes: state.currentNotes,
-      isLoaded: state.isLoaded,
-      isLoading: true,
-    );
-
-    final res = await _repository.getCulturalNotes(bakhedId);
-    res.fold(
-      (failure) =>
-          state = state.copyWith(isLoading: false, error: failure.message),
-      (notes) {
-        state = BakhedNotesState(
-          originalNotes: List.from(notes),
-          currentNotes: List.from(notes),
-          isLoaded: true,
-        );
-      },
-    );
-  }
-
-  void updateNotes(List<BakhedCulturalNote> notes) {
-    state = state.copyWith(currentNotes: notes);
-    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
-  }
-
-  void addNote(BakhedCulturalNote note) {
-    updateNotes([...state.currentNotes, note]);
-  }
-
-  void removeNote(String noteId) {
-    final updated = state.currentNotes
-        .where((e) => e.noteId != noteId)
-        .toList();
-    updateNotes(updated);
-  }
-
-  void markClean() {
-    state = state.copyWith(originalNotes: List.from(state.currentNotes));
-  }
-}
-
-final bakhedNotesEditorProvider =
-    NotifierProvider.family<
-      BakhedNotesEditorNotifier,
-      BakhedNotesState,
-      String
-    >(BakhedNotesEditorNotifier.new);
-
-final bakhedAudioPlayerProvider = Provider.autoDispose.family<AudioPlayer, String>((
-  ref,
-  bakhedId,
-) {
-  final player = AudioPlayer();
-  player.setWebCrossOrigin(WebCrossOrigin.anonymous);
-
-  // Listen to the audioUrl changes in the editor state.
-  // This ensures the player dynamically loads the audio URL when it becomes available
-  // (e.g. after the document loads asynchronously or after a new audio file is uploaded).
-  ref.listen<String?>(
-    bakhedEditorControllerProvider(
-      bakhedId,
-    ).select((s) => s.item.value?.audioUrl),
-    (previous, next) {
-      if (next != null && next.isNotEmpty && next != previous) {
-        player.setUrl(next).catchError((e) {
-          AppLogger.debug('bakhedAudioPlayer: Error setting URL ($next): $e');
-          return null;
-        });
-      } else if (next == null || next.isEmpty) {
-        player.stop();
-      }
-    },
-    fireImmediately: true,
-  );
-
-  // Listen to the player's duration stream to automatically update the document's durationMs
-  // when the player client-side decodes and resolves the audio file metadata.
-  final subscription = player.durationStream.listen((duration) {
-    if (duration != null && duration > Duration.zero) {
-      final notifier = ref.read(
-        bakhedEditorControllerProvider(bakhedId).notifier,
-      );
-      final currentItem = ref
-          .read(bakhedEditorControllerProvider(bakhedId))
-          .item
-          .value;
-      if (currentItem != null &&
-          currentItem.durationMs != duration.inMilliseconds) {
-        notifier.updateAudio(
-          currentItem.audioUrl,
-          currentItem.audioFileId,
-          duration.inMilliseconds,
-        );
-      }
-    }
-  });
-
-  ref.onDispose(() {
-    subscription.cancel();
-    player.dispose();
-  });
-
-  return player;
-});

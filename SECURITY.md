@@ -14,11 +14,12 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 - Client routes (`/admin/*`) use dual enforcement: GoRouter redirects check team membership, and `AdminShell` verifies session validity before rendering.
 
 ### B. Cryptographic Identity & Zero-Trust Caller Headers
-- The backend serverless functions never trust caller-supplied `x-appwrite-user-id` or JSON `userId` fields.
-- Caller identity is verified cryptographically via Appwrite JWT tokens (`Account.get()`). If verification fails or is absent, the caller is handled strictly under the anonymous tier.
+- The backend serverless functions never trust caller-supplied JSON `userId` fields; the caller identity comes from the Appwrite runtime-injected `x-appwrite-user-id` header (not readable by clients for authenticated executions).
+- The `translator` function (which accepts anonymous executions) additionally verifies caller identity cryptographically via Appwrite JWT tokens (`Account.get()`). If verification fails or is absent, the caller is handled strictly under the anonymous tier.
+- Payment functions re-verify every payment amount and order binding against the gateway API and the server-side purchase ledger before granting entitlements.
 
 ### C. Concurrency-Safe Translation Rate Limiting
-- **Optimistic Concurrency Control (CAS):** Distributed workers execute atomic document creation and revision checks with jittered exponential backoff across 12 bounded retries.
+- **Atomic Slot Reservation:** Distributed workers race to create unique slot documents (deterministic IDs, 1..limit); Appwrite's unique document-ID constraint makes the claim atomic. Occupied slots are probed sequentially; no compare-and-swap loops or backoff are involved.
 - **Fail-Closed Design:** In the event of a rate limiting database outage, the service fails closed (HTTP 503 `RATE_LIMIT_ERROR`) rather than allowing unlimited upstream API exhaustion.
 - **Privacy-Preserving Domain-Separated Identifiers:**
   - Verified Users: `usr_` + `HMAC-SHA256(RATE_LIMIT_SALT, "translator-rate-limit:user:v1:" + userId)`
@@ -41,8 +42,10 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 - Play Store review unlock benefits are restricted server-side to a maximum of one course per user.
 
 ### G. Content Security Policy (CSP) & Web Isolation
-- **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated.
+- **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated. All runtime scripts (boot helpers, PWA install/update flow, auth callback) are externalized files (`web/pwa_runtime.js`, `web/pwa_install.js`, `web/auth_redirect.js`) — no inline scripts exist in any HTML template.
 - **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com` to accommodate Flutter Web engine layout mutations.
+- **Additional directives:** `worker-src 'self'` (service worker), `base-uri 'self'`, `object-src 'none'`, `frame-ancestors 'self'`.
+- **Host scope:** The CSP in `vercel.json` applies only to the Vercel-hosted deployment. The Appwrite Sites host (`olitunapp.appwrite.network`) applies its own headers — when promoting Appwrite Sites to the primary production host, mirror this CSP there.
 
 ---
 

@@ -83,6 +83,6 @@ export default async ({ req, res, error }) => {
     return res.json({ ok: true, badges, recentRewards });
   } catch (err) {
     error('getUserGamificationSummary error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to load summary. Please try again.' }, 500);
   }
 };

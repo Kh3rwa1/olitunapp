@@ -10,7 +10,6 @@ import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/motion/branded_refresh.dart';
-import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../domain/rhyme_model.dart';
 
@@ -19,9 +18,11 @@ import 'widgets/tilt_card.dart';
 import 'widgets/rhyme_filter_chips.dart';
 import 'widgets/featured_rhyme_card.dart';
 import 'widgets/bento_rhyme_card.dart';
-import 'widgets/enchanted_visualizer.dart';
 import 'widgets/binti_guru_landing.dart';
 import '../domain/rhyme_catalog.dart';
+import 'widgets/rhyme_header.dart';
+import 'widgets/rhyme_segmented_control.dart';
+import 'widgets/bakhed_preparing_animation.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 
@@ -129,12 +130,17 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                           isTablet ? 32 : 24,
                           24,
                         ),
-                        child: _buildHeader(isDark),
+                        child: RhymeHeader(isDark: isDark),
                       ),
                     ),
 
                     // --- Segmented Control ---
-                    _buildSegmentedControl(isDark, isTablet),
+                    RhymeSegmentedControl(
+                      isDark: isDark,
+                      isTablet: isTablet,
+                      currentTab: _currentTab,
+                      onTabSelect: (tab) => setState(() => _currentTab = tab),
+                    ),
 
                     if (_currentTab == 0) ...[
                       // --- Category Filter chips ---
@@ -205,202 +211,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSegmentedControl(bool isDark, bool isTablet) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: isTablet ? 32 : 24,
-          vertical: 12,
-        ),
-        child: Container(
-          height: 50,
-          padding: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.04)
-                : Colors.black.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white10
-                  : Colors.black.withValues(alpha: 0.04),
-            ),
-          ),
-          child: Stack(
-            children: [
-              AnimatedAlign(
-                alignment: _currentTab == 0
-                    ? Alignment.centerLeft
-                    : Alignment.centerRight,
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOutCubic,
-                child: FractionallySizedBox(
-                  widthFactor: 0.5,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => setState(() => _currentTab = 0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.music_note_rounded,
-                            size: 16,
-                            color: _currentTab == 0
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Bakhed Audio',
-                            style: AppTypography.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _currentTab == 0
-                                  ? Colors.white
-                                  : (isDark ? Colors.white70 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => setState(() => _currentTab = 1),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.school_rounded,
-                            size: 16,
-                            color: _currentTab == 1
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Binti Guru',
-                            style: AppTypography.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: _currentTab == 1
-                                  ? Colors.white
-                                  : (isDark ? Colors.white70 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
-    );
-  }
-
-  // ─── Header ─────────────────────────────────────────────
-  Widget _buildHeader(bool isDark) {
-    final scriptMode = ref.watch(effectiveScriptModeProvider);
-    final l10n = AppLocalizations.of(context)!;
-    final eyebrow = scriptMode == 'olchiki' ? 'ᱥᱟᱱᱛᱟᱲᱤ' : 'Santali';
-    final title = scriptMode == 'olchiki' ? l10n.rhymes : 'Bakhed';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                      eyebrow,
-                      style: AppTypography.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 3,
-                        color: isDark
-                            ? AppColors.primary
-                            : AppColors.primaryDark.withValues(alpha: 0.6),
-                      ),
-                    )
-                    .animate()
-                    .fadeIn(delay: 100.ms, duration: 600.ms)
-                    .slideY(begin: 0.5)
-                    .then()
-                    .shimmer(
-                      delay: 1.seconds,
-                      duration: 1800.ms,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                Text(
-                      title,
-                      style:
-                          (scriptMode == 'olchiki'
-                                  ? const TextStyle(fontFamily: 'OlChiki')
-                                  : AppTypography.inter())
-                              .copyWith(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0,
-                                height: 1,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.primaryDark,
-                              ),
-                    )
-                    .animate()
-                    .fadeIn(delay: 200.ms, duration: 600.ms)
-                    .slideX(begin: -0.15, curve: Curves.easeOutCubic)
-                    .blurXY(begin: 4, end: 0, duration: 500.ms),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Text(
-              'Unlock the magic of stories & songs',
-              style: AppTypography.inter(
-                fontSize: 16,
-                color: isDark ? Colors.white54 : Colors.black45,
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 400.ms, duration: 800.ms)
-            .slideY(begin: 0.3, curve: Curves.easeOutCubic)
-            .then(delay: 500.ms)
-            .shimmer(
-              duration: 2.seconds,
-              color: (isDark ? Colors.white : AppColors.primary).withValues(
-                alpha: 0.15,
-              ),
-            ),
-      ],
     );
   }
 
@@ -633,7 +443,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             child: Padding(
               padding: const EdgeInsets.all(24.0),
               child: filtered.isEmpty
-                  ? _BakhedPreparingAnimation(isDark: isDark)
+                  ? BakhedPreparingAnimation(isDark: isDark)
                   : Center(
                       child: Text(
                         "That's everything here — new Bakhed coming soon!",
@@ -700,113 +510,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             message: 'Could not load the rhymes list.',
             onRetry: () =>
                 ref.refresh(contentListProvider((ContentKind.rhyme, null))),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BakhedPreparingAnimation extends ConsumerWidget {
-  const _BakhedPreparingAnimation({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
-    final cardColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.white.withValues(alpha: 0.72);
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.08)
-        : Colors.white.withValues(alpha: 0.8);
-
-    return Center(
-      child: RepaintBoundary(
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(maxWidth: 420, minHeight: 280),
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 34),
-          decoration: BoxDecoration(
-            color: cardColor,
-            borderRadius: BorderRadius.circular(36),
-            border: Border.all(color: borderColor),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.1),
-                blurRadius: 32,
-                offset: const Offset(0, 18),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                height: 132,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Positioned.fill(
-                      child: EnchantedVisualizer(
-                        isPlaying: !reduceEffects,
-                        color: AppColors.primary,
-                        showParticles: !reduceEffects,
-                        height: 132,
-                      ),
-                    ),
-                    Container(
-                          width: 86,
-                          height: 86,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                            ),
-                          ),
-                          child: const Icon(
-                            Icons.music_note_rounded,
-                            color: AppColors.primary,
-                            size: 42,
-                          ),
-                        )
-                        .animate(
-                          target: reduceEffects ? 0 : 1,
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true),
-                        )
-                        .scale(
-                          begin: const Offset(0.96, 0.96),
-                          end: const Offset(1.08, 1.08),
-                          duration: 1800.ms,
-                          curve: Curves.easeInOut,
-                        ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                'Bakhed are being prepared',
-                textAlign: TextAlign.center,
-                style: AppTypography.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : AppColors.primaryDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'New listening stories will appear here after publishing.',
-                textAlign: TextAlign.center,
-                style: AppTypography.inter(
-                  fontSize: 15,
-                  height: 1.35,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
-              ),
-            ],
           ),
         ),
       ),

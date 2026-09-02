@@ -1,12 +1,10 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
 import 'listened_bakhed_provider.dart';
 
@@ -222,15 +220,12 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
     required int lastPositionMs,
   }) async {
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      await functions.createExecution(
-        functionId: 'recordBakhedProgress',
-        body: jsonEncode({
-          'bakhedId': bakhedId,
-          'listenedPercent': listenedPercent,
-          'lastPositionMs': lastPositionMs,
-        }),
-      );
+      final functions = ref.read(appwriteFunctionsServiceProvider);
+      await functions.execute('recordBakhedProgress', body: {
+        'bakhedId': bakhedId,
+        'listenedPercent': listenedPercent,
+        'lastPositionMs': lastPositionMs,
+      });
     } catch (e) {
       AppLogger.debug('RhymeAudio: progress sync skipped: $e');
     }

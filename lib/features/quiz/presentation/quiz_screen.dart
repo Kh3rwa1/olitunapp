@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../core/error/failures.dart';
 import '../../../core/config/feature_flags.dart';
@@ -25,6 +24,8 @@ import 'widgets/quiz_feedback_panel.dart';
 import 'widgets/quiz_complete_screen.dart';
 import 'widgets/quiz_out_of_hearts_screen.dart';
 import 'widgets/fill_blank_question_card.dart';
+import 'widgets/quiz_session_hud.dart';
+import 'widgets/quiz_fill_blank_options.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
@@ -363,141 +364,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               );
             }
 
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 12),
-                Text(
-                  'Select the missing word:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white38 : Colors.black38,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 12,
-                  runSpacing: 16,
-                  children: List.generate(question.optionsOlChiki.length, (
-                    index,
-                  ) {
-                    final isCorrect = index == question.correctIndex;
-                    final isCurrentSelection = state.selectedAnswer == index;
-
-                    Color chipColor;
-                    Color textColor;
-                    BorderSide borderSide;
-
-                    if (state.isAnswered) {
-                      if (isCorrect) {
-                        chipColor = AppColors.success;
-                        textColor = Colors.white;
-                        borderSide = BorderSide.none;
-                      } else if (isCurrentSelection) {
-                        chipColor = AppColors.error;
-                        textColor = Colors.white;
-                        borderSide = BorderSide.none;
-                      } else {
-                        chipColor = isDark
-                            ? AppColors.quizDarkBubble
-                            : AppColors.quizLightBubble;
-                        textColor = isDark ? Colors.white30 : Colors.black26;
-                        borderSide = BorderSide.none;
-                      }
-                    } else {
-                      if (isCurrentSelection) {
-                        chipColor = isDark
-                            ? AppColors.quizDarkCardAlt
-                            : Colors.grey.shade100;
-                        textColor = Colors.transparent;
-                        borderSide = BorderSide(
-                          color: isDark ? Colors.white12 : Colors.grey.shade300,
-                          width: 1.5,
-                        );
-                      } else {
-                        chipColor = isDark
-                            ? AppColors.quizDarkCard
-                            : Colors.white;
-                        textColor = isDark ? Colors.white : Colors.black87;
-                        borderSide = BorderSide(
-                          color: isDark ? Colors.white24 : Colors.grey.shade300,
-                          width: 1.5,
-                        );
-                      }
-                    }
-
-                    return Semantics(
-                          button: true,
-                          enabled: !state.isAnswered && !isCurrentSelection,
-                          selected: isCurrentSelection,
-                          label:
-                              'Missing word option ${index + 1}: ${question.optionsOlChiki[index]}',
-                          value: state.isAnswered
-                              ? (isCorrect
-                                    ? 'Correct answer'
-                                    : (isCurrentSelection
-                                          ? 'Incorrect answer'
-                                          : ''))
-                              : null,
-                          child: ExcludeSemantics(
-                            child: GestureDetector(
-                              onTap: (state.isAnswered || isCurrentSelection)
-                                  ? null
-                                  : () => notifier.selectAnswer(
-                                      index,
-                                      question,
-                                      quiz,
-                                    ),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: chipColor,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.fromBorderSide(borderSide),
-                                  boxShadow:
-                                      (!state.isAnswered && !isCurrentSelection)
-                                      ? [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(
-                                              alpha: isDark ? 0.25 : 0.08,
-                                            ),
-                                            blurRadius: 4,
-                                            offset: const Offset(0, 3),
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                child: Text(
-                                  question.optionsOlChiki[index],
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                    fontFamily: 'OlChiki',
-                                    color: textColor,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                        .animate(
-                          key: ValueKey(
-                            'chip-$index-${state.selectedAnswer}-${state.isAnswered}',
-                          ),
-                        )
-                        .scale(
-                          begin: const Offset(0.95, 0.95),
-                          duration: 150.ms,
-                        );
-                  }),
-                ),
-              ],
+            return QuizFillBlankOptions(
+              question: question,
+              state: state,
+              isDark: isDark,
+              onSelect: (index) => notifier.selectAnswer(index, question, quiz),
             );
           }
 
@@ -525,7 +396,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 ),
               ),
               actions: [
-                _QuizCountPill(
+                QuizCountPill(
                   current: state.currentQuestion + 1,
                   total: totalQs,
                 ),
@@ -543,8 +414,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                         isDark: isDark,
                       ),
                       const SizedBox(height: 16),
-                      _QuizSessionHud(state: state, isDark: isDark),
-                      const SizedBox(height: 28),
+                      QuizSessionHud(state: state, isDark: isDark),                      const SizedBox(height: 28),
                       Expanded(
                         child: SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
@@ -580,137 +450,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 : null,
           );
         },
-      ),
-    );
-  }
-}
-
-class _QuizCountPill extends StatelessWidget {
-  const _QuizCountPill({required this.current, required this.total});
-
-  final int current;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: 'Quiz progress',
-      value: 'Question $current of $total',
-      child: ExcludeSemantics(
-        child: Container(
-          margin: const EdgeInsets.only(right: 16),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '$current/$total',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _QuizSessionHud extends StatelessWidget {
-  const _QuizSessionHud({required this.state, required this.isDark});
-
-  final QuizSessionState state;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    final showCombo = state.comboStreak > 0;
-
-    return Semantics(
-      container: true,
-      label: 'Quiz session stats',
-      value: showCombo
-          ? '${state.hearts} hearts, ${state.comboStreak} answer combo, ${state.comboMultiplier} times multiplier'
-          : '${state.hearts} hearts',
-      child: ExcludeSemantics(
-        child: Row(
-          children: [
-            Expanded(
-              child: _HudChip(
-                icon: Icons.favorite_rounded,
-                label: '${state.hearts}',
-                accent: AppColors.accentTerracotta,
-                isDark: isDark,
-              ),
-            ),
-            if (showCombo) ...[
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HudChip(
-                  icon: Icons.local_fire_department_rounded,
-                  label: '${state.comboStreak}',
-                  accent: AppColors.accentOchre,
-                  isDark: isDark,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HudChip(
-                  icon: Icons.bolt_rounded,
-                  label: 'x${state.comboMultiplier}',
-                  accent: AppColors.accentGold,
-                  isDark: isDark,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HudChip extends StatelessWidget {
-  const _HudChip({
-    required this.icon,
-    required this.label,
-    required this.accent,
-    required this.isDark,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color accent;
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.06)
-            : accent.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: accent.withValues(alpha: 0.22)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: accent, size: 18),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              color: isDark ? Colors.white : AppColors.textPrimaryLight,
-              fontWeight: FontWeight.w900,
-              fontSize: 14,
-            ),
-          ),
-        ],
       ),
     );
   }

@@ -145,29 +145,19 @@ export function generateAffirmationHash(data) {
   return createHash('sha256').update(content).digest('hex').slice(0, 32);
 }
 
-export function parseBody(body) {
-  if (!body) return {};
-  if (typeof body === 'object') return body;
-  try {
-    return JSON.parse(body);
-  } catch (_) {
-    return {};
-  }
-}
-
-export function appwriteClient(req, env = process.env) {
+// The API key is read exclusively from function env vars. Request headers are
+// never trusted: a caller-supplied key would let any authenticated user make
+// the function act with arbitrary (possibly elevated) credentials.
+export function appwriteClient(env = process.env) {
   const endpoint =
     env.APPWRITE_FUNCTION_API_ENDPOINT ||
     env.APPWRITE_ENDPOINT ||
-    env.OLITUN_APPWRITE_ENDPOINT ||
-    'https://sgp.cloud.appwrite.io/v1';
+    env.OLITUN_APPWRITE_ENDPOINT;
   const projectId =
     env.APPWRITE_FUNCTION_PROJECT_ID ||
     env.APPWRITE_PROJECT_ID ||
-    env.OLITUN_APPWRITE_PROJECT_ID ||
-    '699495910038e39622c5';
+    env.OLITUN_APPWRITE_PROJECT_ID;
   const apiKey =
-    req?.headers?.['x-appwrite-key'] ||
     env.APPWRITE_FUNCTION_API_KEY ||
     env.APPWRITE_API_KEY ||
     env.OLITUN_APPWRITE_API_KEY;
@@ -181,6 +171,29 @@ export function appwriteClient(req, env = process.env) {
     client.setKey(apiKey);
   }
   return client;
+}
+
+/**
+ * Resolve the sheet URL server-side. Callers cannot influence it — the value
+ * comes from the function env or the built-in default, and both are validated
+ * against an HTTPS + Google Sheets host allowlist to prevent SSRF.
+ */
+export function resolveSheetUrl(env = process.env) {
+  const raw = env.GOOGLE_SHEET_CSV_URL || DEFAULT_SHEET_CSV_URL;
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch (_) {
+    throw new Error('Configured sheet URL is not a valid URL.');
+  }
+  if (parsed.protocol !== 'https:') {
+    throw new Error('Configured sheet URL must use HTTPS.');
+  }
+  const host = parsed.hostname.toLowerCase();
+  if (host !== 'docs.google.com' && !host.endsWith('.google.com')) {
+    throw new Error('Configured sheet URL must point to a Google Sheets host.');
+  }
+  return parsed.toString();
 }
 
 /**
@@ -279,19 +292,17 @@ export async function syncAffirmationFromSheet({
   };
 }
 
-export default async ({ req, res, log, error }) => {
+export default async ({ req, res, log, error, databases: injectedDatabases }) => {
   try {
-    const body = parseBody(req.body);
-    const sheetUrl = body.sheetUrl || process.env.GOOGLE_SHEET_CSV_URL || DEFAULT_SHEET_CSV_URL;
-    const force = Boolean(body.force);
+    // The request body is intentionally ignored: this is a scheduled job, and
+    // honoring client-sent sheetUrl/force would allow SSRF and duplicate-creation.
+    const sheetUrl = resolveSheetUrl();
 
-    const client = appwriteClient(req);
-    const databases = new Databases(client);
+    const databases = injectedDatabases || new Databases(appwriteClient());
 
     const result = await syncAffirmationFromSheet({
       databases,
       sheetUrl,
-      force,
       log: log || console.log,
     });
 
@@ -299,10 +310,15 @@ export default async ({ req, res, log, error }) => {
   } catch (err) {
     const message = err?.message || String(err);
     if (error) error(`Google Sheet Affirmation Sync Error: ${message}`);
+    // Generic response for bad config errors; never echo internal details.
+    const publicMessage =
+      message.startsWith('Configured sheet URL') || message.startsWith('Missing Appwrite')
+        ? message
+        : 'Affirmation sync failed. Check the function logs for details.';
     return res.json(
       {
         ok: false,
-        error: message,
+        error: publicMessage,
       },
       500,
     );

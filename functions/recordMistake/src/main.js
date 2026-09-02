@@ -92,6 +92,6 @@ export default async ({ req, res, error }) => {
     }
   } catch (err) {
     error('recordMistake error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to record mistake. Please try again.' }, 500);
   }
 };

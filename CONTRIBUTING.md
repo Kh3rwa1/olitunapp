@@ -33,7 +33,7 @@ flutter analyze --no-fatal-infos
 ```
 
 Both `flutter test` and `flutter analyze` run in CI on every PR
-(`.github/workflows/ci.yml`). PRs that fail either step will not be merged.
+(`.github/workflows/flutter-ci.yml`). PRs that fail either step will not be merged.
 
 ## Commit style
 

@@ -1,8 +1,8 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/api/appwrite_db_service.dart';
+import '../../../../../core/api/appwrite_query_builders.dart';
 import '../../widgets/admin_page_header.dart';
 import '../widgets/gamification_widgets.dart';
 
@@ -17,7 +17,7 @@ class GamificationAnalyticsView extends ConsumerWidget {
       try {
         final rows = await db.listDocuments(
           collectionId,
-          queries: [Query.limit(500), ...?queries],
+          queries: [DbQuery.limit(500), ...?queries],
           paginate: false,
         );
         return rows.length;
@@ -30,33 +30,33 @@ class GamificationAnalyticsView extends ConsumerWidget {
     final values = await Future.wait<int>([
       count(
         'learning_analytics_events',
-        queries: [Query.greaterThan('occurredAt', today)],
+        queries: [DbQuery.greaterThan('occurredAt', today)],
       ),
       count(
         'learning_analytics_events',
-        queries: [Query.equal('eventName', 'lesson_completed')],
+        queries: [DbQuery.equal('eventName', 'lesson_completed')],
       ),
       count(
         'learning_analytics_events',
-        queries: [Query.equal('eventName', 'quiz_attempted')],
+        queries: [DbQuery.equal('eventName', 'quiz_attempted')],
       ),
       count(
         'learning_analytics_events',
-        queries: [Query.equal('eventName', 'streak_milestone')],
+        queries: [DbQuery.equal('eventName', 'streak_milestone')],
       ),
       count('learning_analytics_daily_rollups'),
-      count('user_badges', queries: [Query.equal('isUnlocked', true)]),
+      count('user_badges', queries: [DbQuery.equal('isUnlocked', true)]),
       count('mistake_review_sessions'),
-      count('user_mistakes', queries: [Query.equal('isMastered', false)]),
+      count('user_mistakes', queries: [DbQuery.equal('isMastered', false)]),
       count(
         'bakhed_listening_progress',
-        queries: [Query.equal('completed80Percent', true)],
+        queries: [DbQuery.equal('completed80Percent', true)],
       ),
       count('bakhed_lyrics'),
       count('bakhed_vocabulary'),
       count(
         'bakhed_cultural_notes',
-        queries: [Query.equal('isPublished', true)],
+        queries: [DbQuery.equal('isPublished', true)],
       ),
     ]);
     return {

@@ -9,7 +9,6 @@ Developer scripts for database setup, data migration, and seeding.
 | `appwrite_setup.mjs` | Node.js | Creates Appwrite database, collections, attributes, indexes, and storage buckets |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
 | `appwrite_import.mjs` | Node.js | Imports a MySQL JSON snapshot into Appwrite collections with field mapping |
-| `seed_data.py` | Python | **Legacy** — Seeds data into Firebase/Firestore (pre-Appwrite migration) |
 | `post-merge.sh` | Bash | Post-merge setup hook |
 
 > The import script works against an existing `scripts/exported_data.json`
@@ -66,10 +65,8 @@ APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_import.mjs
 
 Generate fresh data from a database backup before running this command.
 
-### 4. Legacy Firebase Seed (Deprecated)
+### 4. Legacy Firebase Seed (Removed)
 
-```bash
-# Only if you're still using Firebase (you're not)
-pip install firebase-admin==7.1.0
-python3 scripts/seed_data.py
-```
+The pre-Appwrite Firebase seeding script (`seed_data.py`) was removed from
+the repository — the project no longer uses Firebase. History remains
+available in git if ever needed.

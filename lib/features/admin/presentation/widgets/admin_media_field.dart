@@ -1,8 +1,8 @@
+import 'package:itun/core/error/appwrite_error_classifier.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:appwrite/appwrite.dart';
 import '../../../../core/storage/upload_service.dart';
 import '../../../../shared/widgets/video_display.dart';
 import '../../../../shared/widgets/lottie_display.dart';
@@ -115,22 +115,23 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
         );
       }
     } catch (e) {
+      final appwriteInfo = AppwriteErrorClassifier.infoOf(e);
       AppLogger.debug(
         'Error picking ${widget.label}: $e',
         fields: {
           'error': e.toString(),
-          if (e is AppwriteException) ...{
-            'code': e.code ?? 0,
-            'type': e.type ?? '',
-            'message': e.message ?? '',
+          if (appwriteInfo != null) ...{
+            'code': appwriteInfo.code,
+            'type': appwriteInfo.type,
+            'message': appwriteInfo.message,
           },
         },
       );
       if (mounted) setState(() => _uploading = false);
       if (mounted) {
-        final isAppwrite = e is AppwriteException;
+        final isAppwrite = appwriteInfo != null;
         final message = isAppwrite
-            ? 'Error [${e.code}]: ${e.message} (Type: ${e.type})'
+            ? 'Error [${appwriteInfo.code}]: ${appwriteInfo.message} (Type: ${appwriteInfo.type})'
             : 'Error: $e';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

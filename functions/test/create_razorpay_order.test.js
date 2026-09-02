@@ -228,6 +228,37 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(okCount >= 1, true, 'At least 1 request succeeded');
   });
 
+  test('4b. An 11th distinct order in an hour is rate limited with 429', async () => {
+    const db = new InMemDb();
+    const userId = 'u_rate_limited';
+    const categoryId = 'cat_rate_limit';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Rate Limited Course', priceInr: 199, unlockMode: 'paid_only' }]
+    ]));
+
+    const mockFetch = async () => ({
+      ok: true,
+      json: async () => ({ id: 'order_rate_limit_test', amount: 19900, currency: 'INR' })
+    });
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    let lastRes;
+    for (let i = 0; i < 11; i++) {
+      const req = {
+        method: 'POST',
+        headers: { 'x-appwrite-user-id': userId },
+        body: JSON.stringify({ categoryId, idempotencyKey: `key_rate_limit_${i}` })
+      };
+      lastRes = createMockRes();
+      await handler({ req, res: lastRes, error: createMockErrorLogger() });
+    }
+
+    assert.equal(lastRes.statusCode, 429);
+    assert.equal(lastRes.body.ok, false);
+    assert.match(lastRes.body.message, /Too many checkout attempts/i);
+  });
+
   test('5. Verified purchase blocks order creation', async () => {
     const db = new InMemDb();
     const userId = 'u_already_bought';
@@ -279,7 +310,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
   });
 
   test('7. Payment reconciliation converts paid attempt to verified status and unlocks purchase', async () => {
-    const { reconcileStuckPaymentAttempts } = await import('../createRazorpayOrder/src/reconcile.js');
+    const { reconcileStuckPaymentAttempts } = await import('../_shared/payment_reconcile.js');
     const db = new InMemDb();
     const userId = 'u_rec';
     const categoryId = 'cat_rec';
@@ -297,10 +328,22 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
       }]
     ]));
 
-    const mockFetch = async () => ({
-      ok: true,
-      json: async () => ({ id: 'order_rzp_paid_123', status: 'paid', amount: 29900 })
-    });
+    const mockFetch = async (url) => {
+      if (String(url).includes('/payments')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              { id: 'pay_rec_1', status: 'captured', amount: 29900, created_at: 1700000000 }
+            ]
+          })
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_rzp_paid_123', status: 'paid', amount: 29900 })
+      };
+    };
 
     const stats = await reconcileStuckPaymentAttempts({
       databases: db,
@@ -319,6 +362,17 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     const updatedAttempt = db.collections.get('payment_attempts').get(attemptId);
     assert.equal(updatedAttempt.status, 'verified');
     assert.equal(updatedAttempt.reconciliationStatus, 'reconciled_paid');
+
+    // The reconciled grant must land on the canonical stableId ledger row
+    // with the verified schema, not an orphaned `purch_user_category` doc.
+    const ledgerRow = db.collections.get('course_purchases').get(stableId(`${userId}:${categoryId}`));
+    assert.ok(ledgerRow, 'canonical course_purchases ledger row was written');
+    assert.equal(ledgerRow.status, 'verified');
+    assert.equal(ledgerRow.providerPaymentId, 'pay_rec_1');
+    assert.equal(ledgerRow.expectedAmount, 299);
+    assert.equal(ledgerRow.paidAmount, 299);
+    assert.ok(![...db.collections.get('course_purchases').keys()].some(k => k.startsWith('purch_')),
+      'no orphaned purch_user_category docs created');
   });
 });
 

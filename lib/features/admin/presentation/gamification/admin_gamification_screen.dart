@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/appwrite_db_service.dart';
+import '../../../../core/api/appwrite_query_builders.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_modal_sheet.dart';
@@ -181,11 +181,11 @@ class _AdminGamificationScreenState
     int reload,
   ) async {
     final db = ref.read(appwriteDbServiceProvider);
-    final queries = <String>[Query.limit(500)];
+    final queries = <String>[DbQuery.limit(500)];
     if (section.collectionId == 'admin_audit_logs') {
-      queries.add(Query.orderDesc('createdAt'));
+      queries.add(DbQuery.orderDesc('createdAt'));
     } else if (section.editableFields.contains('sortOrder')) {
-      queries.add(Query.orderAsc('sortOrder'));
+      queries.add(DbQuery.orderAsc('sortOrder'));
     }
     return db.listDocuments(section.collectionId, queries: queries);
   }
@@ -366,7 +366,7 @@ class _AdminGamificationScreenState
       final now = DateTime.now().toUtc().toIso8601String();
       await ref
           .read(appwriteDbServiceProvider)
-          .createDocument('admin_audit_logs', ID.unique(), {
+          .createDocument('admin_audit_logs', DbId.unique(), {
             'action': action,
             'targetType': targetType,
             'targetId': targetId,

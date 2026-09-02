@@ -6,6 +6,7 @@ import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../controllers/bakhed_editor_controller.dart';
+part 'bakhed_lyrics_tab_sections.dart';
 
 /// Lyrics timeline editor tab of the Bakhed editor.
 class BakhedLyricsTab extends ConsumerStatefulWidget {
@@ -18,97 +19,6 @@ class BakhedLyricsTab extends ConsumerStatefulWidget {
 
 class _BakhedLyricsTabState extends ConsumerState<BakhedLyricsTab> {
   int? _focusedRowIndex;
-
-  String _formatMs(int ms) {
-    final d = Duration(milliseconds: ms);
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final tenths = ((ms % 1000) ~/ 100).toString();
-    return '$minutes:$seconds.$tenths';
-  }
-
-  Future<void> _showBulkPasteDialog() async {
-    final textController = TextEditingController();
-    bool replaceAll = false;
-
-    await showDialog(
-      context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: AdminTokens.overlay(
-                Theme.of(context).brightness == Brightness.dark,
-              ),
-              title: const Text('Bulk Paste Lyrics'),
-              content: SizedBox(
-                width: 500,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Format: Ol Chiki | Latin | English Meaning (One per line)',
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Example: ᱚᱞ ᱪᱤᱠᱤ | latin text | english meaning',
-                      style: TextStyle(
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: textController,
-                      maxLines: 6,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText:
-                            'ᱚᱞ ᱪᱤᱠᱤ | latin | meaning\nᱚᱞ ᱪᱤᱠᱤ | latin | meaning',
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    CheckboxListTile(
-                      title: const Text('Replace existing lyrics'),
-                      subtitle: const Text(
-                        'Warning: this will delete all currently marked lines',
-                      ),
-                      value: replaceAll,
-                      onChanged: (val) {
-                        setState(() {
-                          replaceAll = val ?? false;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    final notifier = ref.read(
-                      bakhedLyricsEditorProvider(widget.bakhedId).notifier,
-                    );
-                    notifier.bulkPaste(
-                      textController.text,
-                      replace: replaceAll,
-                    );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Import'),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -393,7 +303,9 @@ class _BakhedLyricsTabState extends ConsumerState<BakhedLyricsTab> {
                     : durationMs;
 
                 return MouseRegion(
-                  key: ValueKey('line_${line.id}_$index'),
+                  // Stable per-line key (no index): keeps line state bound
+                  // to its line across reorders.
+                  key: ValueKey('line_${line.id}'),
                   child: Card(
                     color: isFocused
                         ? AppColors.primary.withValues(alpha: 0.05)

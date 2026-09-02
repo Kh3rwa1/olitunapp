@@ -246,7 +246,9 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
                 failureReason: payment.error_description || 'Payment failed'
               });
             }
-          } catch (_) {}
+          } catch (ledgerErr) {
+            error(`payment.failed: could not mark ledger ${purchaseId} failed: ${ledgerErr?.message}`);
+          }
         }
         return res.json({ ok: true, message: 'Webhook payment.failed processed' });
 
@@ -408,7 +410,9 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           let latestDoc = targetPurchaseDoc;
           try {
             latestDoc = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
-          } catch (_) {}
+          } catch (readErr) {
+            error(`refund fencing: could not re-read ledger ${purchaseId}, using stale snapshot: ${readErr?.message}`);
+          }
 
           // FENCING CHECK 1: Ensure our epoch lock document remains active and locked
           try {
@@ -520,7 +524,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
 
     } catch (err) {
       error(`razorpayWebhook processing error: ${err.message}`);
-      return res.json({ ok: false, message: err.message }, 500);
+      return res.json({ ok: false, message: 'Webhook processing failed.' }, 500);
     }
   };
 }

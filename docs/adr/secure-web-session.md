@@ -1,4 +1,4 @@
-# ADR 001: Secure Web Session Storage Architecture
+# ADR: Secure Web Session Storage Architecture
 
 ## Status
 Accepted / Hardened

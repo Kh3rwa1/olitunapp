@@ -1,5 +1,5 @@
 import { Client, Databases } from 'node-appwrite';
-import { reconcileStuckPaymentAttempts } from '../../createRazorpayOrder/src/reconcile.js';
+import { reconcileStuckPaymentAttempts } from './shared/payment_reconcile.js';
 
 export default async ({ req, res, log = console.log, error = console.error }) => {
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;

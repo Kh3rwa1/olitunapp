@@ -41,22 +41,50 @@ lib/
 │   ├── storage/                 # CacheService (Hive), HiveService (init)
 │   └── theme/                   # AppTheme, AppColors, AdminTokens
 ├── features/
-│   ├── admin/                   # CMS dashboard (presentation-only)
+│   ├── admin/                   # CMS dashboard (presentation-heavy)
+│   ├── affirmations/            # Daily affirmation flows
 │   ├── auth/                    # data/domain/presentation layers
 │   ├── categories/              # data/domain/presentation layers
-│   ├── home/                    # Home screen (presentation)
+│   ├── content/                 # Content detail surfaces (data/domain/presentation)
+│   ├── home/                    # Home screen incl. AI translator (presentation)
+│   ├── learn/                   # Browseable content grids (presentation)
 │   ├── lessons/                 # data/domain/presentation layers
+│   ├── legal/                   # Privacy / terms screens
 │   ├── main/                    # Shell + bottom nav
 │   ├── onboarding/              # First-run flow
+│   ├── practice/                # Typing practice (data/domain/presentation)
 │   ├── profile/                 # data/domain/presentation layers
 │   ├── quiz/                    # Quiz gameplay (presentation)
-│   ├── rhymes/                  # Rhyme viewer (presentation)
-│   └── translate/               # AI translator (presentation)
+│   └── rhymes/                  # Rhyme viewer (presentation)
 └── shared/
     ├── models/                  # Content models (shared DTOs)
-    ├── providers/               # Cross-feature providers
+    ├── offline/                 # Offline mutation replay service
+    ├── providers/               # Cross-feature providers (language, gamification,
+    │                            #   waitlist, purchases, rhymes...) — the app's
+    │                            #   parallel data-access layer for features shared
+    │                            #   by multiple features; consumers must go through
+    │                            #   these providers, never construct SDK objects
+    ├── repositories/            # Content repository (bundled seeds + cache + network)
     └── widgets/                 # Reusable UI components
 ```
+
+## SDK Isolation Rule
+
+`package:appwrite` must never be imported outside `lib/core/` and
+`lib/features/*/data/`. Presentation and domain layers consume SDK
+capabilities exclusively through these anti-corruption seams:
+
+| Seam | Location | Purpose |
+| --- | --- | --- |
+| `AppwriteDbService` | `core/api/appwrite_db_service.dart` | All TablesDB reads/writes (retry, paging, breadcrumbs) |
+| `AppwriteFunctionsService` | `core/api/appwrite_functions_service.dart` | Serverless function RPCs; returns neutral `FunctionExecutionResult` |
+| `DbQuery` / `DbId` | `core/api/appwrite_query_builders.dart` | Query-string builders + unique ID generation |
+| `AppwriteErrorClassifier` | `core/error/appwrite_error_classifier.dart` | Exception → neutral error-info mapping |
+| `data/di/*.dart` | `features/*/data/di/` | Datasource/repository provider wiring beside the impls it constructs |
+
+Providers for cross-feature data live in `shared/providers/` (documented in
+the directory table above); the content repository and mutation outbox are
+documented in the Data Flow section below.
 
 ## Data Flow
 
@@ -75,7 +103,14 @@ UI (watch provider) → Riverpod provider → Repository
 1. Repository checks cache (Hive) → returns cached data immediately
 2. Fetches remote (Appwrite) in parallel
 3. On success → updates cache + emits fresh data
-4. On failure → falls back to cached data or returns `NetworkFailure`
+4. On failure → falls back to cached/bundled data, or surfaces a `CacheFailure` /
+   `NetworkFailure` to the UI when nothing is available (no fabricated content)
+
+**Offline writes** are durable: a content edit made while offline is cached
+locally and queued in the `MutationOutboxService` (dedicated Hive box with
+bounded exponential backoff and dead-lettering). The
+`ContentMutationReplay` service drains the queue at startup and whenever
+connectivity is regained.
 
 ## Error Architecture
 
@@ -130,7 +165,7 @@ Serverless Node-22 functions live under `functions/`. Key scheduled jobs:
 | Function | Schedule | Purpose |
 | --- | --- | --- |
 | `aggregateLearningAnalytics` | `30 0 * * *` | Rolls up raw analytics events into daily summaries |
-| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events older than 90 days |
+| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events older than 90 days, expired rate-limit records, and translation-cache entries (90-day retention) |
 | `backupCollections` | `0 4 * * 0` | Weekly JSON backup of core content to `admin_backups` bucket (12-file rolling retention) |
 
-Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), and Bakhed progress (`recordBakhedProgress`).
+Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), Bakhed progress (`recordBakhedProgress`), and public Binti Guru waitlist signups (`bintiWaitlist` — validated, rate-limited per caller and phone, deduplicated; the collection has no public write access).

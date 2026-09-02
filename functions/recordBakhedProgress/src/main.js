@@ -100,6 +100,6 @@ export default async ({ req, res, error }) => {
     }
   } catch (err) {
     error('recordBakhedProgress error: ' + err.message);
-    return res.json({ ok: false, message: err.message }, 500);
+    return res.json({ ok: false, message: 'Unable to record progress. Please try again.' }, 500);
   }
 };

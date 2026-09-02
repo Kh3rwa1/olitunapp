@@ -1,15 +1,58 @@
 import { Client, Databases, Query } from 'node-appwrite';
+import { pruneExpiredRateLimits } from './shared/rate_limiter.js';
 
 export const DATABASE_ID =
   process.env.OLITUN_APPWRITE_DATABASE_ID ||
   process.env.APPWRITE_DATABASE_ID ||
   'olitun_db';
 export const EVENTS_COLLECTION = 'learning_analytics_events';
+export const TRANSLATION_CACHE_COLLECTION = 'translation_cache';
 
 export function getCutoffDateKey(now = new Date(), days = 90) {
   const cutoff = new Date(now);
   cutoff.setUTCDate(cutoff.getUTCDate() - days);
   return cutoff.toISOString().slice(0, 10);
+}
+
+/**
+ * Retention sweep for translation_cache (90-day retention, as documented in
+ * PRIVACY.md). Entries carry a numeric `createdAt` epoch-ms field.
+ */
+export async function pruneTranslationCache({
+  databases,
+  dbId = DATABASE_ID,
+  collectionId = TRANSLATION_CACHE_COLLECTION,
+  now = Date.now(),
+  retentionDays = 90,
+}) {
+  const cutoffMs = now - retentionDays * 24 * 60 * 60 * 1000;
+  let prunedCount = 0;
+
+  try {
+    while (true) {
+      const result = await databases.listDocuments(dbId, collectionId, [
+        Query.lessThan('createdAt', cutoffMs),
+        Query.limit(100),
+      ]);
+
+      if (result.documents.length === 0) break;
+
+      for (const doc of result.documents) {
+        try {
+          await databases.deleteDocument(dbId, collectionId, doc.$id);
+          prunedCount++;
+        } catch (_) {
+          // Continue cleaning other documents
+        }
+      }
+
+      if (result.documents.length < 100) break;
+    }
+  } catch (_) {
+    // Non-fatal background maintenance error
+  }
+
+  return { prunedCount };
 }
 
 function appwriteClient() {
@@ -62,10 +105,34 @@ export default async ({ req, res, log, error }) => {
       }
     }
 
-    log(`Analytics retention cleanup completed. Deleted ${deletedCount} events.`);
+    // Retention maintenance for infrastructure collections that would
+    // otherwise grow unbounded (the rate limiter's window records and the
+    // translation cache). Each sweep is isolated so one failure does not
+    // block the others.
+    let rateLimitsPrunedCount = 0;
+    let translationCachePrunedCount = 0;
+    try {
+      const rateLimitsResult = await pruneExpiredRateLimits({
+        databases,
+        dbId: DATABASE_ID,
+      });
+      rateLimitsPrunedCount = rateLimitsResult.prunedCount;
+    } catch (pruneErr) {
+      error('Rate limits pruning failed: ' + (pruneErr?.message || String(pruneErr)));
+    }
+    try {
+      const cacheResult = await pruneTranslationCache({ databases });
+      translationCachePrunedCount = cacheResult.prunedCount;
+    } catch (pruneErr) {
+      error('Translation cache pruning failed: ' + (pruneErr?.message || String(pruneErr)));
+    }
+
+    log(`Analytics retention cleanup completed. Deleted ${deletedCount} events, ${rateLimitsPrunedCount} rate-limit records, ${translationCachePrunedCount} cache entries.`);
     return res.json({
       ok: true,
       deletedCount,
+      rateLimitsPrunedCount,
+      translationCachePrunedCount,
       cutoffDateKey,
     });
   } catch (err) {

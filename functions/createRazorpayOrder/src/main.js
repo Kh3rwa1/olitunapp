@@ -1,8 +1,18 @@
-import { createHash } from 'crypto';
+import { createHash, createHmac } from 'crypto';
 import { Client, Databases, Query } from 'node-appwrite';
+import { enforceWindowRateLimit, WINDOW_HOUR_MS } from './shared/rate_limiter.js';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
+
+function paymentRateLimitIdentifier(userId) {
+  const salt = process.env.RATE_LIMIT_SALT || 'olitun-dev-salt-do-not-use-in-production';
+  const hash = createHmac('sha256', salt)
+    .update(`payments-rate-limit:v1:${userId}`)
+    .digest('hex')
+    .slice(0, 32);
+  return `pay_${hash}`;
 }
 
 function parseBody(req) {
@@ -184,6 +194,29 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       }
 
       // 4. Create Razorpay order via Razorpay REST API
+
+      // Per-user hourly ceiling on real Razorpay order creation. Identity
+      // comes from the runtime-injected header, so this bucket cannot be
+      // rotated; placed after the idempotency lease so concurrent deduped
+      // requests do not consume quota.
+      {
+        const limitResult = await enforceWindowRateLimit({
+          databases,
+          dbId: databaseId,
+          collectionId: 'rate_limits',
+          identifier: paymentRateLimitIdentifier(userId),
+          windowType: 'h',
+          windowMs: WINDOW_HOUR_MS,
+          limit: parseInt(process.env.PAYMENT_ORDERS_PER_HOUR || '10', 10),
+        });
+        if (!limitResult.allowed) {
+          return res.json(
+            { ok: false, message: 'Too many checkout attempts. Please try again later.' },
+            429,
+          );
+        }
+      }
+
       const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
       const orderPayload = {
         amount: expectedAmount * 100,
@@ -215,7 +248,9 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             reconciliationStatus: 'pending',
             updatedAt: new Date().toISOString(),
           });
-        } catch (_) {}
+        } catch (flagErr) {
+          error(`[${attemptDocId}] Failed to flag attempt for reconciliation: ${flagErr?.message}`);
+        }
 
         return res.json({
           ok: false,
@@ -231,7 +266,9 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             status: 'failed',
             updatedAt: new Date().toISOString(),
           });
-        } catch (_) {}
+        } catch (markErr) {
+          error(`[${attemptDocId}] Failed to mark attempt failed: ${markErr?.message}`);
+        }
 
         return res.json({ ok: false, message: 'Failed to create order with payment gateway' }, 502);
       }

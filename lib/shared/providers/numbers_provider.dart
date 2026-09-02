@@ -1,8 +1,6 @@
-import 'package:itun/core/logging/app_logger.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
+import 'seeded_content_list_notifier.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final numbersProvider =
@@ -10,20 +8,7 @@ final numbersProvider =
       NumbersNotifier.new,
     );
 
-class NumbersNotifier extends Notifier<AsyncValue<List<NumberModel>>> {
-  bool _disposed = false;
-
-  @override
-  AsyncValue<List<NumberModel>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(_loadNumbers);
-    return const AsyncValue.loading();
-  }
-
-  // IDEMPOTENT: safe to re-run, will not create duplicates.
-  static final List<NumberModel> _seedNumbers = [
+final List<NumberModel> _seedNumbers = [
     NumberModel(
       id: 'n_0',
       numeral: '᱐',
@@ -105,20 +90,39 @@ class NumbersNotifier extends Notifier<AsyncValue<List<NumberModel>>> {
     ),
   ];
 
-  Future<void> _loadNumbers() async {
+class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
+  @override
+  String get collectionId => 'numbers';
+
+  @override
+  String get label => 'number';
+
+  @override
+  bool get rethrowCrudErrors => false;
+
+  @override
+  NumberModel Function(Map<String, dynamic> json) get fromJson =>
+      NumberModel.fromJson;
+
+  @override
+  String itemId(NumberModel item) => item.id;
+
+  @override
+  int itemOrder(NumberModel item) => item.order;
+
+  @override
+  Future<List<NumberModel>> loadSeed() async => _seedNumbers;
+
+  /// Remote-only emission with numeral dedupe; bundled seed is the offline
+  /// fallback (this list deliberately does not merge seed rows into remote
+  /// results, unlike words/sentences).
+  @override
+  Future<void> loadList() async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listDocuments(
-        'numbers',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
-      if (_disposed) return;
-      state = AsyncValue.data(
-        _deduplicate(data.map(NumberModel.fromJson).toList()),
-      );
-    } catch (e) {
-      if (_disposed) return;
-      state = AsyncValue.data(_deduplicate(_seedNumbers));
+      final remote = await fetchRemote();
+      emit(_deduplicate(remote));
+    } catch (_) {
+      emit(_deduplicate(_seedNumbers));
     }
   }
 
@@ -137,49 +141,15 @@ class NumbersNotifier extends Notifier<AsyncValue<List<NumberModel>>> {
     return unique;
   }
 
-  Future<void> add(NumberModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument('numbers', item.id, item.toJson());
-      await _loadNumbers();
-    } catch (e) {
-      AppLogger.debug('❌ add number FAILED: $e');
-    }
-  }
-
-  Future<void> update(NumberModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.updateDocument('numbers', item.id, item.toJson());
-      await _loadNumbers();
-    } catch (e) {
-      AppLogger.debug('❌ update number FAILED: $e');
-    }
-  }
-
-  Future<void> delete(String id) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.deleteDocument('numbers', id);
-      await _loadNumbers();
-    } catch (e) {
-      AppLogger.debug('❌ delete number FAILED: $e');
-    }
-  }
-
   void addNumber(NumberModel item) => add(item);
   void updateNumber(NumberModel item) => update(item);
   void deleteNumber(String id) => delete(id);
 
+  @override
   Future<void> seed() async {
     for (final item in _seedNumbers) {
-      try {
-        final db = ref.read(appwriteDbServiceProvider);
-        await db.createDocument('numbers', item.id, item.toJson());
-      } catch (e) {
-        AppLogger.debug('Number already exists or error: $e');
-      }
+      await add(item);
     }
-    await _loadNumbers();
+    await loadList();
   }
 }

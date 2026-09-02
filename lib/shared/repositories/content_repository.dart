@@ -6,7 +6,10 @@ import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
+import 'package:itun/core/observability/crash_reporting.dart';
+import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/lessons/data/models/lesson_model.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -16,15 +19,24 @@ import 'package:itun/shared/models/content_item_extensions.dart';
 // re-exported here for compatibility.
 export '../providers/content_providers.dart';
 
+/// Queue namespace for offline content edits. Content mutations are
+/// device-local team edits (not personal data), so they share one queue that
+/// is drained by the content mutation replay service when connectivity
+/// returns, regardless of which admin account is signed in.
+const String contentMutationQueueUserId = 'content_admin';
+
 class ContentRepository {
   final Databases _databases;
   final NetworkInfo _networkInfo;
+  final MutationOutboxService? _mutationOutbox;
 
   ContentRepository({
     required Databases databases,
     required NetworkInfo networkInfo,
+    MutationOutboxService? mutationOutbox,
   }) : _databases = databases,
-       _networkInfo = networkInfo;
+       _networkInfo = networkInfo,
+       _mutationOutbox = mutationOutbox;
 
   static List<ContentItem>? _cachedBundledSentenceLessons;
   static List<ContentItem>? _cachedBundledVocabLessons;
@@ -111,8 +123,9 @@ class ContentRepository {
                 updatedAt: DateTime(2026, 8, 30),
               );
             }).toList();
-          } catch (_) {
+          } catch (e, stack) {
             _cachedBundledVocabLessons = [];
+            _logSeedLoadFailure('lessons', e, stack);
           }
         }
 
@@ -175,8 +188,9 @@ class ContentRepository {
                 updatedAt: DateTime(2026, 8, 30),
               );
             }).toList();
-          } catch (_) {
+          } catch (e, stack) {
             _cachedBundledSentences = [];
+            _logSeedLoadFailure('sentences', e, stack);
           }
         }
         return _cachedBundledSentences ?? [];
@@ -210,14 +224,27 @@ class ContentRepository {
                 updatedAt: DateTime(2026, 8, 30),
               );
             }).toList();
-          } catch (_) {
+          } catch (e, stack) {
             _cachedBundledWords = [];
+            _logSeedLoadFailure('words', e, stack);
           }
         }
         return _cachedBundledWords ?? [];
       }
-    } catch (_) {}
+    } catch (e, stack) {
+      _logSeedLoadFailure('bundled seed', e, stack);
+    }
     return [];
+  }
+
+  /// Seed loading failure is data-critical: the app loses its offline-first
+  /// fallback dataset, so surface it to logs AND crash reporting.
+  static void _logSeedLoadFailure(String what, Object e, StackTrace stack) {
+    AppLogger.error(
+      'ContentRepository: failed to load bundled seed $what: $e',
+      name: 'ContentRepository',
+    );
+    CrashReporting.recordError(e, stack);
   }
 
   static List<ContentItem> _mergeContentItems(
@@ -326,127 +353,16 @@ class ContentRepository {
         return right(mergedItems);
       } catch (e) {
         // Fallback to cache or bundled seeds on error
-        return _getCachedList(
-          kind,
-          categoryId,
-          e.toString(),
-          fallback: bundledItems,
-        );
+        return _getCachedList(kind, categoryId, fallback: bundledItems);
       }
     } else {
-      return _getCachedList(
-        kind,
-        categoryId,
-        'No internet connection',
-        fallback: bundledItems,
-      );
+      return _getCachedList(kind, categoryId, fallback: bundledItems);
     }
-  }
-
-  static final List<ContentItem> _fallbackSeedItems = [];
-
-  static ContentItem synthesizeFallbackItem(ContentKind kind, String id) {
-    String categoryId = 'cat_alphabets';
-    String title = id.replaceAll('_', ' ').replaceAll('-', ' ');
-    if (title.length > 1) {
-      title = title[0].toUpperCase() + title.substring(1);
-    } else {
-      title = title.toUpperCase();
-    }
-
-    String olChiki = '';
-    TracingConfig? tracing;
-
-    switch (kind) {
-      case ContentKind.letter:
-        categoryId = 'cat_alphabets';
-        olChiki = id.split('_').last;
-        if (olChiki.length > 3) olChiki = 'ᱞ';
-        tracing = TracingConfig(
-          glyph: olChiki,
-          strokes: [
-            TracingStroke(
-              id: 'stroke_${id}_fallback',
-              order: 0,
-              path: const [
-                TracingPoint(x: 0.2, y: 0.2),
-                TracingPoint(x: 0.8, y: 0.2),
-                TracingPoint(x: 0.8, y: 0.8),
-                TracingPoint(x: 0.2, y: 0.8),
-                TracingPoint(x: 0.2, y: 0.2),
-              ],
-              direction: TracingDirection.clockwise,
-              hintText: 'Trace the letter',
-            ),
-          ],
-        );
-        break;
-      case ContentKind.number:
-        categoryId = 'cat_numbers';
-        olChiki = '᱑';
-        tracing = TracingConfig(
-          glyph: olChiki,
-          strokes: [
-            TracingStroke(
-              id: 'stroke_${id}_fallback',
-              order: 0,
-              path: const [
-                TracingPoint(x: 0.2, y: 0.2),
-                TracingPoint(x: 0.8, y: 0.2),
-                TracingPoint(x: 0.8, y: 0.8),
-                TracingPoint(x: 0.2, y: 0.8),
-                TracingPoint(x: 0.2, y: 0.2),
-              ],
-              direction: TracingDirection.clockwise,
-              hintText: 'Trace the number',
-            ),
-          ],
-        );
-        break;
-      case ContentKind.word:
-        categoryId = 'cat_vocab';
-        olChiki = 'ᱡᱚᱦᱟᱨ';
-        break;
-      case ContentKind.sentence:
-        categoryId = 'cat_sentences';
-        olChiki = 'ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?';
-        break;
-      case ContentKind.lesson:
-        categoryId = 'cat_alphabets';
-        break;
-      case ContentKind.rhyme:
-        categoryId = 'cat_greetings';
-        break;
-    }
-
-    return ContentItem(
-      id: id,
-      kind: kind,
-      categoryId: categoryId,
-      title: title,
-      titleOlChiki: olChiki.isNotEmpty ? olChiki : null,
-      subtitle: 'Offline fallback content for $title',
-      olChiki: olChiki.isNotEmpty ? olChiki : null,
-      order: 1,
-      isPublished: true,
-      tags: const ['offline', 'fallback'],
-      blocks: [
-        TextBlock(
-          id: 'b_${id}_synthesized_1',
-          order: 0,
-          markdown:
-              '# $title\n\nThis is a local offline fallback item for **$title**. Connect to the internet to load updated content from the server.',
-        ),
-      ],
-      tracing: tracing,
-      updatedAt: DateTime(2026),
-    );
   }
 
   Future<Either<Failure, List<ContentItem>>> _getCachedList(
     ContentKind kind,
-    String? categoryId,
-    String originalError, {
+    String? categoryId, {
     List<ContentItem>? fallback,
   }) async {
     try {
@@ -467,13 +383,23 @@ class ContentRepository {
         return right(bundled);
       }
 
-      return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
+      // No cached, bundled, or remotely fetched data is available: surface the
+      // failure so the UI can show its error state instead of fabricated items.
+      return left(
+        CacheFailure(
+          message: 'No offline content available for ${kind.name}.',
+        ),
+      );
     } catch (e) {
       final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);
       if (bundled.isNotEmpty) {
         return right(bundled);
       }
-      return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
+      return left(
+        CacheFailure(
+          message: 'Offline content unavailable for ${kind.name}: $e',
+        ),
+      );
     }
   }
 
@@ -495,17 +421,16 @@ class ContentRepository {
 
         return right(item);
       } catch (e) {
-        return _getCachedItem(kind, id, e.toString());
+        return _getCachedItem(kind, id);
       }
     } else {
-      return _getCachedItem(kind, id, 'No internet connection');
+      return _getCachedItem(kind, id);
     }
   }
 
   Future<Either<Failure, ContentItem>> _getCachedItem(
     ContentKind kind,
     String id,
-    String originalError,
   ) async {
     try {
       final cacheKey = _cacheItemKey(kind, id);
@@ -529,39 +454,15 @@ class ContentRepository {
         return right(bundledItem);
       }
 
-      final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
-        (item) => item?.id == id && item?.kind == kind,
-        orElse: () => null,
+      // Nothing cached or bundled: surface the failure instead of returning a
+      // fabricated item, so the UI can show its error and retry state.
+      return left(
+        CacheFailure(message: 'Content "$id" is not available offline.'),
       );
-
-      if (fallbackItem != null) {
-        return right(fallbackItem);
-      }
-
-      // Synthesize a high-quality fallback ContentItem on-the-fly to guarantee zero crashes
-      return right(synthesizeFallbackItem(kind, id));
     } catch (e) {
-      final bundled = await _loadBundledSeedItems(kind, null);
-      final bundledItem = bundled.cast<ContentItem?>().firstWhere(
-        (item) => item?.id == id,
-        orElse: () => null,
+      return left(
+        CacheFailure(message: 'Offline content lookup failed for "$id": $e'),
       );
-
-      if (bundledItem != null) {
-        return right(bundledItem);
-      }
-
-      final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
-        (item) => item?.id == id && item?.kind == kind,
-        orElse: () => null,
-      );
-
-      if (fallbackItem != null) {
-        return right(fallbackItem);
-      }
-
-      // Synthesize a high-quality fallback ContentItem on-the-fly to guarantee zero crashes
-      return right(synthesizeFallbackItem(kind, id));
     }
   }
 
@@ -616,15 +517,40 @@ class ContentRepository {
         return left(ServerFailure(message: 'Upsert failed: $e'));
       }
     } else {
-      // Local caching offline support
+      // Offline support: cache locally and queue a durable mutation so the
+      // edit replays to Appwrite automatically when connectivity returns.
       try {
         await CacheService.set(itemCacheKey, item.toJson());
         await CacheService.delete(_cacheListKey(item.kind, item.categoryId));
         await CacheService.delete(_cacheListKey(item.kind, null));
+        await _enqueueOfflineMutation(item);
         return right(item);
       } catch (e) {
         return left(CacheFailure(message: 'Offline caching failed: $e'));
       }
+    }
+  }
+
+  /// Queues an offline content edit in the durable mutation outbox so it is
+  /// replayed (with retries and dead-lettering) once the device is back online.
+  Future<void> _enqueueOfflineMutation(ContentItem item) async {
+    final outbox = _mutationOutbox;
+    if (outbox == null) return;
+    try {
+      await outbox.enqueueMutation(
+        PendingMutation(
+          operationId:
+              'upsert_${item.kind.name}_${item.id}_${DateTime.now().millisecondsSinceEpoch}',
+          userId: contentMutationQueueUserId,
+          operationType: 'content.upsert',
+          entityId: item.id,
+          payload: {'kind': item.kind.name, 'item': item.toJson()},
+          createdAt: DateTime.now(),
+        ),
+      );
+    } catch (e) {
+      // Queueing is best-effort: the local cache already holds the edit.
+      AppLogger.debug('[Content] Failed to queue offline mutation: $e');
     }
   }
 

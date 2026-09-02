@@ -140,11 +140,10 @@ export default async ({ req, res, log, error }) => {
       pruned: prunedFiles,
     });
   } catch (err) {
-    const message = err?.message || String(err);
-    error('Backup failed: ' + message);
+    error('Backup failed: ' + (err?.message || String(err)));
     return res.json({
       ok: false,
-      message: 'Weekly content backup failed: ' + message,
+      message: 'Weekly content backup failed. Check function logs for details.',
     }, 500);
   }
 };

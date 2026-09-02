@@ -10,7 +10,7 @@ Documents the testing pyramid, automated CI workflows, and verification layers a
 |---|---|---|---|
 | **Unit Tests** | Domain entities, pure helpers, redaction, security | Flutter Test & Node Test | Deterministic correctness, edge cases, zero side-effects |
 | **Widget Tests** | Screen rendering, state transitions, user interactions | Flutter Test WidgetTester | Responsive UI, error handling, accessibility semantics |
-| **Golden Tests** | Visual regression, typography, dark/light themes | GoldenToolkit | Pixel-perfect visual stability across releases |
+| **Golden Tests** | Visual regression, typography, dark/light themes | `matchesGoldenFile` with real bundled fonts + tolerant comparator | Pixel-perfect visual stability across releases |
 | **Contract Tests** | Appwrite schemas, JSON serializers, error mapping | Schema validators & Mocks | Zero client/server contract drift |
 | **Integration / Flow** | Guest flow, onboarding, offline-to-online sync | Flutter Test & Riverpod Overrides | End-to-end user journeys without backend dependencies |
 | **Backend Integration** | Payment idempotency, rate limiting, deletion queue | Node `--test` Suites | Fail-closed transactions, race condition immunity |

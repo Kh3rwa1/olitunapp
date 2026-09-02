@@ -1,12 +1,10 @@
 import 'dart:convert';
 
-import 'package:appwrite/enums.dart' as appwrite_enums;
-import 'package:appwrite/models.dart' as appwrite_models;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/review/admin_review_api_client.dart';
 
 /// A canned [AdminReviewExecutor] recording every request and
-/// replying with a queued [Execution] response.
+/// replying with a queued [AdminReviewExecution] response.
 class _FakeExecutor implements AdminReviewExecutor {
   _FakeExecutor({this.statusCode = 200, required this.responseBody});
 
@@ -16,7 +14,7 @@ class _FakeExecutor implements AdminReviewExecutor {
   final List<Map<String, dynamic>> requests = [];
 
   @override
-  Future<appwrite_models.Execution> createExecution(
+  Future<AdminReviewExecution> createExecution(
     String functionId, {
     required String body,
   }) async {
@@ -24,24 +22,9 @@ class _FakeExecutor implements AdminReviewExecutor {
       'functionId': functionId,
       'body': jsonDecode(body) as Map<String, dynamic>,
     });
-    return appwrite_models.Execution(
-      $id: 'exec1',
-      $createdAt: '2026-03-03T00:00:00Z',
-      $updatedAt: '2026-03-03T00:00:00Z',
-      $permissions: [],
-      functionId: functionId,
-      deploymentId: 'dep1',
-      trigger: appwrite_enums.ExecutionTrigger.http,
-      status: appwrite_enums.ExecutionStatus.completed,
-      requestMethod: 'POST',
-      requestPath: '/',
-      requestHeaders: [],
-      responseStatusCode: statusCode,
+    return AdminReviewExecution(
+      statusCode: statusCode,
       responseBody: responseBody,
-      responseHeaders: [],
-      logs: '',
-      errors: '',
-      duration: 0.1,
     );
   }
 }

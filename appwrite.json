@@ -77,7 +77,9 @@
       ],
       "enabled": true,
       "logging": true,
-      "scopes": []
+      "scopes": [
+        "users.read"
+      ]
     },
     {
       "$id": "delete-account",
@@ -528,6 +530,30 @@
         "databases.write",
         "documents.read",
         "documents.write"
+      ]
+    },
+    {
+      "$id": "bintiWaitlist",
+      "name": "bintiWaitlist",
+      "runtime": "node-22.0",
+      "execute": [
+        "any"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/bintiWaitlist",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
       ]
     }
   ],

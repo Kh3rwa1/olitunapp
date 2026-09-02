@@ -1,101 +1,110 @@
 {
-  "collectionId": "binti_guru_waitlist",
-  "attributes": [
-    {
-      "key": "userId",
-      "type": "string",
-      "size": 36,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "fullName",
-      "type": "string",
-      "size": 100,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "phoneNumber",
-      "type": "string",
-      "size": 20,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "ceremonyType",
-      "type": "string",
-      "size": 50,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "eventDate",
-      "type": "string",
-      "size": 30,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "city",
-      "type": "string",
-      "size": 100,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "state",
-      "type": "string",
-      "size": 100,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "notes",
-      "type": "string",
-      "size": 1000,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "submittedAt",
-      "type": "string",
-      "size": 30,
-      "array": false,
-      "required": true
-    },
-    {
-      "key": "contactedAt",
-      "type": "string",
-      "size": 30,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "status",
-      "type": "string",
-      "size": 20,
-      "array": false,
-      "required": false
-    }
-  ],
-  "indexes": [
-    {
-      "key": "idx_submitted",
-      "type": "key",
-      "attributes": [
-        "submittedAt"
-      ],
-      "orders": [
-        "DESC"
-      ]
-    },
-    {
-      "key": "idx_status",
-      "type": "key",
-      "attributes": [
-        "status"
-      ]
-    }
-  ]
+ "collectionId": "binti_guru_waitlist",
+ "attributes": [
+  {
+   "key": "userId",
+   "type": "string",
+   "size": 36,
+   "array": false,
+   "required": false
+  },
+  {
+   "key": "fullName",
+   "type": "string",
+   "size": 100,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "phoneNumber",
+   "type": "string",
+   "size": 20,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "ceremonyType",
+   "type": "string",
+   "size": 50,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "eventDate",
+   "type": "string",
+   "size": 30,
+   "array": false,
+   "required": false
+  },
+  {
+   "key": "city",
+   "type": "string",
+   "size": 100,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "state",
+   "type": "string",
+   "size": 100,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "notes",
+   "type": "string",
+   "size": 1000,
+   "array": false,
+   "required": false
+  },
+  {
+   "key": "submittedAt",
+   "type": "string",
+   "size": 30,
+   "array": false,
+   "required": true
+  },
+  {
+   "key": "contactedAt",
+   "type": "string",
+   "size": 30,
+   "array": false,
+   "required": false
+  },
+  {
+   "key": "status",
+   "type": "string",
+   "size": 20,
+   "array": false,
+   "required": false
+  }
+ ],
+ "indexes": [
+  {
+   "key": "idx_submitted",
+   "type": "key",
+   "attributes": [
+    "submittedAt"
+   ],
+   "orders": [
+    "DESC"
+   ]
+  },
+  {
+   "key": "idx_status",
+   "type": "key",
+   "attributes": [
+    "status"
+   ]
+  },
+  {
+   "key": "idx_phone_ceremony",
+   "type": "key",
+   "attributes": [
+    "phoneNumber",
+    "ceremonyType"
+   ],
+   "orders": []
+  }
+ ]
 }

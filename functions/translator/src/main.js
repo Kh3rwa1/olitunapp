@@ -7,7 +7,7 @@ import {
   deriveRateLimitIdentifier,
   verifyAppwriteIdentity,
 } from './security.js';
-import { checkRateLimit } from './rate_limiter.js';
+import { checkRateLimit } from './shared/rate_limiter.js';
 import { getTranslationProvider } from './providers/translation_provider.js';
 
 const DB_ID = 'olitun_db';

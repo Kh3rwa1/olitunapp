@@ -9,7 +9,7 @@
    - Check Appwrite Cloud Status page or self-hosted server health (`/v1/health`).
    - Check error monitoring telemetry for spike in network exceptions.
 2. **Enable Degradation Mode**:
-   - Verify client app falls back to local cache (`StaleWhileRevalidateRepository` & Hive cache).
+   - Verify client app falls back to local cache (ContentRepository Hive cache + bundled seed data).
    - Read-only learning features continue using cached lessons and local progress outbox.
 3. **Notify Users**:
    - Display non-intrusive offline banner: *"Experiencing temporary connection issues. Your learning progress is saved locally."*

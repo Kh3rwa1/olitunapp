@@ -6,7 +6,7 @@ import {
   generateSlotDocId,
   WINDOW_MINUTE_MS,
   WINDOW_HOUR_MS,
-} from '../src/rate_limiter.js';
+} from '../../_shared/rate_limiter.js';
 
 const STAGING_ENDPOINT = process.env.STAGING_APPWRITE_ENDPOINT;
 const STAGING_PROJECT_ID = process.env.STAGING_APPWRITE_PROJECT_ID;

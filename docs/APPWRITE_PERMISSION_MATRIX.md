@@ -16,7 +16,7 @@ Authoritative access control matrix across all database collections, storage buc
 | `banners` | Public Content | Public (`Role.any()`) | Admin Team Only | Full Admin | Home screen banners |
 | `affirmations` | Public Content | Public (`Role.any()`) | Admin Team Only | Full Admin | Daily motivation quotes |
 | `user_preferences` | User Data | Owner (`Role.user(id)`) | Owner (`Role.user(id)`) | Full Access | User settings, theme, audio |
-| `user_mistakes` | User Data | Owner (`Role.user(id)`) | Owner (`Role.user(id)`) | Full Access | Quiz mistake review notebook |
+| `user_mistakes` | User Data | Forbidden | Function Only (`recordMistake` et al.) | Full Access via functions | Quiz mistake review notebook |
 | `bakhed_listening_progress`| User Data | Owner (`Role.user(id)`) | Owner (`Role.user(id)`) | Full Access | Audio playback milestones |
 | `learning_analytics_events`| Analytics | Forbidden | Function Only | Full Access | User learning events |
 | `course_purchases` | Financial Ledger | Owner (`Role.user(id)`) | Forbidden | Function Only | Verified entitlements |
@@ -24,7 +24,7 @@ Authoritative access control matrix across all database collections, storage buc
 | `refund_claims` | Idempotency | Forbidden | Forbidden | Function Only | Dispute & refund locks |
 | `payment_attempts` | Telemetry | Forbidden | Forbidden | Function Only | Ephemeral checkout records |
 | `rate_limits` | Security | Forbidden | Forbidden | Function Only | Privacy-hashed rate limits |
-| `binti_guru_waitlist`| Waitlist | Forbidden | Function Only | Admin Read | Sanitized course applications |
+| `binti_guru_waitlist`| Waitlist | Forbidden | Function Only (`bintiWaitlist`) | Function + Admin | Rate-limited, validated, deduplicated submissions |
 | `admin_audit_logs` | Audit | Forbidden | Forbidden | Admin Read | Admin actions audit trail |
 | `account_deletion_queue` | Compliance | Forbidden | Forbidden | Function Only | Deletion staging records |
 

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:itun/core/logging/app_logger.dart';
 
 // ============== LETTER MODEL ==============
 class LetterModel {
@@ -53,7 +54,13 @@ class LetterModel {
               }
             }
           }
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'LetterModel: failed to parse legacy blocks string for letter '
+            '"${data['\$id'] ?? docId ?? 'unknown'}": $e',
+            name: 'LetterModel',
+          );
+        }
       } else if (blocksRaw is List) {
         for (final block in blocksRaw) {
           if (block is Map) {

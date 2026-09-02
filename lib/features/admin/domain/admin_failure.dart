@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:appwrite/appwrite.dart';
+
+import 'package:itun/core/error/appwrite_error_classifier.dart';
 
 /// Typed error classification for all admin operations.
 sealed class AdminFailure {
@@ -16,10 +17,11 @@ sealed class AdminFailure {
 
     final context = actionContext != null ? '$actionContext: ' : '';
 
-    if (error is AppwriteException) {
-      final code = error.code ?? 0;
-      final type = error.type ?? '';
-      final message = error.message ?? '';
+    final appwriteInfo = AppwriteErrorClassifier.infoOf(error);
+    if (appwriteInfo != null) {
+      final code = appwriteInfo.code;
+      final type = appwriteInfo.type;
+      final message = appwriteInfo.message;
 
       if (code == 404 ||
           type == 'document_not_found' ||

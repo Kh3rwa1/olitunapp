@@ -1,9 +1,75 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/models/content_models.dart';
+
+/// Thrown when the bintiWaitlist function rejects a submission; the message
+/// is user-facing (validation errors, rate limits, or a generic failure).
+class WaitlistSubmissionException implements Exception {
+  final String message;
+  const WaitlistSubmissionException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+/// Submits a waitlist entry through the `bintiWaitlist` Appwrite function,
+/// which validates input, rate-limits by caller and phone number, and
+/// deduplicates pending submissions. The collection itself has no public
+/// write access; the function's API key performs the write server-side.
+Future<WaitlistModel> submitWaitlistViaFunction(Ref ref, WaitlistModel entry) async {
+  final authService = ref.read(appwriteAuthServiceProvider);
+  final functions = Functions(authService.client);
+
+  final dynamic execution;
+  try {
+    execution = await functions.createExecution(
+      functionId: 'bintiWaitlist',
+      body: jsonEncode({
+        'fullName': entry.fullName,
+        'phoneNumber': entry.phoneNumber,
+        'ceremonyType': entry.ceremonyType,
+        if (entry.eventDate != null) 'eventDate': entry.eventDate,
+        'city': entry.city,
+        'state': entry.state,
+        if (entry.notes != null) 'notes': entry.notes,
+      }),
+    );
+  } catch (e) {
+    AppLogger.debug('Waitlist execution failed: $e');
+    throw const WaitlistSubmissionException(
+      'Could not reach the waitlist service. Check your connection and try again.',
+    );
+  }
+
+  if (execution.status.name != 'completed') {
+    throw const WaitlistSubmissionException(
+      'Waitlist submission failed. Please try again.',
+    );
+  }
+
+  final Map<String, dynamic> data;
+  try {
+    data = jsonDecode(execution.responseBody) as Map<String, dynamic>;
+  } catch (_) {
+    throw const WaitlistSubmissionException('Unexpected waitlist service response.');
+  }
+
+  if (data['ok'] != true) {
+    throw WaitlistSubmissionException(
+      (data['message'] as String?) ??
+          'Waitlist submission failed. Please try again.',
+    );
+  }
+
+  final entryData = Map<String, dynamic>.from(data['entry'] as Map);
+  return WaitlistModel.fromJson(entryData, entryData['id'] as String?);
+}
 
 final userWaitlistProvider = FutureProvider<List<WaitlistModel>>((ref) async {
   final user = ref.watch(currentUserProvider).value;
@@ -76,8 +142,7 @@ class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
 
   Future<void> submitWaitlistEntry(WaitlistModel entry) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument('binti_guru_waitlist', entry.id, entry.toJson());
+      await submitWaitlistViaFunction(ref, entry);
       await loadWaitlist();
       ref.invalidate(userWaitlistProvider);
     } catch (e) {
@@ -89,10 +154,10 @@ class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
 
 final submitWaitlistEntryProvider = Provider((ref) {
   return (WaitlistModel entry) async {
-    final db = ref.read(appwriteDbServiceProvider);
-    await db.createDocument('binti_guru_waitlist', entry.id, entry.toJson());
+    final created = await submitWaitlistViaFunction(ref, entry);
     ref.invalidate(userWaitlistProvider);
     // If admin is active, refresh the admin list as well
     ref.read(adminWaitlistProvider.notifier).loadWaitlist();
+    return created;
   };
 });

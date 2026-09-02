@@ -1,20 +1,20 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/audio/playback_controller.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
-import '../../../../core/network/network_info.dart';
+// ignore: unnecessary_import
 import '../../../../shared/providers/language_settings_providers.dart';
-import '../../data/datasources/audio_track_remote_datasource.dart';
-import '../../data/datasources/localized_content_remote_datasource.dart';
-import '../../data/repositories/audio_track_repository_impl.dart';
-import '../../data/repositories/localized_content_repository_impl.dart';
+// ignore: unnecessary_import
+import '../../data/di/content_di.dart';
 import '../../domain/entities/audio_track_entity.dart';
 import '../../domain/entities/localized_content_entity.dart';
-import '../../domain/repositories/audio_track_repository.dart';
-import '../../domain/repositories/localized_content_repository.dart';
+
+// Datasource/repository wiring lives in the data layer
+// (data/di/content_di.dart) so the Appwrite SDK stays out of presentation.
+// Re-exported for compatibility with existing imports.
+
+export '../../data/di/content_di.dart';
 
 /// Phase 3 wiring: datasources → repositories → central
 /// [PlaybackController] → playback state (spec §11).
@@ -23,39 +23,6 @@ import '../../domain/repositories/localized_content_repository.dart';
 /// [playbackControllerProvider] so the one-global-player rule is
 /// enforced app-wide: starting a new clip always interrupts the
 /// previous one, with consistent metadata for analytics.
-
-final audioTrackRemoteDataSourceProvider = Provider<AudioTrackRemoteDataSource>(
-  (ref) {
-    final client = ref.watch(appwriteAuthServiceProvider).client;
-    return AudioTrackRemoteDataSourceImpl(Databases(client));
-  },
-);
-
-final audioTrackRepositoryProvider = Provider<AudioTrackRepository>((ref) {
-  final remote = ref.watch(audioTrackRemoteDataSourceProvider);
-  final network = ref.watch(networkInfoProvider);
-  return AudioTrackRepositoryImpl(
-    remoteDataSource: remote,
-    networkInfo: network,
-  );
-});
-
-final localizedContentRemoteDataSourceProvider =
-    Provider<LocalizedContentRemoteDataSource>((ref) {
-      final client = ref.watch(appwriteAuthServiceProvider).client;
-      return LocalizedContentRemoteDataSourceImpl(Databases(client));
-    });
-
-final localizedContentRepositoryProvider = Provider<LocalizedContentRepository>(
-  (ref) {
-    final remote = ref.watch(localizedContentRemoteDataSourceProvider);
-    final network = ref.watch(networkInfoProvider);
-    return LocalizedContentRepositoryImpl(
-      remoteDataSource: remote,
-      networkInfo: network,
-    );
-  },
-);
 
 /// The single central playback controller for the whole app.
 ///

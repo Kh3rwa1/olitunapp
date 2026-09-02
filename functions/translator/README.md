@@ -83,3 +83,15 @@ Running translation as an Appwrite Function:
 - applies Appwrite's auth and rate-limit layers on top of the function's
   own per-IP limiter,
 - and is deployable from the same repo as the Flutter app.
+
+## Version Freeze & Dependency Blockers
+
+This function is intentionally **version-frozen** on `node-appwrite: 25.1.0`.
+
+- **Current Pin:** `node-appwrite: 25.1.0` (in `package.json` and `package-lock.json`).
+- **Reason:** Pinned to maintain stability for translator RPC executions and keep SDK alignment across root and function suites.
+- **Specific Blocker:** `node-appwrite 28.0.0` removed `account.createJWT`. The translator function workflow and tests rely on this capability for authenticating and delegating Appwrite requests.
+- **Revisiting Conditions:** This version freeze may be revisited when either:
+  1. Upstream Appwrite provides an alternative server-side JWT generation or execution mechanism for functions, or
+  2. The entire repository transitions to `node-appwrite` 28+ as a single, coordinated, repo-wide migration.
+- **Governance:** CI strictly enforces this pin via `scripts/verify_node_dependency_alignment.mjs` and excludes `functions/translator` from automated Dependabot updates and vulnerability scans.

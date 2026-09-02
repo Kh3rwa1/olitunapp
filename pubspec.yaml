@@ -19,7 +19,7 @@ dependencies:
   go_router: ^17.2.3
 
   # Local Storage
-  shared_preferences: 2.5.5
+  shared_preferences: ^2.5.5
   hive: ^2.2.3
   hive_flutter: ^1.1.0
 
@@ -37,7 +37,8 @@ dependencies:
 
 
   # Auth
-  appwrite: 21.1.0
+  # Constrained to 21.x to match backend server API (TablesDB) and prevent breaking 22+ SDK changes
+  appwrite: ^21.1.0
 
   # Utils
   uuid: ^4.5.1
@@ -54,10 +55,10 @@ dependencies:
   fpdart: ^1.1.0
   connectivity_plus: ^7.3.1
   equatable: ^2.1.0
-  flutter_markdown: ^0.7.3+1
+  flutter_markdown_plus: ^1.0.12
 
   # Crash & error reporting
-  sentry_flutter: ^8.10.0
+  sentry_flutter: ^9.28.0
   share_plus: ^12.0.2
   just_audio: ^0.10.5
   just_audio_background: ^0.0.1-beta.17
@@ -67,7 +68,7 @@ dependencies:
   url_launcher: ^6.3.2
 
   # Ads & Monetization
-  google_mobile_ads: ^5.3.0
+  google_mobile_ads: ^7.0.0
 
   flutter_web_plugins:
     sdk: flutter
@@ -79,8 +80,8 @@ dev_dependencies:
   flutter_lints: ^6.0.0
   mocktail: ^1.0.4
 
-  just_audio_platform_interface: any
-  video_player_platform_interface: any
+  just_audio_platform_interface: ^4.6.0
+  video_player_platform_interface: ^6.7.0
 flutter:
   generate: true
   uses-material-design: true

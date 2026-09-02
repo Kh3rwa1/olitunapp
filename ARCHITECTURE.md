@@ -169,3 +169,7 @@ Serverless Node-22 functions live under `functions/`. Key scheduled jobs:
 | `backupCollections` | `0 4 * * 0` | Weekly JSON backup of core content to `admin_backups` bucket (12-file rolling retention) |
 
 Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), Bakhed progress (`recordBakhedProgress`), and public Binti Guru waitlist signups (`bintiWaitlist` — validated, rate-limited per caller and phone, deduplicated; the collection has no public write access).
+
+### Version Pinning & Governance Exceptions
+
+- **`functions/translator/`**: Intentionally version-frozen on `node-appwrite: 25.1.0` due to upstream removal of `account.createJWT` in `node-appwrite` 28.0.0. Excluded from automated Dependabot updates and governed by `scripts/verify_node_dependency_alignment.mjs`. See [functions/translator/README.md](functions/translator/README.md) for full context and revisit criteria.

@@ -69,7 +69,6 @@ class ContentBulkActionBar extends StatelessWidget {
                 label: const Text('Publish'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -87,7 +86,6 @@ class ContentBulkActionBar extends StatelessWidget {
                 label: const Text('Draft'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.amber[700],
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,

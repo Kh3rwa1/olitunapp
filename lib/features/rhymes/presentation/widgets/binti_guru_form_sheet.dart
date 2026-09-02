@@ -392,14 +392,15 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
                   onPressed: _isSubmitting ? null : _submitForm,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   child: _isSubmitting
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(
+                          color: AppColors.elevatedButtonFg,
+                        )
                       : const Text(
                           'Submit Waitlist Entry',
                           style: TextStyle(

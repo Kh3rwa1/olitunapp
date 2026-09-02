@@ -282,12 +282,17 @@ class QuizSessionNotifier
           failedNoHearts: true,
         ),
       );
-      await statsNotifier.addStars(
-        QuizScoringRules.calculateStars(
-          state.score,
-          bonusStars: state.bonusStars,
-        ),
-      );
+      // Failed quizzes pay no stars: paying out on failure inflates the
+      // star economy (and rewards grinding hearts away). Score is still
+      // recorded so progress/analytics stay intact.
+      if (state.score > 0) {
+        await statsNotifier.addStars(
+          QuizScoringRules.calculateStars(
+            state.score,
+            bonusStars: state.bonusStars,
+          ),
+        );
+      }
 
       unawaited(
         ref

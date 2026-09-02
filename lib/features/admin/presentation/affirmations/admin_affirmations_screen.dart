@@ -225,7 +225,9 @@ class _AdminAffirmationsScreenState
     return ElevatedButton.icon(
       onPressed: _isSyncing ? null : _triggerSheetSync,
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF107C41),
+        backgroundColor: const Color(
+          0xFF107C41,
+        ), // white on #107C41 = 5.3:1 (WCAG pass)
         foregroundColor: Colors.white,
         disabledBackgroundColor: const Color(0xFF107C41).withValues(alpha: 0.5),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -280,7 +282,6 @@ class _AdminAffirmationsScreenState
                 onPressed: () => AdminAffirmationForm.show(context, ref, null),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,

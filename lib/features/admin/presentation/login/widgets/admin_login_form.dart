@@ -182,7 +182,6 @@ class AdminLoginForm extends StatelessWidget {
                 onPressed: isLoading ? null : onSignIn,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
@@ -194,7 +193,7 @@ class AdminLoginForm extends StatelessWidget {
                         height: 22,
                         width: 22,
                         child: CircularProgressIndicator(
-                          color: Colors.white,
+                          color: AppColors.elevatedButtonFg,
                           strokeWidth: 2.5,
                         ),
                       )

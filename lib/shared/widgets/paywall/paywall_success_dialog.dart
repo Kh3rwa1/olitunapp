@@ -97,7 +97,6 @@ class PaywallSuccessDialog extends StatelessWidget {
                 onPressed: onStartLearning,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: const RoundedRectangleBorder(
@@ -109,7 +108,7 @@ class PaywallSuccessDialog extends StatelessWidget {
                   style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: Colors.white,
+                    color: AppColors.elevatedButtonFg,
                   ),
                 ),
               ),

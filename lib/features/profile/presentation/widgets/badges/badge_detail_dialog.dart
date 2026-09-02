@@ -194,7 +194,6 @@ class BadgeDetailDialog extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   shape: const RoundedRectangleBorder(
                     borderRadius: AppRadius.borderLg,
@@ -205,7 +204,7 @@ class BadgeDetailDialog extends StatelessWidget {
                   'Share Achievement',
                   style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: Colors.white,
+                    color: AppColors.elevatedButtonFg,
                   ),
                 ),
               ),

@@ -156,7 +156,9 @@ Future<void> main() async {
                           icon: const Icon(Icons.refresh),
                           label: const Text('Retry Startup'),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6C5CE7),
+                            backgroundColor: const Color(
+                              0xFF6C5CE7,
+                            ), // white on #6C5CE7 = 4.76:1 (WCAG pass)
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 24,

@@ -211,7 +211,6 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.md,
                     ),

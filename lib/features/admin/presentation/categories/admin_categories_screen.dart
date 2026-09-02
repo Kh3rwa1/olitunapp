@@ -65,7 +65,6 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                 onPressed: () => CategoryFormSheet.show(context, ref, null),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,

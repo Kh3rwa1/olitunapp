@@ -168,7 +168,6 @@ class _SocialShareModalState extends State<SocialShareModal> {
                   onPressed: _isSharing ? null : _handleShare,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                     elevation: 0,
                     shape: const RoundedRectangleBorder(
                       borderRadius: AppRadius.borderXl,
@@ -181,7 +180,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
+                              AppColors.elevatedButtonFg,
                             ),
                           ),
                         )
@@ -190,7 +189,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
                     _isSharing ? 'Preparing...' : 'Share to Apps',
                     style: AppTypography.labelLarge.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: Colors.white,
+                      color: AppColors.elevatedButtonFg,
                     ),
                   ),
                 ),

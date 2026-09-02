@@ -290,7 +290,11 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                     backgroundColor: widget.isCorrect
                         ? AppColors.primary
                         : AppColors.error,
-                    foregroundColor: Colors.white,
+                    // White on error red is 3.19:1 (kept); on primary mint it
+                    // is 1.74:1, so the correct state uses dark brand green.
+                    foregroundColor: widget.isCorrect
+                        ? AppColors.elevatedButtonFg
+                        : Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),

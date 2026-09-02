@@ -247,7 +247,7 @@ class _AffirmationShareSheetState extends ConsumerState<AffirmationShareSheet> {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: AppColors.elevatedButtonFg,
                             ),
                           )
                         : const Icon(Icons.share_rounded, size: 18),
@@ -257,7 +257,6 @@ class _AffirmationShareSheetState extends ConsumerState<AffirmationShareSheet> {
                     ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),

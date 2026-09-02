@@ -39,7 +39,6 @@ class AdminBannersScreen extends ConsumerWidget {
                 onPressed: () => BannerFormSheet.show(context, ref, null),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,

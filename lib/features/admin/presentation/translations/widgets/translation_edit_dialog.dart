@@ -249,7 +249,6 @@ class _TranslationEditDialogState extends State<TranslationEditDialog> {
                     label: const Text('Confirm Translation'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(
                           AdminTokens.radiusSm,

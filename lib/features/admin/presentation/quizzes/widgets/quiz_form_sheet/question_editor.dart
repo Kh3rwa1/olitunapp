@@ -181,6 +181,7 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close question editor',
                   icon: Icon(
                     Icons.close_rounded,
                     color: isDark ? Colors.white54 : Colors.black45,

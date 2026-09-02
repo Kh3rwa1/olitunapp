@@ -241,6 +241,7 @@ class BakhedVocabularyCard extends ConsumerWidget {
                             Icons.delete_outline_rounded,
                             color: Colors.red,
                           ),
+                          tooltip: 'Delete vocabulary item',
                           onPressed: () =>
                               notifier.removeItem(item.id, item.sortOrder),
                         ),
@@ -387,6 +388,7 @@ class BakhedCulturalNotesCard extends ConsumerWidget {
                                 Icons.delete_outline_rounded,
                                 color: Colors.red,
                               ),
+                              tooltip: 'Delete note',
                               onPressed: () => notifier.removeNote(note.noteId),
                             ),
                           ],

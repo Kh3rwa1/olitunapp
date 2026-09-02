@@ -45,6 +45,7 @@ void showContentFormSheet({
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded),
+                    tooltip: 'Close form',
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],

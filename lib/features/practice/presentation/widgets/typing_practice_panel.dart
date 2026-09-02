@@ -292,6 +292,7 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                                 Icons.volume_up_rounded,
                                 size: 20,
                               ),
+                              tooltip: 'Play pronunciation',
                               color: AppColors.primary,
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),

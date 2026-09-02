@@ -64,6 +64,7 @@ class _SheetHeader extends StatelessWidget {
         ),
         IconButton(
           icon: const Icon(Icons.close_rounded),
+          tooltip: 'Close block editor',
           onPressed: onClose,
           color: AdminTokens.textTertiary(isDark),
         ),

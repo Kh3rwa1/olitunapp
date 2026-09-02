@@ -319,6 +319,7 @@ class ContentBlockListSection extends StatelessWidget {
                               Icons.delete_outline_rounded,
                               color: Colors.red,
                             ),
+                            tooltip: 'Delete block',
                             onPressed: () => onRemoveBlock(i),
                           ),
                         ],

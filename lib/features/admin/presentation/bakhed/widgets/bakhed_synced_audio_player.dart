@@ -75,6 +75,7 @@ class BakhedSyncedAudioPlayer extends ConsumerWidget {
                             size: 48,
                             color: AppColors.primary,
                           ),
+                          tooltip: playing ? 'Pause audio' : 'Play audio',
                           onPressed: () {
                             if (playing) {
                               player.pause();

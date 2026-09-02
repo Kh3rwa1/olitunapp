@@ -5,6 +5,7 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/categories/domain/entities/category_entity.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class PaywallCourseDetails extends StatelessWidget {
   final CategoryEntity category;
@@ -34,7 +35,7 @@ class PaywallCourseDetails extends StatelessWidget {
       children: [
         if (hasDescription) ...[
           Text(
-            'About this course',
+            AppLocalizations.of(context)!.aboutThisCourse,
             style: AppTypography.titleMedium.copyWith(
               fontWeight: FontWeight.w800,
               color: isDark
@@ -78,7 +79,7 @@ class PaywallCourseDetails extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Course Outcome',
+                      AppLocalizations.of(context)!.courseOutcome,
                       style: AppTypography.labelLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         color: isDark ? Colors.white : Colors.black87,

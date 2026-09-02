@@ -222,6 +222,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                             color: Colors.white,
                             size: 20,
                           ),
+                          tooltip: 'Go back',
                           onPressed: () {
                             HapticFeedback.lightImpact();
                             Navigator.maybePop(context);
@@ -404,6 +405,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                           color: Colors.white.withOpacity(0.8),
                           size: 30,
                         ),
+                        tooltip: 'Rewind 10 seconds',
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           final pos = Duration(milliseconds: positionMs);
@@ -417,38 +419,42 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       ),
                       const SizedBox(width: 24),
                       // Grand Play/Pause Circle
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          ref
-                              .read(rhymeAudioProvider.notifier)
-                              .togglePlay(
-                                item.id,
-                                item.effectiveAudioUrl,
-                                title: item.title,
-                                artworkUrl: item.heroMedia?.url,
-                              );
-                        },
-                        child: Container(
-                          width: 68,
-                          height: 68,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: accentColor.withOpacity(0.35),
-                                blurRadius: 24,
-                                spreadRadius: 1,
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            isPlaying
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            size: 38,
-                            color: const Color(0xFF0A0E15),
+                      Semantics(
+                        button: true,
+                        label: isPlaying ? 'Pause audio' : 'Play audio',
+                        child: GestureDetector(
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            ref
+                                .read(rhymeAudioProvider.notifier)
+                                .togglePlay(
+                                  item.id,
+                                  item.effectiveAudioUrl,
+                                  title: item.title,
+                                  artworkUrl: item.heroMedia?.url,
+                                );
+                          },
+                          child: Container(
+                            width: 68,
+                            height: 68,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withOpacity(0.35),
+                                  blurRadius: 24,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              isPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 38,
+                              color: const Color(0xFF0A0E15),
+                            ),
                           ),
                         ),
                       ),
@@ -460,6 +466,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                           color: Colors.white.withOpacity(0.8),
                           size: 30,
                         ),
+                        tooltip: 'Forward 10 seconds',
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           final pos = Duration(milliseconds: positionMs);

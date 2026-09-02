@@ -360,5 +360,79 @@
   },
   "downloadStarterAudio": "স্টার্টার অডিও ডাউনলোড করুন",
   "downloadStarterAudioSubtitle": "প্রথম দিন থেকেই অফলাইন শিখুন",
-  "backButton": "পেছনে"
+  "backButton": "পেছনে",
+
+  "joharLoading": "জোহার... লোড হচ্ছে...",
+  "somethingWentWrong": "কিছু একটা ভুল হয়েছে!",
+  "offlineMode": "অফলাইন মোড। সংরক্ষিত কনটেন্ট দেখানো হচ্ছে।",
+  "offlineProgressCached": "অফলাইন। অগ্রগতি ডিভাইসে সংরক্ষিত হয়েছে।",
+  "syncingProgress": "অগ্রগতি সিঙ্ক হচ্ছে...",
+  "progressSynced": "অগ্রগতি সিঙ্ক হয়েছে!",
+  "failedToSyncProgress": "অগ্রগতি সিঙ্ক করা যায়নি।",
+
+  "processing": "প্রসেস হচ্ছে...",
+  "pleaseLogInToPurchase": "কোর্স কিনতে অনুগ্রহ করে লগ ইন করুন।",
+  "creatingSecureOrder": "নিরাপদ সার্ভার অর্ডার তৈরি হচ্ছে...",
+  "openingPaymentGateway": "পেমেন্ট গেটওয়ে খোলা হচ্ছে...",
+  "verifyingPayment": "সার্ভারের সাথে পেমেন্ট যাচাই হচ্ছে...",
+  "courseUnlocked": "কোর্স সফলভাবে আনলক হয়েছে!",
+  "failedToCreateOrder": "পেমেন্ট অর্ডার তৈরি করা যায়নি",
+  "paymentVerificationFailed": "পেমেন্ট যাচাই ব্যর্থ",
+  "checkoutUnexpectedError": "চেকআউটে অপ্রত্যাশিত ত্রুটি: {error}",
+  "@checkoutUnexpectedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "unlockCourse": "কোর্স আনলক করুন (₹{amount})",
+  "@unlockCourse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trustBadgeSecureCheckout": "Razorpay দিয়ে 256-bit এনক্রিপ্টেড চেকআউট • তাৎক্ষণিক অ্যাক্সেস",
+  "webMonetizationRestrictedTitle": "ওয়েবে মনিটাইজেশন সীমাবদ্ধ",
+  "webMonetizationNotice": "Razorpay চেকআউট এবং App Store রিভিউ শুধু Olitun মোবাইল অ্যাপে সমর্থিত। আনলক করতে Android/iOS-এ খুলুন।",
+  "aboutThisCourse": "এই কোর্স সম্পর্কে",
+  "courseOutcome": "কোর্সের ফলাফল",
+  "premiumCourseBadge": "প্রিমিয়াম কোর্স",
+  "maranJauharTitle": "মরন জোহার! 🎉",
+  "startLearning": "শেখা শুরু করুন",
+  "paywallValueOfflineTitle": "সম্পূর্ণ অফলাইন প্যাক অ্যাক্সেস",
+  "paywallValueOfflineSubtitle": "যেকোনো সময় অফলাইনে শেখার জন্য পাঠ, উচ্চারণ অডিও এবং কুইজ ডাউনলোড করুন।",
+  "paywallValueAiTitle": "আনলিমিটেড AI অনুবাদ",
+  "paywallValueAiSubtitle": "কোনো ক্যোয়ারি সীমা ছাড়াই তাৎক্ষণিক ওলচিকি অনুবাদ এবং উচ্চারণ নির্দেশনা।",
+  "paywallValueAdFreeTitle": "শূন্য বিজ্ঞাপন বাধা",
+  "paywallValueAdFreeSubtitle": "সব মডিউলে 100% বিভ্রান্তিমুক্ত ভাষা অনুশীলন।",
+  "paywallValueLifetimeTitle": "আজীবন অ্যাক্সেসের গ্যারান্টি",
+  "paywallValueLifetimeSubtitle": "একবারই পরিশোধ — কোনো পুনরাবৃত্ত ফি, সাবস্ক্রিপশন বা লুকানো চার্জ নেই।",
+
+  "navLearn": "শিখুন",
+  "navBakhed": "বাখেড়",
+  "navProfile": "প্রোফাইল",
+  "navTabSemantics": "{label} ট্যাব",
+  "@navTabSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "navItemSemantics": "{label} নেভিগেশন আইটেম",
+  "@navItemSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+
+  "kudosMistake1": "ভুলগুলো পর্যালোচিত। এভাবেই দক্ষতা তৈরি হয়।",
+  "kudosMistake2": "দক্ষতা তৈরি হচ্ছে! আপনি ভুলগুলোকে জ্ঞানে রূপান্তর করেছেন।",
+  "kudosMistake3": "দারুণ! ভুল সংশোধনই সাবলীলতার রহস্য।",
+  "kudosMistake4": "চমৎকার পর্যালোচনা! ভুল শুধরে আপনি আরও দ্রুত শিখছেন।"
 }

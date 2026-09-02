@@ -311,5 +311,79 @@
     "@minutesPerDay": {"placeholders": {"minutes": {"type": "int"}}},
     "downloadStarterAudio": "ᱥᱩᱨᱩᱭᱟᱜ ᱥᱟᱲᱮ ᱰᱟᱣᱩᱱᱞᱳᱰ ᱢᱮ",
     "downloadStarterAudioSubtitle": "ᱯᱩᱭᱞᱩ ᱫᱤᱱ ᱠᱷᱚᱱ ᱜᱮ ᱚᱯᱷᱞᱟᱭᱱ ᱨᱮ ᱪᱮᱫ ᱢᱮ",
-    "backButton": "ᱛᱟᱭᱚᱢ"
+    "backButton": "ᱛᱟᱭᱚᱢ",
+
+    "joharLoading": "ᱡᱚᱦᱟᱨ... ᱞᱳᱰ ᱦᱚᱭᱚᱜ...",
+    "somethingWentWrong": "ᱵᱷᱩᱞ ᱦᱚᱭᱮᱱᱟ!",
+    "offlineMode": "ᱚᱯᱷᱞᱟᱭᱱ ᱢᱳᱰ᱾ ᱫᱚᱦᱚ ᱟᱠᱟᱱ ᱵᱤᱪᱟᱨ ᱫᱮᱠᱷᱟᱣ ᱦᱚᱭᱮᱱᱟ᱾",
+    "offlineProgressCached": "ᱚᱯᱷᱞᱟᱭᱱ᱾ ᱯᱨᱟᱜᱟᱛᱤ ᱫᱚᱦᱚ ᱟᱠᱟᱱᱟ᱾",
+    "syncingProgress": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱦᱚᱭᱚᱜ...",
+    "progressSynced": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱮᱱᱟ!",
+    "failedToSyncProgress": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱠᱟᱛ ᱵᱟᱸᱜᱚ᱾",
+
+    "processing": "ᱠᱟᱹᱢᱤ ᱪᱟᱹᱞᱩ ᱦᱚᱭᱚᱜ...",
+    "pleaseLogInToPurchase": "ᱯᱟᱴ ᱠᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ᱾",
+    "creatingSecureOrder": "ᱥᱟᱨᱵᱷᱟᱨ ᱚᱨᱰᱟᱨ ᱵᱮᱱᱟᱣ ᱦᱚᱭᱚᱜ...",
+    "openingPaymentGateway": "ᱯᱮᱢᱮᱱᱴ ᱜᱮᱴᱣᱮ ᱠᱷᱩᱞ ᱦᱚᱭᱚᱜ...",
+    "verifyingPayment": "ᱥᱟᱨᱵᱷᱟᱨ ᱥᱟᱶ ᱯᱮᱢᱮᱱᱴ ᱡᱟᱸᱪ ᱦᱚᱭᱚᱜ...",
+    "courseUnlocked": "ᱯᱟᱴ ᱠᱷᱩᱞ ᱮᱱᱟ!",
+    "failedToCreateOrder": "ᱯᱮᱢᱮᱱᱴ ᱚᱨᱰᱟᱨ ᱵᱮᱱᱟᱣ ᱵᱟᱸᱜᱚ",
+    "paymentVerificationFailed": "ᱯᱮᱢᱮᱱᱴ ᱡᱟᱸᱪ ᱵᱟᱸᱜᱚ",
+    "checkoutUnexpectedError": "ᱪᱮᱠᱟᱣᱩᱴ ᱨᱮ ᱵᱷᱩᱞ ᱦᱚᱭᱮᱱᱟ: {error}",
+    "@checkoutUnexpectedError": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "unlockCourse": "ᱯᱟᱴ ᱠᱷᱩᱞ ᱢᱮ (₹{amount})",
+    "@unlockCourse": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "trustBadgeSecureCheckout": "Razorpay ᱥᱟᱶ 256-bit ᱪᱮᱠᱟᱣᱩᱴ • ᱱᱤᱛᱚᱜ ᱜᱮ ᱯᱟᱴ ᱠᱷᱩᱞ",
+    "webMonetizationRestrictedTitle": "ᱣᱮᱵᱽ ᱨᱮ ᱯᱮᱢᱮᱱᱴ ᱵᱟᱝ ᱦᱩᱭᱩᱜᱼᱟ",
+    "webMonetizationNotice": "Razorpay ᱪᱮᱠᱟᱣᱩᱴ ᱟᱨ App Store ᱧᱮᱞ ᱫᱚ ᱠᱷᱟᱹᱞᱤ Olitun ᱢᱳᱵᱟᱭᱤᱞ ᱮᱯ ᱨᱮ ᱠᱟᱹᱢᱤᱭᱟ᱾ ᱠᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ Android/iOS ᱨᱮ ᱡᱟᱭᱱᱟᱢ ᱢᱮ᱾",
+    "aboutThisCourse": "ᱱᱚᱣᱟ ᱠᱳᱨᱥ ᱵᱟᱵᱚᱛ",
+    "courseOutcome": "ᱠᱳᱨᱥ ᱯᱳᱨᱤᱱᱟᱢ",
+    "premiumCourseBadge": "ᱯᱨᱤᱢᱤᱭᱟᱢ ᱠᱳᱨᱥ",
+    "maranJauharTitle": "ᱢᱟᱨᱟᱱ ᱡᱚᱦᱟᱨ! 🎉",
+    "startLearning": "ᱪᱮᱫ ᱥᱩᱨᱩ ᱢᱮ",
+    "paywallValueOfflineTitle": "ᱡᱚᱛᱚ ᱚᱯᱷᱞᱟᱭᱱ ᱯᱮᱠ ᱢᱮᱱᱟᱜᱼᱟ",
+    "paywallValueOfflineSubtitle": "ᱯᱟᱴ, ᱥᱟᱲᱮ ᱟᱨ ᱠᱩᱭᱤᱡᱽ ᱰᱟᱣᱩᱱᱞᱳᱰ ᱢᱮ — ᱚᱯᱷᱞᱟᱭᱱ ᱨᱮ ᱪᱮᱫ ᱞᱟᱹᱜᱤᱫ᱾",
+    "paywallValueAiTitle": "ᱡᱚᱛᱚ ᱚᱠᱛᱚ AI ᱟᱱᱩᱵᱟᱫ",
+    "paywallValueAiSubtitle": "ᱚᱞ ᱪᱤᱠᱤ ᱟᱱᱩᱵᱟᱫ ᱟᱨ ᱥᱟᱲᱮ ᱫᱮᱠᱷᱟᱣ — ᱞᱤᱢᱤᱴ ᱵᱟᱝ᱾",
+    "paywallValueAdFreeTitle": "ᱮᱰ ᱵᱟᱝ ᱪᱮᱫ",
+    "paywallValueAdFreeSubtitle": "ᱡᱚᱛᱚ ᱵᱤᱪᱟᱨ ᱨᱮ ᱥᱟᱯᱷᱟ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱵᱷᱭᱟᱥ᱾",
+    "paywallValueLifetimeTitle": "ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱵᱮᱵᱷᱟᱨ",
+    "paywallValueLifetimeSubtitle": "ᱢᱤᱫ ᱫᱷᱟᱣ ᱜᱮ ᱴᱟᱠᱟ — ᱟᱨ ᱴᱟᱠᱟ ᱞᱟᱹᱠᱛᱤ ᱵᱟ᱾",
+
+    "navLearn": "ᱪᱮᱫᱚᱜ",
+    "navBakhed": "ᱵᱟᱠᱷᱮᱬ",
+    "navProfile": "ᱯᱨᱳᱯᱷᱟᱭᱤᱞ",
+    "navTabSemantics": "{label} ᱴᱮᱵᱽ",
+    "@navTabSemantics": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            }
+        }
+    },
+    "navItemSemantics": "{label} ᱱᱮᱵᱤᱜᱮᱥᱚᱱ ᱡᱤᱱᱤᱥ",
+    "@navItemSemantics": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            }
+        }
+    },
+
+    "kudosMistake1": "ᱵᱷᱩᱞ ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱮᱱᱟ᱾ ᱱᱚᱝᱠᱟ ᱜᱮ ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾",
+    "kudosMistake2": "ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣ ᱦᱩᱭ ᱟᱠᱟᱱᱟ! ᱟᱢ ᱵᱷᱩᱞ ᱠᱷᱚᱱ ᱜᱮᱭᱟᱱ ᱵᱮᱱᱟᱣ ᱟᱠᱟᱫᱟ᱾",
+    "kudosMistake3": "ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮᱜᱮ ᱵᱟᱲᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ᱾",
+    "kudosMistake4": "ᱵᱷᱟᱞᱚ ᱫᱚᱦᱲᱟ ᱧᱮᱞ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮ ᱟᱢ ᱞᱚᱜᱚᱱ ᱪᱮᱫᱚᱜ ᱠᱟᱱᱟ᱾"
 }

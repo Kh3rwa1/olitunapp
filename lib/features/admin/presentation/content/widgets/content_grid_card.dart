@@ -178,6 +178,7 @@ class ContentGridCard extends StatelessWidget {
                       size: 18,
                       color: Colors.redAccent,
                     ),
+                    tooltip: 'Delete content',
                     onPressed: onDelete,
                   ),
                 ),

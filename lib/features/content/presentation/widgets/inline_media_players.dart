@@ -90,6 +90,7 @@ class InlineVideoPlayerState extends State<InlineVideoPlayer> {
                       color: Colors.white,
                       size: 64,
                     ),
+                    tooltip: 'Play video',
                     onPressed: () {
                       setState(() {
                         _controller!.play();

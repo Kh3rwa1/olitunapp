@@ -88,6 +88,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 Icons.close_rounded,
                 color: isDark ? Colors.white : Colors.black,
               ),
+              tooltip: 'Close translator',
               onPressed: () => context.pop(),
             ),
           ),

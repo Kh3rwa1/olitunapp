@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/copy/kudos_messages.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../presentation/providers/mistake_provider.dart';
 import '../presentation/widgets/quiz_option_tile.dart';
 import '../presentation/widgets/quiz_feedback_panel.dart';
@@ -56,6 +57,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
               Icons.arrow_back_rounded,
               color: isDark ? Colors.white : Colors.black,
             ),
+            tooltip: 'Go back',
             onPressed: () => context.pop(),
           ),
           title: Text(
@@ -134,7 +136,13 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
     }
 
     if (_isComplete) {
-      final kudos = KudosMessages.getRandomKudos(KudosMessages.mistakeKudos);
+      final l10n = AppLocalizations.of(context)!;
+      final kudos = KudosMessages.getRandomKudos([
+        l10n.kudosMistake1,
+        l10n.kudosMistake2,
+        l10n.kudosMistake3,
+        l10n.kudosMistake4,
+      ]);
       return Scaffold(
         backgroundColor: isDark
             ? AppColors.darkBackground
@@ -254,6 +262,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
             Icons.close_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
+          tooltip: 'Close review',
           onPressed: () => context.pop(),
         ),
         title: const Text(

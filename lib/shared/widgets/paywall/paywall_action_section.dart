@@ -6,27 +6,25 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../features/categories/domain/entities/category_entity.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class PaywallActionSection extends StatelessWidget {
   final CategoryEntity category;
   final bool isLoading;
   final bool showPaidButton;
-  final bool showReviewButton;
   final VoidCallback onPayPressed;
-  final VoidCallback onReviewPressed;
 
   const PaywallActionSection({
     super.key,
     required this.category,
     required this.isLoading,
     required this.showPaidButton,
-    required this.showReviewButton,
     required this.onPayPressed,
-    required this.onReviewPressed,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (kIsWeb) {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
@@ -45,14 +43,14 @@ class PaywallActionSection extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Monetization restricted on Web',
+              l10n.webMonetizationRestrictedTitle,
               style: AppTypography.labelLarge.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 6),
             Text(
-              'Razorpay checkouts and App Store reviews are only supported on the Olitun Mobile Application. Please load this on Android/iOS to unlock.',
+              l10n.webMonetizationNotice,
               textAlign: TextAlign.center,
               style: AppTypography.bodySmall.copyWith(color: Colors.black54),
             ),
@@ -77,7 +75,7 @@ class PaywallActionSection extends StatelessWidget {
                 ),
               ),
               child: Text(
-                'Unlock Course (₹${category.priceInr})',
+                l10n.unlockCourse('${category.priceInr}'),
                 style: AppTypography.labelLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
@@ -98,7 +96,7 @@ class PaywallActionSection extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               Text(
-                '256-bit encrypted checkout via Razorpay • Instant access',
+                l10n.trustBadgeSecureCheckout,
                 style: AppTypography.labelSmall.copyWith(
                   color: Colors.grey.shade600,
                   fontSize: 11,
@@ -107,39 +105,6 @@ class PaywallActionSection extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-        ],
-        if (showReviewButton) ...[
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: OutlinedButton(
-              onPressed: isLoading ? null : onReviewPressed,
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.primary, width: 2),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: AppRadius.borderXl,
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.rate_review_outlined,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    'Rate & Share Feedback',
-                    style: AppTypography.labelLarge.copyWith(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
         ],
       ],
     );

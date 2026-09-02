@@ -181,6 +181,7 @@ class _BakhedEditorScreenState extends ConsumerState<BakhedEditorScreen>
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Go back',
             onPressed: () {
               if (isDirty) {
                 Navigator.of(context).maybePop();

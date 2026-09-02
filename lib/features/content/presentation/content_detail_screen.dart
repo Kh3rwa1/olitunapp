@@ -163,6 +163,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.close_rounded),
+              tooltip: 'Exit practice',
               onPressed: () {
                 ref
                     .read(

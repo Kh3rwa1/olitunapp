@@ -6,12 +6,12 @@ import '../../core/ads/widgets/native_ad_widget.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/payments/purchase_repository.dart';
 import '../../core/payments/razorpay_service.dart';
-import '../../core/reviews/review_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/app_settings_provider.dart';
 import '../providers/purchases_provider.dart';
 import 'paywall/paywall_action_section.dart';
@@ -42,17 +42,18 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
   Future<void> _handlePayment() async {
     HapticFeedback.mediumImpact();
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.read(currentUserProvider).value;
     if (user == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to purchase courses.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.pleaseLogInToPurchase)));
       return;
     }
 
     setState(() {
       _isLoading = true;
-      _statusMessage = 'Creating secure server order...';
+      _statusMessage = l10n.creatingSecureOrder;
     });
 
     final repo = ref.read(purchaseRepositoryProvider);
@@ -61,7 +62,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
       // 1. Create Razorpay order on server based on official category price
       final orderResult = await repo.createRazorpayOrder(widget.category.id);
       if (orderResult['ok'] != true) {
-        _showError(orderResult['message'] ?? 'Failed to create payment order');
+        _showError(orderResult['message'] ?? l10n.failedToCreateOrder);
         return;
       }
 
@@ -71,7 +72,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
           (orderResult['keyId'] as String?) ?? ref.read(razorpayKeyProvider);
 
       setState(() {
-        _statusMessage = 'Opening payment gateway...';
+        _statusMessage = l10n.openingPaymentGateway;
       });
 
       // 2. Launch Razorpay checkout bound to server order ID
@@ -88,7 +89,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
       if (result is PurchaseSuccess) {
         setState(() {
-          _statusMessage = 'Verifying payment with server...';
+          _statusMessage = l10n.verifyingPayment;
         });
 
         // 3. Verify payment signature & captured status on server
@@ -102,9 +103,9 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
         if (verifyResult['ok'] == true) {
           ref.invalidate(purchasedCategoriesProvider);
           HapticFeedback.heavyImpact();
-          _showSuccessOverlay('Course successfully unlocked!');
+          _showSuccessOverlay(l10n.courseUnlocked);
         } else {
-          _showError(verifyResult['message'] ?? 'Payment verification failed');
+          _showError(verifyResult['message'] ?? l10n.paymentVerificationFailed);
         }
       } else if (result is PurchaseFailed) {
         _showError(result.message);
@@ -117,44 +118,14 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
       }
     } catch (e) {
       AppLogger.debug('Checkout exception: $e');
-      _showError('Checkout encountered an unexpected error: $e');
+      _showError(l10n.checkoutUnexpectedError(e.toString()));
     }
   }
 
-  Future<void> _handleReviewUnlock() async {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _isLoading = true;
-      _statusMessage = 'Opening Play Store...';
-    });
-
-    try {
-      final reviewService = ref.read(reviewServiceProvider);
-      await reviewService.requestReview();
-      await reviewService.openStoreListing();
-
-      setState(() {
-        _isLoading = false;
-        _statusMessage = null;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Thank you for rating Olitun! Play Store reviews are treated as voluntary feedback.',
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      AppLogger.debug('Review exception: $e');
-      setState(() {
-        _isLoading = false;
-        _statusMessage = null;
-      });
-    }
-  }
+  // Review-for-unlock was removed (Google Play incentivized-review policy
+  // risk). Categories previously gated as review_only now stay paid;
+  // players who already unlocked via review keep their entitlement — the
+  // server still honors those records.
 
   void _showSuccessOverlay(String message) {
     setState(() {
@@ -198,19 +169,10 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Watch settings
-    final settingsAsync = ref.watch(appSettingsProvider);
-    final globalReviewEnabled =
-        settingsAsync.value?['global_review_unlock_enabled'] != 'false';
-
-    final showReviewButton =
-        globalReviewEnabled &&
-        (widget.category.unlockMode == 'review_only' ||
-            widget.category.unlockMode == 'review_or_paid');
-
     final showPaidButton =
         widget.category.unlockMode == 'paid_only' ||
-        widget.category.unlockMode == 'review_or_paid';
+        widget.category.unlockMode == 'review_or_paid' ||
+        widget.category.unlockMode == 'review_only';
 
     return Container(
       constraints: BoxConstraints(maxHeight: screenHeight * 0.9),
@@ -254,9 +216,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                         category: widget.category,
                         isLoading: _isLoading,
                         showPaidButton: showPaidButton,
-                        showReviewButton: showReviewButton,
                         onPayPressed: _handlePayment,
-                        onReviewPressed: _handleReviewUnlock,
                       ),
                     ],
                   ),
@@ -283,7 +243,8 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        _statusMessage ?? 'Processing...',
+                        _statusMessage ??
+                            AppLocalizations.of(context)!.processing,
                         style: AppTypography.titleMedium.copyWith(
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : Colors.black87,

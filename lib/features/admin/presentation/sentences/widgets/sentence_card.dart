@@ -161,6 +161,7 @@ class _SentenceCardState extends State<SentenceCard> {
                     Icons.chevron_right_rounded,
                     color: AdminTokens.textTertiary(isDark),
                   ),
+                  tooltip: 'Edit sentence',
                   onPressed: widget.onEdit,
                 ),
             ],

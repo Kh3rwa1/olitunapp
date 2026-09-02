@@ -77,6 +77,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                     ),
                     IconButton(
                       icon: const Icon(Icons.close_rounded),
+                      tooltip: 'Close review sheet',
                       onPressed: () => Navigator.pop(sheetContext),
                     ),
                   ],

@@ -5,6 +5,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class PaywallSuccessDialog extends StatelessWidget {
   final String message;
@@ -76,7 +77,7 @@ class PaywallSuccessDialog extends StatelessWidget {
             ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
             const SizedBox(height: AppSpacing.lg),
             Text(
-              'Maran Jauhar! 🎉',
+              AppLocalizations.of(context)!.maranJauharTitle,
               style: AppTypography.headlineSmall.copyWith(
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.5,
@@ -104,7 +105,7 @@ class PaywallSuccessDialog extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'Start Learning',
+                  AppLocalizations.of(context)!.startLearning,
                   style: AppTypography.labelLarge.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,

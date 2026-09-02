@@ -34,6 +34,7 @@ class LegalDocumentScreen extends StatelessWidget {
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
+          tooltip: 'Go back',
           onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
         title: Text(

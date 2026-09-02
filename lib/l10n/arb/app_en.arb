@@ -313,5 +313,79 @@
     "@minutesPerDay": {"placeholders": {"minutes": {"type": "int"}}},
     "downloadStarterAudio": "Download starter audio",
     "downloadStarterAudioSubtitle": "Learn offline from day one",
-    "backButton": "Back"
+    "backButton": "Back",
+
+    "joharLoading": "Johar... Loading",
+    "somethingWentWrong": "Something went wrong!",
+    "offlineMode": "Offline mode. Showing cached content.",
+    "offlineProgressCached": "Offline. Progress cached locally.",
+    "syncingProgress": "Syncing progress...",
+    "progressSynced": "Progress synced!",
+    "failedToSyncProgress": "Failed to sync progress.",
+
+    "processing": "Processing...",
+    "pleaseLogInToPurchase": "Please log in to purchase courses.",
+    "creatingSecureOrder": "Creating secure server order...",
+    "openingPaymentGateway": "Opening payment gateway...",
+    "verifyingPayment": "Verifying payment with server...",
+    "courseUnlocked": "Course successfully unlocked!",
+    "failedToCreateOrder": "Failed to create payment order",
+    "paymentVerificationFailed": "Payment verification failed",
+    "checkoutUnexpectedError": "Checkout encountered an unexpected error: {error}",
+    "@checkoutUnexpectedError": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "unlockCourse": "Unlock Course (₹{amount})",
+    "@unlockCourse": {
+        "placeholders": {
+            "amount": {
+                "type": "String"
+            }
+        }
+    },
+    "trustBadgeSecureCheckout": "256-bit encrypted checkout via Razorpay • Instant access",
+    "webMonetizationRestrictedTitle": "Monetization restricted on Web",
+    "webMonetizationNotice": "Razorpay checkouts and App Store reviews are only supported on the Olitun Mobile Application. Please load this on Android/iOS to unlock.",
+    "aboutThisCourse": "About this course",
+    "courseOutcome": "Course Outcome",
+    "premiumCourseBadge": "PREMIUM COURSE",
+    "maranJauharTitle": "Maran Jauhar! 🎉",
+    "startLearning": "Start Learning",
+    "paywallValueOfflineTitle": "Full Offline Pack Access",
+    "paywallValueOfflineSubtitle": "Download lessons, audio pronunciations, and quizzes for anytime offline learning.",
+    "paywallValueAiTitle": "Unlimited AI Translations",
+    "paywallValueAiSubtitle": "Instant Ol Chiki translations and pronunciation guides without query limits.",
+    "paywallValueAdFreeTitle": "Zero Ad Interruptions",
+    "paywallValueAdFreeSubtitle": "Experience 100% distraction-free language practice across all modules.",
+    "paywallValueLifetimeTitle": "Lifetime Access Guarantee",
+    "paywallValueLifetimeSubtitle": "Pay once with no recurring fees, subscriptions, or hidden charges.",
+
+    "navLearn": "Learn",
+    "navBakhed": "Bakhed",
+    "navProfile": "Profile",
+    "navTabSemantics": "{label} tab",
+    "@navTabSemantics": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            }
+        }
+    },
+    "navItemSemantics": "{label} navigation item",
+    "@navItemSemantics": {
+        "placeholders": {
+            "label": {
+                "type": "String"
+            }
+        }
+    },
+
+    "kudosMistake1": "Mistakes reviewed. That's how mastery is built.",
+    "kudosMistake2": "Mastery in progress! You transformed mistakes into wisdom.",
+    "kudosMistake3": "Fantastic! Correcting mistakes is the secret to fluency.",
+    "kudosMistake4": "Brilliant review! You are learning faster by refining errors."
 }

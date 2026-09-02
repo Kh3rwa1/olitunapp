@@ -6,6 +6,7 @@ import 'package:hive/hive.dart';
 import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/app_settings_provider.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:itun/shared/widgets/paywall/paywall_action_section.dart';
@@ -22,6 +23,12 @@ void main() {
     final tempDir = Directory.systemTemp.createTempSync('hive_paywall_test_');
     Hive.init(tempDir.path);
   });
+
+  MaterialApp l10nApp({required Widget child}) => MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: child,
+  );
 
   const testCategory = CategoryEntity(
     id: 'cat_advanced_grammar',
@@ -42,8 +49,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        l10nApp(
+          child: const Scaffold(
             body: PaywallHeader(category: testCategory, isDark: false),
           ),
         ),
@@ -58,8 +65,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        l10nApp(
+          child: const Scaffold(
             body: SingleChildScrollView(
               child: PaywallCourseDetails(
                 category: testCategory,
@@ -90,8 +97,8 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        l10nApp(
+          child: const Scaffold(
             body: SingleChildScrollView(
               child: PaywallValueProps(isDark: false),
             ),
@@ -105,39 +112,33 @@ void main() {
       expect(find.text('Lifetime Access Guarantee'), findsOneWidget);
     });
 
-    testWidgets('PaywallActionSection renders paid and review buttons', (
-      tester,
-    ) async {
+    testWidgets('PaywallActionSection renders paid button; review-for-unlock '
+        'is removed', (tester) async {
       var payTapped = false;
-      var reviewTapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        l10nApp(
+          child: Scaffold(
             body: PaywallActionSection(
               category: testCategory,
               isLoading: false,
               showPaidButton: true,
-              showReviewButton: true,
               onPayPressed: () => payTapped = true,
-              onReviewPressed: () => reviewTapped = true,
             ),
           ),
         ),
       );
 
       expect(find.text('Unlock Course (₹299)'), findsOneWidget);
-      expect(find.text('Rate & Share Feedback'), findsOneWidget);
       expect(
         find.text('256-bit encrypted checkout via Razorpay • Instant access'),
         findsOneWidget,
       );
+      // The incentivized review-for-unlock CTA is gone (Play policy risk).
+      expect(find.text('Rate & Share Feedback'), findsNothing);
 
       await tester.tap(find.text('Unlock Course (₹299)'));
       expect(payTapped, isTrue);
-
-      await tester.tap(find.text('Rate & Share Feedback'));
-      expect(reviewTapped, isTrue);
     });
 
     testWidgets('PaywallSuccessDialog renders and handles start learning CTA', (
@@ -146,8 +147,8 @@ void main() {
       var started = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        l10nApp(
+          child: Scaffold(
             body: PaywallSuccessDialog(
               message: 'Your course has been unlocked successfully!',
               onStartLearning: () => started = true,
@@ -188,8 +189,10 @@ void main() {
                 (ref) => Future.value(<String>{}),
               ),
             ],
-            child: const MaterialApp(
-              home: Scaffold(body: PaywallBottomSheet(category: testCategory)),
+            child: l10nApp(
+              child: const Scaffold(
+                body: PaywallBottomSheet(category: testCategory),
+              ),
             ),
           ),
         );
@@ -208,7 +211,7 @@ void main() {
     );
 
     testWidgets(
-      'PaywallBottomSheet respects paid_only mode hiding review CTA',
+      'PaywallBottomSheet shows no review CTA for paid_only or review modes',
       (tester) async {
         tester.view.physicalSize = const Size(800, 1200);
         tester.view.devicePixelRatio = 1.0;
@@ -224,35 +227,55 @@ void main() {
           order: 2,
         );
 
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              currentUserProvider.overrideWith(
-                (ref) => Future.value(
-                  const UserEntity(
-                    id: 'user_test_123',
-                    email: 'test@olitun.com',
-                    name: 'Test Student',
+        const reviewOnlyCategory = CategoryEntity(
+          id: 'cat_review_only',
+          titleLatin: 'Legacy Review Gated Course',
+          titleOlChiki: 'ᱨᱤᱵᱷᱤᱭᱩ',
+          priceInr: 199,
+          unlockMode: 'review_only',
+          order: 3,
+        );
+
+        Future<void> pumpCategory(
+          WidgetTester tester,
+          CategoryEntity category,
+        ) async {
+          await tester.pumpWidget(
+            ProviderScope(
+              overrides: [
+                currentUserProvider.overrideWith(
+                  (ref) => Future.value(
+                    const UserEntity(
+                      id: 'user_test_123',
+                      email: 'test@olitun.com',
+                      name: 'Test Student',
+                    ),
                   ),
                 ),
-              ),
-              appSettingsProvider.overrideWith(
-                (ref) => Future.value({'global_review_unlock_enabled': 'true'}),
-              ),
-              purchasedCategoriesProvider.overrideWith(
-                (ref) => Future.value(<String>{}),
-              ),
-            ],
-            child: const MaterialApp(
-              home: Scaffold(
-                body: PaywallBottomSheet(category: paidOnlyCategory),
+                appSettingsProvider.overrideWith(
+                  (ref) =>
+                      Future.value({'global_review_unlock_enabled': 'true'}),
+                ),
+                purchasedCategoriesProvider.overrideWith(
+                  (ref) => Future.value(<String>{}),
+                ),
+              ],
+              child: l10nApp(
+                child: Scaffold(body: PaywallBottomSheet(category: category)),
               ),
             ),
-          ),
-        );
-        await tester.pumpAndSettle();
+          );
+          await tester.pumpAndSettle();
+        }
 
+        await pumpCategory(tester, paidOnlyCategory);
         expect(find.text('Unlock Course (₹499)'), findsOneWidget);
+        expect(find.text('Rate & Share Feedback'), findsNothing);
+
+        // Legacy review_only categories now stay paid: the unlock CTA is
+        // the paid button and the review CTA never renders.
+        await pumpCategory(tester, reviewOnlyCategory);
+        expect(find.text('Unlock Course (₹199)'), findsOneWidget);
         expect(find.text('Rate & Share Feedback'), findsNothing);
       },
     );

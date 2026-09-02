@@ -170,6 +170,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                       child: _GlassIconButton(
                         icon: Icons.arrow_back_rounded,
                         isDark: isDark,
+                        semanticLabel: 'Go back',
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -291,8 +292,13 @@ class _PracticeTarget {
 class _GlassIconButton extends StatelessWidget {
   final IconData icon;
   final bool isDark;
+  final String semanticLabel;
 
-  const _GlassIconButton({required this.icon, required this.isDark});
+  const _GlassIconButton({
+    required this.icon,
+    required this.isDark,
+    required this.semanticLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -305,7 +311,15 @@ class _GlassIconButton extends StatelessWidget {
           color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black12,
         ),
       ),
-      child: Icon(icon, size: 22, color: isDark ? Colors.white : Colors.black),
+      child: Semantics(
+        button: true,
+        label: semanticLabel,
+        child: Icon(
+          icon,
+          size: 22,
+          color: isDark ? Colors.white : Colors.black,
+        ),
+      ),
     );
   }
 }

@@ -159,6 +159,7 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
+                  tooltip: 'Close form',
                   icon: const Icon(Icons.close_rounded),
                   style: IconButton.styleFrom(
                     backgroundColor: isDark

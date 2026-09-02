@@ -89,6 +89,7 @@ class BakhedCategoryField extends ConsumerWidget {
                   ),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
+                    tooltip: 'Clear category',
                     onPressed: enabled
                         ? () {
                             textEditingController.clear();

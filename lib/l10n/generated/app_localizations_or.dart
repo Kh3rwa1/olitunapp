@@ -706,4 +706,147 @@ class AppLocalizationsOr extends AppLocalizations {
 
   @override
   String get backButton => 'ପଛକୁ';
+
+  @override
+  String get joharLoading => 'ଜୋହାର... ଲୋଡ୍ ହେଉଛି...';
+
+  @override
+  String get somethingWentWrong => 'କିଛି ଭୁଲ ହୋଇଗଲା!';
+
+  @override
+  String get offlineMode => 'ଅଫଲାଇନ ମୋଡ୍। ସଂରକ୍ଷିତ ବିଷୟବସ୍ତୁ ଦେଖାଯାଉଛି।';
+
+  @override
+  String get offlineProgressCached => 'ଅଫଲାଇନ। ପ୍ରଗତି ଡିଭାଇସରେ ସଂରକ୍ଷିତ ହୋଇଛି।';
+
+  @override
+  String get syncingProgress => 'ପ୍ରଗତି ସିଙ୍କ ହେଉଛି...';
+
+  @override
+  String get progressSynced => 'ପ୍ରଗତି ସିଙ୍କ ହୋଇଗଲା!';
+
+  @override
+  String get failedToSyncProgress => 'ପ୍ରଗତି ସିଙ୍କ ହୋଇପାରିଲା ନାହିଁ।';
+
+  @override
+  String get processing => 'ପ୍ରକ୍ରିୟା ଚାଲିଛି...';
+
+  @override
+  String get pleaseLogInToPurchase =>
+      'କୋର୍ସ କିଣିବା ପାଇଁ ଦୟାକରି ଲଗ୍ ଇନ୍ କରନ୍ତୁ।';
+
+  @override
+  String get creatingSecureOrder => 'ସୁରକ୍ଷିତ ସର୍ଭର ଅର୍ଡର ତିଆରି ହେଉଛି...';
+
+  @override
+  String get openingPaymentGateway => 'ପେମେଣ୍ଟ ଗେଟୱେ ଖୋଲାଯାଉଛି...';
+
+  @override
+  String get verifyingPayment => 'ସର୍ଭର ସହ ପେମେଣ୍ଟ ଯାଞ୍ଚ ହେଉଛି...';
+
+  @override
+  String get courseUnlocked => 'କୋର୍ସ ସଫଳତାର ସହ ଆନଲକ୍ ହୋଇଗଲା!';
+
+  @override
+  String get failedToCreateOrder => 'ପେମେଣ୍ଟ ଅର୍ଡର ତିଆରି ହୋଇପାରିଲା ନାହିଁ';
+
+  @override
+  String get paymentVerificationFailed => 'ପେମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ';
+
+  @override
+  String checkoutUnexpectedError(String error) {
+    return 'ଚେକଆଉଟରେ ଅପ୍ରତ୍ୟାଶିତ ତ୍ରୁଟି: $error';
+  }
+
+  @override
+  String unlockCourse(String amount) {
+    return 'କୋର୍ସ ଆନଲକ୍ କରନ୍ତୁ (₹$amount)';
+  }
+
+  @override
+  String get trustBadgeSecureCheckout =>
+      'Razorpay ଦ୍ୱାରା 256-bit ଏନକ୍ରିପ୍ଟେଡ୍ ଚେକଆଉଟ୍ • ତୁରନ୍ତ ପ୍ରବେଶ';
+
+  @override
+  String get webMonetizationRestrictedTitle => 'ୱେବରେ ମୋନେଟାଇଜେସନ ପ୍ରତିବନ୍ଧିତ';
+
+  @override
+  String get webMonetizationNotice =>
+      'Razorpay ଚେକଆଉଟ୍ ଏବଂ App Store ସମୀକ୍ଷା କେବଳ Olitun ମୋବାଇଲ୍ ଆପ୍‌ରେ ସମର୍ଥିତ। ଆନଲକ୍ କରିବା ପାଇଁ ଏହାକୁ Android/iOS ରେ ଖୋଲନ୍ତୁ।';
+
+  @override
+  String get aboutThisCourse => 'ଏହି କୋର୍ସ ବିଷୟରେ';
+
+  @override
+  String get courseOutcome => 'କୋର୍ସ ଫଳାଫଳ';
+
+  @override
+  String get premiumCourseBadge => 'ପ୍ରିମିୟମ୍ କୋର୍ସ';
+
+  @override
+  String get maranJauharTitle => 'ମରନ ଜୋହାର! 🎉';
+
+  @override
+  String get startLearning => 'ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ';
+
+  @override
+  String get paywallValueOfflineTitle => 'ସମ୍ପୂର୍ଣ୍ଣ ଅଫଲାଇନ ପ୍ୟାକ ପ୍ରବେଶ';
+
+  @override
+  String get paywallValueOfflineSubtitle =>
+      'ଯେକୌଣସି ସମୟ ଅଫଲାଇନ ଶିଖିବା ପାଇଁ ପାଠ, ଉଚ୍ଚାରଣ ଅଡ଼ିଓ ଏବଂ କ୍ୱିଜ୍ ଡାଉନଲୋଡ୍ କରନ୍ତୁ।';
+
+  @override
+  String get paywallValueAiTitle => 'ଅସୀମିତ AI ଅନୁବାଦ';
+
+  @override
+  String get paywallValueAiSubtitle =>
+      'କୌଣସି କ୍ୱେରି ସୀମା ବିନା ତୁରନ୍ତ ଓଲଚିକି ଅନୁବାଦ ଏବଂ ଉଚ୍ଚାରଣ ମାର୍ଗଦର୍ଶନ।';
+
+  @override
+  String get paywallValueAdFreeTitle => 'ଶୂନ ବିଜ୍ଞାପନ ବାଧା';
+
+  @override
+  String get paywallValueAdFreeSubtitle =>
+      'ସବୁ ମଡ୍ୟୁଲରେ 100% ବିନା ଧ୍ୟାନ ବିଚ୍ୟୁତିର ଭାଷା ଅଭ୍ୟାସ।';
+
+  @override
+  String get paywallValueLifetimeTitle => 'ଆଜୀବନ ପ୍ରବେଶ ଗାରାଣ୍ଟି';
+
+  @override
+  String get paywallValueLifetimeSubtitle =>
+      'ଥରେ ଦାଗିତ — କୌଣସି ପୁନରାବର୍ତ୍ତିତ ଫି, ସବସ୍କ୍ରିପସନ କିମ୍ବା ଲୁଚା ଚାର୍ଜ ନାହିଁ।';
+
+  @override
+  String get navLearn => 'ଶିଖନ୍ତୁ';
+
+  @override
+  String get navBakhed => 'ବାଖେଡ଼';
+
+  @override
+  String get navProfile => 'ପ୍ରୋଫାଇଲ୍';
+
+  @override
+  String navTabSemantics(String label) {
+    return '$label ଟ୍ୟାବ୍';
+  }
+
+  @override
+  String navItemSemantics(String label) {
+    return '$label ନାଭିଗେସନ୍ ଆଇଟମ୍';
+  }
+
+  @override
+  String get kudosMistake1 =>
+      'ଭୁଲଗୁଡ଼ିକ ସମୀକ୍ଷା ହେଲା। ଏମିତି ହିଁ ଦକ୍ଷତା ଗଢ଼ାଯାଏ।';
+
+  @override
+  String get kudosMistake2 => 'ଦକ୍ଷତା ଗଢ଼ୁଅଛି! ଆପଣ ଭୁଲକୁ ଜ୍ଞାନରେ ବଦଳାଇଛନ୍ତି।';
+
+  @override
+  String get kudosMistake3 => 'ଅଦ୍ଭୁତ! ଭୁଲ ସଂଶୋଧନ ହିଁ ସାବଲୀଳତାର ରହସ୍ୟ।';
+
+  @override
+  String get kudosMistake4 =>
+      'ଅସାଧାରଣ ସମୀକ୍ଷା! ଭୁଲ ସଂଶୋଧନ କରି ଆପଣ ଅଧିକ ଶୀଘ୍ର ଶିଖୁଛନ୍ତି।';
 }

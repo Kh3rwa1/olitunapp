@@ -114,6 +114,7 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
             Icons.arrow_back_ios_new_rounded,
             color: isDark ? Colors.white : Colors.black87,
           ),
+          tooltip: 'Go back',
           onPressed: () => context.pop(),
         ),
         title: Text(

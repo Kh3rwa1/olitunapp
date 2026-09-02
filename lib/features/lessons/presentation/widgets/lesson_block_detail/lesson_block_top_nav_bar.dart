@@ -11,10 +11,12 @@ class LessonBlockFloatingButton extends StatelessWidget {
     super.key,
     required this.icon,
     required this.onPressed,
+    required this.tooltip,
   });
 
   final IconData icon;
   final VoidCallback onPressed;
+  final String tooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +32,7 @@ class LessonBlockFloatingButton extends StatelessWidget {
           ),
           child: IconButton(
             icon: Icon(icon, color: Colors.white, size: 24),
+            tooltip: tooltip,
             onPressed: onPressed,
             padding: const EdgeInsets.all(10),
             constraints: const BoxConstraints(),
@@ -75,6 +78,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
         children: [
           LessonBlockFloatingButton(
             icon: backIcon ?? Icons.arrow_back_rounded,
+            tooltip: 'Go back',
             onPressed:
                 onBackPressed ??
                 () async {
@@ -142,6 +146,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                   ? LessonBlockFloatingButton(
                       key: audioKey,
                       icon: Icons.volume_up_rounded,
+                      tooltip: 'Play audio',
                       onPressed: onAudioPressed!,
                     )
                   : const SizedBox.shrink(),

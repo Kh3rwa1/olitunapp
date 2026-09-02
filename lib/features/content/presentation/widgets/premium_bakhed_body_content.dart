@@ -156,6 +156,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                   ),
                   child: IconButton(
                     icon: Icon(Icons.volume_up_rounded, color: accentColor),
+                    tooltip: 'Play audio',
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       final db = ref.read(appwriteDbServiceProvider);

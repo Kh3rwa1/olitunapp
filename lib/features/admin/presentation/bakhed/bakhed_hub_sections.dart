@@ -199,6 +199,7 @@ extension _BakhedHubSections on _BakhedHubScreenState {
                   IconButton(
                     icon: const Icon(Icons.edit_rounded, size: 18),
                     color: AdminTokens.textSecondary(isDark),
+                    tooltip: 'Edit rhyme',
                     onPressed: () =>
                         context.go('/admin/bakhed/editor/${item.id}'),
                     style: IconButton.styleFrom(
@@ -211,6 +212,7 @@ extension _BakhedHubSections on _BakhedHubScreenState {
                   IconButton(
                     icon: const Icon(Icons.delete_outline_rounded, size: 18),
                     color: Colors.red,
+                    tooltip: 'Delete rhyme',
                     onPressed: () => _confirmDelete(context, ref, item),
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.red.withValues(alpha: 0.08),

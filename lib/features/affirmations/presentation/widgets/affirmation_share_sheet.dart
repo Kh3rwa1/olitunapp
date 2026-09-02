@@ -214,6 +214,7 @@ class _AffirmationShareSheetState extends ConsumerState<AffirmationShareSheet> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Close share sheet',
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ],

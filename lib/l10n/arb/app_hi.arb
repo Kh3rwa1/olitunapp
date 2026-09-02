@@ -360,5 +360,79 @@
   },
   "downloadStarterAudio": "स्टार्टर ऑडियो डाउनलोड करें",
   "downloadStarterAudioSubtitle": "पहले दिन से ऑफ़लाइन सीखें",
-  "backButton": "पीछे"
+  "backButton": "पीछे",
+
+  "joharLoading": "जोहार... लोड हो रहा है...",
+  "somethingWentWrong": "कुछ गलत हो गया!",
+  "offlineMode": "ऑफ़लाइन मोड। सहेजा गया कंटेंट दिख रहा है।",
+  "offlineProgressCached": "ऑफ़लाइन। प्रगति डिवाइस पर सहेजी गई।",
+  "syncingProgress": "प्रगति सिंक हो रही है...",
+  "progressSynced": "प्रगति सिंक हो गई!",
+  "failedToSyncProgress": "प्रगति सिंक करने में विफल।",
+
+  "processing": "प्रोसेस हो रहा है...",
+  "pleaseLogInToPurchase": "कोर्स खरीदने के लिए कृपया लॉग इन करें।",
+  "creatingSecureOrder": "सुरक्षित सर्वर ऑर्डर बनाया जा रहा है...",
+  "openingPaymentGateway": "पेमेंट गेटवे खोला जा रहा है...",
+  "verifyingPayment": "सर्वर से पेमेंट सत्यापित हो रहा है...",
+  "courseUnlocked": "कोर्स सफलतापूर्वक अनलॉक हुआ!",
+  "failedToCreateOrder": "पेमेंट ऑर्डर बनाने में विफल",
+  "paymentVerificationFailed": "पेमेंट सत्यापन विफल",
+  "checkoutUnexpectedError": "चेकआउट में अनपेक्षित त्रुटि: {error}",
+  "@checkoutUnexpectedError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "unlockCourse": "कोर्स अनलॉक करें (₹{amount})",
+  "@unlockCourse": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "trustBadgeSecureCheckout": "Razorpay द्वारा 256-bit एन्क्रिप्टेड चेकआउट • तुरंत एक्सेस",
+  "webMonetizationRestrictedTitle": "वेब पर मॉनेटाइज़ेशन प्रतिबंधित",
+  "webMonetizationNotice": "Razorpay चेकआउट और App Store समीक्षाएँ केवल Olitun मोबाइल ऐप पर समर्थित हैं। अनलॉक करने के लिए इसे Android/iOS पर खोलें।",
+  "aboutThisCourse": "इस कोर्स के बारे में",
+  "courseOutcome": "कोर्स परिणाम",
+  "premiumCourseBadge": "प्रीमियम कोर्स",
+  "maranJauharTitle": "मरन जोहार! 🎉",
+  "startLearning": "सीखना शुरू करें",
+  "paywallValueOfflineTitle": "पूरा ऑफ़लाइन पैक एक्सेस",
+  "paywallValueOfflineSubtitle": "कभी भी ऑफ़लाइन सीखने के लिए पाठ, उच्चारण ऑडियो और क्विज़ डाउनलोड करें।",
+  "paywallValueAiTitle": "असीमित AI अनुवाद",
+  "paywallValueAiSubtitle": "बिना क्वेरी सीमा के तुरंत ओलचिकी अनुवाद और उच्चारण मार्गदर्शन।",
+  "paywallValueAdFreeTitle": "शून्य विज्ञापन रुकावट",
+  "paywallValueAdFreeSubtitle": "सभी मॉड्यूल में 100% बिना ध्यान भटकाने वाला भाषा अभ्यास।",
+  "paywallValueLifetimeTitle": "आजीवन एक्सेस गारंटी",
+  "paywallValueLifetimeSubtitle": "एक बार भुगतान — कोई आवर्ती शुल्क, सब्सक्रिप्शन या छिपा शुल्क नहीं।",
+
+  "navLearn": "सीखें",
+  "navBakhed": "बाखेड़",
+  "navProfile": "प्रोफ़ाइल",
+  "navTabSemantics": "{label} टैब",
+  "@navTabSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "navItemSemantics": "{label} नेविगेशन आइटम",
+  "@navItemSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+
+  "kudosMistake1": "गलतियों की समीक्षा हुई। इसी तरह निपुणता बनती है।",
+  "kudosMistake2": "निपुणता बन रही है! आपने गलतियों को ज्ञान में बदल दिया।",
+  "kudosMistake3": "शानदार! गलतियाँ सुधारना ही धाराप्रवाहता का रहस्य है।",
+  "kudosMistake4": "शानदार समीक्षा! गलतियों को सुधारकर आप तेज़ी से सीख रहे हैं।"
 }

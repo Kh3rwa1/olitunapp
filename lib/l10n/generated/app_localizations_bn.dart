@@ -706,4 +706,147 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get backButton => 'পেছনে';
+
+  @override
+  String get joharLoading => 'জোহার... লোড হচ্ছে...';
+
+  @override
+  String get somethingWentWrong => 'কিছু একটা ভুল হয়েছে!';
+
+  @override
+  String get offlineMode => 'অফলাইন মোড। সংরক্ষিত কনটেন্ট দেখানো হচ্ছে।';
+
+  @override
+  String get offlineProgressCached =>
+      'অফলাইন। অগ্রগতি ডিভাইসে সংরক্ষিত হয়েছে।';
+
+  @override
+  String get syncingProgress => 'অগ্রগতি সিঙ্ক হচ্ছে...';
+
+  @override
+  String get progressSynced => 'অগ্রগতি সিঙ্ক হয়েছে!';
+
+  @override
+  String get failedToSyncProgress => 'অগ্রগতি সিঙ্ক করা যায়নি।';
+
+  @override
+  String get processing => 'প্রসেস হচ্ছে...';
+
+  @override
+  String get pleaseLogInToPurchase => 'কোর্স কিনতে অনুগ্রহ করে লগ ইন করুন।';
+
+  @override
+  String get creatingSecureOrder => 'নিরাপদ সার্ভার অর্ডার তৈরি হচ্ছে...';
+
+  @override
+  String get openingPaymentGateway => 'পেমেন্ট গেটওয়ে খোলা হচ্ছে...';
+
+  @override
+  String get verifyingPayment => 'সার্ভারের সাথে পেমেন্ট যাচাই হচ্ছে...';
+
+  @override
+  String get courseUnlocked => 'কোর্স সফলভাবে আনলক হয়েছে!';
+
+  @override
+  String get failedToCreateOrder => 'পেমেন্ট অর্ডার তৈরি করা যায়নি';
+
+  @override
+  String get paymentVerificationFailed => 'পেমেন্ট যাচাই ব্যর্থ';
+
+  @override
+  String checkoutUnexpectedError(String error) {
+    return 'চেকআউটে অপ্রত্যাশিত ত্রুটি: $error';
+  }
+
+  @override
+  String unlockCourse(String amount) {
+    return 'কোর্স আনলক করুন (₹$amount)';
+  }
+
+  @override
+  String get trustBadgeSecureCheckout =>
+      'Razorpay দিয়ে 256-bit এনক্রিপ্টেড চেকআউট • তাৎক্ষণিক অ্যাক্সেস';
+
+  @override
+  String get webMonetizationRestrictedTitle => 'ওয়েবে মনিটাইজেশন সীমাবদ্ধ';
+
+  @override
+  String get webMonetizationNotice =>
+      'Razorpay চেকআউট এবং App Store রিভিউ শুধু Olitun মোবাইল অ্যাপে সমর্থিত। আনলক করতে Android/iOS-এ খুলুন।';
+
+  @override
+  String get aboutThisCourse => 'এই কোর্স সম্পর্কে';
+
+  @override
+  String get courseOutcome => 'কোর্সের ফলাফল';
+
+  @override
+  String get premiumCourseBadge => 'প্রিমিয়াম কোর্স';
+
+  @override
+  String get maranJauharTitle => 'মরন জোহার! 🎉';
+
+  @override
+  String get startLearning => 'শেখা শুরু করুন';
+
+  @override
+  String get paywallValueOfflineTitle => 'সম্পূর্ণ অফলাইন প্যাক অ্যাক্সেস';
+
+  @override
+  String get paywallValueOfflineSubtitle =>
+      'যেকোনো সময় অফলাইনে শেখার জন্য পাঠ, উচ্চারণ অডিও এবং কুইজ ডাউনলোড করুন।';
+
+  @override
+  String get paywallValueAiTitle => 'আনলিমিটেড AI অনুবাদ';
+
+  @override
+  String get paywallValueAiSubtitle =>
+      'কোনো ক্যোয়ারি সীমা ছাড়াই তাৎক্ষণিক ওলচিকি অনুবাদ এবং উচ্চারণ নির্দেশনা।';
+
+  @override
+  String get paywallValueAdFreeTitle => 'শূন্য বিজ্ঞাপন বাধা';
+
+  @override
+  String get paywallValueAdFreeSubtitle =>
+      'সব মডিউলে 100% বিভ্রান্তিমুক্ত ভাষা অনুশীলন।';
+
+  @override
+  String get paywallValueLifetimeTitle => 'আজীবন অ্যাক্সেসের গ্যারান্টি';
+
+  @override
+  String get paywallValueLifetimeSubtitle =>
+      'একবারই পরিশোধ — কোনো পুনরাবৃত্ত ফি, সাবস্ক্রিপশন বা লুকানো চার্জ নেই।';
+
+  @override
+  String get navLearn => 'শিখুন';
+
+  @override
+  String get navBakhed => 'বাখেড়';
+
+  @override
+  String get navProfile => 'প্রোফাইল';
+
+  @override
+  String navTabSemantics(String label) {
+    return '$label ট্যাব';
+  }
+
+  @override
+  String navItemSemantics(String label) {
+    return '$label নেভিগেশন আইটেম';
+  }
+
+  @override
+  String get kudosMistake1 => 'ভুলগুলো পর্যালোচিত। এভাবেই দক্ষতা তৈরি হয়।';
+
+  @override
+  String get kudosMistake2 =>
+      'দক্ষতা তৈরি হচ্ছে! আপনি ভুলগুলোকে জ্ঞানে রূপান্তর করেছেন।';
+
+  @override
+  String get kudosMistake3 => 'দারুণ! ভুল সংশোধনই সাবলীলতার রহস্য।';
+
+  @override
+  String get kudosMistake4 =>
+      'চমৎকার পর্যালোচনা! ভুল শুধরে আপনি আরও দ্রুত শিখছেন।';
 }

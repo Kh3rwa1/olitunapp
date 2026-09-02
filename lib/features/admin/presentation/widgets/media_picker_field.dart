@@ -307,6 +307,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                               IconButton(
                                 constraints: const BoxConstraints(),
                                 padding: EdgeInsets.zero,
+                                tooltip: 'Dismiss warning',
                                 icon: Icon(
                                   Icons.close_rounded,
                                   size: 18,
@@ -516,6 +517,9 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                         IconButton(
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
+                          tooltip: controller.value.isPlaying
+                              ? 'Pause preview'
+                              : 'Play preview',
                           icon: Icon(
                             controller.value.isPlaying
                                 ? Icons.pause_rounded

@@ -72,35 +72,42 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 1. Kill Switch Toggle
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: Text(
-              'Enable Ads for Free Tier',
-              style: AdminTokens.bodyStrong(isDark),
-            ),
-            subtitle: Text(
-              'Master kill switch. When enabled, free learners see non-intrusive banner, interstitial, and rewarded ads. Paying learners NEVER see ads regardless of this setting.',
-              style: AdminTokens.body(isDark).copyWith(fontSize: 12),
-            ),
-            value: state.isAdsEnabledForFreeTier,
-            activeThumbColor: AppColors.primary,
-            onChanged: (val) async {
-              final success = await ref
-                  .read(adminSettingsControllerProvider.notifier)
-                  .saveSetting('admob_enabled_free_tier', val.toString());
-              if (mounted) {
-                if (success) {
-                  _showSnackBar(
-                    val
-                        ? 'AdMob ads enabled for free tier! 📢'
-                        : 'AdMob ads globally suppressed! 🛑',
-                    AppColors.success,
-                  );
-                } else {
-                  _showSnackBar('Failed to update ad state', AppColors.error);
+          // SwitchListTile paints its background and ink on the nearest
+          // Material ancestor; the section card's decorated Container
+          // would hide both (framework assert) — give the tile its own
+          // transparent Material.
+          Material(
+            type: MaterialType.transparency,
+            child: SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(
+                'Enable Ads for Free Tier',
+                style: AdminTokens.bodyStrong(isDark),
+              ),
+              subtitle: Text(
+                'Master kill switch. When enabled, free learners see non-intrusive banner, interstitial, and rewarded ads. Paying learners NEVER see ads regardless of this setting.',
+                style: AdminTokens.body(isDark).copyWith(fontSize: 12),
+              ),
+              value: state.isAdsEnabledForFreeTier,
+              activeThumbColor: AppColors.primary,
+              onChanged: (val) async {
+                final success = await ref
+                    .read(adminSettingsControllerProvider.notifier)
+                    .saveSetting('admob_enabled_free_tier', val.toString());
+                if (mounted) {
+                  if (success) {
+                    _showSnackBar(
+                      val
+                          ? 'AdMob ads enabled for free tier! 📢'
+                          : 'AdMob ads globally suppressed! 🛑',
+                      AppColors.success,
+                    );
+                  } else {
+                    _showSnackBar('Failed to update ad state', AppColors.error);
+                  }
                 }
-              }
-            },
+              },
+            ),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),

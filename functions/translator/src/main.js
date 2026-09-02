@@ -79,13 +79,24 @@ export default async ({ req, res, log, error }) => {
     ]);
     if (cached.documents && cached.documents.length > 0) {
       const c = cached.documents[0];
-      log(JSON.stringify({
-        event: 'cache_hit',
-        from: c.from,
-        to: c.to,
-        durationMs: Date.now() - startTime,
-      }));
-      return res.json(ok(translationPayload(c.translatedText, c.from, to, true)));
+      // Legacy rows may predate the `translatedText` field name (older
+      // deployments stored `translation`) or be empty — returning them
+      // produced translations that vanished in the app. Treat a stale or
+      // empty row as a miss: self-heal by deleting it and re-translating.
+      const cachedText = String(c.translatedText || c.translation || '').trim();
+      if (cachedText.length > 0) {
+        log(JSON.stringify({
+          event: 'cache_hit',
+          from: c.from,
+          to: c.to,
+          durationMs: Date.now() - startTime,
+        }));
+        return res.json(ok(translationPayload(cachedText, c.from || from, to, true)));
+      }
+      log(JSON.stringify({ event: 'cache_stale_discarded', cacheKey: cacheKey.slice(0, 12) }));
+      db.deleteDocument(DB_ID, CACHE_COLLECTION, c.$id).catch((delErr) => {
+        log(JSON.stringify({ event: 'cache_stale_delete_failed', error: delErr?.message }));
+      });
     }
   } catch (cacheErr) {
     log(JSON.stringify({ event: 'cache_lookup_failed', error: cacheErr?.message }));

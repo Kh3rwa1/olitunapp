@@ -51,8 +51,13 @@ class ListeningQuizGenerator {
           ? ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
           : ['water', 'food', 'house', 'tree', 'hand', 'leg', 'head', 'eye'];
 
-      final distractors = [...otherBlockTranslations, ...fallbackDistractors]
-        ..shuffle();
+      // A distractor identical to the answer makes a correct option textually
+      // indistinguishable from a wrong one (picking it fails validation) —
+      // filter it out and dedupe before sampling.
+      final distractors = [
+        ...otherBlockTranslations,
+        ...fallbackDistractors,
+      ].where((d) => d != latin).toSet().toList()..shuffle();
 
       final options = [latin, ...distractors.take(3)]..shuffle();
       final correctIndex = options.indexOf(latin);

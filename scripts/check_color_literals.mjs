@@ -34,7 +34,7 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/admin/presentation/lessons/content/widgets/universal_block_sheet_sections.dart": 6,
   "lib/features/admin/presentation/lessons/content/widgets/lesson_block_card_sections.dart": 2,
   "lib/core/ads/widgets/native_ad_widget.dart": 1,
-  "lib/features/admin/presentation/affirmations/admin_affirmations_screen.dart": 6,
+  "lib/features/admin/presentation/affirmations/admin_affirmations_screen.dart": 5,
   "lib/features/admin/presentation/analytics/widgets/admin_analytics_cards.dart": 2,
   "lib/features/admin/presentation/banners/widgets/banner_form_sheet.dart": 1,
   "lib/features/admin/presentation/categories/widgets/category_form_sheet.dart": 2,
@@ -96,7 +96,7 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/quiz/presentation/widgets/quiz_out_of_hearts_screen.dart": 3,
   "lib/features/rhymes/presentation/widgets/binti_guru_form_sheet.dart": 1,
   "lib/features/rhymes/presentation/widgets/binti_guru_landing.dart": 4,
-  "lib/main.dart": 3
+  "lib/main.dart": 2
 };
 
 function getAllDartFiles(dir) {

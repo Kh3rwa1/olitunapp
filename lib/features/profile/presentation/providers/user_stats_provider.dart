@@ -296,35 +296,12 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       ..add(normalizedLetter);
     var updated = current.copyWith(practicedLetters: updatedLetters);
 
-    final isDigit = const [
-      '᱐',
-      '᱑',
-      '᱒',
-      '᱓',
-      '᱔',
-      '᱕',
-      '᱖',
-      '᱗',
-      '᱘',
-      '᱙',
-    ].contains(normalizedLetter);
+    const olChikiDigits = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
+    final isDigit = olChikiDigits.contains(normalizedLetter);
 
     if (isDigit) {
       final practicedDigits = updatedLetters
-          .where(
-            (l) => const [
-              '᱐',
-              '᱑',
-              '２',
-              '３',
-              '᱔',
-              '᱕',
-              '᱖',
-              '᱗',
-              '᱘',
-              '᱙',
-            ].contains(l),
-          )
+          .where(olChikiDigits.contains)
           .length;
       final masteryPct = (practicedDigits / 10 * 100).clamp(0, 100).round();
       final updatedMastery = Map<String, int>.from(updated.categoryMastery)
@@ -334,20 +311,7 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       );
     } else {
       final practicedAlphabetLetters = updatedLetters
-          .where(
-            (l) => !const [
-              '᱐',
-              '᱑',
-              '２',
-              '３',
-              '᱔',
-              '᱕',
-              '᱖',
-              '᱗',
-              '᱘',
-              '᱙',
-            ].contains(l),
-          )
+          .where((l) => !olChikiDigits.contains(l))
           .length;
       final masteryPct =
           (practicedAlphabetLetters / UserStatsEntity.alphabetLetterCount * 100)

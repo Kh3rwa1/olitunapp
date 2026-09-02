@@ -71,7 +71,6 @@ class PaywallActionSection extends StatelessWidget {
               onPressed: isLoading ? null : onPayPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
                 elevation: 0,
                 shape: const RoundedRectangleBorder(
                   borderRadius: AppRadius.borderXl,
@@ -82,7 +81,7 @@ class PaywallActionSection extends StatelessWidget {
                 style: AppTypography.labelLarge.copyWith(
                   fontWeight: FontWeight.w800,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: AppColors.elevatedButtonFg,
                 ),
               ),
             ),

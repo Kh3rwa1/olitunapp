@@ -173,8 +173,10 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
+          // #00391C on #1EE088 = 7.54:1 (WCAG AAA) — white on this primary
+          // computes to 1.74:1 and fails WCAG AA on every primary CTA.
           foregroundColor: brightness == Brightness.light
-              ? Colors.white
+              ? AppColors.elevatedButtonFg
               : Colors.black,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

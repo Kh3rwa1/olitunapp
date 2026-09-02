@@ -221,7 +221,6 @@ class NextBestActionCard extends ConsumerWidget {
                 onPressed: onTap,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color,
-                  foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   shape: RoundedRectangleBorder(

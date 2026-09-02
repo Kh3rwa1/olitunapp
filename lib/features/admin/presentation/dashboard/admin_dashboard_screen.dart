@@ -113,7 +113,6 @@ class AdminDashboardScreen extends ConsumerWidget {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
               ),

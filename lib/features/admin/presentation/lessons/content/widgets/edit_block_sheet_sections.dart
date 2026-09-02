@@ -164,7 +164,6 @@ extension _EditBlockSheetSections on _EditBlockSheetState {
             onPressed: match.onOpen,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
               elevation: 0,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               shape: RoundedRectangleBorder(

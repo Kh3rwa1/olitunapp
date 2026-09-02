@@ -383,11 +383,17 @@ class _AdminDestructiveDialogState extends State<AdminDestructiveDialog> {
                           : _handleConfirm,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
+                        // White stays on the danger-red variant; the primary
+                        // variant needs dark green (white = 1.74:1 on mint).
+                        foregroundColor: widget.isDanger
+                            ? Colors.white
+                            : AppColors.elevatedButtonFg,
                         disabledBackgroundColor: primaryColor.withValues(
                           alpha: 0.3,
                         ),
-                        disabledForegroundColor: Colors.white54,
+                        disabledForegroundColor: widget.isDanger
+                            ? Colors.white54
+                            : AppColors.elevatedButtonFg.withValues(alpha: 0.5),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(
@@ -397,13 +403,15 @@ class _AdminDestructiveDialogState extends State<AdminDestructiveDialog> {
                         elevation: 0,
                       ),
                       child: _isExecuting
-                          ? const SizedBox(
+                          ? SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
                                 valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                                  widget.isDanger
+                                      ? Colors.white
+                                      : AppColors.elevatedButtonFg,
                                 ),
                               ),
                             )

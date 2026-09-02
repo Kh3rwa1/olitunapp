@@ -216,6 +216,15 @@ class QuizEngine {
     ];
   }
 
+  /// Display text for an MCQ option: the English meaning when present,
+  /// otherwise the Ol Chiki word. Rendering '{olChiki} ({meaning})' let
+  /// players string-match the prompt glyph inside the option text instead
+  /// of knowing the language — options must show the meaning only.
+  static String _meaningDisplay(WordModel word) {
+    final meaning = word.meaning.trim();
+    return meaning.isNotEmpty ? meaning : word.wordOlChiki;
+  }
+
   static List<WordModel> wordDistractors(
     WordModel correctWord,
     List<WordModel> allWords,
@@ -235,10 +244,22 @@ class QuizEngine {
           !sameCategory.any((candidate) => candidate.id == word.id);
     });
 
-    return (<WordModel>[
+    // Distractors must be display-distinct from the correct answer AND from
+    // each other — two options reading the same meaning would make the
+    // question ambiguous (picking either is equally "correct").
+    final correctDisplay = _meaningDisplay(correctWord);
+    final distinct = <WordModel>[];
+    for (final candidate in <WordModel>[
       ...sameCategory,
       ...fallback,
-    ]..shuffle()).take(3).toList();
+    ]..shuffle()) {
+      final display = _meaningDisplay(candidate);
+      if (display == correctDisplay) continue;
+      if (distinct.any((d) => _meaningDisplay(d) == display)) continue;
+      distinct.add(candidate);
+      if (distinct.length == 3) break;
+    }
+    return distinct;
   }
 
   static void _addMissingDefaults(List<QuizModel> compiled) {
@@ -367,9 +388,7 @@ class QuizEngine {
       promptOlChiki: word.wordOlChiki,
       promptLatin: 'Choose the correct English meaning for this word.',
       optionsOlChiki: options.map((option) => option.wordOlChiki).toList(),
-      optionsLatin: options
-          .map((option) => '${option.wordOlChiki} (${option.meaning})')
-          .toList(),
+      optionsLatin: options.map(_meaningDisplay).toList(),
       correctIndex: options.indexWhere((option) => option.id == word.id),
     );
   }
@@ -397,9 +416,15 @@ class QuizEngine {
         .firstOrNull;
     if (targetWord == null) return null;
 
+    // Distractors must not duplicate the correct option textually — a dupe
+    // makes a correct answer indistinguishable from a wrong one.
     final options = <String>[
       targetWord,
-      ...words.takeShuffled(3).map((word) => word.wordOlChiki),
+      ...words
+          .takeShuffled(6)
+          .map((word) => word.wordOlChiki)
+          .where((option) => option != targetWord)
+          .take(3),
     ];
     return _fillBlankQuestion(
       sentence: sentence,
@@ -424,9 +449,7 @@ class QuizEngine {
       sentence: sentence,
       targetWord: matchedWord.wordOlChiki,
       optionsOlChiki: options.map((word) => word.wordOlChiki).toList(),
-      optionsLatin: options
-          .map((word) => '${word.wordOlChiki} (${word.meaning})')
-          .toList(),
+      optionsLatin: options.map(_meaningDisplay).toList(),
       promptLatin:
           'Choose the word that means "${matchedWord.meaning}" to complete the sentence.',
     );
@@ -455,13 +478,36 @@ class QuizEngine {
       optionsOlChiki: shuffledOptionsOlChiki,
       optionsLatin: shuffledOptionsLatin,
       correctIndex: indices.indexOf(0),
-      blankSentenceOlChiki: sentence.sentenceOlChiki.replaceAll(
+      blankSentenceOlChiki: _blankTargetInSentence(
+        sentence.sentenceOlChiki,
         targetWord,
-        '___',
       ),
       blankSentenceLatin: sentence.meaning,
       correctAnswer: targetWord,
     );
+  }
+
+  /// Blanks the target word in the sentence — but only when it appears as a
+  /// whole (punctuation-stripped) token. Naive `replaceAll` blanks the target
+  /// inside unrelated longer words, corrupting the displayed sentence.
+  static String _blankTargetInSentence(
+    String sentenceOlChiki,
+    String targetWord,
+  ) {
+    final tokens = sentenceOlChiki.split(RegExp(r'\s+'));
+    final blanked = tokens
+        .map((token) {
+          final stripped = token.replaceAll(RegExp(r'[᱾,?.!\-#%&()]'), '');
+          return stripped == targetWord
+              ? token.replaceAll(targetWord, '___')
+              : token;
+        })
+        .join(' ');
+    // Whole-token blanking missed (punctuation shapes differ) — fall back to
+    // the naive blank so the question still shows a gap.
+    return blanked == sentenceOlChiki
+        ? sentenceOlChiki.replaceAll(targetWord, '___')
+        : blanked;
   }
 
   static List<WordModel> _wordsForKeys(

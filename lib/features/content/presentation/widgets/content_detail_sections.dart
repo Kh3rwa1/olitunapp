@@ -447,7 +447,6 @@ class _ContentDetailFooter extends ConsumerWidget {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
-              foregroundColor: Colors.white,
               disabledBackgroundColor: isDark
                   ? AppColors.darkBorder
                   : AppColors.lightBorder,

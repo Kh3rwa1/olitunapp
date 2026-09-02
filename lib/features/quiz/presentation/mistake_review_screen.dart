@@ -11,6 +11,7 @@ import '../presentation/providers/mistake_provider.dart';
 import '../presentation/widgets/quiz_option_tile.dart';
 import '../presentation/widgets/quiz_feedback_panel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../features/profile/presentation/providers/user_stats_provider.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class MistakeReviewScreen extends ConsumerStatefulWidget {
@@ -114,7 +115,6 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                     onPressed: () => context.pop(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -218,7 +218,6 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                       onPressed: () => context.pop(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
@@ -421,6 +420,14 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                   });
                 } else {
                   HapticFeedback.mediumImpact();
+                  // Grant the advertised mistake-review bonus: the summary
+                  // card promises +3 stars per mastered question — this is
+                  // the single grant site so it can never double-pay.
+                  unawaited(
+                    ref
+                        .read(userStatsProvider.notifier)
+                        .addStars(_masteredThisSession * 3),
+                  );
                   unawaited(
                     ref
                         .read(mistakeProvider.notifier)

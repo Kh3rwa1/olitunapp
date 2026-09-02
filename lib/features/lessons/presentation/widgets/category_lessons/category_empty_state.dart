@@ -62,7 +62,6 @@ class CategoryEmptyState extends StatelessWidget {
               label: const Text('Open Dictionary'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 12,

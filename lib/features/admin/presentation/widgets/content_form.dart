@@ -429,7 +429,6 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                 onPressed: _saveForm,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF10B981),
-                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),

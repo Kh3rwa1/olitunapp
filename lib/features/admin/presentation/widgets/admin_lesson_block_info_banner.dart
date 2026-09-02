@@ -74,7 +74,6 @@ class AdminLessonBlocksNeedEditingState extends StatelessWidget {
                 label: Text(actionLabel),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 18,
                     vertical: 14,

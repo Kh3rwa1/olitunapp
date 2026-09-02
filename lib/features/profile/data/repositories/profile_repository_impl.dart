@@ -40,6 +40,22 @@ class ProfileRepositoryImpl implements ProfileRepository {
       }
     });
 
+    // Repeat attempts append a new timestamped key per attempt and this map
+    // is serialized into one prefs string + one Appwrite user pref — cap it
+    // to the most recent entries so it can never overflow storage.
+    const maxQuizHistoryEntries = 50;
+    if (quizHistory.length > maxQuizHistoryEntries) {
+      final recentKeys = quizHistory.keys.toList()
+        ..sort(
+          (x, y) => quizHistory[y]!.completedAt.compareTo(
+            quizHistory[x]!.completedAt,
+          ),
+        );
+      quizHistory.removeWhere(
+        (key, _) => !recentKeys.take(maxQuizHistoryEntries).contains(key),
+      );
+    }
+
     final categoryMastery = Map<String, int>.from(a.categoryMastery);
     b.categoryMastery.forEach((key, valB) {
       final valA = categoryMastery[key] ?? 0;
@@ -69,6 +85,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
       completedLessons: lessons,
       quizHistory: quizHistory,
       categoryMastery: categoryMastery,
+      // Mission history and the practice calendar are date-stamped sets:
+      // merging with a union (not dropping them) is what keeps daily-mission
+      // stars and the streak calendar from being re-farmed or wiped on sync.
+      completedMissionsDates: {
+        ...a.completedMissionsDates,
+        ...b.completedMissionsDates,
+      },
+      practiceDates: {...a.practiceDates, ...b.practiceDates},
       totalLearningMinutes: totalLearningMinutes,
       lastActiveDate: lastActiveDate,
       currentStreak: currentStreak,

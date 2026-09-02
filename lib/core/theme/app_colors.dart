@@ -5,6 +5,9 @@ class AppColors {
 
   // Signature Olitun Brand Green
   static const Color primary = Color(0xFF1EE088);
+  // Dark brand green for text/icons on primary & other bright tokens.
+  // #00391C on #1EE088 = 7.54:1 (WCAG AAA); white there is only 1.74:1.
+  static const Color elevatedButtonFg = Color(0xFF00391C);
   static const Color primaryLight = Color(0xFF5DFFA8);
   static const Color primaryDark = Color(0xFF00C767);
 

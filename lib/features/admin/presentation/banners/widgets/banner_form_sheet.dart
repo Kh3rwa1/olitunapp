@@ -305,7 +305,6 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                     onPressed: _save,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       elevation: 0,
                       shape: RoundedRectangleBorder(

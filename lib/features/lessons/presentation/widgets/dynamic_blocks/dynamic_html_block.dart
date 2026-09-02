@@ -307,7 +307,9 @@ class DynamicHtmlBlock extends StatelessWidget {
               try {
                 final hex = colorStr.replaceAll('#', '');
                 col = Color(int.parse('FF$hex', radix: 16));
-              } catch (_) {}
+              } catch (_) {
+                // Malformed hex color — keep the base color.
+              }
             } else if (colorStr == 'primary') {
               col = accentColor;
             } else if (colorStr == 'red') {

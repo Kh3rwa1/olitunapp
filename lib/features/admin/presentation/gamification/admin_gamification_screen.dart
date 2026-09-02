@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/appwrite_db_service.dart';
 import '../../../../core/api/appwrite_query_builders.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_modal_sheet.dart';
@@ -374,8 +375,13 @@ class _AdminGamificationScreenState
             'success': true,
             'createdAt': now,
           });
-    } catch (_) {
-      // Do not block the admin operation if audit logging is unavailable.
+    } catch (e) {
+      // Do not block the admin operation if audit logging is unavailable,
+      // but the missed audit entry is a real gap — surface it in logs.
+      AppLogger.warning(
+        'AdminGamificationScreen: failed to write audit log for "$action": $e',
+        name: 'AdminGamificationScreen',
+      );
     }
   }
 

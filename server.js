@@ -29,7 +29,6 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
-
   let urlPath = req.url.split('?')[0];
 
   if (urlPath === '/') {
@@ -77,6 +76,11 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Olitun Flutter Web app running at http://0.0.0.0:${PORT}`);
+// Dev-only static server: binds loopback by default so it never exposes
+// the working directory to the network. Override with HOST=0.0.0.0 when a
+// device on the LAN needs to reach it.
+const HOST = process.env.HOST || '127.0.0.1';
+
+server.listen(PORT, HOST, () => {
+  console.log(`Olitun Flutter Web app running at http://${HOST}:${PORT}`);
 });

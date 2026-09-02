@@ -160,6 +160,8 @@ class LessonRepositoryImpl implements LessonRepository {
     } on CacheException {
       // Proceed to remote fetch
     } catch (_) {
+      // Cache read failed: surface an offline network state, otherwise
+      // fall through to the remote fetch / seed fallback below.
       if (!await networkInfo.isConnected) {
         return const Left(NetworkFailure());
       }
@@ -326,6 +328,7 @@ class LessonRepositoryImpl implements LessonRepository {
         final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
         return Right(seed);
       } catch (_) {
+        // Not in the seed either — surface the miss as a cache failure.
         return const Left(CacheFailure(message: 'Lesson not found in cache'));
       }
     }

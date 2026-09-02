@@ -99,7 +99,11 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
                     placement: widget.placement,
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'BannerAdWidget: failed to log impression event: $e',
+            );
+          }
         },
         onFailed: (ad, error) {
           AppLogger.debug('BannerAdWidget: Failed to load: ${error.message}');
@@ -117,7 +121,11 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
                     errorCode: error.code.toString(),
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'BannerAdWidget: failed to log load-fail event: $e',
+            );
+          }
           _scheduleRetry();
         },
         onClicked: (ad) {
@@ -131,7 +139,11 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
                     placement: widget.placement,
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning(
+              'BannerAdWidget: failed to log impression event: $e',
+            );
+          }
         },
       );
     } catch (e) {

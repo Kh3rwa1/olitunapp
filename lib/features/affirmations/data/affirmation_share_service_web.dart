@@ -102,7 +102,9 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
         Future.delayed(const Duration(milliseconds: 1500), () {
           try {
             adapter.revokeBlobUrl(url);
-          } catch (_) {}
+          } catch (_) {
+            // Best-effort cleanup; the URL is transient and harmless if kept.
+          }
         }),
       );
 
@@ -118,7 +120,8 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     try {
       await adapter.copyToClipboard(text);
       return AffirmationShareResult.textCopied;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('⚠️ Web clipboard copy failed: $e');
       return AffirmationShareResult.failed;
     }
   }

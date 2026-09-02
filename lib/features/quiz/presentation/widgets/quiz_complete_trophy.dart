@@ -11,11 +11,15 @@ bool get _isTesting {
     if (binding.contains('Test') || binding.contains('Integration')) {
       return true;
     }
-  } catch (_) {}
+  } catch (_) {
+    // WidgetsBinding may not be initialised yet; treat as production.
+  }
   if (!kIsWeb) {
     try {
       if (Platform.environment.containsKey('FLUTTER_TEST')) return true;
-    } catch (_) {}
+    } catch (_) {
+      // Platform.environment is unavailable in some sandboxed runtimes.
+    }
   }
   return false;
 }

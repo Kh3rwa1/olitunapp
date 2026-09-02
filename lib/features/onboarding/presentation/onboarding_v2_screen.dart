@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -108,8 +109,13 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
             prefs.getStringList(learningGoalsKey) ?? const <String>[],
         'dailyGoalMinutes': prefs.getInt('daily_goal_minutes') ?? 5,
       });
-    } catch (_) {
-      // Sync is opportunistic; never block onboarding completion on it.
+    } catch (e) {
+      // Sync is opportunistic; never block onboarding completion on it,
+      // but surface the missed account-prefs write.
+      AppLogger.warning(
+        'OnboardingV2Screen: account prefs sync failed: $e',
+        name: 'OnboardingV2Screen',
+      );
     }
   }
 

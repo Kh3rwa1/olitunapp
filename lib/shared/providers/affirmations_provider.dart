@@ -114,7 +114,11 @@ class AffirmationsNotifier
           if (decoded is Map<String, dynamic>) {
             result = decoded;
           }
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'AffirmationsNotifier: failed to parse sync response: $e',
+          );
+        }
       }
 
       await _loadAffirmations();

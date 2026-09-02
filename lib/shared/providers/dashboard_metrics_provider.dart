@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -180,7 +181,11 @@ final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
           paginate: false,
         );
         return MapEntry(spec, rows);
-      } catch (_) {
+      } catch (e) {
+        AppLogger.warning(
+          'DashboardMetrics: failed to load collection ${spec.id}: $e',
+          name: 'DashboardMetrics',
+        );
         return MapEntry(spec, const <Map<String, dynamic>>[]);
       }
     }),

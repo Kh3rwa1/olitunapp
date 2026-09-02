@@ -74,6 +74,7 @@ abstract class DailyMissionNotifier extends Notifier<bool> {
       final savedDate = prefs.getString(prefKey) ?? '';
       return savedDate == today;
     } catch (_) {
+      // Prefs unavailable (e.g. early teardown) — mission starts incomplete.
       return false;
     }
   }
@@ -89,7 +90,8 @@ abstract class DailyMissionNotifier extends Notifier<bool> {
         await prefs.remove(prefKey);
         state = false;
       }
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('Mission: failed to persist : ');
       state = completed;
     }
   }

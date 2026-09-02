@@ -61,7 +61,9 @@ class AdminAuthService {
       // Make sure no stale session is in the way
       try {
         await _auth.account.deleteSession(sessionId: 'current');
-      } catch (_) {}
+      } catch (_) {
+        // No existing session — nothing to clear.
+      }
 
       await _auth.account.createEmailPasswordSession(
         email: email.trim(),

@@ -61,6 +61,7 @@ class ProfileHeroCard extends StatelessWidget {
       ];
       return '${months[int.parse(parts[1])]} ${parts[2]}, ${parts[0]}';
     } catch (_) {
+      // Not a yyyy-MM-dd string — show the raw value rather than guessing.
       return iso;
     }
   }

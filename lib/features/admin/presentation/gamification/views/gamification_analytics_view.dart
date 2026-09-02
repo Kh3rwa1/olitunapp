@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../../../../core/api/appwrite_query_builders.dart';
 import '../../widgets/admin_page_header.dart';
 import '../widgets/gamification_widgets.dart';
@@ -21,7 +22,10 @@ class GamificationAnalyticsView extends ConsumerWidget {
           paginate: false,
         );
         return rows.length;
-      } catch (_) {
+      } catch (e) {
+        AppLogger.warning(
+          'GamificationAnalyticsView: count failed for $collectionId: $e',
+        );
         return 0;
       }
     }

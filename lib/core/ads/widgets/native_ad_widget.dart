@@ -139,7 +139,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
                     placement: widget.placement,
                   ),
                 );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning('NativeAdWidget: failed to log click event: $e');
+          }
         },
       );
     } catch (e) {

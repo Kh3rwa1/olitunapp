@@ -102,7 +102,8 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     try {
       await Clipboard.setData(ClipboardData(text: text));
       return AffirmationShareResult.textCopied;
-    } catch (_) {
+    } catch (e) {
+      AppLogger.debug('❌ IO clipboard copy failed: $e');
       return AffirmationShareResult.failed;
     }
   }

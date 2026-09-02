@@ -40,7 +40,9 @@ class _CollapsibleNavGroupState extends ConsumerState<_CollapsibleNavGroup> {
       if (stored != null && mounted) {
         setState(() => _isExpanded = stored);
       }
-    } catch (_) {}
+    } catch (_) {
+      // Prefs unavailable — keep the default expanded state.
+    }
   }
 
   Future<void> _toggle() async {
@@ -49,7 +51,14 @@ class _CollapsibleNavGroupState extends ConsumerState<_CollapsibleNavGroup> {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setBool('admin_sidebar_group_${widget.persistenceKey}', next);
-    } catch (_) {}
+    } catch (e) {
+      // Persisting the toggle is best-effort; UI state is already updated,
+      // but log the missed write so collapsed state loss is diagnosable.
+      AppLogger.warning(
+        'AdminSidebarNavGroups: failed to persist group state: $e',
+        name: 'AdminSidebarNavGroups',
+      );
+    }
   }
 
   @override

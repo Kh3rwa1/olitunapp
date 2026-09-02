@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:itun/core/logging/app_logger.dart';
+
 // ============== QUIZ MODEL ==============
 class QuizModel {
   final String id;
@@ -184,7 +186,8 @@ List<dynamic> _decodeQuizQuestions(dynamic value) {
     try {
       final decoded = jsonDecode(value);
       return decoded is List<dynamic> ? decoded : const [];
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warning('QuizModel: failed to decode questions JSON: $e');
       return const [];
     }
   }

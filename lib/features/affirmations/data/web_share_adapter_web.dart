@@ -14,6 +14,7 @@ class StandardWebShareAdapter implements WebShareAdapter {
       final nav = web.window.navigator;
       return (nav as dynamic).share != null;
     } catch (_) {
+      // Web Share API probe — unsupported browsers are simply "not supported".
       return false;
     }
   }
@@ -30,6 +31,7 @@ class StandardWebShareAdapter implements WebShareAdapter {
       final data = web.ShareData(files: [file].toJS);
       return nav.canShare(data);
     } catch (_) {
+      // canShare probe failed — assume files cannot be shared on this browser.
       return false;
     }
   }
@@ -41,6 +43,7 @@ class StandardWebShareAdapter implements WebShareAdapter {
       final data = web.ShareData(title: title, text: text, url: url ?? '');
       return nav.canShare(data);
     } catch (_) {
+      // canShare probe failed — optimistic default keeps text sharing usable.
       return true;
     }
   }

@@ -121,6 +121,8 @@ class StorySegmentModel {
         (k, v) => MapEntry(k.toString().trim(), v?.toString() ?? ''),
       )..removeWhere((k, v) => k.isEmpty || v.trim().isEmpty);
     } catch (_) {
+      // Malformed translations JSON — the segment renders without them
+      // (see class doc: malformed rows never crash the player).
       return const {};
     }
   }
@@ -143,6 +145,8 @@ class StorySegmentModel {
           .where((e) => e.isNotEmpty)
           .toList();
     } catch (_) {
+      // Malformed vocabulary JSON — the segment renders without refs
+      // (see class doc: malformed rows never crash the player).
       return const [];
     }
   }

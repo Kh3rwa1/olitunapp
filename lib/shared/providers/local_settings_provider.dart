@@ -36,6 +36,8 @@ class SystemReduceMotionNotifier extends Notifier<bool>
       state =
           PlatformDispatcher.instance.accessibilityFeatures.disableAnimations;
     } catch (_) {
+      // Accessibility features may be unreadable before binding init or in
+      // tests; treating it as "no reduce-motion" is the safe default.
       state = false;
     }
   }

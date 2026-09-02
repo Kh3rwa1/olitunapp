@@ -122,6 +122,8 @@ class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
       final remote = await fetchRemote();
       emit(_deduplicate(remote));
     } catch (_) {
+      // Offline or collection unavailable — bundled seed is the
+      // documented fallback for this list (see doc comment above).
       emit(_deduplicate(_seedNumbers));
     }
   }

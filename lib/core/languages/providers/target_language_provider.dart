@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../language_registry.dart';
@@ -29,8 +30,12 @@ class TargetLanguageNotifier extends StateNotifier<String> {
       if (savedCode != null && savedCode.isNotEmpty) {
         state = savedCode;
       }
-    } catch (_) {
-      // Fall back to default
+    } catch (e) {
+      // Fall back to default, but surface that the saved selection was lost.
+      AppLogger.warning(
+        'TargetLanguageNotifier: failed to read saved language: $e',
+        name: 'TargetLanguageNotifier',
+      );
     }
   }
 
@@ -39,8 +44,12 @@ class TargetLanguageNotifier extends StateNotifier<String> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(kTargetLanguagePrefKey, code);
-    } catch (_) {
-      // Ignore storage write failure
+    } catch (e) {
+      // Selection still applies for this session; log the missed write.
+      AppLogger.warning(
+        'TargetLanguageNotifier: failed to persist language: $e',
+        name: 'TargetLanguageNotifier',
+      );
     }
   }
 }

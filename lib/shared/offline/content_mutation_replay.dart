@@ -120,7 +120,11 @@ class ContentMutationReplay {
       );
       final itemJson = Map<String, dynamic>.from(payload['item'] as Map);
       return ContentItem.fromJson(itemJson, mutation.entityId, kind);
-    } catch (_) {
+    } catch (e) {
+      // The caller dead-letters un-parseable payloads; surface why.
+      AppLogger.debug(
+        '[ContentReplay] Failed to deserialize ${mutation.operationId}: $e',
+      );
       return null;
     }
   }

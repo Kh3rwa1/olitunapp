@@ -105,7 +105,11 @@ class InterstitialAdManager {
                   placement: trigger,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'InterstitialAdManager: failed to log impression event: $e',
+          );
+        }
       },
       onAdDismissedFullScreenContent: (ad) {
         AppLogger.debug('InterstitialAdManager: Ad dismissed ($trigger)');
@@ -120,7 +124,11 @@ class InterstitialAdManager {
                   placement: trigger,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'InterstitialAdManager: failed to log dismissed event: $e',
+          );
+        }
         // Preload next ad
         unawaited(preload());
         if (!completer.isCompleted) completer.complete(true);
@@ -141,7 +149,11 @@ class InterstitialAdManager {
                   errorCode: error.code.toString(),
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'InterstitialAdManager: failed to log error event: $e',
+          );
+        }
         unawaited(preload());
         if (!completer.isCompleted) completer.complete(false);
       },
@@ -156,7 +168,11 @@ class InterstitialAdManager {
                   placement: trigger,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'InterstitialAdManager: failed to log click event: $e',
+          );
+        }
       },
     );
 

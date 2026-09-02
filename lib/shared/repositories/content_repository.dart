@@ -85,8 +85,9 @@ class ContentRepository {
                   );
                 })
                 .toList();
-          } catch (_) {
+          } catch (e, stack) {
             _cachedBundledSentenceLessons = [];
+            _logSeedLoadFailure('sentence lessons', e, stack);
           }
         }
 

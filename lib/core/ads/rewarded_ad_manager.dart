@@ -104,7 +104,11 @@ class RewardedAdManager {
                   rewardType: rewardType.name,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'RewardedAdManager: failed to log impression event: $e',
+          );
+        }
       },
       onAdDismissedFullScreenContent: (ad) async {
         AppLogger.debug('RewardedAdManager: Ad dismissed ($placement)');
@@ -119,7 +123,11 @@ class RewardedAdManager {
                   placement: placement,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'RewardedAdManager: failed to log dismissed event: $e',
+          );
+        }
 
         if (rewardEarned) {
           await _grantReward(rewardType, amount);
@@ -145,7 +153,9 @@ class RewardedAdManager {
                   errorCode: error.code.toString(),
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning('RewardedAdManager: failed to log error event: $e');
+        }
         unawaited(preload());
         if (!completer.isCompleted) completer.complete(false);
       },
@@ -160,7 +170,9 @@ class RewardedAdManager {
                   placement: placement,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning('RewardedAdManager: failed to log click event: $e');
+        }
       },
     );
 
@@ -182,7 +194,11 @@ class RewardedAdManager {
                   rewardType: rewardType.name,
                 ),
               );
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.warning(
+            'RewardedAdManager: failed to log impression event: $e',
+          );
+        }
       },
     );
 

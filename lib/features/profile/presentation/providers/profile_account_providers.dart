@@ -21,6 +21,8 @@ final accountCreatedAtProvider = FutureProvider<DateTime?>((ref) async {
     // Appwrite returns `registration` as an ISO string.
     return DateTime.tryParse(account.registration)?.toLocal();
   } catch (_) {
+    // Guest/offline — the profile hero hides the "Since ..." line instead
+    // of guessing (documented contract of this provider).
     return null;
   }
 });

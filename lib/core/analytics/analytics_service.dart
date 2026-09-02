@@ -128,6 +128,7 @@ class LearningAnalyticsService {
           );
           return user.$id;
         } catch (_) {
+          // Guest/offline — events are emitted without a userId.
           return null;
         }
       },
@@ -218,7 +219,10 @@ class LearningAnalyticsService {
 
       try {
         await _remoteWriter(eventId, Map<String, dynamic>.from(item));
-      } catch (_) {
+      } catch (e) {
+        AppLogger.debug(
+          'LearningAnalytics: flush failed for $eventId, kept in queue: $e',
+        );
         remaining.add(item);
       }
     }
@@ -272,7 +276,11 @@ class LearningAnalyticsService {
       final decoded = jsonDecode(raw);
       if (decoded is! List) return [];
       return decoded.whereType<Map>().map(Map<String, dynamic>.from).toList();
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warning(
+        'LearningAnalytics: corrupt pending queue dropped: $e',
+        name: 'LearningAnalytics',
+      );
       return [];
     }
   }
@@ -313,6 +321,7 @@ class LearningAnalyticsService {
       final userId = await _userIdProvider?.call();
       return _safeString(userId, max: 80);
     } catch (_) {
+      // Never let user attribution break event emission.
       return null;
     }
   }

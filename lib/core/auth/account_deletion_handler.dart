@@ -43,6 +43,7 @@ AccountDeletionResult parseAccountDeletionExecution({
         isMalformed = true;
       }
     } catch (_) {
+      // Non-JSON body is intentionally reported as a malformed outcome below.
       isMalformed = true;
     }
   } else {

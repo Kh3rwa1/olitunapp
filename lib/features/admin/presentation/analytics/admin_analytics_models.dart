@@ -252,6 +252,8 @@ Map<String, int> parseBreakdown(Object? raw) {
     try {
       decoded = jsonDecode(raw);
     } catch (_) {
+      // Malformed breakdown JSON (legacy rows) — no breakdown is the
+      // documented fallback for this per-row parser.
       return {};
     }
   }

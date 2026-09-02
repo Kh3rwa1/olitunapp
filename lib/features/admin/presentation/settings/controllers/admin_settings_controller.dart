@@ -200,7 +200,10 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
               };
             }).toList();
           }
-        } catch (_) {
+        } catch (e) {
+          AppLogger.warning(
+            'AdminSettings: failed to parse onboarding_goals, using defaults: $e',
+          );
           loadedGoals = defaultGoals;
         }
       } else {

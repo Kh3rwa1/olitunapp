@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'audio_download_store.dart';
@@ -69,7 +70,11 @@ class IoAudioDownloadStore extends AudioDownloadStore {
       final file = File('${(await _baseDir()).path}/$relativePath');
       if (!file.existsSync()) return 0;
       return await file.length();
-    } catch (_) {
+    } catch (e) {
+      AppLogger.warning(
+        'IoAudioDownloadStore: fileSize($relativePath) failed: $e',
+        name: 'IoAudioDownloadStore',
+      );
       return 0;
     }
   }

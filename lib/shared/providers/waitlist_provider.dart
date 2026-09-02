@@ -59,7 +59,11 @@ Future<WaitlistModel> submitWaitlistViaFunction(
   final Map<String, dynamic> data;
   try {
     data = jsonDecode(execution.responseBody) as Map<String, dynamic>;
-  } catch (_) {
+  } catch (e) {
+    AppLogger.warning(
+      'Waitlist: failed to parse function response: $e',
+      name: 'Waitlist',
+    );
     throw const WaitlistSubmissionException(
       'Unexpected waitlist service response.',
     );

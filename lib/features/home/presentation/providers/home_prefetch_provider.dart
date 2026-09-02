@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../../../shared/providers/learner_content_providers.dart';
 import '../../../categories/presentation/providers/category_notifier.dart';
 
@@ -54,7 +55,8 @@ class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
           isPrefetching: false,
           lastCategoryRefresh: DateTime.now(),
         );
-      } catch (_) {
+      } catch (e) {
+        AppLogger.debug('HomePrefetch: category refresh failed: $e');
         if (_disposed) return;
         state = state.copyWith(isPrefetching: false);
       }

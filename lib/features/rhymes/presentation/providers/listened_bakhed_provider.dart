@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 import '../../../../core/storage/hive_service.dart';
 
@@ -39,8 +40,13 @@ class ListenedBakhedNotifier extends Notifier<Set<String>> {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       await prefs.setStringList(_prefsKey, next.toList());
-    } catch (_) {
-      // In-memory state already updated; persistence is best-effort.
+    } catch (e) {
+      // In-memory state already updated; persistence is best-effort, but a
+      // missed write means the heard badge resets on next launch.
+      AppLogger.warning(
+        'ListenedBakhedNotifier: failed to persist listened ids: $e',
+        name: 'ListenedBakhedNotifier',
+      );
     }
   }
 }

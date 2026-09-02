@@ -30,6 +30,7 @@ void main(List<String> args) {
   final enforceAfter = _dateArg(args, '--enforce-after=');
   final pathMinimums = _pathMinimums(args);
   final untestedEnforceAfter = _dateArg(args, '--enforce-untested-after=');
+  final allowInvisible = _stringArgs(args, '--allow-invisible=');
   final file = File('coverage/lcov.info');
 
   if (!file.existsSync()) {
@@ -67,9 +68,12 @@ void main(List<String> args) {
 
   // The lcov denominator only contains files imported by at least one test;
   // never-imported files silently escape every threshold above. Surface them
-  // explicitly so they cannot hide from the coverage gate.
+  // explicitly so they cannot hide from the coverage gate. Structural files
+  // (export-only barrels, pure-abstract repository interfaces, conditional
+  // web stubs not selected on the VM) emit no lcov entry even when imported
+  // by tests — exempt them via --allow-invisible=<path-substring>.
   failed |= !_checkUntestedFiles(
-    untested: _findUntestedFiles(files),
+    untested: _findUntestedFiles(files, allowInvisible),
     enforce:
         untestedEnforceAfter != null &&
         !DateTime.now().toUtc().isBefore(untestedEnforceAfter),
@@ -79,7 +83,18 @@ void main(List<String> args) {
   if (failed) exit(1);
 }
 
-List<String> _findUntestedFiles(Map<String, _LineCoverage> files) {
+/// Parses every `--allow-invisible=<substring>` argument.
+List<String> _stringArgs(List<String> args, String prefix) {
+  return args
+      .where((arg) => arg.startsWith(prefix))
+      .map((arg) => arg.substring(prefix.length))
+      .toList();
+}
+
+List<String> _findUntestedFiles(
+  Map<String, _LineCoverage> files,
+  List<String> allowInvisible,
+) {
   final covered = files.keys.toSet();
   final untested = <String>[];
 
@@ -87,6 +102,7 @@ List<String> _findUntestedFiles(Map<String, _LineCoverage> files) {
     if (entity is! File || !entity.path.endsWith('.dart')) continue;
     final path = entity.path.replaceAll('\\', '/');
     if (untestedExclusionPatterns.any(path.contains)) continue;
+    if (allowInvisible.any(path.contains)) continue;
     if (!covered.contains(path)) untested.add(path);
   }
 

@@ -108,6 +108,8 @@ class ConsentManager {
     try {
       return await ConsentInformation.instance.canRequestAds();
     } catch (_) {
+      // UMP unavailable (e.g. before initialisation) — do not block ad
+      // serving; consent enforcement still happens at form level.
       return true;
     }
   }
@@ -118,6 +120,7 @@ class ConsentManager {
     try {
       return await ConsentInformation.instance.getConsentStatus();
     } catch (_) {
+      // UMP unavailable — fall back to the cached status or unknown.
       final cached = _prefs?.getString(consentStatusPrefKey);
       if (cached != null) {
         return _statusFromString(cached);

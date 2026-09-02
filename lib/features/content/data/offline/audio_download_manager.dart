@@ -220,7 +220,10 @@ class AudioDownloadManager {
       });
       _manifestCache = entries;
       return entries;
-    } catch (_) {
+    } catch (e) {
+      // A corrupt/unreadable manifest means "no downloads known"; keep the
+      // app usable but surface the data loss.
+      AppLogger.warning('AudioDownloadManager: failed to load manifest: $e');
       return {};
     }
   }
@@ -576,6 +579,8 @@ class AudioDownloadManager {
       final bytes = await store.readFileBytes(record.relativePath);
       return crypto.sha256.convert(bytes).toString() == record.sha256;
     } catch (_) {
+      // An unreadable file cannot be verified — treating it as corrupt is
+      // the intended semantic of this check.
       return false;
     }
   }

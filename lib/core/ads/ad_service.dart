@@ -266,7 +266,9 @@ class AdService with WidgetsBindingObserver {
     for (final ad in _activeAds) {
       try {
         ad.dispose();
-      } catch (_) {}
+      } catch (_) {
+        // Best-effort cleanup: an already-disposed ad may rethrow.
+      }
     }
     _activeAds.clear();
   }

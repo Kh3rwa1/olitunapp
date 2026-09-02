@@ -154,7 +154,9 @@ class PurchasesDataTable extends StatelessWidget {
             try {
               final parsed = DateTime.parse(item.purchasedAt);
               dateFormatted = DateFormat('yyyy-MM-dd').format(parsed);
-            } catch (_) {}
+            } catch (_) {
+              // Unparseable timestamp — show the raw stored string.
+            }
             return Text(
               dateFormatted,
               overflow: TextOverflow.ellipsis,

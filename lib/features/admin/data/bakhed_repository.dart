@@ -3,6 +3,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/error/failures.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -100,8 +101,9 @@ class BakhedRepository {
         if (audioFileId != null && audioFileId!.isNotEmpty) {
           try {
             await _storage.deleteFile(bucketId: 'audio', fileId: audioFileId!);
-          } catch (_) {
-            // Log and ignore to prevent blocking cascade database cleanups
+          } catch (e) {
+            // Log and continue — never block the cascade DB cleanup below.
+            AppLogger.warning('BakhedRepository: audio delete failed: $e');
           }
         }
 
@@ -135,9 +137,23 @@ class BakhedRepository {
       for (final doc in response) {
         try {
           await _dbService.deleteDocument(collectionId, doc['id'] as String);
-        } catch (_) {}
+        } catch (e) {
+          // Best-effort child delete: continue with the remaining docs, but
+          // a missed delete leaves an orphaned doc — surface it in logs.
+          AppLogger.warning(
+            'BakhedRepository: child delete failed in $collectionId '
+            '(doc ${doc['id']}): $e',
+            name: 'BakhedRepository',
+          );
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      // A failed subcollection listing leaves orphaned child docs behind —
+      // surface it, but the parent cascade delete still proceeds.
+      AppLogger.warning(
+        'BakhedRepository: subcollection cleanup failed for $collectionId: $e',
+      );
+    }
   }
 
   /// Fetch lyrics lines for a rhyme

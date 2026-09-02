@@ -281,7 +281,9 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                   onPressed: () {
                     try {
                       HapticFeedback.lightImpact();
-                    } catch (_) {}
+                    } catch (_) {
+                      // Haptics unsupported on simulators — safe to ignore.
+                    }
                     widget.onContinue();
                   },
                   style: ElevatedButton.styleFrom(

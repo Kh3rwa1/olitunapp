@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import '../../../../../core/api/appwrite_query_builders.dart';
 import '../../settings/controllers/admin_maintenance_controller.dart';
@@ -53,6 +54,8 @@ class _GamificationMaintenanceViewState
         );
         entries[collection] = true;
       } catch (_) {
+        // Unreachable/missing collections are reported as unhealthy in the
+        // schema-health table — that IS the outcome of this probe.
         entries[collection] = false;
       }
     }
@@ -101,8 +104,13 @@ class _GamificationMaintenanceViewState
             'success': true,
             'createdAt': now,
           });
-    } catch (_) {
-      // Do not block the admin operation if audit logging is unavailable.
+    } catch (e) {
+      // Do not block the admin operation if audit logging is unavailable,
+      // but the missed audit entry is a real gap — surface it in logs.
+      AppLogger.warning(
+        'GamificationMaintenanceView: failed to write audit log for "$action": $e',
+        name: 'GamificationMaintenanceView',
+      );
     }
   }
 

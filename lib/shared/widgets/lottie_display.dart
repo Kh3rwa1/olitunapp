@@ -163,7 +163,9 @@ class _LottieDisplayState extends State<LottieDisplay> {
             .timeout(const Duration(seconds: 2));
         statusCode = res.statusCode;
         contentType = res.headers['content-type'] ?? 'unknown';
-      } catch (_) {}
+      } catch (_) {
+        // Diagnostics-only HEAD probe; the real failure is logged below.
+      }
 
       AppLogger.debug(
         '[LottieDisplay] failed url=${widget.url} status=$statusCode contentType=$contentType bytesPrefix=none error=$e',

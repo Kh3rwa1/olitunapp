@@ -67,6 +67,7 @@ class AppwriteQueryPaging {
         return parsed['method'] as String?;
       }
     } catch (_) {
+      // Malformed query JSON — treat as unclassifiable (no known method).
       return null;
     }
     return null;

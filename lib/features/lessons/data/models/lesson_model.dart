@@ -1,4 +1,7 @@
 import 'dart:convert';
+
+import 'package:itun/core/logging/app_logger.dart';
+
 import '../../domain/entities/lesson_entity.dart';
 
 class LessonModel extends LessonEntity {
@@ -43,7 +46,9 @@ class LessonModel extends LessonEntity {
       try {
         final decoded = jsonDecode(rawData);
         if (decoded is Map) parsedData = decoded.cast<String, dynamic>();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('LessonModel: malformed data JSON: $e');
+      }
     }
     final rawHeroMedia = json['hero_media'];
     if (rawHeroMedia != null &&
@@ -54,7 +59,9 @@ class LessonModel extends LessonEntity {
         if (decoded is Map) {
           parsedData['heroMedia'] = decoded.cast<String, dynamic>();
         }
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('LessonModel: malformed hero_media JSON: $e');
+      }
     }
     final rawTracing = json['tracing'];
     if (rawTracing != null && rawTracing is String && rawTracing.isNotEmpty) {
@@ -63,7 +70,9 @@ class LessonModel extends LessonEntity {
         if (decoded is Map) {
           parsedData['tracing'] = decoded.cast<String, dynamic>();
         }
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.warning('LessonModel: malformed tracing JSON: $e');
+      }
     }
     if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
       parsedData['thumbnailUrl'] = thumbnailUrl;
@@ -169,7 +178,9 @@ Map<String, dynamic>? _parseData(dynamic rawData) {
     try {
       final decoded = jsonDecode(rawData);
       if (decoded is Map) return decoded.cast<String, dynamic>();
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.warning('LessonBlockModel: malformed data JSON: $e');
+    }
   }
   return null;
 }

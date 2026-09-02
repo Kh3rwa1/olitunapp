@@ -124,11 +124,18 @@ class QuizBasicInfoSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        SwitchListTile(
-          value: isActive,
-          onChanged: onActiveChanged,
-          title: const Text('Active'),
-          contentPadding: EdgeInsets.zero,
+        // SwitchListTile paints its background and ink on the nearest
+        // Material ancestor; the sheet card's decorated Container would
+        // hide both (framework assert) — give the tile its own
+        // transparent Material.
+        Material(
+          type: MaterialType.transparency,
+          child: SwitchListTile(
+            value: isActive,
+            onChanged: onActiveChanged,
+            title: const Text('Active'),
+            contentPadding: EdgeInsets.zero,
+          ),
         ),
       ],
     );

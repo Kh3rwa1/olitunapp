@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/user_entity.dart';
@@ -50,8 +51,13 @@ class AuthController {
         prefsResult.getOrElse((_) => <String, dynamic>{}),
       )..['learning_goals'] = goals;
       await repo.updateUserPrefs(newPrefs);
-    } catch (_) {
-      // Guest mode or network unavailable — goals stay in local settings.
+    } catch (e) {
+      // Guest mode or network unavailable — goals stay in local settings,
+      // but a failed authed prefs sync should be visible in logs.
+      AppLogger.warning(
+        'AuthController: learning goals sync failed: $e',
+        name: 'AuthController',
+      );
     }
   }
 

@@ -122,7 +122,9 @@ class _LessonBlockDetailScreenState
       } else if (cleanHex.length == 8) {
         return Color(int.parse('0x$cleanHex'));
       }
-    } catch (_) {}
+    } catch (_) {
+      // Malformed theme hex — fall back to the default palette.
+    }
     return defaultColor;
   }
 

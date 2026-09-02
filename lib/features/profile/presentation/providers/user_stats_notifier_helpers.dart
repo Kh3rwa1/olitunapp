@@ -10,7 +10,10 @@ extension _UserStatsNotifierHelpers on UserStatsNotifier {
           ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ??
           true;
       ref.read(isStatsSyncedProvider.notifier).state = isSynced;
-    } catch (_) {}
+    } catch (_) {
+      // Prefs/container unavailable (e.g. during teardown) — skip the
+      // sync-state read; it is refreshed on the next successful load.
+    }
   }
 
   void _trackStreakMilestone(

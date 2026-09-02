@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/shared/models/content_item.dart';
 
 class RhymeModel {
@@ -42,7 +43,9 @@ class RhymeModel {
             parsedHeroMedia = ContentMedia.fromJson(
               jsonDecode(rawHeroMedia) as Map<String, dynamic>,
             );
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.warning('RhymeModel: malformed hero_media JSON: $e');
+          }
         }
       } else if (rawHeroMedia is Map<String, dynamic>) {
         parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);

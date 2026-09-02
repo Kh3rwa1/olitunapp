@@ -278,6 +278,7 @@ class ProgressScreen extends ConsumerWidget {
         ),
       );
     } catch (_) {
+      // Failure is surfaced to the user via the snackbar below.
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

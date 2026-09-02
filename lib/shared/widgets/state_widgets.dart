@@ -19,6 +19,8 @@ bool get _isTesting {
   try {
     return Platform.environment.containsKey('FLUTTER_TEST');
   } catch (_) {
+    // Platform.environment is unavailable in some sandboxed runtimes;
+    // defaulting to non-test is the safe fallback.
     return false;
   }
 }

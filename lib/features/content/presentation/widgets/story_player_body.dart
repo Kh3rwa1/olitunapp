@@ -114,8 +114,13 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
       await CacheService.set(_resumeKey(widget.item.id), <String, dynamic>{
         'segmentIndex': _currentIndex,
       }, ttl: const Duration(days: 30));
-    } catch (_) {
-      // Resume persistence is best-effort; never block the reader.
+    } catch (e) {
+      // Resume persistence is best-effort; never block the reader, but log
+      // the missed cache write.
+      AppLogger.warning(
+        'StoryPlayerBody: failed to persist resume position: $e',
+        name: 'StoryPlayerBody',
+      );
     }
   }
 

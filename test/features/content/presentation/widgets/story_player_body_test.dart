@@ -3,6 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+// Covers the StoryPlayerBody library including its
+// story_player_body_views.dart part (segment cards, controls bar and
+// download button for the player body state).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

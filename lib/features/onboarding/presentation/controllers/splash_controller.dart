@@ -68,9 +68,9 @@ class SplashController {
             const Duration(seconds: 4),
           );
           isLoggedIn = isLoggedInResult.getOrElse((_) => false);
-        } catch (_) {
+        } catch (e) {
           AppLogger.debug(
-            'Splash: auth check timed out, treating as logged out',
+            'Splash: auth check failed/timed out, treating as logged out: $e',
           );
         }
         AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');

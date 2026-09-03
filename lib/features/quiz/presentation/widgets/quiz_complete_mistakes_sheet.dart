@@ -38,12 +38,16 @@ void showQuizMistakesSheet({
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Review Mistakes',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : AppColors.pureBlack,
+                Expanded(
+                  child: Text(
+                    'Review Mistakes',
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : AppColors.pureBlack,
+                    ),
                   ),
                 ),
                 IconButton(

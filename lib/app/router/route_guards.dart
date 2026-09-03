@@ -16,7 +16,9 @@ String? fragmentRedirectFor({
   required String fragment,
   String? initialHash,
 }) {
-  if (!isWeb || path != '/') return null;
+  if (!isWeb || (path != '/' && path != '/splash' && path != '/welcome')) {
+    return null;
+  }
   final hash = (initialHash != null && initialHash.isNotEmpty)
       ? initialHash
       : fragment;

@@ -55,6 +55,24 @@ void main() {
       );
     });
 
+    test(
+      'redirects a rooted fragment on /splash and /welcome startup paths',
+      () {
+        expect(
+          fragmentRedirectFor(isWeb: true, path: '/splash', fragment: '/admin'),
+          '/admin',
+        );
+        expect(
+          fragmentRedirectFor(
+            isWeb: true,
+            path: '/welcome',
+            fragment: '/admin/login',
+          ),
+          '/admin/login',
+        );
+      },
+    );
+
     test('prefers the captured initial hash over the live fragment', () {
       expect(
         fragmentRedirectFor(

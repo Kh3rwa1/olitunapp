@@ -439,6 +439,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
             child: CachedNetworkImage(
               imageUrl: media.url,
               fit: BoxFit.contain,
+              memCacheWidth: 800,
               placeholder: (context, url) =>
                   const Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) =>

@@ -17,7 +17,11 @@ class AdminBrandMark extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset('assets/icons/olitun_logo.png', fit: BoxFit.cover),
+        child: Image.asset(
+        'assets/icons/olitun_logo.png',
+        fit: BoxFit.cover,
+        cacheWidth: (size * MediaQuery.devicePixelRatioOf(context)).round(),
+      ),
       ),
     );
   }

@@ -204,6 +204,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                   child: Image.asset(
                                     'assets/icons/olitun_logo.png',
                                     fit: BoxFit.cover,
+                                    cacheWidth: (120 * MediaQuery.devicePixelRatioOf(context)).round(),
                                   ),
                                 ),
                               ),

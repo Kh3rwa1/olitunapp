@@ -274,6 +274,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                         child: Image.asset(
                           'assets/images/olitun_mascot.png',
                           fit: BoxFit.contain,
+                          cacheWidth: (64 * MediaQuery.devicePixelRatioOf(context)).round(),
                         ),
                       ),
                     ),

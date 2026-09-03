@@ -276,6 +276,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
         return CachedNetworkImage(
           imageUrl: media.url,
           fit: BoxFit.cover,
+          memCacheWidth: 1080,
           placeholder: (context, url) => Container(color: Colors.black12),
           errorWidget: (context, url, error) =>
               const Icon(Icons.broken_image, color: Colors.white30, size: 48),
@@ -311,7 +312,11 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
         fit: StackFit.expand,
         children: [
           if (media.posterUrl != null)
-            CachedNetworkImage(imageUrl: media.posterUrl!, fit: BoxFit.cover)
+            CachedNetworkImage(
+              imageUrl: media.posterUrl!,
+              fit: BoxFit.cover,
+              memCacheWidth: 800,
+            )
           else
             Container(color: Colors.black38),
           const Center(child: CircularProgressIndicator(color: Colors.white)),

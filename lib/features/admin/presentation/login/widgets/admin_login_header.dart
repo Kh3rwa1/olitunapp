@@ -24,6 +24,7 @@ class AdminLoginHeader extends StatelessWidget {
             child: Image.asset(
               'assets/icons/olitun_logo.png',
               fit: BoxFit.cover,
+              cacheWidth: (120 * MediaQuery.devicePixelRatioOf(context)).round(),
             ),
           ),
         ).animate().scale(

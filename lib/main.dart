@@ -209,6 +209,20 @@ class OlitunApp extends ConsumerWidget {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       locale: appLocaleForLanguage(languageCode),
+      builder: (context, child) {
+        // Honor OS text scaling up to 1.5x — large enough for low-vision
+        // readability, capped so dense designed layouts never shear/overflow.
+        // Above 1.5x the fix is layout work, not infinite scale.
+        final mediaQuery = MediaQuery.of(context);
+        final effectiveScale = mediaQuery.textScaler.scale(100.0) / 100.0;
+        final scaler = effectiveScale > 1.5
+            ? const TextScaler.linear(1.5)
+            : mediaQuery.textScaler;
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: scaler),
+          child: child ?? const SizedBox(),
+        );
+      },
       routerConfig: router,
     );
   }

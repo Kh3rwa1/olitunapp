@@ -78,6 +78,7 @@ class PaywallHeader extends StatelessWidget {
                     CachedNetworkImage(
                       imageUrl: category.courseHeroImageUrl!,
                       fit: BoxFit.cover,
+                      memCacheWidth: 1080,
                       width: double.infinity,
                       height: double.infinity,
                       placeholder: (context, url) => Container(

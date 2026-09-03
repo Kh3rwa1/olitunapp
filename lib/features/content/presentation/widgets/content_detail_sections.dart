@@ -54,6 +54,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
               child: CachedNetworkImage(
                 imageUrl: imageBlock.media.url,
                 fit: BoxFit.cover,
+                memCacheWidth: 1080,
                 placeholder: (context, url) => Container(
                   height: 200,
                   color: isDark

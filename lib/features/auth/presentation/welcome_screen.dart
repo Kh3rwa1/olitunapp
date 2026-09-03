@@ -33,7 +33,7 @@ class WelcomeScreen extends ConsumerWidget {
                   const Spacer(),
 
                   // Logo and branding
-                  _buildLogo()
+                  _buildLogo(context)
                       .animate()
                       .fadeIn(duration: 800.ms)
                       .scale(
@@ -148,7 +148,7 @@ class WelcomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(BuildContext context) {
     return Container(
       width: 120,
       height: 120,
@@ -168,6 +168,7 @@ class WelcomeScreen extends ConsumerWidget {
         child: Image.asset(
           'assets/icons/olitun_logo.png',
           fit: BoxFit.cover,
+          cacheWidth: (160 * MediaQuery.devicePixelRatioOf(context)).round(),
           errorBuilder: (_, _, _) => const Center(
             child: Text(
               'ᱚ',
@@ -434,6 +435,8 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
                 width: 22,
                 height: 22,
                 fit: BoxFit.contain,
+                cacheWidth: (22 * MediaQuery.devicePixelRatioOf(context))
+                    .round(),
               ),
               const SizedBox(width: 12),
               const Text(

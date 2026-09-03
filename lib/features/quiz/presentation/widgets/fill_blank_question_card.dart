@@ -92,6 +92,8 @@ class FillBlankQuestionCard extends StatelessWidget {
                     child: Image.asset(
                       'assets/images/olitun_mascot.png',
                       fit: BoxFit.contain,
+                      cacheWidth: (56 * MediaQuery.devicePixelRatioOf(context))
+                          .round(),
                     ),
                   ),
                 ),

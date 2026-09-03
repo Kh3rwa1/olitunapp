@@ -200,6 +200,7 @@ class _CoverHeroState extends State<CoverHero> with WidgetsBindingObserver {
     return CachedNetworkImage(
       imageUrl: media.url,
       fit: BoxFit.cover,
+      memCacheWidth: 800,
       placeholder: (context, url) => Container(color: Colors.black26),
       errorWidget: (context, url, err) =>
           widget.fallback ?? const SizedBox.shrink(),

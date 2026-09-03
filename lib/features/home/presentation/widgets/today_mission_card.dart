@@ -121,36 +121,40 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.15,
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
-                                  borderRadius: BorderRadius.circular(10),
+                                  child: const Icon(
+                                    Icons.assignment_turned_in_rounded,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
                                 ),
-                                child: const Icon(
-                                  Icons.assignment_turned_in_rounded,
-                                  color: AppColors.primary,
-                                  size: 20,
+                                const SizedBox(width: 12),
+                                Flexible(
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.todaysMissionTitle,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? Colors.white
+                                          : AppColors.textPrimaryLight,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 12),
-                              Text(
-                                AppLocalizations.of(
-                                  context,
-                                )!.todaysMissionTitle,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? Colors.white
-                                      : AppColors.textPrimaryLight,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           Container(
                             padding: const EdgeInsets.symmetric(

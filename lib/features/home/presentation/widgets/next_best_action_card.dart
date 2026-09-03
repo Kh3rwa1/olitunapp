@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/minimum_tap_target.dart';
 import '../../../../shared/providers/providers.dart';
@@ -129,7 +131,7 @@ class NextBestActionCard extends ConsumerWidget {
       };
     }
 
-    return Container(
+    final card = Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -189,7 +191,11 @@ class NextBestActionCard extends ConsumerWidget {
                   ),
                 ),
               ),
-              Icon(icon, color: color, size: 24),
+              BreathingPulse(
+                maxScale: 1.12,
+                period: const Duration(milliseconds: 2600),
+                child: Icon(icon, color: color, size: 24),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -238,7 +244,15 @@ class NextBestActionCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded, size: 18),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 18,
+                    ).animate(onPlay: (c) => c.repeat(reverse: true)).slideX(
+                      begin: -0.35,
+                      end: 0,
+                      duration: 900.ms,
+                      curve: Curves.easeInOut,
+                    ),
                   ],
                 ),
               ),
@@ -247,5 +261,16 @@ class NextBestActionCard extends ConsumerWidget {
         ],
       ),
     );
+
+    if (MediaQuery.maybeDisableAnimationsOf(context) ?? false) return card;
+    return card
+        .animate()
+        .fadeIn(duration: 420.ms, curve: Curves.easeOutCubic)
+        .slideY(
+          begin: 0.08,
+          end: 0,
+          duration: 420.ms,
+          curve: Curves.easeOutCubic,
+        );
   }
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/minimum_tap_target.dart';
-import '../../../../core/motion/confetti_overlay.dart';
 import '../providers/mission_providers.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
@@ -186,17 +186,24 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                       // Custom Thin Progress Bar
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: isDark
-                              ? Colors.white10
-                              : Colors.black12,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark
-                                ? AppColors.brandTextDark
-                                : AppColors.brandTextLight,
-                          ),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: progress),
+                          duration: MotionTokens.medium,
+                          curve: Curves.easeOutCubic,
+                          builder: (context, animatedValue, _) {
+                            return LinearProgressIndicator(
+                              value: animatedValue,
+                              minHeight: 6,
+                              backgroundColor: isDark
+                                  ? Colors.white10
+                                  : Colors.black12,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isDark
+                                    ? AppColors.brandTextDark
+                                    : AppColors.brandTextLight,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -247,7 +254,10 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                       ),
                       if (progress == 1.0) ...[
                         const SizedBox(height: 20),
-                        Container(
+                        SpringPop(
+                          trigger: progress,
+                          beginScale: 0.7,
+                          child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -316,6 +326,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                             ],
                           ),
                         ),
+                        ),
                       ],
                     ],
                   ),
@@ -373,7 +384,11 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                 shape: BoxShape.circle,
               ),
               child: completed
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  ? SpringPop(
+                      trigger: completed,
+                      beginScale: 0.3,
+                      child: const Icon(Icons.check, size: 14, color: Colors.white),
+                    )
                   : null,
             ),
             const SizedBox(width: 14),

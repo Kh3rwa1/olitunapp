@@ -724,5 +724,74 @@ void main() {
         verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
       },
     );
+
+    test(
+      '18. exchangeOAuthToken on Web creates session and persists active session secret',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final mockSession = MockSession();
+        when(() => mockSession.secret).thenReturn('active_session_secret_999');
+
+        when(
+          () => mockAccount.createSession(
+            userId: 'test_user_id',
+            secret: 'token_secret_123',
+          ),
+        ).thenAnswer((_) async => mockSession);
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
+
+        final result = await service.exchangeOAuthToken(
+          'test_user_id',
+          'token_secret_123',
+        );
+        expect(result, isTrue);
+
+        verify(
+          () => mockAccount.createSession(
+            userId: 'test_user_id',
+            secret: 'token_secret_123',
+          ),
+        ).called(1);
+        verify(
+          () => mockClient.setSession('active_session_secret_999'),
+        ).called(1);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
+      },
+    );
+
+    test(
+      '19. isLoggedIn on Web validates with Appwrite when hasLocal is false',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_has_local_session': false,
+        });
+
+        final mockSession = MockSession();
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenAnswer((_) async => mockSession);
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
+
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isTrue);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
+      },
+    );
   });
 }

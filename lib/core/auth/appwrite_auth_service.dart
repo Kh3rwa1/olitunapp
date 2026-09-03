@@ -144,7 +144,7 @@ class AppwriteAuthService {
       if (kIsWeb) {
         final origin = Uri.base.origin;
         final oauthUrl =
-            '${AppwriteConfig.endpoint}/account/sessions/oauth2/google'
+            '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
             '?project=${AppwriteConfig.projectId}'
             '&success=${Uri.encodeComponent("$origin/splash")}'
             '&failure=${Uri.encodeComponent("$origin/welcome")}'
@@ -182,15 +182,20 @@ class AppwriteAuthService {
       if (userId.startsWith('a_session_')) {
         await _persistWebSession(secret);
       } else {
-        await _account.createSession(userId: userId, secret: secret);
-        if (kIsWeb) {
-          await _persistWebSession(secret);
+        final session = await _account.createSession(
+          userId: userId,
+          secret: secret,
+        );
+        if (_isWeb) {
+          await _persistWebSession(session.secret);
         }
       }
       AppLogger.debug('Appwrite: OAuth session created ✅');
       return true;
     } catch (e) {
-      AppLogger.debug('Appwrite: Failed to create session from token');
+      AppLogger.debug(
+        'Appwrite: Failed to create session from token: ${RedactionHelper.sanitize(e.toString())}',
+      );
       return false;
     }
   }
@@ -202,6 +207,7 @@ class AppwriteAuthService {
       prefs: prefs,
       secret: secret,
       nowProvider: _nowProvider,
+      isWebOverride: _isWeb,
     );
   }
 
@@ -251,7 +257,7 @@ class AppwriteAuthService {
     }
 
     final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-    if (!hasLocal) {
+    if (!hasLocal && !_isWeb) {
       return false;
     }
 

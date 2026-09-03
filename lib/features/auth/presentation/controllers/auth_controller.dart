@@ -61,6 +61,35 @@ class AuthController {
     }
   }
 
+  /// Persists full onboarding choices (target language, teaching language, goals)
+  /// into user prefs when signed in.
+  Future<void> syncOnboardingPreferences({
+    required String targetLanguage,
+    required String teachingLanguage,
+    required List<String> goals,
+  }) async {
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final loggedIn = await repo.isLoggedIn();
+      if (!loggedIn.getOrElse((_) => false)) return;
+
+      final prefsResult = await repo.getUserPrefs();
+      final newPrefs =
+          Map<String, dynamic>.from(
+              prefsResult.getOrElse((_) => <String, dynamic>{}),
+            )
+            ..['selected_target_language'] = targetLanguage
+            ..['teaching_language'] = teachingLanguage
+            ..['learning_goals'] = goals;
+      await repo.updateUserPrefs(newPrefs);
+    } catch (e) {
+      AppLogger.warning(
+        'AuthController: onboarding preferences sync failed: $e',
+        name: 'AuthController',
+      );
+    }
+  }
+
   /// Maps an OAuth sign-in failure to a user-facing snackbar message.
   ///
   /// Returns `null` when the failure should be swallowed silently (genuine

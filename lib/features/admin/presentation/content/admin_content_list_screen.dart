@@ -525,9 +525,7 @@ class _AdminContentListScreenState
         icon: const Icon(Icons.add_rounded),
         label: Text(
           'Add $_title',
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
     );

@@ -339,7 +339,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                       backgroundColor: AppColors.primary,
                       child: Text(
                         '${idx + 1}',
-                        style: TextStyle(color: AppColors.elevatedButtonFg),
+                        style: const TextStyle(color: AppColors.elevatedButtonFg),
                       ),
                     ),
                     title: Text(_strokes[idx].hintText ?? 'Stroke ${idx + 1}'),
@@ -428,9 +428,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.elevatedButtonFg,
                         ),
-                        child: const Text(
-                          'Save Stroke',
-                        ),
+                        child: const Text('Save Stroke'),
                       ),
                       TextButton(
                         onPressed: () {

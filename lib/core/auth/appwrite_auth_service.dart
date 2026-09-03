@@ -79,7 +79,8 @@ class AppwriteAuthService {
     Future<String> Function({
       required String url,
       required String callbackUrlScheme,
-    })? browserAuthenticate,
+    })?
+    browserAuthenticate,
   }) : _client = client,
        _account = account,
        _functions = functions,
@@ -95,7 +96,8 @@ class AppwriteAuthService {
   late final Future<String> Function({
     required String url,
     required String callbackUrlScheme,
-  }) _browserAuthenticate;
+  })
+  _browserAuthenticate;
 
   Account get account => _account;
   Client get client => _client;
@@ -188,17 +190,13 @@ class AppwriteAuthService {
         );
         final result = await _browserAuthenticate(
           url: oauthUrl.toString(),
-          callbackUrlScheme:
-              'appwrite-callback-${AppwriteConfig.projectId}',
+          callbackUrlScheme: 'appwrite-callback-${AppwriteConfig.projectId}',
         );
         final completion = parseWebOAuthCompletion(result);
         final exchanged =
             completion.kind == WebOAuthCompletionKind.persistSession
             ? await _persistWebSession(completion.secret).then((_) => true)
-            : await exchangeOAuthToken(
-                completion.userId!,
-                completion.secret,
-              );
+            : await exchangeOAuthToken(completion.userId!, completion.secret);
         if (!exchanged) {
           throw AppwriteException(
             'Google sign-in failed: session could not be created.',

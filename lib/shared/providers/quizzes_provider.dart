@@ -10,6 +10,7 @@ import '../../core/storage/cache_service.dart';
 import '../../core/storage/hive_service.dart';
 import '../models/content_models.dart';
 import '../quiz_engine/quiz_engine.dart';
+import 'language_settings_providers.dart';
 import 'learner_content_providers.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 
@@ -39,6 +40,10 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
       if (_disposed) return;
       ref.listen(learnerWordsProvider, (_, _) => _updateDynamicQuizzes());
       ref.listen(learnerSentencesProvider, (_, _) => _updateDynamicQuizzes());
+      ref.listen(
+        effectiveTeachingLanguageProvider,
+        (_, _) => _updateDynamicQuizzes(),
+      );
       _updateDynamicQuizzes();
     });
     return const AsyncValue.loading();
@@ -64,11 +69,14 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
       return;
     }
 
+    final teachingLanguage = ref.read(effectiveTeachingLanguageProvider);
+
     state = AsyncValue.data(
       QuizEngine.compile(
         baseQuizzes: _baseQuizzes,
         words: words,
         sentences: sentences,
+        teachingLanguage: teachingLanguage,
       ),
     );
   }

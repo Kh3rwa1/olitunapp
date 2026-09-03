@@ -44,17 +44,24 @@ class QuizOptionTile extends StatelessWidget {
           : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white);
     }
 
+    final optionText = index < question.optionsLatin.length
+        ? question.optionsLatin[index]
+        : (index < question.optionsOlChiki.length
+            ? question.optionsOlChiki[index]
+            : '');
+    final hasOlChiki = optionText.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
     return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: Semantics(
-            key: ValueKey('quiz-option-semantics-$index'),
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Semantics(
+        key: ValueKey('quiz-option-semantics-$index'),
             container: true,
             button: true,
             enabled: !isAnswered,
             selected: isSelected,
             label: LearningSemantics.quizOption(
               index: index,
-              option: question.optionsLatin[index],
+              option: optionText,
               isSelected: isSelected,
               isAnswered: isAnswered,
               isCorrect: isCorrect,
@@ -125,10 +132,11 @@ class QuizOptionTile extends StatelessWidget {
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
-                          question.optionsLatin[index],
+                          optionText,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            fontFamily: hasOlChiki ? 'OlChiki' : null,
                             color: (isAnswered && (isCorrect || isSelected))
                                 ? Colors.white
                                 : (isDark ? Colors.white : Colors.black),

@@ -14,6 +14,7 @@ import '../../../shared/providers/language_settings_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../providers/onboarding_provider.dart';
+import 'onboarding_option_card.dart';
 
 /// Five-step onboarding for the multilingual audio-first experience.
 ///
@@ -281,7 +282,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
           for (final (code, label) in options)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _OptionCard(
+              child: OnboardingOptionCard(
                 title: label,
                 icon: Icons.language_rounded,
                 selected: current == code,
@@ -331,7 +332,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
           for (final (value, label) in options)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _OptionCard(
+              child: OnboardingOptionCard(
                 title: label,
                 icon: Icons.record_voice_over_rounded,
                 selected: current == value,
@@ -372,7 +373,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
           for (final (value, label) in options)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _OptionCard(
+              child: OnboardingOptionCard(
                 title: label,
                 icon: selected.contains(value)
                     ? Icons.check_box_rounded
@@ -411,7 +412,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
           for (final (value, label) in options)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _OptionCard(
+              child: OnboardingOptionCard(
                 title: label,
                 icon: Icons.headphones_rounded,
                 selected: current == value,
@@ -528,87 +529,6 @@ class _StepScaffold extends StatelessWidget {
           const SizedBox(height: 24),
           child,
         ],
-      ),
-    );
-  }
-}
-
-class _OptionCard extends StatelessWidget {
-  const _OptionCard({
-    required this.title,
-    required this.icon,
-    required this.selected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  final String title;
-  final IconData icon;
-  final bool selected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: title,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            constraints: const BoxConstraints(minHeight: 52),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: selected
-                  ? AppColors.primary.withValues(alpha: isDark ? 0.22 : 0.10)
-                  : (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.white),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: selected
-                    ? AppColors.primary
-                    : (isDark
-                          ? Colors.white.withValues(alpha: 0.10)
-                          : Colors.black.withValues(alpha: 0.06)),
-                width: selected ? 1.6 : 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  icon,
-                  size: 22,
-                  color: selected
-                      ? AppColors.primary
-                      : (isDark ? Colors.white54 : Colors.black45),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 15.5,
-                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                ),
-                if (selected)
-                  const Icon(
-                    Icons.check_circle_rounded,
-                    color: AppColors.primary,
-                    size: 20,
-                  ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

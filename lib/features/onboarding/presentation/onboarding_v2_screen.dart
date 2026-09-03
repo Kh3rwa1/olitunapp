@@ -36,9 +36,22 @@ class OnboardingV2Screen extends ConsumerStatefulWidget {
 class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
   static const _stepCount = 5;
 
-  final PageController _pageController = PageController();
-  int _step = 0;
+  /// Last-visited step, so an app restart mid-flow resumes position
+  /// instead of restarting at step 1. Choices themselves already persist
+  /// at tap time; this only restores the page. Cleared on finish/skip.
+  static const _stepIndexKey = 'onboarding_step_index';
+
+  late final PageController _pageController;
+  late int _step;
   bool _completing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final saved = ref.read(sharedPreferencesProvider).getInt(_stepIndexKey);
+    _step = saved == null ? 0 : saved.clamp(0, _stepCount - 1);
+    _pageController = PageController(initialPage: _step);
+  }
 
   @override
   void dispose() {
@@ -48,6 +61,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
 
   void _goToStep(int step) {
     final reduceMotion = ref.read(reduceVisualEffectsProvider);
+    ref.read(sharedPreferencesProvider).setInt(_stepIndexKey, step);
     _pageController.animateToPage(
       step,
       duration: Duration(milliseconds: reduceMotion ? 0 : 250),
@@ -63,7 +77,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
     );
   }
 
-  Future<void> _finish() async {
+  Future<void> _finish({String via = 'continue'}) async {
     if (_completing) return;
     setState(() => _completing = true);
 
@@ -75,11 +89,13 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       'goalCount': ref.read(learningGoalsProvider).length,
       'dailyGoalMinutes': ref.read(dailyGoalMinutesProvider),
       'starterAudio': ref.read(starterAudioDownloadProvider),
+      'completedVia': via,
     });
 
     await _syncProfileToAccount();
 
     // Same completion path as the splash controller.
+    ref.read(sharedPreferencesProvider).remove(_stepIndexKey);
     ref.read(onboardingProvider.notifier).completeOnboarding();
 
     if (!mounted) return;
@@ -161,7 +177,28 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48),
+                  // Quiet skip: the impatient 10-20% can bail with safe
+                  // defaults instead of force-quitting mid-flow. Hidden on
+                  // the last step where the CTA already finishes.
+                  if (_step < _stepCount - 1)
+                    TextButton(
+                      onPressed: _completing
+                          ? null
+                          : () => _finish(via: 'skip'),
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(48, 48),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Text(
+                        l10n.skip,
+                        style: TextStyle(
+                          color: isDark ? Colors.white54 : Colors.black45,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    )
+                  else
+                    const SizedBox(width: 48),
                 ],
               ),
             ),
@@ -187,6 +224,12 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                   onPressed: _completing
                       ? null
                       : () {
+                          // Product decision: Continue never blocks on
+                          // selection. Every axis has a safe migrated
+                          // default, so hurried learners flow through with
+                          // defaults instead of bouncing off a forced
+                          // choice; the funnel data will show if any step
+                          // is routinely skipped empty.
                           if (_step < _stepCount - 1) {
                             _goToStep(_step + 1);
                           } else {
@@ -433,14 +476,10 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
             value: starterAudio,
             onChanged: (value) => updateStarterAudioDownload(ref, value),
           ),
-          const SizedBox(height: 8),
-          Center(
-            child: TextButton.icon(
-              onPressed: () => context.go('/login'),
-              icon: const Icon(Icons.person_outline_rounded),
-              label: Text(l10n.guestSignInCta),
-            ),
-          ),
+          // NOTE: sign-in deliberately lives outside onboarding. Home shows
+          // a persistent guest CTA banner (`guestSignInCta`), so pulling
+          // auth into this step would only add a third concept to an
+          // already dense screen for zero additional conversion.
         ],
       ),
     );

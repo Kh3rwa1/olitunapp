@@ -79,8 +79,7 @@ class AppwriteAuthService {
     Future<String> Function({
       required String url,
       required String callbackUrlScheme,
-    })?
-    browserAuthenticate,
+    })? browserAuthenticate,
   }) : _client = client,
        _account = account,
        _functions = functions,
@@ -96,8 +95,7 @@ class AppwriteAuthService {
   late final Future<String> Function({
     required String url,
     required String callbackUrlScheme,
-  })
-  _browserAuthenticate;
+  }) _browserAuthenticate;
 
   Account get account => _account;
   Client get client => _client;

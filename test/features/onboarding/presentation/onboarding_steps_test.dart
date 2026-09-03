@@ -76,52 +76,59 @@ void main() {
   });
 
   testWidgets(
-    'learning language step is mandatory and cannot be skipped or bypassed',
+    'teaching / mother tongue language step is mandatory and cannot be skipped or bypassed',
     (tester) async {
       await pumpOnboarding(tester);
 
-      // Advance from ValueProp (Step 0) to Learning Language (Step 1)
+      // Advance from ValueProp (Step 0) to Teaching Language (Step 1)
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
 
-      expect(find.text('What language do you want to learn?'), findsOneWidget);
+      expect(
+        find.text('Which language do you understand best?'),
+        findsOneWidget,
+      );
       expect(find.text('REQUIRED'), findsOneWidget);
-      expect(find.text('Santali'), findsOneWidget);
-      expect(find.text('Ho'), findsOneWidget);
-      expect(find.text('Mundari'), findsOneWidget);
+      expect(find.text('English'), findsOneWidget);
+      expect(find.text('हिंदी'), findsOneWidget);
+      expect(find.text('বাংলা'), findsOneWidget);
+      expect(find.text('ଓଡ଼ିଆ'), findsOneWidget);
+      expect(find.text('ᱥᱟᱱᱛᱟᱲᱤ'), findsOneWidget);
 
       // Verify button shows pending prompt and Skip is hidden
-      expect(find.text('Select a Learning Language'), findsOneWidget);
+      expect(find.text('Select Teaching Language'), findsOneWidget);
       expect(find.text('Skip'), findsNothing);
 
       // Tapping without selecting does NOT advance
-      await tester.tap(find.text('Select a Learning Language'));
+      await tester.tap(find.text('Select Teaching Language'));
       await tester.pump();
       expect(
-        find.text('Please select your learning language to continue.'),
+        find.text(
+          'Please select your mother tongue / teaching language to continue.',
+        ),
         findsOneWidget,
       );
       ScaffoldMessenger.of(
         tester.element(find.byType(Scaffold)),
       ).clearSnackBars();
       await tester.pumpAndSettle();
-      expect(find.text('What language do you want to learn?'), findsOneWidget);
+      expect(
+        find.text('Which language do you understand best?'),
+        findsOneWidget,
+      );
 
-      // Select Santali
-      await tester.tap(find.text('Santali'));
+      // Select English
+      await tester.tap(find.text('English'));
       await tester.pumpAndSettle();
 
       // Now Continue is unlocked and Skip appears
       expect(find.text('Continue'), findsOneWidget);
       expect(find.text('Skip'), findsOneWidget);
 
-      // Advance to Teaching Language (Step 2)
+      // Advance to Level (Step 2)
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
-      expect(
-        find.text('Which language do you understand best?'),
-        findsOneWidget,
-      );
+      expect(find.text('How familiar are you with Ol Chiki?'), findsOneWidget);
     },
   );
 
@@ -134,20 +141,13 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Step 1: Learning Language (Mandatory)
-    await tester.tap(find.text('Santali'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Continue'));
-    await tester.pumpAndSettle();
-
-    // Step 2: Teaching Language
-    expect(find.text('Which language do you understand best?'), findsOneWidget);
+    // Step 1: Teaching Language (Mandatory)
     await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Step 3 — learning level.
+    // Step 2 — learning level.
     expect(find.text('How familiar are you with Ol Chiki?'), findsOneWidget);
     expect(find.text("I'm completely new"), findsOneWidget);
     expect(find.text('I know some letters'), findsOneWidget);
@@ -156,7 +156,7 @@ void main() {
     await tester.tap(find.text('I know some letters'));
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Step 4 — script selection.
+    // Step 3 — script selection.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('How do you want to see content?'), findsOneWidget);
@@ -164,7 +164,7 @@ void main() {
     await tester.tap(find.text('Ol Chiki only'));
     await tester.pump(const Duration(milliseconds: 100));
 
-    // Step 5 — daily goal.
+    // Step 4 — daily goal.
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
     expect(find.text('How much do you want to practice?'), findsOneWidget);
@@ -182,19 +182,19 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Step 1: Mandatory Learning Language
-    await tester.tap(find.text('Santali'));
+    // Step 1: Mandatory Teaching Language
+    await tester.tap(find.text('English'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Steps 2 through 5: Teaching language, level, script, daily goal
-    for (var i = 0; i < 4; i++) {
+    // Steps 2 through 4: level, script, daily goal
+    for (var i = 0; i < 3; i++) {
       await tester.tap(find.text('Continue'));
       await tester.pumpAndSettle();
     }
 
-    // Step 6: Learning Goals
+    // Step 5: Learning Goals
     expect(find.text('What are your learning goals?'), findsOneWidget);
     expect(find.text('Read Ol Chiki script'), findsOneWidget);
     expect(find.text('Build daily habits'), findsOneWidget);
@@ -207,6 +207,7 @@ void main() {
 
     // Onboarding completed: flag persisted and the router landed home.
     expect(prefs.getBool('show_onboarding'), isFalse);
+    expect(prefs.getString('teaching_language'), 'en');
     expect(prefs.getString('selected_target_language'), 'sat');
     expect(find.text('Home After Onboarding'), findsOneWidget);
     // Guest mode: goal sync consulted the auth backend at least once

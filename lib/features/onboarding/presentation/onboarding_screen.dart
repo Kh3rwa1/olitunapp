@@ -3,8 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/languages/language_registry.dart';
-import '../../../core/languages/models/language_manifest.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
@@ -25,13 +23,14 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 }
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
-  static const int _totalSteps = 7;
+  static const int _totalSteps = 6;
   final PageController _pageController = PageController();
   int _currentStep = 0;
 
-  // Local state for user choices during onboarding
-  String? _selectedTargetLanguage;
-  String _selectedTeachingLanguage = 'en';
+  // Local state for user choices during onboarding.
+  // Indigenous target language is permanent: Santali ('sat').
+  // Teaching / Mother Tongue language must be selected by the learner.
+  String? _selectedTeachingLanguage;
   LearnerLevel _selectedLevel = LearnerLevel.beginner;
   String _selectedScriptMode = 'both';
   int _selectedDailyGoal = 5;
@@ -43,15 +42,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  void _selectTargetLanguage(String code) {
-    setState(() {
-      _selectedTargetLanguage = code;
-      if (code == 'sat') {
-        _selectedScriptMode = 'both';
-      }
-    });
-  }
-
   void _selectTeachingLanguage(String code) {
     setState(() {
       _selectedTeachingLanguage = code;
@@ -59,16 +49,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _completeOnboarding() async {
-    final targetLang = _selectedTargetLanguage ?? kDefaultTargetLanguage;
+    final teachingLang = _selectedTeachingLanguage ?? 'en';
 
-    // Save learning language to TargetLanguageNotifier and SharedPreferences
+    // Target indigenous language is permanent: Santali ('sat')
     await ref
         .read(targetLanguageCodeProvider.notifier)
-        .selectLanguage(targetLang);
+        .selectLanguage(kDefaultTargetLanguage);
 
-    // Save teaching/UI language
-    updateAppLanguage(ref, _selectedTeachingLanguage);
-    updateTeachingLanguage(ref, _selectedTeachingLanguage);
+    // Save teaching/UI language (English, Hindi, Bengali, Odia, Santali)
+    updateAppLanguage(ref, teachingLang);
+    updateTeachingLanguage(ref, teachingLang);
 
     // Save choices to local settings
     updateLearnerLevel(ref, _selectedLevel);
@@ -79,8 +69,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await ref
         .read(authControllerProvider)
         .syncOnboardingPreferences(
-          targetLanguage: targetLang,
-          teachingLanguage: _selectedTeachingLanguage,
+          targetLanguage: kDefaultTargetLanguage,
+          teachingLanguage: teachingLang,
           goals: _selectedGoals,
         );
 
@@ -93,12 +83,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _nextStep() {
-    if (_currentStep == 1 && _selectedTargetLanguage == null) {
+    // Step 1 is the mandatory Teaching / Mother Tongue language selection step
+    if (_currentStep == 1 && _selectedTeachingLanguage == null) {
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'Please select your learning language to continue.',
+            'Please select your mother tongue / teaching language to continue.',
           ),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
@@ -172,8 +163,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     final showAnimations = !reduceMotion && !reduceVisualEffects;
     final isMandatoryPending =
-        _currentStep == 1 && _selectedTargetLanguage == null;
-    final canSkip = _currentStep != 1 || _selectedTargetLanguage != null;
+        _currentStep == 1 && _selectedTeachingLanguage == null;
+    final canSkip = _currentStep != 1 || _selectedTeachingLanguage != null;
 
     return Scaffold(
       backgroundColor: isDark
@@ -300,11 +291,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
                           _ValuePropStep(isDark: isDark),
-                          _LearningLanguageStep(
-                            isDark: isDark,
-                            selectedLanguage: _selectedTargetLanguage,
-                            onSelected: _selectTargetLanguage,
-                          ),
                           _TeachingLanguageStep(
                             isDark: isDark,
                             selectedLanguage: _selectedTeachingLanguage,
@@ -384,7 +370,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             _currentStep == _totalSteps - 1
                                 ? 'Start Learning'
                                 : (isMandatoryPending
-                                      ? 'Select a Learning Language'
+                                      ? 'Select Teaching Language'
                                       : 'Continue'),
                             style: TextStyle(
                               fontSize: 16,

@@ -348,13 +348,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
               String? subtitle;
               if (scriptMode != 'olchiki' && teachingLanguage != 'sat') {
-                final translit =
-                    OlChikiMultilingualHelper.transliterateOlChiki(
-                      question.promptOlChiki,
-                      teachingLanguage,
-                    );
-                if (translit.isNotEmpty &&
-                    translit != question.promptOlChiki) {
+                final translit = OlChikiMultilingualHelper.transliterateOlChiki(
+                  question.promptOlChiki,
+                  teachingLanguage,
+                );
+                if (translit.isNotEmpty && translit != question.promptOlChiki) {
                   subtitle = translit;
                 }
               }

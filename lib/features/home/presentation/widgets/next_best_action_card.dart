@@ -244,15 +244,14 @@ class NextBestActionCard extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Icon(
-                      Icons.arrow_forward_rounded,
-                      size: 18,
-                    ).animate(onPlay: (c) => c.repeat(reverse: true)).slideX(
-                      begin: -0.35,
-                      end: 0,
-                      duration: 900.ms,
-                      curve: Curves.easeInOut,
-                    ),
+                    const Icon(Icons.arrow_forward_rounded, size: 18)
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .slideX(
+                          begin: -0.35,
+                          end: 0,
+                          duration: 900.ms,
+                          curve: Curves.easeInOut,
+                        ),
                   ],
                 ),
               ),

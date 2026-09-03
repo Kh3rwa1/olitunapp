@@ -14,7 +14,8 @@ void main() {
       blocks: [
         LessonBlockEntity(
           type: 'sentence',
-          textOlChiki: 'ᱫᱟᱨᱮ ᱜᱮ ᱡᱤᱣᱤ ᱠᱟᱱᱟ, ᱚᱱᱟᱛᱮ ᱫᱟᱨᱮ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱫᱚ ᱟᱵᱚᱣᱟᱜ ᱫᱷᱚᱨᱚᱢ ᱠᱟᱱᱟ᱾',
+          textOlChiki:
+              'ᱫᱟᱨᱮ ᱜᱮ ᱡᱤᱣᱤ ᱠᱟᱱᱟ, ᱚᱱᱟᱛᱮ ᱫᱟᱨᱮ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱫᱚ ᱟᱵᱚᱣᱟᱜ ᱫᱷᱚᱨᱚᱢ ᱠᱟᱱᱟ᱾',
           textLatin:
               'Dare ge jiwi kana, onate dare rukhiya do abowag dhorom kana.',
           audioUrl: 'https://example.com/audio/dare.mp3',
@@ -25,8 +26,7 @@ void main() {
                 'Trees are life, therefore protecting trees is our sacred duty.',
             'meaning_hi':
                 'वृक्ष ही जीवन हैं इसलिए वृक्षों की रक्षा करना हमारा पवित्र कर्तव्य है।',
-            'meaning_bn':
-                'গাছ জীবন, তাই গাছ রক্ষা করা আমাদের পবিত্র দায়িত্ব।',
+            'meaning_bn': 'গাছ জীবন, তাই গাছ রক্ষা করা আমাদের পবিত্র দায়িত্ব।',
             'meaning_or':
                 'ବୃକ୍ଷଗୁଡ଼ିକ ଜୀବନ, ତେଣୁ ଗଛର ସୁରକ୍ଷା ଆମର ପବିତ୍ର କର୍ତ୍ତବ୍ୟ |',
           },
@@ -34,16 +34,14 @@ void main() {
         LessonBlockEntity(
           type: 'sentence',
           textOlChiki: 'ᱜᱚᱡ ᱦᱚᱲ ᱫᱚ ᱵᱟᱹᱠᱩ ᱨᱚᱲᱟ, ᱚᱱᱟᱛᱮ ᱦᱚᱞᱟ ᱠᱟᱛᱷᱟ ᱫᱚ ᱦᱤᱲᱤᱧ ᱢᱮ᱾',
-          textLatin:
-              'Goj hor do baku rora, onate hola katha do hirinj me.',
+          textLatin: 'Goj hor do baku rora, onate hola katha do hirinj me.',
           audioUrl: 'https://example.com/audio/goj.mp3',
           data: {
             'meaning':
                 "Dead people do not speak, so forget about yesterday's matters.",
             'meaning_en':
                 "Dead people do not speak, so forget about yesterday's matters.",
-            'meaning_hi':
-                'मरे हुए लोग बोलते नहीं, इसलिए भूल जाओ कल की बातें।',
+            'meaning_hi': 'मरे हुए लोग बोलते नहीं, इसलिए भूल जाओ कल की बातें।',
             'meaning_bn':
                 'মৃত মানুষ কথা বলে না, তাই গতকালের বিষয়গুলি ভুলে যান।',
             'meaning_or':
@@ -150,11 +148,7 @@ void main() {
         titleOlChiki: 'ᱮᱞ ᱑ ᱠᱷᱚᱱ ᱕',
         categoryId: 'numbers',
         blocks: [
-          LessonBlockEntity(
-            type: 'number',
-            textOlChiki: '᱑',
-            textLatin: '1',
-          ),
+          LessonBlockEntity(type: 'number', textOlChiki: '᱑', textLatin: '1'),
         ],
       );
 
@@ -168,34 +162,39 @@ void main() {
       expect(quizEn.questions.first.promptLatin, 'Identify this number:');
     });
 
-    test('Alphabet category transliterates to target teaching language script', () {
-      const alphabetLesson = LessonEntity(
-        id: 'lesson_alpha_1',
-        titleLatin: 'Vowels',
-        titleOlChiki: 'ᱨᱟᱦᱟ ᱟᱲᱟᱝ',
-        categoryId: 'alphabet',
-        blocks: [
-          LessonBlockEntity(
-            type: 'letter',
-            textOlChiki: 'ᱚ',
-            textLatin: 'a',
-          ),
-        ],
-      );
+    test(
+      'Alphabet category transliterates to target teaching language script',
+      () {
+        const alphabetLesson = LessonEntity(
+          id: 'lesson_alpha_1',
+          titleLatin: 'Vowels',
+          titleOlChiki: 'ᱨᱟᱦᱟ ᱟᱲᱟᱝ',
+          categoryId: 'alphabet',
+          blocks: [
+            LessonBlockEntity(type: 'letter', textOlChiki: 'ᱚ', textLatin: 'a'),
+          ],
+        );
 
-      final quizHi = LessonQuizGenerator.generate(
-        alphabetLesson,
-        teachingLanguage: 'hi',
-      );
-      expect(quizHi.questions.first.promptLatin, 'इस अक्षर की ध्वनि पहचानें:');
-      expect(quizHi.questions.first.optionsLatin, contains('अ'));
+        final quizHi = LessonQuizGenerator.generate(
+          alphabetLesson,
+          teachingLanguage: 'hi',
+        );
+        expect(
+          quizHi.questions.first.promptLatin,
+          'इस अक्षर की ध्वनि पहचानें:',
+        );
+        expect(quizHi.questions.first.optionsLatin, contains('अ'));
 
-      final quizBn = LessonQuizGenerator.generate(
-        alphabetLesson,
-        teachingLanguage: 'bn',
-      );
-      expect(quizBn.questions.first.promptLatin, 'এই বর্ণের উচ্চারণ চিহ্নিত করুন:');
-      expect(quizBn.questions.first.optionsLatin, contains('অ'));
-    });
+        final quizBn = LessonQuizGenerator.generate(
+          alphabetLesson,
+          teachingLanguage: 'bn',
+        );
+        expect(
+          quizBn.questions.first.promptLatin,
+          'এই বর্ণের উচ্চারণ চিহ্নিত করুন:',
+        );
+        expect(quizBn.questions.first.optionsLatin, contains('অ'));
+      },
+    );
   });
 }

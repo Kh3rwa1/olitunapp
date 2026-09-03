@@ -441,11 +441,7 @@ class QuizEngine {
   }) {
     final options = <WordModel>[
       word,
-      ...wordDistractors(
-        word,
-        allWords,
-        teachingLanguage: teachingLanguage,
-      ),
+      ...wordDistractors(word, allWords, teachingLanguage: teachingLanguage),
     ]..shuffle();
 
     String prompt(String lang) {

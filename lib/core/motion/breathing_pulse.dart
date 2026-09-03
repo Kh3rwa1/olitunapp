@@ -31,9 +31,7 @@ class _BreathingPulseState extends State<BreathingPulse>
   late final Animation<double> _scale = Tween<double>(
     begin: 1.0,
     end: widget.maxScale,
-  ).animate(
-    CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-  );
+  ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
   bool _reduced = false;
 

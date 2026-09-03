@@ -77,8 +77,8 @@ class LessonQuizGenerator {
       final promptLatin = isNumberCategory
           ? _numberPrompt(teachingLanguage)
           : (isAlphabetCategory
-              ? _letterPrompt(teachingLanguage)
-              : _meaningPrompt(teachingLanguage));
+                ? _letterPrompt(teachingLanguage)
+                : _meaningPrompt(teachingLanguage));
 
       questions.add(
         QuizQuestion(
@@ -214,7 +214,8 @@ class LessonQuizGenerator {
       scriptMode: 'both',
     );
     if (display.meaning.isNotEmpty) return display.meaning;
-    if (display.title.isNotEmpty && display.title != latin) return display.title;
+    if (display.title.isNotEmpty && display.title != latin)
+      return display.title;
     if (display.transliteration.isNotEmpty) return display.transliteration;
 
     return latin;

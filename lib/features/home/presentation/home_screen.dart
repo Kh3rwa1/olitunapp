@@ -120,7 +120,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         _buildHeader(userName: displayUserName, isDark: isDark)
             .animate()
             .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
-            .slideY(begin: 0.15, end: 0, duration: 500.ms, curve: Curves.easeOutCubic),
+            .slideY(
+              begin: 0.15,
+              end: 0,
+              duration: 500.ms,
+              curve: Curves.easeOutCubic,
+            ),
         const SizedBox(height: 20),
 
         // (2b) Featured banners carousel — hidden when empty

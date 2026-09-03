@@ -35,9 +35,7 @@ class ListeningQuizGenerator {
     final questions = <QuizQuestion>[];
 
     final audioBlocks = _eligibleAudioBlocks(lesson);
-    final isNumberCategory = lesson.categoryId.toLowerCase().contains(
-      'number',
-    );
+    final isNumberCategory = lesson.categoryId.toLowerCase().contains('number');
     final isAlphabetCategory =
         lesson.categoryId.toLowerCase().contains('alphabet') ||
         lesson.categoryId.toLowerCase().contains('letter');

@@ -47,14 +47,14 @@ class QuizOptionTile extends StatelessWidget {
     final optionText = index < question.optionsLatin.length
         ? question.optionsLatin[index]
         : (index < question.optionsOlChiki.length
-            ? question.optionsOlChiki[index]
-            : '');
+              ? question.optionsOlChiki[index]
+              : '');
     final hasOlChiki = optionText.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Semantics(
-        key: ValueKey('quiz-option-semantics-$index'),
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Semantics(
+            key: ValueKey('quiz-option-semantics-$index'),
             container: true,
             button: true,
             enabled: !isAnswered,

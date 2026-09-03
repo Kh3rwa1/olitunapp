@@ -77,32 +77,38 @@ class SettingsScreen extends ConsumerWidget {
         // Bento grid for settings sections
         if (isTablet || isDesktop)
           SettingsBentoDesktop(
-            themeMode: themeMode,
-            scriptMode: scriptMode,
-            appLanguage: appLanguage,
-            soundEnabled: soundEnabled,
-            reduceVisualEffects: reduceVisualEffects,
-            isDark: isDark,
-          ).animate().fadeIn(duration: 480.ms, curve: Curves.easeOutCubic).slideY(
-            begin: 0.06,
-            end: 0,
-            duration: 480.ms,
-            curve: Curves.easeOutCubic,
-          )
+                themeMode: themeMode,
+                scriptMode: scriptMode,
+                appLanguage: appLanguage,
+                soundEnabled: soundEnabled,
+                reduceVisualEffects: reduceVisualEffects,
+                isDark: isDark,
+              )
+              .animate()
+              .fadeIn(duration: 480.ms, curve: Curves.easeOutCubic)
+              .slideY(
+                begin: 0.06,
+                end: 0,
+                duration: 480.ms,
+                curve: Curves.easeOutCubic,
+              )
         else
           SettingsBentoMobile(
-            themeMode: themeMode,
-            scriptMode: scriptMode,
-            appLanguage: appLanguage,
-            soundEnabled: soundEnabled,
-            reduceVisualEffects: reduceVisualEffects,
-            isDark: isDark,
-          ).animate().fadeIn(duration: 480.ms, curve: Curves.easeOutCubic).slideY(
-            begin: 0.06,
-            end: 0,
-            duration: 480.ms,
-            curve: Curves.easeOutCubic,
-          ),
+                themeMode: themeMode,
+                scriptMode: scriptMode,
+                appLanguage: appLanguage,
+                soundEnabled: soundEnabled,
+                reduceVisualEffects: reduceVisualEffects,
+                isDark: isDark,
+              )
+              .animate()
+              .fadeIn(duration: 480.ms, curve: Curves.easeOutCubic)
+              .slideY(
+                begin: 0.06,
+                end: 0,
+                duration: 480.ms,
+                curve: Curves.easeOutCubic,
+              ),
 
         const SizedBox(height: 120),
       ],

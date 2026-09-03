@@ -265,12 +265,16 @@ class ProfileHeroCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Overall Progress',
-                    style: AppTypography.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? Colors.white54 : Colors.black45,
+                  Flexible(
+                    child: Text(
+                      'Overall Progress',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: AppTypography.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
                     ),
                   ),
                   Text(

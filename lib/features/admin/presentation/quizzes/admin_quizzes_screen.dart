@@ -122,10 +122,11 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => QuizFormSheet.show(context, ref, null),
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        foregroundColor: AppColors.elevatedButtonFg,
+        icon: const Icon(Icons.add_rounded),
         label: const Text(
           'Create Quiz',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
     );

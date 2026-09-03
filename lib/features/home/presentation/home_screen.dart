@@ -229,13 +229,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.homeDiscover,
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.2,
-                    color: isDark ? AppColors.primary : AppColors.primaryDark,
+                Flexible(
+                  child: Text(
+                    l10n.homeDiscover,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.2,
+                      color: isDark ? AppColors.primary : AppColors.primaryDark,
+                    ),
                   ),
                 ),
                 Container(

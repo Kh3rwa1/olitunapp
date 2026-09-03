@@ -521,11 +521,11 @@ class _AdminContentListScreenState
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openFormSheet(null),
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
+        foregroundColor: AppColors.elevatedButtonFg,
+        icon: const Icon(Icons.add_rounded),
         label: Text(
           'Add $_title',
           style: const TextStyle(
-            color: Colors.white,
             fontWeight: FontWeight.w700,
           ),
         ),

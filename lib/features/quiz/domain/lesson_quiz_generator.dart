@@ -214,8 +214,9 @@ class LessonQuizGenerator {
       scriptMode: 'both',
     );
     if (display.meaning.isNotEmpty) return display.meaning;
-    if (display.title.isNotEmpty && display.title != latin)
+    if (display.title.isNotEmpty && display.title != latin) {
       return display.title;
+    }
     if (display.transliteration.isNotEmpty) return display.transliteration;
 
     return latin;

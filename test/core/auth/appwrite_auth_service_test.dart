@@ -17,6 +17,8 @@ class MockExecution extends Mock implements models.Execution {}
 
 class MockSession extends Mock implements models.Session {}
 
+class MockToken extends Mock implements models.Token {}
+
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 void main() {
@@ -788,6 +790,43 @@ void main() {
 
         final loggedIn = await service.isLoggedIn();
         expect(loggedIn, isTrue);
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
+      },
+    );
+
+    test(
+      '20. signInWithGoogle on mobile creates OAuth token and sets local session flag',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final mockToken = MockToken();
+        when(
+          () => mockAccount.createOAuth2Token(
+            provider: OAuthProvider.google,
+            success: any(named: 'success'),
+            failure: any(named: 'failure'),
+            scopes: any(named: 'scopes'),
+          ),
+        ).thenAnswer((_) async => mockToken);
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: false,
+        );
+
+        await service.signInWithGoogle();
+
+        verify(
+          () => mockAccount.createOAuth2Token(
+            provider: OAuthProvider.google,
+            success: any(named: 'success'),
+            failure: any(named: 'failure'),
+            scopes: any(named: 'scopes'),
+          ),
+        ).called(1);
 
         final prefs = await SharedPreferences.getInstance();
         expect(prefs.getBool('olitun_has_local_session'), isTrue);

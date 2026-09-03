@@ -132,7 +132,13 @@ class AppwriteAuthService {
     required String secret,
   }) async {
     AppLogger.debug('Appwrite: Verifying OTP token');
-    return await _account.createSession(userId: userId, secret: secret);
+    final session = await _account.createSession(
+      userId: userId,
+      secret: secret,
+    );
+    final prefs = await _getPrefs();
+    await prefs.setBool(_hasLocalSessionKey, true);
+    return session;
   }
 
   // ─── Google OAuth ───
@@ -162,6 +168,8 @@ class AppwriteAuthService {
           failure: failureLink,
           scopes: ['email', 'profile'],
         );
+        final prefs = await _getPrefs();
+        await prefs.setBool(_hasLocalSessionKey, true);
       }
     } on AppwriteException catch (e) {
       AppLogger.debug(

@@ -40,7 +40,6 @@ class WebOAuthCompletion {
        );
 }
 
-@visibleForTesting
 WebOAuthCompletion parseWebOAuthCompletion(String result) {
   final uri = Uri.parse(result);
   if (uri.queryParameters.containsKey('failure')) {
@@ -68,4 +67,24 @@ WebOAuthCompletion parseWebOAuthCompletion(String result) {
   }
 
   throw AppwriteException('Invalid OAuth2 response. Missing session key.');
+}
+
+/// Builds the Google OAuth2 token URL for the mobile flow, mirroring the
+/// Appwrite backend contract: `success`/`failure` deep links plus scopes
+/// and project. Pure function so the exact URL the browser opens is
+/// unit-testable.
+Uri buildMobileGoogleOAuthUrl({
+  required String endpoint,
+  required String projectId,
+}) {
+  final successLink = 'appwrite-callback-$projectId://success';
+  final failureLink = 'appwrite-callback-$projectId://failure';
+  final query = [
+    'success=${Uri.encodeComponent(successLink)}',
+    'failure=${Uri.encodeComponent(failureLink)}',
+    'scopes[]=${Uri.encodeComponent('email')}',
+    'scopes[]=${Uri.encodeComponent('profile')}',
+    'project=${Uri.encodeComponent(projectId)}',
+  ].join('&');
+  return Uri.parse('$endpoint/account/tokens/oauth2/google?$query');
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
@@ -53,6 +54,7 @@ class AppwriteAuthService {
 
     _account = Account(_client);
     _functions = Functions(_client);
+    _browserAuthenticate = FlutterWebAuth2.authenticate;
   }
 
   static final AppwriteAuthService _instance = AppwriteAuthService._internal();
@@ -74,12 +76,28 @@ class AppwriteAuthService {
     SharedPreferences? prefs,
     DateTime Function()? nowProvider,
     bool? isWebOverride,
+    Future<String> Function({
+      required String url,
+      required String callbackUrlScheme,
+    })?
+    browserAuthenticate,
   }) : _client = client,
        _account = account,
        _functions = functions,
        _prefsOverride = prefs,
        _nowProvider = nowProvider,
-       _isWebOverride = isWebOverride;
+       _isWebOverride = isWebOverride,
+       _browserAuthenticate =
+           browserAuthenticate ?? FlutterWebAuth2.authenticate;
+
+  /// Browser entry-point for the mobile OAuth flow. A field (not a direct
+  /// plugin call) so unit tests can inject a canned callback URL instead of
+  /// opening a real browser — the platform channel has no VM implementation.
+  late final Future<String> Function({
+    required String url,
+    required String callbackUrlScheme,
+  })
+  _browserAuthenticate;
 
   Account get account => _account;
   Client get client => _client;
@@ -158,16 +176,36 @@ class AppwriteAuthService {
             '&scopes[]=${Uri.encodeComponent("profile")}';
         redirectToUrl(oauthUrl);
       } else {
-        final successLink =
-            'appwrite-callback-${AppwriteConfig.projectId}://success';
-        final failureLink =
-            'appwrite-callback-${AppwriteConfig.projectId}://failure';
-        await _account.createOAuth2Token(
-          provider: OAuthProvider.google,
-          success: successLink,
-          failure: failureLink,
-          scopes: ['email', 'profile'],
+        // Mobile: drive flutter_web_auth_2 directly instead of the SDK's
+        // createOAuth2Token. The SDK's internal callback parser requires
+        // `key` + `secret`, but the token endpoint returns `userId` +
+        // `secret` — so every successful Google consent ended in
+        // "Invalid OAuth2 Response. Key and Secret not available." and no
+        // session was ever created. Parsing with the app's own
+        // parseWebOAuthCompletion (same contract as the web flow) and then
+        // exchanging via exchangeOAuthToken yields a real server session.
+        final oauthUrl = buildMobileGoogleOAuthUrl(
+          endpoint: AppwriteConfig.endpoint,
+          projectId: AppwriteConfig.projectId,
         );
+        final result = await _browserAuthenticate(
+          url: oauthUrl.toString(),
+          callbackUrlScheme:
+              'appwrite-callback-${AppwriteConfig.projectId}',
+        );
+        final completion = parseWebOAuthCompletion(result);
+        final exchanged =
+            completion.kind == WebOAuthCompletionKind.persistSession
+            ? await _persistWebSession(completion.secret).then((_) => true)
+            : await exchangeOAuthToken(
+                completion.userId!,
+                completion.secret,
+              );
+        if (!exchanged) {
+          throw AppwriteException(
+            'Google sign-in failed: session could not be created.',
+          );
+        }
         final prefs = await _getPrefs();
         await prefs.setBool(_hasLocalSessionKey, true);
       }

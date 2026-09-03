@@ -6,6 +6,7 @@ import 'package:appwrite/models.dart' as models;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/config/appwrite_config.dart';
 
 class MockClient extends Mock implements Client {}
 
@@ -110,6 +111,53 @@ void main() {
           ),
         ),
       );
+    });
+
+    test('parses mobile deep-link success callbacks (token contract)', () {
+      // This is the exact shape the Appwrite token endpoint returns to
+      // the appwrite-callback:// scheme on mobile: userId + secret, and
+      // crucially NO `key` — the shape the SDK's internal parser rejects
+      // but the app's mobile flow must accept.
+      final completion = parseWebOAuthCompletion(
+        'appwrite-callback-699495910038e39622c5://success?userId=user_1&secret=session-secret',
+      );
+      expect(completion.kind, WebOAuthCompletionKind.createSession);
+      expect(completion.userId, 'user_1');
+      expect(completion.secret, 'session-secret');
+    });
+  });
+
+  group('buildMobileGoogleOAuthUrl', () {
+    test('targets the token endpoint with deep-link callbacks', () {
+      final url = buildMobileGoogleOAuthUrl(
+        endpoint: 'https://sgp.cloud.appwrite.io/v1',
+        projectId: 'proj_123',
+      );
+      expect(
+        url.toString(),
+        startsWith(
+          'https://sgp.cloud.appwrite.io/v1/account/tokens/oauth2/google?',
+        ),
+      );
+      expect(
+        url.queryParameters['success'],
+        'appwrite-callback-proj_123://success',
+      );
+      expect(
+        url.queryParameters['failure'],
+        'appwrite-callback-proj_123://failure',
+      );
+      expect(url.queryParameters['project'], 'proj_123');
+    });
+
+    test('requests email and profile scopes', () {
+      final url = buildMobileGoogleOAuthUrl(
+        endpoint: 'https://sgp.cloud.appwrite.io/v1',
+        projectId: 'proj_123',
+      );
+      // Uri drops the [] suffix key shape; verify raw encoding instead.
+      expect(url.toString(), contains('email'));
+      expect(url.toString(), contains('profile'));
     });
   });
 
@@ -797,34 +845,45 @@ void main() {
     );
 
     test(
-      '20. signInWithGoogle on mobile creates OAuth token and sets local session flag',
+      '20. signInWithGoogle on mobile exchanges the browser callback for a real session and sets local session flag',
       () async {
         SharedPreferences.setMockInitialValues({});
-        final mockToken = MockToken();
+        final mockSession = MockSession();
         when(
-          () => mockAccount.createOAuth2Token(
-            provider: OAuthProvider.google,
-            success: any(named: 'success'),
-            failure: any(named: 'failure'),
-            scopes: any(named: 'scopes'),
+          () => mockAccount.createSession(
+            userId: any(named: 'userId'),
+            secret: any(named: 'secret'),
           ),
-        ).thenAnswer((_) async => mockToken);
+        ).thenAnswer((_) async => mockSession);
 
+        var browserUrl = '';
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
           functions: mockFunctions,
           isWebOverride: false,
+          browserAuthenticate: ({required url, required callbackUrlScheme}) async {
+            browserUrl = url;
+            expect(
+              callbackUrlScheme,
+              'appwrite-callback-${AppwriteConfig.projectId}',
+            );
+            // Callback shape the Appwrite token endpoint actually returns:
+            // userId + secret, no `key`.
+            return 'appwrite-callback-${AppwriteConfig.projectId}://success?userId=user_1&secret=session-secret';
+          },
         );
 
         await service.signInWithGoogle();
 
+        // The browser must open the token endpoint (not the session one).
+        expect(browserUrl, contains('/account/tokens/oauth2/google'));
+        // And the token must be exchanged for a real server session —
+        // previously the SDK's internal parser rejected this exact shape.
         verify(
-          () => mockAccount.createOAuth2Token(
-            provider: OAuthProvider.google,
-            success: any(named: 'success'),
-            failure: any(named: 'failure'),
-            scopes: any(named: 'scopes'),
+          () => mockAccount.createSession(
+            userId: 'user_1',
+            secret: 'session-secret',
           ),
         ).called(1);
 

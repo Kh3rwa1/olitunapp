@@ -435,7 +435,8 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
                 width: 22,
                 height: 22,
                 fit: BoxFit.contain,
-                cacheWidth: (22 * MediaQuery.devicePixelRatioOf(context)).round(),
+                cacheWidth: (22 * MediaQuery.devicePixelRatioOf(context))
+                    .round(),
               ),
               const SizedBox(width: 12),
               const Text(

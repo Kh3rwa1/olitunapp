@@ -1,6 +1,8 @@
 import '../../../shared/models/content_models.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 
+import 'lesson_quiz_generator.dart';
+
 /// Generates a listening quiz from a lesson's playable audio blocks.
 ///
 /// Phase 7 (spec §14): every question is built ONLY from blocks that have
@@ -26,30 +28,55 @@ class ListeningQuizGenerator {
   /// callers check `questions.isEmpty` and treat that as "no listening
   /// quiz available" (spec §14: exclude incomplete questions from the
   /// pool; never ship a placeholder question).
-  static QuizModel generate(LessonEntity lesson) {
+  static QuizModel generate(
+    LessonEntity lesson, {
+    String teachingLanguage = 'en',
+  }) {
     final questions = <QuizQuestion>[];
 
     final audioBlocks = _eligibleAudioBlocks(lesson);
+    final isNumberCategory = lesson.categoryId.toLowerCase().contains('number');
+    final isAlphabetCategory =
+        lesson.categoryId.toLowerCase().contains('alphabet') ||
+        lesson.categoryId.toLowerCase().contains('letter');
+
+    final resolvedBlockOptions = <String>[];
+    for (final b in audioBlocks) {
+      final opt = LessonQuizGenerator.resolveBlockOption(
+        b,
+        teachingLanguage,
+        isAlphabet: isAlphabetCategory,
+        isNumber: isNumberCategory,
+      );
+      if (opt.isNotEmpty) {
+        resolvedBlockOptions.add(opt);
+      }
+    }
 
     for (int i = 0; i < audioBlocks.length; i++) {
       final block = audioBlocks[i];
       final olChiki = block.textOlChiki!.trim();
-      final latin = block.textLatin!.trim();
       final audioUrl = block.audioUrl!.trim();
 
+      final correctOption = LessonQuizGenerator.resolveBlockOption(
+        block,
+        teachingLanguage,
+        isAlphabet: isAlphabetCategory,
+        isNumber: isNumberCategory,
+      );
+      if (correctOption.isEmpty) continue;
+
       // High-quality distractors first: other meanings in this lesson.
-      final otherBlockTranslations = audioBlocks
-          .map((b) => b.textLatin!.trim())
-          .where((t) => t != latin)
+      final otherBlockTranslations = resolvedBlockOptions
+          .where((t) => t != correctOption)
           .toSet()
           .toList();
 
-      final isNumberCategory = lesson.categoryId.toLowerCase().contains(
-        'number',
+      final fallbackDistractors = LessonQuizGenerator.fallbackDistractors(
+        teachingLanguage,
+        isNumberCategory,
+        isAlphabetCategory,
       );
-      final fallbackDistractors = isNumberCategory
-          ? ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
-          : ['water', 'food', 'house', 'tree', 'hand', 'leg', 'head', 'eye'];
 
       // A distractor identical to the answer makes a correct option textually
       // indistinguishable from a wrong one (picking it fails validation) —
@@ -57,17 +84,19 @@ class ListeningQuizGenerator {
       final distractors = [
         ...otherBlockTranslations,
         ...fallbackDistractors,
-      ].where((d) => d != latin).toSet().toList()..shuffle();
+      ].where((d) => d != correctOption).toSet().toList()..shuffle();
 
-      final options = [latin, ...distractors.take(3)]..shuffle();
-      final correctIndex = options.indexOf(latin);
+      final options = [correctOption, ...distractors.take(3)]..shuffle();
+      final correctIndex = options.indexOf(correctOption);
       if (correctIndex < 0) continue;
+
+      final prompt = _listeningPrompt(teachingLanguage);
 
       questions.add(
         QuizQuestion(
           type: 'listen_meaning',
           promptOlChiki: olChiki,
-          promptLatin: 'Play the audio and choose the correct meaning:',
+          promptLatin: prompt,
           optionsOlChiki: options,
           optionsLatin: options,
           correctIndex: correctIndex,
@@ -83,6 +112,22 @@ class ListeningQuizGenerator {
       title: '${lesson.titleLatin} Listening Quiz',
       questions: questions.take(maxQuestions).toList(),
     );
+  }
+
+  static String _listeningPrompt(String lang) {
+    switch (lang) {
+      case 'hi':
+        return 'ऑडियो सुनें और सही अर्थ चुनें:';
+      case 'bn':
+        return 'অডিও শুনুন এবং সঠিক অর্থ বেছে নিন:';
+      case 'or':
+        return 'ଅଡିଓ ଶୁଣନ୍ତୁ ଏବଂ ସଠିକ୍ ଅର୍ଥ ବାଛନ୍ତୁ:';
+      case 'sat':
+        return 'ᱟᱰᱤᱭᱳ ᱟᱸᱡᱚᱢ ᱢᱮ ᱟᱨ ᱥᱟᱹᱨᱤ ᱢᱮᱱᱮᱛ ᱵᱟᱪᱷᱟᱣ ᱢᱮ:';
+      case 'en':
+      default:
+        return 'Play the audio and choose the correct meaning:';
+    }
   }
 
   static List<LessonBlockEntity> _eligibleAudioBlocks(LessonEntity lesson) {

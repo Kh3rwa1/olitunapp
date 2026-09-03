@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../core/error/failures.dart';
+import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/providers.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
@@ -58,7 +59,15 @@ final dynamicLessonQuizProvider = Provider.family<QuizModel, LessonEntity>((
   ref,
   lesson,
 ) {
-  return LessonQuizGenerator.generate(lesson);
+  final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+  final scriptMode = ref.watch(effectiveScriptModeProvider);
+  final targetManifest = ref.watch(activeLanguageManifestProvider);
+  return LessonQuizGenerator.generate(
+    lesson,
+    teachingLanguage: teachingLanguage,
+    scriptMode: scriptMode,
+    targetLanguage: targetManifest.code,
+  );
 });
 
 /// Phase 7: client-side listening quiz for a lesson (audio-bearing blocks
@@ -67,7 +76,11 @@ final listeningLessonQuizProvider = Provider.family<QuizModel, LessonEntity>((
   ref,
   lesson,
 ) {
-  return ListeningQuizGenerator.generate(lesson);
+  final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+  return ListeningQuizGenerator.generate(
+    lesson,
+    teachingLanguage: teachingLanguage,
+  );
 });
 
 /// True when a listening quiz can be generated for [lessonId] — used to
@@ -103,7 +116,11 @@ final quizResultProvider =
           );
         }
 
-        final listeningQuiz = ListeningQuizGenerator.generate(lesson);
+        final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+        final listeningQuiz = ListeningQuizGenerator.generate(
+          lesson,
+          teachingLanguage: teachingLanguage,
+        );
         if (listeningQuiz.questions.isEmpty) {
           // Spec §14 line 680: exclude incomplete questions from published
           // quiz pools. A lesson without playable audio has no listening
@@ -132,7 +149,15 @@ final quizResultProvider =
           );
         }
 
-        final dynamicQuiz = LessonQuizGenerator.generate(lesson);
+        final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+        final scriptMode = ref.watch(effectiveScriptModeProvider);
+        final targetManifest = ref.watch(activeLanguageManifestProvider);
+        final dynamicQuiz = LessonQuizGenerator.generate(
+          lesson,
+          teachingLanguage: teachingLanguage,
+          scriptMode: scriptMode,
+          targetLanguage: targetManifest.code,
+        );
         return AsyncValue.data(Right(dynamicQuiz));
       }
 

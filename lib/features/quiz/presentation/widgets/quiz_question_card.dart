@@ -9,6 +9,8 @@ class QuizQuestionCard extends StatelessWidget {
   final bool isPlaying;
   final bool isLoading;
   final VoidCallback? onPlayAudio;
+  final String? fontFamily;
+  final String? subtitle;
 
   const QuizQuestionCard({
     super.key,
@@ -16,6 +18,8 @@ class QuizQuestionCard extends StatelessWidget {
     this.isPlaying = false,
     this.isLoading = false,
     this.onPlayAudio,
+    this.fontFamily,
+    this.subtitle,
   });
 
   @override
@@ -28,12 +32,17 @@ class QuizQuestionCard extends StatelessWidget {
         (question.audioUrl != null && question.audioUrl!.trim().isNotEmpty) ||
         onPlayAudio != null;
 
+    final hasOlChikiPrompt = question.promptOlChiki.runes.any(
+      (r) => r >= 0x1C50 && r <= 0x1C7F,
+    );
+    final resolvedFont = fontFamily ?? (hasOlChikiPrompt ? 'OlChiki' : null);
+
     Widget promptWidget = Text(
       question.promptOlChiki,
       style: TextStyle(
         fontSize: isLongPrompt ? 32 : 48,
         fontWeight: FontWeight.w900,
-        fontFamily: 'OlChiki',
+        fontFamily: resolvedFont,
         color: Colors.white,
         height: 1.3,
       ),
@@ -69,6 +78,19 @@ class QuizQuestionCard extends StatelessWidget {
           child: Column(
             children: [
               promptWidget,
+              if (subtitle != null && subtitle!.trim().isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    subtitle!.trim(),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               if (question.promptLatin != null &&
                   question.promptLatin!.isNotEmpty)
                 Padding(

@@ -117,7 +117,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // (2) Header: Johar + user name only
-        _buildHeader(userName: displayUserName, isDark: isDark),
+        _buildHeader(userName: displayUserName, isDark: isDark)
+            .animate()
+            .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
+            .slideY(
+              begin: 0.15,
+              end: 0,
+              duration: 500.ms,
+              curve: Curves.easeOutCubic,
+            ),
         const SizedBox(height: 20),
 
         // (2b) Featured banners carousel — hidden when empty

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/minimum_tap_target.dart';
-import '../../../../core/motion/confetti_overlay.dart';
 import '../providers/mission_providers.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
@@ -186,17 +186,24 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                       // Custom Thin Progress Bar
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                          value: progress,
-                          minHeight: 6,
-                          backgroundColor: isDark
-                              ? Colors.white10
-                              : Colors.black12,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            isDark
-                                ? AppColors.brandTextDark
-                                : AppColors.brandTextLight,
-                          ),
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: progress),
+                          duration: MotionTokens.medium,
+                          curve: Curves.easeOutCubic,
+                          builder: (context, animatedValue, _) {
+                            return LinearProgressIndicator(
+                              value: animatedValue,
+                              minHeight: 6,
+                              backgroundColor: isDark
+                                  ? Colors.white10
+                                  : Colors.black12,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isDark
+                                    ? AppColors.brandTextDark
+                                    : AppColors.brandTextLight,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       const SizedBox(height: 18),
@@ -247,73 +254,81 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                       ),
                       if (progress == 1.0) ...[
                         const SizedBox(height: 20),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: isDark
-                                  ? [
-                                      AppColors.primary.withValues(alpha: 0.15),
-                                      AppColors.darkSurfaceElevated,
-                                    ]
-                                  : [
-                                      AppColors.primary.withValues(alpha: 0.08),
-                                      Colors.white,
-                                    ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                        SpringPop(
+                          trigger: progress,
+                          beginScale: 0.7,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [
+                                        AppColors.primary.withValues(
+                                          alpha: 0.15,
+                                        ),
+                                        AppColors.darkSurfaceElevated,
+                                      ]
+                                    : [
+                                        AppColors.primary.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                        Colors.white,
+                                      ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    '✨',
-                                    style: TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Tomorrow Preview',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark
-                                          ? Colors.white
-                                          : AppColors.textPrimaryLight,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Text(
+                                      '✨',
+                                      style: TextStyle(fontSize: 20),
                                     ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Tomorrow Preview',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w900,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppColors.textPrimaryLight,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Learn: Family Words',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? AppColors.brandTextDark
+                                        : AppColors.brandTextLight,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Learn: Family Words',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? AppColors.brandTextDark
-                                      : AppColors.brandTextLight,
                                 ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Reward: 30 stars\nCome back tomorrow to continue your streak!',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  height: 1.4,
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.black87,
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Reward: 30 stars\nCome back tomorrow to continue your streak!',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    height: 1.4,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -373,7 +388,15 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                 shape: BoxShape.circle,
               ),
               child: completed
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
+                  ? SpringPop(
+                      trigger: completed,
+                      beginScale: 0.3,
+                      child: const Icon(
+                        Icons.check,
+                        size: 14,
+                        color: Colors.white,
+                      ),
+                    )
                   : null,
             ),
             const SizedBox(width: 14),

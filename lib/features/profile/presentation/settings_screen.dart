@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -76,22 +77,38 @@ class SettingsScreen extends ConsumerWidget {
         // Bento grid for settings sections
         if (isTablet || isDesktop)
           SettingsBentoDesktop(
-            themeMode: themeMode,
-            scriptMode: scriptMode,
-            appLanguage: appLanguage,
-            soundEnabled: soundEnabled,
-            reduceVisualEffects: reduceVisualEffects,
-            isDark: isDark,
-          )
+                themeMode: themeMode,
+                scriptMode: scriptMode,
+                appLanguage: appLanguage,
+                soundEnabled: soundEnabled,
+                reduceVisualEffects: reduceVisualEffects,
+                isDark: isDark,
+              )
+              .animate()
+              .fadeIn(duration: 480.ms, curve: Curves.easeOutCubic)
+              .slideY(
+                begin: 0.06,
+                end: 0,
+                duration: 480.ms,
+                curve: Curves.easeOutCubic,
+              )
         else
           SettingsBentoMobile(
-            themeMode: themeMode,
-            scriptMode: scriptMode,
-            appLanguage: appLanguage,
-            soundEnabled: soundEnabled,
-            reduceVisualEffects: reduceVisualEffects,
-            isDark: isDark,
-          ),
+                themeMode: themeMode,
+                scriptMode: scriptMode,
+                appLanguage: appLanguage,
+                soundEnabled: soundEnabled,
+                reduceVisualEffects: reduceVisualEffects,
+                isDark: isDark,
+              )
+              .animate()
+              .fadeIn(duration: 480.ms, curve: Curves.easeOutCubic)
+              .slideY(
+                begin: 0.06,
+                end: 0,
+                duration: 480.ms,
+                curve: Curves.easeOutCubic,
+              ),
 
         const SizedBox(height: 120),
       ],

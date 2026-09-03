@@ -1,4 +1,5 @@
 import '../models/content_models.dart';
+import 'sentence_quiz_builder.dart';
 
 class QuizCatalog {
   const QuizCatalog._();
@@ -192,6 +193,7 @@ class QuizEngine {
     required List<QuizModel> baseQuizzes,
     required List<WordModel> words,
     required List<SentenceModel> sentences,
+    String teachingLanguage = 'en',
   }) {
     final compiled = <QuizModel>[
       for (final quiz in baseQuizzes)
@@ -201,9 +203,17 @@ class QuizEngine {
     ];
 
     _addMissingDefaults(compiled);
-    compiled.addAll(_compileVocabularyQuizzes(words));
+    compiled.addAll(
+      _compileVocabularyQuizzes(words, teachingLanguage: teachingLanguage),
+    );
     compiled.addAll(_compileSentenceQuizzes(sentences, words));
-    compiled.addAll(_compileHybridQuizzes(words, sentences));
+    compiled.addAll(
+      _compileHybridQuizzes(
+        words,
+        sentences,
+        teachingLanguage: teachingLanguage,
+      ),
+    );
     return compiled;
   }
 
@@ -212,23 +222,32 @@ class QuizEngine {
     List<WordModel> words,
   ) {
     return [
-      for (final sentence in sentences) ?_sentenceQuestion(sentence, words),
+      for (final sentence in sentences)
+        ?SentenceQuizBuilder.build(sentence, words),
     ];
   }
 
-  /// Display text for an MCQ option: the English meaning when present,
+  /// Display text for an MCQ option: the localized meaning when present,
   /// otherwise the Ol Chiki word. Rendering '{olChiki} ({meaning})' let
   /// players string-match the prompt glyph inside the option text instead
   /// of knowing the language — options must show the meaning only.
-  static String _meaningDisplay(WordModel word) {
+  static String meaningDisplay(
+    WordModel word, {
+    String teachingLanguage = 'en',
+  }) {
+    if (teachingLanguage != 'en') {
+      final loc = word.localizedMeaning(teachingLanguage).trim();
+      if (loc.isNotEmpty) return loc;
+    }
     final meaning = word.meaning.trim();
     return meaning.isNotEmpty ? meaning : word.wordOlChiki;
   }
 
   static List<WordModel> wordDistractors(
     WordModel correctWord,
-    List<WordModel> allWords,
-  ) {
+    List<WordModel> allWords, {
+    String teachingLanguage = 'en',
+  }) {
     final sameCategory = allWords.where((word) {
       final correctCategory = correctWord.category;
       final candidateCategory = word.category;
@@ -247,15 +266,25 @@ class QuizEngine {
     // Distractors must be display-distinct from the correct answer AND from
     // each other — two options reading the same meaning would make the
     // question ambiguous (picking either is equally "correct").
-    final correctDisplay = _meaningDisplay(correctWord);
+    final correctDisplay = meaningDisplay(
+      correctWord,
+      teachingLanguage: teachingLanguage,
+    );
     final distinct = <WordModel>[];
     for (final candidate in <WordModel>[
       ...sameCategory,
       ...fallback,
     ]..shuffle()) {
-      final display = _meaningDisplay(candidate);
+      final display = meaningDisplay(
+        candidate,
+        teachingLanguage: teachingLanguage,
+      );
       if (display == correctDisplay) continue;
-      if (distinct.any((d) => _meaningDisplay(d) == display)) continue;
+      if (distinct.any(
+        (d) => meaningDisplay(d, teachingLanguage: teachingLanguage) == display,
+      )) {
+        continue;
+      }
       distinct.add(candidate);
       if (distinct.length == 3) break;
     }
@@ -274,7 +303,10 @@ class QuizEngine {
     }
   }
 
-  static Iterable<QuizModel> _compileVocabularyQuizzes(List<WordModel> words) {
+  static Iterable<QuizModel> _compileVocabularyQuizzes(
+    List<WordModel> words, {
+    String teachingLanguage = 'en',
+  }) {
     return [
       for (final spec in _vocabSpecs)
         if (_wordsForKeys(words, spec.keys) case final pool
@@ -285,7 +317,11 @@ class QuizEngine {
             title: spec.title,
             level: spec.level,
             order: spec.order,
-            questions: _wordQuestions(pool.takeShuffled(10), words),
+            questions: _wordQuestions(
+              pool.takeShuffled(10),
+              words,
+              teachingLanguage: teachingLanguage,
+            ),
           ),
     ];
   }
@@ -311,25 +347,37 @@ class QuizEngine {
 
   static Iterable<QuizModel> _compileHybridQuizzes(
     List<WordModel> words,
-    List<SentenceModel> sentences,
-  ) {
+    List<SentenceModel> sentences, {
+    String teachingLanguage = 'en',
+  }) {
     return [
-      for (final spec in _hybridSpecs) ?_hybridQuiz(spec, words, sentences),
+      for (final spec in _hybridSpecs)
+        ?_hybridQuiz(
+          spec,
+          words,
+          sentences,
+          teachingLanguage: teachingLanguage,
+        ),
     ];
   }
 
   static QuizModel? _hybridQuiz(
     _HybridQuizSpec spec,
     List<WordModel> allWords,
-    List<SentenceModel> allSentences,
-  ) {
+    List<SentenceModel> allSentences, {
+    String teachingLanguage = 'en',
+  }) {
     final wordPool = _wordsForKeys(allWords, spec.wordKeys);
     final sentencePool = _sentencesForKeys(allSentences, spec.sentenceKeys);
     if (wordPool.isEmpty && sentencePool.isEmpty) return null;
 
     final splitCount = (spec.targetCount / 2).round();
     final questions = <QuizQuestion>[
-      ..._wordQuestions(wordPool.takeShuffled(splitCount), allWords),
+      ..._wordQuestions(
+        wordPool.takeShuffled(splitCount),
+        allWords,
+        teachingLanguage: teachingLanguage,
+      ),
       ...sentenceQuestions(sentencePool.takeShuffled(splitCount), allWords),
     ];
 
@@ -340,6 +388,7 @@ class QuizEngine {
           questions,
         ).takeShuffled(spec.targetCount - questions.length),
         allWords,
+        teachingLanguage: teachingLanguage,
       ),
     );
 
@@ -350,6 +399,7 @@ class QuizEngine {
           questions,
         ).takeShuffled(spec.targetCount - questions.length),
         allWords,
+        teachingLanguage: teachingLanguage,
       ),
     );
 
@@ -376,138 +426,50 @@ class QuizEngine {
 
   static List<QuizQuestion> _wordQuestions(
     List<WordModel> words,
-    List<WordModel> allWords,
-  ) {
-    return [for (final word in words) _wordQuestion(word, allWords)];
-  }
-
-  static QuizQuestion _wordQuestion(WordModel word, List<WordModel> allWords) {
-    final options = <WordModel>[word, ...wordDistractors(word, allWords)]
-      ..shuffle();
-    return QuizQuestion(
-      promptOlChiki: word.wordOlChiki,
-      promptLatin: 'Choose the correct English meaning for this word.',
-      optionsOlChiki: options.map((option) => option.wordOlChiki).toList(),
-      optionsLatin: options.map(_meaningDisplay).toList(),
-      correctIndex: options.indexWhere((option) => option.id == word.id),
-    );
-  }
-
-  static QuizQuestion? _sentenceQuestion(
-    SentenceModel sentence,
-    List<WordModel> words,
-  ) {
-    final matchedWord = words
-        .where(
-          (word) =>
-              word.wordOlChiki.length >= 2 &&
-              sentence.sentenceOlChiki.contains(word.wordOlChiki),
-        )
-        .firstOrNull;
-
-    if (matchedWord != null) {
-      return _matchedSentenceQuestion(sentence, matchedWord, words);
-    }
-
-    final targetWord = sentence.sentenceOlChiki
-        .split(RegExp(r'\s+'))
-        .map((word) => word.replaceAll(RegExp(r'[᱾,?.!\-#%&()]'), '').trim())
-        .where((word) => word.length >= 3)
-        .firstOrNull;
-    if (targetWord == null) return null;
-
-    // Distractors must not duplicate the correct option textually — a dupe
-    // makes a correct answer indistinguishable from a wrong one.
-    final options = <String>[
-      targetWord,
-      ...words
-          .takeShuffled(6)
-          .map((word) => word.wordOlChiki)
-          .where((option) => option != targetWord)
-          .take(3),
+    List<WordModel> allWords, {
+    String teachingLanguage = 'en',
+  }) {
+    return [
+      for (final word in words)
+        _wordQuestion(word, allWords, teachingLanguage: teachingLanguage),
     ];
-    return _fillBlankQuestion(
-      sentence: sentence,
-      targetWord: targetWord,
-      optionsOlChiki: options,
-      optionsLatin: options,
-      promptLatin: 'Complete the sentence with the correct word.',
-    );
   }
 
-  static QuizQuestion _matchedSentenceQuestion(
-    SentenceModel sentence,
-    WordModel matchedWord,
-    List<WordModel> words,
-  ) {
+  static QuizQuestion _wordQuestion(
+    WordModel word,
+    List<WordModel> allWords, {
+    String teachingLanguage = 'en',
+  }) {
     final options = <WordModel>[
-      matchedWord,
-      ...wordDistractors(matchedWord, words),
+      word,
+      ...wordDistractors(word, allWords, teachingLanguage: teachingLanguage),
     ]..shuffle();
 
-    return _fillBlankQuestion(
-      sentence: sentence,
-      targetWord: matchedWord.wordOlChiki,
-      optionsOlChiki: options.map((word) => word.wordOlChiki).toList(),
-      optionsLatin: options.map(_meaningDisplay).toList(),
-      promptLatin:
-          'Choose the word that means "${matchedWord.meaning}" to complete the sentence.',
-    );
-  }
-
-  static QuizQuestion _fillBlankQuestion({
-    required SentenceModel sentence,
-    required String targetWord,
-    required List<String> optionsOlChiki,
-    required List<String> optionsLatin,
-    required String promptLatin,
-  }) {
-    final indices = List<int>.generate(optionsOlChiki.length, (index) => index)
-      ..shuffle();
-    final shuffledOptionsOlChiki = [
-      for (final index in indices) optionsOlChiki[index],
-    ];
-    final shuffledOptionsLatin = [
-      for (final index in indices) optionsLatin[index],
-    ];
+    String prompt(String lang) {
+      switch (lang) {
+        case 'hi':
+          return 'इस शब्द का सही अर्थ चुनें:';
+        case 'bn':
+          return 'এই শব্দটির সঠিক অর্থ বেছে নিন:';
+        case 'or':
+          return 'ଏହି ଶବ୍ଦର ସଠିକ୍ ଅର୍ଥ ବାଛନ୍ତୁ:';
+        case 'sat':
+          return 'ᱱᱚᱶᱟ ᱟᱹᱲᱟᱹ ᱨᱮᱭᱟᱜ ᱥᱟᱹᱨᱤ ᱢᱮᱱᱮᱛ ᱵᱟᱪᱷᱟᱣ ᱢᱮ:';
+        case 'en':
+        default:
+          return 'Choose the correct English meaning for this word.';
+      }
+    }
 
     return QuizQuestion(
-      type: 'fill_blank',
-      promptOlChiki: 'Fill in the blank:',
-      promptLatin: promptLatin,
-      optionsOlChiki: shuffledOptionsOlChiki,
-      optionsLatin: shuffledOptionsLatin,
-      correctIndex: indices.indexOf(0),
-      blankSentenceOlChiki: _blankTargetInSentence(
-        sentence.sentenceOlChiki,
-        targetWord,
-      ),
-      blankSentenceLatin: sentence.meaning,
-      correctAnswer: targetWord,
+      promptOlChiki: word.wordOlChiki,
+      promptLatin: prompt(teachingLanguage),
+      optionsOlChiki: options.map((option) => option.wordOlChiki).toList(),
+      optionsLatin: options
+          .map((w) => meaningDisplay(w, teachingLanguage: teachingLanguage))
+          .toList(),
+      correctIndex: options.indexWhere((option) => option.id == word.id),
     );
-  }
-
-  /// Blanks the target word in the sentence — but only when it appears as a
-  /// whole (punctuation-stripped) token. Naive `replaceAll` blanks the target
-  /// inside unrelated longer words, corrupting the displayed sentence.
-  static String _blankTargetInSentence(
-    String sentenceOlChiki,
-    String targetWord,
-  ) {
-    final tokens = sentenceOlChiki.split(RegExp(r'\s+'));
-    final blanked = tokens
-        .map((token) {
-          final stripped = token.replaceAll(RegExp(r'[᱾,?.!\-#%&()]'), '');
-          return stripped == targetWord
-              ? token.replaceAll(targetWord, '___')
-              : token;
-        })
-        .join(' ');
-    // Whole-token blanking missed (punctuation shapes differ) — fall back to
-    // the naive blank so the question still shows a gap.
-    return blanked == sentenceOlChiki
-        ? sentenceOlChiki.replaceAll(targetWord, '___')
-        : blanked;
   }
 
   static List<WordModel> _wordsForKeys(
@@ -585,12 +547,5 @@ extension _ShuffledTake<T> on List<T> {
   List<T> takeShuffled(int count) {
     if (count <= 0 || isEmpty) return const [];
     return (List<T>.from(this)..shuffle()).take(count).toList();
-  }
-}
-
-extension _FirstOrNull<T> on Iterable<T> {
-  T? get firstOrNull {
-    final iterator = this.iterator;
-    return iterator.moveNext() ? iterator.current : null;
   }
 }

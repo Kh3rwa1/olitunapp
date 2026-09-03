@@ -128,4 +128,66 @@ void main() {
     expect(prefs.getString('lesson_audio_mode'), 'translationOnDemand');
     expect(prefs.getBool('show_onboarding'), isFalse);
   });
+
+  testWidgets('skip finishes immediately with safe defaults', (tester) async {
+    var finished = false;
+    final prefs = await pumpOnboarding(
+      tester,
+      onFinished: () => finished = true,
+    );
+
+    await tester.tap(find.text('Skip'));
+    await tester.pumpAndSettle();
+
+    expect(finished, isTrue);
+    expect(prefs.getBool('show_onboarding'), isFalse);
+    // Step-position key is cleared on finish so a later reinstall flow
+    // never resumes a completed onboarding.
+    expect(prefs.getInt('onboarding_step_index'), isNull);
+  });
+
+  testWidgets('restart mid-flow resumes the saved step', (tester) async {
+    var finished = false;
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    tester.view.physicalSize = const Size(1080, 2600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    Future<void> pump() async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learningAnalyticsServiceProvider.overrideWithValue(
+              LearningAnalyticsService(
+                prefs: prefs,
+                remoteWriter: (_, _) async {},
+              ),
+            ),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: OnboardingV2Screen(onFinished: () => finished = true),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pump();
+    // Advance two steps: language -> proficiency -> goals.
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+    expect(prefs.getInt('onboarding_step_index'), 2);
+
+    // Simulate an app restart: rebuild with the same prefs store.
+    await pump();
+    expect(find.text('Speak Santali'), findsOneWidget);
+    expect(find.text('Which language do you understand best?'), findsNothing);
+    expect(finished, isFalse);
+  });
 }

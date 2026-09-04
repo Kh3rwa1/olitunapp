@@ -59,6 +59,8 @@ jobs:
           APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
           TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          SENTRY_ENV: production
           ANDROID_EXPECTED_CERT_SHA256: ${{ secrets.ANDROID_EXPECTED_CERT_SHA256 }}
         run: |
           if [ -z "$ANDROID_EXPECTED_CERT_SHA256" ]; then
@@ -68,7 +70,9 @@ jobs:
           flutter build apk --release \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
-            --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
+            --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
+            --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
+            --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}"
           bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
 

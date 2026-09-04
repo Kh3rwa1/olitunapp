@@ -14,13 +14,23 @@ import '../error/failures.dart';
 class CrashReporting {
   CrashReporting._();
 
-  static const String _dsn = String.fromEnvironment('SENTRY_DSN');
+  static const String _defaultDsn =
+      'https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248';
+
+  static const String _dsn = String.fromEnvironment(
+    'SENTRY_DSN',
+    defaultValue: _defaultDsn,
+  );
   static const String _environment = String.fromEnvironment(
     'SENTRY_ENV',
     defaultValue: 'development',
   );
+  static const bool _enableInDebug = bool.fromEnvironment(
+    'SENTRY_ENABLE_IN_DEBUG',
+  );
 
-  static bool get isEnabled => _dsn.isNotEmpty && !kDebugMode;
+  static bool get isEnabled =>
+      _dsn.isNotEmpty && (!kDebugMode || _enableInDebug);
 
   static Future<void> init() async {
     if (!isEnabled) {

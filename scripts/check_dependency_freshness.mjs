@@ -21,6 +21,10 @@ const ALLOWED_PIN_EXEMPTIONS = new Map([
     "file_picker",
     "Constrained to 10.x: file_picker 12.x requires Dart >=3.10; project pins sdk: ^3.9.0",
   ],
+  [
+    "flutter_local_notifications",
+    "Constrained to 20.x: flutter_local_notifications 21.x/22.x requires Dart >=3.10; project pins sdk: ^3.9.0",
+  ],
 ]);
 
 function checkFlutterFreshness() {

@@ -33,3 +33,4 @@ export '../models/content_item.dart';
 export '../models/content_item_extensions.dart';
 export '../repositories/content_repository.dart';
 export 'learner_content_providers.dart';
+export 'notification_providers.dart';

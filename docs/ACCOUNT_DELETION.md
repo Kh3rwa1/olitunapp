@@ -2,7 +2,7 @@
 
 **Application ID:** `com.ol.itun`  
 **Developer Contact:** `support@olitun.in`  
-**Web Deletion Portal:** [https://kh3rwa1.github.io/delete-account.html](https://kh3rwa1.github.io/delete-account.html)
+**Web Deletion Portal:** [https://olitunapp.appwrite.network/delete-account.html](https://olitunapp.appwrite.network/delete-account.html)
 
 ---
 

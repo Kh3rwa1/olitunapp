@@ -126,7 +126,10 @@ void main() {
         final scrubbed = CrashReporting.scrubEvent(event);
 
         expect(scrubbed.message!.formatted, contains('u***@example.com'));
-        expect(scrubbed.message!.formatted, isNot(contains('user@example.com')));
+        expect(
+          scrubbed.message!.formatted,
+          isNot(contains('user@example.com')),
+        );
         expect(
           scrubbed.exceptions!.first.value,
           contains('Bearer [REDACTED_TOKEN]'),

@@ -47,7 +47,12 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.75,
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: EdgeInsets.fromLTRB(
+              24,
+              28,
+              24,
+              24 + MediaQuery.of(sheetContext).padding.bottom,
+            ),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F141C) : Colors.white,
               borderRadius: const BorderRadius.only(
@@ -111,6 +116,9 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                           q.optionsOlChiki.length > q.correctIndex
                           ? q.optionsOlChiki[q.correctIndex]
                           : '';
+                      final showSeparateOlChiki =
+                          correctAnsOlChiki.isNotEmpty &&
+                          correctAnsOlChiki.trim() != correctAns.trim();
 
                       return Container(
                         padding: const EdgeInsets.all(16),
@@ -171,53 +179,69 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Container(
+                              width: double.infinity,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                                horizontal: 14,
+                                vertical: 10,
                               ),
                               decoration: BoxDecoration(
                                 color: AppColors.success.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.25,
+                                  ),
+                                ),
                               ),
-                              child: Row(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
-                                    Icons.check_circle_rounded,
-                                    color: AppColors.success,
-                                    size: 16,
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.check_circle_rounded,
+                                        color: AppColors.success,
+                                        size: 16,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Correct:',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark
+                                              ? AppColors.brandTextDark
+                                              : AppColors.success,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Correct:',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark
-                                          ? AppColors.brandTextDark
-                                          : AppColors.brandTextLight,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  if (correctAnsOlChiki.isNotEmpty) ...[
+                                  const SizedBox(height: 6),
+                                  if (showSeparateOlChiki) ...[
                                     Text(
                                       correctAnsOlChiki,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontFamily: 'OlChiki',
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppColors.pureBlack,
+                                        height: 1.3,
                                       ),
                                     ),
-                                    const SizedBox(width: 6),
-                                    const Text('•'),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(height: 2),
                                   ],
-                                  Expanded(
-                                    child: Text(
-                                      correctAns,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                  Text(
+                                    correctAns,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black87,
+                                      height: 1.3,
                                     ),
                                   ),
                                 ],
@@ -247,43 +271,81 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
           child: Column(
             children: [
               const Spacer(),
-              // Desaturated/Sad Mascot visualizer
+              // Mascot visualizer with broken heart badge
               Center(
-                child: Container(
-                  width: 140,
-                  height: 140,
-                  decoration: BoxDecoration(
-                    color: AppColors.error.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.error.withValues(alpha: 0.2),
-                        blurRadius: 25,
-                        offset: const Offset(0, 10),
+                child: SizedBox(
+                  width: 136,
+                  height: 136,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Container(
+                        width: 124,
+                        height: 124,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppColors.error.withValues(alpha: 0.12)
+                              : const Color(0xFFFFF1F1),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.error.withValues(alpha: 0.25),
+                            width: 2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.error.withValues(alpha: 0.12),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Image.asset(
+                              'assets/images/olitun_mascot.png',
+                              fit: BoxFit.contain,
+                              cacheWidth:
+                                  (124 * MediaQuery.devicePixelRatioOf(context))
+                                      .round(),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 2,
+                        right: 2,
+                        child: Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: AppColors.error,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? AppColors.quizDarkBackground
+                                  : Colors.white,
+                              width: 3,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.heart_broken_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: ColorFiltered(
-                        colorFilter: const ColorFilter.mode(
-                          Colors.grey,
-                          BlendMode.saturation,
-                        ),
-                        child: Image.asset(
-                          'assets/images/olitun_mascot.png',
-                          fit: BoxFit.contain,
-                          cacheWidth:
-                              (64 * MediaQuery.devicePixelRatioOf(context))
-                                  .round(),
-                        ),
-                      ),
-                    ),
-                  ),
                 ),
-              ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
-              const SizedBox(height: 32),
+              ).animate().scale(duration: 600.ms, curve: Curves.easeOutBack),
+              const SizedBox(height: 28),
 
               Text(
                 'Out of Hearts!',
@@ -358,18 +420,22 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                   icon: const Icon(
                     Icons.favorite_rounded,
                     color: AppColors.error,
+                    size: 20,
                   ),
                   label: const Text(
                     'Watch Ad to Refill Hearts (Free)',
                     style: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppColors.error,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
+                    backgroundColor: isDark
+                        ? AppColors.error.withValues(alpha: 0.08)
+                        : const Color(0xFFFFF2F2),
                     side: BorderSide(
-                      color: AppColors.error.withValues(alpha: 0.5),
+                      color: AppColors.error.withValues(alpha: 0.35),
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
@@ -384,25 +450,27 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: () {
                     ref
                         .read(quizSessionNotifierProvider(quizId).notifier)
                         .reset();
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: const Text(
+                  icon: const Icon(Icons.replay_rounded, size: 20),
+                  label: const Text(
                     'Try Again',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                 ),
@@ -414,35 +482,40 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 52,
-                  child: OutlinedButton(
+                  child: OutlinedButton.icon(
                     onPressed: showMistakesSheet,
+                    icon: Icon(
+                      Icons.history_edu_rounded,
+                      size: 20,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                    label: Text(
+                      'Review Mistakes',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color: isDark ? Colors.white : AppColors.pureBlack,
+                      ),
+                    ),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
                       side: BorderSide(
-                        color: AppColors.error.withValues(alpha: 0.4),
-                        width: 2,
+                        color: isDark ? Colors.white24 : Colors.grey.shade300,
+                        width: 1.5,
                       ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Review Mistakes',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
                   ),
-                ).animate().fadeIn(delay: 450.ms).scale(),
+                ).animate().fadeIn(delay: 400.ms).scale(),
                 const SizedBox(height: 12),
               ],
 
               // Back to quizzes CTA
               SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: 48,
                 child: TextButton(
                   onPressed: () => context.pop(),
                   style: TextButton.styleFrom(
@@ -453,10 +526,10 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                   ),
                   child: const Text(
                     'Back to Quizzes',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                   ),
                 ),
-              ).animate().fadeIn(delay: 550.ms),
+              ).animate().fadeIn(delay: 450.ms),
               const SizedBox(height: 8),
             ],
           ),

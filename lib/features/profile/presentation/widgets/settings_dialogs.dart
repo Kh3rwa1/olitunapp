@@ -291,6 +291,30 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                     const Center(child: CircularProgressIndicator()),
               );
 
+              Future<void> finalizeLocalWipe() async {
+                await ref.read(sharedPreferencesProvider).clear();
+                await ref.read(userStatsProvider.notifier).resetProgress();
+                ref.invalidate(isAuthenticatedProvider);
+                ref.invalidate(userStatsProvider);
+                ref.invalidate(userNameProvider);
+                ref.invalidate(userAvatarEmojiProvider);
+                ref.invalidate(userAvatarColorIndexProvider);
+                ref.invalidate(memberSinceProvider);
+
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  context.go('/welcome');
+                }
+              }
+
+              final isAuth =
+                  ref.read(isAuthenticatedProvider).value ?? false;
+              if (!isAuth) {
+                // Guest mode: wipe local data and return to welcome immediately
+                await finalizeLocalWipe();
+                return;
+              }
+
               final authRepo = ref.read(authRepositoryProvider);
               final result = await authRepo.deleteAccount();
 
@@ -308,22 +332,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                     );
                   }
                 },
-                (_) async {
-                  // Clear all local data
-                  await ref.read(sharedPreferencesProvider).clear();
-                  ref.invalidate(isAuthenticatedProvider);
-                  ref.invalidate(userStatsProvider);
-                  ref.invalidate(userNameProvider);
-                  ref.invalidate(userAvatarEmojiProvider);
-                  ref.invalidate(userAvatarColorIndexProvider);
-                  ref.invalidate(memberSinceProvider);
-
-                  // Navigate to welcome screen
-                  if (context.mounted) {
-                    Navigator.pop(context); // Close loading
-                    context.go('/welcome');
-                  }
-                },
+                (_) async => await finalizeLocalWipe(),
               );
             } catch (e) {
               // Handle error

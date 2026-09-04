@@ -396,6 +396,7 @@ class AppwriteAuthService {
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
+
       final execution = await _functions.createExecution(
         functionId: 'delete-account',
       );
@@ -425,6 +426,11 @@ class AppwriteAuthService {
 
       await _clearLocalSessionState();
     } on AppwriteException catch (e) {
+      if (e.code == 401 || e.code == 404) {
+        // User absent or session expired on server; complete local wipe.
+        await _clearLocalSessionState();
+        return;
+      }
       AppLogger.error(
         'Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
       );

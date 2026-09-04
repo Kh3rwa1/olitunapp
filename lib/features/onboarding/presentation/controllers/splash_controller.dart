@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../core/utils/oauth_sanitizer.dart';
+import '../../../../app/router/route_guards.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../providers/onboarding_provider.dart';
 
@@ -17,6 +18,16 @@ class SplashController {
     String? targetLocation;
 
     try {
+      if (kIsWeb) {
+        final hash = (initialWebHash != null && initialWebHash!.isNotEmpty)
+            ? initialWebHash
+            : Uri.base.fragment;
+        if (hash != null && hash.startsWith('/admin')) {
+          AppLogger.debug('Splash: Admin hash target requested: $hash');
+          return hash;
+        }
+      }
+
       // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)
       if (kIsWeb) {
         final uri = Uri.base;

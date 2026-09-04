@@ -138,14 +138,25 @@ function checkNpmVulnerabilities() {
     return true;
   }
 
+  // Global deadline: even with per-target caps, 24 stalled targets must
+  // never exceed the CI job budget. Stop starting new audits past it.
+  const auditDeadline = Date.now() + 12 * 60 * 1000;
+
   for (const target of auditTargets) {
+    if (Date.now() > auditDeadline) {
+      console.warn(
+        `\n⚠️ npm audit deadline reached; skipping remaining targets starting with ${target.name}. Re-run when the registry recovers.`,
+      );
+      auditSkipped.push(`${target.name} (+remaining)`);
+      break;
+    }
     // Bounded: an unbounded npm audit hangs the whole gate when the
     // registry stalls (observed: 20+ min with zero output). A hung audit
     // is recorded loudly but must not permanently red the gate.
     const result = spawnSync("npm", ["audit", "--audit-level=high"], {
       cwd: target.dir,
       encoding: "utf8",
-      timeout: 240000,
+      timeout: 120000,
     });
 
     if (result.error) {

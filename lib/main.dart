@@ -20,6 +20,7 @@ import 'shared/offline/content_mutation_replay.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'core/ads/ad_service.dart';
 import 'core/ads/consent_manager.dart';
+import 'core/notifications/notification_service.dart';
 import 'features/home/presentation/providers/daily_missions_observer.dart';
 
 @visibleForTesting
@@ -101,6 +102,23 @@ Future<void> main() async {
           await AdService.instance.initialize(consentManager: consentManager);
         } catch (e) {
           AppLogger.debug('Non-essential AdService init failed: $e');
+        }
+
+        // Initialize daily streak & study reminder notifications
+        try {
+          await NotificationService.instance.initialize();
+          final notificationsEnabled =
+              prefs.getBool('notifications_enabled') ?? true;
+          if (notificationsEnabled) {
+            final hour = prefs.getInt('reminder_hour') ?? 20;
+            final minute = prefs.getInt('reminder_minute') ?? 0;
+            await NotificationService.instance.scheduleDailyStreakReminder(
+              hour: hour,
+              minute: minute,
+            );
+          }
+        } catch (e) {
+          AppLogger.debug('Non-essential NotificationService init failed: $e');
         }
 
         runApp(

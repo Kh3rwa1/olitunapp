@@ -71,6 +71,11 @@ dependencies:
   # Ads & Monetization
   google_mobile_ads: ^7.0.0
 
+  # Notifications & Habit Retention
+  flutter_local_notifications: ^20.1.0
+  timezone: ^0.10.1
+  flutter_timezone: ^5.1.0
+
   flutter_web_plugins:
     sdk: flutter
 dev_dependencies:

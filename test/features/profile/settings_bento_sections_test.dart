@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/features/profile/presentation/widgets/settings_bento_sections.dart';
+import 'package:itun/features/profile/presentation/widgets/settings_widgets.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,6 +52,8 @@ void main() {
     expect(find.text('APPEARANCE'), findsOneWidget);
     expect(find.text('SCRIPT DISPLAY'), findsOneWidget);
     expect(find.text('Sound Effects'), findsOneWidget);
+    expect(find.text('NOTIFICATIONS & HABITS'), findsOneWidget);
+    expect(find.text('Daily Study Reminder'), findsOneWidget);
     expect(find.text('DANGER ZONE'), findsOneWidget);
     expect(find.text('LEGAL'), findsOneWidget);
     expect(find.text('Reset Progress'), findsOneWidget);
@@ -80,6 +83,7 @@ void main() {
     expect(find.text('APPEARANCE'), findsOneWidget);
     expect(find.text('SCRIPT DISPLAY'), findsOneWidget);
     expect(find.text('Sound Effects'), findsOneWidget);
+    expect(find.text('NOTIFICATIONS & HABITS'), findsOneWidget);
     expect(find.text('DANGER ZONE'), findsOneWidget);
   });
 
@@ -103,9 +107,16 @@ void main() {
     final container = ProviderScope.containerOf(context);
     expect(container.read(typingPracticeSettingsProvider).enabled, isTrue);
 
-    await tester.ensureVisible(find.text('Vocabulary & Sentence Practice'));
+    final typingTile = find.ancestor(
+      of: find.text('Vocabulary & Sentence Practice'),
+      matching: find.byType(ToggleTile),
+    );
+    await tester.ensureVisible(typingTile);
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(Switch).last, warnIfMissed: false);
+    await tester.tap(
+      find.descendant(of: typingTile, matching: find.byType(Switch)),
+      warnIfMissed: false,
+    );
     await tester.pumpAndSettle();
 
     expect(container.read(typingPracticeSettingsProvider).enabled, isFalse);

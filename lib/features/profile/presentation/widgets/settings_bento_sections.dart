@@ -9,6 +9,7 @@ import '../../../practice/data/typing_practice_settings.dart';
 import 'diagnostics_tile.dart';
 import 'downloads_management_card.dart';
 import 'learning_settings_tiles.dart';
+import 'notifications_settings_card.dart';
 import 'settings_dialogs.dart';
 import 'settings_widgets.dart';
 import 'target_language_tile.dart';
@@ -188,6 +189,10 @@ class SettingsBentoDesktop extends ConsumerWidget {
         ),
         SizedBox(
           width: double.infinity,
+          child: NotificationsSettingsCard(isDark: isDark),
+        ),
+        SizedBox(
+          width: double.infinity,
           child: _buildLegalCard(context, isDark, 4),
         ),
         // Phase 6: offline audio downloads & cache management. Renders
@@ -312,6 +317,8 @@ class SettingsBentoMobile extends ConsumerWidget {
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        NotificationsSettingsCard(isDark: isDark),
         const SizedBox(height: 16),
         _buildLegalCard(context, isDark, 4),
         const SizedBox(height: 16),

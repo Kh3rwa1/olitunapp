@@ -307,8 +307,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 }
               }
 
-              final isAuth =
-                  ref.read(isAuthenticatedProvider).value ?? false;
+              final isAuth = ref.read(isAuthenticatedProvider).value ?? false;
               if (!isAuth) {
                 // Guest mode: wipe local data and return to welcome immediately
                 await finalizeLocalWipe();
@@ -318,22 +317,19 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
               final authRepo = ref.read(authRepositoryProvider);
               final result = await authRepo.deleteAccount();
 
-              result.fold(
-                (failure) {
-                  if (context.mounted) {
-                    Navigator.pop(context); // Close loading
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'Failed to delete account: ${failure.message}',
-                        ),
-                        backgroundColor: AppColors.error,
+              result.fold((failure) {
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to delete account: ${failure.message}',
                       ),
-                    );
-                  }
-                },
-                (_) async => await finalizeLocalWipe(),
-              );
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }, (_) async => await finalizeLocalWipe());
             } catch (e) {
               // Handle error
               if (context.mounted) {

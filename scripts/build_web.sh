@@ -24,6 +24,8 @@ flutter build web --release --no-wasm-dry-run \
   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
   --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 \
   --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions \
+  --dart-define=SENTRY_DSN="${SENTRY_DSN:-https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248}" \
+  --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}" \
   --dart-define=BUILD_SHA=$BUILD_SHA \
   --dart-define=BUILT_AT=$BUILT_AT
 

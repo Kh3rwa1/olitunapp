@@ -30,7 +30,16 @@ import '../auth/appwrite_auth_service.dart';
 /// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
 /// separate deployment.
 class AiConfig {
-  static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+  static const String _defaultUrl =
+      'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions';
+  static const String _envUrl = String.fromEnvironment('TRANSLATE_URL');
+
+  static String get translateUrl {
+    if (_envUrl.isNotEmpty) return _envUrl;
+    if (kReleaseMode) return _defaultUrl;
+    return '';
+  }
+
   static const int maxTranslationChars = 5000;
   static const String _reverseOverride = String.fromEnvironment(
     'REVERSE_TRANSLATE_URL',

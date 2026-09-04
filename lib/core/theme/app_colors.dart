@@ -94,6 +94,12 @@ class AppColors {
   static const Color darkSurfaceVariant = Color(0xFF2A2A2A);
   static const Color darkBorder = Color(0xFF3D3D3D);
 
+  // Onboarding ambient mesh (gradient canvas behind the first-run flow).
+  static const Color onboardingMeshDarkStart = Color(0xFF0B1220);
+  static const Color onboardingMeshDarkEnd = Color(0xFF0E2A1D);
+  static const Color onboardingMeshLightStart = Color(0xFFF4F8F5);
+  static const Color onboardingMeshLightEnd = Color(0xFFE4F5EA);
+
   // Text Colors
   static const Color textPrimaryLight = Colors.black;
   static const Color textSecondaryLight = Color(0xFF424242);

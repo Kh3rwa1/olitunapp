@@ -37,14 +37,14 @@ class OnboardingAmbient extends ConsumerWidget {
           end: Alignment.bottomRight,
           colors: isDark
               ? const [
-                  Color(0xFF0B1220),
+                  AppColors.onboardingMeshDarkStart,
                   AppColors.darkBackground,
-                  Color(0xFF0E2A1D),
+                  AppColors.onboardingMeshDarkEnd,
                 ]
               : const [
-                  Color(0xFFF4F8F5),
+                  AppColors.onboardingMeshLightStart,
                   AppColors.lightBackground,
-                  Color(0xFFE4F5EA),
+                  AppColors.onboardingMeshLightEnd,
                 ],
           stops: const [0.0, 0.55, 1.0],
         ),

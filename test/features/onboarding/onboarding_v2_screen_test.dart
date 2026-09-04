@@ -7,6 +7,7 @@ import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/onboarding/presentation/onboarding_v2_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
+import 'package:itun/shared/providers/local_settings_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -27,6 +28,9 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          // Static ambient: the drifting background glyphs repeat
+          // forever and would block pumpAndSettle.
+          reduceVisualEffectsProvider.overrideWithValue(true),
           // No-op analytics: the real provider constructs an Appwrite
           // client and would attempt network writes in tests.
           learningAnalyticsServiceProvider.overrideWithValue(
@@ -159,6 +163,7 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
+            reduceVisualEffectsProvider.overrideWithValue(true),
             learningAnalyticsServiceProvider.overrideWithValue(
               LearningAnalyticsService(
                 prefs: prefs,

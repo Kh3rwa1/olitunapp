@@ -12,6 +12,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/language_settings_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'onboarding_ambient.dart';
+import 'onboarding_step_scaffold.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../providers/onboarding_provider.dart';
 import 'onboarding_option_card.dart';
@@ -63,9 +66,15 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
   void _goToStep(int step) {
     final reduceMotion = ref.read(reduceVisualEffectsProvider);
     ref.read(sharedPreferencesProvider).setInt(_stepIndexKey, step);
+    if (reduceMotion) {
+      // animateToPage with Duration.zero violates the scroll-activity
+      // contract; reduced-motion gets an instant jump instead.
+      _pageController.jumpToPage(step);
+      return;
+    }
     _pageController.animateToPage(
       step,
-      duration: Duration(milliseconds: reduceMotion ? 0 : 250),
+      duration: const Duration(milliseconds: 250),
       curve: Curves.easeOutCubic,
     );
   }
@@ -142,121 +151,182 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-              child: Row(
-                children: [
-                  if (_step > 0)
-                    IconButton(
-                      tooltip: l10n.backButton,
-                      icon: Icon(
-                        Icons.arrow_back_rounded,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                      onPressed: () => _goToStep(_step - 1),
-                    )
-                  else
-                    const SizedBox(width: 48),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: (_step + 1) / _stepCount,
-                        minHeight: 6,
-                        backgroundColor: isDark
-                            ? Colors.white.withValues(alpha: 0.08)
-                            : Colors.black.withValues(alpha: 0.06),
-                        valueColor: const AlwaysStoppedAnimation(
-                          AppColors.primary,
+      backgroundColor: Colors.transparent,
+      body: OnboardingAmbient(
+        isDark: isDark,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                child: Row(
+                  children: [
+                    if (_step > 0)
+                      IconButton(
+                        tooltip: l10n.backButton,
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
+                        onPressed: () => _goToStep(_step - 1),
+                      )
+                    else
+                      const SizedBox(width: 48),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          for (int i = 0; i < _stepCount; i++)
+                            Expanded(
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  right: i < _stepCount - 1 ? 6 : 0,
+                                ),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeOutCubic,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(4),
+                                    gradient: i <= _step
+                                        ? const LinearGradient(
+                                            colors: [
+                                              AppColors.primary,
+                                              AppColors.primaryDark,
+                                            ],
+                                          )
+                                        : null,
+                                    color: i <= _step
+                                        ? null
+                                        : (isDark
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.08,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.06,
+                                                )),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                  // Quiet skip: the impatient 10-20% can bail with safe
-                  // defaults instead of force-quitting mid-flow. Hidden on
-                  // the last step where the CTA already finishes.
-                  if (_step < _stepCount - 1)
-                    TextButton(
-                      onPressed: _completing
-                          ? null
-                          : () => _finish(via: 'skip'),
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size(48, 48),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Text(
-                        l10n.skip,
-                        style: TextStyle(
-                          color: isDark ? Colors.white54 : Colors.black45,
-                          fontWeight: FontWeight.w600,
+                    // Quiet skip: the impatient 10-20% can bail with safe
+                    // defaults instead of force-quitting mid-flow. Hidden on
+                    // the last step where the CTA already finishes.
+                    if (_step < _stepCount - 1)
+                      TextButton(
+                        onPressed: _completing
+                            ? null
+                            : () => _finish(via: 'skip'),
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(48, 48),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                      ),
-                    )
-                  else
-                    const SizedBox(width: 48),
-                ],
-              ),
-            ),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) => setState(() => _step = index),
-                children: [
-                  _buildLanguageStep(l10n, isDark),
-                  _buildProficiencyStep(l10n, isDark),
-                  _buildGoalsStep(l10n, isDark),
-                  _buildAudioModeStep(l10n, isDark),
-                  _buildReadyStep(l10n, isDark),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _completing
-                      ? null
-                      : () {
-                          // Product decision: Continue never blocks on
-                          // selection. Every axis has a safe migrated
-                          // default, so hurried learners flow through with
-                          // defaults instead of bouncing off a forced
-                          // choice; the funnel data will show if any step
-                          // is routinely skipped empty.
-                          if (_step < _stepCount - 1) {
-                            _goToStep(_step + 1);
-                          } else {
-                            _finish();
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: Text(
-                    _step < _stepCount - 1
-                        ? l10n.continueButton
-                        : l10n.streakStartLearning,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
+                        child: Text(
+                          l10n.skip,
+                          style: TextStyle(
+                            color: isDark ? Colors.white54 : Colors.black45,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    else
+                      const SizedBox(width: 48),
+                  ],
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  onPageChanged: (index) => setState(() => _step = index),
+                  children: [
+                    _buildLanguageStep(l10n, isDark),
+                    _buildProficiencyStep(l10n, isDark),
+                    _buildGoalsStep(l10n, isDark),
+                    _buildAudioModeStep(l10n, isDark),
+                    _buildReadyStep(l10n, isDark),
+                  ],
+                ),
+              ),
+              Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _completing
+                            ? null
+                            : () {
+                                // Product decision: Continue never blocks on
+                                // selection. Every axis has a safe migrated
+                                // default, so hurried learners flow through with
+                                // defaults instead of bouncing off a forced
+                                // choice; the funnel data will show if any step
+                                // is routinely skipped empty.
+                                if (_step < _stepCount - 1) {
+                                  _goToStep(_step + 1);
+                                } else {
+                                  _finish();
+                                }
+                              },
+                        style:
+                            ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              elevation: 0,
+                              minimumSize: const Size.fromHeight(52),
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ).copyWith(
+                              backgroundBuilder: (context, states, child) =>
+                                  Ink(
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          AppColors.primaryLight,
+                                          AppColors.primary,
+                                          AppColors.primaryDark,
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primary.withValues(
+                                            alpha: isDark ? 0.4 : 0.3,
+                                          ),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: child,
+                                  ),
+                            ),
+                        child: Text(
+                          _step < _stepCount - 1
+                              ? l10n.continueButton
+                              : l10n.streakStartLearning,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 450.ms)
+                  .slideY(
+                    begin: 0.15,
+                    end: 0,
+                    duration: 450.ms,
+                    curve: Curves.easeOutCubic,
+                  ),
+            ],
+          ),
         ),
       ),
     );
@@ -274,12 +344,14 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       ('sat', 'ᱥᱟᱱᱛᱟᱲᱤ'),
     ];
 
-    return _StepScaffold(
+    return OnboardingStepScaffold(
       title: l10n.onboardingStepLanguageTitle,
       isDark: isDark,
+      step: 0,
+      stepCount: _stepCount,
       child: Column(
         children: [
-          for (final (code, label) in options)
+          for (final (i, (code, label)) in options.indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: OnboardingOptionCard(
@@ -287,6 +359,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                 icon: Icons.language_rounded,
                 selected: current == code,
                 isDark: isDark,
+                index: i,
                 onTap: () {
                   // Normalizes, persists, couples Santali to the Ol Chiki
                   // script mode, and cascades the teaching language until
@@ -324,12 +397,14 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       (SantaliProficiency.fluentReader, l10n.proficiencyFluentReader),
     ];
 
-    return _StepScaffold(
+    return OnboardingStepScaffold(
       title: l10n.onboardingStepProficiencyTitle,
       isDark: isDark,
+      step: 1,
+      stepCount: _stepCount,
       child: Column(
         children: [
-          for (final (value, label) in options)
+          for (final (i, (value, label)) in options.indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: OnboardingOptionCard(
@@ -337,6 +412,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                 icon: Icons.record_voice_over_rounded,
                 selected: current == value,
                 isDark: isDark,
+                index: i,
                 onTap: () {
                   updateSantaliProficiency(ref, value);
                   _trackSelection(LearningAnalyticsEvents.proficiencySelected, {
@@ -364,13 +440,15 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       (LearningGoal.prepareForExam, l10n.goalPrepareExam),
     ];
 
-    return _StepScaffold(
+    return OnboardingStepScaffold(
       title: l10n.onboardingStepGoalsTitle,
       subtitle: l10n.onboardingStepGoalsSubtitle,
       isDark: isDark,
+      step: 2,
+      stepCount: _stepCount,
       child: Column(
         children: [
-          for (final (value, label) in options)
+          for (final (i, (value, label)) in options.indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: OnboardingOptionCard(
@@ -380,6 +458,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                     : Icons.check_box_outline_blank_rounded,
                 selected: selected.contains(value),
                 isDark: isDark,
+                index: i,
                 onTap: () {
                   toggleLearningGoal(ref, value);
                   _trackSelection(
@@ -404,12 +483,14 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       (LessonAudioMode.translationOnDemand, l10n.audioModeTranslationOnDemand),
     ];
 
-    return _StepScaffold(
+    return OnboardingStepScaffold(
       title: l10n.onboardingStepAudioTitle,
       isDark: isDark,
+      step: 3,
+      stepCount: _stepCount,
       child: Column(
         children: [
-          for (final (value, label) in options)
+          for (final (i, (value, label)) in options.indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: OnboardingOptionCard(
@@ -417,6 +498,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                 icon: Icons.headphones_rounded,
                 selected: current == value,
                 isDark: isDark,
+                index: i,
                 onTap: () {
                   updateLessonAudioMode(ref, value);
                   _trackSelection(LearningAnalyticsEvents.audioModeSelected, {
@@ -436,9 +518,11 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
     final dailyGoal = ref.watch(dailyGoalMinutesProvider);
     final starterAudio = ref.watch(starterAudioDownloadProvider);
 
-    return _StepScaffold(
+    return OnboardingStepScaffold(
       title: l10n.onboardingStepReadyTitle,
       isDark: isDark,
+      step: 4,
+      stepCount: _stepCount,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -481,53 +565,6 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
           // a persistent guest CTA banner (`guestSignInCta`), so pulling
           // auth into this step would only add a third concept to an
           // already dense screen for zero additional conversion.
-        ],
-      ),
-    );
-  }
-}
-
-class _StepScaffold extends StatelessWidget {
-  const _StepScaffold({
-    required this.title,
-    required this.isDark,
-    required this.child,
-    this.subtitle,
-  });
-
-  final String title;
-  final String? subtitle;
-  final bool isDark;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.4,
-              color: isDark ? Colors.white : Colors.black,
-            ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              subtitle!,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white54 : Colors.black45,
-              ),
-            ),
-          ],
-          const SizedBox(height: 24),
-          child,
         ],
       ),
     );

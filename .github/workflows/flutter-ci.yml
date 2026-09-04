@@ -366,7 +366,10 @@ jobs:
   dependency-freshness-gate:
     name: Dependency Freshness & Vulnerability Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # pub outdated + npm audit are both registry-bound; 10 min is too tight
+    # when registries are slow (killed mid-audit repeatedly). The gate still
+    # fails loudly on real findings — this only allows slow networks room.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0

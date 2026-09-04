@@ -12,7 +12,6 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/audio/playback_controller.dart';
-import '../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../content/presentation/providers/audio_playback_providers.dart';
@@ -341,26 +340,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   playbackState?.current?.id == question.audioUrl;
 
               final manifest = ref.watch(activeLanguageManifestProvider);
-              final teachingLanguage = ref.watch(
-                effectiveTeachingLanguageProvider,
-              );
-              final scriptMode = ref.watch(effectiveScriptModeProvider);
-
-              String? subtitle;
-              if (scriptMode != 'olchiki' && teachingLanguage != 'sat') {
-                final translit = OlChikiMultilingualHelper.transliterateOlChiki(
-                  question.promptOlChiki,
-                  teachingLanguage,
-                );
-                if (translit.isNotEmpty && translit != question.promptOlChiki) {
-                  subtitle = translit;
-                }
-              }
 
               return QuizQuestionCard(
                 question: question,
                 fontFamily: manifest.primaryFontFamily,
-                subtitle: subtitle,
                 isPlaying: isPlayingThisAudio,
                 isLoading: isLoadingThisAudio,
                 onPlayAudio: hasAudio

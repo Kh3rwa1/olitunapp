@@ -18,7 +18,12 @@ void showQuizMistakesSheet({
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.75,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: EdgeInsets.fromLTRB(
+          24,
+          24,
+          24,
+          24 + MediaQuery.of(sheetContext).padding.bottom,
+        ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F141C) : Colors.white,
           borderRadius: const BorderRadius.only(
@@ -76,11 +81,16 @@ void showQuizMistakesSheet({
                 itemBuilder: (context, index) {
                   final qIdx = incorrectQuestionIndices[index];
                   final q = questions[qIdx];
-                  final correctAns = q.optionsLatin[q.correctIndex];
+                  final correctAns = q.optionsLatin.length > q.correctIndex
+                      ? q.optionsLatin[q.correctIndex]
+                      : '';
                   final correctAnsOlChiki =
                       q.optionsOlChiki.length > q.correctIndex
                       ? q.optionsOlChiki[q.correctIndex]
                       : '';
+                  final showSeparateOlChiki =
+                      correctAnsOlChiki.isNotEmpty &&
+                      correctAnsOlChiki != correctAns;
 
                   return Container(
                     padding: const EdgeInsets.all(16),
@@ -123,7 +133,8 @@ void showQuizMistakesSheet({
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  if (q.promptLatin != null)
+                                  if (q.promptLatin != null &&
+                                      q.promptLatin!.isNotEmpty)
                                     Text(
                                       q.promptLatin!,
                                       style: TextStyle(
@@ -140,52 +151,64 @@ void showQuizMistakesSheet({
                         ),
                         const SizedBox(height: 12),
                         Container(
+                          width: double.infinity,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
-                            vertical: 8,
+                            vertical: 10,
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.success.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: AppColors.success,
-                                size: 16,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Correct:',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? AppColors.brandTextDark
-                                      : AppColors.brandTextLight,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              if (correctAnsOlChiki.isNotEmpty) ...[
-                                Text(
-                                  correctAnsOlChiki,
-                                  style: const TextStyle(
-                                    fontFamily: 'OlChiki',
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.success,
+                                    size: 16,
                                   ),
-                                ),
-                                const SizedBox(width: 6),
-                                const Text('•'),
-                                const SizedBox(width: 6),
-                              ],
-                              Expanded(
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Correct:',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: isDark
+                                          ? AppColors.brandTextDark
+                                          : AppColors.brandTextLight,
+                                    ),
+                                  ),
+                                  if (showSeparateOlChiki) ...[
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        correctAnsOlChiki,
+                                        style: const TextStyle(
+                                          fontFamily: 'OlChiki',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 24),
                                 child: Text(
                                   correctAns,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
+                                    height: 1.3,
                                   ),
                                 ),
                               ),

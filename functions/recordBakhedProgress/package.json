@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "node-appwrite": "15.0.0"
-  }
+  },
+  "name": "recordBakhedProgress",
+  "version": "1.0.0",
+  "type": "module"
 }

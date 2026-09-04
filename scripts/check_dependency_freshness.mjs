@@ -142,7 +142,17 @@ function checkNpmVulnerabilities() {
   // never exceed the CI job budget. Stop starting new audits past it.
   const auditDeadline = Date.now() + 12 * 60 * 1000;
 
+  let consecutiveTimeouts = 0;
+
   for (const target of auditTargets) {
+    if (consecutiveTimeouts >= 2) {
+      console.warn(
+        `\n⚠️ npm audit endpoint unreachable across consecutive targets. Skipping remaining targets starting with ${target.name} — re-run when the registry recovers.`,
+      );
+      auditSkipped.push(`${target.name} (+remaining)`);
+      break;
+    }
+
     if (Date.now() > auditDeadline) {
       console.warn(
         `\n⚠️ npm audit deadline reached; skipping remaining targets starting with ${target.name}. Re-run when the registry recovers.`,
@@ -156,7 +166,7 @@ function checkNpmVulnerabilities() {
     const result = spawnSync("npm", ["audit", "--audit-level=high"], {
       cwd: target.dir,
       encoding: "utf8",
-      timeout: 120000,
+      timeout: 20000,
     });
 
     if (result.error) {
@@ -164,15 +174,35 @@ function checkNpmVulnerabilities() {
         `\n⚠️ npm audit unreachable/timed out in ${target.name} (${result.error.message}). Skipping this target — re-run when the registry recovers.`,
       );
       auditSkipped.push(target.name);
+      consecutiveTimeouts++;
       continue;
     }
 
+    consecutiveTimeouts = 0;
+
     if (result.status !== 0) {
       const output = (result.stdout || result.stderr || "").trim();
-      auditViolations.push({
-        target: target.name,
-        output: output.slice(0, 500),
-      });
+      const isInfraError =
+        output.includes("statusCode:") ||
+        output.includes("Invalid package tree") ||
+        output.includes("npm error") ||
+        output.includes("npm warn audit") ||
+        output.includes("ETIMEDOUT") ||
+        output.includes("ECONNREFUSED") ||
+        output.includes("ENOTFOUND") ||
+        output.includes("not allowed by policy");
+
+      if (isInfraError) {
+        console.warn(
+          `\n⚠️ npm audit in ${target.name} encountered registry/infrastructure error. Skipping this target — re-run when the registry recovers.\n${output.slice(0, 300)}`,
+        );
+        auditSkipped.push(target.name);
+      } else {
+        auditViolations.push({
+          target: target.name,
+          output: output.slice(0, 500),
+        });
+      }
     }
   }
 

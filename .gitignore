@@ -85,3 +85,5 @@ scripts/backups/
 
 # Golden test failure diff artifacts
 **/failures/*.png
+mapping.txt
+mapping.txt

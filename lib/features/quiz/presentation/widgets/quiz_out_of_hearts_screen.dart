@@ -285,7 +285,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: isDark
                               ? AppColors.error.withValues(alpha: 0.12)
-                              : const Color(0xFFFFF1F1),
+                              : AppColors.error.withValues(alpha: 0.06),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: AppColors.error.withValues(alpha: 0.25),
@@ -433,7 +433,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                   style: OutlinedButton.styleFrom(
                     backgroundColor: isDark
                         ? AppColors.error.withValues(alpha: 0.08)
-                        : const Color(0xFFFFF2F2),
+                        : AppColors.error.withValues(alpha: 0.05),
                     side: BorderSide(
                       color: AppColors.error.withValues(alpha: 0.35),
                       width: 1.5,

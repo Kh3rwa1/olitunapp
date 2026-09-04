@@ -1,4 +1,5 @@
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/logging/redaction_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../error/failures.dart';
@@ -31,12 +32,69 @@ class CrashReporting {
       options.environment = _environment;
       options.tracesSampleRate = 0.1;
       options.attachStacktrace = true;
+      // PII gate: filenames, document IDs and error strings can carry
+      // emails, tokens or user content. Scrub everything before upload —
+      // this keeps the Play Data Safety story honest for a learning app.
+      options.beforeSend = (event, hint) async => scrubEvent(event);
     });
   }
 
   static void recordError(Object error, StackTrace? stack) {
     if (!isEnabled) return;
     Sentry.captureException(error, stackTrace: stack);
+  }
+
+  /// PII scrubber applied to every event before upload (see `beforeSend`
+  /// wiring in [init]). Pure function so it stays unit-testable without
+  /// initializing the SDK: messages, exception values and breadcrumb
+  /// payloads go through [RedactionHelper.sanitize], request headers and
+  /// cookies are dropped outright, and any user-identity fields are
+  /// stripped (the app never sets Sentry user identity).
+  @visibleForTesting
+  static SentryEvent scrubEvent(SentryEvent event) {
+    final message = event.message;
+    if (message != null) {
+      message.formatted = RedactionHelper.sanitize(message.formatted);
+    }
+
+    final exceptions = event.exceptions;
+    if (exceptions != null) {
+      for (final e in exceptions) {
+        if (e.value != null) {
+          e.value = RedactionHelper.sanitize(e.value!);
+        }
+      }
+    }
+
+    final breadcrumbs = event.breadcrumbs;
+    if (breadcrumbs != null) {
+      for (final b in breadcrumbs) {
+        if (b.message != null) {
+          b.message = RedactionHelper.sanitize(b.message!);
+        }
+        final data = b.data;
+        if (data != null) {
+          for (final key in data.keys.toList()) {
+            final value = data[key];
+            if (value is String) data[key] = RedactionHelper.sanitize(value);
+          }
+        }
+      }
+    }
+
+    final request = event.request;
+    if (request != null) {
+      request.headers = {};
+      request.cookies = null;
+    }
+
+    final user = event.user;
+    user?.id = null;
+    user?.email = null;
+    user?.username = null;
+    user?.ipAddress = null;
+
+    return event;
   }
 
   static void recordFlutterError(FlutterErrorDetails details) {

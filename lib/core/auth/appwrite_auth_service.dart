@@ -415,6 +415,7 @@ class AppwriteAuthService {
             result.errorMessage ??
                 'Account deleted; final cleanup reconciliation is pending.',
             result.statusCode,
+            'account_deletion_pending',
           );
         }
 
@@ -426,11 +427,17 @@ class AppwriteAuthService {
 
       await _clearLocalSessionState();
     } on AppwriteException catch (e) {
-      if (e.code == 401 || e.code == 404) {
-        // User absent or session expired on server; complete local wipe.
+      if (e.code == 401 && e.type != 'account_deletion_pending') {
+        // An expired session is not evidence that the account was deleted.
         await _clearLocalSessionState();
-        return;
+        throw AppwriteException(
+          'Sign in again to confirm account deletion. Deletion is not confirmed.',
+          401,
+          'account_deletion_reauthentication_required',
+        );
       }
+      // A 404 can refer to the function or another resource, not the user.
+      // Preserve it as a failure rather than silently reporting deletion.
       AppLogger.error(
         'Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
       );

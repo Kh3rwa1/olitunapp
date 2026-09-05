@@ -11,6 +11,7 @@ import 'package:itun/main.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
+import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/main/presentation/main_shell/main_shell_screen.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
@@ -35,7 +36,7 @@ void main() {
   });
 
   testWidgets(
-    'Guest mode / Skip Login flow renders successfully without throwing',
+    'Unauthenticated startup gates to WelcomeScreen when login is mandatory',
     (tester) async {
       final mockAuthRepo = MockAuthRepository();
       when(mockAuthRepo.isLoggedIn).thenAnswer((_) async => const Right(false));
@@ -49,7 +50,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             authRepositoryProvider.overrideWithValue(mockAuthRepo),
-            // Enforce Guest Mode (user is not logged in)
+            // User is not logged in
             isAuthenticatedProvider.overrideWith((ref) async => false),
             currentUserProvider.overrideWith((ref) async => null),
 
@@ -73,14 +74,17 @@ void main() {
         ),
       );
 
-      // Pump through the router redirects and let the home screen boot
+      // Pump through the router redirects and let splash transition complete
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 500));
       await tester.pump(const Duration(seconds: 1));
+      await tester.pump(const Duration(seconds: 1));
 
-      // Check if we can find the MainShellScreen or any error
-      expect(find.byType(MainShellScreen), findsOneWidget);
-      expect(find.textContaining('Johar'), findsOneWidget);
+      // In mandatory login mode, unauthenticated users MUST land on WelcomeScreen
+      expect(find.byType(WelcomeScreen), findsOneWidget);
+      expect(find.text('Continue with Google'), findsOneWidget);
+      expect(find.text('Continue with Email'), findsOneWidget);
+      expect(find.byType(MainShellScreen), findsNothing);
     },
   );
 }

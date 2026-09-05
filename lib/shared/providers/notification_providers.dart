@@ -5,6 +5,7 @@ import '../../core/storage/hive_service.dart';
 const String _notificationsEnabledKey = 'notifications_enabled';
 const String _reminderHourKey = 'reminder_hour';
 const String _reminderMinuteKey = 'reminder_minute';
+const String _notificationFrequencyKey = 'notification_frequency';
 
 /// Provider for whether daily study notifications are enabled.
 final notificationsEnabledProvider =
@@ -27,13 +28,15 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
     if (enabled) {
       final hour = ref.read(reminderHourProvider);
       final minute = ref.read(reminderMinuteProvider);
+      final frequency = ref.read(notificationFrequencyProvider);
       await NotificationService.instance.requestPermission();
-      await NotificationService.instance.scheduleDailyStreakReminder(
+      await NotificationService.instance.scheduleAllReminders(
+        frequency: frequency,
         hour: hour,
         minute: minute,
       );
     } else {
-      await NotificationService.instance.cancelDailyReminder();
+      await NotificationService.instance.cancelAllReminders();
     }
   }
 }
@@ -57,7 +60,9 @@ class ReminderHourNotifier extends Notifier<int> {
 
     if (ref.read(notificationsEnabledProvider)) {
       final minute = ref.read(reminderMinuteProvider);
-      await NotificationService.instance.scheduleDailyStreakReminder(
+      final frequency = ref.read(notificationFrequencyProvider);
+      await NotificationService.instance.scheduleAllReminders(
+        frequency: frequency,
         hour: hour,
         minute: minute,
       );
@@ -84,7 +89,43 @@ class ReminderMinuteNotifier extends Notifier<int> {
 
     if (ref.read(notificationsEnabledProvider)) {
       final hour = ref.read(reminderHourProvider);
-      await NotificationService.instance.scheduleDailyStreakReminder(
+      final frequency = ref.read(notificationFrequencyProvider);
+      await NotificationService.instance.scheduleAllReminders(
+        frequency: frequency,
+        hour: hour,
+        minute: minute,
+      );
+    }
+  }
+}
+
+/// Provider for notification frequency preference (once, balanced, high).
+final notificationFrequencyProvider =
+    NotifierProvider<NotificationFrequencyNotifier, NotificationFrequency>(
+      NotificationFrequencyNotifier.new,
+    );
+
+class NotificationFrequencyNotifier extends Notifier<NotificationFrequency> {
+  @override
+  NotificationFrequency build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    final val = prefs.getString(_notificationFrequencyKey);
+    return NotificationFrequency.values.firstWhere(
+      (f) => f.name == val,
+      orElse: () => NotificationFrequency.high,
+    );
+  }
+
+  Future<void> setFrequency(NotificationFrequency frequency) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setString(_notificationFrequencyKey, frequency.name);
+    state = frequency;
+
+    if (ref.read(notificationsEnabledProvider)) {
+      final hour = ref.read(reminderHourProvider);
+      final minute = ref.read(reminderMinuteProvider);
+      await NotificationService.instance.scheduleAllReminders(
+        frequency: frequency,
         hour: hour,
         minute: minute,
       );

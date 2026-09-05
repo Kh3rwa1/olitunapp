@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/motion/page_transitions.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
@@ -132,18 +133,25 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      // Check onboarding: if onboarding not completed and we are not on welcome/splash/login/privacy/terms/admin, redirect to /welcome
-      final showOnboarding = ref.read(onboardingProvider);
       final path = state.uri.path;
-      final isAllowedDuringOnboarding =
+      final isPublicAuthPath =
           path == '/welcome' ||
           path == '/splash' ||
           path == '/login' ||
           path == '/privacy' ||
           path == '/terms' ||
-          path == '/onboarding' ||
           path.startsWith('/admin');
 
+      // Enforce mandatory authentication: confirmed logged-out users cannot access learning/profile routes
+      final isAuth = ref.read(isAuthenticatedProvider).asData?.value;
+      if (isAuth == false && !isPublicAuthPath) {
+        return '/welcome';
+      }
+
+      // Check onboarding: if onboarding not completed and user is on an unallowed path, redirect to /welcome
+      final showOnboarding = ref.read(onboardingProvider);
+      final isAllowedDuringOnboarding =
+          isPublicAuthPath || path == '/onboarding';
       if (showOnboarding && !isAllowedDuringOnboarding) {
         return '/welcome';
       }

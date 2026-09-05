@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
@@ -150,34 +149,6 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     }
   }
 
-  Future<void> _handleSkip() async {
-    HapticFeedback.lightImpact();
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      await ref.read(authControllerProvider).signInAnonymously();
-      ref.invalidate(isAuthenticatedProvider);
-    } catch (e) {
-      // Gracefully catch any errors (e.g. offline/network failures)
-      // and continue to ensure guest mode is still usable offline.
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        final showOnboarding = ref.read(onboardingProvider);
-        if (showOnboarding) {
-          context.go('/onboarding');
-        } else {
-          context.go('/');
-        }
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -206,19 +177,6 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             }
           },
         ),
-        actions: [
-          TextButton(
-            onPressed: _handleSkip,
-            child: Text(
-              'Skip',
-              style: TextStyle(
-                color: isDark ? Colors.white54 : Colors.black45,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -244,7 +202,6 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
                   errorMessage: _errorMessage,
                   successMessage: _successMessage,
                   onSendCode: _handleSendCode,
-                  onSkip: _handleSkip,
                 ),
         ),
       ),

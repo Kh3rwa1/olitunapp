@@ -90,18 +90,8 @@ class SplashController {
           ref.read(onboardingProvider.notifier).completeOnboarding();
           targetLocation = '/';
         } else {
-          if (!context.mounted) return null;
-          final isDesktopWeb = kIsWeb && MediaQuery.sizeOf(context).width > 900;
-          AppLogger.debug('Splash: isDesktopWeb = $isDesktopWeb');
-
-          if (isDesktopWeb) {
-            ref.read(onboardingProvider.notifier).completeOnboarding();
-            targetLocation = '/welcome';
-          } else {
-            final showOnboarding = ref.read(onboardingProvider);
-            AppLogger.debug('Splash: showOnboarding = $showOnboarding');
-            targetLocation = showOnboarding ? '/welcome' : '/';
-          }
+          AppLogger.debug('Splash: User unauthenticated, routing to /welcome');
+          targetLocation = '/welcome';
         }
       }
     } catch (e, stack) {

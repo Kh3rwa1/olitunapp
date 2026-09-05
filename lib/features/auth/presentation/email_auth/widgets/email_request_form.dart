@@ -15,7 +15,6 @@ class EmailRequestForm extends StatelessWidget {
   final String? errorMessage;
   final String? successMessage;
   final VoidCallback onSendCode;
-  final VoidCallback onSkip;
 
   const EmailRequestForm({
     super.key,
@@ -26,7 +25,6 @@ class EmailRequestForm extends StatelessWidget {
     required this.errorMessage,
     required this.successMessage,
     required this.onSendCode,
-    required this.onSkip,
   });
 
   @override
@@ -112,23 +110,6 @@ class EmailRequestForm extends StatelessWidget {
             .animate()
             .fadeIn(delay: 400.ms, duration: 500.ms)
             .scale(begin: const Offset(0.96, 0.96)),
-
-        const SizedBox(height: 28),
-
-        // Skip link
-        Center(
-          child: GestureDetector(
-            onTap: onSkip,
-            child: Text(
-              l10n.continueWithoutAccount,
-              style: TextStyle(
-                color: isDark ? Colors.white38 : Colors.black38,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ).animate().fadeIn(delay: 600.ms, duration: 500.ms),
 
         const SizedBox(height: 40),
       ],

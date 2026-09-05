@@ -22,12 +22,84 @@ export function classifyLesson(category, lesson) {
   if (!PAID_UNLOCK_MODES.has(mode)) {
     return { public: false, reason: `unknown-unlock-mode-${mode}` };
   }
+  if (lesson.isPreview === true) {
+    return { public: true, reason: 'explicit-preview' };
+  }
   const order = Number(lesson.order);
   const previews = Number(category.previewLessonCount || 0);
   if (Number.isInteger(order) && order > 0 && order <= previews) {
     return { public: true, reason: 'legacy-order-window-preview' };
   }
   return { public: false, reason: `category-${mode}` };
+}
+
+export function auditLessonOrders(lessons) {
+  const anomalies = [];
+  const byCategory = new Map();
+
+  for (const lesson of lessons) {
+    const categoryId = typeof lesson.categoryId === 'string'
+      ? lesson.categoryId
+      : (lesson.categoryId?.$id || 'unassigned');
+    if (!byCategory.has(categoryId)) {
+      byCategory.set(categoryId, []);
+    }
+    byCategory.get(categoryId).push(lesson);
+  }
+
+  for (const [categoryId, catLessons] of byCategory.entries()) {
+    const seenOrders = new Map();
+    for (const lesson of catLessons) {
+      const order = Number(lesson.order);
+      if (!Number.isInteger(order) || order <= 0) {
+        anomalies.push({
+          categoryId,
+          lessonId: lesson.$id || lesson.id,
+          order: lesson.order,
+          type: 'invalid_or_zero',
+          message: `Lesson ${lesson.$id || lesson.id} has invalid or non-positive order: ${lesson.order}`,
+        });
+      } else {
+        if (seenOrders.has(order)) {
+          anomalies.push({
+            categoryId,
+            lessonId: lesson.$id || lesson.id,
+            order,
+            type: 'duplicate',
+            message: `Lesson ${lesson.$id || lesson.id} has duplicate order ${order} (already seen on ${seenOrders.get(order)})`,
+          });
+        } else {
+          seenOrders.set(order, lesson.$id || lesson.id);
+        }
+      }
+    }
+
+    const validOrders = Array.from(seenOrders.keys()).sort((a, b) => a - b);
+    if (validOrders.length > 0) {
+      if (validOrders[0] > 1) {
+        anomalies.push({
+          categoryId,
+          type: 'gap',
+          expected: 1,
+          actual: validOrders[0],
+          message: `Category ${categoryId} orders start at ${validOrders[0]} instead of 1`,
+        });
+      }
+      for (let i = 1; i < validOrders.length; i++) {
+        if (validOrders[i] > validOrders[i - 1] + 1) {
+          anomalies.push({
+            categoryId,
+            type: 'gap',
+            expected: validOrders[i - 1] + 1,
+            actual: validOrders[i],
+            message: `Category ${categoryId} has order gap between ${validOrders[i - 1]} and ${validOrders[i]}`,
+          });
+        }
+      }
+    }
+  }
+
+  return anomalies;
 }
 
 export function desiredPermissions(current, allowAnonymousRead) {
@@ -161,6 +233,17 @@ async function main() {
   if (protectedMedia.size > 0) {
     console.log('No media permissions were changed. Move/copy these assets only after signed retrieval is deployed.');
   }
+
+  const orderAnomalies = auditLessonOrders(lessons);
+  if (orderAnomalies.length > 0) {
+    console.warn(`⚠️ Detected ${orderAnomalies.length} lesson order anomalies (gaps, zeroes, duplicates):`);
+    for (const anomaly of orderAnomalies) {
+      console.warn(`  - [${anomaly.type}] ${anomaly.message}`);
+    }
+  } else {
+    console.log('✅ Lesson order sequence verified: no gaps, zeroes, or duplicates.');
+  }
+
   if (!apply && drift > 0) process.exitCode = 2;
 }
 

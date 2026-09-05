@@ -198,43 +198,105 @@ void main() {
   });
 
   group('getLessonById', () {
-    test('returns remote lesson and caches it when online', () async {
+    test(
+      'returns remote lesson and caches it when online and unlocked',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => true);
+        when(
+          () => remote.getAuthorizedLesson('1'),
+        ).thenAnswer((_) async => _lesson('1'));
+        when(() => local.cacheLessons(any())).thenAnswer((_) async {});
+
+        final result = await repo.getLessonById('1');
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (_) => fail('should be right'),
+          (lesson) => expect(lesson.id, '1'),
+        );
+        verify(() => local.cacheLessons(any())).called(1);
+      },
+    );
+
+    test(
+      'returns locked lesson without caching when backend returns locked',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => true);
+        const lockedLesson = LessonModel(
+          id: 'locked_1',
+          categoryId: 'cat',
+          titleOlChiki: 'ᱚ',
+          titleLatin: 'a',
+          isLocked: true,
+          blocks: [],
+        );
+        when(
+          () => remote.getAuthorizedLesson('locked_1'),
+        ).thenAnswer((_) async => lockedLesson);
+
+        final result = await repo.getLessonById('locked_1');
+
+        expect(result.isRight(), isTrue);
+        result.match((_) => fail('should be right'), (lesson) {
+          expect(lesson.id, 'locked_1');
+          expect(lesson.isLocked, isTrue);
+          expect(lesson.blocks, isEmpty);
+        });
+        verifyNever(() => local.cacheLessons(any()));
+      },
+    );
+
+    test('returns AuthFailure on remote 403 without silent fallback', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
-      when(
-        () => remote.getLessonById('1'),
-      ).thenAnswer((_) async => _lesson('1'));
-      when(() => local.cacheLessons(any())).thenAnswer((_) async {});
+      when(() => remote.getAuthorizedLesson('1')).thenThrow(
+        ServerException(message: 'Access denied to lesson', code: 403),
+      );
 
       final result = await repo.getLessonById('1');
 
-      expect(result.isRight(), isTrue);
+      expect(result.isLeft(), isTrue);
       result.match(
-        (_) => fail('should be right'),
-        (lesson) => expect(lesson.id, '1'),
+        (failure) => expect(failure, isA<AuthFailure>()),
+        (_) => fail('should be Left(AuthFailure)'),
       );
     });
 
-    test('falls back to local cache when online remote call fails', () async {
-      when(() => network.isConnected).thenAnswer((_) async => true);
-      when(
-        () => remote.getLessonById('1'),
-      ).thenThrow(ServerException(message: 'boom', code: 500));
-      when(() => local.getLessons()).thenAnswer((_) async => [_lesson('1')]);
+    test(
+      'falls back to local cache when online remote call fails with server error',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => true);
+        when(
+          () => remote.getAuthorizedLesson('1'),
+        ).thenThrow(ServerException(message: 'boom', code: 500));
+        when(() => local.getLessons()).thenAnswer(
+          (_) async => const [
+            LessonModel(
+              id: '1',
+              categoryId: 'cat',
+              titleOlChiki: 'ᱚ',
+              titleLatin: 'a',
+              blocks: [
+                LessonBlockModel(type: 'text', textLatin: 'cached content'),
+              ],
+            ),
+          ],
+        );
 
-      final result = await repo.getLessonById('1');
+        final result = await repo.getLessonById('1');
 
-      result.match(
-        (_) => fail('should be right'),
-        (lesson) => expect(lesson.id, '1'),
-      );
-    });
+        result.match(
+          (_) => fail('should be right'),
+          (lesson) => expect(lesson.id, '1'),
+        );
+      },
+    );
 
     test(
       'falls back to static seed lesson when remote and cache fail online',
       () async {
         when(() => network.isConnected).thenAnswer((_) async => true);
         when(
-          () => remote.getLessonById('lesson_alphabet_0'),
+          () => remote.getAuthorizedLesson('lesson_alphabet_0'),
         ).thenThrow(ServerException(message: 'boom', code: 500));
         when(
           () => local.getLessons(),
@@ -248,10 +310,11 @@ void main() {
         );
       },
     );
+
     test('returns remote lesson by id even if cache writing fails', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
       when(
-        () => remote.getLessonById('1'),
+        () => remote.getAuthorizedLesson('1'),
       ).thenAnswer((_) async => _lesson('fresh_1'));
       when(
         () => local.cacheLessons(any()),

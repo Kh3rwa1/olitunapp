@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/network/network_info.dart';
 import '../datasources/lesson_local_datasource.dart';
@@ -14,7 +15,11 @@ import '../../domain/repositories/lesson_repository.dart';
 
 final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
   final client = ref.watch(appwriteAuthServiceProvider).client;
-  return LessonRemoteDataSourceImpl(Databases(client));
+  final functions = ref.watch(appwriteFunctionsServiceProvider);
+  return LessonRemoteDataSourceImpl(
+    Databases(client),
+    functionsService: functions,
+  );
 });
 
 final lessonLocalDataSourceProvider = Provider<LessonLocalDataSource>((ref) {

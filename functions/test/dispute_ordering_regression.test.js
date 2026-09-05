@@ -76,7 +76,7 @@ test('repurchase binding conflict aborts a delayed dispute', async () => {
 
 test('deployed payment guard copies match their canonical source', () => {
   const canonical = readFileSync(new URL('../_shared/payment_state.js', import.meta.url), 'utf8');
-  for (const name of ['razorpayWebhook', 'reconcilePaymentAttempts', 'verifyCoursePurchase']) {
+  for (const name of ['razorpayWebhook', 'reconcilePaymentAttempts', 'verifyCoursePurchase', 'admin-maintenance']) {
     assert.equal(readFileSync(new URL(`../${name}/src/shared/payment_state.js`, import.meta.url), 'utf8'), canonical);
   }
 });

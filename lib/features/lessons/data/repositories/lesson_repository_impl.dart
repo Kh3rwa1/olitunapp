@@ -298,39 +298,52 @@ class LessonRepositoryImpl implements LessonRepository {
     try {
       final cached = await localDataSource.getLessons();
       final lesson = cached.firstWhere((l) => l.id == id);
-      return Right(lesson.toEntity());
+      if (!lesson.isLocked && lesson.blocks.isNotEmpty) {
+        return Right(lesson.toEntity());
+      }
     } catch (_) {
-      // Try remote if online
-      if (await networkInfo.isConnected) {
-        try {
-          final result = await remoteDataSource.getLessonById(id);
-          try {
-            await localDataSource.cacheLessons([result]);
-          } catch (cacheErr, cacheSt) {
-            AppLogger.warning(
-              'LessonRepositoryImpl: Failed to cache lesson by id: $cacheErr',
-            );
-            CrashReporting.recordFailure(
-              CacheFailure(message: 'Failed to cache lesson: $cacheErr'),
-              cacheSt,
-            );
-          }
+      // Cache miss; proceed to authorized remote retrieval
+    }
+
+    // Try remote if online
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.getAuthorizedLesson(id);
+        if (result.isLocked) {
+          // Do not cache locked lesson content as playable
           return Right(result.toEntity());
-        } catch (e, st) {
-          if (e is ServerException) {
-            _recordedServerFailure(e, st);
+        }
+        try {
+          await localDataSource.cacheLessons([result]);
+        } catch (cacheErr, cacheSt) {
+          AppLogger.warning(
+            'LessonRepositoryImpl: Failed to cache lesson by id: $cacheErr',
+          );
+          CrashReporting.recordFailure(
+            CacheFailure(message: 'Failed to cache lesson: $cacheErr'),
+            cacheSt,
+          );
+        }
+        return Right(result.toEntity());
+      } catch (e, st) {
+        if (e is ServerException) {
+          if (e.code == 403) {
+            return const Left(
+              AuthFailure(message: 'Access denied to protected lesson.'),
+            );
           }
+          _recordedServerFailure(e, st);
         }
       }
+    }
 
-      // Seed fallback
-      try {
-        final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
-        return Right(seed);
-      } catch (_) {
-        // Not in the seed either — surface the miss as a cache failure.
-        return const Left(CacheFailure(message: 'Lesson not found in cache'));
-      }
+    // Seed fallback
+    try {
+      final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
+      return Right(seed);
+    } catch (_) {
+      // Not in the seed either — surface the miss as a cache failure.
+      return const Left(CacheFailure(message: 'Lesson not found in cache'));
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/api/appwrite_databases_pagination.dart';
+import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../shared/security/premium_content_policy.dart';
@@ -11,6 +12,7 @@ abstract class LessonRemoteDataSource {
   Future<List<LessonModel>> getLessons();
   Future<List<LessonModel>> getLessonsByCategory(String categoryId);
   Future<LessonModel> getLessonById(String id);
+  Future<LessonModel> getAuthorizedLesson(String id);
   Future<void> createLesson(LessonModel lesson);
   Future<void> updateLesson(LessonModel lesson);
   Future<void> deleteLesson(String id);
@@ -21,8 +23,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   static const Duration _writeTimeout = Duration(seconds: 15);
 
   final Databases databases;
+  final AppwriteFunctionsService? functionsService;
 
-  LessonRemoteDataSourceImpl(this.databases);
+  LessonRemoteDataSourceImpl(this.databases, {this.functionsService});
 
   @override
   Future<List<LessonModel>> getLessons() async {
@@ -73,7 +76,47 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   }
 
   @override
-  Future<LessonModel> getLessonById(String id) async {
+  Future<LessonModel> getAuthorizedLesson(String id) async {
+    if (functionsService != null) {
+      try {
+        final result = await functionsService!.execute(
+          'getAuthorizedLesson',
+          body: {'lessonId': id},
+          usePost: true,
+        );
+        if (result.isCompleted &&
+            result.statusCode == 200 &&
+            result.bodyJson != null) {
+          final data = result.bodyJson!;
+          if (data['ok'] == true && data['lesson'] is Map) {
+            final lessonMap = Map<String, dynamic>.from(data['lesson'] as Map);
+            return LessonModel.fromJson(lessonMap, lessonMap['id'] as String?);
+          }
+        }
+        if (result.statusCode == 404) {
+          throw ServerException(message: 'Lesson not found', code: 404);
+        }
+        if (result.statusCode == 401 || result.statusCode == 403) {
+          throw ServerException(message: 'Access denied to lesson', code: 403);
+        }
+        throw ServerException(
+          message:
+              result.bodyJson?['message'] as String? ??
+              'Failed to retrieve authorized lesson',
+          code: result.statusCode,
+        );
+      } on ServerException {
+        rethrow;
+      } catch (e) {
+        throw ServerException(
+          message: 'Failed to retrieve authorized lesson: $e',
+        );
+      }
+    }
+    return _getLessonByIdDirect(id);
+  }
+
+  Future<LessonModel> _getLessonByIdDirect(String id) async {
     try {
       final doc = await databases
           .getDocument(
@@ -91,6 +134,14 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     } catch (e) {
       throw ServerException(message: e.toString());
     }
+  }
+
+  @override
+  Future<LessonModel> getLessonById(String id) async {
+    if (functionsService != null) {
+      return getAuthorizedLesson(id);
+    }
+    return _getLessonByIdDirect(id);
   }
 
   Future<PublicationDecision> _publicationDecisionFor(
@@ -116,6 +167,7 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
         categoryUnlockMode: category.data['unlockMode'] as String?,
         lessonOrder: lesson.order,
         previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+        isPreview: lesson.isPreview,
       );
     } catch (_) {
       return PremiumContentPolicy.forContentItem(

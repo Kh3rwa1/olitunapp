@@ -14,6 +14,8 @@ class UserStatsModel extends UserStatsEntity {
     required super.completedMissionsDates,
     super.practiceDates,
     super.syncEpoch,
+    super.starEvents,
+    super.minuteEvents,
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
@@ -52,6 +54,20 @@ class UserStatsModel extends UserStatsEntity {
       });
     }
 
+    Map<String, int> readIntMap(dynamic value) {
+      if (value is! Map) return {};
+      return value.map((key, raw) {
+        final parsed = raw is int
+            ? raw
+            : raw is num
+            ? raw.round()
+            : raw is String
+            ? int.tryParse(raw) ?? 0
+            : 0;
+        return MapEntry(key.toString(), parsed < 0 ? 0 : parsed);
+      });
+    }
+
     return UserStatsModel(
       practicedLetters: Set<String>.from(json['practicedLetters'] ?? []),
       completedLessons: Set<String>.from(json['completedLessons'] ?? []),
@@ -66,6 +82,8 @@ class UserStatsModel extends UserStatsEntity {
       ),
       practiceDates: Set<String>.from(json['practiceDates'] ?? []),
       syncEpoch: readInt('syncEpoch'),
+      starEvents: readIntMap(json['starEvents']),
+      minuteEvents: readIntMap(json['minuteEvents']),
     );
   }
 
@@ -84,6 +102,8 @@ class UserStatsModel extends UserStatsEntity {
       'completedMissionsDates': completedMissionsDates.toList(),
       'practiceDates': practiceDates.toList(),
       'syncEpoch': syncEpoch,
+      'starEvents': starEvents,
+      'minuteEvents': minuteEvents,
     };
   }
 
@@ -100,6 +120,8 @@ class UserStatsModel extends UserStatsEntity {
       completedMissionsDates: entity.completedMissionsDates,
       practiceDates: entity.practiceDates,
       syncEpoch: entity.syncEpoch,
+      starEvents: entity.starEvents,
+      minuteEvents: entity.minuteEvents,
     );
   }
 }

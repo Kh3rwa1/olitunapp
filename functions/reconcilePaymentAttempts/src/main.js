@@ -1,5 +1,5 @@
 import { Client, Databases } from 'node-appwrite';
-import { reconcileStuckPaymentAttempts } from './shared/payment_reconcile.js';
+import { reconcileStuckPaymentAttempts, reconcileDisputedPurchases } from './shared/payment_reconcile.js';
 import { withPaymentStateGuard } from './shared/payment_state.js';
 
 export default async ({ req, res, log = console.log, error = console.error }) => {
@@ -20,11 +20,13 @@ export default async ({ req, res, log = console.log, error = console.error }) =>
     .setProject(projectId)
     .setKey(apiKey);
 
-  const databases = withPaymentStateGuard(new Databases(client));
+  const rawDatabases = new Databases(client);
+  const databases = withPaymentStateGuard(rawDatabases);
+  const disputeDatabases = withPaymentStateGuard(rawDatabases, { event: 'reconcile.dispute' });
 
-  log('Starting scheduled payment attempt reconciliation');
+  log('Starting scheduled payment attempt and dispute reconciliation');
 
-  const stats = await reconcileStuckPaymentAttempts({
+  const attemptStats = await reconcileStuckPaymentAttempts({
     databases,
     databaseId,
     razorpayKeyId,
@@ -33,11 +35,28 @@ export default async ({ req, res, log = console.log, error = console.error }) =>
     error,
   });
 
-  log(`Reconciliation completed. Scanned: ${stats.scanned}, Reconciled: ${stats.reconciled}, Failed: ${stats.failed}`);
+  const disputeStats = await reconcileDisputedPurchases({
+    databases: disputeDatabases,
+    databaseId,
+    razorpayKeyId,
+    razorpayKeySecret,
+    log,
+    error,
+  });
+
+  const combinedStats = {
+    attempts: attemptStats,
+    disputes: disputeStats,
+    scanned: attemptStats.scanned + disputeStats.scanned,
+    reconciled: attemptStats.reconciled + disputeStats.won + disputeStats.lost,
+    failed: attemptStats.failed + disputeStats.failed,
+  };
+
+  log(`Reconciliation completed. Attempts: scanned ${attemptStats.scanned}, reconciled ${attemptStats.reconciled}, failed ${attemptStats.failed}. Disputes: scanned ${disputeStats.scanned}, won ${disputeStats.won}, lost ${disputeStats.lost}, pending ${disputeStats.pending}, failed ${disputeStats.failed}`);
 
   return res.json({
     ok: true,
     message: 'Reconciliation process completed',
-    stats,
+    stats: combinedStats,
   });
 };

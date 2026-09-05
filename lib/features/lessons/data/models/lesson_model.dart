@@ -15,6 +15,8 @@ class LessonModel extends LessonEntity {
     super.order = 0,
     super.estimatedMinutes = 5,
     super.isActive = true,
+    super.isPreview = false,
+    super.isLocked = false,
     super.data,
     required List<LessonBlockModel> super.blocks,
   });
@@ -106,6 +108,8 @@ class LessonModel extends LessonEntity {
       order: json['order'] as int? ?? 0,
       estimatedMinutes: json['estimatedMinutes'] as int? ?? 5,
       isActive: json['isActive'] as bool? ?? true,
+      isPreview: json['isPreview'] as bool? ?? false,
+      isLocked: json['isLocked'] as bool? ?? false,
       data: parsedData.isEmpty ? null : parsedData,
       blocks: blocksJson
           .whereType<Map>()
@@ -125,6 +129,8 @@ class LessonModel extends LessonEntity {
       'order': order,
       'estimatedMinutes': estimatedMinutes,
       'isActive': isActive,
+      'isPreview': isPreview,
+      'isLocked': isLocked,
       'thumbnailUrl': data?['thumbnailUrl'],
       'heroMediaUrl': data?['heroMediaUrl'],
       'heroMediaType': data?['heroMediaType'],
@@ -150,6 +156,8 @@ class LessonModel extends LessonEntity {
       order: order,
       estimatedMinutes: estimatedMinutes,
       isActive: isActive,
+      isPreview: isPreview,
+      isLocked: isLocked,
       data: data,
       blocks: blocks.map((e) => (e as LessonBlockModel).toEntity()).toList(),
     );
@@ -166,6 +174,8 @@ class LessonModel extends LessonEntity {
       order: entity.order,
       estimatedMinutes: entity.estimatedMinutes,
       isActive: entity.isActive,
+      isPreview: entity.isPreview,
+      isLocked: entity.isLocked,
       data: entity.data,
       blocks: entity.blocks.map(LessonBlockModel.fromEntity).toList(),
     );

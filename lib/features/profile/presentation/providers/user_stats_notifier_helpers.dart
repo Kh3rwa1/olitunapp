@@ -71,41 +71,19 @@ extension _UserStatsNotifierHelpers on UserStatsNotifier {
     );
   }
 
-  /// Updates lastActiveDate and currentStreak based on today's date.
+  /// Updates lastActiveDate and currentStreak based on today's date and practiceDates.
   UserStatsEntity _withStreakUpdate(UserStatsEntity stats) {
     final now = _now();
     final todayDate = DateTime(now.year, now.month, now.day);
-    final today = todayDate.toIso8601String().substring(0, 10);
-    final lastDate = stats.lastActiveDate;
+    final today = StreakWeekLogic.dateKey(todayDate);
 
     final updatedPracticeDates = _bumpPracticeDates(stats, today);
-
-    if (lastDate == today) {
-      return stats.copyWith(
-        lastActiveDate: today,
-        practiceDates: updatedPracticeDates,
-      );
-    }
-
-    int newStreak = 1;
-    if (lastDate.isNotEmpty) {
-      final parsedLastDay = DateTime.tryParse(lastDate);
-      if (parsedLastDay != null) {
-        final lastDay = DateTime(
-          parsedLastDay.year,
-          parsedLastDay.month,
-          parsedLastDay.day,
-        );
-        final diff = todayDate.difference(lastDay).inDays;
-        if (diff == 1) {
-          newStreak = stats.currentStreak + 1;
-        } else if (diff == 0) {
-          newStreak = stats.currentStreak;
-        } else {
-          newStreak = 1;
-        }
-      }
-    }
+    final newStreak = StreakWeekLogic.deriveStreak(
+      updatedPracticeDates,
+      asOf: todayDate,
+      lastActiveDate: stats.lastActiveDate,
+      fallbackStreak: stats.currentStreak,
+    );
 
     return stats.copyWith(
       lastActiveDate: today,

@@ -85,5 +85,31 @@ void main() {
         isFalse,
       );
     });
+
+    test(
+      'explicit isPreview grants public access even outside order window',
+      () {
+        final decision = PremiumContentPolicy.forContentItem(
+          isPremium: false,
+          categoryUnlockMode: 'paid_only',
+          lessonOrder: 99,
+          previewLessonCount: 2,
+          isPreview: true,
+        );
+        expect(decision.allowAnonymousRead, isTrue);
+        expect(decision.reason, 'explicit-preview');
+      },
+    );
+
+    test('item marked premium overrides isPreview', () {
+      final decision = PremiumContentPolicy.forContentItem(
+        isPremium: true,
+        categoryUnlockMode: 'paid_only',
+        lessonOrder: 1,
+        isPreview: true,
+      );
+      expect(decision.allowAnonymousRead, isFalse);
+      expect(decision.reason, 'item-marked-premium');
+    });
   });
 }

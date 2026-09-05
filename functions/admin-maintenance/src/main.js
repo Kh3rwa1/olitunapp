@@ -7,6 +7,7 @@ import {
   Users,
 } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
+import { withPaymentStateGuard } from './shared/payment_state.js';
 
 export const DATABASE_ID = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
 export const ADMIN_TEAM_ID = process.env.ADMIN_TEAM_ID || 'admins';
@@ -22,7 +23,12 @@ export const CONTENT_COLLECTIONS = [
   'categories',
 ];
 
-const ACTIONS = new Set(['backup_content', 'wipe_content', 'restore_content']);
+const ACTIONS = new Set([
+  'backup_content',
+  'wipe_content',
+  'restore_content',
+  'record_refund',
+]);
 
 export function parseBody(body) {
   if (!body) return {};
@@ -66,6 +72,10 @@ export function validateRequest({ method, userId, body }) {
 
   if (body.action === 'restore_content' && !body.fileId) {
     return { status: 400, message: 'Missing backup file ID.' };
+  }
+
+  if (body.action === 'record_refund' && !body.purchaseId) {
+    return { status: 400, message: 'Missing purchase ID.' };
   }
 
   return null;
@@ -212,6 +222,117 @@ export async function restoreContent({ databases, storage, fileId }) {
   return { restored, deleted };
 }
 
+export async function executeAdminRefund({
+  databases,
+  actorUserId,
+  body,
+  databaseId = DATABASE_ID,
+}) {
+  const purchaseId = String(body.purchaseId || '').trim();
+  if (!purchaseId) {
+    throw Object.assign(new Error('Missing purchase ID.'), { status: 400 });
+  }
+
+  // 1. Fetch current purchase document
+  let purchase;
+  try {
+    purchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+  } catch (err) {
+    if (err.code === 404 || err.status === 404) {
+      throw Object.assign(new Error(`Purchase ${purchaseId} not found.`), { status: 404 });
+    }
+    throw err;
+  }
+
+  const expectedPaise = Math.round(Number(purchase.expectedAmount || 0) * 100);
+  const isAlreadyRefunded =
+    purchase.status === 'refunded' ||
+    purchase.refundStatus === 'fully_refunded' ||
+    (expectedPaise > 0 && Number(purchase.refundedAmountPaise || 0) >= expectedPaise);
+
+  if (isAlreadyRefunded) {
+    return {
+      alreadyRefunded: true,
+      purchaseId,
+      status: purchase.status,
+      refundStatus: purchase.refundStatus,
+      refundedAmountPaise: purchase.refundedAmountPaise,
+    };
+  }
+
+  // 2. Validate current status allows refund
+  if (!['verified', 'disputed', 'failed'].includes(purchase.status)) {
+    throw Object.assign(
+      new Error(`Cannot refund purchase in status '${purchase.status}'.`),
+      { status: 409 },
+    );
+  }
+
+  const now = new Date().toISOString();
+  const reason = String(body.reason || 'Admin recorded refund').trim();
+  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
+  const refundAmountPaise = Number(body.amountPaise) || expectedPaise || (Number(purchase.paidAmount || 0) * 100);
+
+  // 3. Monotonic epoch computation
+  const currentEpoch = Number(purchase.refundEpoch || 0);
+  const targetEpoch = currentEpoch + 1;
+
+  // 4. Update course_purchases via guarded databases
+  let guardedDb = databases;
+  if (typeof databases.createTransaction === 'function') {
+    guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
+  }
+
+  const updatedPurchase = await guardedDb.updateDocument(
+    databaseId,
+    'course_purchases',
+    purchaseId,
+    {
+      status: 'refunded',
+      refundStatus: 'fully_refunded',
+      refundedAmountPaise: Math.max(Number(purchase.refundedAmountPaise || 0), refundAmountPaise),
+      refundEpoch: targetEpoch,
+    },
+  );
+
+  // 5. Write audit log to admin_audit_logs collection (fail-safe)
+  try {
+    await databases.createDocument(
+      databaseId,
+      'admin_audit_logs',
+      ID.unique(),
+      {
+        action: 'refund_recorded',
+        actorUserId,
+        targetType: 'course_purchase',
+        targetId: purchaseId,
+        metadata: JSON.stringify({
+          userId: purchase.userId,
+          categoryId: purchase.categoryId,
+          externalRefundId,
+          reason,
+          refundAmountPaise,
+          previousStatus: purchase.status,
+          refundEpoch: targetEpoch,
+        }),
+        success: true,
+        createdAt: now,
+      },
+    );
+  } catch (auditErr) {
+    console.error(`Warning: Failed to write admin audit log for refund: ${auditErr.message}`);
+  }
+
+  return {
+    alreadyRefunded: false,
+    purchaseId,
+    status: 'refunded',
+    refundStatus: 'fully_refunded',
+    refundedAmountPaise: updatedPurchase.refundedAmountPaise,
+    refundEpoch: targetEpoch,
+  };
+}
+
 function json(res, status, payload) {
   return res.json(payload, status);
 }
@@ -243,6 +364,23 @@ export default async ({ req, res, log, error }) => {
     }
 
     const databases = new Databases(client);
+
+    if (body.action === 'record_refund') {
+      const refundResult = await executeAdminRefund({
+        databases,
+        actorUserId: userId,
+        body,
+        databaseId: DATABASE_ID,
+      });
+      log(
+        `Admin maintenance record_refund completed by ${userId} for purchase ${body.purchaseId}.`,
+      );
+      return json(res, 200, {
+        success: true,
+        ...refundResult,
+      });
+    }
+
     const storage = new Storage(client);
     const backup = await createContentBackup({
       databases,
@@ -296,9 +434,10 @@ export default async ({ req, res, log, error }) => {
     });
   } catch (err) {
     error(err.message || String(err));
-    return json(res, 500, {
+    const statusCode = err.status || (Number.isInteger(err.code) && err.code >= 400 && err.code < 600 ? err.code : 500);
+    return json(res, statusCode, {
       success: false,
-      message: 'Admin maintenance failed.',
+      message: err.message || 'Admin maintenance failed.',
     });
   }
 };

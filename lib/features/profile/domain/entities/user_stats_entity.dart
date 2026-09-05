@@ -27,6 +27,12 @@ class UserStatsEntity extends Equatable {
   /// activity (quiz, lesson, typing). Capped to the most recent entries.
   final Set<String> practiceDates;
 
+  /// Deduplicated star reward event deltas (eventId -> delta).
+  final Map<String, int> starEvents;
+
+  /// Deduplicated learning minute event deltas (eventId -> delta).
+  final Map<String, int> minuteEvents;
+
   const UserStatsEntity({
     required this.practicedLetters,
     required this.completedLessons,
@@ -39,6 +45,8 @@ class UserStatsEntity extends Equatable {
     this.completedMissionsDates = const {},
     this.practiceDates = const {},
     this.syncEpoch = 0,
+    this.starEvents = const {},
+    this.minuteEvents = const {},
   });
 
   @override
@@ -54,6 +62,8 @@ class UserStatsEntity extends Equatable {
     completedMissionsDates,
     practiceDates,
     syncEpoch,
+    starEvents,
+    minuteEvents,
   ];
 
   UserStatsEntity copyWith({
@@ -68,6 +78,8 @@ class UserStatsEntity extends Equatable {
     Set<String>? completedMissionsDates,
     Set<String>? practiceDates,
     int? syncEpoch,
+    Map<String, int>? starEvents,
+    Map<String, int>? minuteEvents,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -82,6 +94,27 @@ class UserStatsEntity extends Equatable {
           completedMissionsDates ?? this.completedMissionsDates,
       practiceDates: practiceDates ?? this.practiceDates,
       syncEpoch: syncEpoch ?? this.syncEpoch,
+      starEvents: starEvents ?? this.starEvents,
+      minuteEvents: minuteEvents ?? this.minuteEvents,
+    );
+  }
+
+  /// Records a star reward with a deduplicatable event ID.
+  UserStatsEntity recordStarReward(int count, {String? eventId}) {
+    if (count <= 0) return this;
+    final id = eventId ?? 'star_${DateTime.now().microsecondsSinceEpoch}';
+    final updatedEvents = Map<String, int>.from(starEvents)..[id] = count;
+    return copyWith(totalStars: totalStars + count, starEvents: updatedEvents);
+  }
+
+  /// Records learning minutes with a deduplicatable event ID.
+  UserStatsEntity recordLearningMinutes(int minutes, {String? eventId}) {
+    if (minutes <= 0) return this;
+    final id = eventId ?? 'min_${DateTime.now().microsecondsSinceEpoch}';
+    final updatedEvents = Map<String, int>.from(minuteEvents)..[id] = minutes;
+    return copyWith(
+      totalLearningMinutes: totalLearningMinutes + minutes,
+      minuteEvents: updatedEvents,
     );
   }
 

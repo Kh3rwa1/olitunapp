@@ -18,6 +18,7 @@ class PremiumContentPolicy {
     int? lessonOrder,
     int previewLessonCount = 0,
     bool categoryResolved = true,
+    bool isPreview = false,
   }) {
     if (isPremium) {
       return const PublicationDecision.protected('item-marked-premium');
@@ -38,6 +39,10 @@ class PremiumContentPolicy {
 
     if (!paidUnlockModes.contains(mode)) {
       return PublicationDecision.protected('unknown-unlock-mode-$mode');
+    }
+
+    if (isPreview) {
+      return const PublicationDecision.public('explicit-preview');
     }
 
     final isLegacyOrderWindowPreview =

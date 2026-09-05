@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   assertCollectionBoundary,
+  auditLessonOrders,
   classifyLesson,
   desiredPermissions,
   parseArgs,
@@ -18,6 +19,13 @@ test('known paid mode may use the legacy positive-order window', () => {
   assert.equal(
     classifyLesson({ unlockMode: 'review_or_paid', previewLessonCount: 2 }, { order: 1 }).public,
     true,
+  );
+});
+
+test('explicit isPreview grants public access even outside order window', () => {
+  assert.deepEqual(
+    classifyLesson({ unlockMode: 'paid_only', previewLessonCount: 2 }, { order: 10, isPreview: true }),
+    { public: true, reason: 'explicit-preview' },
   );
 });
 
@@ -79,3 +87,28 @@ test('apply confirmation is bound to the explicit project', () => {
     { apply: true },
   );
 });
+
+test('auditLessonOrders passes for sequential positive orders', () => {
+  const lessons = [
+    { $id: 'l1', categoryId: 'cat1', order: 1 },
+    { $id: 'l2', categoryId: 'cat1', order: 2 },
+    { $id: 'l3', categoryId: 'cat1', order: 3 },
+  ];
+  assert.deepEqual(auditLessonOrders(lessons), []);
+});
+
+test('auditLessonOrders detects zeroes, negatives, duplicates, and gaps', () => {
+  const lessons = [
+    { $id: 'l0', categoryId: 'cat1', order: 0 },
+    { $id: 'l1a', categoryId: 'cat1', order: 2 },
+    { $id: 'l1b', categoryId: 'cat1', order: 2 },
+    { $id: 'l5', categoryId: 'cat1', order: 5 },
+  ];
+  const anomalies = auditLessonOrders(lessons);
+  assert.equal(anomalies.length, 4);
+  assert.equal(anomalies.some((a) => a.type === 'invalid_or_zero' && a.lessonId === 'l0'), true);
+  assert.equal(anomalies.some((a) => a.type === 'duplicate' && a.order === 2), true);
+  assert.equal(anomalies.some((a) => a.type === 'gap' && a.expected === 1), true);
+  assert.equal(anomalies.some((a) => a.type === 'gap' && a.expected === 3 && a.actual === 5), true);
+});
+

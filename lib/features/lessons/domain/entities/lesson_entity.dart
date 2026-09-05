@@ -10,6 +10,8 @@ class LessonEntity extends Equatable {
   final int order;
   final int estimatedMinutes;
   final bool isActive;
+  final bool isPreview;
+  final bool isLocked;
   final Map<String, dynamic>? data;
   final List<LessonBlockEntity> blocks;
 
@@ -23,6 +25,8 @@ class LessonEntity extends Equatable {
     this.order = 0,
     this.estimatedMinutes = 5,
     this.isActive = true,
+    this.isPreview = false,
+    this.isLocked = false,
     this.data,
     this.blocks = const [],
   });
@@ -37,6 +41,8 @@ class LessonEntity extends Equatable {
     int? order,
     int? estimatedMinutes,
     bool? isActive,
+    bool? isPreview,
+    bool? isLocked,
     Map<String, dynamic>? data,
     List<LessonBlockEntity>? blocks,
   }) {
@@ -50,6 +56,8 @@ class LessonEntity extends Equatable {
       order: order ?? this.order,
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       isActive: isActive ?? this.isActive,
+      isPreview: isPreview ?? this.isPreview,
+      isLocked: isLocked ?? this.isLocked,
       data: data ?? this.data,
       blocks: blocks ?? this.blocks,
     );
@@ -66,6 +74,8 @@ class LessonEntity extends Equatable {
     order,
     estimatedMinutes,
     isActive,
+    isPreview,
+    isLocked,
     data,
     blocks,
   ];

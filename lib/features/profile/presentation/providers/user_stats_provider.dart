@@ -12,6 +12,7 @@ import 'package:itun/features/profile/data/repositories/profile_repository_impl.
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
+import 'package:itun/features/profile/domain/streak_week_logic.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../shared/widgets/state_widgets.dart';
@@ -200,8 +201,9 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     if (current == null) return;
 
     // 1. Award Stars
-    final updated = current.copyWith(
-      totalStars: current.totalStars + starsAwarded,
+    final updated = current.recordStarReward(
+      starsAwarded,
+      eventId: 'practice_${contentId}_${DateTime.now().microsecondsSinceEpoch}',
     );
 
     // 2. Track Analytics
@@ -349,9 +351,7 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       if (current == null) return;
       if (count <= 0) return;
 
-      final updated = _withStreakUpdate(
-        current.copyWith(totalStars: current.totalStars + count),
-      );
+      final updated = _withStreakUpdate(current.recordStarReward(count));
       await updateStats(updated);
     } catch (e, st) {
       AppLogger.debug('Failed to add stars: $e\n$st');
@@ -375,12 +375,13 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     final updatedLessons = Set<String>.from(current.completedLessons)
       ..add(lessonId);
 
-    var updated = current.copyWith(
-      completedLessons: updatedLessons,
-      totalLearningMinutes: alreadyCompleted
-          ? current.totalLearningMinutes
-          : current.totalLearningMinutes + estimatedMinutes.clamp(0, 240),
-    );
+    var updated = current.copyWith(completedLessons: updatedLessons);
+    if (!alreadyCompleted) {
+      updated = updated.recordLearningMinutes(
+        estimatedMinutes.clamp(0, 240),
+        eventId: 'lesson_$lessonId',
+      );
+    }
 
     // Update category mastery only the first time a lesson is completed.
     if (!alreadyCompleted && categoryId != null && categoryId.isNotEmpty) {

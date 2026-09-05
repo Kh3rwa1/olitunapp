@@ -21,7 +21,7 @@ This change targets learning-path discovery and shared actions/motion. It is not
 - The separate physical-device performance target is not part of the ordinary widget-test count.
 - 10 Node tests for the measurement validator passed locally. These are synthetic validator fixtures, not evidence of actual app speed.
 - Flutter/Dart and the user-visible browser were unavailable in the editing sandbox. No local Flutter run, visual inspection, screen-reader session, user study, or device trace is represented as completed.
-- Existing coverage, security, backend, build-size, and release gates remain unchanged. The additional workflow tests the measurement validator, not device performance.
+- Existing coverage, security, backend, build-size, and release gates remain unchanged. The additional workflow tests the measurement validator and reports targeted Flutter diagnostics, not device performance. For same-repository PRs only, its reporter can post a diagnostic comment; it cannot commit, merge, or deploy, and checkout credentials are not persisted.
 
 ## Reproducible device profiling
 

@@ -40,17 +40,20 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    await tester.pumpWidget(
-      _wrap(PrimaryButton(text: 'Start learning', onPressed: () {})),
-    );
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    final data = tester
-        .getSemantics(find.byType(ElevatedButton))
-        .getSemanticsData();
-    expect(data.label, 'Start learning');
-    expect(data.hasAction(ui.SemanticsAction.tap), isTrue);
+    try {
+      await tester.pumpWidget(
+        _wrap(PrimaryButton(text: 'Start learning', onPressed: () {})),
+      );
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      final data = tester
+          .getSemantics(find.byType(ElevatedButton))
+          .getSemanticsData();
+      expect(data.label, 'Start learning');
+      expect(data.hasAction(ui.SemanticsAction.tap), isTrue);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('large primary labels wrap and increase button height', (
@@ -67,10 +70,7 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(
-      tester.getSize(find.byType(ElevatedButton)).height,
-      greaterThan(58),
-    );
+    expect(tester.getSize(find.byType(ElevatedButton)).height, greaterThan(58));
   });
 
   testWidgets('Duo labels also wrap at 200 percent text size', (tester) async {
@@ -84,39 +84,39 @@ void main() {
       ),
     );
     expect(tester.takeException(), isNull);
-    expect(
-      tester.getSize(find.byType(ElevatedButton)).height,
-      greaterThan(56),
-    );
+    expect(tester.getSize(find.byType(ElevatedButton)).height, greaterThan(56));
   });
 
   testWidgets('loading preserves its label and blocks duplicate activation', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    var taps = 0;
-    await tester.pumpWidget(
-      _wrap(
-        PrimaryButton(
-          text: 'Save progress',
-          isLoading: true,
-          onPressed: () => taps++,
+    try {
+      var taps = 0;
+      await tester.pumpWidget(
+        _wrap(
+          PrimaryButton(
+            text: 'Save progress',
+            isLoading: true,
+            onPressed: () => taps++,
+          ),
+          reduce: true,
         ),
-        reduce: true,
-      ),
-    );
-    expect(find.text('Save progress'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
-    final data = tester
-        .getSemantics(find.byType(ElevatedButton))
-        .getSemanticsData();
-    expect(data.label, contains('Save progress'));
-    expect(data.label, contains('Loading'));
-    expect(data.hasAction(ui.SemanticsAction.tap), isFalse);
-    await tester.tap(find.text('Save progress'));
-    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
-    expect(taps, 0);
+      );
+      expect(find.text('Save progress'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      final data = tester
+          .getSemantics(find.byType(ElevatedButton))
+          .getSemanticsData();
+      expect(data.label, contains('Save progress'));
+      expect(data.label, contains('Loading'));
+      expect(data.hasAction(ui.SemanticsAction.tap), isFalse);
+      await tester.tap(find.text('Save progress'));
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      expect(taps, 0);
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('Duo chooses readable text for bright and dark surfaces', (

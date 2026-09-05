@@ -55,10 +55,7 @@ Future<void> _pump(
   final router = GoRouter(
     initialLocation: '/lessons',
     routes: [
-      GoRoute(
-        path: '/lessons',
-        builder: (_, state) => const LessonsScreen(),
-      ),
+      GoRoute(path: '/lessons', builder: (_, state) => const LessonsScreen()),
       GoRoute(
         path: '/lessons/:id',
         builder: (_, state) => Text('opened:${state.pathParameters['id']}'),
@@ -117,9 +114,7 @@ void main() {
 
   for (final width in [320.0, 390.0, 768.0]) {
     for (final dark in [false, true]) {
-      testWidgets('200% text fits at width=$width dark=$dark', (
-        tester,
-      ) async {
+      testWidgets('200% text fits at width=$width dark=$dark', (tester) async {
         final data = _categories(8);
         await _pump(
           tester,
@@ -128,8 +123,6 @@ void main() {
           scale: 2,
           dark: dark,
         );
-        expect(find.byType(SliverGrid), findsNothing);
-        expect(find.byType(SliverList), findsOneWidget);
         expect(tester.takeException(), isNull);
         await tester.scrollUntilVisible(
           find.text('Path 5'),
@@ -140,6 +133,8 @@ void main() {
         await tester.pumpAndSettle();
         expect(tester.takeException(), isNull);
         expect(find.text('Path 5'), findsOneWidget);
+        expect(find.byType(SliverGrid), findsNothing);
+        expect(find.byType(SliverList), findsOneWidget);
       });
     }
   }

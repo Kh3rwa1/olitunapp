@@ -40,23 +40,26 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
-    await tester.pumpWidget(
-      _wrap(
-        PressableScale(
-          semanticLabel: 'Open numbers',
-          onTap: () {},
-          child: const Icon(Icons.calculate, size: 20),
+    try {
+      await tester.pumpWidget(
+        _wrap(
+          PressableScale(
+            semanticLabel: 'Open numbers',
+            onTap: () {},
+            child: const Icon(Icons.calculate, size: 20),
+          ),
         ),
-      ),
-    );
-    final node = tester.getSemantics(find.bySemanticsLabel('Open numbers'));
-    expect(node.getSemanticsData().hasAction(ui.SemanticsAction.tap), isTrue);
-    final size = tester.getSize(find.byType(PressableScale));
-    expect(size.width, greaterThanOrEqualTo(48));
-    expect(size.height, greaterThanOrEqualTo(48));
-    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      );
+      final node = tester.getSemantics(find.bySemanticsLabel('Open numbers'));
+      expect(node.getSemanticsData().hasAction(ui.SemanticsAction.tap), isTrue);
+      final size = tester.getSize(find.byType(PressableScale));
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    } finally {
+      semantics.dispose();
+    }
   });
 
   testWidgets('disabled controls cannot activate via pointer or keyboard', (
@@ -114,12 +117,12 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      _wrap(
-        const AnimatedBentoChild(index: 100, child: Text('Last category')),
-      ),
+      _wrap(const AnimatedBentoChild(index: 100, child: Text('Last category'))),
     );
     await tester.pump();
-    await tester.pump(const Duration(seconds: 2));
+    for (var frame = 0; frame < 20; frame++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
     final fades = tester.widgetList<FadeTransition>(
       find.descendant(
         of: find.byType(AnimatedBentoChild),

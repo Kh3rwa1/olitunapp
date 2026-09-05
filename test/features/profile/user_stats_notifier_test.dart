@@ -394,11 +394,22 @@ void main() {
       expect(notifier.state.value!.bestQuizScore, 100);
     });
 
-    test('resetProgress clears all stats', () async {
+    test('resetProgress uses the explicit reset contract', () async {
+      const reset = UserStatsEntity(
+        practicedLetters: {},
+        completedLessons: {},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 0,
+        lastActiveDate: '',
+        currentStreak: 0,
+        totalStars: 0,
+        syncEpoch: 1,
+      );
       when(
-        () => mockRepo.getUserStats(),
+        mockRepo.getUserStats,
       ).thenAnswer((_) async => const Right(baseStats));
-
+      when(mockRepo.resetUserStats).thenAnswer((_) async => const Right(reset));
       final container = _containerFor(mockRepo);
       addTearDown(container.dispose);
       final notifier = container.read(userStatsProvider.notifier);
@@ -407,7 +418,30 @@ void main() {
 
       await notifier.resetProgress();
       final stats = notifier.state.value!;
-      expect(stats.quizHistory.isEmpty, isTrue);
+      expect(stats, reset);
+      expect(stats.practicedLetters, isEmpty);
+      expect(stats.completedLessons, isEmpty);
+      expect(stats.totalStars, 0);
+      expect(stats.syncEpoch, 1);
+      verify(mockRepo.resetUserStats).called(1);
+      verifyNever(() => mockRepo.updateUserStats(any()));
+    });
+
+    test('resetProgress reports a failed reset', () async {
+      when(
+        mockRepo.getUserStats,
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(mockRepo.resetUserStats).thenAnswer(
+        (_) async => const Left(CacheFailure(message: 'reset failed')),
+      );
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      await notifier.resetProgress();
+      expect(notifier.state.hasError, isTrue);
+      verifyNever(() => mockRepo.updateUserStats(any()));
     });
 
     test(

@@ -47,6 +47,7 @@ def main():
     test_code, test_log = run(["flutter", "test", "--no-pub", "--machine", *TEST_FILES], timeout=240)
     errors = []
     names = {}
+    messages = {}
     for line in test_log.splitlines():
         try:
             event = json.loads(line)
@@ -56,13 +57,17 @@ def main():
             continue
         if event.get("type") == "testStart":
             names[event["test"]["id"]] = event["test"]["name"]
+        elif event.get("type") == "print":
+            messages.setdefault(event.get("testID"), []).append(str(event.get("message", "")))
         elif event.get("type") == "error":
-            errors.append(
-                names.get(event.get("testID"), "Test error")
-                + "\n" + str(event.get("error", ""))
-                + "\n" + str(event.get("stackTrace", ""))
-            )
-    test_detail = "Selected Flutter tests passed." if test_code == 0 else "\n\n".join(errors) or test_log
+            errors.append(event)
+    details = []
+    for error in errors:
+        test_id = error.get("testID")
+        detail = "\n".join(messages.get(test_id, []))
+        detail += "\n" + str(error.get("error", "")) + "\n" + str(error.get("stackTrace", ""))
+        details.append(names.get(test_id, "Test error") + "\n" + clip(detail, 2800))
+    test_detail = "Selected Flutter tests passed." if test_code == 0 else "\n\n".join(details) or test_log
     head = os.environ.get("TESTED_HEAD", "unrecorded")
     body = (
         f"<!-- experience-diagnostics:{head} -->\n"

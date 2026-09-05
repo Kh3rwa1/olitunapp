@@ -1,0 +1,260 @@
+Source before preparation: 3d413014df4c8dbe9d7163327278266542b20b78
+Area: content
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
+Formatted test/shared/security/content_publication_guard_test.dart
+Formatted 5 files (1 changed) in 0.03 seconds.
+00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/shared/security/content_publication_guard_test.dart
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/shared/security/content_publication_guard_test.dart: generic Appwrite publication guard rejects every lesson because category policy is unavailable
+00:00 +1: /home/runner/work/olitunapp/olitunapp/test/shared/security/content_publication_guard_test.dart: generic Appwrite publication guard lesson local/cache serialization remains available
+00:00 +2: /home/runner/work/olitunapp/olitunapp/test/shared/security/content_publication_guard_test.dart: generic Appwrite publication guard rejects explicitly premium non-lesson content
+00:00 +3: /home/runner/work/olitunapp/olitunapp/test/shared/security/content_publication_guard_test.dart: generic Appwrite publication guard preserves generic publication for free unrelated serializers
+00:00 +4: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy keeps a resolved free category public
+00:00 +5: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy never publishes an explicitly premium item anonymously
+00:00 +6: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy fails closed when category lookup did not complete
+00:00 +7: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy fails closed for missing and unknown unlock modes
+00:00 +8: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy unknown mode denies even a positive order-window preview
+00:00 +9: /home/runner/work/olitunapp/olitunapp/test/shared/security/premium_content_policy_test.dart: PremiumContentPolicy known paid modes may use the legacy positive-order window
+00:00 +10: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_model_test.dart: LessonModel media fields injects root hero media fields into data for UI compatibility
+00:00 +11: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_model_test.dart: LessonModel media fields serializes hero media fields back to Appwrite root attributes
+00:00 +12: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonEntity creates with required fields and defaults
+00:00 +13: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonEntity copyWith preserves unchanged fields
+00:00 +14: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonEntity equatable considers all props
+00:00 +15: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonEntity blocks are part of equality
+00:00 +16: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonBlockEntity creates with required type
+00:00 +17: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_entity_test.dart: LessonBlockEntity equatable compares all fields
+00:08 +18: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: (setUpAll)
+00:08 +18: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: lessonRemoteDataSourceProvider builds the Appwrite-backed datasource
+00:08 +19: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: lessonLocalDataSourceProvider builds the local datasource
+00:08 +20: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: lessonRepositoryProvider wires remote, local and network together
+00:08 +21: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: lesson repository provider reuses the same datasources per read
+00:08 +22: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_di_test.dart: (tearDownAll)
+00:08 +22: /home/runner/work/olitunapp/olitunapp/test/features/lessons/quiz_block_cta_widget_test.dart: renders the trophy, copy and action buttons
+00:09 +23: /home/runner/work/olitunapp/olitunapp/test/features/lessons/quiz_block_cta_widget_test.dart: uses a generic phrase when the quiz has no title
+00:09 +24: /home/runner/work/olitunapp/olitunapp/test/features/lessons/quiz_block_cta_widget_test.dart: tapping the CTA pushes the quiz route
+00:09 +25: /home/runner/work/olitunapp/olitunapp/test/features/lessons/quiz_block_cta_widget_test.dart: skip button triggers the dismiss callback
+00:13 +26: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_block_detail_screen_test.dart: (setUpAll)
+00:13 +26: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_block_detail_screen_test.dart: LessonBlockDetailScreen shows loading state
+00:13 +27: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: large catalogs build only visible and cached cards
+00:13 +28: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: large catalogs build only visible and cached cards
+00:13 +29: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: large catalogs build only visible and cached cards
+00:14 +30: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: large catalogs build only visible and cached cards
+00:14 +31: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_block_detail_screen_test.dart: LessonBlockDetailScreen resolves and renders different media types correctly
+00:14 +32: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=320.0 dark=false
+00:15 +33: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=320.0 dark=true
+00:15 +34: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=390.0 dark=false
+00:15 +35: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=390.0 dark=true
+00:15 +36: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=768.0 dark=false
+00:15 +37: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: 200% text fits at width=768.0 dark=true
+00:15 +38: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: error retry actually reloads and recovers the catalog
+00:15 +39: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: error retry actually reloads and recovers the catalog
+00:15 +40: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_swr_deduplication_test.dart: LessonRepositoryImpl SWR & In-Flight Deduplication Returns cached data immediately while revalidating in background
+00:15 +41: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: empty catalog explains the state and offers recovery
+00:15 +42: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: empty catalog explains the state and offers recovery
+00:15 +42: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_swr_deduplication_test.dart: LessonRepositoryImpl SWR & In-Flight Deduplication Discards invalid models before writing to cache
+[WARNING] LessonRepositoryImpl: Discarded invalid remote lesson: 
+00:15 +43: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: empty catalog explains the state and offers recovery
+00:15 +44: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: a lazily built category still opens the correct destination
+00:16 +45: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_experience_test.dart: back is labelled and returns to home on a direct visit
+00:16 +46: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: (setUpAll)
+00:16 +46: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: Happy path: active quiz CTA renders and navigates to quiz route
+00:17 +47: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: Happy path: active quiz CTA renders and navigates to quiz route
+00:17 +48: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/lesson_content_widgets_barrel_test.dart: lesson_content_widgets compatibility barrel EmptyContentPlaceholder exported via the barrel renders in light mode
+00:18 +49: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/lesson_content_widgets_barrel_test.dart: lesson_content_widgets compatibility barrel EmptyContentPlaceholder exported via the barrel renders in light mode
+00:18 +50: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/lesson_content_widgets_barrel_test.dart: lesson_content_widgets compatibility barrel EmptyContentPlaceholder exported via the barrel renders in light mode
+00:18 +51: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: Dismiss-in-place: tapping "Skip for now" collapses the card, user remains on page, and screen does not pop
+00:18 +52: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: Dismiss-in-place: tapping "Skip for now" collapses the card, user remains on page, and screen does not pop
+00:18 +53: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: Dismiss-in-place: tapping "Skip for now" collapses the card, user remains on page, and screen does not pop
+00:18 +54: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/lesson_quiz_block_test.dart: (tearDownAll)
+00:18 +54: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/lesson_content_helpers_test.dart: getResponsiveCrossAxisCount returns 2 columns on narrow phone widths
+00:19 +55: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +56: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +57: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +58: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +59: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +60: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: renders recommended badge, titles and CTA
+00:19 +61: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: hides Ol Chiki line and description when absent
+00:19 +62: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: maps icon names to matching material icons
+00:19 +63: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/hero_category_card_test.dart: falls back to school icon for unknown icon names
+00:20 +64: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/sentence_list_content_test.dart: list mode shows scoped sentence cards with pronunciation
+00:21 +65: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: resolves an exact letter match and navigates to the letter route
+00:21 +66: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: resolves an exact letter match and navigates to the letter route
+00:21 +67: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: resolves an exact letter match and navigates to the letter route
+00:21 +68: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: resolves an exact letter match and navigates to the letter route
+00:21 +69: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: resolves an exact letter match and navigates to the letter route
+00:21 +70: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: splits dash-separated text and matches the first part
+00:22 +71: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: matches numbers, words and sentences in order
+00:22 +72: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: matches a word by its Ol Chiki text
+00:22 +73: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: falls back to the block index route when nothing matches
+00:22 +74: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/dynamic_block_grid_cell_test.dart: shows the meaning from the block data payload
+00:22 +75: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/letter_grid_content_test.dart: scopes letters to the lesson blocks and sorts by order
+00:23 +76: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: scopes numbers matched by lesson block text
+00:23 +77: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: scopes numbers matched by lesson block text
+00:23 +78: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: scopes numbers matched by lesson block text
+00:23 +79: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: scopes numbers matched by lesson block text
+00:24 +80: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: scopes numbers matched by lesson block text
+00:24 +81: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: falls back to title range for lessons without text blocks
+00:24 +82: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: tens range fallback matches 10-99 lessons
+00:24 +83: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: hundred range fallback matches large-number lessons
+00:24 +84: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: tapping a number navigates to its detail route
+00:24 +85: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/number_grid_content_test.dart: missing lesson shows the empty placeholder
+00:24 +86: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/bento_category_card_test.dart: renders category title, ol chiki subtitle and arrow
+00:25 +87: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: renders title, description and icon
+00:25 +88: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: renders title, description and icon
+00:25 +89: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: renders title, description and icon
+00:25 +90: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: renders title, description and icon
+00:26 +91: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: back button triggers callback
+00:26 +92: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: omits description when empty
+00:26 +93: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/category_header_banner_widget_test.dart: renders supplied badges
+00:26 +94: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/empty_content_placeholder_test.dart: EmptyContentPlaceholder renders inbox icon and message in light mode
+00:27 +95: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/block_grid_content_test.dart: shows empty placeholder when the lesson has no blocks
+00:27 +96: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/block_grid_content_test.dart: shows empty placeholder when the lesson has no blocks
+00:27 +97: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/block_grid_content_test.dart: shows empty placeholder when the lesson has no blocks
+00:27 +98: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/block_grid_content_test.dart: renders one grid cell per block
+00:28 +99: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/block_grid_content_test.dart: tapping a cell falls back to the block index route
+00:28 +100: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: list mode shows scoped word cards with pronunciation chip
+00:28 +101: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: list mode shows scoped word cards with pronunciation chip
+00:28 +102: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: list mode shows scoped word cards with pronunciation chip
+00:29 +103: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: grid mode renders one card per scoped word
+00:29 +104: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: hides pronunciation outside English teaching language
+00:29 +105: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: shows placeholder when lesson is not loaded
+00:29 +106: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: tapping a word card navigates to its detail route
+00:29 +107: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: tapping a word card navigates to its detail route
+00:29 +108: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: tapping a word card navigates to its detail route
+00:29 +109: /home/runner/work/olitunapp/olitunapp/test/features/lessons/presentation/widgets/vocabulary_list_content_test.dart: tapping a word card navigates to its detail route
+00:30 +110: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: computeTraceScore rewards a precise trace that starts and stays on the guide
+00:30 +111: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: computeTraceScore rejects off-guide scribbling even with lots of movement
+00:30 +112: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: computeTraceScore penalizes traces that begin far from the start point
+00:30 +113: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: computeTraceScore allows practice to auto-advance once the trace reaches 70 percent
+00:30 +114: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: buildPracticeGuidePath uses authored stroke guides for Ol Chiki and ASCII numerals
+00:30 +115: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: buildPracticeGuidePath normalizes Latin labels and Ol Chiki words to Ol Chiki glyphs
+00:30 +116: /home/runner/work/olitunapp/olitunapp/test/features/lessons/practice_guide_test.dart: buildPracticeGuidePath has authored guides for common Ol Chiki letters beyond numerals
+00:30 +117: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: (setUpAll)
+00:30 +117: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: LessonRepository contract getLessons returns the full catalog on success
+00:30 +118: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: LessonRepository contract getLessonsByCategory filters by categoryId
+00:30 +119: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: LessonRepository contract getLessonById returns the lesson or a NotFoundFailure
+00:30 +120: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: LessonRepository contract create, update and delete all resolve to Right(null)
+00:30 +121: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: LessonRepository contract mock-typed repositories satisfy the interface and surface failures
+00:30 +122: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_contract_test.dart: (tearDownAll)
+00:31 +122: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: (setUpAll)
+00:31 +122: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: lesson_providers compatibility barrel re-exports the Appwrite-backed remote datasource provider
+00:31 +123: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: lesson_providers compatibility barrel re-exports the local datasource provider
+00:31 +124: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: lesson_providers compatibility barrel re-exported repository provider builds a LessonRepository
+00:31 +125: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: lesson_providers compatibility barrel re-exported providers are stable across reads
+00:31 +126: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_providers_barrel_test.dart: (tearDownAll)
+00:31 +126: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: (setUpAll)
+00:31 +126: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier starts in loading then emits data on success
+00:31 +127: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier emits error on repository failure
+00:31 +128: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier refresh re-fetches lessons
+00:31 +129: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier addLesson calls repository and refreshes
+00:31 +130: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier deleteLesson calls repository and refreshes
+00:31 +131: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: LessonNotifier addLesson surfaces failure
+00:31 +132: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: lessonsByCategoryProvider filters lessons by categoryId
+00:31 +133: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_notifier_test.dart: (tearDownAll)
+00:32 +133: /home/runner/work/olitunapp/olitunapp/test/features/lessons/category_recovery_test.dart: category loading has a working escape route
+00:33 +134: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: renders header and hero card for the first category
+00:33 +135: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: renders header and hero card for the first category
+00:33 +136: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: renders header and hero card for the first category
+00:33 +137: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: renders header and hero card for the first category
+00:33 +138: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: hides the bento grid section when only one category exists
+00:33 +139: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: tapping the hero category navigates to its lesson list
+00:33 +140: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: alphabet hero categories route to the standalone letter grid
+00:34 +141: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_screen_test.dart: shows the error state when categories fail to load
+00:34 +142: /home/runner/work/olitunapp/olitunapp/test/features/lessons/category_lessons_screen_test.dart: CategoryLessonsScreen displays Ol Chiki Browse All card and routes correctly for Alphabets
+00:35 +143: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: renders the hardcoded fallback quiz when quizId is null
+00:36 +144: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: renders the hardcoded fallback quiz when quizId is null
+00:36 +145: /home/runner/work/olitunapp/olitunapp/test/features/lessons/category_lessons_screen_test.dart: CategoryLessonsScreen tapping a lesson card routes to the per-lesson carousel route, NOT standalone grid
+00:36 +146: /home/runner/work/olitunapp/olitunapp/test/features/lessons/category_lessons_screen_test.dart: CategoryLessonsScreen tapping a lesson card routes to the per-lesson carousel route, NOT standalone grid
+00:36 +147: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: unknown quizId falls back to the hardcoded question
+00:36 +148: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: empty quiz renders the empty state
+00:36 +149: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: correct answer reveals the next button and finishing shows the passing dialog
+00:36 +150: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lessons_quiz_screen_test.dart: retry resets the quiz to the first question
+00:37 +151: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessons returns remote lessons and caches them when online
+00:37 +152: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessons falls back to cache on remote ServerException
+00:37 +153: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessons returns static seed lessons when offline AND cache empty
+00:37 +154: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessons uses cache when offline AND cache populated
+00:37 +155: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessons returns remote lessons even if cache writing fails
+[WARNING] LessonRepositoryImpl: Failed to write validated cache: Instance of 'CacheException'
+00:37 +156: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonsByCategory returns remote category lessons even if cache writing fails
+[WARNING] LessonRepositoryImpl: Failed to write validated cache: Instance of 'CacheException'
+00:37 +157: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonsByCategory returns NetworkFailure when offline AND local cache throws
+00:37 +158: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonsByCategory falls back to matching cached category when remote throws online
+00:37 +159: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonsByCategory returns static seed lessons by category when remote and cache both fail online
+00:37 +160: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonById returns remote lesson and caches it when online
+00:37 +161: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonById falls back to local cache when online remote call fails
+00:37 +162: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonById falls back to static seed lesson when remote and cache fail online
+00:37 +163: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_repository_impl_test.dart: getLessonById returns remote lesson by id even if cache writing fails
+[WARNING] LessonRepositoryImpl: Failed to cache lesson by id: Instance of 'CacheException'
+00:38 +164: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_detail_screen_test.dart: ContentDetailScreen shows loading state
+00:39 +165: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_detail_screen_test.dart: ContentDetailScreen shows lesson content
+00:39 +166: /home/runner/work/olitunapp/olitunapp/test/features/lessons/lesson_detail_screen_test.dart: ContentDetailScreen shows error state
+00:39 +167: All tests passed!
+Analyzing olitunapp...                                          
+
+   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/shared/security/premium_content_policy_test.dart:36:31 • avoid_redundant_argument_values
+
+1 issue found. (ran in 28.5s)
+TAP version 13
+# Subtest: premium category body is protected
+ok 1 - premium category body is protected
+  ---
+  duration_ms: 7.268442
+  type: 'test'
+  ...
+# Subtest: known paid mode may use the legacy positive-order window
+ok 2 - known paid mode may use the legacy positive-order window
+  ---
+  duration_ms: 0.173655
+  type: 'test'
+  ...
+# Subtest: unknown mode denies even a positive order-window preview
+ok 3 - unknown mode denies even a positive order-window preview
+  ---
+  duration_ms: 0.810016
+  type: 'test'
+  ...
+# Subtest: missing category fails closed
+ok 4 - missing category fails closed
+  ---
+  duration_ms: 0.14978
+  type: 'test'
+  ...
+# Subtest: protected permissions remove every read role and retain writes
+ok 5 - protected permissions remove every read role and retain writes
+  ---
+  duration_ms: 0.225562
+  type: 'test'
+  ...
+# Subtest: public permissions canonicalize reads to anonymous and preserve writes
+ok 6 - public permissions canonicalize reads to anonymous and preserve writes
+  ---
+  duration_ms: 0.142767
+  type: 'test'
+  ...
+# Subtest: collection read grants are rejected even with document security
+ok 7 - collection read grants are rejected even with document security
+  ---
+  duration_ms: 0.598009
+  type: 'test'
+  ...
+# Subtest: apply confirmation is bound to the explicit project
+ok 8 - apply confirmation is bound to the explicit project
+  ---
+  duration_ms: 0.227466
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 137.755328
+
+Focused test exit: 0
+Analysis exit: 1
+Node test exit: 0

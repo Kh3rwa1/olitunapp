@@ -172,12 +172,14 @@ void main() {
     }
 
     test('lesson summary maps to description, never subtitle', () {
-      final payload = item(ContentKind.lesson).toAppwrite();
+      final lessonItem = item(ContentKind.lesson);
+      final payload = lessonItem.toAppwriteAttributes();
 
       expect(payload['description'], 'Summary');
       expect(payload['titleLatin'], 'Latin title');
       expect(payload['isActive'], isTrue);
       expect(payload.containsKey('subtitle'), isFalse);
+      expect(lessonItem.toAppwrite, throwsA(isA<StateError>()));
     });
 
     test('letter uses declared media and example word attributes', () {

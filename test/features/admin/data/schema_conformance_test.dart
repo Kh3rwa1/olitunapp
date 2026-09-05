@@ -174,12 +174,37 @@ void main() {
           fileId: 'thumb123',
           kind: ContentMediaKind.image,
         ),
-        isPremium: true,
         difficulty: 'easy',
         blocks: const [],
         updatedAt: DateTime.now(),
       );
       _assertConforms(item.toAppwrite(), schema);
+    });
+
+    test('premium rhyme schema conforms and generic publication is denied', () {
+      final item = ContentItem(
+        id: 'r1',
+        kind: ContentKind.rhyme,
+        title: 'x',
+        titleOlChiki: 'x',
+        tags: const ['a', 'b'],
+        categoryId: 'cat_sohrai',
+        audioUrl: 'https://example.com/a.mp3',
+        audioFileId:
+            'abc1234567890123456789012345678901234567890123456789012345678901',
+        durationMs: 180000,
+        heroMedia: const ContentMedia(
+          url: 'https://example.com/t.png',
+          fileId: 'thumb123',
+          kind: ContentMediaKind.image,
+        ),
+        isPremium: true,
+        difficulty: 'easy',
+        blocks: const [],
+        updatedAt: DateTime.now(),
+      );
+      _assertConforms(item.toAppwriteAttributes(), schema);
+      expect(item.toAppwrite, throwsA(isA<StateError>()));
     });
   });
 

@@ -19,3 +19,9 @@ These are not real Appwrite transactions or Razorpay staging tests. Full Node/ru
 - Server-side dispute reconciliation against authoritative Razorpay data with payment/dispute identity, state versioning and idempotency.
 - Safe server-authorized external-refund recording with fresh operator membership, transactional binding, audit trail and idempotency. Client-side read/update is not sufficient.
 - Staging lifecycle tests, including concurrent repurchase/refund/dispute races, actual SDK transaction support and replay/retry behavior.
+
+## Client refund containment
+
+The unsafe client-side ledger update is disabled. `recordExternalRefund` returns a failed outcome without reading providers or writing data, and its legacy boolean alias returns false. The admin dialog explicitly explains the pause, distinguishes gateway refunds from recording, and warns against duplicate refunds. Existing pagination/export tests are retained; former client-refund-success tests now assert zero ledger reads/writes/cache invalidations for each relevant state.
+
+This is intentionally a temporary loss of manual-recording functionality, not a server-side authorization boundary. Deploy an authorized transactional recording endpoint and restrict direct client write permissions before restoring it. No refund has been executed by this change.

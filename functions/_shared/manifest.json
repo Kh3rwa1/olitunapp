@@ -3,7 +3,7 @@
   "consumers": {
     "translator": ["rate_limiter.js"],
     "bintiWaitlist": ["rate_limiter.js"],
-    "createRazorpayOrder": ["rate_limiter.js", "payment_reconcile.js"],
+    "createRazorpayOrder": ["rate_limiter.js", "payment_reconcile.js", "payment_state.js"],
     "cleanupAnalyticsEvents": ["rate_limiter.js"],
     "reconcilePaymentAttempts": ["payment_reconcile.js", "payment_state.js"],
     "reconcileOrphanedDeletions": ["delete_account_core.js"],

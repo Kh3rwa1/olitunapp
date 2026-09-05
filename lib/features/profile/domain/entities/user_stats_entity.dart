@@ -33,6 +33,12 @@ class UserStatsEntity extends Equatable {
   /// Deduplicated learning minute event deltas (eventId -> delta).
   final Map<String, int> minuteEvents;
 
+  /// Retained set of compacted star event IDs to prevent stale replay from re-crediting them.
+  final Set<String> compactedStarEvents;
+
+  /// Retained set of compacted learning minute event IDs to prevent stale replay from re-crediting them.
+  final Set<String> compactedMinuteEvents;
+
   const UserStatsEntity({
     required this.practicedLetters,
     required this.completedLessons,
@@ -47,6 +53,8 @@ class UserStatsEntity extends Equatable {
     this.syncEpoch = 0,
     this.starEvents = const {},
     this.minuteEvents = const {},
+    this.compactedStarEvents = const {},
+    this.compactedMinuteEvents = const {},
   });
 
   @override
@@ -64,6 +72,8 @@ class UserStatsEntity extends Equatable {
     syncEpoch,
     starEvents,
     minuteEvents,
+    compactedStarEvents,
+    compactedMinuteEvents,
   ];
 
   UserStatsEntity copyWith({
@@ -80,6 +90,8 @@ class UserStatsEntity extends Equatable {
     int? syncEpoch,
     Map<String, int>? starEvents,
     Map<String, int>? minuteEvents,
+    Set<String>? compactedStarEvents,
+    Set<String>? compactedMinuteEvents,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -96,6 +108,9 @@ class UserStatsEntity extends Equatable {
       syncEpoch: syncEpoch ?? this.syncEpoch,
       starEvents: starEvents ?? this.starEvents,
       minuteEvents: minuteEvents ?? this.minuteEvents,
+      compactedStarEvents: compactedStarEvents ?? this.compactedStarEvents,
+      compactedMinuteEvents:
+          compactedMinuteEvents ?? this.compactedMinuteEvents,
     );
   }
 

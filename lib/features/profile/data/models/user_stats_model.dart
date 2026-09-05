@@ -16,6 +16,8 @@ class UserStatsModel extends UserStatsEntity {
     super.syncEpoch,
     super.starEvents,
     super.minuteEvents,
+    super.compactedStarEvents,
+    super.compactedMinuteEvents,
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
@@ -84,6 +86,10 @@ class UserStatsModel extends UserStatsEntity {
       syncEpoch: readInt('syncEpoch'),
       starEvents: readIntMap(json['starEvents']),
       minuteEvents: readIntMap(json['minuteEvents']),
+      compactedStarEvents: Set<String>.from(json['compactedStarEvents'] ?? []),
+      compactedMinuteEvents: Set<String>.from(
+        json['compactedMinuteEvents'] ?? [],
+      ),
     );
   }
 
@@ -104,6 +110,8 @@ class UserStatsModel extends UserStatsEntity {
       'syncEpoch': syncEpoch,
       'starEvents': starEvents,
       'minuteEvents': minuteEvents,
+      'compactedStarEvents': compactedStarEvents.toList(),
+      'compactedMinuteEvents': compactedMinuteEvents.toList(),
     };
   }
 
@@ -122,6 +130,8 @@ class UserStatsModel extends UserStatsEntity {
       syncEpoch: entity.syncEpoch,
       starEvents: entity.starEvents,
       minuteEvents: entity.minuteEvents,
+      compactedStarEvents: entity.compactedStarEvents,
+      compactedMinuteEvents: entity.compactedMinuteEvents,
     );
   }
 }

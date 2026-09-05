@@ -49,12 +49,15 @@ function nextState(current, data, event) {
     const expected = Math.round(Number(current.expectedAmount || 0) * 100);
     const total = Math.max(Number(current.refundedAmountPaise || 0), Number(data.refundedAmountPaise || expected));
     const epoch = Number(data.refundEpoch || (Number(current.refundEpoch || 0) + 1));
+    if (!Number.isSafeInteger(total) || total <= 0 || !Number.isSafeInteger(epoch) ||
+        epoch < Number(current.refundEpoch || 0)) throw new PaymentStateConflict();
+    const full = !(expected > 0) || total >= expected;
     return {
       ...data,
       refundedAmountPaise: total,
       refundEpoch: epoch,
-      status: 'refunded',
-      refundStatus: 'fully_refunded',
+      status: full ? 'refunded' : current.status,
+      refundStatus: full ? 'fully_refunded' : 'partially_refunded',
     };
   }
   if (event?.startsWith('payment.dispute.')) {
@@ -97,14 +100,21 @@ function nextState(current, data, event) {
 // but require every course_purchases update to pass the same transaction gate.
 // Reads retain order/payment binding so a late refund cannot affect a repurchase.
 export function withPaymentStateGuard(databases, { event = 'capture' } = {}) {
+  if (databases?.__isPaymentStateGuarded && databases.__guardedEvent === event) {
+    return databases;
+  }
+  const rawTarget = databases?.__underlyingDatabases || databases;
   const observed = new Map();
   const capture = ['capture', 'payment.captured', 'order.paid'].includes(event);
   const remember = doc => {
     if (doc?.$id && !observed.has(doc.$id)) observed.set(doc.$id, { ...doc });
     return doc;
   };
-  return new Proxy(databases, {
+  return new Proxy(rawTarget, {
     get(target, prop) {
+      if (prop === '__isPaymentStateGuarded') return true;
+      if (prop === '__guardedEvent') return event;
+      if (prop === '__underlyingDatabases') return rawTarget;
       if (prop === 'getDocument') return async (...args) => {
         const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
         const doc = await target.getDocument(...args);

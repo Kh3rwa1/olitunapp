@@ -77,71 +77,51 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
 
   @override
   Future<LessonModel> getAuthorizedLesson(String id) async {
-    if (functionsService != null) {
-      try {
-        final result = await functionsService!.execute(
-          'getAuthorizedLesson',
-          body: {'lessonId': id},
-          usePost: true,
-        );
-        if (result.isCompleted &&
-            result.statusCode == 200 &&
-            result.bodyJson != null) {
-          final data = result.bodyJson!;
-          if (data['ok'] == true && data['lesson'] is Map) {
-            final lessonMap = Map<String, dynamic>.from(data['lesson'] as Map);
-            return LessonModel.fromJson(lessonMap, lessonMap['id'] as String?);
-          }
-        }
-        if (result.statusCode == 404) {
-          throw ServerException(message: 'Lesson not found', code: 404);
-        }
-        if (result.statusCode == 401 || result.statusCode == 403) {
-          throw ServerException(message: 'Access denied to lesson', code: 403);
-        }
-        throw ServerException(
-          message:
-              result.bodyJson?['message'] as String? ??
-              'Failed to retrieve authorized lesson',
-          code: result.statusCode,
-        );
-      } on ServerException {
-        rethrow;
-      } catch (e) {
-        throw ServerException(
-          message: 'Failed to retrieve authorized lesson: $e',
-        );
-      }
-    }
-    return _getLessonByIdDirect(id);
-  }
-
-  Future<LessonModel> _getLessonByIdDirect(String id) async {
-    try {
-      final doc = await databases
-          .getDocument(
-            databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: id,
-          )
-          .timeout(_readTimeout);
-      return LessonModel.fromJson(doc.data, doc.$id);
-    } on AppwriteException catch (e) {
+    if (functionsService == null) {
       throw ServerException(
-        message: e.message ?? 'Failed to get lesson',
-        code: e.code,
+        message: 'Authorization service unavailable',
+        code: 503,
       );
+    }
+    try {
+      final result = await functionsService!.execute(
+        'getAuthorizedLesson',
+        body: {'lessonId': id},
+        usePost: true,
+      );
+      if (result.isCompleted &&
+          result.statusCode == 200 &&
+          result.bodyJson != null) {
+        final data = result.bodyJson!;
+        if (data['ok'] == true && data['lesson'] is Map) {
+          final lessonMap = Map<String, dynamic>.from(data['lesson'] as Map);
+          return LessonModel.fromJson(lessonMap, lessonMap['id'] as String?);
+        }
+      }
+      if (result.statusCode == 404) {
+        throw ServerException(message: 'Lesson not found', code: 404);
+      }
+      if (result.statusCode == 401 || result.statusCode == 403) {
+        throw ServerException(message: 'Access denied to lesson', code: 403);
+      }
+      throw ServerException(
+        message:
+            result.bodyJson?['message'] as String? ??
+            'Failed to retrieve authorized lesson',
+        code: result.statusCode,
+      );
+    } on ServerException {
+      rethrow;
     } catch (e) {
-      throw ServerException(message: e.toString());
+      throw ServerException(
+        message: 'Failed to retrieve authorized lesson: $e',
+      );
     }
   }
 
   @override
   Future<LessonModel> getLessonById(String id) async {
-    if (functionsService != null) {
-      return getAuthorizedLesson(id);
-    }
-    return _getLessonByIdDirect(id);
+    return getAuthorizedLesson(id);
   }
 
   Future<PublicationDecision> _publicationDecisionFor(

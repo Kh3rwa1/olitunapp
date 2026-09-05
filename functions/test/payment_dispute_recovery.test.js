@@ -191,6 +191,220 @@ describe('Priority 0B: Payment Dispute Lifecycle & Reconciliation', () => {
     const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
     assert.equal(doc.status, 'refunded');
   });
+
+  test('Dispute positive evidence: missing dispute or 404 with captured payment does NOT assume won (keeps disputed)', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    const guardedDb = withPaymentStateGuard(withTransactions(db), { event: 'reconcile.dispute' });
+
+    const fetchFake = async (url) => {
+      if (url.includes('/disputes')) {
+        return { ok: false, status: 404 };
+      }
+      if (url.includes('/payments/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 'pay-123',
+            status: 'captured',
+            disputed: false,
+            amount_refunded: 0,
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    };
+
+    const stats = await reconcileDisputedPurchases({
+      databases: guardedDb,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.pending, 1);
+    assert.equal(stats.won, 0);
+    assert.equal(stats.lost, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'disputed');
+  });
+
+  test('Dispute positive evidence: closed dispute with ambiguous reason and no winner does NOT assume won', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    const guardedDb = withPaymentStateGuard(withTransactions(db), { event: 'reconcile.dispute' });
+
+    const fetchFake = async (url) => {
+      if (url.includes('/disputes')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                id: 'disp_1',
+                status: 'closed',
+                reason_code: 'fraudulent',
+                created_at: 1700000000,
+              },
+            ],
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    };
+
+    const stats = await reconcileDisputedPurchases({
+      databases: guardedDb,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.pending, 1);
+    assert.equal(stats.won, 0);
+    assert.equal(stats.lost, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'disputed');
+  });
+
+  test('Dispute positive evidence: closed dispute with winner merchant authoritatively reinstates verified', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    const guardedDb = withPaymentStateGuard(withTransactions(db), { event: 'reconcile.dispute' });
+
+    const fetchFake = async (url) => {
+      if (url.includes('/disputes')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                id: 'disp_1',
+                status: 'closed',
+                winner: 'merchant',
+                created_at: 1700000000,
+              },
+            ],
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    };
+
+    const stats = await reconcileDisputedPurchases({
+      databases: guardedDb,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.won, 1);
+    assert.equal(stats.lost, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'verified');
+  });
+
+  test('Dispute positive evidence: closed dispute with resolution lost authoritatively revokes entitlement', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    const guardedDb = withPaymentStateGuard(withTransactions(db), { event: 'reconcile.dispute' });
+
+    const fetchFake = async (url) => {
+      if (url.includes('/disputes')) {
+        return {
+          ok: true,
+          json: async () => ({
+            items: [
+              {
+                id: 'disp_1',
+                status: 'closed',
+                resolution: 'lost',
+                created_at: 1700000000,
+              },
+            ],
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    };
+
+    const stats = await reconcileDisputedPurchases({
+      databases: guardedDb,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.lost, 1);
+    assert.equal(stats.won, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'revoked');
+  });
+
+  test('Dispute positive evidence: missing dispute but payment entity indicates refund revokes entitlement', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    const guardedDb = withPaymentStateGuard(withTransactions(db), { event: 'reconcile.dispute' });
+
+    const fetchFake = async (url) => {
+      if (url.includes('/disputes')) {
+        return { ok: false, status: 404 };
+      }
+      if (url.includes('/payments/')) {
+        return {
+          ok: true,
+          json: async () => ({
+            id: 'pay-123',
+            status: 'refunded',
+            amount_refunded: 49900,
+          }),
+        };
+      }
+      return { ok: false, status: 404 };
+    };
+
+    const stats = await reconcileDisputedPurchases({
+      databases: guardedDb,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.lost, 1);
+    assert.equal(stats.won, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'revoked');
+  });
+
+  test('Dispute reconciliation enforces transaction state guarding even if unguarded database passed', async () => {
+    const db = new MemoryDatabase({ ...basePurchase, status: 'disputed' });
+    // Unguarded db without createTransaction
+    const fetchFake = async () => ({
+      ok: true,
+      json: async () => ({
+        items: [{ id: 'disp_1', status: 'won', created_at: 1700000000 }],
+      }),
+    });
+
+    const stats = await reconcileDisputedPurchases({
+      databases: db,
+      razorpayKeyId: 'rzp_test',
+      razorpayKeySecret: 'rzp_secret',
+      fetchImpl: fetchFake,
+    });
+
+    // Guard fails closed because transactions are unavailable, preventing unguarded update
+    assert.equal(stats.failed, 1);
+    assert.equal(stats.won, 0);
+
+    const doc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(doc.status, 'disputed');
+  });
 });
 
 describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
@@ -341,6 +555,140 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
           body: { purchaseId: 'purchase' },
         }),
       { status: 409 },
+    );
+  });
+
+  test('executeAdminRefund fails with 503 if transactions are unavailable (0 writes)', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    // Note: db without withTransactions has no createTransaction
+
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: db,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase' },
+        }),
+      { status: 503 },
+    );
+
+    assert.equal(db.writes.length, 0);
+  });
+
+  test('executeAdminRefund supports partial refund without revoking entitlement', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const transactional = withTransactions(db);
+
+    const result = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: {
+        purchaseId: 'purchase',
+        amountPaise: 15000,
+        externalRefundId: 'rfnd_part_1',
+      },
+    });
+
+    assert.equal(result.alreadyRefunded, false);
+    assert.equal(result.status, 'verified'); // Entitlement retained!
+    assert.equal(result.refundStatus, 'partially_refunded');
+    assert.equal(result.refundedAmountPaise, 15000);
+    assert.equal(result.refundEpoch, 1);
+
+    const purchaseDoc = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(purchaseDoc.status, 'verified');
+    assert.equal(purchaseDoc.refundStatus, 'partially_refunded');
+    assert.equal(purchaseDoc.refundedAmountPaise, 15000);
+    assert.equal(purchaseDoc.refundEpoch, 1);
+  });
+
+  test('executeAdminRefund partial refund is idempotent on replay with same externalRefundId', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const transactional = withTransactions(db);
+
+    // First call: partial refund
+    const firstResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: {
+        purchaseId: 'purchase',
+        amountPaise: 15000,
+        externalRefundId: 'rfnd_part_idem_1',
+      },
+    });
+    assert.equal(firstResult.alreadyRefunded, false);
+    assert.equal(firstResult.status, 'verified');
+    assert.equal(firstResult.refundStatus, 'partially_refunded');
+
+    const writesAfterFirst = db.writes.length;
+
+    // Second call: replay with same externalRefundId
+    const secondResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: {
+        purchaseId: 'purchase',
+        amountPaise: 15000,
+        externalRefundId: 'rfnd_part_idem_1',
+      },
+    });
+    assert.equal(secondResult.alreadyRefunded, true);
+    assert.equal(secondResult.status, 'verified');
+    assert.equal(secondResult.refundStatus, 'partially_refunded');
+    assert.equal(secondResult.refundedAmountPaise, 15000);
+
+    // Zero extra writes to course_purchases occurred
+    const writesAfterSecond = db.writes.length;
+    assert.equal(writesAfterSecond, writesAfterFirst);
+  });
+
+  test('executeAdminRefund rejects invalid or excessive refund amounts', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const transactional = withTransactions(db);
+
+    // Negative amount
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', amountPaise: -500 },
+        }),
+      { status: 400 },
+    );
+
+    // Excessive amount (exceeds 49900 paise)
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', amountPaise: 99999 },
+        }),
+      { status: 400 },
+    );
+  });
+
+  test('executeAdminRefund fails closed if audit log creation fails (swallowed audit fix)', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const originalCreate = db.createDocument.bind(db);
+    db.createDocument = async (...args) => {
+      const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
+      if (col === 'admin_audit_logs') {
+        throw new Error('Audit log service outage');
+      }
+      return originalCreate(...args);
+    };
+    const transactional = withTransactions(db);
+
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_audit' },
+        }),
+      /Audit log service outage/,
     );
   });
 });

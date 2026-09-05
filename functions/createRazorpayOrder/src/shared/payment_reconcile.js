@@ -1,5 +1,6 @@
 import { createHash } from 'crypto';
 import { Query } from 'node-appwrite';
+import { withPaymentStateGuard } from './payment_state.js';
 
 /**
  * SOURCE OF TRUTH for this shared module.
@@ -204,7 +205,7 @@ export async function reconcileStuckPaymentAttempts({
  *   Preserves 'disputed' containment status.
  */
 export async function reconcileDisputedPurchases({
-  databases,
+  databases: inputDatabases,
   databaseId = 'olitun_db',
   fetchImpl = globalThis.fetch,
   razorpayKeyId,
@@ -213,6 +214,7 @@ export async function reconcileDisputedPurchases({
   error = console.error,
 }) {
   const stats = { scanned: 0, won: 0, lost: 0, pending: 0, failed: 0 };
+  const databases = withPaymentStateGuard(inputDatabases, { event: 'reconcile.dispute' });
 
   try {
     const disputedPurchases = await databases.listDocuments(databaseId, 'course_purchases', [
@@ -262,8 +264,24 @@ export async function reconcileDisputedPurchases({
           continue;
         }
 
-        // 2. If no dispute record in dispute endpoint, check payment entity directly
-        if (!latestDispute) {
+        let isPositiveWin = false;
+        let isDefiniteLoss = false;
+
+        if (latestDispute) {
+          const disputeStatus = String(latestDispute.status || '').toLowerCase();
+          const resolution = String(latestDispute.resolution || '').toLowerCase();
+          const winner = String(latestDispute.winner || '').toLowerCase();
+
+          isPositiveWin =
+            disputeStatus === 'won' ||
+            (disputeStatus === 'closed' && (resolution === 'won' || winner === 'merchant'));
+          isDefiniteLoss =
+            disputeStatus === 'lost' ||
+            (disputeStatus === 'closed' && (resolution === 'lost' || winner === 'customer')) ||
+            Number(latestDispute.amount_deducted || 0) > 0;
+        } else {
+          // No dispute record in dispute endpoint (404 or empty items).
+          // Check payment entity directly to check for refunds.
           const paymentRes = await fetchImpl(
             `https://api.razorpay.com/v1/payments/${purchase.providerPaymentId}`,
             { method: 'GET', headers: { Authorization: authHeader } },
@@ -276,19 +294,20 @@ export async function reconcileDisputedPurchases({
           }
 
           const paymentBody = await paymentRes.json();
-          // If payment is captured and not disputed or refunded, dispute was cleared
-          if (paymentBody.status === 'captured' && !paymentBody.disputed && Number(paymentBody.amount_refunded || 0) === 0) {
-            latestDispute = { status: 'won' };
-          } else if (Number(paymentBody.amount_refunded || 0) > 0 || paymentBody.status === 'refunded') {
-            latestDispute = { status: 'lost' };
+          if (Number(paymentBody.amount_refunded || 0) > 0 || paymentBody.status === 'refunded') {
+            isDefiniteLoss = true;
           } else {
-            latestDispute = { status: 'under_review' };
+            // Missing dispute records or unrefunded captured payment is NEVER positive proof of a win.
+            // A pending dispute without explicit win evidence must remain contained in 'disputed' status.
+            log(
+              `No authoritative dispute win evidence found for purchase ${purchase.$id} (payment: ${purchase.providerPaymentId}). Preserving disputed status.`,
+            );
+            stats.pending++;
+            continue;
           }
         }
 
-        const disputeStatus = String(latestDispute.status || '').toLowerCase();
-
-        if (disputeStatus === 'won' || (disputeStatus === 'closed' && latestDispute.reason_code !== 'lost')) {
+        if (isPositiveWin) {
           // Entitlement recovered
           await databases.updateDocument(
             databaseId,
@@ -298,7 +317,7 @@ export async function reconcileDisputedPurchases({
           );
           log(`Dispute WON for purchase ${purchase.$id} (payment: ${purchase.providerPaymentId}). Entitlement restored.`);
           stats.won++;
-        } else if (disputeStatus === 'lost') {
+        } else if (isDefiniteLoss) {
           // Entitlement revoked
           await databases.updateDocument(
             databaseId,
@@ -309,8 +328,10 @@ export async function reconcileDisputedPurchases({
           log(`Dispute LOST for purchase ${purchase.$id} (payment: ${purchase.providerPaymentId}). Entitlement revoked.`);
           stats.lost++;
         } else {
-          // Still active dispute: open, under_review, action_required
-          log(`Dispute still active (${disputeStatus}) for purchase ${purchase.$id}. Keeping disputed status.`);
+          // Still active dispute: open, under_review, action_required, or ambiguous closed
+          log(
+            `Dispute still active or unresolved (${latestDispute?.status || 'unknown'}) for purchase ${purchase.$id}. Keeping disputed status.`,
+          );
           stats.pending++;
         }
       } catch (err) {

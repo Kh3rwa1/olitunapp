@@ -487,12 +487,20 @@ test('Authorized Lesson: Client-supplied userId in body is ignored', async () =>
 });
 
 test('Authorized Lesson: Private media action allows entitled buyer and denies non-buyer', async () => {
+  const lessonWithMediaBlocks = [
+    { type: 'text', textLatin: 'Ol Chiki' },
+    {
+      type: 'audio',
+      audioUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/audio_secure_123/view',
+    },
+  ];
+
   const databases = makeFakeDatabases({
     lessons: {
       lesson_paid_1: {
         categoryId: 'cat_advanced',
         order: 5,
-        blocks: JSON.stringify(samplePaidBlocks),
+        blocks: JSON.stringify(lessonWithMediaBlocks),
       },
     },
     categories: {
@@ -550,3 +558,309 @@ test('Authorized Lesson: Private media action allows entitled buyer and denies n
   assert.equal(authRes.body.fileId, 'audio_secure_123');
   assert.ok(authRes.body.base64);
 });
+
+test('Fix 1 Regression: Buyer of course A requests a file belonging only to course B: denied', async () => {
+  let storageDownloadCalled = false;
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_course_a: {
+        categoryId: 'course_a',
+        order: 1,
+        blocks: JSON.stringify([
+          { type: 'audio', audioUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/audio_course_a/view' },
+        ]),
+      },
+      lesson_course_b: {
+        categoryId: 'course_b',
+        order: 1,
+        blocks: JSON.stringify([
+          { type: 'audio', audioUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/audio_course_b/view' },
+        ]),
+      },
+    },
+    categories: {
+      course_a: { unlockMode: 'paid_only' },
+      course_b: { unlockMode: 'paid_only' },
+    },
+    purchases: [
+      {
+        userId: 'buyer_of_a',
+        categoryId: 'course_a',
+        status: 'verified',
+        expectedAmount: '499',
+      },
+    ],
+  });
+
+  const storage = {
+    async getFileDownload(bucketId, fileId) {
+      storageDownloadCalled = true;
+      return Buffer.from('SECRET_DATA');
+    },
+  };
+
+  const handler = createGetAuthorizedLessonHandler({ databases, storage });
+
+  // Buyer of course A tries to fetch file belonging only to course B through authorized lesson A
+  const req = {
+    method: 'POST',
+    headers: { 'x-appwrite-user-id': 'buyer_of_a' },
+    body: JSON.stringify({
+      lessonId: 'lesson_course_a',
+      action: 'get_media',
+      fileId: 'audio_course_b',
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.error, 'media_not_associated');
+  assert.equal(storageDownloadCalled, false, 'Storage download must not be called for unassociated file');
+});
+
+test('Fix 1 Regression: Caller uses accessible free lesson with unrelated private file: denied', async () => {
+  let storageDownloadCalled = false;
+  const databases = makeFakeDatabases({
+    lessons: {
+      free_lesson_1: {
+        categoryId: 'cat_free',
+        order: 1,
+        blocks: JSON.stringify([
+          { type: 'text', textLatin: 'Free content only' },
+        ]),
+      },
+    },
+    categories: {
+      cat_free: { unlockMode: 'free' },
+    },
+    purchases: [],
+  });
+
+  const storage = {
+    async getFileDownload(bucketId, fileId) {
+      storageDownloadCalled = true;
+      return Buffer.from('SECRET_DATA');
+    },
+  };
+
+  const handler = createGetAuthorizedLessonHandler({ databases, storage });
+
+  const req = {
+    method: 'POST',
+    headers: {},
+    body: JSON.stringify({
+      lessonId: 'free_lesson_1',
+      action: 'get_media',
+      fileId: 'secret_paid_file_999',
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.error, 'media_not_associated');
+  assert.equal(storageDownloadCalled, false, 'Storage download must not be invoked for unrelated private asset');
+});
+
+test('Fix 1 Regression: Correct file ID with wrong bucket: denied', async () => {
+  let storageDownloadCalled = false;
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_paid_1: {
+        categoryId: 'cat_advanced',
+        order: 1,
+        blocks: JSON.stringify([
+          { type: 'audio', audioUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/audio_legit/view' },
+        ]),
+      },
+    },
+    categories: {
+      cat_advanced: { unlockMode: 'paid_only' },
+    },
+    purchases: [
+      {
+        userId: 'buyer_1',
+        categoryId: 'cat_advanced',
+        status: 'verified',
+        expectedAmount: '499',
+      },
+    ],
+  });
+
+  const storage = {
+    async getFileDownload(bucketId, fileId) {
+      storageDownloadCalled = true;
+      return Buffer.from('DATA');
+    },
+  };
+
+  const handler = createGetAuthorizedLessonHandler({ databases, storage });
+
+  const req = {
+    method: 'POST',
+    headers: { 'x-appwrite-user-id': 'buyer_1' },
+    body: JSON.stringify({
+      lessonId: 'lesson_paid_1',
+      action: 'get_media',
+      fileId: 'audio_legit',
+      bucketId: 'other_bucket', // Wrong bucket!
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.error, 'bucket_mismatch');
+  assert.equal(storageDownloadCalled, false);
+});
+
+test('Fix 1 Regression: Refunded or disputed users cannot retrieve associated paid media', async () => {
+  let storageDownloadCalled = false;
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_paid_1: {
+        categoryId: 'cat_advanced',
+        order: 1,
+        blocks: JSON.stringify([
+          { type: 'audio', audioUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/audio_legit/view' },
+        ]),
+      },
+    },
+    categories: {
+      cat_advanced: { unlockMode: 'paid_only' },
+    },
+    purchases: [
+      {
+        userId: 'refunded_user',
+        categoryId: 'cat_advanced',
+        status: 'refunded',
+        refundStatus: 'fully_refunded',
+        expectedAmount: '499',
+        refundedAmountPaise: 49900,
+      },
+    ],
+  });
+
+  const storage = {
+    async getFileDownload(bucketId, fileId) {
+      storageDownloadCalled = true;
+      return Buffer.from('DATA');
+    },
+  };
+
+  const handler = createGetAuthorizedLessonHandler({ databases, storage });
+
+  const req = {
+    method: 'POST',
+    headers: { 'x-appwrite-user-id': 'refunded_user' },
+    body: JSON.stringify({
+      lessonId: 'lesson_paid_1',
+      action: 'get_media',
+      fileId: 'audio_legit',
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 403);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.error, 'access_denied');
+  assert.equal(storageDownloadCalled, false);
+});
+
+test('Fix 1 Regression: Nested block references are correctly extracted and authorized', async () => {
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_nested: {
+        categoryId: 'cat_advanced',
+        order: 1,
+        blocks: JSON.stringify([
+          {
+            type: 'universal_media',
+            contentJson: {
+              contentJson: {
+                imageUrl: 'https://cloud.appwrite.io/v1/storage/buckets/paid_media/files/nested_img_777/view',
+              },
+            },
+          },
+        ]),
+      },
+    },
+    categories: {
+      cat_advanced: { unlockMode: 'paid_only' },
+    },
+    purchases: [
+      {
+        userId: 'buyer_1',
+        categoryId: 'cat_advanced',
+        status: 'verified',
+        expectedAmount: '499',
+      },
+    ],
+  });
+
+  const storage = {
+    async getFileDownload(bucketId, fileId) {
+      return Buffer.from('IMAGE_BINARY_DATA');
+    },
+  };
+
+  const handler = createGetAuthorizedLessonHandler({ databases, storage });
+
+  const req = {
+    method: 'POST',
+    headers: { 'x-appwrite-user-id': 'buyer_1' },
+    body: JSON.stringify({
+      lessonId: 'lesson_nested',
+      action: 'get_media',
+      fileId: 'nested_img_777',
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.ok, true);
+  assert.equal(res.body.fileId, 'nested_img_777');
+  assert.ok(res.body.base64);
+});
+
+test('Fix 1 Regression: Conflicting isPremium=true and isPreview=true requires entitlement', async () => {
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_conflict: {
+        categoryId: 'cat_advanced',
+        order: 1,
+        isPremium: true, // Explicitly marked premium
+        isPreview: true, // Conflicting preview claim
+        blocks: JSON.stringify(samplePaidBlocks),
+      },
+    },
+    categories: {
+      cat_advanced: { unlockMode: 'paid_only' },
+    },
+    purchases: [], // Non-buyer
+  });
+
+  const handler = createGetAuthorizedLessonHandler({ databases });
+
+  const req = {
+    method: 'POST',
+    headers: { 'x-appwrite-user-id': 'non_buyer' },
+    body: JSON.stringify({
+      lessonId: 'lesson_conflict',
+    }),
+  };
+  const res = mockRes();
+  await handler({ req, res });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.locked, true);
+  assert.equal(res.body.reason, 'purchase_required');
+  assert.deepEqual(res.body.lesson.blocks, []);
+});
+

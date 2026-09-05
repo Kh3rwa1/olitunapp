@@ -42,7 +42,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
-    expect(find.text('Quiz not found'), findsOneWidget);
+    expect(find.text('Something went wrong!'), findsOneWidget);
     expect(find.text('No questions yet'), findsNothing);
   });
 

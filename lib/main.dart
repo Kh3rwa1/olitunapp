@@ -45,6 +45,21 @@ Locale appLocaleForLanguage(String languageCode) {
 
 final _storageStartup = RequiredStartupTask(initStorage);
 final _optionalStartup = StartupTaskRunner();
+// Audio players must not race a still-running background platform setup.
+// Completed failures keep the existing foreground-audio fallback behavior.
+final _audioStartup = RequiredStartupTask<void>(() async {
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
+      androidNotificationChannelName: 'Bakhed playback',
+      androidNotificationChannelDescription:
+          'Controls for long Bakhed audio playback',
+      androidNotificationOngoing: true,
+    );
+  } catch (error) {
+    AppLogger.debug('Non-essential JustAudioBackground init failed: $error');
+  }
+});
 bool _startupInProgress = false;
 
 Future<void> main() async {
@@ -68,8 +83,8 @@ Future<void> main() async {
 Future<void> _startApplication() async {
   if (_startupInProgress) return;
   _startupInProgress = true;
-  runApp(const StartupStatusApp());
   try {
+    runApp(const StartupStatusApp());
     SecureHttpOverrides.initialize();
     AppwriteConfig.validate();
     FlutterError.onError = (details) {
@@ -80,7 +95,7 @@ Future<void> _startApplication() async {
     // A timeout keeps the underlying storage operation alive. A retry waits
     // for that same operation instead of opening a second set of Hive boxes.
     final prefs = await _storageStartup.run();
-    final outcomes = await _optionalStartup.runAll({
+    final optionalWork = _optionalStartup.runAll({
       'display': () async {
         await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         SystemChrome.setSystemUIOverlayStyle(
@@ -97,15 +112,6 @@ Future<void> _startApplication() async {
         ]);
       },
       'crash-reporting': CrashReporting.init,
-      'background-audio': () async {
-        await JustAudioBackground.init(
-          androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
-          androidNotificationChannelName: 'Bakhed playback',
-          androidNotificationChannelDescription:
-              'Controls for long Bakhed audio playback',
-          androidNotificationOngoing: true,
-        );
-      },
       'ads': () async {
         final result = await AdService.instance.initialize(
           consentManager: ConsentManager(prefs),
@@ -137,6 +143,10 @@ Future<void> _startApplication() async {
         }
       },
     });
+    // An audio timeout shows the retry shell, rather than launching players
+    // against an unfinished platform. Retry reuses the same pending future.
+    await _audioStartup.run(timeout: const Duration(seconds: 8));
+    final outcomes = await optionalWork;
     for (final outcome in outcomes) {
       AppLogger.debug(
         'Startup ${outcome.name}: ${outcome.status.name} '

@@ -3,18 +3,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/startup/startup_status_app.dart';
 
 void main() {
-  testWidgets('loading shell renders without initialized storage or providers', (
+  testWidgets(
+    'loading shell renders without initialized storage or providers',
+    (tester) async {
+      await tester.pumpWidget(const StartupStatusApp());
+      expect(find.text('Starting Olitun'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      expect(find.byKey(const Key('startup-retry')), findsNothing);
+      expect(find.byType(Navigator), findsNothing);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+
+  testWidgets('failure shell invokes the supplied retry action', (
     tester,
   ) async {
-    await tester.pumpWidget(const StartupStatusApp());
-    expect(find.text('Starting Olitun'), findsOneWidget);
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.byKey(const Key('startup-retry')), findsNothing);
-    expect(find.byType(Navigator), findsNothing);
-    await tester.pumpWidget(const SizedBox());
-  });
-
-  testWidgets('failure shell invokes the supplied retry action', (tester) async {
     var retries = 0;
     await tester.pumpWidget(
       StartupStatusApp(

@@ -10,11 +10,14 @@ class StartupStatusApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final failed = errorMessage != null;
+    final theme = ThemeData.dark();
+    final colors = theme.colorScheme;
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark(),
-      home: Scaffold(
-        backgroundColor: const Color(0xFF1E1E2C),
+      theme: theme,
+      // No Navigator: preserve incoming web paths, queries and OAuth links.
+      builder: (context, _) => Scaffold(
+        backgroundColor: colors.surface,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
@@ -23,9 +26,9 @@ class StartupStatusApp extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (failed)
-                    const Icon(
+                    Icon(
                       Icons.warning_amber_rounded,
-                      color: Color(0xFFFFB74D),
+                      color: colors.error,
                       size: 64,
                     )
                   else
@@ -36,10 +39,12 @@ class StartupStatusApp extends StatelessWidget {
                   Semantics(
                     liveRegion: true,
                     child: Text(
-                      failed ? 'Unable to Start Application' : 'Starting Olitun',
+                      failed
+                          ? 'Unable to Start Application'
+                          : 'Starting Olitun',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: colors.onSurface,
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
@@ -50,7 +55,7 @@ class StartupStatusApp extends StatelessWidget {
                     Text(
                       errorMessage!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.white, fontSize: 15),
+                      style: TextStyle(color: colors.onSurface, fontSize: 15),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
@@ -59,8 +64,8 @@ class StartupStatusApp extends StatelessWidget {
                       icon: const Icon(Icons.refresh),
                       label: const Text('Retry Startup'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C5CE7),
-                        foregroundColor: Colors.white,
+                        backgroundColor: colors.primary,
+                        foregroundColor: colors.onPrimary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 12,

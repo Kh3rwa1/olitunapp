@@ -149,10 +149,7 @@ void main() {
         quizTakenTodayProvider.overrideWith(() => mockQuizTakenToday),
       ],
     );
-    container.listen(
-      quizSessionNotifierProvider('test_quiz_id'),
-      (_, _) {},
-    );
+    container.listen(quizSessionNotifierProvider('test_quiz_id'), (_, _) {});
   });
 
   tearDown(() {
@@ -229,7 +226,9 @@ void main() {
       expect(mockUserStats.savedResults, isEmpty);
       expect(mockUserStats.starsAdded, isEmpty);
       expect(
-        container.read(quizSessionNotifierProvider('test_quiz_id')).isQuizComplete,
+        container
+            .read(quizSessionNotifierProvider('test_quiz_id'))
+            .isQuizComplete,
         isFalse,
       );
     });

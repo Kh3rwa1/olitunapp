@@ -78,9 +78,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     if (category == null) {
       return Scaffold(
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        appBar: AppBar(
-          leading: BackButton(onPressed: _backToLearningPaths),
-        ),
+        appBar: AppBar(leading: BackButton(onPressed: _backToLearningPaths)),
         body: categories.isLoading
             ? const Center(child: CircularProgressIndicator())
             : SafeArea(

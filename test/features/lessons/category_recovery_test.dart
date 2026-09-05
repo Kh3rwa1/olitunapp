@@ -42,9 +42,9 @@ Future<void> _pump(
       child: MaterialApp.router(
         routerConfig: router,
         builder: (context, child) => MediaQuery(
-          data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScale),
-          ),
+          data: MediaQuery.of(
+            context,
+          ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         ),
       ),

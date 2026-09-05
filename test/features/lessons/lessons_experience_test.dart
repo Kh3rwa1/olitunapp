@@ -97,7 +97,10 @@ void main() {
     final data = _categories(200);
     await _pump(tester, _Categories(AsyncValue.data(data), data));
     expect(find.byType(CustomScrollView), findsOneWidget);
-    expect(find.byType(BentoCategoryCard).evaluate().length, lessThan(20));
+    expect(
+      find.byType(BentoCategoryCard, skipOffstage: false).evaluate().length,
+      lessThan(20),
+    );
     expect(find.text('Path 199'), findsNothing);
 
     await tester.scrollUntilVisible(
@@ -108,7 +111,10 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('Path 30'), findsOneWidget);
-    expect(find.byType(BentoCategoryCard).evaluate().length, lessThan(20));
+    expect(
+      find.byType(BentoCategoryCard, skipOffstage: false).evaluate().length,
+      lessThan(20),
+    );
     expect(tester.takeException(), isNull);
   });
 

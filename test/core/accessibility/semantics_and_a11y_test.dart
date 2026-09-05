@@ -59,13 +59,57 @@ void main() {
       'PrimaryButton provides button semantics and reflects enabled/disabled',
       (tester) async {
         final handle = tester.ensureSemantics();
+        try {
+          for (final disabled in [false, true]) {
+            var taps = 0;
+            await tester.pumpWidget(
+              MaterialApp(
+                home: Scaffold(
+                  body: Center(
+                    child: PrimaryButton(
+                      text: 'Continue Lesson',
+                      isDisabled: disabled,
+                      onPressed: () => taps++,
+                    ),
+                  ),
+                ),
+              ),
+            );
+            await tester.pumpAndSettle();
+
+            expect(
+              tester.getSemantics(find.byType(ElevatedButton)),
+              matchesSemantics(
+                isButton: true,
+                label: 'Continue Lesson',
+                hasTapAction: !disabled,
+                hasEnabledState: true,
+                isEnabled: !disabled,
+                isFocusable: !disabled,
+                hasFocusAction: !disabled,
+              ),
+            );
+
+            await tester.tap(find.byType(PrimaryButton), warnIfMissed: false);
+            await tester.pumpAndSettle();
+            expect(taps, disabled ? 0 : 1);
+          }
+        } finally {
+          handle.dispose();
+        }
+      },
+    );
+
+    testWidgets('DuoButton has focusable tap semantics', (tester) async {
+      final handle = tester.ensureSemantics();
+      try {
         var tapped = false;
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
               body: Center(
-                child: PrimaryButton(
-                  text: 'Continue Lesson',
+                child: DuoButton(
+                  text: 'Check Answer',
                   onPressed: () => tapped = true,
                 ),
               ),
@@ -74,54 +118,24 @@ void main() {
         );
 
         expect(
-          tester.getSemantics(find.byType(PrimaryButton)),
+          tester.getSemantics(find.byType(ElevatedButton)),
           matchesSemantics(
             isButton: true,
-            label: 'Continue Lesson',
+            label: 'Check Answer',
             hasTapAction: true,
             hasEnabledState: true,
             isEnabled: true,
+            isFocusable: true,
+            hasFocusAction: true,
           ),
         );
 
-        await tester.tap(find.byType(PrimaryButton));
+        await tester.tap(find.byType(DuoButton));
+        await tester.pumpAndSettle();
         expect(tapped, isTrue);
+      } finally {
         handle.dispose();
-      },
-    );
-
-    testWidgets('DuoButton provides button semantics and 3D tap interaction', (
-      tester,
-    ) async {
-      final handle = tester.ensureSemantics();
-      var tapped = false;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Center(
-              child: DuoButton(
-                text: 'Check Answer',
-                onPressed: () => tapped = true,
-              ),
-            ),
-          ),
-        ),
-      );
-
-      expect(
-        tester.getSemantics(find.byType(DuoButton)),
-        matchesSemantics(
-          isButton: true,
-          label: 'Check Answer',
-          hasTapAction: true,
-          hasEnabledState: true,
-          isEnabled: true,
-        ),
-      );
-
-      await tester.tap(find.byType(DuoButton));
-      expect(tapped, isTrue);
-      handle.dispose();
+      }
     });
 
     testWidgets(

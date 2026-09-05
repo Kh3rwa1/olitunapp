@@ -63,7 +63,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Collect targeted diagnostics
+      - name: Collect full Flutter diagnostics
         env:
           TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
         run: python3 tool/report_experience_checks.py --full

@@ -16,6 +16,7 @@ DART_FILES = [
     "lib/features/lessons/presentation/widgets/hero_category_card.dart",
     "lib/main.dart",
     "test/core/accessibility/app_experience_scope_test.dart",
+    "test/core/accessibility/semantics_and_a11y_test.dart",
     "test/core/motion/pressable_scale_accessibility_test.dart",
     "test/shared/widgets/experience_controls_test.dart",
     "test/features/lessons/lessons_experience_test.dart",

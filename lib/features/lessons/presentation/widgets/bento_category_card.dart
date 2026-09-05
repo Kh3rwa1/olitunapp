@@ -109,7 +109,7 @@ class BentoCategoryCard extends StatelessWidget {
               overflow: largeText ? null : TextOverflow.ellipsis,
             ),
           ],
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           ExcludeSemantics(
             child: Align(
               alignment: AlignmentDirectional.centerEnd,

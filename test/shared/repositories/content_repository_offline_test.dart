@@ -4,6 +4,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
@@ -88,18 +89,38 @@ void main() {
       expect(rebuilt.title, 'Offline Edit');
     });
 
-    test(
-      'still succeeds when no outbox is wired (default constructor)',
-      () async {
-        final repo = ContentRepository(
-          databases: _MockDatabases(),
-          networkInfo: _FakeNetworkInfo(connected: false),
-        );
+    test('fails without an outbox and does not cache a phantom save', () async {
+      final databases = _MockDatabases();
+      final repo = ContentRepository(
+        databases: databases,
+        networkInfo: _FakeNetworkInfo(connected: false),
+      );
+      final item = _buildItem();
+      const cacheKey = 'content_item_word_word_offline_edit';
+      await CacheService.delete(cacheKey);
 
-        final result = await repo.upsert(_buildItem());
+      final result = await repo.upsert(item);
 
-        expect(result.isRight(), isTrue);
-      },
-    );
+      expect(result.isLeft(), isTrue);
+      result.fold(
+        (failure) => expect(
+          failure,
+          isA<CacheFailure>().having(
+            (value) => value.message,
+            'message',
+            contains('Durable offline storage unavailable'),
+          ),
+        ),
+        (_) => fail('A save without durable storage must not succeed.'),
+      );
+      expect(
+        await CacheService.get<ContentItem>(
+          cacheKey,
+          (json) => ContentItem.fromJson(json, item.id, item.kind),
+        ),
+        isNull,
+      );
+      verifyZeroInteractions(databases);
+    });
   });
 }

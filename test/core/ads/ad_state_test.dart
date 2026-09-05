@@ -6,20 +6,17 @@ import 'package:itun/shared/providers/purchases_provider.dart';
 
 void main() {
   group('AdState and AdStateNotifier Tests', () {
-    test(
-      'default state requires ads for free users and allows initial interstitial/rewarded',
-      () {
-        const state = AdState();
-        expect(state.isAdFreeUser, isFalse);
-        expect(state.isAdsEnabledGlobally, isTrue);
-        expect(state.shouldShowAds, isTrue);
-        expect(state.canShowInterstitial(), isTrue);
-        expect(state.canShowRewarded(), isTrue);
-      },
-    );
+    test('unknown consent fails closed for free users', () {
+      const state = AdState();
+      expect(state.isAdFreeUser, isFalse);
+      expect(state.isAdsEnabledGlobally, isTrue);
+      expect(state.shouldShowAds, isFalse);
+      expect(state.canShowInterstitial(), isFalse);
+      expect(state.canShowRewarded(), isFalse);
+    });
 
     test('ad-free user suppresses all ads and interstitial', () {
-      const state = AdState(isAdFreeUser: true);
+      const state = AdState(consentAllowsAds: true, isAdFreeUser: true);
       expect(state.shouldShowAds, isFalse);
       expect(state.canShowInterstitial(), isFalse);
       // Ad-free users can claim rewards instantly without ads
@@ -29,12 +26,14 @@ void main() {
     test('interstitial frequency cap suppresses ad within cooldown window', () {
       final now = DateTime.now();
       final state = AdState(
+        consentAllowsAds: true,
         lastInterstitialShownAt: now.subtract(const Duration(minutes: 2)),
         interstitialIntervalMinutes: 5,
       );
       expect(state.canShowInterstitial(), isFalse);
 
       final stateAfterCap = AdState(
+        consentAllowsAds: true,
         lastInterstitialShownAt: now.subtract(const Duration(minutes: 6)),
         interstitialIntervalMinutes: 5,
       );
@@ -44,6 +43,7 @@ void main() {
     test('rewarded cooldown enforces duration and remaining seconds', () {
       final now = DateTime.now();
       final state = AdState(
+        consentAllowsAds: true,
         lastRewardedShownAt: now.subtract(const Duration(minutes: 5)),
         rewardedCooldownMinutes: 15,
       );
@@ -51,6 +51,7 @@ void main() {
       expect(state.remainingRewardedCooldownSeconds, greaterThan(0));
 
       final readyState = AdState(
+        consentAllowsAds: true,
         lastRewardedShownAt: now.subtract(const Duration(minutes: 16)),
         rewardedCooldownMinutes: 15,
       );

@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:convert';
+
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:fpdart/fpdart.dart';
@@ -264,36 +265,20 @@ class ContentRepository {
     return list;
   }
 
-  String _getCollectionId(ContentKind kind) {
-    switch (kind) {
-      case ContentKind.letter:
-        return 'letters';
-      case ContentKind.number:
-        return 'numbers';
-      case ContentKind.word:
-        return 'words';
-      case ContentKind.sentence:
-        return 'sentences';
-      case ContentKind.lesson:
-        return 'lessons';
-      case ContentKind.rhyme:
-        return 'rhymes';
-    }
-  }
+  String _getCollectionId(ContentKind kind) => switch (kind) {
+    ContentKind.letter => 'letters',
+    ContentKind.number => 'numbers',
+    ContentKind.word => 'words',
+    ContentKind.sentence => 'sentences',
+    ContentKind.lesson => 'lessons',
+    ContentKind.rhyme => 'rhymes',
+  };
 
-  String? _categoryAttribute(ContentKind kind) {
-    switch (kind) {
-      case ContentKind.lesson:
-      case ContentKind.rhyme:
-        return 'categoryId';
-      case ContentKind.word:
-      case ContentKind.sentence:
-        return 'category';
-      case ContentKind.letter:
-      case ContentKind.number:
-        return null;
-    }
-  }
+  String? _categoryAttribute(ContentKind kind) => switch (kind) {
+    ContentKind.lesson || ContentKind.rhyme => 'categoryId',
+    ContentKind.word || ContentKind.sentence => 'category',
+    ContentKind.letter || ContentKind.number => null,
+  };
 
   bool _hasOrderAttribute(ContentKind kind) => kind != ContentKind.rhyme;
 
@@ -466,7 +451,10 @@ class ContentRepository {
   }
 
   /// Upserts a content item to Appwrite and updates the local cache.
-  Future<Either<Failure, ContentItem>> upsert(ContentItem item) async {
+  Future<Either<Failure, ContentItem>> upsert(
+    ContentItem item, {
+    bool allowOfflineQueue = true,
+  }) async {
     try {
       // 1. Validate the model layers
       ContentItem.validate(item.kind, item.tracing);
@@ -518,11 +506,17 @@ class ContentRepository {
     } else {
       // Offline support: cache locally and queue a durable mutation so the
       // edit replays to Appwrite automatically when connectivity returns.
+      if (!allowOfflineQueue) {
+        return left(
+          const NetworkFailure(message: 'Connection lost during replay.'),
+        );
+      }
       try {
+        // The outbox is authoritative. Cache writes are only an optimistic view.
+        await _enqueueOfflineMutation(item);
         await CacheService.set(itemCacheKey, item.toJson());
         await CacheService.delete(_cacheListKey(item.kind, item.categoryId));
         await CacheService.delete(_cacheListKey(item.kind, null));
-        await _enqueueOfflineMutation(item);
         return right(item);
       } catch (e) {
         return left(CacheFailure(message: 'Offline caching failed: $e'));
@@ -534,12 +528,11 @@ class ContentRepository {
   /// replayed (with retries and dead-lettering) once the device is back online.
   Future<void> _enqueueOfflineMutation(ContentItem item) async {
     final outbox = _mutationOutbox;
-    if (outbox == null) return;
+    if (outbox == null) throw StateError('Durable offline storage unavailable');
     try {
       await outbox.enqueueMutation(
         PendingMutation(
-          operationId:
-              'upsert_${item.kind.name}_${item.id}_${DateTime.now().millisecondsSinceEpoch}',
+          operationId: 'upsert_${item.kind.name}_${item.id}_${ID.unique()}',
           userId: contentMutationQueueUserId,
           operationType: 'content.upsert',
           entityId: item.id,
@@ -548,8 +541,8 @@ class ContentRepository {
         ),
       );
     } catch (e) {
-      // Queueing is best-effort: the local cache already holds the edit.
       AppLogger.debug('[Content] Failed to queue offline mutation: $e');
+      rethrow;
     }
   }
 

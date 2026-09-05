@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import '../../analytics/analytics_service.dart';
 import '../../logging/app_logger.dart';
 import '../../network/network_info.dart';
@@ -172,6 +174,20 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
   Widget build(BuildContext context) {
     if (kIsWeb) return const SizedBox.shrink();
 
+    ref.listen<AdState>(adStateProvider, (previous, next) {
+      if (previous?.shouldShowAds != next.shouldShowAds) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (next.shouldShowAds) {
+            _loadAd();
+          } else {
+            _bannerAd?.dispose();
+            _bannerAd = null;
+            setState(() => _isLoaded = false);
+          }
+        });
+      }
+    });
     final adState = ref.watch(adStateProvider);
     if (!adState.shouldShowAds || _hasPersistentError) {
       return const SizedBox.shrink();

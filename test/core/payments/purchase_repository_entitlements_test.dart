@@ -1,4 +1,8 @@
 import 'package:flutter/services.dart';
+
+import 'dart:async';
+
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -44,6 +48,101 @@ void main() {
       overrides: [appwriteDbServiceProvider.overrideWithValue(mockDb)],
     );
   }
+
+  test(
+    'background refund refresh publishes a revision and removes the entitlement',
+    () async {
+      const userId = 'reactive_refund';
+      await CacheService.set('entitlements:production:$userId', {
+        'ids': ['refunded'],
+      });
+      when(
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
+      ).thenAnswer((_) async => []);
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final changed = Completer<void>();
+      container.listen(entitlementRevisionProvider(userId), (_, next) {
+        if (next > 0 && !changed.isCompleted) changed.complete();
+      });
+      final repo = container.read(purchaseRepositoryProvider);
+      expect(
+        (await repo.fetchEntitlements(userId)).categoryIds,
+        contains('refunded'),
+      );
+      await changed.future.timeout(const Duration(seconds: 5));
+      expect(
+        (await repo.fetchEntitlements(
+          userId,
+          skipRevalidate: true,
+        )).categoryIds,
+        isEmpty,
+      );
+    },
+  );
+
+  test(
+    'permission denial revokes fresh cached access and notifies consumers',
+    () async {
+      const userId = 'denied_access';
+      await CacheService.set('entitlements:production:$userId', {
+        'ids': ['paid'],
+      });
+      when(
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
+      ).thenThrow(AppwriteException('not permitted', 403));
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final changed = Completer<void>();
+      container.listen(entitlementRevisionProvider(userId), (_, next) {
+        if (next > 0 && !changed.isCompleted) changed.complete();
+      });
+      final repo = container.read(purchaseRepositoryProvider);
+      await repo.fetchEntitlements(userId);
+      await changed.future.timeout(const Duration(seconds: 5));
+      final result = await repo.fetchEntitlements(userId);
+      expect(result.status, EntitlementStatus.permissionDenied);
+      expect(result.categoryIds, isEmpty);
+      expect(
+        await CacheService.getMeta('entitlements:production:$userId'),
+        isNull,
+      );
+    },
+  );
+
+  test(
+    'logout invalidates an in-flight verification before it can repopulate cache',
+    () async {
+      const userId = 'logout_race';
+      final response = Completer<List<Map<String, dynamic>>>();
+      when(
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
+      ).thenAnswer((_) => response.future);
+      final container = createContainer();
+      addTearDown(container.dispose);
+      final repo = container.read(purchaseRepositoryProvider);
+      final pending = repo.fetchEntitlements(userId);
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+      await repo.clearUserEntitlementCache(userId);
+      response.complete([
+        {'categoryId': 'paid', 'status': 'verified'},
+      ]);
+      expect((await pending).categoryIds, isEmpty);
+      expect(
+        await CacheService.getMeta('entitlements:production:$userId'),
+        isNull,
+      );
+    },
+  );
 
   group('PurchaseRepository - Entitlements & User-Scoped Cache', () {
     test(

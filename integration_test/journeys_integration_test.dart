@@ -13,7 +13,7 @@ import 'package:itun/features/legal/presentation/legal_document_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  group('Full Application User Journeys Integration Suite', () {
+  group('Screen rendering smoke suite (not backend E2E)', () {
     setUpAll(() async {
       try {
         await Hive.initFlutter();
@@ -69,7 +69,7 @@ void main() {
     });
 
     testWidgets(
-      '2. Purchase Callback Journey: Handles callback parameters gracefully',
+      '2. Home screen renders with purchase query parameters (no payment verification)',
       (tester) async {
         final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
@@ -100,7 +100,7 @@ void main() {
     );
 
     testWidgets(
-      '3. Offline Restart Journey: Initializing app offline loads cached state',
+      '3. Home screen renders with mock local preferences (no restart simulation)',
       (tester) async {
         final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
@@ -131,7 +131,7 @@ void main() {
     );
 
     testWidgets(
-      '4. Account Deletion Journey: Renders deletion confirmation sheet options',
+      '4. Welcome screen renders (does not exercise account deletion)',
       (tester) async {
         final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
@@ -224,7 +224,7 @@ void main() {
     );
 
     testWidgets(
-      '7. OAuth Callback Sanitization: Strips sensitive query params upon routing',
+      '7. Welcome screen renders with OAuth query parameters (no sanitization assertion)',
       (tester) async {
         final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(

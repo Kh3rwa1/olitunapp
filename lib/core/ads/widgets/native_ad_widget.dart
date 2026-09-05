@@ -1,8 +1,10 @@
 import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import '../../analytics/analytics_service.dart';
 import '../../logging/app_logger.dart';
 import '../../theme/app_colors.dart';
@@ -153,6 +155,20 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
   Widget build(BuildContext context) {
     if (kIsWeb) return const SizedBox.shrink();
 
+    ref.listen<AdState>(adStateProvider, (previous, next) {
+      if (previous?.shouldShowAds != next.shouldShowAds) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          if (next.shouldShowAds) {
+            _loadNativeAd();
+          } else {
+            _nativeAd?.dispose();
+            _nativeAd = null;
+            setState(() => _isLoaded = false);
+          }
+        });
+      }
+    });
     final adState = ref.watch(adStateProvider);
     if (!adState.shouldShowAds || !_isLoaded || _nativeAd == null) {
       return const SizedBox.shrink();

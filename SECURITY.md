@@ -15,13 +15,14 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 
 ### B. Cryptographic Identity & Zero-Trust Caller Headers
 - The backend serverless functions never trust caller-supplied JSON `userId` fields; the caller identity comes from the Appwrite runtime-injected `x-appwrite-user-id` header (not readable by clients for authenticated executions).
-- The `translator` function is a deliberate exception: **translation is a free, unlimited service** — identity verification and rate limiting were intentionally removed (product decision). It keeps JSON/text/language validation, a SHA-256 key/value cache (`translation_cache`), and per-deployment env secrets; abuse protection is the cache plus Appwrite's per-function execution concurrency.
+- The `translator` function is a deliberate exception: **translation is free and public**, with deployment-wide request/upstream budgets and a fail-closed resource guard. It keeps JSON/text/language validation, a SHA-256 key/value cache (`translation_cache`), and per-deployment env secrets; resource safeguards are described in docs/PRIORITY_HARDENING_2026_09_05.md.
 - Payment functions re-verify every payment amount and order binding against the gateway API and the server-side purchase ledger before granting entitlements.
 
 ### C. Translator Service Model
-- **No rate limiting:** There is no per-IP or per-user rate limit on `translator` — translation is absolutely free and unlimited by design. The former `RATE_LIMIT_SALT`/`rate_limits` model was removed from the function; the shared `_shared/rate_limiter.js` module remains for any future need and its unit tests stay green.
-- **Cache-first:** Identical translations (hashed from/to/text key) are served from the `translation_cache` collection, upstream providers only see uncached text.
-- **Fail-open behavior:** Cache lookups are best-effort; a cache outage never blocks a translation — it just falls through to the upstream provider.
+- Free public access does not imply unbounded infrastructure use. Distributed minute budgets reserve atomic Appwrite slots before requests/upstream work.
+- Cache hits avoid the upstream budget. Configuration/storage failures fail closed; responses identify temporary saturation without logging submitted text.
+- Five consecutive upstream failures open a per-instance 30-second circuit; deployment-wide budgets still bound aggregate work.
+- Operators can pause translation with TRANSLATION_ENABLED=false and should alert on budget events and billing. See docs/PRIORITY_HARDENING_2026_09_05.md.
 
 ### D. Fail-Closed Production Release Signing
 - Android release builds enforce cryptographic signing credentials in `android/app/build.gradle.kts`.

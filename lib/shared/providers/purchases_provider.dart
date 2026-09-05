@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
@@ -15,6 +16,7 @@ final purchasedCategoriesProvider = FutureProvider<Set<String>>((ref) async {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return {};
 
+  ref.watch(entitlementRevisionProvider(user.id));
   final repo = ref.watch(purchaseRepositoryProvider);
   return repo.fetchPurchasedCategoryIds(user.id);
 });

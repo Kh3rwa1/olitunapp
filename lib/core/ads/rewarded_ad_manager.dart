@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
+
 import '../../features/profile/presentation/providers/profile_providers.dart';
 import '../analytics/analytics_service.dart';
 import '../logging/app_logger.dart';
@@ -21,7 +23,7 @@ class RewardedAdManager {
   /// Preload a rewarded ad.
   Future<void> preload() async {
     final adState = _ref.read(adStateProvider);
-    if (adState.isAdFreeUser || _isLoading || _rewardedAd != null) {
+    if (!adState.shouldShowAds || _isLoading || _rewardedAd != null) {
       return;
     }
 
@@ -78,6 +80,14 @@ class RewardedAdManager {
         'RewardedAdManager: Ad not ready for placement: $placement',
       );
       unawaited(preload());
+      return false;
+    }
+
+    if (!await _ref.read(adServiceProvider).consentManager.canRequestAds() ||
+        !_ref.read(adStateProvider).shouldShowAds ||
+        _rewardedAd == null) {
+      _rewardedAd?.dispose();
+      _rewardedAd = null;
       return false;
     }
 
@@ -234,6 +244,13 @@ class RewardedAdManager {
 final rewardedAdManagerProvider = Provider<RewardedAdManager>((ref) {
   final manager = RewardedAdManager(ref);
   Future.microtask(manager.preload);
+  ref.listen<AdState>(adStateProvider, (previous, next) {
+    if (next.shouldShowAds && previous?.shouldShowAds != true) {
+      Future.microtask(manager.preload);
+    } else if (!next.shouldShowAds) {
+      manager.dispose();
+    }
+  });
   ref.onDispose(manager.dispose);
   return manager;
 });

@@ -78,7 +78,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "users.read"
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -115,9 +116,7 @@
       "$id": "reconcileOrphanedDeletions",
       "name": "reconcileOrphanedDeletions",
       "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
+      "execute": [],
       "events": [],
       "schedule": "0 2 * * *",
       "timeout": 60,
@@ -131,11 +130,12 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "users.read",
         "databases.read",
         "databases.write",
         "documents.read",
-        "documents.write"
+        "documents.write",
+        "users.read",
+        "users.write"
       ]
     },
     {
@@ -378,7 +378,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -410,9 +412,7 @@
       "$id": "reconcilePaymentAttempts",
       "name": "reconcilePaymentAttempts",
       "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
+      "execute": [],
       "events": [],
       "schedule": "*/15 * * * *",
       "timeout": 60,

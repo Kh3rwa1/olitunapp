@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
@@ -41,7 +43,15 @@ class ContentMutationReplay {
        _networkInfo = networkInfo,
        _executeUpsert = executeUpsert;
 
-  Future<ReplaySummary> replayPending() async {
+  Future<ReplaySummary>? _activeReplay;
+
+  Future<ReplaySummary> replayPending() {
+    return _activeReplay ??= _replayPending().whenComplete(() {
+      _activeReplay = null;
+    });
+  }
+
+  Future<ReplaySummary> _replayPending() async {
     if (!await _networkInfo.isConnected) {
       return const ReplaySummary(replayed: 0, failed: 0, skipped: 0);
     }
@@ -52,9 +62,17 @@ class ContentMutationReplay {
     var replayed = 0;
     var failed = 0;
     var skipped = 0;
+    final blockedEntities = <String>{};
 
     for (final mutation in pending) {
+      final entityKey = '${mutation.payload['kind']}:${mutation.entityId}';
       if (mutation.status == MutationStatus.deadLetter) {
+        skipped++;
+        continue;
+      }
+      if (blockedEntities.contains(entityKey) ||
+          mutation.nextRetryAt.isAfter(DateTime.now())) {
+        blockedEntities.add(entityKey);
         skipped++;
         continue;
       }
@@ -73,34 +91,29 @@ class ContentMutationReplay {
         }
 
         final result = await _executeUpsert(item);
-        result.fold(
-          (failure) {
+        await result.fold<Future<void>>(
+          (failure) async {
+            blockedEntities.add(entityKey);
             failed++;
-            // Fire-and-forget failure recording; replay is best-effort.
-            _outbox
-                .recordAttemptFailed(
-                  mutation.userId,
-                  mutation.operationId,
-                  failure.message,
-                )
-                .catchError((_) {});
+            await _outbox.recordAttemptFailed(
+              mutation.userId,
+              mutation.operationId,
+              failure.message,
+            );
           },
-          (_) {
+          (_) async {
+            await _outbox.markCompleted(mutation.userId, mutation.operationId);
             replayed++;
-            _outbox
-                .markCompleted(mutation.userId, mutation.operationId)
-                .catchError((_) {});
           },
         );
       } catch (e) {
+        blockedEntities.add(entityKey);
         failed++;
-        _outbox
-            .recordAttemptFailed(
-              mutation.userId,
-              mutation.operationId,
-              e.toString(),
-            )
-            .catchError((_) {});
+        await _outbox.recordAttemptFailed(
+          mutation.userId,
+          mutation.operationId,
+          e.toString(),
+        );
       }
     }
 
@@ -135,7 +148,7 @@ final contentMutationReplayProvider = Provider<ContentMutationReplay>((ref) {
   return ContentMutationReplay(
     outbox: ref.watch(mutationOutboxProvider),
     networkInfo: ref.watch(networkInfoProvider),
-    executeUpsert: repo.upsert,
+    executeUpsert: (item) => repo.upsert(item, allowOfflineQueue: false),
   );
 });
 
@@ -145,7 +158,10 @@ final contentMutationReplayProvider = Provider<ContentMutationReplay>((ref) {
 final mutationReplayInitProvider = Provider<void>((ref) {
   final replay = ref.watch(contentMutationReplayProvider);
 
+  var disposed = false;
+  ref.onDispose(() => disposed = true);
   Future<void> safeReplay() async {
+    if (disposed) return;
     try {
       await replay.replayPending();
     } catch (e) {
@@ -155,7 +171,10 @@ final mutationReplayInitProvider = Provider<void>((ref) {
 
   // Startup pass: drain anything queued during a previous offline session.
   Future<void>.microtask(safeReplay);
-
+  final retryTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+    unawaited(safeReplay());
+  });
+  ref.onDispose(retryTimer.cancel);
   ref.listen(connectivityStreamProvider, (previous, next) {
     next.whenData((results) {
       if (!results.contains(ConnectivityResult.none)) {

@@ -6,12 +6,14 @@ import {
   isLanguageSupported,
 } from './security.js';
 import { getTranslationProvider } from './providers/translation_provider.js';
+import { createTranslationBudget } from './resource_budget.js';
+const resourceBudget = createTranslationBudget();
 
 const DB_ID = 'olitun_db';
 const CACHE_COLLECTION = 'translation_cache';
 
-// Translation is a free, unlimited service: identity verification and rate
-// limiting were intentionally removed (see README + SECURITY.md §C).
+// Translation remains free and public. Distributed budgets bound resource use.
+// Limits apply per deployment, not a subscription or payment tier.
 
 const ok = (data) => ({ success: true, data });
 const err = (message, code = 'TRANSLATION_ERROR', retryAfter = undefined) => ({
@@ -23,6 +25,9 @@ const err = (message, code = 'TRANSLATION_ERROR', retryAfter = undefined) => ({
 
 export default async ({ req, res, log, error }) => {
   const startTime = Date.now();
+  if (process.env.TRANSLATION_ENABLED === 'false') {
+    return res.json(err('Translation is temporarily unavailable', 'SERVICE_PAUSED', 60), 503);
+  }
   if (req.method !== 'POST') {
     return res.json(err('Method not allowed', 'METHOD_NOT_ALLOWED'), 405);
   }
@@ -55,7 +60,7 @@ export default async ({ req, res, log, error }) => {
   const from = normalizeLanguage(reqFrom, 'auto');
   const to = normalizeLanguage(reqTo, 'sat');
 
-  const apiKey = process.env.APPWRITE_API_KEY;
+  const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
   const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
 
@@ -69,6 +74,12 @@ export default async ({ req, res, log, error }) => {
     .setProject(projectId)
     .setKey(apiKey);
   const db = new Databases(client);
+  const requestBudget = await resourceBudget.acquire(db);
+  if (!requestBudget.allowed) {
+    log(JSON.stringify({ event: 'translation_budget_rejected', stage: 'request', reason: requestBudget.reason }));
+    const unavailable = requestBudget.reason === 'rate_limit_storage_error' || requestBudget.reason === 'configuration_error';
+    return res.json(err('Translation is busy. Please try again shortly.', 'RESOURCE_LIMIT', requestBudget.retryAfterSeconds || 60), unavailable ? 503 : 429);
+  }
 
   // ---- Cache Lookup (SHA-256 hashed cacheKey) ----
   const cacheKey = createCacheKey({ from, to, text });
@@ -103,9 +114,18 @@ export default async ({ req, res, log, error }) => {
   }
 
   // ---- Upstream Translation Provider Call ----
+  const upstreamBudget = await resourceBudget.acquire(db, { upstream: true });
+  if (!upstreamBudget.allowed) {
+    log(JSON.stringify({ event: 'translation_budget_rejected', stage: 'upstream', reason: upstreamBudget.reason }));
+    return res.json(err('Translation is temporarily busy. Please retry.', 'UPSTREAM_RESOURCE_LIMIT', upstreamBudget.retryAfterSeconds || 60), 503);
+  }
+  if (upstreamBudget.remaining <= 5) {
+    log(JSON.stringify({ event: 'translation_budget_low', remaining: upstreamBudget.remaining }));
+  }
   const provider = getTranslationProvider();
   try {
     const translationResult = await provider.translate({ text, from, to, timeoutMs: 8000 });
+    resourceBudget.succeeded();
     const translatedText = translationResult.text;
     const detectedFrom = translationResult.from || from;
 
@@ -130,6 +150,7 @@ export default async ({ req, res, log, error }) => {
 
     return res.json(ok(translationPayload(translatedText, detectedFrom, to, false)));
   } catch (upstreamErr) {
+    resourceBudget.failed();
     error(JSON.stringify({
       event: 'upstream_translation_failed',
       error: upstreamErr?.message,

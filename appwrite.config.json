@@ -5,17 +5,21 @@
       "$id": "generateAudio",
       "name": "generateAudio",
       "runtime": "node-22.0",
-      "path": "functions/generateAudio",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 60,
+      "path": "functions/generateAudio",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write",
@@ -30,17 +34,21 @@
       "$id": "reviewContent",
       "name": "reviewContent",
       "runtime": "node-22.0",
-      "path": "functions/reviewContent",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 60,
+      "path": "functions/reviewContent",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write",
@@ -53,36 +61,45 @@
       "$id": "6a007db60024418c0997",
       "name": "translator",
       "runtime": "node-22.0",
-      "path": "functions/translator",
-      "entrypoint": "src/main.js",
       "execute": [
         "any"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/translator",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
-        "users.read"
+        "documents.read",
+        "documents.write"
       ]
     },
     {
       "$id": "delete-account",
       "name": "delete-account",
       "runtime": "node-22.0",
-      "path": "functions/delete-account",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/delete-account",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "users.write",
         "databases.read",
@@ -94,20 +111,51 @@
       ]
     },
     {
-      "$id": "admin-maintenance",
-      "name": "admin-maintenance",
+      "id": "reconcileOrphanedDeletions",
+      "$id": "reconcileOrphanedDeletions",
+      "name": "reconcileOrphanedDeletions",
       "runtime": "node-22.0",
-      "path": "functions/admin-maintenance",
+      "execute": [],
+      "events": [],
+      "schedule": "0 2 * * *",
+      "timeout": 60,
+      "path": "functions/reconcileOrphanedDeletions",
       "entrypoint": "src/main.js",
-      "execute": [
-        "users"
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
       ],
       "enabled": true,
       "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write",
+        "users.read",
+        "users.write"
+      ]
+    },
+    {
+      "$id": "admin-maintenance",
+      "name": "admin-maintenance",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/admin-maintenance",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "users.read",
         "databases.read",
@@ -119,17 +167,21 @@
       "$id": "manageAdminAccess",
       "name": "manageAdminAccess",
       "runtime": "node-22.0",
-      "path": "functions/manageAdminAccess",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/manageAdminAccess",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "users.read",
         "users.write",
@@ -142,17 +194,21 @@
       "$id": "recordMistake",
       "name": "recordMistake",
       "runtime": "node-22.0",
-      "path": "functions/recordMistake",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/recordMistake",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "documents.read",
         "documents.write",
@@ -164,17 +220,21 @@
       "$id": "getUserMistakes",
       "name": "getUserMistakes",
       "runtime": "node-22.0",
-      "path": "functions/getUserMistakes",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/getUserMistakes",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read"
       ]
@@ -183,17 +243,21 @@
       "$id": "markMistakeMastered",
       "name": "markMistakeMastered",
       "runtime": "node-22.0",
-      "path": "functions/markMistakeMastered",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/markMistakeMastered",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
@@ -203,17 +267,21 @@
       "$id": "completeMistakeReview",
       "name": "completeMistakeReview",
       "runtime": "node-22.0",
-      "path": "functions/completeMistakeReview",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/completeMistakeReview",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
@@ -223,17 +291,21 @@
       "$id": "recordBakhedProgress",
       "name": "recordBakhedProgress",
       "runtime": "node-22.0",
-      "path": "functions/recordBakhedProgress",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/recordBakhedProgress",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
@@ -243,17 +315,21 @@
       "$id": "getUserGamificationSummary",
       "name": "getUserGamificationSummary",
       "runtime": "node-22.0",
-      "path": "functions/getUserGamificationSummary",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/getUserGamificationSummary",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read"
       ]
@@ -262,15 +338,19 @@
       "$id": "aggregateLearningAnalytics",
       "name": "aggregateLearningAnalytics",
       "runtime": "node-22.0",
-      "path": "functions/aggregateLearningAnalytics",
-      "entrypoint": "src/main.js",
       "execute": [],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "30 0 * * *",
       "timeout": 60,
+      "path": "functions/aggregateLearningAnalytics",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "documents.read",
         "documents.write",
@@ -282,33 +362,44 @@
       "$id": "cleanupAnalyticsEvents",
       "name": "cleanupAnalyticsEvents",
       "runtime": "node-22.0",
-      "path": "functions/cleanupAnalyticsEvents",
-      "entrypoint": "src/main.js",
       "execute": [],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "0 3 * * *",
       "timeout": 60,
+      "path": "functions/cleanupAnalyticsEvents",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
+      "id": "backupCollections",
       "$id": "backupCollections",
       "name": "backupCollections",
       "runtime": "node-22.0",
-      "path": "functions/backupCollections",
-      "entrypoint": "src/main.js",
       "execute": [],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "0 4 * * 0",
       "timeout": 60,
+      "path": "functions/backupCollections",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "files.read",
@@ -316,80 +407,123 @@
       ]
     },
     {
+      "id": "reconcilePaymentAttempts",
+      "$id": "reconcilePaymentAttempts",
+      "name": "reconcilePaymentAttempts",
+      "runtime": "node-22.0",
+      "execute": [],
+      "events": [],
+      "schedule": "*/15 * * * *",
+      "timeout": 60,
+      "path": "functions/reconcilePaymentAttempts",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "id": "createRazorpayOrder",
       "$id": "createRazorpayOrder",
       "name": "createRazorpayOrder",
       "runtime": "node-22.0",
-      "path": "functions/createRazorpayOrder",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/createRazorpayOrder",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
       ]
     },
     {
+      "id": "razorpayWebhook",
       "$id": "razorpayWebhook",
       "name": "razorpayWebhook",
       "runtime": "node-22.0",
-      "path": "functions/razorpayWebhook",
-      "entrypoint": "src/main.js",
       "execute": [
         "any"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/razorpayWebhook",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
       ]
     },
     {
+      "id": "verifyCoursePurchase",
       "$id": "verifyCoursePurchase",
       "name": "verifyCoursePurchase",
       "runtime": "node-22.0",
-      "path": "functions/verifyCoursePurchase",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/verifyCoursePurchase",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"
       ]
     },
     {
+      "id": "syncDailyAffirmation",
       "$id": "syncDailyAffirmation",
       "name": "syncDailyAffirmation",
       "runtime": "node-22.0",
-      "path": "functions/syncDailyAffirmation",
-      "entrypoint": "src/main.js",
       "execute": [
         "users"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "0 */3 * * *",
       "timeout": 30,
+      "path": "functions/syncDailyAffirmation",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write",
@@ -401,17 +535,21 @@
       "$id": "bintiWaitlist",
       "name": "bintiWaitlist",
       "runtime": "node-22.0",
-      "path": "functions/bintiWaitlist",
-      "entrypoint": "src/main.js",
       "execute": [
         "any"
       ],
-      "enabled": true,
-      "logging": true,
       "events": [],
       "schedule": "",
       "timeout": 30,
+      "path": "functions/bintiWaitlist",
+      "entrypoint": "src/main.js",
       "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
       "scopes": [
         "databases.read",
         "databases.write"

@@ -32,10 +32,19 @@ class CategoryLessonsScreen extends ConsumerStatefulWidget {
 
 class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   Future<void> _onRefresh() async {
+    ref.invalidate(categoryNotifierProvider);
     ref.invalidate(
       contentListProvider((ContentKind.lesson, widget.categoryId)),
     );
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+  }
+
+  void _backToLearningPaths() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/lessons');
+    }
   }
 
   LinearGradient _getGradient(String preset) {
@@ -58,9 +67,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoryNotifierProvider);
-    final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final scriptMode = ref.watch(effectiveScriptModeProvider);
 
     final category = categories.when(
       data: (data) => _findCategory(data, widget.categoryId),
@@ -71,10 +78,52 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     if (category == null) {
       return Scaffold(
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: AppBar(
+          leading: BackButton(onPressed: _backToLearningPaths),
+        ),
+        body: categories.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SafeArea(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          categories.hasError
+                              ? Icons.cloud_off_rounded
+                              : Icons.search_off_rounded,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          categories.hasError
+                              ? 'Could not load lessons'
+                              : 'Learning path not found',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        TextButton.icon(
+                          onPressed: _onRefresh,
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Retry'),
+                        ),
+                        TextButton(
+                          onPressed: _backToLearningPaths,
+                          child: const Text('Back to learning paths'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
       );
     }
 
+    final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
     final brandGradient = _getGradient(category.gradientPreset);
     final themeColor = brandGradient.colors.first;
 

@@ -259,8 +259,7 @@ describe('Admin Refund Operation Identity & Recovery', () => {
     assert.equal((await auditDocs(db)).documents.length, 0);
   });
 
-  test('an earlier operation recovers its audit after a later operation moved the purchase', async () => {
-    const db = new MemoryDatabase({ ...basePurchase });
+  test('an earlier operation recovers its audit after a later operation moved the purchase', async () => {    const db = new MemoryDatabase({ ...basePurchase });
     let failAudit = true;
     const originalCreate = db.createDocument.bind(db);
     db.createDocument = async (...args) => {
@@ -474,5 +473,97 @@ describe('Admin Refund Operation Identity & Recovery', () => {
     );
     assert.equal(claim.status, 'audit_committed');
     assert.equal((await auditDocs(db)).documents.length, 1);
+  });
+
+  test('partial claim failure plus full successor: retry recovers the earlier audit without touching the ledger', async () => {
+    // Combined interruption: K1 commits a partial ledger, but BOTH its
+    // claim-status and audit writes fail. K2 then completes a full refund
+    // and displaces the purchase pointer. Retrying K1 must still recover
+    // K1's missing audit (its claim row cannot be displaced) while leaving
+    // K2's ledger outcome and pointer exactly intact.
+    const db = new MemoryDatabase({ ...basePurchase });
+    let faultActive = true;
+    const originalUpdate = db.updateDocument.bind(db);
+    db.updateDocument = async (...args) => {
+      const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
+      if (col === 'refund_claims' && faultActive) {
+        throw new Error('Claim status write outage');
+      }
+      return originalUpdate(...args);
+    };
+    const originalCreate = db.createDocument.bind(db);
+    db.createDocument = async (...args) => {
+      const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
+      if (col === 'admin_audit_logs' && faultActive) {
+        throw new Error('Audit log service outage');
+      }
+      return originalCreate(...args);
+    };
+    const transactional = withTransactions(db);
+    const run = (body) =>
+      executeAdminRefund({
+        databases: transactional,
+        actorUserId: 'admin_ops_1',
+        body,
+      });
+
+    await assert.rejects(
+      () =>
+        run({ purchaseId: 'purchase', operationKey: 'K1', amountPaise: 15000 }),
+      /Audit log service outage/,
+    );
+    faultActive = false;
+
+    const k2 = await run({
+      purchaseId: 'purchase',
+      operationKey: 'K2',
+      amountPaise: 49900,
+    });
+    assert.equal(k2.alreadyRefunded, false);
+    assert.equal(k2.refundEpoch, 2);
+    assert.equal(k2.status, 'refunded');
+
+    // Precondition: K1's claim is stuck at 'claimed' with a displaced pointer.
+    const stuckClaim = await db.getDocument(
+      'olitun_db',
+      'refund_claims',
+      stableId('refund:K1'),
+    );
+    assert.equal(stuckClaim.status, 'claimed');
+    const afterK2 = await purchaseDoc(db);
+    assert.equal(afterK2.lastRefundClaimId, stableId('refund:K2'));
+
+    // Retry K1: must NOT short-circuit into alreadyRefunded without an
+    // audit, must NOT rewrite the ledger (epoch stays 2, pointer stays K2),
+    // and must finalize K1's own claim + audit row.
+    const retry = await run({
+      purchaseId: 'purchase',
+      operationKey: 'K1',
+      amountPaise: 15000,
+    });
+    assert.equal(retry.alreadyRefunded, true);
+
+    const purchase = await purchaseDoc(db);
+    assert.equal(purchase.refundedAmountPaise, 49900);
+    assert.equal(purchase.refundEpoch, 2);
+    assert.equal(purchase.lastRefundClaimId, stableId('refund:K2'));
+
+    const logs = await auditDocs(db);
+    assert.equal(logs.documents.length, 2);
+    assert.ok(
+      logs.documents.some((d) => d.metadata.includes('"operationKey":"K1"')),
+      'K1 audit recovered',
+    );
+    assert.ok(
+      logs.documents.some((d) => d.metadata.includes('"operationKey":"K2"')),
+      'K2 audit intact',
+    );
+
+    const claimK1 = await db.getDocument(
+      'olitun_db',
+      'refund_claims',
+      stableId('refund:K1'),
+    );
+    assert.equal(claimK1.status, 'audit_committed');
   });
 });

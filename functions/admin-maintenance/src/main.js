@@ -403,12 +403,28 @@ export async function executeAdminRefund({
     )
   );
   const isResumingAudit = Boolean(existingClaim && isThisClaimLedgerCommitted);
+  // Subsumed resume: this operation's claim is still open, but the purchase
+  // total already reflects at least this operation's amount (max-floor
+  // semantics make reapplying a no-op on amounts). This happens when a later
+  // operation advanced — and displaced the claim pointer of — an operation
+  // whose own claim/audit writes failed. The operation record lives in its
+  // claim row, which no later purchase update can displace, so recovery
+  // proceeds directly to this operation's missing audit instead of
+  // short-circuiting. Reapplying the ledger here would only churn the epoch
+  // and clobber the later operation's pointer.
+  const ledgerSubsumed = Boolean(
+    existingClaim &&
+      existingClaim.status !== 'audit_committed' &&
+      existingClaim.status !== 'committed' &&
+      currentRefundedPaise >= refundAmountPaise,
+  );
+  const isResuming = Boolean(isResumingAudit || ledgerSubsumed);
   const isAlreadyRefunded =
     purchase.status === 'refunded' ||
     purchase.refundStatus === 'fully_refunded' ||
     (expectedPaise > 0 && currentRefundedPaise >= expectedPaise);
 
-  if (isAlreadyRefunded && !isResumingAudit) {
+  if (isAlreadyRefunded && !isResuming) {
     return {
       alreadyRefunded: true,
       purchaseId,
@@ -419,8 +435,8 @@ export async function executeAdminRefund({
     };
   }
 
-  // 7. Validate current status allows refund (if not resuming audit step)
-  if (!isResumingAudit) {
+  // 7. Validate current status allows refund (if not resuming)
+  if (!isResuming) {
     if (!['verified', 'disputed', 'failed'].includes(purchase.status)) {
       throw Object.assign(
         new Error(`Cannot refund purchase in status '${purchase.status}'.`),
@@ -513,6 +529,14 @@ export async function executeAdminRefund({
   // 9. Phase 2: Update course_purchases via guarded databases (Skipped if ledger was already committed)
   let updatedPurchase = purchase;
   let ledgerAlreadyCommitted = isThisClaimLedgerCommitted;
+
+  if (!ledgerAlreadyCommitted && ledgerSubsumed) {
+    // The purchase total already reflects at least this operation's amount,
+    // so rewriting the ledger would only churn the epoch and displace a
+    // later operation's claim pointer. The operation still owns its missing
+    // audit below, which is bound to this operation's key.
+    ledgerAlreadyCommitted = true;
+  }
 
   if (!ledgerAlreadyCommitted) {
     const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });

@@ -74,16 +74,24 @@ class UserStatsModel extends UserStatsEntity {
       });
     }
 
-    Map<String, int> readFoldedLedger(dynamic value) {
-      // Wire key stays `compactedStarEvents` / `compactedMinuteEvents` for
-      // backward compatibility. Pre-ledger versions wrote a LIST of folded
-      // key IDs (their values live in frozen legacy bases); those migrate
-      // to exclusion-only entries with value 0, preserving both totals and
-      // stale-replay protection exactly. Current versions write a MAP of
-      // key -> folded value. Old readers iterate map keys, so they degrade
-      // to key-only tracking instead of crashing.
-      if (value is Map) {
-        return value.map((key, raw) {
+    // Dual-write wire contract (mixed-version safety):
+    // - `compactedStarEvents` / `compactedMinuteEvents` are ALWAYS a LIST of
+    //   folded key IDs (the pre-ledger shape). Previous builds parse them
+    //   with `Set.from(...)`, which throws on any other shape, so this key
+    //   must never become a map.
+    // - `foldedStarEvents` / `foldedMinuteEvents` carry the MAP of
+    //   key -> folded value for ledger-aware builds. Previous builds ignore
+    //   unknown keys, so they keep working on the list alone.
+    // New readers prefer the map when present and otherwise migrate the
+    // legacy list to zero-valued exclusion markers (values for those folds
+    // live in frozen legacy bases), preserving totals and stale-replay
+    // protection exactly.
+    Map<String, int> readFoldedLedger({
+      required dynamic ledgerValue,
+      required dynamic legacyListValue,
+    }) {
+      if (ledgerValue is Map) {
+        return ledgerValue.map((key, raw) {
           final parsed = raw is int
               ? raw
               : raw is num
@@ -94,8 +102,8 @@ class UserStatsModel extends UserStatsEntity {
           return MapEntry(key.toString(), parsed < 0 ? 0 : parsed);
         });
       }
-      if (value is List) {
-        return {for (final entry in value) entry.toString(): 0};
+      if (legacyListValue is List) {
+        return {for (final entry in legacyListValue) entry.toString(): 0};
       }
       return {};
     }
@@ -112,7 +120,8 @@ class UserStatsModel extends UserStatsEntity {
       // remainder unattributed to live events or ledger entries may use the
       // frozen legacy key (never invented, never double-counted).
       final foldedSum = readFoldedLedger(
-        json['compactedStarEvents'],
+        ledgerValue: json['foldedStarEvents'],
+        legacyListValue: json['compactedStarEvents'],
       ).values.fold<int>(0, (s, v) => s + v);
       final accounted = activeSum + foldedSum;
       final legacyBase = totalStarsVal >= accounted
@@ -127,7 +136,8 @@ class UserStatsModel extends UserStatsEntity {
     if (baseMinutesMap.isEmpty) {
       final activeSum = rawMinuteEvents.values.fold<int>(0, (s, v) => s + v);
       final foldedSum = readFoldedLedger(
-        json['compactedMinuteEvents'],
+        ledgerValue: json['foldedMinuteEvents'],
+        legacyListValue: json['compactedMinuteEvents'],
       ).values.fold<int>(0, (s, v) => s + v);
       final accounted = activeSum + foldedSum;
       final legacyBase = totalMinutesVal >= accounted
@@ -157,8 +167,14 @@ class UserStatsModel extends UserStatsEntity {
       syncEpoch: readInt('syncEpoch'),
       starEvents: rawStarEvents,
       minuteEvents: rawMinuteEvents,
-      foldedStarEvents: readFoldedLedger(json['compactedStarEvents']),
-      foldedMinuteEvents: readFoldedLedger(json['compactedMinuteEvents']),
+      foldedStarEvents: readFoldedLedger(
+        ledgerValue: json['foldedStarEvents'],
+        legacyListValue: json['compactedStarEvents'],
+      ),
+      foldedMinuteEvents: readFoldedLedger(
+        ledgerValue: json['foldedMinuteEvents'],
+        legacyListValue: json['compactedMinuteEvents'],
+      ),
       baseStarsByOrigin: baseStarsMap,
       starCheckpoints: starCheckpointsMap,
       baseMinutesByOrigin: baseMinutesMap,
@@ -183,8 +199,13 @@ class UserStatsModel extends UserStatsEntity {
       'syncEpoch': syncEpoch,
       'starEvents': starEvents,
       'minuteEvents': minuteEvents,
-      'compactedStarEvents': foldedStarEvents,
-      'compactedMinuteEvents': foldedMinuteEvents,
+      // Dual-write: the legacy list shape keeps previous builds working
+      // (they parse it with Set.from and ignore unknown keys); the ledger
+      // map carries exact folded values for ledger-aware builds.
+      'compactedStarEvents': foldedStarEvents.keys.toList(),
+      'compactedMinuteEvents': foldedMinuteEvents.keys.toList(),
+      'foldedStarEvents': foldedStarEvents,
+      'foldedMinuteEvents': foldedMinuteEvents,
       'baseStarsByOrigin': baseStarsByOrigin,
       'starCheckpoints': starCheckpoints,
       'baseMinutesByOrigin': baseMinutesByOrigin,

@@ -1,0 +1,172 @@
+Source before preparation: d77cb8e5c99e2765bbc5a171e0f00e7a91b86fd1
+Area: web
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
+Formatted 2 files (0 changed) in 0.02 seconds.
+00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: category semantics is actionable
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1969:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  category semantics is actionable
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: category semantics is actionable [E]
+  Test failed. See exception logs above.
+  The test description was: category semantics is actionable
+  
+00:00 +0 -1: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes words
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1969:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  semantic tap routes words
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -2: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes words [E]
+  Test failed. See exception logs above.
+  The test description was: semantic tap routes words
+  
+00:01 +0 -2: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_alphabets
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1969:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  semantic tap routes cat_alphabets
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -3: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_alphabets [E]
+  Test failed. See exception logs above.
+  The test description was: semantic tap routes cat_alphabets
+  
+00:01 +0 -3: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_letters
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1969:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  semantic tap routes cat_letters
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -4: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_letters [E]
+  Test failed. See exception logs above.
+  The test description was: semantic tap routes cat_letters
+  
+00:01 +0 -4: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes letters
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1969:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  semantic tap routes letters
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes letters [E]
+  Test failed. See exception logs above.
+  The test description was: semantic tap routes letters
+  
+00:01 +0 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: keyboard Enter
+00:01 +1 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: keyboard  
+00:09 +2 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/home_screen_test.dart: (setUpAll)
+00:09 +2 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/home_screen_test.dart: HomeScreen renders greeting and daily progress
+00:10 +3 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/home_screen_test.dart: continueLessonFor prefers the last opened unfinished lesson
+00:10 +4 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/home_screen_test.dart: continueLessonFor falls back when the last opened lesson is completed
+00:10 +5 -5: /home/runner/work/olitunapp/olitunapp/test/features/home/home_screen_test.dart: (tearDownAll)
+00:10 +5 -5: Some tests failed.
+
+Failing tests:
+  /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: category semantics is actionable
+  /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_alphabets
+  /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes cat_letters
+  /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes letters
+  /home/runner/work/olitunapp/olitunapp/test/features/home/widgets/home_category_accessibility_test.dart: semantic tap routes words
+Analyzing olitunapp...                                          
+
+   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/features/home/presentation/widgets/home_content_grid.dart:255:9 • use_null_aware_elements
+   info • 'hasFlag' is deprecated and shouldn't be used. Use flagsCollection instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • test/features/home/widgets/home_category_accessibility_test.dart:80:17 • deprecated_member_use
+
+2 issues found. (ran in 31.1s)
+TAP version 13
+# Subtest: remote lesson media has an explicit restricted source directive
+ok 1 - remote lesson media has an explicit restricted source directive
+  ---
+  duration_ms: 2.103664
+  type: 'test'
+  ...
+# Subtest: allowing lesson media does not broaden executable resource policies
+ok 2 - allowing lesson media does not broaden executable resource policies
+  ---
+  duration_ms: 0.259596
+  type: 'test'
+  ...
+# Subtest: media allowlist excludes unrestricted hosts and insecure transport
+ok 3 - media allowlist excludes unrestricted hosts and insecure transport
+  ---
+  duration_ms: 0.205575
+  type: 'test'
+  ...
+# Subtest: worker update and baseline security headers are preserved
+ok 4 - worker update and baseline security headers are preserved
+  ---
+  duration_ms: 0.909535
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 79.771288
+
+Focused test exit: 1
+Analysis exit: 1
+Node test exit: 0

@@ -1,86 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/features/admin/presentation/analytics/admin_analytics_csv_exporter.dart';
-import 'package:itun/features/admin/presentation/widgets/common/admin_destructive_dialog.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 
 class PurchasesActionsHelper {
-  static final NumberFormat _inrCurrencyFormat = NumberFormat.currency(
-    locale: 'en_IN',
-    symbol: '₹',
-    decimalDigits: 0,
-  );
-
   static Future<void> showRefundDialog({
     required BuildContext context,
     required WidgetRef ref,
     required PurchaseModel item,
     required void Function(bool isProcessing) onProcessingChanged,
   }) async {
-    final confirmed = await AdminDestructiveDialog.show(
+    onProcessingChanged(false);
+    await showDialog<void>(
       context: context,
-      title: 'Record External Refund & Revoke Access',
-      actionName: 'Record Refund in Database',
-      targetName:
-          'Payment: ${item.razorpayPaymentId ?? item.id} (User: ${item.userId})',
-      blastRadiusDescription:
-          'Course "${item.categoryId}" access will be removed on the user\'s next entitlement sync, normally within 5 minutes. Amount of ${_inrCurrencyFormat.format(item.amountPaidInr)} will be marked as refunded in the database.\n\n⚠️ Note: Payment disbursements must be issued separately in the Razorpay Dashboard if returning funds.',
-      confirmButtonLabel: 'Record Refund & Revoke Access',
-      icon: Icons.replay_circle_filled_rounded,
-      onConfirm: () async {
-        onProcessingChanged(true);
-        try {
-          final outcome = await ref
-              .read(adminPurchasesProvider.notifier)
-              .recordExternalRefund(
-                item.id,
-                idempotencyKey:
-                    'rfnd_${item.id}_${DateTime.now().millisecondsSinceEpoch}',
-              );
-
-          if (!context.mounted) return;
-
-          if (outcome == RefundResult.completed ||
-              outcome == RefundResult.alreadyRefunded) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Refund recorded. Access will be removed on the user’s next entitlement sync, normally within five minutes.',
-                ),
-                backgroundColor: AppColors.success,
-              ),
-            );
-          } else if (outcome == RefundResult.invalidTransition) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Cannot refund: Transaction is not in a verified state.',
-                ),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Failed to record refund in database.'),
-                backgroundColor: AppColors.error,
-              ),
-            );
-          }
-        } finally {
-          onProcessingChanged(false);
-        }
-      },
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Refund recording unavailable'),
+        content: const Text(externalRefundRecordingUnavailableMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
-
-    if (confirmed == null) {
-      onProcessingChanged(false);
-    }
   }
 
   static Future<void> exportVisibleRows({

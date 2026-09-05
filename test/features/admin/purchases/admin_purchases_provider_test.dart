@@ -234,9 +234,8 @@ void main() {
       },
     );
 
-    test(
-      'Case 4: recordExternalRefund stores actual operator admin ID and invalidates user cache',
-      () async {
+    for (final status in ['verified', 'refunded', 'failed', 'disputed']) {
+      test('client refund fails closed for $status', () async {
         when(
           () => mockDb.listDocuments(
             'course_purchases',
@@ -246,175 +245,37 @@ void main() {
           (_) async => [
             makePurchaseDoc(
               id: 'p_refund_target',
-              userId: 'u_target_123',
+              userId: 'u_target',
               categoryId: 'santali_pro',
               unlockMethod: 'razorpay',
               amountPaidInr: 499,
-              status: 'verified',
-              paymentId: 'pay_target',
+              status: status,
             ),
           ],
         );
-
-        when(
-          () => mockDb.getDocument('course_purchases', 'p_refund_target'),
-        ).thenAnswer(
-          (_) async => makePurchaseDoc(
-            id: 'p_refund_target',
-            userId: 'u_target_123',
-            categoryId: 'santali_pro',
-            unlockMethod: 'razorpay',
-            amountPaidInr: 499,
-            status: 'verified',
-            paymentId: 'pay_target',
-          ),
-        );
-
-        when(
-          () => mockDb.updateDocument(
-            'course_purchases',
-            'p_refund_target',
-            any(),
-          ),
-        ).thenAnswer((_) async => {});
-
-        when(
-          () => mockRepo.clearUserEntitlementCache('u_target_123'),
-        ).thenAnswer((_) async => {});
-
         final container = createContainer();
         addTearDown(container.dispose);
         await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-
         final outcome = await notifier.recordExternalRefund(
           'p_refund_target',
-          externalRefundId: 'rfnd_ext_123',
-          reason: 'Customer requested refund via support ticket',
-          idempotencyKey: 'idemp_key_999',
+          externalRefundId: 'already-issued-refund',
+          reason: 'Support reconciliation',
+          idempotencyKey: 'same-key',
         );
-
-        expect(outcome, RefundResult.completed);
-        verify(
-          () => mockDb.updateDocument(
-            'course_purchases',
-            'p_refund_target',
-            any(
-              that: predicate((Map<String, dynamic> data) {
-                return data['status'] == 'refunded' &&
-                    data['refundReference'] == 'rfnd_ext_123' &&
-                    data['refundReason'] ==
-                        'Customer requested refund via support ticket' &&
-                    data['refundedBy'] ==
-                        'admin_usr_999' && // Actual operator ID!
-                    data['idempotencyKey'] == 'idemp_key_999' &&
-                    data['previousStatus'] == 'verified';
-              }),
-            ),
-          ),
-        ).called(1);
-
-        verify(
-          () => mockRepo.clearUserEntitlementCache('u_target_123'),
-        ).called(1);
-      },
-    );
-
-    test(
-      'Case 5: recordExternalRefund returns alreadyRefunded idempotently without duplicate update',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer(
-          (_) async => [
-            makePurchaseDoc(
-              id: 'p_already_refunded',
-              userId: 'u_target_456',
-              categoryId: 'santali_pro',
-              unlockMethod: 'razorpay',
-              amountPaidInr: 499,
-              status: 'refunded',
-              paymentId: 'pay_target',
-            ),
-          ],
+        expect(outcome, RefundResult.failed);
+        expect(await notifier.refundPurchase('p_refund_target'), isFalse);
+        expect(
+          container.read(adminPurchasesProvider).items.single.status,
+          status,
         );
-
-        when(
-          () => mockDb.getDocument('course_purchases', 'p_already_refunded'),
-        ).thenAnswer(
-          (_) async => makePurchaseDoc(
-            id: 'p_already_refunded',
-            userId: 'u_target_456',
-            categoryId: 'santali_pro',
-            unlockMethod: 'razorpay',
-            amountPaidInr: 499,
-            status: 'refunded',
-            paymentId: 'pay_target',
-          ),
-        );
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-
-        final outcome = await notifier.recordExternalRefund(
-          'p_already_refunded',
-        );
-
-        expect(outcome, RefundResult.alreadyRefunded);
+        verifyNever(() => mockDb.getDocument('course_purchases', any()));
         verifyNever(
           () => mockDb.updateDocument('course_purchases', any(), any()),
         );
-      },
-    );
-
-    test(
-      'Case 6: recordExternalRefund rejects invalid state transitions',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer(
-          (_) async => [
-            makePurchaseDoc(
-              id: 'p_failed_item',
-              userId: 'u_fail_1',
-              categoryId: 'santali_pro',
-              unlockMethod: 'razorpay',
-              amountPaidInr: 499,
-              status: 'failed',
-            ),
-          ],
-        );
-
-        when(
-          () => mockDb.getDocument('course_purchases', 'p_failed_item'),
-        ).thenAnswer(
-          (_) async => makePurchaseDoc(
-            id: 'p_failed_item',
-            userId: 'u_fail_1',
-            categoryId: 'santali_pro',
-            unlockMethod: 'razorpay',
-            amountPaidInr: 499,
-            status: 'failed',
-          ),
-        );
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-
-        final outcome = await notifier.recordExternalRefund('p_failed_item');
-        expect(outcome, RefundResult.invalidTransition);
-      },
-    );
+        verifyNever(() => mockRepo.clearUserEntitlementCache(any()));
+      });
+    }
 
     test(
       'Case 7: fetchAllMatchingPurchases loops through all pages via cursor and returns completed status',

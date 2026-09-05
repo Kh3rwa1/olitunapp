@@ -1,55 +1,536 @@
-Source commit: 6b2e140d3746817ce21469595adc57a5f27de299
-Applied priority hardening to 26 files
-Warning: Package resolution error when reading "analysis_options.yaml" file for "integration_test/journeys_integration_test.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/core/ads/ad_service.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
+Source commit: 84560f8d9148fcffe7e979365e1e8252fdde9a21
+
+
+## finalize
+Finalized 13 files
 Formatted lib/core/ads/ad_service.dart
-Formatted lib/core/ads/ad_state.dart
-Formatted lib/core/ads/consent_manager.dart
-Formatted lib/core/ads/interstitial_ad_manager.dart
-Formatted lib/core/ads/rewarded_ad_manager.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/core/ads/widgets/banner_ad_widget.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/core/ads/widgets/banner_ad_widget.dart
-Formatted lib/core/ads/widgets/native_ad_widget.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/core/offline/mutation_outbox_service.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/core/offline/mutation_outbox_service.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/core/payments/purchase_repository.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/core/payments/purchase_repository.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/shared/offline/content_mutation_replay.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/shared/offline/content_mutation_replay.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/shared/providers/purchases_provider.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/shared/providers/purchases_provider.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "lib/shared/repositories/content_repository.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted lib/shared/repositories/content_repository.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "test/core/ads/ad_state_test.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted test/core/ads/ad_state_test.dart
-Formatted test/core/ads/consent_fail_closed_test.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "test/core/payments/purchase_repository_entitlements_test.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted test/core/payments/purchase_repository_entitlements_test.dart
-Warning: Package resolution error when reading "analysis_options.yaml" file for "test/shared/offline/content_mutation_replay_test.dart":
-Failed to resolve package URI "package:flutter_lints/flutter.yaml" in include at "/home/runner/work/olitunapp/olitunapp/analysis_options.yaml".
-Formatted test/shared/offline/content_mutation_replay_test.dart
-Formatted 17 files (16 changed) in 0.08 seconds.
-Function manifests, schedules, execution roles and deletion scopes verified.
-[fix/review-priority-hardening-20260905 6b2e140] fix: address priority findings with regression coverage
- 26 files changed, 995 insertions(+), 298 deletions(-)
- create mode 100644 docs/PRIORITY_HARDENING_2026_09_05.md
- create mode 100644 functions/test/translation_resource_budget.test.js
- create mode 100644 functions/translator/src/resource_budget.js
- create mode 100644 functions/translator/test/resource_budget.test.js
- create mode 100644 scripts/verify_function_deployment.mjs
- create mode 100644 test/core/ads/consent_fail_closed_test.dart
+Formatted 3 files (1 changed) in 0.03 seconds.
+Function manifests, schedules, execution roles and required scopes verified.
+[fix/review-priority-hardening-20260905 84560f8] fix: validate scoped budgets and durable persistence regressions
+ 10 files changed, 59 insertions(+), 42 deletions(-)
+ create mode 100644 functions/test/schema_attribute.test.js
+ delete mode 100644 functions/test/translation_resource_budget.test.js
+ create mode 100644 scripts/lib/schema_attribute.mjs
 To https://github.com/Kh3rwa1/olitunapp
-   4216955..6b2e140  HEAD -> fix/review-priority-hardening-20260905
+   fe5f380..84560f8  HEAD -> fix/review-priority-hardening-20260905
+
+
+## outcomes
+Analysis exit: 0
+Flutter regression exit: 0
+Backend exit: 0
+
+
+## analyze
+Analyzing olitunapp...                                          
+No issues found! (ran in 28.8s)
+
+
+## flutter
+
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests provides test ad unit IDs by default in test mode
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests default frequency caps have reasonable limits
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests BannerAdWidget renders empty box when Ad-Free
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests NativeAdWidget renders empty box when Ad-Free
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
+ConsentManager: Reset failed: MissingPluginException(No implementation found for method ConsentInformation#reset on channel plugins.flutter.io/google_mobile_ads/ump)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
+AdState: isAdFreeUser set to true
+AdState: isAdFreeUser set to false
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests InterstitialAdManager respects ad-free and frequency rules
+InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
+AdState: isAdFreeUser set to true
+InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests RewardedAdManager instantly grants rewards to Ad-Free users without loading ads
+AdState: isAdFreeUser set to true
+RewardedAdManager: Ad-free user instant reward granted (quiz_reward_test)
+AdState: isAdFreeUser set to false
+RewardedAdManager: Credited 50 stars to user
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_stale_cache_test.dart: verified purchase -> TTL expires -> device offline -> entitlement remains available with staleCached status
+❌ fetchPurchasedCategoryIds failed: Exception: SocketException: Client error (offline)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: background refund refresh publishes a revision and removes the entitlement
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: permission denial revokes fresh cached access and notifies consumers
+❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
+❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: logout invalidates an in-flight verification before it can repopulate cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 1: fetchEntitlements returns verified categories from Appwrite and caches with user key
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 2: clearUserEntitlementCache purges user cache so next fetch hits server
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 3: refunding one category leaves other verified categories intact
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite returns unauthenticated status when userId is empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite EntitlementResult helper properties evaluate correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite clearUserCache purges user-specific entitlement cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries PurchaseRepository provider initializes correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries User-scoped entitlement cache is isolated per userId
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Refunded or disputed status revokes entitlement from user cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Order ID and Payment ID strict verification contract
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Captured status requirement validation
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable
+[Content] Failed to queue offline mutation: Bad state: disk full
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: replay cannot acknowledge an offline re-enqueue as a server success
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: durable edit survives Hive close and reopen before replay
+Outbox: Enqueued mutation upsert_word_word_johar_6a9bc74c9b80de46fa20 (type: content.upsert) for user content_admin
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: simultaneous replay triggers share one execution and await persistence
+Outbox: Enqueued mutation single_flight (type: content.upsert) for user content_admin
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: a deferred older edit blocks newer edits of the same entity
+Outbox: Enqueued mutation ordered_0 (type: content.upsert) for user content_admin
+Outbox: Enqueued mutation ordered_1 (type: content.upsert) for user content_admin
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips replay when the device is offline
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay replays queued upserts and clears them from the outbox
+Outbox: Enqueued mutation op_replay_success (type: content.upsert) for user content_admin
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay records failures with retry budget instead of losing the edit
+Outbox: Enqueued mutation op_replay_failure (type: content.upsert) for user content_admin
+[ContentReplay] Replayed 0 queued edits, 1 failed, 0 dead-lettered.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay dead-letters permanently unparseable mutations
+Outbox: Enqueued mutation op_replay_corrupt (type: content.upsert) for user content_admin
+[ContentReplay] Failed to deserialize op_replay_corrupt: Bad state: No element
+Outbox: Operation op_replay_corrupt moved to dead-letter state after 1 attempts
+[ContentReplay] Replayed 0 queued edits, 1 failed, 0 dead-lettered.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips already dead-lettered mutations
+Outbox: Enqueued mutation op_replay_dead (type: content.upsert) for user content_admin
+::endgroup::
+
+🎉 38 tests passed.
+
+
+## backend
+
+> olitunapp-root@1.0.0 test
+> npm run test:backend && node scripts/test_gitleaks_rules.mjs
+
+
+> olitunapp-root@1.0.0 test:backend
+> node scripts/sync_shared_modules.mjs --check && node --test functions/test/*.test.js functions/translator/test/*.test.js functions/syncDailyAffirmation/test/*.test.js functions/bintiWaitlist/test/*.test.js
+
+✅ Shared modules are in sync.
+TAP version 13
+# Subtest: validateWaitlistInput accepts a valid submission and normalizes it
+ok 1 - validateWaitlistInput accepts a valid submission and normalizes it
+  ---
+  duration_ms: 1.715789
+  type: 'test'
+  ...
+# Subtest: validateWaitlistInput rejects invalid fields with readable errors
+ok 2 - validateWaitlistInput rejects invalid fields with readable errors
+  ---
+  duration_ms: 0.494011
+  type: 'test'
+  ...
+# Subtest: deriveCallerIdentifier prefers the verified user and never leaks raw values
+ok 3 - deriveCallerIdentifier prefers the verified user and never leaks raw values
+  ---
+  duration_ms: 0.8105
+  type: 'test'
+  ...
+# Subtest: derivePhoneIdentifier is domain-separated from the caller identifier
+ok 4 - derivePhoneIdentifier is domain-separated from the caller identifier
+  ---
+  duration_ms: 0.293935
+  type: 'test'
+  ...
+# Subtest: valid POST creates an entry with server-owned fields and admin-only permissions
+ok 5 - valid POST creates an entry with server-owned fields and admin-only permissions
+  ---
+  duration_ms: 3.946151
+  type: 'test'
+  ...
+# Subtest: client-supplied id, userId, status, and submittedAt are ignored
+ok 6 - client-supplied id, userId, status, and submittedAt are ignored
+  ---
+  duration_ms: 0.95284
+  type: 'test'
+  ...
+# Subtest: rejects non-POST requests
+ok 7 - rejects non-POST requests
+  ---
+  duration_ms: 0.225063
+  type: 'test'
+  ...
+# Subtest: deduplicates pending submissions for the same phone + ceremony
+ok 8 - deduplicates pending submissions for the same phone + ceremony
+  ---
+  duration_ms: 1.261347
+  type: 'test'
+  ...
+# Subtest: a contacted entry does not block a
+...
+
+...
+0
+    ok 14 - 14. razorpayWebhook rejects invalid signature with HTTP 400
+      ---
+      duration_ms: 0.360593
+      type: 'test'
+      ...
+    # Subtest: 15. Authoritative-total failure returns 503 fail closed
+    ok 15 - 15. Authoritative-total failure returns 503 fail closed
+      ---
+      duration_ms: 0.812412
+      type: 'test'
+      ...
+    1..15
+ok 57 - Full Schema-Aware Backend Payment Integration Tests
+  ---
+  duration_ms: 23.687217
+  type: 'suite'
+  ...
+# Subtest: Reconciliation Serverless Function Wrappers Suite
+    # Subtest: reconcilePaymentAttempts returns 500 when environment configuration is missing
+    ok 1 - reconcilePaymentAttempts returns 500 when environment configuration is missing
+      ---
+      duration_ms: 1.060309
+      type: 'test'
+      ...
+    # Subtest: reconcileOrphanedDeletions returns 500 when database ID is missing
+    ok 2 - reconcileOrphanedDeletions returns 500 when database ID is missing
+      ---
+      duration_ms: 0.313314
+      type: 'test'
+      ...
+    # Subtest: reconcilePaymentAttempts returns 200 and scans payment_attempts when env is configured
+    ok 3 - reconcilePaymentAttempts returns 200 and scans payment_attempts when env is configured
+      ---
+      duration_ms: 25.628028
+      type: 'test'
+      ...
+    # Subtest: reconcileOrphanedDeletions returns 200 and completes scan when env is configured
+    ok 4 - reconcileOrphanedDeletions returns 200 and completes scan when env is configured
+      ---
+      duration_ms: 4.570412
+      type: 'test'
+      ...
+    1..4
+ok 58 - Reconciliation Serverless Function Wrappers Suite
+  ---
+  duration_ms: 33.050841
+  type: 'suite'
+  ...
+# Subtest: reconcileStuckPaymentAttempts paid-order grant
+    # Subtest: grants entitlement using the canonical stableId purchase key, schema, and permissions
+    ok 1 - grants entitlement using the canonical stableId purchase key, schema, and permissions
+      ---
+      duration_ms: 3.983604
+      type: 'test'
+      ...
+    # Subtest: reuses and verifies an existing pending ledger row instead of creating a duplicate
+    ok 2 - reuses and verifies an existing pending ledger row instead of creating a duplicate
+      ---
+      duration_ms: 0.719754
+      type: 'test'
+      ...
+    # Subtest: fails closed on amount mismatch: no grant, attempt flagged amount_mismatch
+    ok 3 - fails closed on amount mismatch: no grant, attempt flagged amount_mismatch
+      ---
+      duration_ms: 0.446631
+      type: 'test'
+      ...
+    # Subtest: fails closed when the paid order has no captured payment
+    ok 4 - fails closed when the paid order has no captured payment
+      ---
+      duration_ms: 0.424729
+      type: 'test'
+      ...
+    # Subtest: expires attempts whose gateway order is not paid
+    ok 5 - expires attempts whose gateway order is not paid
+      ---
+      duration_ms: 0.652205
+      type: 'test'
+      ...
+    # Subtest: abandons attempts without a gateway order id
+    ok 6 - abandons attempts without a gateway order id
+      ---
+      duration_ms: 0.376848
+      type: 'test'
+      ...
+    1..6
+ok 59 - reconcileStuckPaymentAttempts paid-order grant
+  ---
+  duration_ms: 8.179441
+  type: 'suite'
+  ...
+# Subtest: schema snapshots serialize actual attributes rather than null entries
+ok 60 - schema snapshots serialize actual attributes rather than null entries
+  ---
+  duration_ms: 1.294375
+  type: 'test'
+  ...
+# Subtest: schema snapshots preserve zero bounds and enum values but omit server metadata
+ok 61 - schema snapshots preserve zero bounds and enum values but omit server metadata
+  ---
+  duration_ms: 0.260075
+  type: 'test'
+  ...
+# Subtest: Version Consistency: parsePubspecVersion extracts semver and monotonic build number
+ok 62 - Version Consistency: parsePubspecVersion extracts semver and monotonic build number
+  ---
+  duration_ms: 1.50755
+  type: 'test'
+  ...
+# Subtest: Version Consistency: parseChangelogLatestVersion extracts top release header
+ok 63 - Version Consistency: parseChangelogLatestVersion extracts top release header
+  ---
+  duration_ms: 0.273795
+  type: 'test'
+  ...
+# Subtest: Version Consistency: verifyReleaseVersion validates live repo metadata
+ok 64 - Version Consistency: verifyReleaseVersion validates live repo metadata
+  ---
+  duration_ms: 2.157121
+  type: 'test'
+  ...
+# Subtest: Version Consistency: detect release tag drift
+ok 65 - Version Consistency: detect release tag drift
+  ---
+  duration_ms: 0.874634
+  type: 'test'
+  ...
+# Subtest: Staging Integration: Real Appwrite parallel concurrency execution
+ok 66 - Staging Integration: Real Appwrite parallel concurrency execution # SKIP Skipping live Appwrite staging test: STAGING_APPWRITE_* credentials not set.
+  ---
+  duration_ms: 1.042432
+  type: 'test'
+  ...
+# Subtest: Unit: Deterministic slot document IDs are stable and valid format
+ok 67 - Unit: Deterministic slot document IDs are stable and valid format
+  ---
+  duration_ms: 1.753725
+  type: 'test'
+  ...
+# Subtest: Unit: First request successfully claims slot 1
+ok 68 - Unit: First request successfully claims slot 1
+  ---
+  duration_ms: 8.473867
+  type: 'test'
+  ...
+# Subtest: Unit: Exactly-at-limit request succeeds and request N+1 is rejected
+ok 69 - Unit: Exactly-at-limit request succeeds and request N+1 is rejected
+  ---
+  duration_ms: 27.497414
+  type: 'test'
+  ...
+# Subtest: Unit: Malformed or non-positive limit fails closed safely
+ok 70 - Unit: Malformed or non-positive limit fails closed safely
+  ---
+  duration_ms: 0.367964
+  type: 'test'
+  ...
+# Subtest: Unit: Storage failure triggers fail-closed error with sanitized code
+ok 71 - Unit: Storage failure triggers fail-closed error with sanitized code
+  ---
+  duration_ms: 1.272383
+  type: 'test'
+  ...
+# Subtest: Unit: Retention cleanup prunes expired rate limit documents safely
+ok 72 - Unit: Retention cleanup prunes expired rate limit documents safely
+  ---
+  duration_ms: 9.602287
+  type: 'test'
+  ...
+# Subtest: Concurrency: 20 simultaneous requests never exceed the burst limit
+ok 73 - Concurrency: 20 simultaneous requests never exceed the burst limit
+  ---
+  duration_ms: 16.069075
+  type: 'test'
+  ...
+# Subtest: Concurrency: 50 simultaneous requests under hourly limit test strictly bounds successes
+ok 74 - Concurrency: 50 simultaneous requests under hourly limit test strictly bounds successes
+  ---
+  duration_ms: 192.046451
+  type: 'test'
+  ...
+# Subtest: Concurrency: 100 simultaneous requests across multiple simulated workers do not exceed limit
+ok 75 - Concurrency: 100 simultaneous requests across multiple simulated workers do not exceed limit
+  ---
+  duration_ms: 54.844696
+  type: 'test'
+  ...
+# Subtest: Verified Identity: Cryptographic verification succeeds for valid JWT and fails for invalid/fake claims
+ok 76 - Verified Identity: Cryptographic verification succeeds for valid JWT and fails for invalid/fake claims
+  ---
+  duration_ms: 1.130042
+  type: 'test'
+  ...
+# Subtest: Verified Identity: Mandatory RATE_LIMIT_SALT in production & domain separation
+ok 77 - Verified Identity: Mandatory RATE_LIMIT_SALT in production & domain separation
+  ---
+  duration_ms: 1.25025
+  type: 'test'
+  ...
+# Subtest: Rollback: When minute limit succeeds but hourly limit fails, minute slot is rolled back
+ok 78 - Rollback: When minute limit succeeds but hourly limit fails, minute slot is rolled back
+  ---
+  duration_ms: 7.405406
+  type: 'test'
+  ...
+# Subtest: Fail-Closed: Non-duplicate 409 or unknown error fails closed immediately without probing next slot
+ok 79 - Fail-Closed: Non-duplicate 409 or unknown error fails closed immediately without probing next slot
+  ---
+  duration_ms: 0.411639
+  type: 'test'
+  ...
+# Subtest: Fail-Closed: Limit exceeding MAX_ALLOWED_LIMIT fails closed
+ok 80 - Fail-Closed: Limit exceeding MAX_ALLOWED_LIMIT fails closed
+  ---
+  duration_ms: 0.194117
+  type: 'test'
+  ...
+# Subtest: SDK Version Integrity: Installed node-appwrite version matches expected release SDK
+ok 81 - SDK Version Integrity: Installed node-appwrite version matches expected release SDK
+  ---
+  duration_ms: 0.806493
+  type: 'test'
+  ...
+# Subtest: Identity Trust Boundary: Spoofed x-appwrite-user-id header is ignored without valid JWT
+ok 82 - Identity Trust Boundary: Spoofed x-appwrite-user-id header is ignored without valid JWT
+  ---
+  duration_ms: 1.618835
+  type: 'test'
+  ...
+# Subtest: Identity Trust Boundary: Valid Appwrite JWT grants authenticated tier with usr_ domain separation
+ok 83 - Identity Trust Boundary: Valid Appwrite JWT grants authenticated tier with usr_ domain separation
+  ---
+  duration_ms: 0.309928
+  type: 'test'
+  ...
+# Subtest: Identity Trust Boundary: Authenticated callers receive higher rate limits than anonymous callers
+ok 84 - Identity Trust Boundary: Authenticated callers receive higher rate limits than anonymous callers
+  ---
+  duration_ms: 2.646916
+  type: 'test'
+  ...
+# Subtest: resource configuration rejects invalid and unbounded values
+ok 85 - resource configuration rejects invalid and unbounded values
+  ---
+  duration_ms: 1.433031
+  type: 'test'
+  ...
+# Subtest: disabled service never reserves a slot
+ok 86 - disabled service never reserves a slot
+  ---
+  duration_ms: 0.323058
+  type: 'test'
+  ...
+# Subtest: request and upstream budgets use independent global identities
+ok 87 - request and upstream budgets use independent global identities
+  ---
+  duration_ms: 0.321747
+  type: 'test'
+  ...
+# Subtest: storage outage fails closed and repeated failures open the circuit
+ok 88 - storage outage fails closed and repeated failures open the circuit
+  ---
+  duration_ms: 0.42615
+  type: 'test'
+  ...
+# Subtest: cache keys are stable SHA-256 hashes, not raw text
+ok 89 - cache keys are stable SHA-256 hashes, not raw text
+  ---
+  duration_ms: 1.253926
+  type: 'test'
+  ...
+# Subtest: language tags are normalized or replaced with safe defaults
+ok 90 - language tags are normalized or replaced with safe defaults
+  ---
+  duration_ms: 0.418149
+  type: 'test'
+  ...
+# Subtest: translation input limit defaults to a bounded value
+ok 91 - translation input limit defaults to a bounded value
+  ---
+  duration_ms: 0.133788
+  type: 'test'
+  ...
+# Subtest: Security: Rate-limit identifier derivation preserves privacy and never exposes raw IP
+ok 92 - Security: Rate-limit identifier derivation preserves privacy and never exposes raw IP
+  ---
+  duration_ms: 1.326302
+  type: 'test'
+  ...
+# Subtest: Security: Supported languages validation and normalization
+ok 93 - Security: Supported languages validation and normalization
+  ---
+  duration_ms: 0.280925
+  type: 'test'
+  ...
+# Subtest: Security: Cache keys are immutable SHA-256 hashes without text leaks
+ok 94 - Security: Cache keys are immutable SHA-256 hashes without text leaks
+  ---
+  duration_ms: 0.49324
+  type: 'test'
+  ...
+# Subtest: RateLimiter: Burst and sustained limits enforce bounds correctly
+ok 95 - RateLimiter: Burst and sustained limits enforce bounds correctly
+  ---
+  duration_ms: 2.016353
+  type: 'test'
+  ...
+# Subtest: RateLimiter: Fail-closed on storage error
+ok 96 - RateLimiter: Fail-closed on storage error
+  ---
+  duration_ms: 0.376608
+  type: 'test'
+  ...
+# Subtest: Providers: Provider factory correctly instantiates configured provider
+ok 97 - Providers: Provider factory correctly instantiates configured provider
+  ---
+  duration_ms: 0.303329
+  type: 'test'
+  ...
+1..97
+# tests 151
+# suites 7
+# pass 150
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 1924.501953
+🧪 Testing Gitleaks Rules against Dynamic Temp Fixtures...
+  (Gitleaks binary not present in environment; evaluating parsed .gitleaks.toml rule regex)...
+  ✓ Rule regex matched positive fixture.
+  ✓ Rule regex matched positive fixture.
+  ✓ Rule regex matched positive fixture.
+  ✓ Rule regex matched positive fixture.
+  ✓ Rule regex correctly allowed negative fixture.
+  ✓ Rule regex correctly allowed negative fixture.
+  ✓ Rule regex correctly allowed negative fixture.
+  ✓ Rule regex correctly allowed negative fixture.
+✅ Gitleaks rule fixture verification passed successfully!
+
+
+## dependencies
 Resolving dependencies...
 Downloading packages...
   appwrite 21.1.0 (26.1.0 available)
@@ -146,181 +627,16 @@ Changed 7 dependencies!
 85 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
 
-added 16 packages, and audited 17 packages in 2s
+added 16 packages, and audited 17 packages in 928ms
 
 1 package is looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
 
-added 16 packages, and audited 17 packages in 558ms
+added 16 packages, and audited 17 packages in 504ms
 
 1 package is looking for funding
   run `npm fund` for details
 
 found 0 vulnerabilities
-Analyzing olitunapp...                                          
-
-   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/ads/ad_service.dart:138:9 • prefer_const_constructors
-   info • Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation • lib/core/ads/ad_service.dart:180:9 • prefer_const_constructors
-   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/core/payments/purchase_repository.dart:60:7 • curly_braces_in_flow_control_structures
-warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/core/payments/purchase_repository.dart:98:27 • invalid_null_aware_operator
-   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/core/payments/purchase_repository.dart:210:13 • curly_braces_in_flow_control_structures
-
-5 issues found. (ran in 27.9s)
-
-::group::✅ Passing tests
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests provides test ad unit IDs by default in test mode
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests default frequency caps have reasonable limits
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests BannerAdWidget renders empty box when Ad-Free
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests NativeAdWidget renders empty box when Ad-Free
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
-ConsentManager: Reset failed: MissingPluginException(No implementation found for method ConsentInformation#reset on channel plugins.flutter.io/google_mobile_ads/ump)
-::endgroup::
-::group::✅ Passing tests
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
-✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
-AdState: isAdFreeUser set to true
-AdState: isAdFreeUser set to false
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests InterstitialAdManager respects ad-free and frequency rules
-InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
-AdState: isAdFreeUser set to true
-InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests RewardedAdManager instantly grants rewards to Ad-Free users without loading ads
-AdState: isAdFreeUser set to true
-RewardedAdManager: Ad-free user instant reward granted (quiz_reward_test)
-AdState: isAdFreeUser set to false
-RewardedAdManager: Credited 50 stars to user
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_stale_cache_test.dart: verified purchase -> TTL expires -> device offline -> entitlement remains available with staleCached status
-❌ fetchPurchasedCategoryIds failed: Exception: SocketException: Client error (offline)
-::endgroup::
-::group::✅ Passing tests
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: background refund refresh publishes a revision and removes the entitlement
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: permission denial revokes fresh cached access and notifies consumers
-❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
-❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
-::endgroup::
-::group::✅ Passing tests
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: logout invalidates an in-flight verification before it can repopulate cache
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 1: fetchEntitlements returns verified categories from Appwrite and caches with user key
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 2: clearUserEntitlementCache purges user cache so next fetch hits server
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 3: refunding one category leaves other verified categories intact
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite returns unauthenticated status when userId is empty
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite EntitlementResult helper properties evaluate correctly
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite clearUserCache purges user-specific entitlement cache
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries PurchaseRepository provider initializes correctly
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries User-scoped entitlement cache is isolated per userId
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Refunded or disputed status revokes entitlement from user cache
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Order ID and Payment ID strict verification contract
-✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Captured status requirement validation
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable
-[Content] Failed to queue offline mutation: Bad state: disk full
-::endgroup::
-::group::❌ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable (failed after test completion)
-MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
-package:flutter/src/services/platform_channel.dart 364:7     MethodChannel._invokeMethod
-===== asynchronous gap ===========================
-dart:async                                                   _CustomZone.registerBinaryCallback
-package:appwrite/src/client_io.dart 166:33                   ClientIO.init
-package:appwrite/src/client_io.dart 71:5                     new ClientIO
-package:appwrite/src/client_io.dart 22:5                     createClient
-package:appwrite/src/client.dart 31:7                        new Client
-test/shared/offline/content_mutation_replay_test.dart 74:32  main.<fn>
-::endgroup::
-Warning: At least one test in this suite creates an HttpClient. When running a test suite that uses
-TestWidgetsFlutterBinding, all HTTP requests will return status code 400, and no network request
-will actually be made. Any test expecting a real network connection and status code will fail.
-To test code that needs an HttpClient, provide your own HttpClient implementation to the code under
-test, so that your test can consistently provide a testable response to the code under test.
-::group::❌ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable (failed after test completion)
-This test failed after it had already completed.
-Make sure to use a matching library which informs the test runner
-of pending async work.
-package:flutter/src/services/platform_channel.dart 364:7     MethodChannel._invokeMethod
-===== asynchronous gap ===========================
-dart:async                                                   _CustomZone.registerBinaryCallback
-package:appwrite/src/client_io.dart 166:33                   ClientIO.init
-package:appwrite/src/client_io.dart 71:5                     new ClientIO
-package:appwrite/src/client_io.dart 22:5                     createClient
-package:appwrite/src/client.dart 31:7                        new Client
-test/shared/offline/content_mutation_replay_test.dart 74:32  main.<fn>
-::endgroup::
-::group::❌ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable (failed after test completion)
-MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
-package:flutter/src/services/platform_channel.dart 364:7     MethodChannel._invokeMethod
-===== asynchronous gap ===========================
-dart:async                                                   _CustomZone.registerBinaryCallback
-package:appwrite/src/client_io.dart 166:33                   ClientIO.init
-package:appwrite/src/client_io.dart 71:5                     new ClientIO
-package:appwrite/src/client_io.dart 22:5                     createClient
-package:appwrite/src/client.dart 31:7                        new Client
-test/shared/offline/content_mutation_replay_test.dart 74:32  main.<fn>
-===== asynchronous gap ===========================
-dart:async                                                   _CustomZone.registerUnaryCallback
-test/shared/offline/content_mutation_replay_test.dart 78:24  main.<fn>
-::endgroup::
-::group::❌ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: replay cannot acknowledge an offline re-enqueue as a server success (failed)
-MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
-package:flutter/src/services/platform_channel.dart 364:7     MethodChannel._invokeMethod
-===== asynchronous gap ===========================
-dart:async                                                   _CustomZone.registerBinaryCallback
-package:appwrite/src/client_io.dart 166:33                   ClientIO.init
-package:appwrite/src/client_io.dart 71:5                     new ClientIO
-package:appwrite/src/client_io.dart 22:5                     createClient
-package:appwrite/src/client.dart 31:7                        new Client
-test/shared/offline/content_mutation_replay_test.dart 88:30  main.<fn>
-::endgroup::
-::group::❌ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: durable edit survives Hive close and reopen before replay (failed)
-Outbox: Enqueued mutation upsert_word_word_johar_6a9bc62a298408fa9c30 (type: content.upsert) for user content_admin
-[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
-MissingPluginException(No implementation found for method getApplicationDocumentsDirectory on channel plugins.flutter.io/path_provider)
-package:flutter/src/services/platform_channel.dart 364:7      MethodChannel._invokeMethod
-===== asynchronous gap ===========================
-dart:async                                                    _CustomZone.registerBinaryCallback
-package:appwrite/src/client_io.dart 166:33                    ClientIO.init
-package:appwrite/src/client_io.dart 71:5                      new ClientIO
-package:appwrite/src/client_io.dart 22:5                      createClient
-package:appwrite/src/client.dart 31:7                         new Client
-test/shared/offline/content_mutation_replay_test.dart 109:28  main.<fn>
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: simultaneous replay triggers share one execution and await persistence
-Outbox: Enqueued mutation single_flight (type: content.upsert) for user content_admin
-[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: a deferred older edit blocks newer edits of the same entity
-Outbox: Enqueued mutation ordered_0 (type: content.upsert) for user content_admin
-Outbox: Enqueued mutation ordered_1 (type: content.upsert) for user content_admin
-::endgroup::
-::group::✅ Passing tests
-✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips replay when the device is offline
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay replays queued upserts and clears them from the outbox
-Outbox: Enqueued mutation op_replay_success (type: content.upsert) for user content_admin
-[ContentReplay] Replayed 1 queued edits, 0 failed, 0 dead-lettered.
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay records failures with retry budget instead of losing the edit
-Outbox: Enqueued mutation op_replay_failure (type: content.upsert) for user content_admin
-[ContentReplay] Replayed 0 queued edits, 1 failed, 0 dead-lettered.
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay dead-letters permanently unparseable mutations
-Outbox: Enqueued mutation op_replay_corrupt (type: content.upsert) for user content_admin
-[ContentReplay] Failed to deserialize op_replay_corrupt: Bad state: No element
-Outbox: Operation op_replay_corrupt moved to dead-letter state after 1 attempts
-[ContentReplay] Replayed 0 queued edits, 1 failed, 0 dead-lettered.
-::endgroup::
-::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips already dead-lettered mutations
-Outbox: Enqueued mutation op_replay_dead (type: content.upsert) for user content_admin
-::endgroup::
-
-::error::35 tests passed, 3 failed.

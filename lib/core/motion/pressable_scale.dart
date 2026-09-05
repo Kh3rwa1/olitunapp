@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'motion_tokens.dart';
 
-/// Tap wrapper: press-down scale + release spring + commit haptic.
+/// One accessible action, with optional press motion and commit haptics.
 class PressableScale extends StatefulWidget {
   const PressableScale({
     super.key,
@@ -13,6 +13,8 @@ class PressableScale extends StatefulWidget {
     this.haptic = HapticIntensity.light,
     this.enabled = true,
     this.behavior = HitTestBehavior.opaque,
+    this.semanticLabel,
+    this.focusColor,
   });
 
   final Widget child;
@@ -22,6 +24,10 @@ class PressableScale extends StatefulWidget {
   final HapticIntensity haptic;
   final bool enabled;
   final HitTestBehavior behavior;
+
+  /// Optional replacement for the combined child label, for a single action.
+  final String? semanticLabel;
+  final Color? focusColor;
 
   @override
   State<PressableScale> createState() => _PressableScaleState();
@@ -33,33 +39,23 @@ class _PressableScaleState extends State<PressableScale>
     vsync: this,
     duration: MotionTokens.quick,
     reverseDuration: MotionTokens.short,
-    value: 0.0,
   );
-
-  late final Animation<double> _scaleAnim =
-      Tween<double>(begin: 1.0, end: widget.scale).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: MotionTokens.standard,
-          reverseCurve: MotionTokens.gentleSpring,
-        ),
-      );
+  bool _showFocus = false;
+  bool _hasFocus = false;
 
   bool get _interactive =>
       widget.enabled && (widget.onTap != null || widget.onLongPress != null);
 
   @override
+  void didUpdateWidget(covariant PressableScale oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_interactive) _controller.reset();
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
-  }
-
-  void _press() {
-    if (_interactive) _controller.forward();
-  }
-
-  void _release() {
-    if (_interactive) _controller.reverse();
   }
 
   void _commit() {
@@ -96,23 +92,91 @@ class _PressableScaleState extends State<PressableScale>
   @override
   Widget build(BuildContext context) {
     final reduce = RespectMotion.of(context);
-    return GestureDetector(
-      behavior: widget.behavior,
-      onTapDown: _interactive && !reduce ? (_) => _press() : null,
-      onTapUp: _interactive && !reduce ? (_) => _release() : null,
-      onTapCancel: _interactive && !reduce ? _release : null,
-      onTap: _interactive ? _commit : null,
-      onLongPress: _interactive && widget.onLongPress != null
-          ? _commitLong
-          : null,
-      child: reduce
-          ? widget.child
-          : AnimatedBuilder(
-              animation: _scaleAnim,
-              builder: (_, child) =>
-                  Transform.scale(scale: _scaleAnim.value, child: child),
-              child: widget.child,
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+      child: widget.child,
+    );
+
+    return FocusableActionDetector(
+      enabled: _interactive,
+      includeFocusSemantics: false,
+      mouseCursor: _interactive
+          ? SystemMouseCursors.click
+          : MouseCursor.defer,
+      onFocusChange: (value) => setState(() => _hasFocus = value),
+      onShowFocusHighlight: (value) => setState(() => _showFocus = value),
+      shortcuts: const <ShortcutActivator, Intent>{
+        SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+        SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+      },
+      actions: <Type, Action<Intent>>{
+        ActivateIntent: CallbackAction<ActivateIntent>(
+          onInvoke: (_) {
+            if (widget.onTap != null) {
+              _commit();
+            } else {
+              _commitLong();
+            }
+            return null;
+          },
+        ),
+      },
+      child: Semantics(
+        button: true,
+        enabled: _interactive,
+        focusable: _interactive,
+        focused: _hasFocus,
+        label: widget.semanticLabel,
+        excludeSemantics: widget.semanticLabel != null,
+        onTap: _interactive && widget.onTap != null ? _commit : null,
+        onLongPress: _interactive && widget.onLongPress != null
+            ? _commitLong
+            : null,
+        child: GestureDetector(
+          excludeFromSemantics: true,
+          behavior: widget.behavior,
+          onTapDown: _interactive && !reduce
+              ? (_) => _controller.forward()
+              : null,
+          onTapUp: _interactive && !reduce
+              ? (_) => _controller.reverse()
+              : null,
+          onTapCancel: _interactive && !reduce ? _controller.reverse : null,
+          onTap: _interactive && widget.onTap != null ? _commit : null,
+          onLongPress: _interactive && widget.onLongPress != null
+              ? _commitLong
+              : null,
+          child: DecoratedBox(
+            position: DecorationPosition.foreground,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: _showFocus && _interactive
+                  ? Border.all(
+                      color:
+                          widget.focusColor ??
+                          Theme.of(context).colorScheme.onSurface,
+                      width: 3,
+                    )
+                  : null,
             ),
+            child: reduce
+                ? content
+                : AnimatedBuilder(
+                    animation: _controller,
+                    builder: (_, child) {
+                      final progress = MotionTokens.standard.transform(
+                        _controller.value,
+                      );
+                      return Transform.scale(
+                        scale: 1 + (widget.scale - 1) * progress,
+                        child: child,
+                      );
+                    },
+                    child: content,
+                  ),
+          ),
+        ),
+      ),
     );
   }
 }

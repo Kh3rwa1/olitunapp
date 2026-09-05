@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../core/motion/motion_tokens.dart';
 
 /// A single cell in a BentoGrid with configurable span and styling.
 class BentoCell extends StatefulWidget {
@@ -38,6 +39,7 @@ class _BentoCellState extends State<BentoCell> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final reduce = RespectMotion.of(context);
 
     return MouseRegion(
       onEnter: widget.enableHover
@@ -47,9 +49,9 @@ class _BentoCellState extends State<BentoCell> {
           ? (_) => setState(() => _isHovered = false)
           : null,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
+        duration: reduce ? Duration.zero : const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        transform: _isHovered
+        transform: _isHovered && !reduce
             ? Matrix4.diagonal3Values(1.02, 1.02, 1.0)
             : Matrix4.identity(),
         transformAlignment: Alignment.center,
@@ -129,7 +131,7 @@ class BentoGridLayout extends StatelessWidget {
   }
 }
 
-/// Staggered bento animation wrapper
+/// Bounded entrance motion; reduced-motion users see content immediately.
 class AnimatedBentoChild extends StatelessWidget {
   final Widget child;
   final int index;
@@ -144,21 +146,23 @@ class AnimatedBentoChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (RespectMotion.of(context)) return child;
+    final delay = Duration(
+      milliseconds: (index * delayMs).clamp(
+        0,
+        MotionTokens.staggerMax.inMilliseconds,
+      ),
+    );
     return child
         .animate()
-        .fadeIn(delay: (index * delayMs).ms, duration: 500.ms)
+        .fadeIn(delay: delay, duration: 500.ms)
         .scale(
           begin: const Offset(0.92, 0.92),
           end: const Offset(1, 1),
-          delay: (index * delayMs).ms,
+          delay: delay,
           duration: 400.ms,
           curve: Curves.easeOutBack,
         )
-        .slideY(
-          begin: 0.08,
-          end: 0,
-          delay: (index * delayMs).ms,
-          duration: 400.ms,
-        );
+        .slideY(begin: 0.08, end: 0, delay: delay, duration: 400.ms);
   }
 }

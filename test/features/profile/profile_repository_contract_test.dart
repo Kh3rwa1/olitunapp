@@ -29,6 +29,22 @@ class _InMemoryProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, UserStatsEntity>> resetUserStats() async {
+    stats = UserStatsEntity(
+      practicedLetters: const {},
+      completedLessons: const {},
+      quizHistory: const {},
+      categoryMastery: const {},
+      totalLearningMinutes: 0,
+      lastActiveDate: '',
+      currentStreak: 0,
+      totalStars: 0,
+      syncEpoch: stats.syncEpoch + 1,
+    );
+    return Right(stats);
+  }
+
+  @override
   Future<Either<Failure, void>> updateDisplayName(String name) async {
     updatedName = name;
     return const Right(null);
@@ -69,18 +85,14 @@ void main() {
   group('ProfileRepository contract', () {
     test('getUserStats returns the stored stats on success', () async {
       final repo = _InMemoryProfileRepository(_baseStats);
-
       final result = await repo.getUserStats();
-
       expect(result.getRight().toNullable()!.totalStars, 7);
     });
 
     test('updateUserStats persists and echoes the new stats', () async {
       final repo = _InMemoryProfileRepository(_baseStats);
       final updated = _baseStats.copyWith(totalStars: 12);
-
       final result = await repo.updateUserStats(updated);
-
       expect(result.getRight().toNullable()!.totalStars, 12);
       expect(
         (await repo.getUserStats()).getRight().toNullable()!.totalStars,
@@ -88,46 +100,44 @@ void main() {
       );
     });
 
+    test('resetUserStats clears progress and advances its epoch', () async {
+      final repo = _InMemoryProfileRepository(_baseStats);
+      final result = await repo.resetUserStats();
+      final reset = result.getRight().toNullable()!;
+      expect(reset.totalStars, 0);
+      expect(reset.currentStreak, 0);
+      expect(reset.syncEpoch, 1);
+    });
+
     test('updateDisplayName and updateAvatar record the changes', () async {
       final repo = _InMemoryProfileRepository(_baseStats);
-
       expect((await repo.updateDisplayName('Somi')).isRight(), isTrue);
       expect((await repo.updateAvatar('🦊', 3)).isRight(), isTrue);
-
       expect(repo.updatedName, 'Somi');
       expect(repo.updatedAvatar?.emoji, '🦊');
       expect(repo.updatedAvatar?.colorIndex, 3);
     });
 
-    test(
-      'syncPendingStats completes without error and is repeatable',
-      () async {
-        final repo = _InMemoryProfileRepository(_baseStats);
+    test('syncPendingStats completes without error and is repeatable', () async {
+      final repo = _InMemoryProfileRepository(_baseStats);
+      expect((await repo.syncPendingStats()).isRight(), isTrue);
+      expect((await repo.syncPendingStats()).isRight(), isTrue);
+      expect(repo.syncCalls, 2);
+    });
 
-        expect((await repo.syncPendingStats()).isRight(), isTrue);
-        expect((await repo.syncPendingStats()).isRight(), isTrue);
-        expect(repo.syncCalls, 2);
-      },
-    );
-
-    test(
-      'mock-typed repositories satisfy the interface and surface failures',
-      () async {
-        final repo = _MockProfileRepository();
-        when(repo.getUserStats).thenAnswer(
-          (_) async => const Left(NetworkFailure(message: 'offline')),
-        );
-        when(() => repo.updateDisplayName(any())).thenAnswer(
-          (_) async => const Left(ServerFailure(message: 'conflict')),
-        );
-
-        final read = await repo.getUserStats();
-        final renamed = await repo.updateDisplayName('Somi');
-
-        expect(read.getLeft().toNullable(), isA<NetworkFailure>());
-        expect(renamed.getLeft().toNullable(), isA<ServerFailure>());
-        verify(repo.getUserStats).called(1);
-      },
-    );
+    test('mock repositories surface failures', () async {
+      final repo = _MockProfileRepository();
+      when(repo.getUserStats).thenAnswer(
+        (_) async => const Left(NetworkFailure(message: 'offline')),
+      );
+      when(() => repo.updateDisplayName(any())).thenAnswer(
+        (_) async => const Left(ServerFailure(message: 'conflict')),
+      );
+      final read = await repo.getUserStats();
+      final renamed = await repo.updateDisplayName('Somi');
+      expect(read.getLeft().toNullable(), isA<NetworkFailure>());
+      expect(renamed.getLeft().toNullable(), isA<ServerFailure>());
+      verify(repo.getUserStats).called(1);
+    });
   });
 }

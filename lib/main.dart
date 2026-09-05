@@ -13,6 +13,8 @@ import 'core/accessibility/app_experience_scope.dart';
 import 'core/config/appwrite_config.dart';
 import 'core/observability/app_observability.dart';
 import 'core/observability/crash_reporting.dart';
+import 'core/startup/startup_status_app.dart';
+import 'core/startup/startup_tasks.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
@@ -41,30 +43,61 @@ Locale appLocaleForLanguage(String languageCode) {
   }
 }
 
-Future<void> main() async {
-  if (kIsWeb) {
-    initialWebHash = Uri.base.fragment;
+final _storageStartup = RequiredStartupTask(initStorage);
+final _optionalStartup = StartupTaskRunner();
+// Audio players must not race a still-running background platform setup.
+// Completed failures keep the existing foreground-audio fallback behavior.
+final _audioStartup = RequiredStartupTask<void>(() async {
+  try {
+    await JustAudioBackground.init(
+      androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
+      androidNotificationChannelName: 'Bakhed playback',
+      androidNotificationChannelDescription:
+          'Controls for long Bakhed audio playback',
+      androidNotificationOngoing: true,
+    );
+  } catch (error) {
+    AppLogger.debug('Non-essential JustAudioBackground init failed: $error');
   }
-  configureUrlStrategy();
-  WidgetsFlutterBinding.ensureInitialized();
+});
+bool _startupInProgress = false;
 
-  runZonedGuarded(
+Future<void> main() async {
+  await runZonedGuarded<Future<void>>(
     () async {
-      try {
-        // Enforce strict production TLS certificate validation.
-        SecureHttpOverrides.initialize();
+      if (kIsWeb) {
+        initialWebHash = Uri.base.fragment;
+      }
+      // Binding and runApp must share the same error zone, including retries.
+      WidgetsFlutterBinding.ensureInitialized();
+      configureUrlStrategy();
+      await _startApplication();
+    },
+    (error, stack) {
+      AppLogger.debug('Uncaught zone error: $error');
+      CrashReporting.recordError(error, stack);
+    },
+  );
+}
 
-        // Fail fast if Appwrite config is missing; release builds must not silently
-        // point at the wrong backend or an empty project.
-        AppwriteConfig.validate();
-        FlutterError.onError = (details) {
-          FlutterError.presentError(details);
-          CrashReporting.recordFlutterError(details);
-        };
+Future<void> _startApplication() async {
+  if (_startupInProgress) return;
+  _startupInProgress = true;
+  try {
+    runApp(const StartupStatusApp());
+    SecureHttpOverrides.initialize();
+    AppwriteConfig.validate();
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      CrashReporting.recordFlutterError(details);
+    };
 
-        final prefs = await initStorage();
-
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    // A timeout keeps the underlying storage operation alive. A retry waits
+    // for that same operation instead of opening a second set of Hive boxes.
+    final prefs = await _storageStartup.run();
+    final optionalWork = _optionalStartup.runAll({
+      'display': () async {
+        await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         SystemChrome.setSystemUIOverlayStyle(
           const SystemUiOverlayStyle(
             statusBarColor: Colors.transparent,
@@ -73,139 +106,75 @@ Future<void> main() async {
             systemNavigationBarIconBrightness: Brightness.dark,
           ),
         );
-
         await SystemChrome.setPreferredOrientations([
           DeviceOrientation.portraitUp,
           DeviceOrientation.portraitDown,
         ]);
-
-        try {
-          await CrashReporting.init();
-        } catch (e) {
-          AppLogger.debug('Non-essential CrashReporting init failed: $e');
+      },
+      'crash-reporting': CrashReporting.init,
+      'ads': () async {
+        final result = await AdService.instance.initialize(
+          consentManager: ConsentManager(prefs),
+        );
+        result.fold(
+          (_) => throw StateError('Ad service initialization failed'),
+          (_) {},
+        );
+      },
+      'notifications': () async {
+        final service = NotificationService.instance;
+        await service.initialize();
+        if (!service.isInitialized) {
+          throw StateError('Notification service initialization failed');
         }
-
-        try {
-          await JustAudioBackground.init(
-            androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
-            androidNotificationChannelName: 'Bakhed playback',
-            androidNotificationChannelDescription:
-                'Controls for long Bakhed audio playback',
-            androidNotificationOngoing: true,
+        if (prefs.getBool('notifications_enabled') ?? true) {
+          final hour = (prefs.getInt('reminder_hour') ?? 20).clamp(0, 23);
+          final minute = (prefs.getInt('reminder_minute') ?? 0).clamp(0, 59);
+          final name = prefs.getString('notification_frequency') ?? 'high';
+          final frequency = NotificationFrequency.values.firstWhere(
+            (value) => value.name == name,
+            orElse: () => NotificationFrequency.high,
           );
-        } catch (e) {
-          AppLogger.debug('Non-essential JustAudioBackground init failed: $e');
+          await service.scheduleAllReminders(
+            frequency: frequency,
+            hour: hour,
+            minute: minute,
+          );
         }
+      },
+    });
+    // An audio timeout shows the retry shell, rather than launching players
+    // against an unfinished platform. Retry reuses the same pending future.
+    await _audioStartup.run(timeout: const Duration(seconds: 8));
+    final outcomes = await optionalWork;
+    for (final outcome in outcomes) {
+      AppLogger.debug(
+        'Startup ${outcome.name}: ${outcome.status.name} '
+        'after ${outcome.elapsed.inMilliseconds}ms',
+      );
+    }
 
-        // Initialize Google AdMob & UMP GDPR consent flow
-        try {
-          final consentManager = ConsentManager(prefs);
-          await AdService.instance.initialize(consentManager: consentManager);
-        } catch (e) {
-          AppLogger.debug('Non-essential AdService init failed: $e');
-        }
-
-        // Initialize daily streak & study reminder notifications
-        try {
-          await NotificationService.instance.initialize();
-          final notificationsEnabled =
-              prefs.getBool('notifications_enabled') ?? true;
-          if (notificationsEnabled) {
-            final hour = prefs.getInt('reminder_hour') ?? 20;
-            final minute = prefs.getInt('reminder_minute') ?? 0;
-            final freqStr = prefs.getString('notification_frequency') ?? 'high';
-            final frequency = NotificationFrequency.values.firstWhere(
-              (f) => f.name == freqStr,
-              orElse: () => NotificationFrequency.high,
-            );
-            await NotificationService.instance.scheduleAllReminders(
-              frequency: frequency,
-              hour: hour,
-              minute: minute,
-            );
-          }
-        } catch (e) {
-          AppLogger.debug('Non-essential NotificationService init failed: $e');
-        }
-
-        runApp(
-          ProviderScope(
-            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-            observers: const [DailyMissionsObserver(), AppProviderObserver()],
-            child: const OlitunApp(),
-          ),
-        );
-      } catch (e, stack) {
-        AppLogger.debug('Fatal initialization error: $e\n$stack');
-        runApp(
-          MaterialApp(
-            debugShowCheckedModeBanner: false,
-            home: Scaffold(
-              backgroundColor: const Color(0xFF1E1E2C),
-              body: SafeArea(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.warning_amber_rounded,
-                          color: Color(0xFFFFB74D),
-                          size: 64,
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Unable to Start Application',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          kReleaseMode
-                              ? 'Olitun could not connect to necessary services. Please verify your internet connection and try again.'
-                              : e.toString(),
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.85),
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
-                        ElevatedButton.icon(
-                          onPressed: main,
-                          icon: const Icon(Icons.refresh),
-                          label: const Text('Retry Startup'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(
-                              0xFF6C5CE7,
-                            ), // white on #6C5CE7 = 4.76:1 (WCAG pass)
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-    },
-    (error, stack) {
-      AppLogger.debug('Uncaught zone error: $error');
-      CrashReporting.recordError(error, stack);
-    },
-  );
+    runApp(
+      ProviderScope(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        observers: const [DailyMissionsObserver(), AppProviderObserver()],
+        child: const OlitunApp(),
+      ),
+    );
+  } catch (error, stack) {
+    AppLogger.debug('Fatal initialization error: $error\n$stack');
+    runApp(
+      StartupStatusApp(
+        errorMessage: kReleaseMode
+            ? 'Olitun could not finish starting. Please try again. '
+                  'If this continues, restart the app.'
+            : error.toString(),
+        onRetry: _startApplication,
+      ),
+    );
+  } finally {
+    _startupInProgress = false;
+  }
 }
 
 class OlitunApp extends ConsumerWidget {

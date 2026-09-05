@@ -21,7 +21,9 @@ class AdService with WidgetsBindingObserver {
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
-  bool get canServeAds => _isInitialized && consentManager.requestsAllowed;
+  final ValueNotifier<bool> _readiness = ValueNotifier(false);
+  ValueListenable<bool> get readiness => _readiness;
+  bool get canServeAds => _readiness.value && consentManager.requestsAllowed;
 
   DateTime? _lastBackgroundedAt;
 
@@ -33,6 +35,7 @@ class AdService with WidgetsBindingObserver {
   }) async {
     if (kIsWeb) {
       _isInitialized = true;
+      _readiness.value = true;
       return right<AdError, bool>(true);
     }
 
@@ -70,9 +73,12 @@ class AdService with WidgetsBindingObserver {
 
       // Register default native ad factory
       registerOlitunNativeAdFactory();
+      _readiness.value = true;
 
       return right<AdError, bool>(true);
     } catch (e, stack) {
+      _isInitialized = false;
+      _readiness.value = false;
       AppLogger.debug('AdService: Initialization error: $e\n$stack');
       return left<AdError, bool>(AdInitError('Failed to initialize AdMob: $e'));
     }
@@ -318,6 +324,8 @@ class AdService with WidgetsBindingObserver {
   }
 
   void dispose() {
+    _isInitialized = false;
+    _readiness.value = false;
     WidgetsBinding.instance.removeObserver(this);
     disposeAll();
   }

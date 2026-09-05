@@ -1,24 +1,13 @@
 {
   "_comment": "Appwrite runtimes package only each function's own directory, so shared modules are synced from functions/_shared into each consumer's src/shared/ by scripts/sync_shared_modules.mjs. npm test fails on drift.",
   "consumers": {
-    "translator": [
-      "rate_limiter.js"
-    ],
-    "bintiWaitlist": [
-      "rate_limiter.js"
-    ],
-    "createRazorpayOrder": [
-      "rate_limiter.js",
-      "payment_reconcile.js"
-    ],
-    "cleanupAnalyticsEvents": [
-      "rate_limiter.js"
-    ],
-    "reconcilePaymentAttempts": [
-      "payment_reconcile.js"
-    ],
-    "reconcileOrphanedDeletions": [
-      "delete_account_core.js"
-    ]
+    "translator": ["rate_limiter.js"],
+    "bintiWaitlist": ["rate_limiter.js"],
+    "createRazorpayOrder": ["rate_limiter.js", "payment_reconcile.js"],
+    "cleanupAnalyticsEvents": ["rate_limiter.js"],
+    "reconcilePaymentAttempts": ["payment_reconcile.js", "payment_state.js"],
+    "reconcileOrphanedDeletions": ["delete_account_core.js"],
+    "verifyCoursePurchase": ["payment_state.js"],
+    "razorpayWebhook": ["payment_state.js"]
   }
 }

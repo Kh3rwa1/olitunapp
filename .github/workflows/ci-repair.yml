@@ -1,50 +1,127 @@
-name: Temporary CI failure diagnostics
+name: Temporary CI repair verification
 on:
   push:
     branches: [fix/review-priority-hardening-20260905]
     paths: [.github/workflows/ci-repair.yml]
 permissions:
   contents: write
-  actions: read
 concurrency:
   group: priority-ci-repair
   cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
 jobs:
-  diagnose:
+  repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: fix/review-priority-hardening-20260905
-      - name: Retrieve failed checks
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh run view 33953278225 --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/failed-checks.log 2>&1
-      - name: Persist focused failure details
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Correct the old unsafe-save expectation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('test/shared/repositories/content_repository_offline_test.dart')
+          s=p.read_text()
+          s=s.replace("import 'package:itun/core/network/network_info.dart';", "import 'package:itun/core/error/failures.dart';\nimport 'package:itun/core/network/network_info.dart';")
+          old="""    test(
+                'still succeeds when no outbox is wired (default constructor)',
+                () async {
+                  final repo = ContentRepository(
+                    databases: _MockDatabases(),
+                    networkInfo: _FakeNetworkInfo(connected: false),
+                  );
+          
+                  final result = await repo.upsert(_buildItem());
+          
+                  expect(result.isRight(), isTrue);
+                },
+              );"""
+          # Match the latest formatted source, not an indentation approximation.
+          begin=s.index('    test(\n      \'still succeeds when no outbox is wired (default constructor)\',')
+          end=s.index('    );',begin)+len('    );')
+          replacement="""    test('fails without an outbox and does not cache a phantom save', () async {
+                final databases = _MockDatabases();
+                final repo = ContentRepository(
+                  databases: databases,
+                  networkInfo: _FakeNetworkInfo(connected: false),
+                );
+                final item = _buildItem();
+                const cacheKey = 'content_item_word_word_offline_edit';
+                await CacheService.delete(cacheKey);
+          
+                final result = await repo.upsert(item);
+          
+                expect(result.isLeft(), isTrue);
+                result.fold(
+                  (failure) => expect(
+                    failure,
+                    isA<CacheFailure>().having(
+                      (value) => value.message,
+                      'message',
+                      contains('Durable offline storage unavailable'),
+                    ),
+                  ),
+                  (_) => fail('A save without durable storage must not succeed.'),
+                );
+                expect(
+                  await CacheService.get<ContentItem>(
+                    cacheKey,
+                    (json) => ContentItem.fromJson(json, item.id, item.kind),
+                  ),
+                  isNull,
+                );
+                verifyZeroInteractions(databases);
+              });"""
+          s=s[:begin]+replacement+s[end:]
+          p.write_text(s)
+          PY
+          dart format test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
+          git config user.name 'Notion AI'
+          git config user.email 'noreply@notion.so'
+          git add test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
+          git commit -m 'test: enforce durable offline failure contract and format entitlements'
+          git push origin HEAD:fix/review-priority-hardening-20260905
+      - name: Run all formatting and static policy gates
+        run: |
+          python3 - <<'PY' > /tmp/gates.log 2>&1
+          import subprocess
+          commands=[['dart','format','--output=none','--set-exit-if-changed','.']]
+          for name in ['check_file_length','check_typography','check_color_literals','check_l10n_parity','verify_pinned_actions','verify_signing_configuration','verify_node_dependency_alignment']:
+            commands.append(['node','scripts/'+name+'.mjs'])
+          commands += [['dart','run','tool/verify_version_consistency.dart'],['node','--test','scripts/verify_android_signing_certificate.test.mjs'],['flutter','analyze','--fatal-infos']]
+          failed=False
+          for command in commands:
+            print('\nCHECK: '+' '.join(command),flush=True)
+            result=subprocess.run(command)
+            print('EXIT: '+str(result.returncode),flush=True)
+            failed |= result.returncode != 0
+          raise SystemExit(1 if failed else 0)
+          PY
+      - name: Verify the previously failing repository test
+        if: success() || failure()
+        run: flutter test test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart > /tmp/repaired-tests.log 2>&1
+      - name: Persist focused verification results
         if: always()
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          p=Path('/tmp/failed-checks.log')
-          original=(p.read_text() if p.exists() else 'No log produced').splitlines()
-          lines=[re.sub(r'^\S+Z ', '', line.split('\t',2)[-1]).replace('\ufeff','') for line in original]
-          keep=set()
-          inside=False
-          for i,line in enumerate(lines):
-            if '##[group]❌' in line: inside=True
-            if inside: keep.add(i)
-            if '##[endgroup]' in line: inside=False
-            if original[i].startswith('Code Formatting') or original[i].startswith('Release Gate'):
-              keep.add(i)
-            if '##[error]' in line or 'tests passed' in line or '[E]' in line:
-              keep.update(range(max(0,i-2),min(len(lines),i+10)))
-          text='\n'.join(lines[i] for i in sorted(keep))
-          Path('docs/CI_REPAIR_DIAGNOSTICS.txt').write_text('Failed source: 6ce0c8de5e29bad504725ed83a217f9ee5fe9938\n'+text[:55000])
+          import subprocess
+          chunks=['Source commit: '+subprocess.check_output(['git','rev-parse','HEAD'],text=True)]
+          for path in ['/tmp/gates.log','/tmp/repaired-tests.log']:
+            p=Path(path)
+            if p.exists(): chunks += ['\n'+path+'\n'+p.read_text()[-30000:]]
+          Path('docs/CI_REPAIR_DIAGNOSTICS.txt').write_text('\n'.join(chunks))
           PY
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
           git add docs/CI_REPAIR_DIAGNOSTICS.txt
-          git diff --cached --quiet || git commit -m 'chore: record focused failed check diagnostics'
+          git diff --cached --quiet || git commit -m 'chore: record repaired test and policy gate results'
           git push origin HEAD:fix/review-priority-hardening-20260905

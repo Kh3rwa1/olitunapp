@@ -11,6 +11,7 @@ import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Concrete overrides (not mocktail stubs) because the central
 /// PlaybackController subscribes to these streams in its constructor.
@@ -164,7 +165,7 @@ void main() {
   );
 
   testWidgets(
-    'Graceful absence: null or empty quiz ID renders SizedBox.shrink()',
+    'Graceful absence: null or empty quiz ID explains and offers skip',
     (tester) async {
       final mockAudioService = MockAudioService();
 
@@ -181,8 +182,10 @@ void main() {
               AsyncValue.data({'quiz_123': mockQuiz}),
             ),
           ],
-          child: const MaterialApp(
-            home: LessonBlockDetailScreen(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
             ),
@@ -192,14 +195,16 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify that the screen is empty (SizedBox.shrink() rendered)
+      // No blank page: the learner sees an explanation and a skip action.
       expect(find.text('Ready to test yourself?'), findsNothing);
       expect(find.text('TAKE THE QUIZ'), findsNothing);
+      expect(find.text('No questions yet'), findsOneWidget);
+      expect(find.text('Skip'), findsOneWidget);
     },
   );
 
   testWidgets(
-    'Graceful absence: missing quiz ID not in provider renders SizedBox.shrink()',
+    'Graceful absence: missing quiz ID not in provider explains and offers skip',
     (tester) async {
       final mockAudioService = MockAudioService();
 
@@ -216,8 +221,10 @@ void main() {
               AsyncValue.data({'quiz_123': mockQuiz}),
             ),
           ],
-          child: const MaterialApp(
-            home: LessonBlockDetailScreen(
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
             ),
@@ -227,9 +234,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify that the screen is empty (SizedBox.shrink() rendered)
+      // No blank page: the learner sees an explanation and a skip action.
       expect(find.text('Ready to test yourself?'), findsNothing);
       expect(find.text('TAKE THE QUIZ'), findsNothing);
+      expect(find.text('No questions yet'), findsOneWidget);
+      expect(find.text('Skip'), findsOneWidget);
     },
   );
 

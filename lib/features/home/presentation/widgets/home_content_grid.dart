@@ -246,71 +246,70 @@ class _BentoCategoryCard extends ConsumerWidget {
       scriptMode: scriptMode,
     );
 
-    return Semantics(
-      button: true,
-      label: 'Learning path: $primaryTitle',
-      value: secondaryTitle,
-      hint: 'Double tap to open',
-      child: ExcludeSemantics(
-        child: PressableScale(
-          onTap: () {
-            final id = category.id;
-            final isAlphabet =
-                id == 'cat_alphabets' || id == 'cat_letters' || id == 'letters';
-            if (isAlphabet) {
-              context.push('/letter/standalone/all');
-            } else {
-              context.push('/lessons/${category.id}');
-            }
-          },
-          child: BentoCell(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        gradientColors[0].withValues(alpha: 0.15),
-                        gradientColors[1].withValues(alpha: 0.08),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(_getIcon(), color: gradientColors[0], size: 22),
+    // Keep label, focus and activation on the same accessible control.
+    // Excluding the PressableScale subtree also excluded its tap action.
+    return PressableScale(
+      key: ValueKey('home_category_${category.id}'),
+      semanticLabel: [
+        primaryTitle,
+        if (secondaryTitle != null) secondaryTitle,
+      ].join(', '),
+      onTap: () {
+        final id = category.id;
+        final isAlphabet =
+            id == 'cat_alphabets' || id == 'cat_letters' || id == 'letters';
+        if (isAlphabet) {
+          context.push('/letter/standalone/all');
+        } else {
+          context.push('/lessons/${category.id}');
+        }
+      },
+      child: BentoCell(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    gradientColors[0].withValues(alpha: 0.15),
+                    gradientColors[1].withValues(alpha: 0.08),
+                  ],
                 ),
-                const Spacer(),
-                Text(
-                  primaryTitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : Colors.black,
-                    letterSpacing: 0,
-                    fontFamily: primaryLocalizedFontFamily(scriptMode),
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (secondaryTitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    secondaryTitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'OlChiki',
-                      color: isDark ? Colors.white38 : Colors.black38,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ],
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(_getIcon(), color: gradientColors[0], size: 22),
             ),
-          ),
+            const Spacer(),
+            Text(
+              primaryTitle,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : Colors.black,
+                letterSpacing: 0,
+                fontFamily: primaryLocalizedFontFamily(scriptMode),
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (secondaryTitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                secondaryTitle,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'OlChiki',
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ],
         ),
       ),
     );

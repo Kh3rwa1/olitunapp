@@ -360,6 +360,38 @@ void main() {
         DownloadStatus.downloaded,
       );
     });
+
+    test(
+      'refreshTrackStates does not report wiped files as downloaded',
+      () async {
+        final c = await makeContainer(tracks: const []);
+        await (c.read(audioDownloadManagerProvider)).downloadStoryPack('warm', [
+          DownloadableTrack(track: _narration(id: 'n1')),
+        ]);
+        // External wipe (OS cleanup, user deleted files): the manifest still
+        // lists the track, but the file is gone — the badge must not claim
+        // "Saved".
+        await store.deleteFile('tracks/n1.mp3');
+        c.read(audioDownloadProvider.notifier).state = const {};
+        await c.read(audioDownloadProvider.notifier).refreshTrackStates(['n1']);
+        expect(
+          (c.read(audioDownloadProvider)['n1'] as TrackDownloadState).status,
+          DownloadStatus.notDownloaded,
+        );
+      },
+    );
+
+    test('downloadCount ignores records whose files are missing', () async {
+      final c = await makeContainer(tracks: const []);
+      final manager = c.read(audioDownloadManagerProvider);
+      await manager.downloadStoryPack('warm', [
+        DownloadableTrack(track: _narration(id: 'n1')),
+      ]);
+      expect(await manager.downloadCount(), 1);
+
+      await store.deleteFile('tracks/n1.mp3');
+      expect(await manager.downloadCount(), 0);
+    });
   });
 
   group('storyDownloadStateProvider', () {

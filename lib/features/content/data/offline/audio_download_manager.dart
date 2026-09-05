@@ -256,6 +256,17 @@ class AudioDownloadManager {
     return manifest[trackId];
   }
 
+  /// Whether the track's file is actually present on disk (manifest record
+  /// plus file). Unlike [recordForTrack], this never reports a wiped or
+  /// externally deleted download as present, so UI badges and the settings
+  /// "clips saved" count stay truthful. Hash freshness still requires the
+  /// live [AudioTrack]; see [isDownloaded].
+  Future<bool> isTrackFilePresent(String trackId) async {
+    final record = await recordForTrack(trackId);
+    if (record == null) return false;
+    return store.fileExists(record.relativePath);
+  }
+
   /// Whether the track is downloaded with *fresh* content — i.e. the file
   /// exists and, when both hashes are known, matches the current
   /// [AudioTrack.contentHash].
@@ -294,8 +305,17 @@ class AudioDownloadManager {
     return total;
   }
 
-  /// Number of tracks recorded in the manifest.
-  Future<int> downloadCount() async => (await _loadManifest()).length;
+  /// Number of downloaded tracks, verified against disk — records whose
+  /// files are missing (wiped, externally deleted) are not counted, so
+  /// settings never reports "N clips saved" for files that are gone.
+  Future<int> downloadCount() async {
+    final manifest = await _loadManifest();
+    var count = 0;
+    for (final entry in manifest.entries) {
+      if (await store.fileExists(entry.value.relativePath)) count++;
+    }
+    return count;
+  }
 
   /// Local playback URL for a downloaded track, or null when missing.
   ///

@@ -23,6 +23,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   UserStatsEntity _mergeStats(UserStatsEntity a, UserStatsEntity b) {
+    // A reset starts a new generation. Data from an older generation must
+    // never be unioned back in, even when an offline device reconnects later.
+    if (a.syncEpoch != b.syncEpoch) {
+      return a.syncEpoch > b.syncEpoch ? a : b;
+    }
+
     final letters = Set<String>.from(a.practicedLetters)
       ..addAll(b.practicedLetters);
     final lessons = Set<String>.from(a.completedLessons)
@@ -32,17 +38,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
     b.quizHistory.forEach((key, resultB) {
       if (quizHistory.containsKey(key)) {
         final resultA = quizHistory[key]!;
-        if (resultB.score > resultA.score) {
-          quizHistory[key] = resultB;
-        }
+        if (resultB.score > resultA.score) quizHistory[key] = resultB;
       } else {
         quizHistory[key] = resultB;
       }
     });
 
-    // Repeat attempts append a new timestamped key per attempt and this map
-    // is serialized into one prefs string + one Appwrite user pref — cap it
-    // to the most recent entries so it can never overflow storage.
     const maxQuizHistoryEntries = 50;
     if (quizHistory.length > maxQuizHistoryEntries) {
       final recentKeys = quizHistory.keys.toList()
@@ -51,9 +52,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
             quizHistory[x]!.completedAt,
           ),
         );
-      quizHistory.removeWhere(
-        (key, _) => !recentKeys.take(maxQuizHistoryEntries).contains(key),
-      );
+      final retained = recentKeys.take(maxQuizHistoryEntries).toSet();
+      quizHistory.removeWhere((key, _) => !retained.contains(key));
     }
 
     final categoryMastery = Map<String, int>.from(a.categoryMastery);
@@ -62,9 +62,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       categoryMastery[key] = valB > valA ? valB : valA;
     });
 
-    final totalStars = a.totalStars > b.totalStars
-        ? a.totalStars
-        : b.totalStars;
+    final totalStars = a.totalStars > b.totalStars ? a.totalStars : b.totalStars;
     final totalLearningMinutes = a.totalLearningMinutes > b.totalLearningMinutes
         ? a.totalLearningMinutes
         : b.totalLearningMinutes;
@@ -73,11 +71,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
         : b.currentStreak;
 
     String lastActiveDate = a.lastActiveDate;
-    if (b.lastActiveDate.isNotEmpty) {
-      if (lastActiveDate.isEmpty ||
-          b.lastActiveDate.compareTo(lastActiveDate) > 0) {
-        lastActiveDate = b.lastActiveDate;
-      }
+    if (b.lastActiveDate.isNotEmpty &&
+        (lastActiveDate.isEmpty ||
+            b.lastActiveDate.compareTo(lastActiveDate) > 0)) {
+      lastActiveDate = b.lastActiveDate;
     }
 
     return UserStatsEntity(
@@ -85,9 +82,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
       completedLessons: lessons,
       quizHistory: quizHistory,
       categoryMastery: categoryMastery,
-      // Mission history and the practice calendar are date-stamped sets:
-      // merging with a union (not dropping them) is what keeps daily-mission
-      // stars and the streak calendar from being re-farmed or wiped on sync.
       completedMissionsDates: {
         ...a.completedMissionsDates,
         ...b.completedMissionsDates,
@@ -97,8 +91,20 @@ class ProfileRepositoryImpl implements ProfileRepository {
       lastActiveDate: lastActiveDate,
       currentStreak: currentStreak,
       totalStars: totalStars,
+      syncEpoch: a.syncEpoch,
     );
   }
+
+  UserStatsEntity get _emptyStats => const UserStatsEntity(
+    practicedLetters: {},
+    completedLessons: {},
+    quizHistory: {},
+    categoryMastery: {},
+    totalLearningMinutes: 0,
+    lastActiveDate: '',
+    currentStreak: 0,
+    totalStars: 0,
+  );
 
   @override
   Future<Either<Failure, UserStatsEntity>> getUserStats() async {
@@ -115,40 +121,22 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (isLoggedIn) {
         final prefsResult = await _authRepository.getUserPrefs();
         return await prefsResult.fold(
-          (failure) {
-            return Right(
-              localStats ??
-                  const UserStatsEntity(
-                    practicedLetters: {},
-                    completedLessons: {},
-                    quizHistory: {},
-                    categoryMastery: {},
-                    totalLearningMinutes: 0,
-                    lastActiveDate: '',
-                    currentStreak: 0,
-                    totalStars: 0,
-                  ),
-            );
-          },
+          (failure) => Right(localStats ?? _emptyStats),
           (cloudPrefs) async {
             final cloudProgressData = cloudPrefs[_statsKey];
-            if (cloudProgressData != null &&
-                cloudProgressData is String &&
-                cloudProgressData.isNotEmpty) {
+            if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
               final cloudStats = UserStatsModel.fromJson(
                 jsonDecode(cloudProgressData),
               );
 
               if (localStats != null) {
                 final resolvedStats = _mergeStats(localStats, cloudStats);
-                await _prefs.setString(
-                  _statsKey,
-                  jsonEncode(UserStatsModel.fromEntity(resolvedStats).toJson()),
+                final resolvedJson = jsonEncode(
+                  UserStatsModel.fromEntity(resolvedStats).toJson(),
                 );
+                await _prefs.setString(_statsKey, resolvedJson);
                 final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-                  ..[_statsKey] = jsonEncode(
-                    UserStatsModel.fromEntity(resolvedStats).toJson(),
-                  );
+                  ..[_statsKey] = resolvedJson;
                 final cloudResult = await _authRepository.updateUserPrefs(
                   cloudUpdate,
                 );
@@ -158,66 +146,43 @@ class ProfileRepositoryImpl implements ProfileRepository {
                   (_) async => await _prefs.setBool('is_stats_synced', true),
                 );
                 return Right(resolvedStats);
-              } else {
-                await _prefs.setString(
-                  _statsKey,
-                  jsonEncode(UserStatsModel.fromEntity(cloudStats).toJson()),
-                );
-                await _prefs.setBool('is_stats_synced', true);
-                return Right(cloudStats);
               }
-            } else {
-              final currentLocal = localStats;
-              if (currentLocal != null) {
-                final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-                  ..[_statsKey] = jsonEncode(
-                    UserStatsModel.fromEntity(currentLocal).toJson(),
-                  );
-                final cloudResult = await _authRepository.updateUserPrefs(
-                  cloudUpdate,
+
+              await _prefs.setString(
+                _statsKey,
+                jsonEncode(UserStatsModel.fromEntity(cloudStats).toJson()),
+              );
+              await _prefs.setBool('is_stats_synced', true);
+              return Right(cloudStats);
+            }
+
+            final currentLocal = localStats;
+            if (currentLocal != null) {
+              final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
+                ..[_statsKey] = jsonEncode(
+                  UserStatsModel.fromEntity(currentLocal).toJson(),
                 );
-                await cloudResult.fold(
-                  (failure) async =>
-                      await _prefs.setBool('is_stats_synced', false),
-                  (_) async => await _prefs.setBool('is_stats_synced', true),
-                );
-                return Right(currentLocal);
-              }
+              final cloudResult = await _authRepository.updateUserPrefs(
+                cloudUpdate,
+              );
+              await cloudResult.fold(
+                (failure) async =>
+                    await _prefs.setBool('is_stats_synced', false),
+                (_) async => await _prefs.setBool('is_stats_synced', true),
+              );
+              return Right(currentLocal);
             }
 
             await _prefs.setBool('is_stats_synced', true);
-            return const Right(
-              UserStatsEntity(
-                practicedLetters: {},
-                completedLessons: {},
-                quizHistory: {},
-                categoryMastery: {},
-                totalLearningMinutes: 0,
-                lastActiveDate: '',
-                currentStreak: 0,
-                totalStars: 0,
-              ),
-            );
+            return Right(_emptyStats);
           },
         );
       }
 
       await _prefs.setBool('is_stats_synced', true);
-      return Right(
-        localStats ??
-            const UserStatsEntity(
-              practicedLetters: {},
-              completedLessons: {},
-              quizHistory: {},
-              categoryMastery: {},
-              totalLearningMinutes: 0,
-              lastActiveDate: '',
-              currentStreak: 0,
-              totalStars: 0,
-            ),
-      );
-    } catch (e) {
-      return Left(_recordedCacheFailure(e));
+      return Right(localStats ?? _emptyStats);
+    } catch (e, st) {
+      return Left(_recordedCacheFailure(e, st));
     }
   }
 
@@ -226,8 +191,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     UserStatsEntity stats,
   ) async {
     try {
-      final model = UserStatsModel.fromEntity(stats);
-      final jsonStr = jsonEncode(model.toJson());
+      final jsonStr = jsonEncode(UserStatsModel.fromEntity(stats).toJson());
       await _prefs.setString(_statsKey, jsonStr);
 
       final loggedInResult = await _authRepository.isLoggedIn();
@@ -239,9 +203,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         final prefsResult = await _authRepository.getUserPrefs();
         await prefsResult.fold((failure) => null, (cloudPrefs) async {
           final cloudProgressData = cloudPrefs[_statsKey];
-          if (cloudProgressData != null &&
-              cloudProgressData is String &&
-              cloudProgressData.isNotEmpty) {
+          if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
             final cloudStats = UserStatsModel.fromJson(
               jsonDecode(cloudProgressData),
             );
@@ -257,9 +219,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
           final updateResult = await _authRepository.updateUserPrefs(
             cloudUpdate,
           );
-          updateResult.fold((failure) => null, (_) {
-            synced = true;
-          });
+          updateResult.fold((failure) => null, (_) => synced = true);
         });
       } else {
         synced = true;
@@ -267,9 +227,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       await _prefs.setBool('is_stats_synced', synced);
       return Right(finalStats);
-    } catch (e) {
+    } catch (e, st) {
       await _prefs.setBool('is_stats_synced', false);
-      return Left(_recordedCacheFailure(e));
+      return Left(_recordedCacheFailure(e, st));
     }
   }
 
@@ -277,9 +237,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Either<Failure, void>> syncPendingStats() async {
     try {
       final isSynced = _prefs.getBool('is_stats_synced') ?? true;
-      if (isSynced) {
-        return const Right(null);
-      }
+      if (isSynced) return const Right(null);
 
       final loggedInResult = await _authRepository.isLoggedIn();
       final isLoggedIn = loggedInResult.getOrElse((_) => false);
@@ -295,14 +253,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
       }
 
       final localStats = UserStatsModel.fromJson(jsonDecode(storedLocal));
-
       final prefsResult = await _authRepository.getUserPrefs();
       return await prefsResult.fold(Left.new, (cloudPrefs) async {
         UserStatsEntity finalStats = localStats;
         final cloudProgressData = cloudPrefs[_statsKey];
-        if (cloudProgressData != null &&
-            cloudProgressData is String &&
-            cloudProgressData.isNotEmpty) {
+        if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
           final cloudStats = UserStatsModel.fromJson(
             jsonDecode(cloudProgressData),
           );
@@ -322,8 +277,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
           return const Right(null);
         });
       });
-    } catch (e) {
-      return Left(_recordedCacheFailure(e));
+    } catch (e, st) {
+      return Left(_recordedCacheFailure(e, st));
     }
   }
 
@@ -333,9 +288,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       await _prefs.setString('user_name', name);
       final result = await _authRepository.isLoggedIn();
       await result.fold(
-        (failure) async {
-          CrashReporting.recordFailure(failure);
-        },
+        (failure) async => CrashReporting.recordFailure(failure),
         (isLoggedIn) async {
           if (isLoggedIn) {
             final syncResult = await _authRepository.updateDisplayName(name);
@@ -344,8 +297,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
         },
       );
       return const Right(null);
-    } catch (e) {
-      return Left(_recordedCacheFailure(e));
+    } catch (e, st) {
+      return Left(_recordedCacheFailure(e, st));
     }
   }
 

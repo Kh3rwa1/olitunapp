@@ -1,14 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/languages/providers/target_language_provider.dart';
+import '../../../core/storage/hive_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/minimum_tap_target.dart';
 import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import '../providers/onboarding_draft.dart';
 import '../providers/onboarding_provider.dart';
 
 part 'onboarding_steps.dart';
@@ -24,7 +28,7 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   static const int _totalSteps = 6;
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _currentStep = 0;
 
   // Local state for user choices during onboarding.
@@ -37,6 +41,39 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final List<String> _selectedGoals = [];
 
   @override
+  void initState() {
+    super.initState();
+    // Resume an interrupted onboarding instead of restarting: choices and
+    // step position are restored from the draft (see OnboardingDraft).
+    final draft = OnboardingDraft.load(ref.read(sharedPreferencesProvider));
+    if (draft != null) {
+      _currentStep = draft.step;
+      _selectedTeachingLanguage = draft.teachingLanguage;
+      _selectedLevel = draft.level;
+      _selectedScriptMode = draft.scriptMode;
+      _selectedDailyGoal = draft.dailyGoal;
+      _selectedGoals.addAll(draft.goals);
+    }
+    _pageController = PageController(initialPage: _currentStep);
+  }
+
+  /// Persists the in-progress choices so killing the app mid-flow resumes
+  /// where the learner left off. Fire-and-forget: a slow write must never
+  /// block the next tap.
+  void _saveDraft() {
+    unawaited(
+      OnboardingDraft(
+        step: _currentStep,
+        teachingLanguage: _selectedTeachingLanguage,
+        level: _selectedLevel,
+        scriptMode: _selectedScriptMode,
+        dailyGoal: _selectedDailyGoal,
+        goals: List.of(_selectedGoals),
+      ).save(ref.read(sharedPreferencesProvider)),
+    );
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
@@ -46,6 +83,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() {
       _selectedTeachingLanguage = code;
     });
+    _saveDraft();
   }
 
   Future<void> _completeOnboarding() async {
@@ -77,6 +115,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     // Mark onboarding completed
     await ref.read(onboardingProvider.notifier).completeOnboarding();
 
+    // The draft served its purpose — a later reinstall flow must never
+    // resume a completed onboarding.
+    await OnboardingDraft.clear(ref.read(sharedPreferencesProvider));
+
     if (mounted) {
       context.go('/');
     }
@@ -106,6 +148,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       setState(() {
         _currentStep++;
       });
+      _saveDraft();
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -120,6 +163,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       setState(() {
         _currentStep--;
       });
+      _saveDraft();
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -131,18 +175,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() {
       _selectedLevel = level;
     });
+    _saveDraft();
   }
 
   void _selectScriptMode(String mode) {
     setState(() {
       _selectedScriptMode = mode;
     });
+    _saveDraft();
   }
 
   void _selectDailyGoal(int goal) {
     setState(() {
       _selectedDailyGoal = goal;
     });
+    _saveDraft();
   }
 
   void _toggleGoal(String goalId, bool isSelected) {
@@ -153,6 +200,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         _selectedGoals.add(goalId);
       }
     });
+    _saveDraft();
   }
 
   @override

@@ -6,12 +6,15 @@ import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 class MockPurchaseRepository extends Mock implements PurchaseRepository {}
+
+class MockAppwriteAuthService extends Mock implements AppwriteAuthService {}
 
 void main() {
   late MockAppwriteDbService mockDb;
@@ -257,14 +260,10 @@ void main() {
         addTearDown(container.dispose);
         await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        final outcome = await notifier.recordExternalRefund(
-          'p_refund_target',
-          externalRefundId: 'already-issued-refund',
-          reason: 'Support reconciliation',
-          idempotencyKey: 'same-key',
-        );
+        // Without an operation identity the call fails before any I/O,
+        // regardless of the purchase status.
+        final outcome = await notifier.recordExternalRefund('p_refund_target');
         expect(outcome, RefundResult.failed);
-        expect(await notifier.refundPurchase('p_refund_target'), isFalse);
         expect(
           container.read(adminPurchasesProvider).items.single.status,
           status,
@@ -276,6 +275,46 @@ void main() {
         verifyNever(() => mockRepo.clearUserEntitlementCache(any()));
       });
     }
+
+    test(
+      'client refund fails closed when the function service is unreachable',
+      () async {
+        when(
+          () => mockDb.listDocuments(
+            'course_purchases',
+            queries: any(named: 'queries'),
+          ),
+        ).thenAnswer((_) async => []);
+        final mockAuthService = MockAppwriteAuthService();
+        when(
+          () => mockAuthService.client,
+        ).thenThrow(AppwriteException('unreachable', 503));
+        final container = ProviderContainer(
+          overrides: [
+            appwriteDbServiceProvider.overrideWithValue(mockDb),
+            purchaseRepositoryProvider.overrideWithValue(mockRepo),
+            appwriteAuthServiceProvider.overrideWithValue(mockAuthService),
+            isAuthenticatedProvider.overrideWith((ref) async => true),
+            currentUserProvider.overrideWith((ref) async => testAdminUser),
+          ],
+        );
+        addTearDown(container.dispose);
+        container.listen(adminPurchasesProvider, (previous, next) {});
+        container.read(adminPurchasesProvider.notifier);
+        await waitForInitialLoad(container);
+        final notifier = container.read(adminPurchasesProvider.notifier);
+        final outcome = await notifier.recordExternalRefund(
+          'p_refund_target',
+          operationKey: 'op_unreachable_1',
+        );
+        expect(outcome, RefundResult.failed);
+        expect(await notifier.refundPurchase('p_refund_target'), isFalse);
+        verifyNever(() => mockDb.getDocument('course_purchases', any()));
+        verifyNever(
+          () => mockDb.updateDocument('course_purchases', any(), any()),
+        );
+      },
+    );
 
     test(
       'Case 7: fetchAllMatchingPurchases loops through all pages via cursor and returns completed status',

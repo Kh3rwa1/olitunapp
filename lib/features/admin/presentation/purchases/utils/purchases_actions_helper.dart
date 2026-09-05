@@ -7,6 +7,204 @@ import 'package:itun/features/admin/presentation/analytics/admin_analytics_csv_e
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 
+/// Dialog that records a gateway-issued refund through the protected
+/// server function. The operation key is derived deterministically from
+/// (purchase, amount) so retries — including across restarts — reuse one
+/// key and converge instead of duplicating. Submit is disabled while a
+/// request is in flight (duplicate-submit prevention).
+class _RefundRecordingDialog extends StatefulWidget {
+  const _RefundRecordingDialog({
+    required this.item,
+    required this.amountController,
+    required this.reasonController,
+    required this.gatewayController,
+    required this.onProcessingChanged,
+    required this.recordRefund,
+  });
+
+  final PurchaseModel item;
+  final TextEditingController amountController;
+  final TextEditingController reasonController;
+  final TextEditingController gatewayController;
+  final void Function(bool isProcessing) onProcessingChanged;
+  final Future<RefundResult> Function(
+    String purchaseId, {
+    required String operationKey,
+    String? gatewayRefundId,
+    int? amountPaise,
+    String? reason,
+  })
+  recordRefund;
+
+  @override
+  State<_RefundRecordingDialog> createState() => _RefundRecordingDialogState();
+}
+
+class _RefundRecordingDialogState extends State<_RefundRecordingDialog> {
+  bool _submitting = false;
+  bool _done = false;
+  String? _formError;
+  RefundResult? _result;
+
+  static const _resultCopy = <RefundResult, String>{
+    RefundResult.completed: 'Refund recorded and access revoked.',
+    RefundResult.alreadyRefunded:
+        'Already recorded — no duplicate entry was created.',
+    RefundResult.invalidTransition:
+        'Purchase is not in a refundable state. Refresh the list and check its status.',
+    RefundResult.conflict:
+        'This refund conflicts with an earlier record. Check the existing record instead of retrying.',
+    RefundResult.notFound: 'Purchase not found. It may have been deleted.',
+    RefundResult.unauthorized:
+        'Not authorized. Sign in with an admin account and retry.',
+    RefundResult.failed:
+        'Recording failed. Retry with the same details — the operation key keeps retries safe.',
+  };
+
+  Future<void> _submit() async {
+    if (_submitting || _done) return;
+    final amountText = widget.amountController.text.trim();
+    int? amountPaise;
+    if (amountText.isNotEmpty) {
+      final rupees = double.tryParse(amountText);
+      if (rupees == null || rupees <= 0) {
+        setState(
+          () => _formError =
+              'Enter a valid amount in ₹, or leave empty for a full refund.',
+        );
+        return;
+      }
+      amountPaise = (rupees * 100).round();
+      if (amountPaise <= 0) {
+        setState(
+          () => _formError =
+              'Enter a valid amount in ₹, or leave empty for a full refund.',
+        );
+        return;
+      }
+    }
+    setState(() {
+      _submitting = true;
+      _formError = null;
+    });
+    widget.onProcessingChanged(true);
+    try {
+      final result = await widget.recordRefund(
+        widget.item.id,
+        operationKey: adminRefundOperationKey(widget.item.id, amountPaise),
+        gatewayRefundId: widget.gatewayController.text.trim().isEmpty
+            ? null
+            : widget.gatewayController.text.trim(),
+        amountPaise: amountPaise,
+        reason: widget.reasonController.text.trim().isEmpty
+            ? null
+            : widget.reasonController.text.trim(),
+      );
+      if (!mounted) return;
+      setState(() {
+        _result = result;
+        _done =
+            result == RefundResult.completed ||
+            result == RefundResult.alreadyRefunded;
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+      widget.onProcessingChanged(false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+    return AlertDialog(
+      title: const Text('Record external refund'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
+              ),
+              child: const Text(
+                'Bookkeeping only — records a refund already issued in the payment dashboard. Does not move money. Do not record twice.',
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Purchase ${item.id} · ₹${item.amountPaidInr} · ${item.status}',
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: widget.amountController,
+              enabled: !_submitting && !_done,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Refund amount in ₹ (empty = full refund)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: widget.gatewayController,
+              enabled: !_submitting && !_done,
+              decoration: const InputDecoration(
+                labelText: 'Gateway refund ID (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: widget.reasonController,
+              enabled: !_submitting && !_done,
+              decoration: const InputDecoration(
+                labelText: 'Reason (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_formError != null) ...[
+              const SizedBox(height: 8),
+              Text(_formError!, style: const TextStyle(color: AppColors.error)),
+            ],
+            if (_result != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                _resultCopy[_result]!,
+                style: TextStyle(
+                  color: _done ? AppColors.success : AppColors.error,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            if (_submitting) ...[
+              const SizedBox(height: 12),
+              const LinearProgressIndicator(),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
+          child: Text(_done ? 'Close' : 'Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submitting || _done ? null : _submit,
+          child: Text(_submitting ? 'Recording…' : 'Record Refund'),
+        ),
+      ],
+    );
+  }
+}
+
 class PurchasesActionsHelper {
   static Future<void> showRefundDialog({
     required BuildContext context,
@@ -14,20 +212,42 @@ class PurchasesActionsHelper {
     required PurchaseModel item,
     required void Function(bool isProcessing) onProcessingChanged,
   }) async {
-    onProcessingChanged(false);
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Refund recording unavailable'),
-        content: const Text(externalRefundRecordingUnavailableMessage),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
+    final amountController = TextEditingController();
+    final reasonController = TextEditingController();
+    final gatewayController = TextEditingController();
+    try {
+      await showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (dialogContext) => _RefundRecordingDialog(
+          item: item,
+          amountController: amountController,
+          reasonController: reasonController,
+          gatewayController: gatewayController,
+          onProcessingChanged: onProcessingChanged,
+          recordRefund:
+              (
+                String purchaseId, {
+                required String operationKey,
+                String? gatewayRefundId,
+                int? amountPaise,
+                String? reason,
+              }) => ref
+                  .read(adminPurchasesProvider.notifier)
+                  .recordExternalRefund(
+                    purchaseId,
+                    operationKey: operationKey,
+                    externalRefundId: gatewayRefundId,
+                    amountPaise: amountPaise,
+                    reason: reason,
+                  ),
+        ),
+      );
+    } finally {
+      amountController.dispose();
+      reasonController.dispose();
+      gatewayController.dispose();
+    }
   }
 
   static Future<void> exportVisibleRows({

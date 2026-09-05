@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/admin_failure.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
@@ -21,20 +23,66 @@ final purchasedCategoriesProvider = FutureProvider<Set<String>>((ref) async {
   return repo.fetchPurchasedCategoryIds(user.id);
 });
 
-const externalRefundRecordingUnavailableMessage =
-    'Manual refund recording is temporarily disabled. '
-    'Use the Razorpay Dashboard for gateway refunds and ask the administrator '
-    'to reconcile external refunds through a secure server-side process. '
-    'Do not issue a refund twice.';
-
 /// Typed outcome for recording an external refund in Appwrite.
 enum RefundResult {
   completed,
   alreadyRefunded,
   invalidTransition,
+  conflict,
   notFound,
   unauthorized,
   failed,
+}
+
+/// Deterministic operation key for recording an external refund.
+///
+/// Derived from (purchaseId, cumulative amount) so retries — including
+/// across app restarts — reuse the same key and converge on the server
+/// instead of creating duplicate operations. Under the server's max-floor
+/// bookkeeping, identical inputs always produce identical ledger outcomes.
+String adminRefundOperationKey(String purchaseId, int? amountPaise) {
+  final amount = amountPaise == null ? 'full' : amountPaise.toString();
+  return 'admin-record:$purchaseId:$amount';
+}
+
+/// Maps an admin-maintenance `record_refund` function response to a
+/// [RefundResult]. Pure and unit-tested; the live call lives in
+/// [AdminPurchasesNotifier.recordExternalRefund].
+@visibleForTesting
+RefundResult refundResultFromResponse({
+  required int? statusCode,
+  required Map<String, dynamic>? body,
+}) {
+  if (body != null) {
+    if (body['success'] == true) {
+      return body['alreadyRefunded'] == true
+          ? RefundResult.alreadyRefunded
+          : RefundResult.completed;
+    }
+    final message = body['message'];
+    final text = message is String ? message : '';
+    if (statusCode == 404 || text.contains('not found')) {
+      return RefundResult.notFound;
+    }
+    if (statusCode == 403 || text.contains('Admin team membership')) {
+      return RefundResult.unauthorized;
+    }
+    if (statusCode == 409 || text.contains('Idempotency conflict')) {
+      // Same-key-different-params and already-recorded-under-another-
+      // operation both surface here; both mean "do not retry blindly".
+      return text.contains('Cannot refund purchase in status')
+          ? RefundResult.invalidTransition
+          : RefundResult.conflict;
+    }
+    if (text.contains('Cannot refund purchase in status')) {
+      return RefundResult.invalidTransition;
+    }
+  }
+  if (statusCode == 401 || statusCode == 403) {
+    return RefundResult.unauthorized;
+  }
+  if (statusCode == 404) return RefundResult.notFound;
+  return RefundResult.failed;
 }
 
 /// Immutable state model for the Admin Purchases & Revenue module.
@@ -311,17 +359,79 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     }
   }
 
-  /// Fails closed until a server-authorized, transactional recorder exists.
-  /// No operator identity, stale client state, or client idempotency key can
-  /// authorize a direct financial ledger write. This does not transfer money.
+  /// Records an external (gateway-issued) refund through the protected
+  /// `admin-maintenance` server function (`record_refund` action).
+  ///
+  /// This is bookkeeping only: it records a refund already issued in the
+  /// payment dashboard. It never moves money and never writes the ledger
+  /// directly — all bookkeeping happens server-side under admin
+  /// authorization with a durable operation identity.
+  ///
+  /// [operationKey] is the stable idempotency identity, created once per
+  /// refund intent (see [adminRefundOperationKey]) and reused across
+  /// retries, including across app restarts. [externalRefundId] is the
+  /// optional informational gateway refund reference. [amountPaise] is the
+  /// cumulative refunded total in paise (omit for a full refund).
+  /// [executor] is a test seam; production always calls the function.
   Future<RefundResult> recordExternalRefund(
     String purchaseId, {
+    String? operationKey,
     String? externalRefundId,
     String? reason,
     String? idempotencyKey,
+    int? amountPaise,
+    Future<Map<String, dynamic>> Function(Map<String, dynamic> payload)?
+    executor,
   }) async {
-    AppLogger.debug(externalRefundRecordingUnavailableMessage);
-    return RefundResult.failed;
+    final key = (operationKey ?? idempotencyKey ?? '').trim();
+    if (purchaseId.trim().isEmpty || key.isEmpty) {
+      return RefundResult.failed;
+    }
+    try {
+      final gateway = externalRefundId?.trim();
+      final trimmedReason = reason?.trim();
+      final payload = <String, dynamic>{
+        'action': 'record_refund',
+        'purchaseId': purchaseId.trim(),
+        'operationKey': key,
+        if (gateway != null && gateway.isNotEmpty) 'gatewayRefundId': gateway,
+        if (amountPaise case final int amount) 'amountPaise': amount,
+        if (trimmedReason != null && trimmedReason.isNotEmpty)
+          'reason': trimmedReason,
+      };
+      final Map<String, dynamic> resBody;
+      int? statusCode;
+      if (executor != null) {
+        final result = await executor(payload);
+        resBody = result;
+      } else {
+        final client = ref.read(appwriteAuthServiceProvider).client;
+        final functions = Functions(client);
+        final execution = await functions.createExecution(
+          functionId: 'admin-maintenance',
+          body: jsonEncode(payload),
+        );
+        statusCode = execution.responseStatusCode;
+        final decoded = jsonDecode(execution.responseBody);
+        if (decoded is! Map<String, dynamic>) return RefundResult.failed;
+        resBody = decoded;
+      }
+      final outcome = refundResultFromResponse(
+        statusCode: statusCode,
+        body: resBody,
+      );
+      if (outcome == RefundResult.completed ||
+          outcome == RefundResult.alreadyRefunded) {
+        await loadPurchases();
+      }
+      return outcome;
+    } catch (e) {
+      AppLogger.debug('recordExternalRefund failed: $e');
+      if (e is AppwriteException) {
+        return refundResultFromResponse(statusCode: e.code, body: null);
+      }
+      return RefundResult.failed;
+    }
   }
 
   /// Fetches matching purchase records from Appwrite with continuous pagination, backoff, and safety limits.
@@ -447,9 +557,14 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     );
   }
 
-  /// Backward-compatible alias.
+  /// Backward-compatible alias. Generates a single-shot operation key, so
+  /// callers that retry must use [recordExternalRefund] directly with a
+  /// stable key instead of calling this alias repeatedly.
   Future<bool> refundPurchase(String purchaseId) async {
-    final res = await recordExternalRefund(purchaseId);
+    final res = await recordExternalRefund(
+      purchaseId,
+      operationKey: adminRefundOperationKey(purchaseId, null),
+    );
     return res == RefundResult.completed || res == RefundResult.alreadyRefunded;
   }
 }

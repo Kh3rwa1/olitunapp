@@ -1,0 +1,54 @@
+name: One-time progress hardening recheck
+
+on:
+  push:
+    branches: ['fix/progress-reset-sync-20260905']
+    paths: ['.github/workflows/progress-hardening-recheck.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    if: github.repository == 'Kh3rwa1/olitunapp' && github.ref == 'refs/heads/fix/progress-reset-sync-20260905' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.sha }}
+      - name: Apply the reviewed reset-test correction without reverting merges
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          git fetch --depth=1 origin 29fc48f8c35c660300fbc0429b671403ff5c2bb0
+          git show 29fc48f8c35c660300fbc0429b671403ff5c2bb0:scripts/prepare_hardening_validation.py > "$RUNNER_TEMP/recheck_progress.py"
+          AREA=progress python3 "$RUNNER_TEMP/recheck_progress.py"
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Record focused validation
+        run: |
+          REPORT=docs/PROGRESS_HARDENING_DIAGNOSTICS.txt
+          printf 'Source before reset-test correction: %s\n' "$GITHUB_SHA" > "$REPORT"
+          flutter --version >> "$REPORT"
+          dart format test/features/profile/user_stats_notifier_test.dart >> "$REPORT" 2>&1
+          set +e
+          timeout 7m flutter test test/features/profile --reporter expanded >> "$REPORT" 2>&1
+          TEST_EXIT=$?
+          timeout 5m flutter analyze --fatal-infos >> "$REPORT" 2>&1
+          ANALYZE_EXIT=$?
+          printf '\nFocused test exit: %s\nAnalysis exit: %s\n' "$TEST_EXIT" "$ANALYZE_EXIT" >> "$REPORT"
+          printf 'TEST_EXIT=%s\nANALYZE_EXIT=%s\n' "$TEST_EXIT" "$ANALYZE_EXIT" >> "$GITHUB_ENV"
+      - name: Save evidence and remove temporary workflow
+        run: |
+          git rm .github/workflows/progress-hardening-recheck.yml
+          git add test/features/profile/user_stats_notifier_test.dart docs/PROGRESS_HARDENING_DIAGNOSTICS.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'test(progress): validate explicit reset against the updated branch'
+          git push origin HEAD:refs/heads/fix/progress-reset-sync-20260905
+      - name: Require passing checks
+        run: test "$TEST_EXIT" = 0 && test "$ANALYZE_EXIT" = 0

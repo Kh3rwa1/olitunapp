@@ -1,5 +1,6 @@
 import { createHash, createHmac } from 'crypto';
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases } from 'node-appwrite';
+import { publishPendingPurchase, isPayablePurchase } from './purchase_ledger.js';
 import { enforceWindowRateLimit, WINDOW_HOUR_MS } from './shared/rate_limiter.js';
 
 function stableId(value) {
@@ -112,9 +113,70 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       }
 
       const expectedAmount = category.priceInr || 0;
-      if (expectedAmount <= 0) {
+      if (!Number.isSafeInteger(expectedAmount) || expectedAmount <= 0 ||
+          !Number.isSafeInteger(expectedAmount * 100)) {
         return res.json({ ok: false, message: 'Invalid category price' }, 400);
       }
+
+      // Publish/repair the canonical ledger before returning ANY gateway order,
+      // including idempotent retries after a partial database failure.
+      const finishCheckout = async (attempt, duplicateRetry) => {
+        const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
+        const permissions = [
+          `read("user:${userId}")`, `read("team:${adminTeamId}")`,
+          `update("team:${adminTeamId}")`, `delete("team:${adminTeamId}")`,
+        ];
+        const data = {
+          userId, categoryId, provider: 'razorpay',
+          providerOrderId: attempt.providerOrderId, providerPaymentId: '',
+          expectedAmount: attempt.expectedAmount, paidAmount: 0,
+          currency: attempt.currency, status: 'created',
+          createdAt: attempt.createdAt || now,
+          paidAt: null, verifiedAt: null, failureReason: '',
+        };
+        if (!isPayablePurchase(data)) throw new Error('Invalid stored order');
+        let purchase;
+        try {
+          purchase = await publishPendingPurchase({
+            databases, databaseId, purchaseId, data, permissions,
+          });
+        } catch (publishError) {
+          const conflict = publishError.code === 409;
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: conflict ? 'blocked' : 'reconciliation_required',
+            reconciliationStatus: conflict ? 'purchase_state_conflict' : 'pending',
+            updatedAt: new Date().toISOString(),
+          });
+          return res.json({
+            ok: false, code: conflict ? 'purchase_state_conflict' : 'reconciliation_required',
+            message: conflict
+              ? 'Purchase state changed. Please refresh before starting a new checkout.'
+              : 'Checkout could not be confirmed. Please retry after reconciliation.',
+          }, conflict ? 409 : 503);
+        }
+        const canonical = purchase.providerOrderId === attempt.providerOrderId;
+        try {
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: canonical ? 'created' : 'superseded',
+            reconciliationStatus: canonical ? 'none' : 'canonical_order_reused',
+            updatedAt: new Date().toISOString(),
+          });
+        } catch {
+          error('Checkout ledger committed; attempt finalization needs reconciliation');
+        }
+        if (purchase.status === 'verified') {
+          return res.json({ ok: false, message: 'Category already unlocked', purchase });
+        }
+        if (!isPayablePurchase(purchase)) throw new Error('Invalid canonical purchase');
+        return res.json({
+          ok: true, message: 'Razorpay checkout ready',
+          orderId: purchase.providerOrderId,
+          amount: purchase.expectedAmount * 100, currency: purchase.currency,
+          keyId: razorpayKeyId, categoryId,
+          categoryTitle: category.name || category.title || '',
+          isDuplicateRetry: duplicateRetry || !canonical,
+        });
+      };
 
       // 3. Concurrency & Idempotency Reservation via payment_attempts
       let attemptRecord = null;
@@ -153,17 +215,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
 
           if (attemptRecord.providerOrderId) {
             log(`Returning existing idempotency attempt for order ${attemptRecord.providerOrderId}`);
-            return res.json({
-              ok: true,
-              message: 'Razorpay order retrieved from existing attempt',
-              orderId: attemptRecord.providerOrderId,
-              amount: expectedAmount * 100,
-              currency: 'INR',
-              keyId: razorpayKeyId,
-              categoryId: categoryId,
-              categoryTitle: category.name || category.title || '',
-              isDuplicateRetry: true,
-            });
+            return await finishCheckout(attemptRecord, true);
           }
 
           if (attemptRecord.reconciliationStatus === 'pending' || attemptRecord.status === 'reconciliation_required') {
@@ -238,7 +290,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             'Content-Type': 'application/json',
             'Authorization': authHeader
           },
-          body: JSON.stringify(orderPayload)
+          body: JSON.stringify(orderPayload),
+          signal: AbortSignal.timeout(12000),
         });
       } catch (netErr) {
         error(`[${attemptDocId}] Gateway network timeout or connection error`);
@@ -274,13 +327,22 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       }
 
       const razorpayOrder = await razorpayRes.json();
+      if (typeof razorpayOrder.id !== 'string' || !razorpayOrder.id ||
+          razorpayOrder.amount !== expectedAmount * 100 || razorpayOrder.currency !== 'INR') {
+        await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+          status: 'reconciliation_required', reconciliationStatus: 'pending',
+          providerOrderId: typeof razorpayOrder.id === 'string' ? razorpayOrder.id : null,
+          updatedAt: new Date().toISOString(),
+        });
+        return res.json({ ok: false, message: 'Invalid payment gateway response' }, 502);
+      }
 
-      // Update payment_attempts record with verified provider order ID
+      // Persist the gateway ID as unresolved until the canonical ledger is safe.
       try {
         await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
-          status: 'created',
+          status: 'reconciliation_required',
           providerOrderId: razorpayOrder.id,
-          reconciliationStatus: 'none',
+          reconciliationStatus: 'pending',
           updatedAt: new Date().toISOString(),
         });
       } catch (updateErr) {
@@ -298,63 +360,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
         }
       }
 
-      const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
-      const documentPermissions = [
-        `read("user:${userId}")`,
-        `read("team:${adminTeamId}")`,
-        `update("team:${adminTeamId}")`,
-        `delete("team:${adminTeamId}")`
-      ];
-
-      // 5. Create or update pending purchase ledger entry
-      const ledgerData = {
-        userId,
-        categoryId,
-        provider: 'razorpay',
-        providerOrderId: razorpayOrder.id,
-        providerPaymentId: '',
-        expectedAmount: expectedAmount,
-        paidAmount: 0,
-        currency: 'INR',
-        status: 'created',
-        createdAt: now,
-        paidAt: null,
-        verifiedAt: null,
-        failureReason: ''
-      };
-
-      try {
-        await databases.updateDocument(
-          databaseId,
-          'course_purchases',
-          purchaseId,
-          ledgerData,
-          documentPermissions
-        );
-      } catch (err) {
-        if (err.code === 404) {
-          await databases.createDocument(
-            databaseId,
-            'course_purchases',
-            purchaseId,
-            ledgerData,
-            documentPermissions
-          );
-        } else {
-          throw err;
-        }
-      }
-
-      return res.json({
-        ok: true,
-        message: 'Razorpay order created successfully',
-        orderId: razorpayOrder.id,
-        amount: razorpayOrder.amount,
-        currency: razorpayOrder.currency,
-        keyId: razorpayKeyId,
-        categoryId: categoryId,
-        categoryTitle: category.name || category.title || ''
-      });
+      return await finishCheckout({ ...attemptRecord, providerOrderId: razorpayOrder.id }, false);
 
     } catch (err) {
       error('[createRazorpayOrder] Internal server error occurred');

@@ -112,7 +112,13 @@ Future<void> main() async {
           if (notificationsEnabled) {
             final hour = prefs.getInt('reminder_hour') ?? 20;
             final minute = prefs.getInt('reminder_minute') ?? 0;
-            await NotificationService.instance.scheduleDailyStreakReminder(
+            final freqStr = prefs.getString('notification_frequency') ?? 'high';
+            final frequency = NotificationFrequency.values.firstWhere(
+              (f) => f.name == freqStr,
+              orElse: () => NotificationFrequency.high,
+            );
+            await NotificationService.instance.scheduleAllReminders(
+              frequency: frequency,
               hour: hour,
               minute: minute,
             );

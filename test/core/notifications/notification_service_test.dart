@@ -11,6 +11,14 @@ void main() {
       final service = NotificationService.instance;
       expect(service, isNotNull);
       expect(NotificationService.streakReminderNotificationId, equals(101));
+      expect(NotificationService.morningReminderNotificationId, equals(102));
+      expect(NotificationService.afternoonReminderNotificationId, equals(103));
+      expect(NotificationService.nightStreakSaverNotificationId, equals(104));
+      expect(NotificationService.inactivityReminderNotificationId, equals(105));
+      expect(
+        NotificationService.allReminderNotificationIds,
+        containsAll([101, 102, 103, 104, 105]),
+      );
       expect(
         NotificationService.reminderChannelId,
         equals('com.olitun.app.channel.reminders'),
@@ -20,6 +28,20 @@ void main() {
         equals('Daily Study Reminders'),
       );
       expect(NotificationService.reminderChannelDescription, isNotEmpty);
+    });
+
+    test('NotificationFrequency extension returns expected properties', () {
+      expect(NotificationFrequency.high.remindersPerDay, equals(4));
+      expect(NotificationFrequency.high.label, contains('High'));
+      expect(NotificationFrequency.high.description, isNotEmpty);
+
+      expect(NotificationFrequency.balanced.remindersPerDay, equals(2));
+      expect(NotificationFrequency.balanced.label, contains('Balanced'));
+      expect(NotificationFrequency.balanced.description, isNotEmpty);
+
+      expect(NotificationFrequency.once.remindersPerDay, equals(1));
+      expect(NotificationFrequency.once.label, contains('Relaxed'));
+      expect(NotificationFrequency.once.description, isNotEmpty);
     });
 
     test(
@@ -82,8 +104,10 @@ void main() {
       () async {
         final service = NotificationService.instance;
         expect(service.scheduleDailyStreakReminder, returnsNormally);
+        expect(service.scheduleAllReminders, returnsNormally);
         expect(service.suppressTodayReminderIfPracticed, returnsNormally);
         expect(service.cancelDailyReminder, returnsNormally);
+        expect(service.cancelAllReminders, returnsNormally);
         expect(await service.requestPermission(), isFalse);
       },
     );

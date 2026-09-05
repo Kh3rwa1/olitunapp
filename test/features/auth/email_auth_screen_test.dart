@@ -91,4 +91,24 @@ void main() {
     // After successful send, it should show a second text field for OTP.
     // Or replace the field. Let's see if there's text "Verify Code" or two text fields.
   });
+
+  testWidgets(
+    'EmailAuthScreen does not display any skip button or guest option',
+    (tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const EmailAuthScreen(),
+          overrides: [
+            authRepositoryProvider.overrideWithValue(mockAuthRepository),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Ensure no skip button in AppBar or form
+      expect(find.text('Skip'), findsNothing);
+      expect(find.text('Continue without an account'), findsNothing);
+    },
+  );
 }

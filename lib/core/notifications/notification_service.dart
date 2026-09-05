@@ -6,6 +6,53 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../logging/app_logger.dart';
 
+/// Frequency of habit and streak study reminders throughout the day.
+enum NotificationFrequency {
+  /// Single reminder per day at user's preferred time.
+  once,
+
+  /// 2 reminders per day: Morning kickstart (9:00 AM) and Evening study.
+  balanced,
+
+  /// 4 reminders per day: Morning (9:00 AM), Midday (2:30 PM), Evening, and Night streak saver (9:45 PM).
+  high,
+}
+
+extension NotificationFrequencyX on NotificationFrequency {
+  String get label {
+    switch (this) {
+      case NotificationFrequency.high:
+        return 'High (4x daily)';
+      case NotificationFrequency.balanced:
+        return 'Balanced (2x daily)';
+      case NotificationFrequency.once:
+        return 'Relaxed (1x daily)';
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case NotificationFrequency.high:
+        return 'Morning, Midday, Evening & Night streak saver';
+      case NotificationFrequency.balanced:
+        return 'Morning boost & Evening study reminder';
+      case NotificationFrequency.once:
+        return 'Single daily reminder at your preferred time';
+    }
+  }
+
+  int get remindersPerDay {
+    switch (this) {
+      case NotificationFrequency.high:
+        return 4;
+      case NotificationFrequency.balanced:
+        return 2;
+      case NotificationFrequency.once:
+        return 1;
+    }
+  }
+}
+
 /// Service responsible for managing local habit and streak reminders.
 /// Operates 100% offline and respects user privacy without transmitting tokens.
 class NotificationService {
@@ -13,10 +60,39 @@ class NotificationService {
   static final NotificationService instance = NotificationService._();
 
   static const int streakReminderNotificationId = 101;
+  static const int morningReminderNotificationId = 102;
+  static const int afternoonReminderNotificationId = 103;
+  static const int nightStreakSaverNotificationId = 104;
+  static const int inactivityReminderNotificationId = 105;
+
+  static const List<int> allReminderNotificationIds = [
+    streakReminderNotificationId,
+    morningReminderNotificationId,
+    afternoonReminderNotificationId,
+    nightStreakSaverNotificationId,
+    inactivityReminderNotificationId,
+  ];
+
   static const String reminderChannelId = 'com.olitun.app.channel.reminders';
   static const String reminderChannelName = 'Daily Study Reminders';
   static const String reminderChannelDescription =
       'Reminders to practice Ol Chiki and maintain your daily learning streak.';
+
+  static const NotificationDetails _notificationDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      reminderChannelId,
+      reminderChannelName,
+      channelDescription: reminderChannelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    ),
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    ),
+  );
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
@@ -156,105 +232,207 @@ class NotificationService {
     return scheduledDate;
   }
 
-  /// Schedules a repeating daily streak reminder at the specified [hour] and [minute] (24-hour clock).
+  /// Schedules a specific reminder slot at [hour]:[minute].
+  Future<void> _scheduleSlot({
+    required int id,
+    required int hour,
+    required int minute,
+    required String title,
+    required String body,
+    tz.TZDateTime? startFrom,
+  }) async {
+    final scheduledDate = startFrom != null
+        ? tz.TZDateTime(
+            tz.local,
+            startFrom.year,
+            startFrom.month,
+            startFrom.day,
+            hour,
+            minute,
+          )
+        : nextInstanceOfTime(hour, minute);
+
+    await _plugin.zonedSchedule(
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduledDate,
+      notificationDetails: _notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  /// Schedules an inactivity reminder after 3 days of no learning.
+  Future<void> _scheduleInactivityReminder([tz.TZDateTime? from]) async {
+    final baseTime = from ?? tz.TZDateTime.now(tz.local);
+    final scheduledDate = baseTime.add(const Duration(days: 3));
+
+    await _plugin.zonedSchedule(
+      id: inactivityReminderNotificationId,
+      title: 'We miss you in Olitun! 🪶',
+      body: 'Your Santali learning journey is waiting. Jump back in today!',
+      scheduledDate: scheduledDate,
+      notificationDetails: _notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+    );
+  }
+
+  /// Schedules all configured habit reminders according to [frequency].
+  /// [hour] and [minute] define the main evening study reminder time.
+  Future<void> scheduleAllReminders({
+    NotificationFrequency frequency = NotificationFrequency.high,
+    int hour = 20,
+    int minute = 0,
+  }) async {
+    if (kIsWeb || !_isInitialized) return;
+
+    try {
+      await cancelAllReminders();
+
+      // 1. Main Study Reminder (User-selected evening time)
+      await _scheduleSlot(
+        id: streakReminderNotificationId,
+        hour: hour,
+        minute: minute,
+        title: 'Protect your streak! 🔥',
+        body:
+            'Take 2 minutes to practice Ol Chiki today and keep your streak alive.',
+      );
+
+      // 2. Morning Kickstart (9:00 AM) for Balanced and High frequency
+      if (frequency == NotificationFrequency.balanced ||
+          frequency == NotificationFrequency.high) {
+        await _scheduleSlot(
+          id: morningReminderNotificationId,
+          hour: 9,
+          minute: 0,
+          title: 'Start your morning with Ol Chiki! ☀️',
+          body:
+              'A quick 2-minute lesson starts your day with positive momentum.',
+        );
+      }
+
+      // 3. Afternoon Booster (2:30 PM) and Night Streak Saver (9:45 PM) for High frequency
+      if (frequency == NotificationFrequency.high) {
+        await _scheduleSlot(
+          id: afternoonReminderNotificationId,
+          hour: 14,
+          minute: 30,
+          title: 'Midday Ol Chiki boost! 🎯',
+          body: 'Take a short break and master a new Santali word today.',
+        );
+
+        final nightHour = (hour >= 21 && minute >= 30) ? 22 : 21;
+        final nightMinute = (nightHour == 22) ? 30 : 45;
+        await _scheduleSlot(
+          id: nightStreakSaverNotificationId,
+          hour: nightHour,
+          minute: nightMinute,
+          title: 'Don\'t lose your streak! ⏳',
+          body:
+              'Your streak is waiting! Complete a quick lesson before midnight to save your progress.',
+        );
+      }
+
+      // 4. Inactivity Re-engagement reminder (3 days from now)
+      await _scheduleInactivityReminder();
+
+      AppLogger.debug(
+        'NotificationService: Scheduled ${frequency.remindersPerDay} daily reminders (frequency: ${frequency.name}, main time: $hour:${minute.toString().padLeft(2, '0')})',
+      );
+    } catch (e) {
+      AppLogger.debug('NotificationService: scheduleAllReminders error: $e');
+    }
+  }
+
+  /// Schedules a repeating daily streak reminder (backwards-compatible alias).
   Future<void> scheduleDailyStreakReminder({
     int hour = 20,
     int minute = 0,
     String? title,
     String? body,
+    NotificationFrequency frequency = NotificationFrequency.high,
   }) async {
-    if (kIsWeb || !_isInitialized) return;
-
-    try {
-      final scheduledDate = nextInstanceOfTime(hour, minute);
-
-      const notificationDetails = NotificationDetails(
-        android: AndroidNotificationDetails(
-          reminderChannelId,
-          reminderChannelName,
-          channelDescription: reminderChannelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      );
-
-      await _plugin.zonedSchedule(
-        id: streakReminderNotificationId,
-        title: title ?? 'Protect your streak! 🔥',
-        body:
-            body ??
-            'Take 2 minutes to practice Ol Chiki today and keep your streak alive.',
-        scheduledDate: scheduledDate,
-        notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-      );
-
-      AppLogger.debug(
-        'NotificationService: Scheduled daily streak reminder at $hour:${minute.toString().padLeft(2, '0')} (next: $scheduledDate)',
-      );
-    } catch (e) {
-      AppLogger.debug(
-        'NotificationService: scheduleDailyStreakReminder error: $e',
-      );
-    }
+    await scheduleAllReminders(
+      frequency: frequency,
+      hour: hour,
+      minute: minute,
+    );
   }
 
-  /// Suppresses reminder for today if the user has already practiced today.
-  /// Re-arms the reminder starting tomorrow at the specified (or default) hour and minute.
+  /// Suppresses reminders for today if the user has already practiced today.
+  /// Re-arms reminders starting tomorrow according to [frequency].
   Future<void> suppressTodayReminderIfPracticed({
     int hour = 20,
     int minute = 0,
+    NotificationFrequency frequency = NotificationFrequency.high,
   }) async {
     if (kIsWeb || !_isInitialized) return;
 
     try {
       final now = tz.TZDateTime.now(tz.local);
       final tomorrow = now.add(const Duration(days: 1));
-      final scheduledDate = tz.TZDateTime(
-        tz.local,
-        tomorrow.year,
-        tomorrow.month,
-        tomorrow.day,
-        hour,
-        minute,
-      );
 
-      const notificationDetails = NotificationDetails(
-        android: AndroidNotificationDetails(
-          reminderChannelId,
-          reminderChannelName,
-          channelDescription: reminderChannelDescription,
-          importance: Importance.high,
-          priority: Priority.high,
-          icon: '@mipmap/ic_launcher',
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-        ),
-      );
+      // Cancel all active reminder IDs for today
+      for (final id in allReminderNotificationIds) {
+        await _plugin.cancel(id: id);
+      }
 
-      await _plugin.cancel(id: streakReminderNotificationId);
-      await _plugin.zonedSchedule(
+      // Re-arm Main Reminder starting tomorrow
+      await _scheduleSlot(
         id: streakReminderNotificationId,
+        hour: hour,
+        minute: minute,
         title: 'Keep the momentum going! 🔥',
         body:
             'Ready for your daily Ol Chiki practice? Keep your streak shining.',
-        scheduledDate: scheduledDate,
-        notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
+        startFrom: tomorrow,
       );
+
+      // Re-arm Morning Kickstart starting tomorrow
+      if (frequency == NotificationFrequency.balanced ||
+          frequency == NotificationFrequency.high) {
+        await _scheduleSlot(
+          id: morningReminderNotificationId,
+          hour: 9,
+          minute: 0,
+          title: 'Start your morning with Ol Chiki! ☀️',
+          body:
+              'A quick 2-minute lesson starts your day with positive momentum.',
+          startFrom: tomorrow,
+        );
+      }
+
+      // Re-arm Afternoon and Night Streak Saver starting tomorrow
+      if (frequency == NotificationFrequency.high) {
+        await _scheduleSlot(
+          id: afternoonReminderNotificationId,
+          hour: 14,
+          minute: 30,
+          title: 'Midday Ol Chiki boost! 🎯',
+          body: 'Take a short break and master a new Santali word today.',
+          startFrom: tomorrow,
+        );
+
+        final nightHour = (hour >= 21 && minute >= 30) ? 22 : 21;
+        final nightMinute = (nightHour == 22) ? 30 : 45;
+        await _scheduleSlot(
+          id: nightStreakSaverNotificationId,
+          hour: nightHour,
+          minute: nightMinute,
+          title: 'Don\'t lose your streak! ⏳',
+          body:
+              'Your streak is waiting! Complete a quick lesson before midnight to save your progress.',
+          startFrom: tomorrow,
+        );
+      }
+
+      // Re-arm inactivity reminder for 3 days from today
+      await _scheduleInactivityReminder(now);
+
       AppLogger.debug(
-        'NotificationService: Suppressed today reminder since user practiced. Next scheduled for: $scheduledDate',
+        'NotificationService: Suppressed today\'s reminders since user practiced. Next armed starting tomorrow.',
       );
     } catch (e) {
       AppLogger.debug(
@@ -263,15 +441,22 @@ class NotificationService {
     }
   }
 
-  /// Cancels any scheduled daily streak reminder.
-  Future<void> cancelDailyReminder() async {
+  /// Cancels all scheduled habit, streak, and inactivity reminders.
+  Future<void> cancelAllReminders() async {
     if (kIsWeb || !_isInitialized) return;
 
     try {
-      await _plugin.cancel(id: streakReminderNotificationId);
-      AppLogger.debug('NotificationService: daily reminder canceled.');
+      for (final id in allReminderNotificationIds) {
+        await _plugin.cancel(id: id);
+      }
+      AppLogger.debug('NotificationService: all reminders canceled.');
     } catch (e) {
-      AppLogger.debug('NotificationService: cancelDailyReminder error: $e');
+      AppLogger.debug('NotificationService: cancelAllReminders error: $e');
     }
+  }
+
+  /// Cancels any scheduled daily streak reminder (backwards-compatible alias).
+  Future<void> cancelDailyReminder() async {
+    await cancelAllReminders();
   }
 }

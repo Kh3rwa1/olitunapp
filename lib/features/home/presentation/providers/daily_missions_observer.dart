@@ -29,9 +29,11 @@ class DailyMissionsObserver extends ProviderObserver {
         if (notificationsEnabled) {
           final hour = container.read(reminderHourProvider);
           final minute = container.read(reminderMinuteProvider);
+          final frequency = container.read(notificationFrequencyProvider);
           NotificationService.instance.suppressTodayReminderIfPracticed(
             hour: hour,
             minute: minute,
+            frequency: frequency,
           );
         }
       }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:itun/core/notifications/notification_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/shared/providers/notification_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -89,5 +90,59 @@ void main() {
       expect(container.read(reminderMinuteProvider), equals(30));
       expect(prefs.getInt('reminder_minute'), equals(30));
     });
+
+    test(
+      'notificationFrequencyProvider defaults to high and updates properly',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        expect(
+          container.read(notificationFrequencyProvider),
+          equals(NotificationFrequency.high),
+        );
+
+        await container
+            .read(notificationFrequencyProvider.notifier)
+            .setFrequency(NotificationFrequency.balanced);
+        expect(
+          container.read(notificationFrequencyProvider),
+          equals(NotificationFrequency.balanced),
+        );
+        expect(prefs.getString('notification_frequency'), equals('balanced'));
+
+        await container
+            .read(notificationFrequencyProvider.notifier)
+            .setFrequency(NotificationFrequency.once);
+        expect(
+          container.read(notificationFrequencyProvider),
+          equals(NotificationFrequency.once),
+        );
+        expect(prefs.getString('notification_frequency'), equals('once'));
+      },
+    );
+
+    test(
+      'notificationFrequencyProvider reads existing stored preference',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'notification_frequency': 'once',
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
+
+        expect(
+          container.read(notificationFrequencyProvider),
+          equals(NotificationFrequency.once),
+        );
+      },
+    );
   });
 }

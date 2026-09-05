@@ -1,4 +1,4 @@
-import 'dart:ui' show SemanticsAction, SemanticsFlag;
+import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -73,11 +73,11 @@ Finder _card(String id) => find.byKey(ValueKey('home_category_$id'));
 void main() {
   testWidgets('category semantics is actionable', (tester) async {
     final handle = tester.ensureSemantics();
-    addTearDown(handle.dispose);
+    try {
     await _pump(tester, 'words');
 
     final data = tester.getSemantics(_card('words')).getSemanticsData();
-    expect(data.hasFlag(SemanticsFlag.isButton), isTrue);
+    expect(data.flagsCollection.isButton, isTrue);
     expect(data.hasAction(SemanticsAction.tap), isTrue);
     expect(data.label, isNotEmpty);
     expect(data.label, isNot(contains('Double tap')));
@@ -91,12 +91,15 @@ void main() {
     );
     expect(semanticWidgets, findsOneWidget);
     expect(tester.takeException(), isNull);
+    } finally {
+      handle.dispose();
+    }
   });
 
   for (final id in ['words', 'cat_alphabets', 'cat_letters', 'letters']) {
     testWidgets('semantic tap routes $id', (tester) async {
       final handle = tester.ensureSemantics();
-      addTearDown(handle.dispose);
+      try {
       await _pump(tester, id);
       final data = tester.getSemantics(_card(id)).getSemanticsData();
       expect(data.hasAction(SemanticsAction.tap), isTrue);
@@ -114,6 +117,9 @@ void main() {
         find.text(id == 'words' ? 'opened:words' : 'opened:alphabet'),
         findsOneWidget,
       );
+      } finally {
+        handle.dispose();
+      }
     });
   }
 

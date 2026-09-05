@@ -252,7 +252,7 @@ class _BentoCategoryCard extends ConsumerWidget {
       key: ValueKey('home_category_${category.id}'),
       semanticLabel: [
         primaryTitle,
-        if (secondaryTitle != null) secondaryTitle,
+        ?secondaryTitle,
       ].join(', '),
       onTap: () {
         final id = category.id;

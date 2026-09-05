@@ -1,18 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/shared/models/content_item.dart';
 
-ContentItem item({
-  required ContentKind kind,
-  bool isPremium = false,
-}) => ContentItem(
-  id: 'content-1',
-  kind: kind,
-  categoryId: 'category-1',
-  title: 'Content',
-  blocks: const [],
-  isPremium: isPremium,
-  updatedAt: DateTime(2026, 9, 5),
-);
+ContentItem item({required ContentKind kind, bool isPremium = false}) =>
+    ContentItem(
+      id: 'content-1',
+      kind: kind,
+      categoryId: 'category-1',
+      title: 'Content',
+      blocks: const [],
+      isPremium: isPremium,
+      updatedAt: DateTime(2026, 9, 5),
+    );
 
 void main() {
   group('generic Appwrite publication guard', () {

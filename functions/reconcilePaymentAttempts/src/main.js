@@ -1,5 +1,6 @@
 import { Client, Databases } from 'node-appwrite';
 import { reconcileStuckPaymentAttempts } from './shared/payment_reconcile.js';
+import { withPaymentStateGuard } from './shared/payment_state.js';
 
 export default async ({ req, res, log = console.log, error = console.error }) => {
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
@@ -19,7 +20,7 @@ export default async ({ req, res, log = console.log, error = console.error }) =>
     .setProject(projectId)
     .setKey(apiKey);
 
-  const databases = new Databases(client);
+  const databases = withPaymentStateGuard(new Databases(client));
 
   log('Starting scheduled payment attempt reconciliation');
 

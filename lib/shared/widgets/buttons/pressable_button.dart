@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../core/accessibility/wcag_audit.dart';
+import '../../../core/motion/motion_tokens.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'button_tokens.dart';
 
-/// Premium Primary Button - $20B Startup Quality
-class PrimaryButton extends StatefulWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final bool isLoading;
-  final bool isDisabled;
-  final IconData? icon;
-  final double? width;
-  final double height;
-
+/// A keyboard-accessible primary action with a wrapping, persistent label.
+class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
     required this.text,
@@ -23,148 +18,36 @@ class PrimaryButton extends StatefulWidget {
     this.height = 58,
   });
 
-  @override
-  State<PrimaryButton> createState() => _PrimaryButtonState();
-}
-
-class _PrimaryButtonState extends State<PrimaryButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 100),
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.97,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isEnabled = !widget.isDisabled && !widget.isLoading;
-
-    return Semantics(
-      button: true,
-      enabled: isEnabled,
-      child: GestureDetector(
-        onTapDown: isEnabled ? (_) => _controller.forward() : null,
-        onTapUp: isEnabled
-            ? (_) {
-                _controller.reverse();
-                HapticFeedback.mediumImpact();
-                widget.onPressed();
-              }
-            : null,
-        onTapCancel: isEnabled ? () => _controller.reverse() : null,
-        child: AnimatedBuilder(
-          animation: _scaleAnimation,
-          builder: (context, child) {
-            return Transform.scale(scale: _scaleAnimation.value, child: child);
-          },
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
-            opacity: isEnabled ? 1.0 : 0.6,
-            child: Container(
-              width: widget.width ?? double.infinity,
-              height: widget.height,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: AppColors.heroGradient,
-                boxShadow: isEnabled ? AppColors.buttonShadow : null,
-              ),
-              child: Stack(
-                children: [
-                  // Gloss effect
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: widget.height / 2,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(16),
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withValues(alpha: 0.15),
-                            Colors.white.withValues(alpha: 0),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Content
-                  Center(
-                    child: widget.isLoading
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (widget.icon != null) ...[
-                                Icon(
-                                  widget.icon,
-                                  color: Colors.white,
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 10),
-                              ],
-                              Text(
-                                widget.text,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: -0.3,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Playful 3D Pressed Button (Duo-style)
-class DuoButton extends StatefulWidget {
   final String text;
   final VoidCallback onPressed;
-  final Color color;
-  final Color? shadowColor;
   final bool isLoading;
   final bool isDisabled;
   final IconData? icon;
   final double? width;
   final double height;
-  final double borderRadius;
 
+  @override
+  Widget build(BuildContext context) {
+    return _LearningButton(
+      text: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      icon: icon,
+      width: width,
+      height: height,
+      foreground: AppColors.elevatedButtonFg,
+      decoration: BoxDecoration(
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: isDisabled || isLoading ? null : AppColors.buttonShadow,
+      ),
+    );
+  }
+}
+
+/// A raised action whose foreground is chosen from its actual opaque surface.
+class DuoButton extends StatelessWidget {
   const DuoButton({
     super.key,
     required this.text,
@@ -179,117 +62,179 @@ class DuoButton extends StatefulWidget {
     this.borderRadius = 16,
   });
 
-  @override
-  State<DuoButton> createState() => _DuoButtonState();
-}
-
-class _DuoButtonState extends State<DuoButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _translateAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 80),
-    );
-    _translateAnimation = Tween<double>(
-      begin: 0.0,
-      end: 4.0,
-    ).animate(_controller);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  final String text;
+  final VoidCallback onPressed;
+  final Color color;
+  final Color? shadowColor;
+  final bool isLoading;
+  final bool isDisabled;
+  final IconData? icon;
+  final double? width;
+  final double height;
+  final double borderRadius;
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = !widget.isDisabled && !widget.isLoading;
-    final effectiveShadowColor =
-        widget.shadowColor ??
-        (widget.color == AppColors.primary
-            ? AppColors.primaryDark
-            : widget.color.withValues(alpha: 0.7));
-
-    // Auto-detect contrast color for text
-    final textColor = widget.color == Colors.white
-        ? AppColors.primary
+    final surface = Color.alphaBlend(
+      color,
+      Theme.of(context).colorScheme.surface,
+    );
+    final foreground =
+        WcagAudit.contrastRatio(Colors.black, surface) >=
+            WcagAudit.contrastRatio(Colors.white, surface)
+        ? Colors.black
         : Colors.white;
+    return _LearningButton(
+      text: text,
+      onPressed: onPressed,
+      isLoading: isLoading,
+      isDisabled: isDisabled,
+      icon: icon,
+      width: width,
+      height: height,
+      borderRadius: borderRadius,
+      foreground: foreground,
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color:
+                shadowColor ??
+                (color == AppColors.primary
+                    ? AppColors.primaryDark
+                    : surface.withValues(alpha: 0.7)),
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LearningButton extends StatelessWidget {
+  const _LearningButton({
+    required this.text,
+    required this.onPressed,
+    required this.isLoading,
+    required this.isDisabled,
+    required this.icon,
+    required this.width,
+    required this.height,
+    required this.foreground,
+    required this.decoration,
+    this.borderRadius = 16,
+  });
+
+  final String text;
+  final VoidCallback onPressed;
+  final bool isLoading;
+  final bool isDisabled;
+  final IconData? icon;
+  final double? width;
+  final double height;
+  final Color foreground;
+  final BoxDecoration decoration;
+  final double borderRadius;
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = !isDisabled && !isLoading;
+    final reduce = RespectMotion.of(context);
+    final loadingLabel =
+        AppLocalizations.of(context)?.joharLoading ?? 'Loading';
 
     return Semantics(
-      button: true,
-      enabled: isEnabled,
-      child: GestureDetector(
-        onTapDown: isEnabled ? (_) => _controller.forward() : null,
-        onTapUp: isEnabled
-            ? (_) {
-                _controller.reverse();
-                HapticFeedback.lightImpact();
-                widget.onPressed();
-              }
-            : null,
-        onTapCancel: isEnabled ? () => _controller.reverse() : null,
-        child: Container(
-          width: widget.width ?? double.infinity,
-          height: widget.height,
-          // Shadow/Bottom part
-          decoration: BoxDecoration(
-            color: effectiveShadowColor,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-          ),
-          child: AnimatedBuilder(
-            animation: _controller,
-            builder: (context, _) {
-              return Transform.translate(
-                // Move from -4 (top/unpressed) to 0 (pressed)
-                offset: Offset(0, _translateAnimation.value - 4),
-                child: Container(
-                  width: widget.width ?? double.infinity,
-                  height: widget.height,
-                  decoration: BoxDecoration(
-                    color: widget.color,
-                    borderRadius: BorderRadius.circular(widget.borderRadius),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.1),
+      liveRegion: isLoading,
+      child: SizedBox(
+        width: width ?? double.infinity,
+        child: DecoratedBox(
+          decoration: decoration,
+          child: ElevatedButton(
+            onPressed: enabled
+                ? () {
+                    HapticFeedback.lightImpact();
+                    onPressed();
+                  }
+                : null,
+            style: ButtonStyle(
+              foregroundColor: WidgetStatePropertyAll(foreground),
+              backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+              shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+              surfaceTintColor: const WidgetStatePropertyAll(
+                Colors.transparent,
+              ),
+              elevation: const WidgetStatePropertyAll(0),
+              overlayColor: WidgetStateProperty.resolveWith((states) {
+                if (states.contains(WidgetState.pressed) ||
+                    states.contains(WidgetState.hovered) ||
+                    states.contains(WidgetState.focused)) {
+                  // State feedback increases, rather than reduces, contrast.
+                  return (foreground.computeLuminance() > 0.5
+                          ? Colors.black
+                          : Colors.white)
+                      .withValues(alpha: 0.08);
+                }
+                return Colors.transparent;
+              }),
+              minimumSize: WidgetStatePropertyAll(
+                Size(48, height < 48 ? 48 : height),
+              ),
+              padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              ),
+              tapTargetSize: MaterialTapTargetSize.padded,
+              animationDuration: reduce ? Duration.zero : MotionTokens.quick,
+              splashFactory: reduce ? NoSplash.splashFactory : null,
+              shape: WidgetStatePropertyAll(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(borderRadius),
+                ),
+              ),
+              side: WidgetStateProperty.resolveWith((states) {
+                return states.contains(WidgetState.focused)
+                    ? BorderSide(color: foreground, width: 3)
+                    : BorderSide.none;
+              }),
+            ),
+            child: Semantics(
+              label: isLoading ? '$text. $loadingLabel' : text,
+              excludeSemantics: true,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (isLoading) ...[
+                    if (reduce)
+                      Icon(Icons.hourglass_top_rounded, color: foreground)
+                    else
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: foreground,
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    const SizedBox(width: 10),
+                  ] else if (icon != null) ...[
+                    Icon(icon, color: foreground, size: 22),
+                    const SizedBox(width: 10),
+                  ],
+                  Flexible(
+                    child: Text(
+                      text,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: foreground,
+                      ),
                     ),
                   ),
-                  child: Center(
-                    child: widget.isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              if (widget.icon != null) ...[
-                                Icon(widget.icon, color: textColor, size: 20),
-                                const SizedBox(width: 8),
-                              ],
-                              Text(
-                                widget.text,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.5,
-                                  color: textColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                  ),
-                ),
-              );
-            },
+                ],
+              ),
+            ),
           ),
         ),
       ),

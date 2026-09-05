@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 
-// ═══════════════ BENTO CATEGORY CARD ═══════════════
-
 class BentoCategoryCard extends StatelessWidget {
   final dynamic category;
   final int index;
@@ -52,10 +50,14 @@ class BentoCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final gradient = _gradients[index % _gradients.length];
+    final largeText = MediaQuery.textScalerOf(context).scale(17) > 22;
+    final foreground = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
 
     return BentoCell(
       padding: const EdgeInsets.all(20),
-      color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
+      color: isDark ? AppColors.darkSurface : AppColors.lightSurface,
       boxShadow: isDark
           ? null
           : [
@@ -66,86 +68,53 @@ class BentoCategoryCard extends StatelessWidget {
               ),
             ],
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Icon Badge
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              gradient: gradient,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: gradient.colors.first.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
+          ExcludeSemantics(
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(_getIcon(), color: Colors.black, size: 26),
             ),
-            child: Icon(_getIcon(), color: Colors.white, size: 26),
           ),
           const SizedBox(height: 16),
-
-          // Title
           Text(
             category.titleLatin,
             style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : Colors.black87,
+              color: foreground,
               letterSpacing: -0.3,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+            maxLines: largeText ? null : 2,
+            overflow: largeText ? null : TextOverflow.ellipsis,
           ),
-
-          // Ol Chiki subtitle
           if (category.titleOlChiki.isNotEmpty) ...[
             const SizedBox(height: 3),
             Text(
               category.titleOlChiki,
               style: TextStyle(
-                fontSize: 13,
+                fontSize: 14,
                 fontFamily: 'OlChiki',
-                color: isDark ? Colors.white54 : Colors.black38,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+              maxLines: largeText ? null : 2,
+              overflow: largeText ? null : TextOverflow.ellipsis,
             ),
           ],
-
-          const Spacer(),
-
-          // Arrow indicator
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 3,
-                  decoration: BoxDecoration(
-                    gradient: gradient,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : gradient.colors.first.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 16,
-                  color: gradient.colors.first,
-                ),
-              ),
-            ],
+          const SizedBox(height: 12),
+          ExcludeSemantics(
+            child: Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Icon(Icons.arrow_forward_rounded, color: foreground),
+            ),
           ),
         ],
       ),

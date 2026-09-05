@@ -20,6 +20,9 @@ class UserStatsEntity extends Equatable {
   final int totalStars;
   final Set<String> completedMissionsDates;
 
+  /// Reset generation; legacy payloads belong to generation zero.
+  final int syncEpoch;
+
   /// Local dates (yyyy-MM-dd) on which the learner completed ANY practice
   /// activity (quiz, lesson, typing). Capped to the most recent entries.
   final Set<String> practiceDates;
@@ -35,6 +38,7 @@ class UserStatsEntity extends Equatable {
     required this.totalStars,
     this.completedMissionsDates = const {},
     this.practiceDates = const {},
+    this.syncEpoch = 0,
   });
 
   @override
@@ -49,6 +53,7 @@ class UserStatsEntity extends Equatable {
     totalStars,
     completedMissionsDates,
     practiceDates,
+    syncEpoch,
   ];
 
   UserStatsEntity copyWith({
@@ -62,6 +67,7 @@ class UserStatsEntity extends Equatable {
     int? totalStars,
     Set<String>? completedMissionsDates,
     Set<String>? practiceDates,
+    int? syncEpoch,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -75,6 +81,7 @@ class UserStatsEntity extends Equatable {
       completedMissionsDates:
           completedMissionsDates ?? this.completedMissionsDates,
       practiceDates: practiceDates ?? this.practiceDates,
+      syncEpoch: syncEpoch ?? this.syncEpoch,
     );
   }
 

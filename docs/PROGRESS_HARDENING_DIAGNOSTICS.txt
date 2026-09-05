@@ -1,0 +1,128 @@
+Source before reset-test correction: e2441d4580a276e0d1ebf2e3dc5cd63172483c09
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
+Formatted test/features/profile/user_stats_notifier_test.dart
+Formatted 1 file (1 changed) in 0.01 seconds.
+00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/features/profile/notifications_settings_card_test.dart
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/features/profile/notifications_settings_card_test.dart: NotificationsSettingsCard renders daily study reminder switch, frequency, reminder time, and preview when enabled
+00:00 +1: /home/runner/work/olitunapp/olitunapp/test/features/profile/notifications_settings_card_test.dart: NotificationsSettingsCard hides reminder time, frequency, and preview when notifications are disabled
+00:00 +2: /home/runner/work/olitunapp/olitunapp/test/features/profile/notifications_settings_card_test.dart: NotificationsSettingsCard opening frequency picker and selecting balanced updates state
+00:00 +3: /home/runner/work/olitunapp/olitunapp/test/features/profile/notifications_settings_card_test.dart: NotificationsSettingsCard toggling switch toggles notificationsEnabledProvider
+00:04 +4: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: account defaults to Learner, baby emoji and April 2024
+00:04 +5: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: account providers read stored preference values
+00:04 +6: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: badge providers fall back to traditional Santali names
+00:04 +7: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: userAvatarColorsProvider resolves the palette for the stored index
+00:04 +8: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: userAvatarColorsProvider is usable inside a widget tree
+00:04 +9: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_account_providers_test.dart: accountCreatedAtProvider returns null for guests without network
+00:05 +10: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/diagnostics_sheet_test.dart: DiagnosticsTile & DiagnosticsSheet Tests renders DiagnosticsTile with system health info
+00:06 +11: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/diagnostics_sheet_test.dart: DiagnosticsTile & DiagnosticsSheet Tests opens DiagnosticsSheet and handles Copy Diagnostics trigger
+00:06 +12: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/badges_grid_widget_test.dart: BadgesGridWidget & BadgeDetailDialog Tests renders category filter pills and badge items
+00:07 +13: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/target_language_tile_test.dart: TargetLanguageTile & IndigenousLanguagesSheet Tests renders TargetLanguageTile with default Santali selection
+00:07 +14: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/target_language_tile_test.dart: TargetLanguageTile & IndigenousLanguagesSheet Tests renders TargetLanguageTile with default Santali selection
+00:07 +15: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/badges_grid_widget_test.dart: BadgesGridWidget & BadgeDetailDialog Tests opens BadgeDetailDialog and triggers Share Achievement
+00:08 +16: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/target_language_tile_test.dart: TargetLanguageTile & IndigenousLanguagesSheet Tests opens IndigenousLanguagesSheet and selects Ho language
+00:08 +17: /home/runner/work/olitunapp/olitunapp/test/features/profile/widgets/target_language_tile_test.dart: TargetLanguageTile & IndigenousLanguagesSheet Tests shows coming soon snackbar when tapping coming soon language
+00:08 +18: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_hero_card_test.dart: hides the Since line when creation date is unknown
+00:09 +19: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_hero_card_test.dart: shows formatted Since date when known
+00:11 +20: /home/runner/work/olitunapp/olitunapp/test/features/profile/streak_calendar_widget_test.dart: idle state shows Start Your Streak, never Active
+00:11 +21: /home/runner/work/olitunapp/olitunapp/test/features/profile/streak_calendar_widget_test.dart: active state shows Weekly Streak Active with streak count
+00:11 +22: /home/runner/work/olitunapp/olitunapp/test/features/profile/streak_calendar_widget_test.dart: tapping a practiced day opens the detail sheet
+00:11 +23: /home/runner/work/olitunapp/olitunapp/test/features/profile/streak_calendar_widget_test.dart: detail sheet shows the real quiz title when available
+00:11 +24: /home/runner/work/olitunapp/olitunapp/test/features/profile/streak_calendar_widget_test.dart: tapping an empty day reports no activity
+00:15 +25: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +26: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +27: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +28: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +29: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +30: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +31: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +32: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +33: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +34: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +35: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showThemeDialog presents the three theme options
+00:16 +36: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showScriptDialog presents the three script options
+00:16 +37: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showLanguageDialog presents the five app languages
+00:16 +38: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showResetDialog warns and cancels without touching stats
+00:16 +39: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_dialogs_test.dart: showDeleteAccountDialog presents a destructive confirmation
+00:17 +40: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_screen_test.dart: SettingsScreen changes language and theme without exceptions
+00:18 +41: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: (setUpAll)
+00:18 +41: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: syncPendingStats marks success and reloads merged stats
+00:18 +42: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: syncPendingStats marks error and unsynced on failure
+00:18 +43: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: updateName persists via repository and updates the name provider
+00:18 +44: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: updateAvatar updates emoji and color providers on success
+00:18 +45: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: practiceLetter on a digit updates numbers category mastery
+00:18 +46: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: recordDailyMissionsCompletedToday records the day only once
+00:18 +47: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: derived providers expose stars, lessons and quizzes counters
+00:18 +48: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: isStatsSyncedProvider reflects the stored preference
+00:18 +49: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_providers_test.dart: (tearDownAll)
+00:20 +49: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: (setUpAll)
+00:20 +49: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier loadStats emits data on success
+00:20 +50: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier loadStats emits error on failure
+00:20 +51: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier addStars increments totalStars correctly
+00:20 +52: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier addStars ignores non-positive values
+00:20 +53: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier addStars does nothing when state has no value
+00:20 +54: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier completeLesson adds lessonId to set
+00:20 +55: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier completeLesson is idempotent for same lessonId
+00:20 +56: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier completeLesson caps unreasonable learning minutes
+00:20 +57: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier streak advances by calendar day, not elapsed hours
+00:20 +58: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier practiceLetter adds letter to set
+00:20 +59: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier recordPracticeCompletion logs today into practiceDates
+00:20 +60: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier saveQuizResult stores result in history
+00:20 +61: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier saveQuizResult preserves quiz retakes as separate attempts
+00:20 +62: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier saveQuizResult clamps impossible scores
+00:20 +63: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier resetProgress uses the explicit reset contract
+00:20 +64: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier resetProgress reports a failed reset
+00:20 +65: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier recordPracticeCompletion awards stars correctly exactly once per call
+00:20 +66: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier recordPracticeCompletion calls _withStreakUpdate to update active learning day
+00:20 +67: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: UserStatsNotifier recordPracticeCompletion tracks practiceCompleted analytics event with correct payload
+00:20 +68: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_notifier_test.dart: (tearDownAll)
+00:20 +68: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: (setUpAll)
+00:20 +68: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract getUserStats returns the stored stats on success
+00:20 +69: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract updateUserStats persists and echoes the new stats
+00:20 +70: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract resetUserStats clears progress and advances its epoch
+00:20 +71: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract updateDisplayName and updateAvatar record the changes
+00:20 +72: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract syncPendingStats completes without error and is repeatable
+00:20 +73: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: ProfileRepository contract mock repositories surface failures
+00:20 +74: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_contract_test.dart: (tearDownAll)
+00:21 +74: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_model_test.dart: UserStatsModel practiceDates round-trips through JSON
+00:21 +75: /home/runner/work/olitunapp/olitunapp/test/features/profile/user_stats_model_test.dart: UserStatsModel practiceDates defaults to empty for legacy payloads without the field
+00:22 +76: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: getUserStats returns empty defaults when no data is stored
+00:22 +77: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: getUserStats returns stored stats round-tripped through JSON
+00:22 +78: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: getUserStats maps malformed stored JSON to CacheFailure
+00:22 +79: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: getUserStats maps structurally-invalid JSON to CacheFailure
+00:22 +80: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: updateUserStats persists data and returns Right(stats)
+00:22 +81: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: updateAvatar writes both emoji and color index to prefs
+00:22 +82: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: updateDisplayName writes name and returns Right when not logged in
+00:22 +83: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: updateDisplayName still writes local name when auth status check fails
+00:22 +84: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: updateDisplayName keeps local name when cloud display name sync fails
+00:22 +85: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: Bi-directional Cloud Sync Tests getUserStats uploads local stats to cloud when cloud is empty
+00:22 +86: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_repository_impl_test.dart: Bi-directional Cloud Sync Tests getUserStats merges local and cloud stats when both exist
+00:23 +87: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: ProgressErrorState renders the failure copy and retry button
+00:23 +88: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: BintiGuruBookingsSection shows the empty state when no bookings exist
+00:23 +89: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: BintiGuruBookingsSection renders booking cards with ceremony, status and city
+00:23 +90: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: BintiGuruBookingsSection shows the failure message when the waitlist errors
+00:24 +91: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: ActionTilesSection renders the three account action tiles
+00:24 +92: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_screen_sections_test.dart: ActionTilesSection BentoActionCard invokes its callback on tap
+00:24 +93: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: legacy payloads default to sync epoch zero
+00:24 +94: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: sync epoch round-trips through the model
+00:24 +95: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: normal empty update merges cloud progress and is not a reset
+00:24 +96: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: explicit offline reset advances epoch and persists empty data
+00:24 +97: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: explicit logged-in reset wins over cloud and uploads
+00:24 +98: /home/runner/work/olitunapp/olitunapp/test/features/profile/progress_reset_sync_test.dart: older cloud epoch cannot restore reset progress
+00:25 +99: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports account identity providers backed by preferences
+00:25 +100: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports account providers honouring stored preferences
+00:25 +101: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports the avatar palette provider with a non-empty palette
+00:25 +102: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports the sync status provider in its idle default
+00:25 +103: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports derived stat providers fed by the stats notifier
+00:25 +104: /home/runner/work/olitunapp/olitunapp/test/features/profile/profile_providers_barrel_test.dart: profile_providers compatibility barrel re-exports QuizResultEntity for quiz history consumers
+00:26 +105: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_bento_sections_test.dart: mobile bento renders all settings cards
+00:27 +106: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_bento_sections_test.dart: desktop bento renders the grouped cards on a wide surface
+00:27 +107: /home/runner/work/olitunapp/olitunapp/test/features/profile/settings_bento_sections_test.dart: typing practice toggle flips the setting provider
+00:27 +108: All tests passed!
+Analyzing olitunapp...                                          
+No issues found! (ran in 21.4s)
+
+Focused test exit: 0
+Analysis exit: 0

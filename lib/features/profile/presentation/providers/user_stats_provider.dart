@@ -464,17 +464,15 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> resetProgress() async {
-    const empty = UserStatsEntity(
-      practicedLetters: {},
-      completedLessons: {},
-      quizHistory: {},
-      categoryMastery: {},
-      totalLearningMinutes: 0,
-      lastActiveDate: '',
-      currentStreak: 0,
-      totalStars: 0,
+    final result = await _repository.resetUserStats();
+    if (_disposed) return;
+    result.fold(
+      (failure) => state = AsyncValue.error(failure, StackTrace.current),
+      (stats) {
+        state = AsyncValue.data(stats);
+        _updateSyncStateFromPrefs();
+      },
     );
-    await updateStats(empty);
   }
 
   Future<void> updateName(String name) async {

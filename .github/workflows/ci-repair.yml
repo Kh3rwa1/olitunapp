@@ -24,70 +24,13 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Correct the old unsafe-save expectation
+      - name: Apply the repository formatter to both tests
         run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('test/shared/repositories/content_repository_offline_test.dart')
-          s=p.read_text()
-          s=s.replace("import 'package:itun/core/network/network_info.dart';", "import 'package:itun/core/error/failures.dart';\nimport 'package:itun/core/network/network_info.dart';")
-          old="""    test(
-                'still succeeds when no outbox is wired (default constructor)',
-                () async {
-                  final repo = ContentRepository(
-                    databases: _MockDatabases(),
-                    networkInfo: _FakeNetworkInfo(connected: false),
-                  );
-          
-                  final result = await repo.upsert(_buildItem());
-          
-                  expect(result.isRight(), isTrue);
-                },
-              );"""
-          # Match the latest formatted source, not an indentation approximation.
-          begin=s.index('    test(\n      \'still succeeds when no outbox is wired (default constructor)\',')
-          end=s.index('    );',begin)+len('    );')
-          replacement="""    test('fails without an outbox and does not cache a phantom save', () async {
-                final databases = _MockDatabases();
-                final repo = ContentRepository(
-                  databases: databases,
-                  networkInfo: _FakeNetworkInfo(connected: false),
-                );
-                final item = _buildItem();
-                const cacheKey = 'content_item_word_word_offline_edit';
-                await CacheService.delete(cacheKey);
-          
-                final result = await repo.upsert(item);
-          
-                expect(result.isLeft(), isTrue);
-                result.fold(
-                  (failure) => expect(
-                    failure,
-                    isA<CacheFailure>().having(
-                      (value) => value.message,
-                      'message',
-                      contains('Durable offline storage unavailable'),
-                    ),
-                  ),
-                  (_) => fail('A save without durable storage must not succeed.'),
-                );
-                expect(
-                  await CacheService.get<ContentItem>(
-                    cacheKey,
-                    (json) => ContentItem.fromJson(json, item.id, item.kind),
-                  ),
-                  isNull,
-                );
-                verifyZeroInteractions(databases);
-              });"""
-          s=s[:begin]+replacement+s[end:]
-          p.write_text(s)
-          PY
           dart format test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
           git add test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
-          git commit -m 'test: enforce durable offline failure contract and format entitlements'
+          git diff --cached --quiet || git commit -m 'style: format offline and entitlement regression tests'
           git push origin HEAD:fix/review-priority-hardening-20260905
       - name: Run all formatting and static policy gates
         run: |

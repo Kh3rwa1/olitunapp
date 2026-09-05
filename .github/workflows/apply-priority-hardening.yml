@@ -2,75 +2,67 @@ name: Apply isolated priority hardening
 on:
   push:
     branches: [fix/review-priority-hardening-20260905]
-    paths: [scripts/apply_priority_hardening.py, scripts/refine_priority_hardening.py, .github/workflows/apply-priority-hardening.yml]
+    paths: [.github/workflows/apply-priority-hardening.yml, scripts/refine_priority_hardening.py]
 concurrency:
   group: isolated-priority-hardening
   cancel-in-progress: true
 permissions:
   contents: write
-  issues: write
 defaults:
   run:
     shell: bash
 jobs:
   apply:
-    if: github.repository == 'Kh3rwa1/olitunapp' && github.ref == 'refs/heads/fix/review-priority-hardening-20260905'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: fix/review-priority-hardening-20260905
-          fetch-depth: 2
-      - name: Apply exact-match changes
+          fetch-depth: 30
+      - name: Apply reviewed exact-match patch
         run: |
+          git show b7ed8df6761e1c1028b7cae249c98f391b523a0d:scripts/apply_priority_hardening.py > scripts/apply_priority_hardening.py
           python3 scripts/refine_priority_hardening.py 2>&1 | tee /tmp/priority.log
           python3 scripts/apply_priority_hardening.py 2>&1 | tee -a /tmp/priority.log
       - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
         with:
           channel: stable
           cache: true
-      - name: Format changed Dart files and check JavaScript
+      - name: Format and verify source before committing
         run: |
           python3 - <<'PY' 2>&1 | tee -a /tmp/priority.log
-          import json, subprocess
+          import json,subprocess
           paths=json.load(open('/tmp/priority_changed_paths.json'))
           subprocess.run(['dart','format',*[p for p in paths if p.endswith('.dart')]],check=True)
           for p in paths:
             if p.endswith(('.js','.mjs')): subprocess.run(['node','--check',p],check=True)
-          PY
-          node scripts/verify_function_deployment.mjs 2>&1 | tee -a /tmp/priority.log
-      - name: Commit source changes to review branch only
-        run: |
-          python3 - <<'PY' 2>&1 | tee -a /tmp/priority.log
-          import json, subprocess
-          paths=[p for p in json.load(open('/tmp/priority_changed_paths.json')) if not p.startswith('.github/')]
-          subprocess.run(['git','add','--',*paths],check=True)
+          subprocess.run(['node','scripts/verify_function_deployment.mjs'],check=True)
+          subprocess.run(['git','add','--',*[p for p in paths if not p.startswith('.github/')]],check=True)
           subprocess.run(['git','config','user.name','Notion AI'],check=True)
           subprocess.run(['git','config','user.email','noreply@notion.so'],check=True)
-          subprocess.run(['git','commit','-m','fix: consent durable sync entitlements and translation safeguards'],check=True)
-          subprocess.run(['git','push','origin','HEAD:refs/heads/fix/review-priority-hardening-20260905'],check=True)
+          subprocess.run(['git','commit','-m','fix: address priority findings with regression coverage'],check=True)
+          subprocess.run(['git','push','origin','HEAD:fix/review-priority-hardening-20260905'],check=True)
           PY
       - name: Install dependencies
         run: |
           flutter pub get 2>&1 | tee -a /tmp/priority.log
           npm ci 2>&1 | tee -a /tmp/priority.log
           npm ci --prefix functions/translator 2>&1 | tee -a /tmp/priority.log
-      - name: Validate implementation
+      - name: Static analysis
+        run: flutter analyze --fatal-infos 2>&1 | tee -a /tmp/priority.log
+      - name: Targeted regression tests
+        if: success() || failure()
         run: |
-          flutter analyze --fatal-infos 2>&1 | tee -a /tmp/priority.log
           flutter test test/core/ads test/core/payments test/shared/offline 2>&1 | tee -a /tmp/priority.log
           npm test 2>&1 | tee -a /tmp/priority.log
-      - name: Publish diagnostics to this draft only
+      - name: Persist diagnostics on this review branch
         if: always()
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          python3 - <<'PY'
-          import json,pathlib
-          p=pathlib.Path('/tmp/priority.log')
-          text=p.read_text() if p.exists() else 'No patch output; see workflow run.'
-          if len(text)>24000: text=text[:12000]+'\n...\n'+text[-12000:]
-          pathlib.Path('/tmp/comment.json').write_text(json.dumps({'body':'Priority hardening validation log (no production services invoked):\n```text\n'+text+'\n```'}))
-          PY
-          gh api repos/Kh3rwa1/olitunapp/issues/250/comments --input /tmp/comment.json
+          mkdir -p docs
+          { echo "Source commit: $(git rev-parse HEAD)"; cat /tmp/priority.log; } > docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          git add docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          git config user.name 'Notion AI'
+          git config user.email 'noreply@notion.so'
+          git diff --cached --quiet || git commit -m 'chore: record exact validation results on review branch'
+          git push origin HEAD:fix/review-priority-hardening-20260905

@@ -2,7 +2,9 @@
 import json
 import os
 from pathlib import Path
+import shlex
 import subprocess
+import sys
 
 DART_FILES = [
     "lib/core/accessibility/app_experience_scope.dart",
@@ -37,14 +39,46 @@ def clip(text, limit):
     return text if len(text) <= limit else text[:limit] + "\n[truncated; see CI logs]"
 
 
-def main():
+def outcome(code):
+    return "passed" if code == 0 else "not run" if code is None else "failed"
+
+
+def coverage_command():
+    """Reuse the current CI coverage policy verbatim, without invoking a shell."""
+    lines = Path(".github/workflows/flutter-ci.yml").read_text().splitlines()
+    index = lines.index("      - name: Enforce coverage threshold")
+    if lines[index + 1].strip() != "run: |":
+        raise ValueError("Coverage policy is no longer a literal command; review it manually.")
+    body = []
+    for line in lines[index + 2:]:
+        if not line.startswith("          "):
+            break
+        body.append(line[10:])
+    command = shlex.split("\n".join(body).replace("\\\n", " "))
+    if command[:3] != ["dart", "run", "tool/enforce_coverage.dart"]:
+        raise ValueError("Unexpected coverage command; refusing to substitute policy.")
+    return command
+
+
+def main(full=False):
     output = Path("build/experience-diagnostics")
     output.mkdir(parents=True, exist_ok=True)
     format_code, format_log = run(["dart", "format", *DART_FILES])
     _, patch = run(["git", "diff", "--", *DART_FILES])
     format_ok = format_code == 0 and not patch
     analyze_code, analyze_log = run(["flutter", "analyze", "--no-pub", "--fatal-infos"])
-    test_code, test_log = run(["flutter", "test", "--no-pub", "--machine", *TEST_FILES], timeout=240)
+    test_command = ["flutter", "test", "--no-pub", "--machine"]
+    test_command += ["--coverage", "--concurrency=4"] if full else TEST_FILES
+    test_code, test_log = run(test_command, timeout=660 if full else 240)
+    coverage_code = smoke_code = None
+    coverage_log = smoke_log = "Not run because an earlier required stage did not pass."
+    if full and test_code == 0:
+        try:
+            coverage_code, coverage_log = run(coverage_command())
+        except (ValueError, OSError) as error:
+            coverage_code, coverage_log = 2, str(error)
+        if coverage_code == 0:
+            smoke_code, smoke_log = run(["flutter", "test", "--no-pub", "test/smoke"])
     errors = []
     names = {}
     messages = {}
@@ -67,7 +101,8 @@ def main():
         detail = "\n".join(messages.get(test_id, []))
         detail += "\n" + str(error.get("error", "")) + "\n" + str(error.get("stackTrace", ""))
         details.append(names.get(test_id, "Test error") + "\n" + clip(detail, 2800))
-    test_detail = "Selected Flutter tests passed." if test_code == 0 else "\n\n".join(details) or test_log
+    suite = "Full Flutter suite" if full else "Targeted Flutter tests"
+    test_detail = f"{suite} passed." if test_code == 0 else "\n\n".join(details) or test_log
     head = os.environ.get("TESTED_HEAD", "unrecorded")
     body = (
         f"<!-- experience-diagnostics:{head} -->\n"
@@ -75,22 +110,34 @@ def main():
         "Formatting happens only in the disposable CI checkout. No source is auto-committed. "
         "These checks do not replace visual/device evaluation or the existing release gates.\n\n"
         f"### Formatting: {'passed' if format_ok else 'needs correction'}\n"
-        f"```diff\n{clip(patch or format_log, 28000)}\n```\n\n"
-        f"### Analyzer: {'passed' if analyze_code == 0 else 'failed'}\n"
-        f"```text\n{clip(analyze_log, 7000)}\n```\n\n"
-        f"### Targeted Flutter tests: {'passed' if test_code == 0 else 'failed'}\n"
+        f"```diff\n{clip(patch or format_log, 18000)}\n```\n\n"
+        f"### Analyzer: {outcome(analyze_code)}\n"
+        f"```text\n{clip(analyze_log, 5000)}\n```\n\n"
+        f"### {suite}: {outcome(test_code)}\n"
         f"```text\n{clip(test_detail, 18000)}\n```\n"
     )
+    if full:
+        body += (
+            f"\n### Coverage gate: {outcome(coverage_code)}\n"
+            f"```text\n{clip(coverage_log, 4500)}\n```\n"
+            f"\n### Smoke tests: {outcome(smoke_code)}\n"
+            f"```text\n{clip(smoke_log, 3000)}\n```\n"
+        )
     (output / "comment.json").write_text(json.dumps({"body": body}), encoding="utf-8")
     (output / "format.patch").write_text(patch, encoding="utf-8")
     (output / "analyze.log").write_text(analyze_log, encoding="utf-8")
     (output / "tests.jsonl").write_text(test_log, encoding="utf-8")
+    (output / "coverage.log").write_text(coverage_log, encoding="utf-8")
+    (output / "smoke.log").write_text(smoke_log, encoding="utf-8")
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
         with open(summary, "a", encoding="utf-8") as handle:
             handle.write(body)
-    return 0 if format_ok and analyze_code == 0 and test_code == 0 else 1
+    passed = format_ok and analyze_code == 0 and test_code == 0
+    if full:
+        passed = passed and coverage_code == 0 and smoke_code == 0
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(full="--full" in sys.argv))

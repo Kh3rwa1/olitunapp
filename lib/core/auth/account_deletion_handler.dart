@@ -51,10 +51,18 @@ AccountDeletionResult parseAccountDeletionExecution({
   }
 
   final isAuthDeleted = responseData?['authDeleted'] == true;
-  final normalizedStatus = status.toLowerCase();
-  final isFailedStatus = normalizedStatus.contains('failed');
+  // Accept both SDK enum strings and plain status values.
+  final normalizedStatus = status.trim().toLowerCase().split('.').last;
+  final isCompletedStatus = normalizedStatus == 'completed';
+  // The existing server confirms completed deletion with account_deleted;
+  // newer responses may additionally include authDeleted. Never accept a
+  // generic {ok: true} or an explicit authDeleted: false as confirmation.
+  final isConfirmed =
+      responseData?['authDeleted'] != false &&
+      (isAuthDeleted || responseData?['code'] == 'account_deleted');
 
-  if (isFailedStatus ||
+  if (!isCompletedStatus ||
+      !isConfirmed ||
       statusCode < 200 ||
       statusCode >= 300 ||
       responseData == null ||

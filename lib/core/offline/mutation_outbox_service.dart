@@ -84,13 +84,15 @@ class MutationOutboxService {
     if (_box != null && _box!.isOpen) return _box!;
     if (_openFuture != null) return _openFuture!;
 
-    _openFuture = () async {
-      final box = await Hive.openBox<String>(_outboxBoxName);
-      _box = box;
-      return box;
-    }();
-
-    return _openFuture!;
+    final opening = Hive.openBox<String>(_outboxBoxName);
+    _openFuture = opening;
+    try {
+      _box = await opening;
+      return _box!;
+    } finally {
+      // Cache only an in-flight open, never a rejected Future or closed box.
+      if (identical(_openFuture, opening)) _openFuture = null;
+    }
   }
 
   static String _storageKey(String userId, String operationId) =>
@@ -127,7 +129,8 @@ class MutationOutboxService {
         try {
           final json = jsonDecode(raw) as Map<String, dynamic>;
           final mutation = PendingMutation.fromJson(json);
-          if (mutation.status != MutationStatus.completed) {
+          if (mutation.userId == userId &&
+              mutation.status != MutationStatus.completed) {
             result.add(mutation);
           }
         } catch (e) {
@@ -192,9 +195,19 @@ class MutationOutboxService {
     if (userId.isEmpty) return;
     final box = await _getBox();
     final prefix = '${userId}_';
-    final keysToDelete = box.keys
-        .where((k) => k.toString().startsWith(prefix))
-        .toList();
+    final keysToDelete = <dynamic>[];
+    for (final key in box.keys) {
+      if (!key.toString().startsWith(prefix)) continue;
+      try {
+        final raw = box.get(key);
+        if (raw == null) continue;
+        final data = jsonDecode(raw) as Map<String, dynamic>;
+        // User IDs may contain underscores: a prefix is not ownership proof.
+        if (data['userId'] == userId) keysToDelete.add(key);
+      } catch (_) {
+        // Do not delete a record whose owner cannot be established.
+      }
+    }
     await box.deleteAll(keysToDelete);
   }
 

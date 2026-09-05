@@ -118,10 +118,12 @@ for (const status of ['refunded', 'revoked']) {
     assert.equal((await read(raw)).status, status);
   });
 }
-test('legitimate dispute won restores a disputed, non-refunded purchase', async () => {
-  const { raw, db } = setup({ status: 'disputed', providerPaymentId: 'pay_one' }, 'payment.dispute.won');
+test('legitimate dispute won requires authoritative reconciliation before restoration', async () => {
+  const { raw, tx, db } = setup({ status: 'disputed', providerPaymentId: 'pay_one' }, 'payment.dispute.won');
   await update(db, { status: 'verified' });
-  assert.equal((await read(raw)).status, 'verified');
+  assert.equal((await read(raw)).status, 'disputed');
+  assert.equal(raw.writes.filter(w => w.collection === 'course_purchases').length, 0);
+  assert.equal(tx.transactions.size, 0);
 });
 test('late refund cannot mutate a new order replacing the observed purchase', async () => {
   const { raw, db } = setup({ status: 'verified', providerPaymentId: 'pay_one' }, 'refund.processed');

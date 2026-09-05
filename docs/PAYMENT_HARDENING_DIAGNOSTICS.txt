@@ -1,0 +1,153 @@
+Source before preparation: 079482773a8beff830a871615a2356d38218cd5e
+Area: payment
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
+Formatted test/features/admin/purchases/admin_purchases_provider_test.dart
+Formatted test/features/admin/purchases/refund_unavailable_test.dart
+Formatted 4 files (2 changed) in 0.03 seconds.
+00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/refund_unavailable_test.dart
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/refund_unavailable_test.dart: refund cannot access uninitialized providers
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+00:00 +1: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/refund_unavailable_test.dart: refund dialog explains the safe recovery path
+00:00 +2: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +3: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +4: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +5: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +6: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +7: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +8: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +9: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +10: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +11: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +12: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +13: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +14: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +15: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +16: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +17: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +18: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.0)
+00:01 +19: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 320px width (textScale: 1.5)
+00:01 +20: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 360px width (textScale: 1.0)
+00:01 +21: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 360px width (textScale: 1.5)
+00:02 +22: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 390px width (textScale: 1.0)
+00:02 +23: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 390px width (textScale: 1.5)
+00:02 +24: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.0)
+00:02 +25: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.0)
+00:02 +26: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.0)
+00:02 +27: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_csv_exporter_test.dart: PurchaseCsvExporter - Complete Export & Safety Limit Matrix Case 3: properly escapes cells containing commas, quotes, and newlines
+00:02 +28: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +29: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +30: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +31: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +32: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +33: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +34: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 600px width (textScale: 1.5)
+00:02 +35: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 768px width (textScale: 1.0)
+00:02 +36: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 768px width (textScale: 1.5)
+00:02 +37: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1024px width (textScale: 1.0)
+00:02 +38: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1024px width (textScale: 1.5)
+00:02 +39: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1280px width (textScale: 1.0)
+00:02 +40: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1280px width (textScale: 1.5)
+00:03 +41: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1440px width (textScale: 1.0)
+00:03 +42: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1440px width (textScale: 1.5)
+00:03 +43: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix Case 1: initial load loads first page and computes metrics
+00:03 +44: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.0)
+00:03 +45: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.0)
+00:03 +45: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix Case 3: loadNextPage preserves existing items, sets loadMoreFailure, and keeps hasMore true on error
+⚠️ loadNextPage failed: Appwrite 0 (network_timeout): Network timeout
+00:03 +46: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.0)
+00:03 +46: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix client refund fails closed for verified
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+00:03 +47: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.0)
+00:03 +47: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix client refund fails closed for refunded
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+00:03 +48: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.0)
+00:03 +49: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix client refund fails closed for failed
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+00:03 +50: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.5)
+00:03 +50: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_provider_test.dart: AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix client refund fails closed for disputed
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+Manual refund recording is temporarily disabled. Use the Razorpay Dashboard for gateway refunds and ask the administrator to reconcile external refunds through a secure server-side process. Do not issue a refund twice.
+00:03 +51: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.5)
+00:03 +52: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.5)
+00:03 +53: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.5)
+00:03 +54: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) renders cleanly without overflow at 1920px width (textScale: 1.5)
+00:03 +55: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_responsive_test.dart: AdminPurchasesScreen - Responsive & Viewport Tests (320px - 1920px) critical controls scale cleanly at 320px with textScale 2.0
+00:04 +56: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_metrics_test.dart: Purchases Metrics & Revenue Calculation calculates gross collected revenue including original payments later refunded
+00:04 +57: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_metrics_test.dart: Purchases Metrics & Revenue Calculation calculates refunded amount from confirmed refunded purchases
+00:04 +58: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_metrics_test.dart: Purchases Metrics & Revenue Calculation calculates net revenue accurately as gross minus refunded without double deduction
+00:04 +59: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_metrics_test.dart: Purchases Metrics & Revenue Calculation calculates verified paid share (paid / total verified unlocks)
+00:04 +60: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/admin_purchases_metrics_test.dart: Purchases Metrics & Revenue Calculation builds formula-safe CSV export for purchase records
+00:04 +61: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract backend JSON maps canonical fields into model and paid metrics
+00:04 +62: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract canonical values override conflicting legacy values
+00:04 +63: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract legacy documents tolerate null additive schema attributes
+00:04 +64: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract fractional INR is rejected rather than silently rounded
+00:04 +65: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract pending expected amount is never decoded as money paid
+00:04 +66: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract canonical zero never falls back to a positive legacy amount
+00:04 +67: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract blank dates fall back to ledger creation time
+00:04 +68: /home/runner/work/olitunapp/olitunapp/test/features/admin/purchases/purchase_ledger_contract_test.dart: canonical payment ledger contract canonical records survive the existing cache serialization
+00:04 +69: All tests passed!
+Analyzing olitunapp...                                          
+No issues found! (ran in 28.7s)
+TAP version 13
+# Subtest: late won notification cannot restore a disputed entitlement
+ok 1 - late won notification cannot restore a disputed entitlement
+  ---
+  duration_ms: 4.223927
+  type: 'test'
+  ...
+# Subtest: won before created cannot authorize a later disputed purchase
+ok 2 - won before created cannot authorize a later disputed purchase
+  ---
+  duration_ms: 0.476603
+  type: 'test'
+  ...
+# Subtest: legitimate wins remain blocked pending authoritative reconciliation
+ok 3 - legitimate wins remain blocked pending authoritative reconciliation
+  ---
+  duration_ms: 0.317708
+  type: 'test'
+  ...
+# Subtest: disputes never overwrite terminal refunds or revocations
+ok 4 - disputes never overwrite terminal refunds or revocations
+  ---
+  duration_ms: 0.775984
+  type: 'test'
+  ...
+# Subtest: failed commit does not alter the entitlement
+ok 5 - failed commit does not alter the entitlement
+  ---
+  duration_ms: 0.667024
+  type: 'test'
+  ...
+# Subtest: repurchase binding conflict aborts a delayed dispute
+ok 6 - repurchase binding conflict aborts a delayed dispute
+  ---
+  duration_ms: 0.851425
+  type: 'test'
+  ...
+# Subtest: deployed payment guard copies match their canonical source
+ok 7 - deployed payment guard copies match their canonical source
+  ---
+  duration_ms: 1.249933
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 111.30567
+
+Focused test exit: 0
+Analysis exit: 0
+Node test exit: 0

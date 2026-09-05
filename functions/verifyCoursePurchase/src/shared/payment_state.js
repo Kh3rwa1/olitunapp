@@ -47,9 +47,12 @@ function nextState(current, data, event) {
   if (event?.startsWith('payment.dispute.')) {
     if (fullyRefunded(current)) return { ...data, status: 'refunded' };
     if (current.status === 'revoked') return null;
-    if (data.status === 'verified' && !['disputed', 'verified'].includes(current.status)) {
-      throw new PaymentStateConflict();
-    }
+    // Webhook delivery order does not establish dispute identity or finality.
+    // Until server-authoritative reconciliation is available, a won/closed
+    // notification must not restore access over a newer dispute. Legitimate
+    // wins also require reconciliation; this is deliberately conservative.
+    if (data.status === 'verified') return null;
+    if (data.status !== 'disputed') throw new PaymentStateConflict();
     return data;
   }
   assertCaptureAllowed(current);

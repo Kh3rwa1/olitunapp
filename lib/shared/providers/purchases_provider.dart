@@ -21,6 +21,12 @@ final purchasedCategoriesProvider = FutureProvider<Set<String>>((ref) async {
   return repo.fetchPurchasedCategoryIds(user.id);
 });
 
+const externalRefundRecordingUnavailableMessage =
+    'Manual refund recording is temporarily disabled. '
+    'Use the Razorpay Dashboard for gateway refunds and ask the administrator '
+    'to reconcile external refunds through a secure server-side process. '
+    'Do not issue a refund twice.';
+
 /// Typed outcome for recording an external refund in Appwrite.
 enum RefundResult {
   completed,
@@ -305,107 +311,17 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     }
   }
 
-  /// Records an external refund in Appwrite with authenticated admin ID and idempotency protection.
-  ///
-  /// Truthful Mode B Status-Only Operation:
-  /// Updates database record with status 'refunded', records operator admin ID,
-  /// and invalidates the user's entitlement cache. Does not execute payment gateway wire transfers.
+  /// Fails closed until a server-authorized, transactional recorder exists.
+  /// No operator identity, stale client state, or client idempotency key can
+  /// authorize a direct financial ledger write. This does not transfer money.
   Future<RefundResult> recordExternalRefund(
     String purchaseId, {
     String? externalRefundId,
     String? reason,
     String? idempotencyKey,
   }) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-
-      // Authenticate operator identity
-      final currentUser = await ref.read(currentUserProvider.future);
-      final operatorId = currentUser?.id ?? 'authenticated_admin';
-
-      PurchaseModel? targetItem;
-      for (final p in state.items) {
-        if (p.id == purchaseId) {
-          targetItem = p;
-          break;
-        }
-      }
-
-      // Fetch fresh server state to prevent race conditions
-      try {
-        final freshDoc = await db.getDocument('course_purchases', purchaseId);
-        targetItem = PurchaseModel.fromJson(freshDoc);
-      } catch (e) {
-        if (targetItem == null) {
-          return RefundResult.notFound;
-        }
-      }
-
-      // Concurrency & Idempotency check
-      if (targetItem.status == 'refunded') {
-        AppLogger.debug(
-          'ℹ️ Purchase $purchaseId is already refunded (Idempotent).',
-        );
-        return RefundResult.alreadyRefunded;
-      }
-
-      // Validate state transition
-      if (targetItem.status != 'verified' && targetItem.status != 'completed') {
-        AppLogger.debug(
-          '⚠️ Invalid refund transition from status: ${targetItem.status}',
-        );
-        return RefundResult.invalidTransition;
-      }
-
-      final nowUtc = DateTime.now().toUtc().toIso8601String();
-      final updatePayload = <String, dynamic>{
-        'status': 'refunded',
-        'refundedAt': nowUtc,
-        'refundedBy': operatorId,
-        'previousStatus': targetItem.status,
-      };
-
-      if (externalRefundId != null && externalRefundId.trim().isNotEmpty) {
-        updatePayload['refundReference'] = externalRefundId.trim();
-      }
-      if (reason != null && reason.trim().isNotEmpty) {
-        updatePayload['refundReason'] = reason.trim();
-      }
-      if (idempotencyKey != null && idempotencyKey.trim().isNotEmpty) {
-        updatePayload['idempotencyKey'] = idempotencyKey.trim();
-      }
-
-      // Update document in Appwrite
-      await db.updateDocument('course_purchases', purchaseId, updatePayload);
-
-      // Invalidate the specific user's entitlement cache
-      final repo = ref.read(purchaseRepositoryProvider);
-      if (targetItem.userId.isNotEmpty) {
-        try {
-          await repo.clearUserEntitlementCache(targetItem.userId);
-        } catch (e) {
-          AppLogger.debug(
-            '⚠️ Cache invalidation warning for ${targetItem.userId}: $e',
-          );
-        }
-      }
-
-      // Reload purchase records
-      await loadPurchases();
-
-      // Refresh current user entitlement provider
-      ref.invalidate(purchasedCategoriesProvider);
-      return RefundResult.completed;
-    } catch (e) {
-      final failure = AdminFailure.fromException(
-        e,
-        actionContext: 'Recording purchase refund',
-      );
-      AppLogger.debug(
-        '❌ recordExternalRefund failed: ${failure.sanitizedDetails}',
-      );
-      return RefundResult.failed;
-    }
+    AppLogger.debug(externalRefundRecordingUnavailableMessage);
+    return RefundResult.failed;
   }
 
   /// Fetches matching purchase records from Appwrite with continuous pagination, backoff, and safety limits.

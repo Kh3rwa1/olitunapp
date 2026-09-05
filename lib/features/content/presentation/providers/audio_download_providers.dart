@@ -124,15 +124,17 @@ class AudioDownloadNotifier extends Notifier<Map<String, Object>> {
   }
 
   /// Hydrates state for tracks that are already on disk (called when a
-  /// story's segments resolve). Safe on web: the manager degrades to
-  /// "nothing downloaded".
+  /// story's segments resolve). Verifies each file is actually present —
+  /// a manifest record alone is not enough, since OS cleanup or external
+  /// deletion can remove files behind our back. Safe on web: the manager
+  /// degrades to "nothing downloaded".
   Future<void> refreshTrackStates(Iterable<String> trackIds) async {
     if (trackIds.isEmpty) return;
     final manager = ref.read(audioDownloadManagerProvider);
     final next = Map<String, Object>.from(state);
     for (final trackId in trackIds) {
-      final record = await manager.recordForTrack(trackId);
-      next[trackId] = record != null
+      final present = await manager.isTrackFilePresent(trackId);
+      next[trackId] = present
           ? const TrackDownloadState.downloaded()
           : const TrackDownloadState.initial();
     }

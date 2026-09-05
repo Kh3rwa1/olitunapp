@@ -1,0 +1,58 @@
+name: Apply isolated priority hardening
+on:
+  push:
+    branches: [fix/review-priority-hardening-20260905]
+    paths: [scripts/apply_priority_hardening.py, .github/workflows/apply-priority-hardening.yml]
+permissions:
+  contents: write
+jobs:
+  apply:
+    if: github.repository == 'Kh3rwa1/olitunapp' && github.ref == 'refs/heads/fix/review-priority-hardening-20260905'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/review-priority-hardening-20260905
+          fetch-depth: 2
+      - name: Apply exact-match changes
+        run: |
+          python3 -m py_compile scripts/apply_priority_hardening.py
+          python3 scripts/apply_priority_hardening.py
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
+        with:
+          channel: stable
+          cache: true
+      - name: Format changed Dart files and check JavaScript
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          paths=json.load(open('/tmp/priority_changed_paths.json'))
+          dart=[p for p in paths if p.endswith('.dart')]
+          subprocess.run(['dart','format',*dart], check=True)
+          for p in paths:
+            if p.endswith(('.js','.mjs')): subprocess.run(['node','--check',p],check=True)
+          PY
+          node scripts/verify_function_deployment.mjs
+      - name: Commit only the reviewed changes and remove this one-shot workflow
+        run: |
+          python3 - <<'PY'
+          import json, subprocess
+          paths=json.load(open('/tmp/priority_changed_paths.json'))
+          subprocess.run(['git','add','--',*paths],check=True)
+          PY
+          git rm scripts/apply_priority_hardening.py .github/workflows/apply-priority-hardening.yml
+          git config user.name 'Notion AI'
+          git config user.email 'noreply@notion.so'
+          git commit -m 'fix: enforce consent durable sync entitlement refresh and release safeguards'
+          git push origin HEAD:refs/heads/fix/review-priority-hardening-20260905
+      - name: Install dependencies
+        run: |
+          flutter pub get
+          npm ci
+          npm ci --prefix functions/translator
+      - name: Validate changed implementation
+        run: |
+          flutter analyze --fatal-infos
+          flutter test test/core/ads test/core/payments test/shared/offline
+          npm run test:backend

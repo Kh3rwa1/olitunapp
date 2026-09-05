@@ -33,22 +33,28 @@ class UserStatsEntity extends Equatable {
   /// Deduplicated learning minute event deltas (eventId -> delta).
   final Map<String, int> minuteEvents;
 
-  /// Retained set of compacted star event IDs to prevent stale replay from re-crediting them.
-  final Set<String> compactedStarEvents;
+  /// Folded ledger: every compacted star event's key -> folded value.
+  /// Counted in totals; merged by per-key max so independent folds survive
+  /// and refolds stay idempotent. Entries are evicted only when covered by
+  /// a checkpoint; value 0 marks exclusion-only entries migrated from
+  /// pre-ledger compacted sets (their value lives in frozen legacy bases).
+  final Map<String, int> foldedStarEvents;
 
-  /// Retained set of compacted learning minute event IDs to prevent stale replay from re-crediting them.
-  final Set<String> compactedMinuteEvents;
+  /// Folded ledger for learning minute events (same contract as above).
+  final Map<String, int> foldedMinuteEvents;
 
   /// Base stars partitioned by origin to preserve independent contributions during compaction.
   final Map<String, int> baseStarsByOrigin;
 
-  /// Monotonic checkpoint vector recording the maximum compacted sequence number per origin.
+  /// Contiguous folded prefix per origin: cp[O] = N means every sequence
+  /// 1..N of O was folded (proven coverage, never the largest observed).
   final Map<String, int> starCheckpoints;
 
   /// Base learning minutes partitioned by origin to preserve independent contributions during compaction.
   final Map<String, int> baseMinutesByOrigin;
 
-  /// Monotonic checkpoint vector for learning minutes per origin.
+  /// Contiguous folded prefix per origin for learning minutes (same
+  /// contract as above).
   final Map<String, int> minuteCheckpoints;
 
   const UserStatsEntity({
@@ -65,8 +71,8 @@ class UserStatsEntity extends Equatable {
     this.syncEpoch = 0,
     this.starEvents = const {},
     this.minuteEvents = const {},
-    this.compactedStarEvents = const {},
-    this.compactedMinuteEvents = const {},
+    this.foldedStarEvents = const {},
+    this.foldedMinuteEvents = const {},
     this.baseStarsByOrigin = const {},
     this.starCheckpoints = const {},
     this.baseMinutesByOrigin = const {},
@@ -88,8 +94,8 @@ class UserStatsEntity extends Equatable {
     syncEpoch,
     starEvents,
     minuteEvents,
-    compactedStarEvents,
-    compactedMinuteEvents,
+    foldedStarEvents,
+    foldedMinuteEvents,
     baseStarsByOrigin,
     starCheckpoints,
     baseMinutesByOrigin,
@@ -110,8 +116,8 @@ class UserStatsEntity extends Equatable {
     int? syncEpoch,
     Map<String, int>? starEvents,
     Map<String, int>? minuteEvents,
-    Set<String>? compactedStarEvents,
-    Set<String>? compactedMinuteEvents,
+    Map<String, int>? foldedStarEvents,
+    Map<String, int>? foldedMinuteEvents,
     Map<String, int>? baseStarsByOrigin,
     Map<String, int>? starCheckpoints,
     Map<String, int>? baseMinutesByOrigin,
@@ -132,9 +138,8 @@ class UserStatsEntity extends Equatable {
       syncEpoch: syncEpoch ?? this.syncEpoch,
       starEvents: starEvents ?? this.starEvents,
       minuteEvents: minuteEvents ?? this.minuteEvents,
-      compactedStarEvents: compactedStarEvents ?? this.compactedStarEvents,
-      compactedMinuteEvents:
-          compactedMinuteEvents ?? this.compactedMinuteEvents,
+      foldedStarEvents: foldedStarEvents ?? this.foldedStarEvents,
+      foldedMinuteEvents: foldedMinuteEvents ?? this.foldedMinuteEvents,
       baseStarsByOrigin: baseStarsByOrigin ?? this.baseStarsByOrigin,
       starCheckpoints: starCheckpoints ?? this.starCheckpoints,
       baseMinutesByOrigin: baseMinutesByOrigin ?? this.baseMinutesByOrigin,

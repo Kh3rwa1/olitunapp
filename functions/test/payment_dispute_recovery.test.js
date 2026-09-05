@@ -552,7 +552,7 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
         executeAdminRefund({
           databases: transactional,
           actorUserId: 'admin_ops_1',
-          body: { purchaseId: 'purchase' },
+          body: { purchaseId: 'purchase', operationKey: 'op_status_gate_1' },
         }),
       { status: 409 },
     );
@@ -567,7 +567,7 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
         executeAdminRefund({
           databases: db,
           actorUserId: 'admin_ops_1',
-          body: { purchaseId: 'purchase' },
+          body: { purchaseId: 'purchase', operationKey: 'op_no_txn_1' },
         }),
       { status: 503 },
     );
@@ -652,7 +652,11 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
         executeAdminRefund({
           databases: transactional,
           actorUserId: 'admin_ops_1',
-          body: { purchaseId: 'purchase', amountPaise: -500 },
+          body: {
+            purchaseId: 'purchase',
+            amountPaise: -500,
+            operationKey: 'op_bad_amount_1',
+          },
         }),
       { status: 400 },
     );
@@ -663,7 +667,11 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
         executeAdminRefund({
           databases: transactional,
           actorUserId: 'admin_ops_1',
-          body: { purchaseId: 'purchase', amountPaise: 99999 },
+          body: {
+            purchaseId: 'purchase',
+            amountPaise: 99999,
+            operationKey: 'op_bad_amount_2',
+          },
         }),
       { status: 400 },
     );

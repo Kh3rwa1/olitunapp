@@ -238,6 +238,33 @@ export async function executeAdminRefund({
     throw Object.assign(new Error('Missing purchase ID.'), { status: 400 });
   }
 
+  // 0. Durable operation identity is required BEFORE any financial
+  // bookkeeping mutation. `operationKey` (alias: `idempotencyKey`) is the
+  // internal idempotency identity; the optional `gatewayRefundId`
+  // (alias: legacy `externalRefundId`-as-gateway) is informational only and
+  // never used for identity. Requests without any identity are rejected so
+  // every accepted operation owns a claim anchor plus a deterministic audit
+  // ID, which is what makes crash-window retry repairable. Keyless writes
+  // (full refund committed, audit failed, retry skipping audit repair) are
+  // therefore impossible: without a key the request never reaches Phase 1.
+  const operationKey = String(
+    body.operationKey || body.idempotencyKey || body.externalRefundId || '',
+  ).trim();
+  if (!operationKey) {
+    throw Object.assign(
+      new Error(
+        'Missing operation identity: provide operationKey (or idempotencyKey).',
+      ),
+      { status: 400 },
+    );
+  }
+  // Informational gateway-side refund identifier. When the caller passes a
+  // legacy `externalRefundId` without a separate gateway field, it doubles
+  // as the gateway reference to preserve existing audit-trail content.
+  const gatewayRefundId = String(
+    body.gatewayRefundId || body.externalRefundId || '',
+  ).trim();
+
   // 1. Transactions are mandatory; fail closed if unavailable before any state changes
   if (
     typeof databases.createTransaction !== 'function' ||
@@ -263,7 +290,13 @@ export async function executeAdminRefund({
   const expectedPaise = Math.round(Number(purchase.expectedAmount || 0) * 100);
   const currentRefundedPaise = Number(purchase.refundedAmountPaise || 0);
 
-  // 3. Amount validation: must be a positive safe integer and not exceed expected amount
+  // 3. Amount validation: `amountPaise` is the CUMULATIVE refunded total as
+  // of this operation (not an incremental delta). Application uses
+  // max-floor semantics (see payment_state.js `admin.refund`): the stored
+  // cumulative never decreases, concurrent same-key retries converge to the
+  // same values, and a purchase is fully refunded once the cumulative total
+  // reaches the expected amount. Partial operations therefore pass the
+  // running total, not just the latest increment.
   let refundAmountPaise;
   if (body.amountPaise !== undefined) {
     const rawAmount = Number(body.amountPaise);
@@ -297,18 +330,21 @@ export async function executeAdminRefund({
   const currentEpoch = Number(purchase.refundEpoch || 0);
   const targetEpoch = currentEpoch + 1;
 
-  // 5. Durable Idempotency & Claim Verification
-  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
-  const claimId = externalRefundId ? stableId(`refund:${externalRefundId}`) : null;
+  // 5. Durable Idempotency & Claim Verification. The claim document ID is
+  // derived from the required operation key, so every accepted request owns
+  // a recovery anchor before any bookkeeping mutation.
+  const claimId = stableId(`refund:${operationKey}`);
 
   let existingClaim = null;
-  if (claimId) {
-    try {
-      existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
-    } catch (err) {
-      if (err.code !== 404 && err.status !== 404) {
-        throw err;
-      }
+  try {
+    existingClaim = await databases.getDocument(
+      databaseId,
+      'refund_claims',
+      claimId,
+    );
+  } catch (err) {
+    if (err.code !== 404 && err.status !== 404) {
+      throw err;
     }
   }
 
@@ -319,7 +355,7 @@ export async function executeAdminRefund({
       (claim.currency && claim.currency !== currency)
     ) {
       throw Object.assign(
-        new Error('Idempotency conflict: externalRefundId was already used with different refund parameters.'),
+        new Error('Idempotency conflict: operation key was already used with different refund parameters.'),
         { status: 409, code: 409 },
       );
     }
@@ -327,6 +363,24 @@ export async function executeAdminRefund({
 
   if (existingClaim) {
     assertClaimPayloadBinding(existingClaim);
+    // A repeated gateway reference is informational only: adopt it onto the
+    // claim when the claim does not already carry one. Never conflicts.
+    if (
+      gatewayRefundId &&
+      (!existingClaim.refundId || existingClaim.refundId === operationKey) &&
+      existingClaim.refundId !== gatewayRefundId
+    ) {
+      try {
+        existingClaim = await databases.updateDocument(
+          databaseId,
+          'refund_claims',
+          claimId,
+          { refundId: gatewayRefundId },
+        );
+      } catch {
+        // Best-effort linkage only; the operation proceeds regardless.
+      }
+    }
     if (existingClaim.status === 'audit_committed' || existingClaim.status === 'committed') {
       return {
         alreadyRefunded: true,
@@ -375,15 +429,17 @@ export async function executeAdminRefund({
     }
   }
 
-  // 8. Phase 1: Claim Reservation in refund_claims (if not already claimed)
-  if (claimId && !existingClaim) {
+  // 8. Phase 1: Claim Reservation in refund_claims (if not already claimed).
+  // `refundId` carries the informational gateway reference (unique index);
+  // identity lives in the claim document ID derived from the operation key.
+  if (!existingClaim) {
     try {
       existingClaim = await databases.createDocument(
         databaseId,
         'refund_claims',
         claimId,
         {
-          refundId: externalRefundId,
+          refundId: gatewayRefundId || operationKey,
           paymentId: purchase.providerPaymentId || `admin_${purchaseId}`,
           purchaseId,
           amountPaise: refundAmountPaise,
@@ -396,10 +452,31 @@ export async function executeAdminRefund({
       );
     } catch (claimErr) {
       if (claimErr.code === 409 || claimErr.status === 409) {
-        existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
+        let raced = null;
+        try {
+          raced = await databases.getDocument(
+            databaseId,
+            'refund_claims',
+            claimId,
+          );
+        } catch (readErr) {
+          if (readErr.code === 404 || readErr.status === 404) {
+            // The 409 came from the unique refundId index, not our claim ID:
+            // this gateway refund was already recorded under a DIFFERENT
+            // operation. Reusing a fresh key cannot recover it; the original
+            // operation key must be retried instead. Fail closed, write nothing.
+            throw Object.assign(
+              new Error(
+                'This gateway refund was already recorded under a different operation. Retry with the original operation key.',
+              ),
+              { status: 409, code: 409 },
+            );
+          }
+          throw readErr;
+        }
+        existingClaim = raced;
         assertClaimPayloadBinding(existingClaim);
-        if (existingClaim.status === 'audit_committed' || existingClaim.status === 'committed') {
-          return {
+        if (existingClaim.status === 'audit_committed' || existingClaim.status === 'committed') {          return {
             alreadyRefunded: true,
             purchaseId,
             status: purchase.status,
@@ -412,28 +489,85 @@ export async function executeAdminRefund({
         throw claimErr;
       }
     }
+  } else {
+    // A repeated gateway reference is informational only: adopt it onto the
+    // claim when the claim does not already carry one. Never conflicts.
+    if (
+      gatewayRefundId &&
+      (!existingClaim.refundId || existingClaim.refundId === operationKey) &&
+      existingClaim.refundId !== gatewayRefundId
+    ) {
+      try {
+        existingClaim = await databases.updateDocument(
+          databaseId,
+          'refund_claims',
+          claimId,
+          { refundId: gatewayRefundId },
+        );
+      } catch {
+        // Best-effort linkage only; the operation proceeds regardless.
+      }
+    }
   }
 
   // 9. Phase 2: Update course_purchases via guarded databases (Skipped if ledger was already committed)
   let updatedPurchase = purchase;
-  const isLedgerAlreadyCommitted = isThisClaimLedgerCommitted;
+  let ledgerAlreadyCommitted = isThisClaimLedgerCommitted;
 
-  if (!isLedgerAlreadyCommitted) {
+  if (!ledgerAlreadyCommitted) {
     const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
-    updatedPurchase = await guardedDb.updateDocument(
-      databaseId,
-      'course_purchases',
-      purchaseId,
-      {
-        status: isFullRefund ? 'refunded' : purchase.status,
-        refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
-        refundedAmountPaise: targetRefundedPaise,
-        refundEpoch: targetEpoch,
-        lastRefundClaimId: claimId,
-      },
-    );
+    try {
+      updatedPurchase = await guardedDb.updateDocument(
+        databaseId,
+        'course_purchases',
+        purchaseId,
+        {
+          status: isFullRefund ? 'refunded' : purchase.status,
+          refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
+          refundedAmountPaise: targetRefundedPaise,
+          refundEpoch: targetEpoch,
+          lastRefundClaimId: claimId,
+        },
+      );
+    } catch (ledgerErr) {
+      if (ledgerErr.code !== 409 && ledgerErr.status !== 409) throw ledgerErr;
+      // A concurrent writer moved the ledger under us. Resume (do not
+      // duplicate) only when THIS operation's claim shows ledger progress;
+      // otherwise the conflict belongs to another operation and the caller
+      // must retry with fresh state.
+      let recheck = null;
+      let freshPurchase = null;
+      try {
+        recheck = await databases.getDocument(databaseId, 'refund_claims', claimId);
+      } catch {
+        // Treated as not-committed below.
+      }
+      try {
+        freshPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+      } catch {
+        // Treated as not-committed below.
+      }
+      const mineCommitted = Boolean(
+        recheck &&
+          (recheck.status === 'ledger_committed' ||
+            recheck.status === 'audit_committed' ||
+            recheck.status === 'committed'),
+      );
+      const pointerMine = Boolean(
+        freshPurchase &&
+          freshPurchase.lastRefundClaimId &&
+          freshPurchase.lastRefundClaimId === claimId,
+      );
+      if ((mineCommitted || pointerMine) && freshPurchase) {
+        existingClaim = recheck || existingClaim;
+        updatedPurchase = freshPurchase;
+        ledgerAlreadyCommitted = true;
+      } else {
+        throw ledgerErr;
+      }
+    }
 
-    if (claimId) {
+    if (!ledgerAlreadyCommitted) {
       try {
         await databases.updateDocument(
           databaseId,
@@ -450,10 +584,10 @@ export async function executeAdminRefund({
     }
   }
 
-  // 10. Phase 3: Write audit log to admin_audit_logs collection (idempotent write bound to claimId)
-  const auditDocId = claimId
-    ? stableId(`audit:${claimId}`)
-    : stableId(`audit:${purchaseId}_${updatedPurchase.refundEpoch || targetEpoch}`);
+  // 10. Phase 3: Write audit log to admin_audit_logs collection.
+  // The audit ID is deterministic per operation key, so retries and
+  // concurrent same-key requests converge on exactly one audit row.
+  const auditDocId = stableId(`audit:${claimId}`);
 
   try {
     await databases.createDocument(
@@ -468,7 +602,8 @@ export async function executeAdminRefund({
         metadata: JSON.stringify({
           userId: purchase.userId,
           categoryId: purchase.categoryId,
-          externalRefundId,
+          operationKey,
+          externalRefundId: gatewayRefundId || operationKey,
           reason,
           refundAmountPaise,
           totalRefundedPaise: updatedPurchase.refundedAmountPaise,
@@ -490,24 +625,22 @@ export async function executeAdminRefund({
   }
 
   // 11. Finalize claim in refund_claims to audit_committed
-  if (claimId) {
-    try {
-      await databases.updateDocument(
-        databaseId,
-        'refund_claims',
-        claimId,
-        {
-          status: 'audit_committed',
-          committedAt: new Date().toISOString(),
-        },
-      );
-    } catch {
-      // Non-fatal if status update to audit_committed fails after audit log is created
-    }
+  try {
+    await databases.updateDocument(
+      databaseId,
+      'refund_claims',
+      claimId,
+      {
+        status: 'audit_committed',
+        committedAt: new Date().toISOString(),
+      },
+    );
+  } catch {
+    // Non-fatal if status update to audit_committed fails after audit log is created
   }
 
   return {
-    alreadyRefunded: isLedgerAlreadyCommitted,
+    alreadyRefunded: ledgerAlreadyCommitted,
     purchaseId,
     status: updatedPurchase.status,
     refundStatus: updatedPurchase.refundStatus,

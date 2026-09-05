@@ -20,8 +20,7 @@ jobs:
       - name: Retrieve failed checks
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh run view 33953278225 --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/failed-checks.log 2>&1
+        run: gh run view 33953278225 --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/failed-checks.log 2>&1
       - name: Persist focused failure details
         if: always()
         run: |
@@ -29,16 +28,23 @@ jobs:
           from pathlib import Path
           import re
           p=Path('/tmp/failed-checks.log')
-          lines=re.sub(r'\x1b\[[0-9;]*m','',p.read_text() if p.exists() else 'No log produced').splitlines()
-          keep=set(range(min(100,len(lines)))) | set(range(max(0,len(lines)-100),len(lines)))
-          needles=['[E]','failed','ERROR','Error','error','Changed ','exceeds','❌','FAIL','coverage','Format','gate','Gate','Expected:','Actual:']
+          original=(p.read_text() if p.exists() else 'No log produced').splitlines()
+          lines=[re.sub(r'^\S+Z ', '', line.split('\t',2)[-1]).replace('\ufeff','') for line in original]
+          keep=set()
+          inside=False
           for i,line in enumerate(lines):
-            if any(n in line for n in needles): keep.update(range(max(0,i-3),min(len(lines),i+14)))
+            if '##[group]❌' in line: inside=True
+            if inside: keep.add(i)
+            if '##[endgroup]' in line: inside=False
+            if original[i].startswith('Code Formatting') or original[i].startswith('Release Gate'):
+              keep.add(i)
+            if '##[error]' in line or 'tests passed' in line or '[E]' in line:
+              keep.update(range(max(0,i-2),min(len(lines),i+10)))
           text='\n'.join(lines[i] for i in sorted(keep))
-          Path('docs/CI_REPAIR_DIAGNOSTICS.txt').write_text('Failed source: 6ce0c8de5e29bad504725ed83a217f9ee5fe9938\n'+text[:180000])
+          Path('docs/CI_REPAIR_DIAGNOSTICS.txt').write_text('Failed source: 6ce0c8de5e29bad504725ed83a217f9ee5fe9938\n'+text[:55000])
           PY
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
           git add docs/CI_REPAIR_DIAGNOSTICS.txt
-          git diff --cached --quiet || git commit -m 'chore: record precise failed check diagnostics'
+          git diff --cached --quiet || git commit -m 'chore: record focused failed check diagnostics'
           git push origin HEAD:fix/review-priority-hardening-20260905

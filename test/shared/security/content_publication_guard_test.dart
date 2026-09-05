@@ -23,6 +23,12 @@ void main() {
       );
     });
 
+    test('lesson local/cache serialization remains available', () {
+      final serialized = item(kind: ContentKind.lesson).toJson();
+      expect(serialized['kind'], ContentKind.lesson.name);
+      expect(serialized['categoryId'], 'category-1');
+    });
+
     test('rejects explicitly premium non-lesson content', () {
       expect(
         () => item(kind: ContentKind.rhyme, isPremium: true).toAppwrite(),
@@ -30,11 +36,20 @@ void main() {
       );
     });
 
-    test('preserves generic publication for free non-lesson content', () {
-      expect(
-        item(kind: ContentKind.rhyme).toAppwrite(),
-        isA<Map<String, dynamic>>(),
-      );
+    test('preserves generic publication for free unrelated serializers', () {
+      for (final kind in [
+        ContentKind.letter,
+        ContentKind.number,
+        ContentKind.word,
+        ContentKind.sentence,
+        ContentKind.rhyme,
+      ]) {
+        expect(
+          item(kind: kind).toAppwrite(),
+          isA<Map<String, dynamic>>(),
+          reason: '${kind.name} free serialization must remain available',
+        );
+      }
     });
   });
 }

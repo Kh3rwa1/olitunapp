@@ -46,7 +46,18 @@ void main() {
       );
     });
 
-    test('only configured positive-order previews remain public', () {
+    test('unknown mode denies even a positive order-window preview', () {
+      final decision = PremiumContentPolicy.forContentItem(
+        isPremium: false,
+        categoryUnlockMode: 'future_mode',
+        lessonOrder: 1,
+        previewLessonCount: 3,
+      );
+      expect(decision.allowAnonymousRead, isFalse);
+      expect(decision.reason, 'unknown-unlock-mode-future_mode');
+    });
+
+    test('known paid modes may use the legacy positive-order window', () {
       expect(
         PremiumContentPolicy.forContentItem(
           isPremium: false,

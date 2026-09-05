@@ -6,6 +6,11 @@
 /// public.
 class PremiumContentPolicy {
   static const String freeUnlockMode = 'free';
+  static const Set<String> paidUnlockModes = {
+    'paid_only',
+    'review_or_paid',
+    'review_only',
+  };
 
   static PublicationDecision forContentItem({
     required bool isPremium,
@@ -31,13 +36,17 @@ class PremiumContentPolicy {
       return const PublicationDecision.public('free-category');
     }
 
-    final isExplicitPreview =
+    if (!paidUnlockModes.contains(mode)) {
+      return PublicationDecision.protected('unknown-unlock-mode-$mode');
+    }
+
+    final isLegacyOrderWindowPreview =
         previewLessonCount > 0 &&
         lessonOrder != null &&
         lessonOrder > 0 &&
         lessonOrder <= previewLessonCount;
-    if (isExplicitPreview) {
-      return const PublicationDecision.public('configured-preview');
+    if (isLegacyOrderWindowPreview) {
+      return const PublicationDecision.public('legacy-order-window-preview');
     }
 
     return PublicationDecision.protected('category-$mode');

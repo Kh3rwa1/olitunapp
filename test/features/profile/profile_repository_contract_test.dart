@@ -118,21 +118,24 @@ void main() {
       expect(repo.updatedAvatar?.colorIndex, 3);
     });
 
-    test('syncPendingStats completes without error and is repeatable', () async {
-      final repo = _InMemoryProfileRepository(_baseStats);
-      expect((await repo.syncPendingStats()).isRight(), isTrue);
-      expect((await repo.syncPendingStats()).isRight(), isTrue);
-      expect(repo.syncCalls, 2);
-    });
+    test(
+      'syncPendingStats completes without error and is repeatable',
+      () async {
+        final repo = _InMemoryProfileRepository(_baseStats);
+        expect((await repo.syncPendingStats()).isRight(), isTrue);
+        expect((await repo.syncPendingStats()).isRight(), isTrue);
+        expect(repo.syncCalls, 2);
+      },
+    );
 
     test('mock repositories surface failures', () async {
       final repo = _MockProfileRepository();
-      when(repo.getUserStats).thenAnswer(
-        (_) async => const Left(NetworkFailure(message: 'offline')),
-      );
-      when(() => repo.updateDisplayName(any())).thenAnswer(
-        (_) async => const Left(ServerFailure(message: 'conflict')),
-      );
+      when(
+        repo.getUserStats,
+      ).thenAnswer((_) async => const Left(NetworkFailure(message: 'offline')));
+      when(
+        () => repo.updateDisplayName(any()),
+      ).thenAnswer((_) async => const Left(ServerFailure(message: 'conflict')));
       final read = await repo.getUserStats();
       final renamed = await repo.updateDisplayName('Somi');
       expect(read.getLeft().toNullable(), isA<NetworkFailure>());

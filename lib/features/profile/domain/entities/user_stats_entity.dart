@@ -20,8 +20,7 @@ class UserStatsEntity extends Equatable {
   final int totalStars;
   final Set<String> completedMissionsDates;
 
-  /// Monotonically increasing generation for destructive progress resets.
-  /// Legacy payloads belong to generation zero.
+  /// Reset generation; legacy payloads belong to generation zero.
   final int syncEpoch;
 
   /// Local dates (yyyy-MM-dd) on which the learner completed ANY practice

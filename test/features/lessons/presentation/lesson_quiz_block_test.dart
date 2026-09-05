@@ -182,10 +182,10 @@ void main() {
               AsyncValue.data({'quiz_123': mockQuiz}),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const LessonBlockDetailScreen(
+            home: LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
             ),
@@ -221,10 +221,10 @@ void main() {
               AsyncValue.data({'quiz_123': mockQuiz}),
             ),
           ],
-          child: MaterialApp(
+          child: const MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const LessonBlockDetailScreen(
+            home: LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
             ),

@@ -65,6 +65,18 @@ final quizzesCompletedProvider = Provider<int>((ref) {
 class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   bool _disposed = false;
 
+  /// Serializes read-modify-write mutations. Overlapping calls (e.g. two
+  /// rapid `addStars`) must not snapshot the same stale state and drop one
+  /// earning (last-writer-wins). Entry points only — never re-entrant:
+  /// bodies run their repository writes inside the zone instead.
+  Future<void> _mutationChain = Future<void>.value();
+
+  Future<void> _runSerialized(Future<void> Function() action) {
+    final pending = _mutationChain.then((_) => action());
+    _mutationChain = pending.then((_) {}, onError: (_) {});
+    return pending;
+  }
+
   DateTime Function() get _now => ref.read(userStatsClockProvider);
 
   ProfileRepository get _repository => ref.read(profileRepositoryProvider);
@@ -197,175 +209,189 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     required int attempts,
     required bool withHint,
     required int starsAwarded,
-  }) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
+  }) {
+    return _runSerialized(() async {
+      final current = state.valueOrNull;
+      if (current == null) return;
 
-    // 1. Award Stars
-    final prefs = ref.read(sharedPreferencesProvider);
-    final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
-    final seq = ProgressOriginIdentity.nextStarSeq(prefs, originId, current);
-    final updated = current.recordStarReward(
-      starsAwarded,
-      originId: originId,
-      seq: seq,
-    );
-
-    // 2. Track Analytics
-    unawaited(
-      ref
-          .read(learningAnalyticsServiceProvider)
-          .track(
-            LearningAnalyticsEvents.practiceCompleted,
-            source: 'typing_practice',
-            sourceId: contentId,
-            metadata: {
-              'contentType': contentType,
-              'practiceMode': practiceMode,
-              'attempts': attempts,
-              'withHint': withHint,
-              'starsAwarded': starsAwarded,
-            },
-          ),
-    );
-
-    // 3. Increment streak and save stats
-    await updateStats(_withStreakUpdate(updated));
-  }
-
-  Future<void> recordDailyMissionsCompletedToday() async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-
-    final now = _now();
-    final todayDate = DateTime(now.year, now.month, now.day);
-    final today = todayDate.toIso8601String().substring(0, 10);
-
-    if (current.completedMissionsDates.contains(today)) return;
-
-    final updatedDates = Set<String>.from(current.completedMissionsDates)
-      ..add(today);
-
-    // Calculate weekId of today using ISO-like week number
-    final year = todayDate.year;
-    final firstDayOfYear = DateTime(year);
-    final daysOffset = firstDayOfYear.weekday - 1;
-    final firstMonday = firstDayOfYear.subtract(Duration(days: daysOffset));
-    final daysSinceFirstMonday = todayDate.difference(firstMonday).inDays;
-    final week = (daysSinceFirstMonday / 7).floor() + 1;
-    final weekId = '$year-W$week';
-
-    // Count how many days in this week have completed daily missions
-    int completedDaysThisWeek = 0;
-    for (final dateStr in updatedDates) {
-      final date = DateTime.tryParse(dateStr);
-      if (date != null) {
-        final dYear = date.year;
-        final dFirstDay = DateTime(dYear);
-        final dOffset = dFirstDay.weekday - 1;
-        final dFirstMonday = dFirstDay.subtract(Duration(days: dOffset));
-        final dDaysSince = date.difference(dFirstMonday).inDays;
-        final dWeek = (dDaysSince / 7).floor() + 1;
-        final dWeekId = '$dYear-W$dWeek';
-        if (dWeekId == weekId) {
-          completedDaysThisWeek++;
-        }
-      }
-    }
-
-    final updated = current.copyWith(completedMissionsDates: updatedDates);
-
-    unawaited(
-      ref
-          .read(learningAnalyticsServiceProvider)
-          .track(
-            LearningAnalyticsEvents.dailyMissionCompleted,
-            source: 'daily_missions',
-            sourceId: today,
-            metadata: {
-              'weekId': weekId,
-              'completedDaysThisWeek': completedDaysThisWeek,
-            },
-          ),
-    );
-
-    await updateStats(updated);
-  }
-
-  Future<void> practiceLetter(String letter, {double? score}) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-
-    final normalizedLetter = letter.trim();
-    if (normalizedLetter.isEmpty) return;
-
-    final updatedLetters = Set<String>.from(current.practicedLetters)
-      ..add(normalizedLetter);
-    var updated = current.copyWith(practicedLetters: updatedLetters);
-
-    const olChikiDigits = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
-    final isDigit = olChikiDigits.contains(normalizedLetter);
-
-    if (isDigit) {
-      final practicedDigits = updatedLetters
-          .where(olChikiDigits.contains)
-          .length;
-      final masteryPct = (practicedDigits / 10 * 100).clamp(0, 100).round();
-      final updatedMastery = Map<String, int>.from(updated.categoryMastery)
-        ..['numbers'] = masteryPct;
-      updated = _withStreakUpdate(
-        updated.copyWith(categoryMastery: updatedMastery),
+      // 1. Award Stars
+      final prefs = ref.read(sharedPreferencesProvider);
+      final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+      final seq = ProgressOriginIdentity.nextStarSeq(prefs, originId, current);
+      final updated = current.recordStarReward(
+        starsAwarded,
+        originId: originId,
+        seq: seq,
       );
-    } else {
-      final practicedAlphabetLetters = updatedLetters
-          .where((l) => !olChikiDigits.contains(l))
-          .length;
-      final masteryPct =
-          (practicedAlphabetLetters / UserStatsEntity.alphabetLetterCount * 100)
-              .clamp(0, 100)
-              .round();
-      final updatedMastery = Map<String, int>.from(updated.categoryMastery)
-        ..['alphabets'] = masteryPct;
-      updated = _withStreakUpdate(
-        updated.copyWith(categoryMastery: updatedMastery),
-      );
-    }
 
-    if (score != null) {
+      // 2. Track Analytics
       unawaited(
         ref
             .read(learningAnalyticsServiceProvider)
             .track(
-              LearningAnalyticsEvents.letterPracticed,
-              source: 'practice_trace',
-              sourceId: normalizedLetter,
+              LearningAnalyticsEvents.practiceCompleted,
+              source: 'typing_practice',
+              sourceId: contentId,
               metadata: {
-                'score': double.parse(score.toStringAsFixed(2)),
-                'isDigit': isDigit,
+                'contentType': contentType,
+                'practiceMode': practiceMode,
+                'attempts': attempts,
+                'withHint': withHint,
+                'starsAwarded': starsAwarded,
               },
             ),
       );
-    }
 
-    await updateStats(updated);
+      // 3. Increment streak and save stats
+      await updateStats(_withStreakUpdate(updated));
+    });
   }
 
-  Future<void> addStars(int count) async {
-    try {
+  Future<void> recordDailyMissionsCompletedToday() {
+    return _runSerialized(() async {
       final current = state.valueOrNull;
       if (current == null) return;
-      if (count <= 0) return;
 
-      final prefs = ref.read(sharedPreferencesProvider);
-      final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
-      final seq = ProgressOriginIdentity.nextStarSeq(prefs, originId, current);
-      final updated = _withStreakUpdate(
-        current.recordStarReward(count, originId: originId, seq: seq),
+      final now = _now();
+      final todayDate = DateTime(now.year, now.month, now.day);
+      final today = todayDate.toIso8601String().substring(0, 10);
+
+      if (current.completedMissionsDates.contains(today)) return;
+
+      final updatedDates = Set<String>.from(current.completedMissionsDates)
+        ..add(today);
+
+      // Calculate weekId of today using ISO-like week number
+      final year = todayDate.year;
+      final firstDayOfYear = DateTime(year);
+      final daysOffset = firstDayOfYear.weekday - 1;
+      final firstMonday = firstDayOfYear.subtract(Duration(days: daysOffset));
+      final daysSinceFirstMonday = todayDate.difference(firstMonday).inDays;
+      final week = (daysSinceFirstMonday / 7).floor() + 1;
+      final weekId = '$year-W$week';
+
+      // Count how many days in this week have completed daily missions
+      int completedDaysThisWeek = 0;
+      for (final dateStr in updatedDates) {
+        final date = DateTime.tryParse(dateStr);
+        if (date != null) {
+          final dYear = date.year;
+          final dFirstDay = DateTime(dYear);
+          final dOffset = dFirstDay.weekday - 1;
+          final dFirstMonday = dFirstDay.subtract(Duration(days: dOffset));
+          final dDaysSince = date.difference(dFirstMonday).inDays;
+          final dWeek = (dDaysSince / 7).floor() + 1;
+          final dWeekId = '$dYear-W$dWeek';
+          if (dWeekId == weekId) {
+            completedDaysThisWeek++;
+          }
+        }
+      }
+
+      final updated = current.copyWith(completedMissionsDates: updatedDates);
+
+      unawaited(
+        ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              LearningAnalyticsEvents.dailyMissionCompleted,
+              source: 'daily_missions',
+              sourceId: today,
+              metadata: {
+                'weekId': weekId,
+                'completedDaysThisWeek': completedDaysThisWeek,
+              },
+            ),
       );
+
       await updateStats(updated);
-    } catch (e, st) {
-      AppLogger.debug('Failed to add stars: $e\n$st');
-    }
+    });
+  }
+
+  Future<void> practiceLetter(String letter, {double? score}) {
+    return _runSerialized(() async {
+      final current = state.valueOrNull;
+      if (current == null) return;
+
+      final normalizedLetter = letter.trim();
+      if (normalizedLetter.isEmpty) return;
+
+      final updatedLetters = Set<String>.from(current.practicedLetters)
+        ..add(normalizedLetter);
+      var updated = current.copyWith(practicedLetters: updatedLetters);
+
+      const olChikiDigits = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
+      final isDigit = olChikiDigits.contains(normalizedLetter);
+
+      if (isDigit) {
+        final practicedDigits = updatedLetters
+            .where(olChikiDigits.contains)
+            .length;
+        final masteryPct = (practicedDigits / 10 * 100).clamp(0, 100).round();
+        final updatedMastery = Map<String, int>.from(updated.categoryMastery)
+          ..['numbers'] = masteryPct;
+        updated = _withStreakUpdate(
+          updated.copyWith(categoryMastery: updatedMastery),
+        );
+      } else {
+        final practicedAlphabetLetters = updatedLetters
+            .where((l) => !olChikiDigits.contains(l))
+            .length;
+        final masteryPct =
+            (practicedAlphabetLetters /
+                    UserStatsEntity.alphabetLetterCount *
+                    100)
+                .clamp(0, 100)
+                .round();
+        final updatedMastery = Map<String, int>.from(updated.categoryMastery)
+          ..['alphabets'] = masteryPct;
+        updated = _withStreakUpdate(
+          updated.copyWith(categoryMastery: updatedMastery),
+        );
+      }
+
+      if (score != null) {
+        unawaited(
+          ref
+              .read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.letterPracticed,
+                source: 'practice_trace',
+                sourceId: normalizedLetter,
+                metadata: {
+                  'score': double.parse(score.toStringAsFixed(2)),
+                  'isDigit': isDigit,
+                },
+              ),
+        );
+      }
+
+      await updateStats(updated);
+    });
+  }
+
+  Future<void> addStars(int count) {
+    return _runSerialized(() async {
+      try {
+        final current = state.valueOrNull;
+        if (current == null) return;
+        if (count <= 0) return;
+
+        final prefs = ref.read(sharedPreferencesProvider);
+        final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+        final seq = ProgressOriginIdentity.nextStarSeq(
+          prefs,
+          originId,
+          current,
+        );
+        final updated = _withStreakUpdate(
+          current.recordStarReward(count, originId: originId, seq: seq),
+        );
+        await updateStats(updated);
+      } catch (e, st) {
+        AppLogger.debug('Failed to add stars: $e\n$st');
+      }
+    });
   }
 
   /// Marks a lesson as completed and updates:
@@ -377,121 +403,129 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     String lessonId, {
     String? categoryId,
     int estimatedMinutes = 5,
-  }) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-
-    final alreadyCompleted = current.completedLessons.contains(lessonId);
-    final updatedLessons = Set<String>.from(current.completedLessons)
-      ..add(lessonId);
-
-    var updated = current.copyWith(completedLessons: updatedLessons);
-    if (!alreadyCompleted) {
-      final prefs = ref.read(sharedPreferencesProvider);
-      final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
-      final seq = ProgressOriginIdentity.nextMinuteSeq(
-        prefs,
-        originId,
-        current,
-      );
-      updated = updated.recordLearningMinutes(
-        estimatedMinutes.clamp(0, 240),
-        originId: originId,
-        seq: seq,
-      );
-    }
-
-    // Update category mastery only the first time a lesson is completed.
-    if (!alreadyCompleted && categoryId != null && categoryId.isNotEmpty) {
-      final key = _normalizeCategoryKey(categoryId);
-      final currentMastery = Map<String, int>.from(updated.categoryMastery);
-      final oldVal = currentMastery[key] ?? 0;
-      // Each completed lesson in this category adds ~10% mastery, capped at 100
-      currentMastery[key] = (oldVal + 10).clamp(0, 100);
-      updated = updated.copyWith(categoryMastery: currentMastery);
-    }
-
-    updated = _withStreakUpdate(updated);
-    await updateStats(updated);
-    if (!alreadyCompleted) {
-      unawaited(
-        ref
-            .read(learningAnalyticsServiceProvider)
-            .track(
-              LearningAnalyticsEvents.lessonCompleted,
-              source: 'lesson_detail',
-              sourceId: lessonId,
-              learnerLevel: updated.learnerLevel,
-              metadata: {
-                'categoryId': categoryId,
-                'estimatedMinutes': estimatedMinutes.clamp(0, 240),
-                'totalCompletedLessons': updated.completedLessons.length,
-              },
-            ),
-      );
-    }
-  }
-
-  Future<void> saveQuizResult(QuizResultEntity result) async {
-    try {
+  }) {
+    return _runSerialized(() async {
       final current = state.valueOrNull;
       if (current == null) return;
-      if (result.quizId.trim().isEmpty || result.totalQuestions <= 0) return;
 
-      final sanitized = QuizResultEntity(
-        quizId: result.quizId.trim(),
-        score: result.score.clamp(0, result.totalQuestions),
-        totalQuestions: result.totalQuestions,
-        completedAt: result.completedAt.isNotEmpty
-            ? result.completedAt
-            : _now().toIso8601String(),
-        failedNoHearts: result.failedNoHearts,
-      );
+      final alreadyCompleted = current.completedLessons.contains(lessonId);
+      final updatedLessons = Set<String>.from(current.completedLessons)
+        ..add(lessonId);
 
-      final updatedHistory = Map<String, QuizResultEntity>.from(
-        current.quizHistory,
-      );
-      final key = updatedHistory.containsKey(sanitized.quizId)
-          ? '${sanitized.quizId}@${sanitized.completedAt}'
-          : sanitized.quizId;
-      updatedHistory[key] = sanitized;
+      var updated = current.copyWith(completedLessons: updatedLessons);
+      if (!alreadyCompleted) {
+        final prefs = ref.read(sharedPreferencesProvider);
+        final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+        final seq = ProgressOriginIdentity.nextMinuteSeq(
+          prefs,
+          originId,
+          current,
+        );
+        updated = updated.recordLearningMinutes(
+          estimatedMinutes.clamp(0, 240),
+          originId: originId,
+          seq: seq,
+        );
+      }
 
-      final updated = _withStreakUpdate(
-        current.copyWith(quizHistory: updatedHistory),
-      );
+      // Update category mastery only the first time a lesson is completed.
+      if (!alreadyCompleted && categoryId != null && categoryId.isNotEmpty) {
+        final key = _normalizeCategoryKey(categoryId);
+        final currentMastery = Map<String, int>.from(updated.categoryMastery);
+        final oldVal = currentMastery[key] ?? 0;
+        // Each completed lesson in this category adds ~10% mastery, capped at 100
+        currentMastery[key] = (oldVal + 10).clamp(0, 100);
+        updated = updated.copyWith(categoryMastery: currentMastery);
+      }
+
+      updated = _withStreakUpdate(updated);
       await updateStats(updated);
-      unawaited(
-        ref
-            .read(learningAnalyticsServiceProvider)
-            .track(
-              LearningAnalyticsEvents.quizCompleted,
-              source: 'quiz',
-              sourceId: sanitized.quizId,
-              learnerLevel: updated.learnerLevel,
-              metadata: {
-                'score': sanitized.score,
-                'totalQuestions': sanitized.totalQuestions,
-                'percent': (sanitized.score / sanitized.totalQuestions * 100)
-                    .round(),
-                'passed': sanitized.isPassing,
-              },
-            ),
-      );
-    } catch (e, st) {
-      AppLogger.debug('Failed to save quiz result: $e\n$st');
-    }
+      if (!alreadyCompleted) {
+        unawaited(
+          ref
+              .read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.lessonCompleted,
+                source: 'lesson_detail',
+                sourceId: lessonId,
+                learnerLevel: updated.learnerLevel,
+                metadata: {
+                  'categoryId': categoryId,
+                  'estimatedMinutes': estimatedMinutes.clamp(0, 240),
+                  'totalCompletedLessons': updated.completedLessons.length,
+                },
+              ),
+        );
+      }
+    });
   }
 
-  Future<void> resetProgress() async {
-    final result = await _repository.resetUserStats();
-    if (_disposed) return;
-    result.fold(
-      (failure) => state = AsyncValue.error(failure, StackTrace.current),
-      (stats) {
-        state = AsyncValue.data(stats);
-        _updateSyncStateFromPrefs();
-      },
-    );
+  Future<void> saveQuizResult(QuizResultEntity result) {
+    return _runSerialized(() async {
+      try {
+        final current = state.valueOrNull;
+        if (current == null) return;
+        if (result.quizId.trim().isEmpty || result.totalQuestions <= 0) {
+          return;
+        }
+
+        final sanitized = QuizResultEntity(
+          quizId: result.quizId.trim(),
+          score: result.score.clamp(0, result.totalQuestions),
+          totalQuestions: result.totalQuestions,
+          completedAt: result.completedAt.isNotEmpty
+              ? result.completedAt
+              : _now().toIso8601String(),
+          failedNoHearts: result.failedNoHearts,
+        );
+
+        final updatedHistory = Map<String, QuizResultEntity>.from(
+          current.quizHistory,
+        );
+        final key = updatedHistory.containsKey(sanitized.quizId)
+            ? '${sanitized.quizId}@${sanitized.completedAt}'
+            : sanitized.quizId;
+        updatedHistory[key] = sanitized;
+
+        final updated = _withStreakUpdate(
+          current.copyWith(quizHistory: updatedHistory),
+        );
+        await updateStats(updated);
+        unawaited(
+          ref
+              .read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.quizCompleted,
+                source: 'quiz',
+                sourceId: sanitized.quizId,
+                learnerLevel: updated.learnerLevel,
+                metadata: {
+                  'score': sanitized.score,
+                  'totalQuestions': sanitized.totalQuestions,
+                  'percent': (sanitized.score / sanitized.totalQuestions * 100)
+                      .round(),
+                  'passed': sanitized.isPassing,
+                },
+              ),
+        );
+      } catch (e, st) {
+        AppLogger.debug('Failed to save quiz result: $e\n$st');
+      }
+    });
+  }
+
+  Future<void> resetProgress() {
+    return _runSerialized(() async {
+      final result = await _repository.resetUserStats();
+      if (_disposed) return;
+      result.fold(
+        (failure) => state = AsyncValue.error(failure, StackTrace.current),
+        (stats) {
+          state = AsyncValue.data(stats);
+          _updateSyncStateFromPrefs();
+        },
+      );
+    });
   }
 
   Future<void> updateName(String name) async {

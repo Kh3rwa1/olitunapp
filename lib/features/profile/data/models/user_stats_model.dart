@@ -16,8 +16,8 @@ class UserStatsModel extends UserStatsEntity {
     super.syncEpoch,
     super.starEvents,
     super.minuteEvents,
-    super.compactedStarEvents,
-    super.compactedMinuteEvents,
+    super.foldedStarEvents,
+    super.foldedMinuteEvents,
     super.baseStarsByOrigin,
     super.starCheckpoints,
     super.baseMinutesByOrigin,
@@ -74,6 +74,32 @@ class UserStatsModel extends UserStatsEntity {
       });
     }
 
+    Map<String, int> readFoldedLedger(dynamic value) {
+      // Wire key stays `compactedStarEvents` / `compactedMinuteEvents` for
+      // backward compatibility. Pre-ledger versions wrote a LIST of folded
+      // key IDs (their values live in frozen legacy bases); those migrate
+      // to exclusion-only entries with value 0, preserving both totals and
+      // stale-replay protection exactly. Current versions write a MAP of
+      // key -> folded value. Old readers iterate map keys, so they degrade
+      // to key-only tracking instead of crashing.
+      if (value is Map) {
+        return value.map((key, raw) {
+          final parsed = raw is int
+              ? raw
+              : raw is num
+              ? raw.round()
+              : raw is String
+              ? int.tryParse(raw) ?? 0
+              : 0;
+          return MapEntry(key.toString(), parsed < 0 ? 0 : parsed);
+        });
+      }
+      if (value is List) {
+        return {for (final entry in value) entry.toString(): 0};
+      }
+      return {};
+    }
+
     final rawStarEvents = readIntMap(json['starEvents']);
     final rawMinuteEvents = readIntMap(json['minuteEvents']);
     final totalStarsVal = readInt('totalStars');
@@ -82,8 +108,15 @@ class UserStatsModel extends UserStatsEntity {
     var baseStarsMap = readIntMap(json['baseStarsByOrigin']);
     if (baseStarsMap.isEmpty) {
       final activeSum = rawStarEvents.values.fold<int>(0, (s, v) => s + v);
-      final legacyBase = totalStarsVal >= activeSum
-          ? totalStarsVal - activeSum
+      // The folded ledger already accounts for compacted rewards; only the
+      // remainder unattributed to live events or ledger entries may use the
+      // frozen legacy key (never invented, never double-counted).
+      final foldedSum = readFoldedLedger(
+        json['compactedStarEvents'],
+      ).values.fold<int>(0, (s, v) => s + v);
+      final accounted = activeSum + foldedSum;
+      final legacyBase = totalStarsVal >= accounted
+          ? totalStarsVal - accounted
           : totalStarsVal;
       if (legacyBase > 0) {
         baseStarsMap = {'__legacy__': legacyBase};
@@ -93,8 +126,12 @@ class UserStatsModel extends UserStatsEntity {
     var baseMinutesMap = readIntMap(json['baseMinutesByOrigin']);
     if (baseMinutesMap.isEmpty) {
       final activeSum = rawMinuteEvents.values.fold<int>(0, (s, v) => s + v);
-      final legacyBase = totalMinutesVal >= activeSum
-          ? totalMinutesVal - activeSum
+      final foldedSum = readFoldedLedger(
+        json['compactedMinuteEvents'],
+      ).values.fold<int>(0, (s, v) => s + v);
+      final accounted = activeSum + foldedSum;
+      final legacyBase = totalMinutesVal >= accounted
+          ? totalMinutesVal - accounted
           : totalMinutesVal;
       if (legacyBase > 0) {
         baseMinutesMap = {'__legacy__': legacyBase};
@@ -120,10 +157,8 @@ class UserStatsModel extends UserStatsEntity {
       syncEpoch: readInt('syncEpoch'),
       starEvents: rawStarEvents,
       minuteEvents: rawMinuteEvents,
-      compactedStarEvents: Set<String>.from(json['compactedStarEvents'] ?? []),
-      compactedMinuteEvents: Set<String>.from(
-        json['compactedMinuteEvents'] ?? [],
-      ),
+      foldedStarEvents: readFoldedLedger(json['compactedStarEvents']),
+      foldedMinuteEvents: readFoldedLedger(json['compactedMinuteEvents']),
       baseStarsByOrigin: baseStarsMap,
       starCheckpoints: starCheckpointsMap,
       baseMinutesByOrigin: baseMinutesMap,
@@ -148,8 +183,8 @@ class UserStatsModel extends UserStatsEntity {
       'syncEpoch': syncEpoch,
       'starEvents': starEvents,
       'minuteEvents': minuteEvents,
-      'compactedStarEvents': compactedStarEvents.toList(),
-      'compactedMinuteEvents': compactedMinuteEvents.toList(),
+      'compactedStarEvents': foldedStarEvents,
+      'compactedMinuteEvents': foldedMinuteEvents,
       'baseStarsByOrigin': baseStarsByOrigin,
       'starCheckpoints': starCheckpoints,
       'baseMinutesByOrigin': baseMinutesByOrigin,
@@ -172,8 +207,8 @@ class UserStatsModel extends UserStatsEntity {
       syncEpoch: entity.syncEpoch,
       starEvents: entity.starEvents,
       minuteEvents: entity.minuteEvents,
-      compactedStarEvents: entity.compactedStarEvents,
-      compactedMinuteEvents: entity.compactedMinuteEvents,
+      foldedStarEvents: entity.foldedStarEvents,
+      foldedMinuteEvents: entity.foldedMinuteEvents,
       baseStarsByOrigin: entity.baseStarsByOrigin,
       starCheckpoints: entity.starCheckpoints,
       baseMinutesByOrigin: entity.baseMinutesByOrigin,

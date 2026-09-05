@@ -33,17 +33,17 @@ jobs:
           flutter pub get > /tmp/dependencies.log 2>&1
           npm ci >> /tmp/dependencies.log 2>&1
           npm ci --prefix functions/translator >> /tmp/dependencies.log 2>&1
-      - name: Format and commit reviewed files
+      - name: Format and commit source only
         run: |
           python3 - <<'PY' >> /tmp/finalize.log 2>&1
           import json, subprocess
           paths=json.load(open('/tmp/final_changed_paths.json'))
           subprocess.run(['dart','format',*[p for p in paths if p.endswith('.dart')]],check=True)
           subprocess.run(['node','scripts/verify_function_deployment.mjs'],check=True)
-          subprocess.run(['git','add','-A','--',*paths],check=True)
+          subprocess.run(['git','add','-A','--',*[p for p in paths if not p.startswith('.github/')]],check=True)
           subprocess.run(['git','config','user.name','Notion AI'],check=True)
           subprocess.run(['git','config','user.email','noreply@notion.so'],check=True)
-          subprocess.run(['git','commit','-m','fix: complete release gates scoped budgets and regression validation'],check=True)
+          subprocess.run(['git','commit','-m','fix: validate scoped budgets and durable persistence regressions'],check=True)
           subprocess.run(['git','push','origin','HEAD:fix/review-priority-hardening-20260905'],check=True)
           PY
       - name: Static analysis
@@ -69,7 +69,7 @@ jobs:
           result=$?
           echo "Backend exit: $result" >> /tmp/outcomes
           exit $result
-      - name: Persist concise verification results
+      - name: Persist verification results
         if: always()
         run: |
           python3 - <<'PY'
@@ -80,7 +80,11 @@ jobs:
             p=Path('/tmp/'+name+('.log' if name!='outcomes' else ''))
             if p.exists():
               text=p.read_text()
-              if len(text)>18000: text=text[:3000]+'\n...\n'+text[-15000:]
+              lines=text.splitlines()
+              failures=[]
+              for i,line in enumerate(lines):
+                if 'not ok' in line or 'failed)' in line: failures.extend(lines[max(0,i-2):i+24])
+              if len(text)>18000: text=text[:2000]+'\n...\n'+'\n'.join(failures)+'\n...\n'+text[-12000:]
               sections.append('\n## '+name+'\n'+text)
           Path('docs/PRIORITY_PATCH_DIAGNOSTICS.txt').write_text('\n'.join(sections))
           PY

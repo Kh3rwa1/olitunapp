@@ -1,72 +1,41 @@
-Startup preparation source: 80903995dbee6438af42a267c469fd333a135835
+Startup validation source: b4f06469f4d308301041202613d3a5f1ade3da2e
 Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
 Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
 Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
 Tools • Dart 3.13.2 • DevTools 2.60.0
 00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart
-lib/core/startup/startup_tasks.dart:83:33: Error: The argument type 'Object?' can't be assigned to the parameter type 'Object'.
- - 'Object' is from 'dart:core'.
-      Error.throwWithStackTrace(error, stack);
-                                ^
-00:00 +0 -1: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart [E]
-  Failed to load "/home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart":
-  Compilation failed for testPath=/home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: lib/core/startup/startup_tasks.dart:83:33: Error: The argument type 'Object?' can't be assigned to the parameter type 'Object'.
-   - 'Object' is from 'dart:core'.
-        Error.throwWithStackTrace(error, stack);
-                                  ^
-  .
-00:00 +0 -2: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart [E]
-  Error: The Dart compiler exited unexpectedly.
-  package:flutter_tools/src/base/common.dart 34:3  throwToolExit
-  package:flutter_tools/src/compile.dart 1024:11   DefaultResidentCompiler._compile.<fn>
-  dart:async/zone_root.dart 48:47                  _rootRunUnary
-  dart:async/zone.dart 816:35                      _CustomZone.runUnary
-  dart:async/future_impl.dart 948:45               Future._propagateToListeners.handleValueCallback
-  dart:async/future_impl.dart 977:13               Future._propagateToListeners
-  dart:async/future_impl.dart 862:9                Future._propagateToListeners
-  dart:async/future_impl.dart 720:5                Future._completeWithValue
-  dart:async/future_impl.dart 804:7                Future._asyncCompleteWithValue.<fn>
-  dart:async/zone_root.dart 35:13                  _rootRun
-  dart:async/zone.dart 810:35                      _CustomZone.run
-  dart:async/zone.dart 702:7                       _CustomZone.runGuarded
-  dart:async/zone.dart 743:23                      _CustomZone.bindCallbackGuarded.<fn>
-  dart:async/schedule_microtask.dart 40:35         _microtaskLoop
-  dart:async/schedule_microtask.dart 49:5          _startMicrotaskLoop
-  dart:isolate-patch/isolate_patch.dart 127:13     _runPendingImmediateCallback
-  dart:isolate-patch/isolate_patch.dart 193:5      _RawReceivePort._handleMessage
-  
-00:00 +0 -2: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
-00:00 +1 -2: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure shell invokes the supplied retry action
-00:00 +2 -2: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure content scrolls on a narrow large-text display
-00:07 +3 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: consent before SDK readiness cannot enable ads
-00:07 +4 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: SDK readiness without consent remains fail closed
-00:07 +5 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
-00:07 +6 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
-00:07 +7 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
-00:07 +8 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
-00:07 +9 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +1: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +2: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +3: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +4: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +5: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +6: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +7: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +8: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +9: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure shell invokes the supplied retry action
+00:00 +10: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure content scrolls on a narrow large-text display
+00:08 +11: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: consent before SDK readiness cannot enable ads
+00:08 +12: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: SDK readiness without consent remains fail closed
+00:09 +13: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
+00:09 +14: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
+00:09 +15: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
+00:09 +16: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
+00:09 +17: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
 AdState: isAdFreeUser set to true
 AdState: isAdFreeUser set to false
-00:08 +10 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
+00:09 +18: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
 ConsentManager: Reset failed: MissingPluginException(No implementation found for method ConsentInformation#reset on channel plugins.flutter.io/google_mobile_ads/ump)
-00:08 +11 -2: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
-00:08 +12 -2: Some tests failed.
-
-Failing tests:
-  /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart
-  /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart
+00:09 +19: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
+00:09 +20: All tests passed!
 Analyzing olitunapp...                                          
-
-  error • The argument type 'Object?' can't be assigned to the parameter type 'Object'.  • lib/core/startup/startup_tasks.dart:83:33 • argument_type_not_assignable
-   info • The import of 'package:mocktail/mocktail.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter_test/flutter_test.dart'. Try removing the import directive • test/core/ads/ad_readiness_test.dart:8:8 • unnecessary_import
-
-2 issues found. (ran in 28.0s)
+No issues found! (ran in 33.7s)
 
 🔍 Checked 666 Dart files in lib/ for color token compliance.
 📊 Found 173 total remaining literals across 67 grandfathered files.
 ✅ Color token gate passed successfully! Zero unapproved raw color literals.
 
 
-Focused test exit: 1
-Analysis exit: 1
+Focused test exit: 0
+Analysis exit: 0
 Color gate exit: 0

@@ -29,10 +29,10 @@ class NextBestActionCard extends ConsumerWidget {
     final streak = stats?.currentStreak ?? 0;
 
     // Determine the state and copy
-    String badgeText = 'NEXT';
+    String badgeText = l10n.continueLearning;
     String title = l10n.continueLearning;
-    String subtitle = 'Choose one small practice step for today.';
-    String ctaText = 'Continue';
+    String subtitle = l10n.readyToLearn;
+    String ctaText = l10n.continueButton;
     VoidCallback onTap = () {};
     IconData icon = Icons.star_rounded;
     Color color = AppColors.primary;
@@ -115,11 +115,13 @@ class NextBestActionCard extends ConsumerWidget {
         context.push('/bakhed');
       };
     } else {
-      // Default: Active learning
-      badgeText = 'CONTINUE LEARNING';
-      title = 'Next step in your journey';
-      subtitle = 'Consistent daily practice creates strong roots. Keep going!';
-      ctaText = 'Continue';
+      // Default: Active learning — the learner is mid-journey. Reuse
+      // localized "resume" copy (present in every shipped locale) instead of
+      // hardcoded English so non-English learners get the same next action.
+      badgeText = l10n.resumeJourney;
+      title = l10n.continueLearning;
+      subtitle = l10n.readyToLearn;
+      ctaText = l10n.continueButton;
       icon = Icons.play_arrow_rounded;
       color = AppColors.primary;
       onTap = () {

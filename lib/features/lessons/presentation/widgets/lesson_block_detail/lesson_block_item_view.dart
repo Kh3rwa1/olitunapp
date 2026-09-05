@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/core/theme/app_colors.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
@@ -49,12 +51,26 @@ class LessonBlockItemView extends ConsumerWidget {
           block.data?['quizRefId'] as String? ??
           '';
       if (quizId.isEmpty) {
-        return const SizedBox.shrink();
+        // Authored block without a quiz reference: explain instead of a
+        // blank page so the learner can keep moving through the lesson.
+        return _InlineQuizUnavailable(
+          isDark: isDark,
+          accentColor: accentColor,
+          isError: false,
+          onSkip: onDismissQuiz,
+        );
       }
 
       if (quizId.startsWith('listening_quiz_')) {
         final quiz = ref.watch(listeningLessonQuizProvider(lesson));
-        if (quiz.questions.isEmpty) return const SizedBox.shrink();
+        if (quiz.questions.isEmpty) {
+          return _InlineQuizUnavailable(
+            isDark: isDark,
+            accentColor: accentColor,
+            isError: false,
+            onSkip: onDismissQuiz,
+          );
+        }
         return LayoutBuilder(
           builder: (context, constraints) => LessonBlockQuizCTA(
             quizId: quizId,
@@ -92,10 +108,21 @@ class LessonBlockItemView extends ConsumerWidget {
                 child: CircularProgressIndicator(strokeWidth: 3),
               ),
             ),
-            error: (err, _) => const SizedBox.shrink(),
+            error: (err, _) => _InlineQuizUnavailable(
+              isDark: isDark,
+              accentColor: accentColor,
+              isError: true,
+              onSkip: onDismissQuiz,
+              onRetry: () => ref.invalidate(quizzesProvider),
+            ),
             data: (quizzesMap) {
               if (!quizzesMap.containsKey(quizId)) {
-                return const SizedBox.shrink();
+                return _InlineQuizUnavailable(
+                  isDark: isDark,
+                  accentColor: accentColor,
+                  isError: false,
+                  onSkip: onDismissQuiz,
+                );
               }
               final quiz = quizzesMap[quizId]!;
               return LayoutBuilder(
@@ -228,6 +255,100 @@ class LessonBlockItemView extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// Inline replacement for [LessonBlockQuizCTA] shown when an embedded quiz
+/// block cannot render: a missing quiz reference, an unknown quiz id, or a
+/// failed quiz load. Never a blank page — the learner always sees an
+/// explanation and a way forward (retry the load and/or skip back into the
+/// lesson flow via [onSkip]).
+class _InlineQuizUnavailable extends StatelessWidget {
+  const _InlineQuizUnavailable({
+    required this.isDark,
+    required this.accentColor,
+    required this.isError,
+    required this.onSkip,
+    this.onRetry,
+  });
+
+  final bool isDark;
+  final Color accentColor;
+  final bool isError;
+  final VoidCallback onSkip;
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final title = isError ? l10n.somethingWentWrong : l10n.noQuestionsYet;
+    return Center(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isError ? Icons.error_outline_rounded : Icons.quiz_outlined,
+              size: 56,
+              semanticLabel: title,
+              color: isError
+                  ? AppColors.error.withValues(alpha: 0.8)
+                  : accentColor.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (onRetry != null)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: accentColor,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(0, 48),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(l10n.retry),
+                ),
+              ),
+            if (onRetry != null) const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton(
+                onPressed: onSkip,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(0, 48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  l10n.skip,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

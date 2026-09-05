@@ -28,7 +28,7 @@ class QuizEmptyView extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               isNotFound
-                  ? 'Quiz not found'
+                  ? AppLocalizations.of(context)!.somethingWentWrong
                   : AppLocalizations.of(context)!.noQuestionsYet,
               style: TextStyle(
                 fontSize: 22,

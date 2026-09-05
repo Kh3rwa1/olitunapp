@@ -10,7 +10,7 @@ import {
 import { InputFile } from 'node-appwrite/file';
 import { withPaymentStateGuard } from './shared/payment_state.js';
 
-function stableId(value) {
+export function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
 }
 
@@ -262,55 +262,8 @@ export async function executeAdminRefund({
 
   const expectedPaise = Math.round(Number(purchase.expectedAmount || 0) * 100);
   const currentRefundedPaise = Number(purchase.refundedAmountPaise || 0);
-  const isAlreadyRefunded =
-    purchase.status === 'refunded' ||
-    purchase.refundStatus === 'fully_refunded' ||
-    (expectedPaise > 0 && currentRefundedPaise >= expectedPaise);
 
-  if (isAlreadyRefunded) {
-    return {
-      alreadyRefunded: true,
-      purchaseId,
-      status: purchase.status,
-      refundStatus: purchase.refundStatus,
-      refundedAmountPaise: purchase.refundedAmountPaise,
-      refundEpoch: purchase.refundEpoch,
-    };
-  }
-
-  // 3. Durable Idempotency Check: check if externalRefundId was already claimed/processed
-  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
-  const claimId = externalRefundId ? stableId(`refund:${externalRefundId}`) : null;
-
-  if (claimId) {
-    try {
-      const existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
-      if (existingClaim && (existingClaim.status === 'committed' || existingClaim.status === 'claimed')) {
-        return {
-          alreadyRefunded: true,
-          purchaseId,
-          status: purchase.status,
-          refundStatus: purchase.refundStatus,
-          refundedAmountPaise: purchase.refundedAmountPaise,
-          refundEpoch: purchase.refundEpoch,
-        };
-      }
-    } catch (err) {
-      if (err.code !== 404 && err.status !== 404) {
-        // Document does not exist or collection query threw; proceed
-      }
-    }
-  }
-
-  // 4. Validate current status allows refund
-  if (!['verified', 'disputed', 'failed'].includes(purchase.status)) {
-    throw Object.assign(
-      new Error(`Cannot refund purchase in status '${purchase.status}'.`),
-      { status: 409 },
-    );
-  }
-
-  // 5. Amount validation: must be a positive safe integer and not exceed expected amount
+  // 3. Amount validation: must be a positive safe integer and not exceed expected amount
   let refundAmountPaise;
   if (body.amountPaise !== undefined) {
     const rawAmount = Number(body.amountPaise);
@@ -334,19 +287,90 @@ export async function executeAdminRefund({
     }
   }
 
+  const currency = purchase.currency || 'INR';
   const now = new Date().toISOString();
   const reason = String(body.reason || 'Admin recorded refund').trim();
   const targetRefundedPaise = Math.max(currentRefundedPaise, refundAmountPaise);
   const isFullRefund = !(expectedPaise > 0) || targetRefundedPaise >= expectedPaise;
 
-  // 6. Monotonic epoch computation
+  // 4. Monotonic epoch computation
   const currentEpoch = Number(purchase.refundEpoch || 0);
   const targetEpoch = currentEpoch + 1;
 
-  // 7. Claim reservation in refund_claims (if externalRefundId provided)
+  // 5. Durable Idempotency & Claim Verification
+  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
+  const claimId = externalRefundId ? stableId(`refund:${externalRefundId}`) : null;
+
+  let existingClaim = null;
   if (claimId) {
     try {
-      await databases.createDocument(
+      existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
+    } catch (err) {
+      if (err.code !== 404 && err.status !== 404) {
+        throw err;
+      }
+    }
+  }
+
+  function assertClaimPayloadBinding(claim) {
+    if (
+      claim.purchaseId !== purchaseId ||
+      claim.amountPaise !== refundAmountPaise ||
+      (claim.currency && claim.currency !== currency)
+    ) {
+      throw Object.assign(
+        new Error('Idempotency conflict: externalRefundId was already used with different refund parameters.'),
+        { status: 409, code: 409 },
+      );
+    }
+  }
+
+  if (existingClaim) {
+    assertClaimPayloadBinding(existingClaim);
+    if (existingClaim.status === 'audit_committed' || existingClaim.status === 'committed') {
+      return {
+        alreadyRefunded: true,
+        purchaseId,
+        status: purchase.status,
+        refundStatus: purchase.refundStatus,
+        refundedAmountPaise: purchase.refundedAmountPaise,
+        refundEpoch: purchase.refundEpoch,
+      };
+    }
+  }
+
+  // 6. Check if already refunded on purchase (only short-circuit if NOT resuming an incomplete claim)
+  const isResumingAudit = existingClaim && existingClaim.status === 'ledger_committed';
+  const isAlreadyRefunded =
+    purchase.status === 'refunded' ||
+    purchase.refundStatus === 'fully_refunded' ||
+    (expectedPaise > 0 && currentRefundedPaise >= expectedPaise);
+
+  if (isAlreadyRefunded && !isResumingAudit) {
+    return {
+      alreadyRefunded: true,
+      purchaseId,
+      status: purchase.status,
+      refundStatus: purchase.refundStatus,
+      refundedAmountPaise: purchase.refundedAmountPaise,
+      refundEpoch: purchase.refundEpoch,
+    };
+  }
+
+  // 7. Validate current status allows refund (if not resuming audit step)
+  if (!isResumingAudit) {
+    if (!['verified', 'disputed', 'failed'].includes(purchase.status)) {
+      throw Object.assign(
+        new Error(`Cannot refund purchase in status '${purchase.status}'.`),
+        { status: 409 },
+      );
+    }
+  }
+
+  // 8. Phase 1: Claim Reservation in refund_claims (if not already claimed)
+  if (claimId && !existingClaim) {
+    try {
+      existingClaim = await databases.createDocument(
         databaseId,
         'refund_claims',
         claimId,
@@ -355,7 +379,7 @@ export async function executeAdminRefund({
           paymentId: purchase.providerPaymentId || `admin_${purchaseId}`,
           purchaseId,
           amountPaise: refundAmountPaise,
-          currency: purchase.currency || 'INR',
+          currency,
           status: 'claimed',
           claimedAt: now,
           committedAt: null,
@@ -364,50 +388,62 @@ export async function executeAdminRefund({
       );
     } catch (claimErr) {
       if (claimErr.code === 409 || claimErr.status === 409) {
-        return {
-          alreadyRefunded: true,
-          purchaseId,
-          status: purchase.status,
-          refundStatus: purchase.refundStatus,
-          refundedAmountPaise: purchase.refundedAmountPaise,
-          refundEpoch: purchase.refundEpoch,
-        };
+        existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
+        assertClaimPayloadBinding(existingClaim);
+        if (existingClaim.status === 'audit_committed' || existingClaim.status === 'committed') {
+          return {
+            alreadyRefunded: true,
+            purchaseId,
+            status: purchase.status,
+            refundStatus: purchase.refundStatus,
+            refundedAmountPaise: purchase.refundedAmountPaise,
+            refundEpoch: purchase.refundEpoch,
+          };
+        }
+      } else {
+        throw claimErr;
       }
     }
   }
 
-  // 8. Update course_purchases via guarded databases
-  const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
-  const updatedPurchase = await guardedDb.updateDocument(
-    databaseId,
-    'course_purchases',
-    purchaseId,
-    {
-      status: isFullRefund ? 'refunded' : purchase.status,
-      refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
-      refundedAmountPaise: targetRefundedPaise,
-      refundEpoch: targetEpoch,
-    },
+  // 9. Phase 2: Update course_purchases via guarded databases (Skipped if ledger was already committed)
+  let updatedPurchase = purchase;
+  const isLedgerAlreadyCommitted = Boolean(
+    existingClaim && (existingClaim.status === 'ledger_committed' || existingClaim.status === 'committed')
   );
 
-  // 9. Mark claim committed if claimed
-  if (claimId) {
-    try {
-      await databases.updateDocument(
-        databaseId,
-        'refund_claims',
-        claimId,
-        {
-          status: 'committed',
-          committedAt: new Date().toISOString(),
-        },
-      );
-    } catch {
-      // Non-fatal if claim status update fails after course_purchases is committed
+  if (!isLedgerAlreadyCommitted) {
+    const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
+    updatedPurchase = await guardedDb.updateDocument(
+      databaseId,
+      'course_purchases',
+      purchaseId,
+      {
+        status: isFullRefund ? 'refunded' : purchase.status,
+        refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
+        refundedAmountPaise: targetRefundedPaise,
+        refundEpoch: targetEpoch,
+      },
+    );
+
+    if (claimId) {
+      try {
+        await databases.updateDocument(
+          databaseId,
+          'refund_claims',
+          claimId,
+          {
+            status: 'ledger_committed',
+            committedAt: new Date().toISOString(),
+          },
+        );
+      } catch {
+        // Non-fatal if claim status update fails after course_purchases is committed
+      }
     }
   }
 
-  // 10. Write audit log to admin_audit_logs collection (fail-closed: do not swallow error)
+  // 10. Phase 3: Write audit log to admin_audit_logs collection (fail-closed: do not swallow error)
   await databases.createDocument(
     databaseId,
     'admin_audit_logs',
@@ -427,20 +463,36 @@ export async function executeAdminRefund({
         previousStatus: purchase.status,
         newStatus: updatedPurchase.status,
         refundStatus: updatedPurchase.refundStatus,
-        refundEpoch: targetEpoch,
+        refundEpoch: updatedPurchase.refundEpoch || targetEpoch,
       }),
       success: true,
       createdAt: now,
     },
   );
 
+  // 11. Finalize claim in refund_claims to audit_committed
+  if (claimId) {
+    try {
+      await databases.updateDocument(
+        databaseId,
+        'refund_claims',
+        claimId,
+        {
+          status: 'audit_committed',
+        },
+      );
+    } catch {
+      // Non-fatal if status update to audit_committed fails after audit log is created
+    }
+  }
+
   return {
-    alreadyRefunded: false,
+    alreadyRefunded: isLedgerAlreadyCommitted,
     purchaseId,
     status: updatedPurchase.status,
     refundStatus: updatedPurchase.refundStatus,
     refundedAmountPaise: updatedPurchase.refundedAmountPaise,
-    refundEpoch: targetEpoch,
+    refundEpoch: updatedPurchase.refundEpoch || targetEpoch,
   };
 }
 

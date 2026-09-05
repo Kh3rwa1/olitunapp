@@ -39,6 +39,18 @@ class UserStatsEntity extends Equatable {
   /// Retained set of compacted learning minute event IDs to prevent stale replay from re-crediting them.
   final Set<String> compactedMinuteEvents;
 
+  /// Base stars partitioned by origin to preserve independent contributions during compaction.
+  final Map<String, int> baseStarsByOrigin;
+
+  /// Monotonic checkpoint vector recording the maximum compacted sequence number per origin.
+  final Map<String, int> starCheckpoints;
+
+  /// Base learning minutes partitioned by origin to preserve independent contributions during compaction.
+  final Map<String, int> baseMinutesByOrigin;
+
+  /// Monotonic checkpoint vector for learning minutes per origin.
+  final Map<String, int> minuteCheckpoints;
+
   const UserStatsEntity({
     required this.practicedLetters,
     required this.completedLessons,
@@ -55,6 +67,10 @@ class UserStatsEntity extends Equatable {
     this.minuteEvents = const {},
     this.compactedStarEvents = const {},
     this.compactedMinuteEvents = const {},
+    this.baseStarsByOrigin = const {},
+    this.starCheckpoints = const {},
+    this.baseMinutesByOrigin = const {},
+    this.minuteCheckpoints = const {},
   });
 
   @override
@@ -74,6 +90,10 @@ class UserStatsEntity extends Equatable {
     minuteEvents,
     compactedStarEvents,
     compactedMinuteEvents,
+    baseStarsByOrigin,
+    starCheckpoints,
+    baseMinutesByOrigin,
+    minuteCheckpoints,
   ];
 
   UserStatsEntity copyWith({
@@ -92,6 +112,10 @@ class UserStatsEntity extends Equatable {
     Map<String, int>? minuteEvents,
     Set<String>? compactedStarEvents,
     Set<String>? compactedMinuteEvents,
+    Map<String, int>? baseStarsByOrigin,
+    Map<String, int>? starCheckpoints,
+    Map<String, int>? baseMinutesByOrigin,
+    Map<String, int>? minuteCheckpoints,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -111,21 +135,41 @@ class UserStatsEntity extends Equatable {
       compactedStarEvents: compactedStarEvents ?? this.compactedStarEvents,
       compactedMinuteEvents:
           compactedMinuteEvents ?? this.compactedMinuteEvents,
+      baseStarsByOrigin: baseStarsByOrigin ?? this.baseStarsByOrigin,
+      starCheckpoints: starCheckpoints ?? this.starCheckpoints,
+      baseMinutesByOrigin: baseMinutesByOrigin ?? this.baseMinutesByOrigin,
+      minuteCheckpoints: minuteCheckpoints ?? this.minuteCheckpoints,
     );
   }
 
   /// Records a star reward with a deduplicatable event ID.
-  UserStatsEntity recordStarReward(int count, {String? eventId}) {
+  UserStatsEntity recordStarReward(
+    int count, {
+    String? eventId,
+    String? originId,
+  }) {
     if (count <= 0) return this;
-    final id = eventId ?? 'star_${DateTime.now().microsecondsSinceEpoch}';
+    final id =
+        eventId ??
+        (originId != null
+            ? '${originId}_${DateTime.now().microsecondsSinceEpoch}'
+            : 'star_${DateTime.now().microsecondsSinceEpoch}');
     final updatedEvents = Map<String, int>.from(starEvents)..[id] = count;
     return copyWith(totalStars: totalStars + count, starEvents: updatedEvents);
   }
 
   /// Records learning minutes with a deduplicatable event ID.
-  UserStatsEntity recordLearningMinutes(int minutes, {String? eventId}) {
+  UserStatsEntity recordLearningMinutes(
+    int minutes, {
+    String? eventId,
+    String? originId,
+  }) {
     if (minutes <= 0) return this;
-    final id = eventId ?? 'min_${DateTime.now().microsecondsSinceEpoch}';
+    final id =
+        eventId ??
+        (originId != null
+            ? '${originId}_${DateTime.now().microsecondsSinceEpoch}'
+            : 'min_${DateTime.now().microsecondsSinceEpoch}');
     final updatedEvents = Map<String, int>.from(minuteEvents)..[id] = minutes;
     return copyWith(
       totalLearningMinutes: totalLearningMinutes + minutes,

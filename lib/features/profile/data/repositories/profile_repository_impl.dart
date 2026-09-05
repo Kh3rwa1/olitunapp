@@ -11,6 +11,53 @@ import '../../domain/repositories/profile_repository.dart';
 import '../../domain/streak_week_logic.dart';
 import '../models/user_stats_model.dart';
 
+class _ProgressEventKey {
+  final String origin;
+  final int? seq;
+  final String rawId;
+
+  const _ProgressEventKey({
+    required this.origin,
+    this.seq,
+    required this.rawId,
+  });
+}
+
+_ProgressEventKey _parseProgressEvent(String key) {
+  if (key.contains(':')) {
+    final idx = key.lastIndexOf(':');
+    final suffix = key.substring(idx + 1);
+    final seq = int.tryParse(suffix);
+    if (seq != null) {
+      return _ProgressEventKey(
+        origin: key.substring(0, idx),
+        seq: seq,
+        rawId: key,
+      );
+    }
+  }
+  if (key.contains('_')) {
+    final idx = key.lastIndexOf('_');
+    final suffix = key.substring(idx + 1);
+    final seq = int.tryParse(suffix);
+    if (seq != null) {
+      return _ProgressEventKey(
+        origin: key.substring(0, idx),
+        seq: seq,
+        rawId: key,
+      );
+    }
+  }
+  final match = RegExp(r'^([a-zA-Z0-9_-]+?)(\d+)$').firstMatch(key);
+  if (match != null) {
+    final seq = int.tryParse(match.group(2)!);
+    if (seq != null) {
+      return _ProgressEventKey(origin: match.group(1)!, seq: seq, rawId: key);
+    }
+  }
+  return _ProgressEventKey(origin: key, rawId: key);
+}
+
 class ProfileRepositoryImpl implements ProfileRepository {
   final AuthRepository _authRepository;
   final SharedPreferences _prefs;
@@ -137,46 +184,63 @@ class ProfileRepositoryImpl implements ProfileRepository {
       categoryMastery[key] = valB > valA ? valB : valA;
     });
 
-    // Merge star reward events with deduplication, compaction tracking, and base preservation
+    // ==========================================
+    // Vector Checkpoint CRDT: Star Rewards Merge
+    // ==========================================
+    Map<String, int> resolveBaseStars(UserStatsEntity stats) {
+      if (stats.baseStarsByOrigin.isNotEmpty) {
+        return Map<String, int>.from(stats.baseStarsByOrigin);
+      }
+      final sumEvents = stats.starEvents.values.fold<int>(0, (s, v) => s + v);
+      final legacyBase = stats.totalStars >= sumEvents
+          ? stats.totalStars - sumEvents
+          : stats.totalStars;
+      return legacyBase > 0 ? {'__legacy__': legacyBase} : {};
+    }
+
+    final baseStarsA = resolveBaseStars(a);
+    final baseStarsB = resolveBaseStars(b);
+
+    final mergedStarCheckpoints = <String, int>{};
+    final allStarCheckpointOrigins = {
+      ...a.starCheckpoints.keys,
+      ...b.starCheckpoints.keys,
+    };
+    for (final origin in allStarCheckpointOrigins) {
+      final cpA = a.starCheckpoints[origin];
+      final cpB = b.starCheckpoints[origin];
+      if (cpA != null && cpB != null) {
+        mergedStarCheckpoints[origin] = math.max(cpA, cpB);
+      } else {
+        mergedStarCheckpoints[origin] = (cpA ?? cpB)!;
+      }
+    }
+
+    final mergedBaseStarsByOrigin = <String, int>{};
+    final allBaseStarOrigins = {...baseStarsA.keys, ...baseStarsB.keys};
+    for (final origin in allBaseStarOrigins) {
+      final baseA = baseStarsA[origin] ?? 0;
+      final baseB = baseStarsB[origin] ?? 0;
+      mergedBaseStarsByOrigin[origin] = math.max(baseA, baseB);
+    }
+
     final allCompactedStarEvents = Set<String>.from(a.compactedStarEvents)
       ..addAll(b.compactedStarEvents);
-
-    final sumStarEventsA = a.starEvents.values.fold<int>(
-      0,
-      (sum, val) => sum + val,
-    );
-    final sumStarEventsB = b.starEvents.values.fold<int>(
-      0,
-      (sum, val) => sum + val,
-    );
-    int baseStarsA = a.totalStars >= sumStarEventsA
-        ? a.totalStars - sumStarEventsA
-        : a.totalStars;
-    int baseStarsB = b.totalStars >= sumStarEventsB
-        ? b.totalStars - sumStarEventsB
-        : b.totalStars;
-
-    // Account for any events compacted on B that were still active in A
-    for (final key in b.compactedStarEvents) {
-      if (a.starEvents.containsKey(key) &&
-          !a.compactedStarEvents.contains(key)) {
-        baseStarsA += a.starEvents[key]!;
-      }
-    }
-    // Account for any events compacted on A that were still active in B
-    for (final key in a.compactedStarEvents) {
-      if (b.starEvents.containsKey(key) &&
-          !b.compactedStarEvents.contains(key)) {
-        baseStarsB += b.starEvents[key]!;
-      }
-    }
-    int baseStars = math.max<int>(baseStarsA, baseStarsB);
 
     final mergedStarEvents = <String, int>{};
     final allStarEventKeys = {...a.starEvents.keys, ...b.starEvents.keys};
     for (final key in allStarEventKeys) {
       if (allCompactedStarEvents.contains(key)) {
         continue;
+      }
+      final parsed = _parseProgressEvent(key);
+      if (parsed.seq != null &&
+          mergedStarCheckpoints.containsKey(parsed.origin)) {
+        final cp = mergedStarCheckpoints[parsed.origin]!;
+        if (parsed.seq! <= cp) {
+          // Already folded into base by this origin's monotonic checkpoint
+          continue;
+        }
       }
       final valA = a.starEvents[key] ?? 0;
       final valB = b.starEvents[key] ?? 0;
@@ -186,56 +250,88 @@ class ProfileRepositoryImpl implements ProfileRepository {
     const maxEvents = 100;
     const maxCompactedTracking = 500;
     if (mergedStarEvents.length > maxEvents) {
-      final sortedKeys = mergedStarEvents.keys.toList()..sort();
+      final sortedKeys = mergedStarEvents.keys.toList()
+        ..sort((k1, k2) {
+          final p1 = _parseProgressEvent(k1);
+          final p2 = _parseProgressEvent(k2);
+          if (p1.origin == p2.origin && p1.seq != null && p2.seq != null) {
+            return p1.seq!.compareTo(p2.seq!);
+          }
+          return k1.compareTo(k2);
+        });
       final overflowCount = mergedStarEvents.length - maxEvents;
       for (int i = 0; i < overflowCount; i++) {
         final key = sortedKeys[i];
-        baseStars += mergedStarEvents.remove(key) ?? 0;
+        final delta = mergedStarEvents.remove(key) ?? 0;
+        final parsed = _parseProgressEvent(key);
+        if (parsed.seq != null) {
+          mergedStarCheckpoints[parsed.origin] = math.max(
+            mergedStarCheckpoints[parsed.origin] ?? parsed.seq!,
+            parsed.seq!,
+          );
+          mergedBaseStarsByOrigin[parsed.origin] =
+              (mergedBaseStarsByOrigin[parsed.origin] ?? 0) + delta;
+        } else {
+          mergedBaseStarsByOrigin['__discrete__'] =
+              (mergedBaseStarsByOrigin['__discrete__'] ?? 0) + delta;
+        }
         allCompactedStarEvents.add(key);
       }
     }
+
     if (allCompactedStarEvents.length > maxCompactedTracking) {
       final sortedCompacted = allCompactedStarEvents.toList()..sort();
       allCompactedStarEvents.retainAll(
         sortedCompacted.sublist(sortedCompacted.length - maxCompactedTracking),
       );
     }
+
     final int totalStars =
-        baseStars +
+        mergedBaseStarsByOrigin.values.fold<int>(0, (sum, val) => sum + val) +
         mergedStarEvents.values.fold<int>(0, (sum, val) => sum + val);
 
-    // Merge learning minute events with deduplication, compaction tracking, and base preservation
+    // ====================================================
+    // Vector Checkpoint CRDT: Learning Minutes Merge
+    // ====================================================
+    Map<String, int> resolveBaseMinutes(UserStatsEntity stats) {
+      if (stats.baseMinutesByOrigin.isNotEmpty) {
+        return Map<String, int>.from(stats.baseMinutesByOrigin);
+      }
+      final sumEvents = stats.minuteEvents.values.fold<int>(0, (s, v) => s + v);
+      final legacyBase = stats.totalLearningMinutes >= sumEvents
+          ? stats.totalLearningMinutes - sumEvents
+          : stats.totalLearningMinutes;
+      return legacyBase > 0 ? {'__legacy__': legacyBase} : {};
+    }
+
+    final baseMinutesA = resolveBaseMinutes(a);
+    final baseMinutesB = resolveBaseMinutes(b);
+
+    final mergedMinuteCheckpoints = <String, int>{};
+    final allMinuteCheckpointOrigins = {
+      ...a.minuteCheckpoints.keys,
+      ...b.minuteCheckpoints.keys,
+    };
+    for (final origin in allMinuteCheckpointOrigins) {
+      final cpA = a.minuteCheckpoints[origin];
+      final cpB = b.minuteCheckpoints[origin];
+      if (cpA != null && cpB != null) {
+        mergedMinuteCheckpoints[origin] = math.max(cpA, cpB);
+      } else {
+        mergedMinuteCheckpoints[origin] = (cpA ?? cpB)!;
+      }
+    }
+
+    final mergedBaseMinutesByOrigin = <String, int>{};
+    final allBaseMinuteOrigins = {...baseMinutesA.keys, ...baseMinutesB.keys};
+    for (final origin in allBaseMinuteOrigins) {
+      final baseA = baseMinutesA[origin] ?? 0;
+      final baseB = baseMinutesB[origin] ?? 0;
+      mergedBaseMinutesByOrigin[origin] = math.max(baseA, baseB);
+    }
+
     final allCompactedMinuteEvents = Set<String>.from(a.compactedMinuteEvents)
       ..addAll(b.compactedMinuteEvents);
-
-    final sumMinuteEventsA = a.minuteEvents.values.fold<int>(
-      0,
-      (sum, val) => sum + val,
-    );
-    final sumMinuteEventsB = b.minuteEvents.values.fold<int>(
-      0,
-      (sum, val) => sum + val,
-    );
-    int baseMinutesA = a.totalLearningMinutes >= sumMinuteEventsA
-        ? a.totalLearningMinutes - sumMinuteEventsA
-        : a.totalLearningMinutes;
-    int baseMinutesB = b.totalLearningMinutes >= sumMinuteEventsB
-        ? b.totalLearningMinutes - sumMinuteEventsB
-        : b.totalLearningMinutes;
-
-    for (final key in b.compactedMinuteEvents) {
-      if (a.minuteEvents.containsKey(key) &&
-          !a.compactedMinuteEvents.contains(key)) {
-        baseMinutesA += a.minuteEvents[key]!;
-      }
-    }
-    for (final key in a.compactedMinuteEvents) {
-      if (b.minuteEvents.containsKey(key) &&
-          !b.compactedMinuteEvents.contains(key)) {
-        baseMinutesB += b.minuteEvents[key]!;
-      }
-    }
-    int baseMinutes = math.max<int>(baseMinutesA, baseMinutesB);
 
     final mergedMinuteEvents = <String, int>{};
     final allMinuteEventKeys = {...a.minuteEvents.keys, ...b.minuteEvents.keys};
@@ -243,28 +339,58 @@ class ProfileRepositoryImpl implements ProfileRepository {
       if (allCompactedMinuteEvents.contains(key)) {
         continue;
       }
+      final parsed = _parseProgressEvent(key);
+      if (parsed.seq != null &&
+          mergedMinuteCheckpoints.containsKey(parsed.origin)) {
+        final cp = mergedMinuteCheckpoints[parsed.origin]!;
+        if (parsed.seq! <= cp) {
+          continue;
+        }
+      }
       final valA = a.minuteEvents[key] ?? 0;
       final valB = b.minuteEvents[key] ?? 0;
       mergedMinuteEvents[key] = math.max(valA, valB);
     }
 
     if (mergedMinuteEvents.length > maxEvents) {
-      final sortedKeys = mergedMinuteEvents.keys.toList()..sort();
+      final sortedKeys = mergedMinuteEvents.keys.toList()
+        ..sort((k1, k2) {
+          final p1 = _parseProgressEvent(k1);
+          final p2 = _parseProgressEvent(k2);
+          if (p1.origin == p2.origin && p1.seq != null && p2.seq != null) {
+            return p1.seq!.compareTo(p2.seq!);
+          }
+          return k1.compareTo(k2);
+        });
       final overflowCount = mergedMinuteEvents.length - maxEvents;
       for (int i = 0; i < overflowCount; i++) {
         final key = sortedKeys[i];
-        baseMinutes += mergedMinuteEvents.remove(key) ?? 0;
+        final delta = mergedMinuteEvents.remove(key) ?? 0;
+        final parsed = _parseProgressEvent(key);
+        if (parsed.seq != null) {
+          mergedMinuteCheckpoints[parsed.origin] = math.max(
+            mergedMinuteCheckpoints[parsed.origin] ?? parsed.seq!,
+            parsed.seq!,
+          );
+          mergedBaseMinutesByOrigin[parsed.origin] =
+              (mergedBaseMinutesByOrigin[parsed.origin] ?? 0) + delta;
+        } else {
+          mergedBaseMinutesByOrigin['__discrete__'] =
+              (mergedBaseMinutesByOrigin['__discrete__'] ?? 0) + delta;
+        }
         allCompactedMinuteEvents.add(key);
       }
     }
+
     if (allCompactedMinuteEvents.length > maxCompactedTracking) {
       final sortedCompacted = allCompactedMinuteEvents.toList()..sort();
       allCompactedMinuteEvents.retainAll(
         sortedCompacted.sublist(sortedCompacted.length - maxCompactedTracking),
       );
     }
+
     final int totalLearningMinutes =
-        baseMinutes +
+        mergedBaseMinutesByOrigin.values.fold<int>(0, (sum, val) => sum + val) +
         mergedMinuteEvents.values.fold<int>(0, (sum, val) => sum + val);
 
     String lastActiveDate = a.lastActiveDate;
@@ -278,7 +404,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
     final practiceDates = Set<String>.from(a.practiceDates)
       ..addAll(b.practiceDates);
 
-    // Dynamically derive streak from consecutive practice dates
     final currentStreak = StreakWeekLogic.deriveStreak(
       practiceDates,
       asOf: _clock(),
@@ -305,6 +430,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       minuteEvents: mergedMinuteEvents,
       compactedStarEvents: allCompactedStarEvents,
       compactedMinuteEvents: allCompactedMinuteEvents,
+      baseStarsByOrigin: mergedBaseStarsByOrigin,
+      starCheckpoints: mergedStarCheckpoints,
+      baseMinutesByOrigin: mergedBaseMinutesByOrigin,
+      minuteCheckpoints: mergedMinuteCheckpoints,
     );
   }
 

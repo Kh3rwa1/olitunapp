@@ -2,7 +2,7 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { withPaymentStateGuard } from '../_shared/payment_state.js';
 import { reconcileDisputedPurchases } from '../_shared/payment_reconcile.js';
-import { executeAdminRefund } from '../admin-maintenance/src/main.js';
+import { executeAdminRefund, stableId } from '../admin-maintenance/src/main.js';
 import adminMaintenanceHandler from '../admin-maintenance/src/main.js';
 import { MemoryDatabase, withTransactions } from './helpers/transaction_db.js';
 
@@ -689,6 +689,156 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
           body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_audit' },
         }),
       /Audit log service outage/,
+    );
+  });
+
+  test('Failure path B recovery: retry resumes at Phase 3 and writes missing audit log without updating purchase again', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    let failAudit = true;
+    const originalCreate = db.createDocument.bind(db);
+    db.createDocument = async (...args) => {
+      const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
+      if (col === 'admin_audit_logs' && failAudit) {
+        throw new Error('Audit log service outage');
+      }
+      return originalCreate(...args);
+    };
+    const transactional = withTransactions(db);
+
+    // First attempt fails during audit log creation
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_b' },
+        }),
+      /Audit log service outage/,
+    );
+
+    // Purchase ledger was updated to refunded
+    const purchaseAfterFail = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(purchaseAfterFail.status, 'refunded');
+    assert.equal(purchaseAfterFail.refundEpoch, 1);
+
+    // Audit logs collection is currently EMPTY (missing audit record)
+    const logsBeforeRetry = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsBeforeRetry.documents.length, 0);
+
+    // Now service recovers
+    failAudit = false;
+
+    // Retry with the same externalRefundId: must resume Phase 3 and repair the audit log!
+    const retryResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_b' },
+    });
+
+    assert.equal(retryResult.alreadyRefunded, true);
+    assert.equal(retryResult.status, 'refunded');
+
+    // Purchase epoch was NOT incremented again (no duplicate purchase write)
+    const purchaseAfterRetry = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(purchaseAfterRetry.refundEpoch, 1);
+
+    // Audit log was durably created on retry!
+    const logsAfterRetry = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsAfterRetry.documents.length, 1);
+    assert.equal(logsAfterRetry.documents[0].targetId, 'purchase');
+    assert.match(logsAfterRetry.documents[0].metadata, /rfnd_fail_b/);
+  });
+
+  test('Failure path A recovery: retry after failed purchase update resumes Phase 2 and completes ledger update', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    let failPurchaseUpdate = true;
+    const originalUpdate = db.updateDocument.bind(db);
+    db.updateDocument = async (...args) => {
+      const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
+      if (col === 'course_purchases' && failPurchaseUpdate) {
+        throw new Error('Database transaction timeout on purchase write');
+      }
+      return originalUpdate(...args);
+    };
+    const transactional = withTransactions(db);
+
+    // First attempt fails during purchase ledger update
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_a' },
+        }),
+      /Database transaction timeout on purchase write/,
+    );
+
+    // Purchase was NOT updated yet
+    const purchaseAfterFail = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(purchaseAfterFail.status, 'verified');
+    assert.equal(purchaseAfterFail.refundEpoch, 0);
+
+    // Claim exists in 'claimed' state
+    const claimDoc = await db.getDocument('olitun_db', 'refund_claims', stableId('refund:rfnd_fail_a'));
+    assert.equal(claimDoc.status, 'claimed');
+
+    // Database recovers
+    failPurchaseUpdate = false;
+
+    // Retry must resume Phase 2 and update purchase ledger, NOT return alreadyRefunded without writing
+    const retryResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_fail_a' },
+    });
+
+    assert.equal(retryResult.alreadyRefunded, false);
+    assert.equal(retryResult.status, 'refunded');
+
+    const purchaseAfterRetry = await db.getDocument('olitun_db', 'course_purchases', 'purchase');
+    assert.equal(purchaseAfterRetry.status, 'refunded');
+    assert.equal(purchaseAfterRetry.refundEpoch, 1);
+
+    // Audit log was also created
+    const logs = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logs.documents.length, 1);
+  });
+
+  test('Payload mismatch: reusing externalRefundId with different purchaseId or amount throws 409 Conflict', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    await db.createDocument('olitun_db', 'course_purchases', 'other_purchase', {
+      ...basePurchase,
+      $id: 'other_purchase',
+    });
+    const transactional = withTransactions(db);
+
+    // Initial refund for purchase
+    await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_same_key', amountPaise: 49900 },
+    });
+
+    // Attempt to reuse same externalRefundId with different purchaseId
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'other_purchase', externalRefundId: 'rfnd_same_key', amountPaise: 49900 },
+        }),
+      (err) => err.status === 409 && /Idempotency conflict/.test(err.message),
+    );
+
+    // Attempt to reuse same externalRefundId with different amountPaise
+    await assert.rejects(
+      () =>
+        executeAdminRefund({
+          databases: transactional,
+          actorUserId: 'admin_ops_1',
+          body: { purchaseId: 'purchase', externalRefundId: 'rfnd_same_key', amountPaise: 20000 },
+        }),
+      (err) => err.status === 409 && /Idempotency conflict/.test(err.message),
     );
   });
 });

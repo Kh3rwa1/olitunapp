@@ -83,7 +83,8 @@ void main() {
       find.descendant(
         of: find.byType(NextBestActionCard),
         matching: find.byWidgetPredicate(
-          (widget) => widget is Semantics && (widget.properties.button ?? false),
+          (widget) =>
+              widget is Semantics && (widget.properties.button ?? false),
         ),
       ),
       findsOneWidget,

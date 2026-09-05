@@ -100,9 +100,7 @@ class _PressableScaleState extends State<PressableScale>
     return FocusableActionDetector(
       enabled: _interactive,
       includeFocusSemantics: false,
-      mouseCursor: _interactive
-          ? SystemMouseCursors.click
-          : MouseCursor.defer,
+      mouseCursor: _interactive ? SystemMouseCursors.click : MouseCursor.defer,
       onFocusChange: (value) => setState(() => _hasFocus = value),
       onShowFocusHighlight: (value) => setState(() => _showFocus = value),
       shortcuts: const <ShortcutActivator, Intent>{

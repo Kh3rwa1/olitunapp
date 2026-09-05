@@ -49,10 +49,7 @@ void main() {
     final router = GoRouter(
       initialLocation: '/lessons',
       routes: [
-        GoRoute(
-          path: '/lessons',
-          builder: (_, state) => const LessonsScreen(),
-        ),
+        GoRoute(path: '/lessons', builder: (_, state) => const LessonsScreen()),
       ],
     );
     addTearDown(router.dispose);
@@ -85,11 +82,7 @@ void main() {
     binding.addTimingsCallback(record);
     try {
       for (var pass = 0; pass < 8; pass++) {
-        await tester.fling(
-          scroll,
-          Offset(0, pass.isEven ? -600 : 600),
-          1500,
-        );
+        await tester.fling(scroll, Offset(0, pass.isEven ? -600 : 600), 1500);
         await tester.pumpAndSettle();
       }
       // Engine timing batches arrive after the rendered frames.

@@ -159,9 +159,7 @@ class _LearningButton extends StatelessWidget {
                 : null,
             style: ButtonStyle(
               foregroundColor: WidgetStatePropertyAll(foreground),
-              backgroundColor: const WidgetStatePropertyAll(
-                Colors.transparent,
-              ),
+              backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
               shadowColor: const WidgetStatePropertyAll(Colors.transparent),
               surfaceTintColor: const WidgetStatePropertyAll(
                 Colors.transparent,

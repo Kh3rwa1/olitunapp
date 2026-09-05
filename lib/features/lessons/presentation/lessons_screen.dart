@@ -147,10 +147,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
             label: Text(AppLocalizations.of(context)?.retry ?? 'Retry'),
             style: FilledButton.styleFrom(
               minimumSize: const Size(48, 48),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             ),
           ),
         ],
@@ -199,9 +196,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       ),
                     ),
                     if (data.isEmpty)
-                      SliverToBoxAdapter(
-                        child: _notice(context, error: false),
-                      ),
+                      SliverToBoxAdapter(child: _notice(context, error: false)),
                     if (data.isNotEmpty) ...[
                       SliverToBoxAdapter(
                         child: IndexedSemantics(
@@ -289,10 +284,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                   padding: ResponsiveLayout.pagePadding(context),
                   itemCount: 4,
                   separatorBuilder: (_, index) => const SizedBox(height: 16),
-                  itemBuilder: (_, index) => const Skeleton(
-                    height: 180,
-                    borderRadius: 28,
-                  ),
+                  itemBuilder: (_, index) =>
+                      const Skeleton(height: 180, borderRadius: 28),
                 ),
               ),
               error: (error, stack) => SingleChildScrollView(

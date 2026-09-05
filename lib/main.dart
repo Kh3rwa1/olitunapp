@@ -234,9 +234,8 @@ class OlitunApp extends ConsumerWidget {
       ],
       supportedLocales: AppLocalizations.supportedLocales,
       locale: appLocaleForLanguage(languageCode),
-      builder: (context, child) => AppExperienceScope(
-        child: child ?? const SizedBox(),
-      ),
+      builder: (context, child) =>
+          AppExperienceScope(child: child ?? const SizedBox()),
       routerConfig: router,
     );
   }

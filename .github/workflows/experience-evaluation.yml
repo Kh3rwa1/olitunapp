@@ -1,0 +1,28 @@
+name: Experience measurement validator
+
+on:
+  pull_request:
+    paths:
+      - 'tool/experience_frame_budget*'
+      - '.github/workflows/experience-evaluation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tool/experience_frame_budget*'
+      - '.github/workflows/experience-evaluation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  measurement-validator:
+    name: Performance measurement validator tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+      - run: node --test tool/experience_frame_budget.test.mjs

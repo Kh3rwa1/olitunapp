@@ -135,8 +135,25 @@ class ContentItem extends Equatable {
     };
   }
 
-  Map<String, dynamic> toAppwrite() =>
-      ContentItemSerialization.toAppwrite(this);
+  /// Serializes content for legacy generic upsert paths.
+  ///
+  /// Those paths create documents with anonymous read permission and cannot
+  /// resolve category entitlement policy. Refuse lesson and explicitly premium
+  /// writes here so a future call site cannot accidentally publish paid bodies.
+  /// Lessons must use the category-aware lesson publisher.
+  Map<String, dynamic> toAppwrite() {
+    if (kind == ContentKind.lesson) {
+      throw StateError(
+        'Lesson publication requires the category-aware lesson publisher.',
+      );
+    }
+    if (isPremium) {
+      throw StateError(
+        'Premium content cannot use the anonymous generic publication path.',
+      );
+    }
+    return ContentItemSerialization.toAppwrite(this);
+  }
 
   ContentItem copyWith({
     String? id,

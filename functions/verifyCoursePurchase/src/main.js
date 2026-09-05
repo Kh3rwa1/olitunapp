@@ -1,5 +1,6 @@
 import { createHmac, createHash, timingSafeEqual } from 'crypto';
 import { Client, Databases } from 'node-appwrite';
+import { withPaymentStateGuard } from './shared/payment_state.js';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -24,6 +25,8 @@ function text(value, max = 255) {
   return String(value || '').trim().slice(0, max);
 }
 
+// customDb is a low-level transport-test seam. Production constructs the guarded
+// SDK below; stateful handler tests must inject withPaymentStateGuard(fakeDb).
 export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchImpl = fetch } = {}) {
   return async ({ req, res, error }) => {
     if (req.method !== 'POST') {
@@ -69,7 +72,7 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
         .setEndpoint(endpoint)
         .setProject(projectId)
         .setKey(apiKey);
-      databases = new Databases(client);
+      databases = withPaymentStateGuard(new Databases(client));
     }
 
     const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
@@ -200,13 +203,15 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
           try {
             const existingClaim = await databases.getDocument(databaseId, 'payment_claims', claimId);
             if (existingClaim.paymentId === paymentId &&
+                existingClaim.purchaseId === purchaseId &&
                 existingClaim.userId === userId &&
                 existingClaim.categoryId === categoryId &&
-                existingClaim.providerOrderId === orderId) {
+                existingClaim.providerOrderId === orderId &&
+                existingClaim.status === 'claimed') {
               isRetry = true;
             } else {
-              error('Replay prevention: Payment ID already claimed by another purchase');
-              return res.json({ ok: false, message: 'This payment ID has already been claimed by another purchase' }, 409);
+              error('Replay prevention: Payment ID is not a resumable claim for this purchase');
+              return res.json({ ok: false, message: 'This payment claim cannot re-verify the purchase' }, 409);
             }
           } catch (fetchClaimErr) {
             error('Failed to fetch existing payment claim record');
@@ -218,7 +223,7 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
         }
       }
 
-      // 8. Update purchase ledger to verified
+      // 8. Update purchase ledger to verified (transactional in the runtime adapter)
       const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
       const documentPermissions = [
         `read("user:${userId}")`,
@@ -268,6 +273,9 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
       });
 
     } catch (err) {
+      if (err.code === 409 || err.code === 503) {
+        return res.json({ ok: false, message: 'Purchase state changed or verification is temporarily unavailable. Refresh and retry.' }, err.code);
+      }
       error('[verifyCoursePurchase] Internal server error occurred');
       return res.json({ ok: false, message: 'An internal server error occurred' }, 500);
     }

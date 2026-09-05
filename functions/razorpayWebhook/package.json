@@ -4,7 +4,5 @@
   "description": "Appwrite function handling Razorpay signed webhooks for asynchronous settlement, refunds, and dispute management",
   "main": "src/main.js",
   "type": "module",
-  "dependencies": {
-    "node-appwrite": "^14.0.0"
-  }
+  "dependencies": { "node-appwrite": "25.1.0" }
 }

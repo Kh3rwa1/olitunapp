@@ -1,5 +1,6 @@
 import { createHmac, createHash, timingSafeEqual } from 'crypto';
 import { Client, Databases, Query } from 'node-appwrite';
+import { withPaymentStateGuard } from './shared/payment_state.js';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -36,6 +37,8 @@ function parseRawAndJson(req) {
 // 60 seconds TTL: comfortably higher than maximum Appwrite Function execution timeout (15-30s max)
 const LOCK_TTL_MS = 60000;
 
+// customDb is a low-level transport-test seam. Production constructs the guarded
+// SDK below; stateful handler tests must inject withPaymentStateGuard(fakeDb, { event }).
 export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = fetch } = {}) {
   return async ({ req, res, error }) => {
     if (req.method !== 'POST') {
@@ -85,7 +88,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         .setEndpoint(endpoint)
         .setProject(projectId)
         .setKey(apiKey);
-      databases = new Databases(client);
+      databases = withPaymentStateGuard(new Databases(client), { event });
     }
 
     const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
@@ -388,7 +391,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             if (razorpaySecret && razorpayKeyId) {
               try {
                 const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
-                const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+                const paymentRes = await fetchImpl(`{{https://api.razorpay.com/v1/payments/${paymentId}}}`, {
                   headers: { 'Authorization': authHeader }
                 });
                 if (paymentRes.ok) {
@@ -524,7 +527,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
 
     } catch (err) {
       error(`razorpayWebhook processing error: ${err.message}`);
-      return res.json({ ok: false, message: 'Webhook processing failed.' }, 500);
+      return res.json({ ok: false, message: 'Webhook processing failed.' }, err.code === 409 || err.code === 503 ? 503 : 500);
     }
   };
 }

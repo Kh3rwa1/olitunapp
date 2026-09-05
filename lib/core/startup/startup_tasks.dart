@@ -78,10 +78,14 @@ class RequiredStartupTask<T> {
   Future<T>? _pending;
 
   Future<T> run({Duration timeout = const Duration(seconds: 15)}) {
-    final pending = _pending ??= Future<T>.sync(action).onError((error, stack) {
+    final pending = _pending ??= _start();
+    return pending.timeout(timeout);
+  }
+
+  Future<T> _start() {
+    return Future<T>.sync(action).onError<Object>((error, stack) {
       _pending = null;
       Error.throwWithStackTrace(error, stack);
     });
-    return pending.timeout(timeout);
   }
 }

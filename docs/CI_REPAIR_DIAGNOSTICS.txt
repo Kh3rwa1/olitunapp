@@ -1,22 +1,19 @@
-Source commit: b95248b8237db79044167c2ce11fda219bc2ad52
+Source commit: 6f18de032d4509f3afd2eaaf94ca4972929c2d58
 
 
 /tmp/gates.log
 
 CHECK: dart format --output=none --set-exit-if-changed .
-Formatted 995 files (0 changed) in 3.05 seconds.
+Formatted 995 files (0 changed) in 4.00 seconds.
 EXIT: 0
 
 CHECK: node scripts/check_file_length.mjs
 
 🔍 Checked 670 Dart files in lib/ against 600-line limit.
 
-❌ File Length Violations: The following files exceed 600 lines:
-  - lib/shared/repositories/content_repository.dart (601 lines, exceeds by 1)
+✅ File length gate passed successfully! All non-exempted files are under 600 lines.
 
-🚫 File length gate check failed.
-
-EXIT: 1
+EXIT: 0
 
 CHECK: node scripts/check_typography.mjs
 
@@ -75,37 +72,37 @@ TAP version 13
 # Subtest: Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
 ok 1 - Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
   ---
-  duration_ms: 1.142672
+  duration_ms: 1.719815
   type: 'test'
   ...
 # Subtest: Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
 ok 2 - Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
   ---
-  duration_ms: 0.133832
+  duration_ms: 0.171886
   type: 'test'
   ...
 # Subtest: Cert Normalization: Malformed non-hex or invalid length throws error
 ok 3 - Cert Normalization: Malformed non-hex or invalid length throws error
   ---
-  duration_ms: 0.344539
+  duration_ms: 0.466002
   type: 'test'
   ...
 # Subtest: Cert Verification: Matches valid apksigner standard output
 ok 4 - Cert Verification: Matches valid apksigner standard output
   ---
-  duration_ms: 0.399553
+  duration_ms: 0.478901
   type: 'test'
   ...
 # Subtest: Cert Verification: Fails on certificate digest mismatch
 ok 5 - Cert Verification: Fails on certificate digest mismatch
   ---
-  duration_ms: 0.647266
+  duration_ms: 0.904033
   type: 'test'
   ...
 # Subtest: Cert Verification: Fails on missing certificate or multiple signers
 ok 6 - Cert Verification: Fails on missing certificate or multiple signers
   ---
-  duration_ms: 0.150156
+  duration_ms: 0.199416
   type: 'test'
   ...
 1..6
@@ -116,22 +113,27 @@ ok 6 - Cert Verification: Fails on missing certificate or multiple signers
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 63.748229
+# duration_ms 63.9173
 EXIT: 0
 
 CHECK: flutter analyze --fatal-infos
 Analyzing olitunapp...                                          
-No issues found! (ran in 22.6s)
+No issues found! (ran in 29.3s)
 EXIT: 0
 
 
 /tmp/repaired-tests.log
 
 ::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/repositories/content_repository_offline_test.dart: ContentRepository.upsert offline behaviour caches locally and queues a durable mutation when offline
-Outbox: Enqueued mutation upsert_word_word_offline_edit_6a9bcd2757819a84b23e (type: content.upsert) for user content_admin
+Outbox: Enqueued mutation upsert_word_word_offline_edit_6a9bcdda408621ff4728 (type: content.upsert) for user content_admin
 ::endgroup::
 ::group::✅ Passing tests
 ✅ /home/runner/work/olitunapp/olitunapp/test/shared/repositories/content_repository_offline_test.dart: ContentRepository.upsert offline behaviour fails without an outbox and does not cache a phantom save
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_stale_cache_test.dart: verified purchase -> TTL expires -> device offline -> entitlement remains available with staleCached status
+❌ fetchPurchasedCategoryIds failed: Exception: SocketException: Client error (offline)
+::endgroup::
+::group::✅ Passing tests
 ✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: background refund refresh publishes a revision and removes the entitlement
 ::endgroup::
 ::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: permission denial revokes fresh cached access and notifies consumers
@@ -143,6 +145,14 @@ Outbox: Enqueued mutation upsert_word_word_offline_edit_6a9bcd2757819a84b23e (ty
 ✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 1: fetchEntitlements returns verified categories from Appwrite and caches with user key
 ✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 2: clearUserEntitlementCache purges user cache so next fetch hits server
 ✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 3: refunding one category leaves other verified categories intact
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite returns unauthenticated status when userId is empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite EntitlementResult helper properties evaluate correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite clearUserCache purges user-specific entitlement cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries PurchaseRepository provider initializes correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries User-scoped entitlement cache is isolated per userId
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Refunded or disputed status revokes entitlement from user cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Order ID and Payment ID strict verification contract
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Captured status requirement validation
 ::endgroup::
 
-🎉 8 tests passed.
+🎉 17 tests passed.

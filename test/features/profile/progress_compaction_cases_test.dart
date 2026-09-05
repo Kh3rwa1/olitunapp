@@ -217,6 +217,38 @@ void main() {
       final merged = mergeProgressStats(restored, stale, asOf: asOf);
       expect(merged.totalStars, 450);
     });
+
+    test('previous builds parse new payloads: list shape, exact totals', () {
+      final history = _withStarEvents({
+        for (var i = 0; i < 150; i++) 'star_${1700000000000000 + i}': 3,
+      }, 450);
+      final compacted = compact(history);
+      final payload =
+          jsonDecode(jsonEncode(UserStatsModel.fromEntity(compacted).toJson()))
+              as Map<String, dynamic>;
+
+      // The legacy key must stay a LIST: previous builds parse it verbatim
+      // with `Set.from(...)`, which throws on any other shape.
+      expect(payload['compactedStarEvents'], isA<List>());
+      final legacySet = Set<String>.from(payload['compactedStarEvents'] ?? []);
+      expect(
+        legacySet,
+        equals(Set<String>.of(compacted.foldedStarEvents.keys)),
+      );
+
+      // Previous-release total reconstruction (live sum plus the unattributed
+      // remainder) stays exact on new payloads: the ledger values cover the
+      // remainder unit-for-unit.
+      final live = Map<String, dynamic>.from(payload['starEvents'] as Map);
+      final liveSum = live.values.fold<int>(0, (s, v) => s + (v as int));
+      final total = payload['totalStars'] as int;
+      final remainder = total - liveSum;
+      expect(remainder, greaterThanOrEqualTo(0));
+      final ledger = Map<String, dynamic>.from(
+        payload['foldedStarEvents'] as Map,
+      );
+      expect(ledger.values.fold<int>(0, (s, v) => s + (v as int)), remainder);
+    });
   });
 
   group('Merge orderings, groupings, and generations', () {

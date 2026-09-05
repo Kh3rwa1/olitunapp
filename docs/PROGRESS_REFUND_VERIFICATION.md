@@ -1,9 +1,11 @@
 # Progress & Refund Verification Report
 
 Single verification record for the progress-compaction and refund-recovery
-work. No prior report is superseded: `docs/PRODUCT_QUALITY_PLAN.md` remains
-the product plan; this file records evidence only. Nothing here claims
-production readiness, device testing, educator approval, or staging results.
+work, including two review-driven follow-up gaps (A: mixed-version wire
+compat; B: combined refund interruption). No prior report is superseded:
+`docs/PRODUCT_QUALITY_PLAN.md` remains the product plan; this file records
+evidence only. Nothing here claims production readiness, device testing,
+educator approval, or staging results.
 
 ## 1. Working state
 
@@ -160,11 +162,52 @@ checklist:
   test); pathological reorder beyond thousands is untested.
 - Shared pre-migration history across devices stays ambiguous (see §5).
 
-## 11. Status summary
+## 11. Review-driven follow-up gaps (VERIFIED)
+
+### Gap A — mixed-version wire compatibility (was: incorrect graceful-degradation claim)
+- Demonstrated: the previous build parses `compactedStarEvents` verbatim
+  with `Set<String>.from(...)`, which throws `_TypeError` on the map shape
+  the new build wrote (confirmed at runtime against the actual expression).
+  A mixed fleet (one device upgraded, one not, sharing cloud prefs) would
+  have failed deserialization on the old device.
+- Fix: dual-write. `toJson` always emits BOTH the legacy list
+  (`compactedStarEvents`, keys only — the only shape old readers accept)
+  and the ledger map (`foldedStarEvents`, exact values). `fromJson`
+  prefers the map when present and otherwise migrates the list to
+  zero-valued exclusion markers. Old readers ignore unknown keys, so they
+  reconstruct exact totals (live sum plus unattributed remainder) and keep
+  stale-replay exclusion on new payloads.
+- Evidence: new test executes the verbatim old-reader expression against
+  new payloads (list shape assertion, exact key set, ledger-covers-
+  remainder assertion). Incorrect graceful-degradation comment replaced
+  with the dual-write contract.
+- Files: `user_stats_model.dart`, `progress_compaction_cases_test.dart`.
+
+### Gap B — combined refund interruption (was: early return skipping K1's audit)
+- Demonstrated: K1 commits a partial ledger while BOTH its claim-status
+  and audit writes fail; K2 then completes a full refund and displaces the
+  purchase pointer; retrying K1 returned `alreadyRefunded` with K1's audit
+  never written (1 audit row instead of 2).
+- Fix: a subsumed-resume rule. When this operation's claim is still open
+  and the purchase total already reflects at least its amount (max-floor
+  semantics make reapplying a value-no-op), recovery skips the ledger
+  rewrite — avoiding epoch churn and pointer displacement — and proceeds
+  directly to the operation's missing audit, which is bound to the
+  undisplaceable per-operation claim row. Reapply paths (total below the
+  requested amount) are unchanged.
+- Evidence: new test asserts the exact sequence — K1 audit recovered, K2
+  audit intact, purchase at 49900/epoch 2, pointer still K2, K1 claim
+  `audit_committed`. Full Node suite passes.
+- Files: `functions/admin-maintenance/src/main.js`,
+  `functions/test/admin_refund_operation_identity.test.js`.
+
+## 12. Status summary
 
 - Progress repro/fix/regression: VERIFIED (evidence §§2–4).
+- Mixed-version wire compat: VERIFIED (§11A).
 - Refund server/admin implementation + tests: VERIFIED locally
-  (evidence §6); live behavior: BLOCKED (§7).
+  (evidence §6).
+- Combined refund interruption recovery: VERIFIED (§11B).
 - Migration policy: IMPLEMENTED, NOT VERIFIED in production (§5).
 - Staging/device/educator/learner validation: BLOCKED or NOT STARTED
   (§§7–9).

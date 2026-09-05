@@ -1,59 +1,82 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { withPaymentStateGuard } from '../_shared/payment_state.js';
+import { MemoryDatabase, withTransactions } from './helpers/transaction_db.js';
 
-class TransactionalDb {
-  constructor(doc) { this.doc = { ...doc }; this.writes = []; }
-  async listDocuments() { return { documents: [{ ...this.doc }] }; }
-  async getDocument() { return { ...this.doc }; }
-  async createTransaction() { return { $id: 'tx_test' }; }
-  async updateTransaction() { return {}; }
-  async updateDocument(arg, col, id, data) {
-    const patch = typeof arg === 'object' ? arg.data : data;
-    this.doc = { ...this.doc, ...patch };
-    this.writes.push(patch);
-    return { ...this.doc };
-  }
-}
-
+const purchase = {
+  userId: 'user-1', categoryId: 'category-1', providerOrderId: 'order-1',
+  providerPaymentId: 'payment-1', status: 'verified', expectedAmount: 500,
+  currency: 'INR', refundedAmountPaise: 0,
+};
+const read = db => db.getDocument('olitun_db', 'course_purchases', 'purchase');
 async function apply(db, event, status) {
   const guarded = withPaymentStateGuard(db, { event });
-  const listed = await guarded.listDocuments('olitun_db', 'course_purchases', []);
-  await guarded.updateDocument(
-    'olitun_db',
-    'course_purchases',
-    listed.documents[0].$id,
-    { status },
-  );
+  await guarded.listDocuments('olitun_db', 'course_purchases', []);
+  return guarded.updateDocument('olitun_db', 'course_purchases', 'purchase', { status });
 }
 
-test('stale dispute.won cannot restore a later disputed entitlement', async () => {
-  const db = new TransactionalDb({
-    $id: 'purchase_1',
-    status: 'verified',
-    expectedAmount: 500,
-    refundedAmountPaise: 0,
-  });
-
-  await apply(db, 'payment.dispute.created', 'disputed');
-  assert.equal(db.doc.status, 'disputed');
-
-  await apply(db, 'payment.dispute.won', 'verified');
-  assert.equal(db.doc.status, 'disputed');
-  assert.equal(db.writes.length, 1, 'restorative webhook must be a no-op');
+test('late won notification cannot restore a disputed entitlement', async () => {
+  const db = new MemoryDatabase(purchase);
+  const transactional = withTransactions(db);
+  await apply(transactional, 'payment.dispute.created', 'disputed');
+  await apply(transactional, 'payment.dispute.won', 'verified');
+  assert.equal((await read(db)).status, 'disputed');
+  assert.equal(db.writes.length, 1);
+  assert.equal(transactional.transactions.size, 0);
 });
 
-test('dispute events cannot overwrite a terminal full refund', async () => {
-  const db = new TransactionalDb({
-    $id: 'purchase_refunded',
-    status: 'refunded',
-    refundStatus: 'fully_refunded',
-    expectedAmount: 500,
-    refundedAmountPaise: 50000,
-  });
+test('won before created cannot authorize a later disputed purchase', async () => {
+  const db = new MemoryDatabase(purchase);
+  const transactional = withTransactions(db);
+  await apply(transactional, 'payment.dispute.won', 'verified');
+  await apply(transactional, 'payment.dispute.created', 'disputed');
+  assert.equal((await read(db)).status, 'disputed');
+});
 
-  await apply(db, 'payment.dispute.created', 'disputed');
-  await apply(db, 'payment.dispute.won', 'verified');
-  assert.equal(db.doc.status, 'refunded');
-  assert.ok(db.writes.every((write) => write.status === 'refunded'));
+test('legitimate wins remain blocked pending authoritative reconciliation', async () => {
+  const db = new MemoryDatabase({ ...purchase, status: 'disputed' });
+  await apply(withTransactions(db), 'payment.dispute.won', 'verified');
+  assert.equal((await read(db)).status, 'disputed');
+  assert.equal(db.writes.length, 0);
+});
+
+test('disputes never overwrite terminal refunds or revocations', async () => {
+  for (const status of ['refunded', 'revoked']) {
+    const db = new MemoryDatabase({ ...purchase, status });
+    const transactional = withTransactions(db);
+    await apply(transactional, 'payment.dispute.created', 'disputed');
+    await apply(transactional, 'payment.dispute.won', 'verified');
+    assert.equal((await read(db)).status, status);
+  }
+});
+
+test('failed commit does not alter the entitlement', async () => {
+  const db = new MemoryDatabase(purchase);
+  db.failCommit = true;
+  const transactional = withTransactions(db);
+  await assert.rejects(apply(transactional, 'payment.dispute.created', 'disputed'));
+  assert.equal((await read(db)).status, 'verified');
+  assert.equal(db.writes.length, 0);
+  assert.equal(transactional.transactions.size, 0);
+});
+
+test('repurchase binding conflict aborts a delayed dispute', async () => {
+  const db = new MemoryDatabase(purchase);
+  const transactional = withTransactions(db);
+  const guard = withPaymentStateGuard(transactional, { event: 'payment.dispute.created' });
+  await guard.listDocuments('olitun_db', 'course_purchases', []);
+  await db.updateDocument('olitun_db', 'course_purchases', 'purchase', {
+    providerOrderId: 'order-2', providerPaymentId: 'payment-2',
+  });
+  await assert.rejects(guard.updateDocument('olitun_db', 'course_purchases', 'purchase', { status: 'disputed' }), { code: 409 });
+  assert.equal((await read(db)).status, 'verified');
+  assert.equal((await read(db)).providerPaymentId, 'payment-2');
+});
+
+test('deployed payment guard copies match their canonical source', () => {
+  const canonical = readFileSync(new URL('../_shared/payment_state.js', import.meta.url), 'utf8');
+  for (const name of ['razorpayWebhook', 'reconcilePaymentAttempts', 'verifyCoursePurchase']) {
+    assert.equal(readFileSync(new URL(`../${name}/src/shared/payment_state.js`, import.meta.url), 'utf8'), canonical);
+  }
 });

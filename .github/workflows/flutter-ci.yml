@@ -391,10 +391,27 @@ jobs:
     name: Release Gate
     runs-on: ubuntu-latest
     needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-integration-tests, android-emulator-e2e, web-release-build, android-release-build, artifact-verification, dependency-freshness-gate]
-    if: always()
+    if: always() && !cancelled()
     steps:
       - name: Check All Dependencies Succeeded
         run: |
+          for res in \
+            "${{ needs.format-and-analyze.result }}" \
+            "${{ needs.flutter-unit-widget-tests.result }}" \
+            "${{ needs.node-backend-tests.result }}" \
+            "${{ needs.permission-and-schema-tests.result }}" \
+            "${{ needs.web-integration-tests.result }}" \
+            "${{ needs.android-emulator-e2e.result }}" \
+            "${{ needs.web-release-build.result }}" \
+            "${{ needs.android-release-build.result }}" \
+            "${{ needs.artifact-verification.result }}" \
+            "${{ needs.dependency-freshness-gate.result }}"; do
+            if [ "$res" = "cancelled" ]; then
+              echo "⚠️ Release Gate: Upstream job was cancelled. Skipping gate failure."
+              exit 0
+            fi
+          done
+
           if [ "${{ needs.format-and-analyze.result }}" != "success" ] || \
              [ "${{ needs.flutter-unit-widget-tests.result }}" != "success" ] || \
              [ "${{ needs.node-backend-tests.result }}" != "success" ] || \

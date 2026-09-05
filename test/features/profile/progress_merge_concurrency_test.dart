@@ -275,8 +275,8 @@ void main() {
         expect(merged.totalStars, 220);
         // Event map must be bounded to at most 100 entries
         expect(merged.starEvents.length, lessThanOrEqualTo(100));
-        // Compacted events must be recorded
-        expect(merged.compactedStarEvents, isNotEmpty);
+        // Folded events must be recorded in the ledger
+        expect(merged.foldedStarEvents, isNotEmpty);
       },
     );
 
@@ -325,9 +325,9 @@ void main() {
 
         expect(compactedA.totalStars, 525);
         expect(
-          compactedA.compactedStarEvents.length,
+          compactedA.foldedStarEvents.length,
           5,
-        ); // 105 - 100 = 5 compacted
+        ); // 105 - 100 = 5 folded into the ledger
         expect(compactedA.starEvents.length, 100);
 
         // Device B was an offline device that had a stale snapshot containing the first 50 events
@@ -365,10 +365,10 @@ void main() {
         final mergedB = resultB.getOrElse((_) => fail('merge failed'));
 
         // Total unique events: 105 from A + 1 unique from B = 106 events * 5 = 530 stars!
-        // Compacted events (evt_000..evt_004) MUST NOT be double-counted!
+        // Folded events (evt_000..evt_004) MUST NOT be double-counted!
         expect(mergedB.totalStars, 530);
         expect(mergedB.starEvents.containsKey('evt_b_unique'), isTrue);
-        expect(mergedB.compactedStarEvents.contains('evt_000'), isTrue);
+        expect(mergedB.foldedStarEvents.containsKey('evt_000'), isTrue);
         expect(mergedB.starEvents.containsKey('evt_000'), isFalse);
       },
     );
@@ -415,9 +415,11 @@ void main() {
 
         expect(compactedA.totalStars, 601);
         expect(compactedA.starEvents.length, 100);
-        // Checkpoint must reflect sequence 500
-        expect(compactedA.starCheckpoints['devA'], 500);
-        expect(compactedA.baseStarsByOrigin['devA'], 501);
+        // devA_* IDs carry no counter-backed origin, so they fold as discrete
+        // events into the ledger (501 entries) instead of forming a sequence
+        // checkpoint. Totals and stale-replay protection are unchanged.
+        expect(compactedA.foldedStarEvents.length, 501);
+        expect(compactedA.starCheckpoints, isEmpty);
 
         // A stale snapshot containing early events (devA_0..devA_9), which are well beyond
         // the 500 tracking limit and would be evicted under simple set tombstoning.
@@ -516,14 +518,14 @@ void main() {
           () => auth.updateUserPrefs(any()),
         ).thenAnswer((_) async => const Right(null));
 
-        // Device A compacts offline: 1 event folded into base (baseStarsByOrigin['devA'] = 1)
+        // Device A compacts offline: 1 discrete event folded into the ledger
         final resultA = await repo.updateUserStats(deviceA);
         final compactedA = resultA.getOrElse((_) => fail('compact A failed'));
         expect(compactedA.totalStars, 101);
         expect(compactedA.starEvents.length, 100);
-        expect(compactedA.baseStarsByOrigin['devA'], 1);
+        expect(compactedA.foldedStarEvents, equals({'devA_0': 1}));
 
-        // Device B compacts offline: 1 event folded into base (baseStarsByOrigin['devB'] = 1)
+        // Device B compacts offline: 1 discrete event folded into the ledger
         when(
           () => auth.getUserPrefs(),
         ).thenAnswer((_) async => const Right(<String, dynamic>{}));
@@ -531,7 +533,7 @@ void main() {
         final compactedB = resultB.getOrElse((_) => fail('compact B failed'));
         expect(compactedB.totalStars, 101);
         expect(compactedB.starEvents.length, 100);
-        expect(compactedB.baseStarsByOrigin['devB'], 1);
+        expect(compactedB.foldedStarEvents, equals({'devB_0': 1}));
 
         // Now merge compacted Device A and compacted Device B through cloud sync
         when(() => auth.getUserPrefs()).thenAnswer(
@@ -548,10 +550,14 @@ void main() {
         // MUST be 202, NOT 201!
         expect(merged.totalStars, 202);
         expect(merged.starEvents.length, 100);
-        expect(merged.baseStarsByOrigin['devA'], 101);
-        expect(merged.baseStarsByOrigin['devB'], 1);
-        expect(merged.starCheckpoints['devA'], 100);
-        expect(merged.starCheckpoints['devB'], 0);
+        // Both independent folds survive in the ledger (devA_0 plus the 100
+        // refolded devA_1..devA_100) alongside devB_0; bases stay empty
+        // because no counter-backed sequence was folded.
+        expect(merged.foldedStarEvents.length, 102);
+        expect(merged.foldedStarEvents.containsKey('devA_0'), isTrue);
+        expect(merged.foldedStarEvents.containsKey('devB_0'), isTrue);
+        expect(merged.baseStarsByOrigin, isEmpty);
+        expect(merged.starCheckpoints, isEmpty);
       },
     );
 
@@ -661,7 +667,10 @@ void main() {
         final resultA = await repo.updateUserStats(deviceA);
         final compactedA = resultA.getOrElse((_) => fail('compact A failed'));
         expect(compactedA.totalStars, 102);
-        expect(compactedA.starCheckpoints['devA'], 1);
+        // devA_* IDs are discrete (no counter-backed origin): the two
+        // smallest fold into the ledger instead of forming a checkpoint.
+        expect(compactedA.foldedStarEvents.length, 2);
+        expect(compactedA.starCheckpoints, isEmpty);
 
         // A previously unseen event arrives from another device / discrete source
         final unseenDevice = const UserStatsEntity(
@@ -790,6 +799,57 @@ void main() {
     );
 
     test(
+      'Real UserStatsNotifier: concurrent addStars calls issue distinct sequences and merge exactly',
+      () async {
+        final mockAnalytics = _MockAnalyticsService();
+        when(
+          () => mockAnalytics.track(
+            any(),
+            source: any(named: 'source'),
+            sourceId: any(named: 'sourceId'),
+            learnerLevel: any(named: 'learnerLevel'),
+            scriptMode: any(named: 'scriptMode'),
+            metadata: any(named: 'metadata'),
+          ),
+        ).thenAnswer((_) async {});
+
+        SharedPreferences.setMockInitialValues({});
+        final prefsA = await SharedPreferences.getInstance();
+        final containerA = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefsA),
+            authRepositoryProvider.overrideWithValue(auth),
+            userStatsClockProvider.overrideWithValue(() => fixedClock),
+            learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
+          ],
+        );
+        addTearDown(containerA.dispose);
+
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(false));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        await containerA.read(userStatsProvider.notifier).loadStats();
+
+        // Two overlapping addStars calls on the same client must not share
+        // a sequence number or drop an earning.
+        await Future.wait([
+          containerA.read(userStatsProvider.notifier).addStars(3),
+          containerA.read(userStatsProvider.notifier).addStars(4),
+        ]);
+        final statsA = containerA.read(userStatsProvider).value!;
+        expect(statsA.totalStars, 7);
+        expect(statsA.starEvents.length, 2);
+        final keys = statsA.starEvents.keys.toList();
+        expect(keys.toSet().length, 2);
+        expect(keys.every((k) => k.startsWith('c_')), isTrue);
+      },
+    );
+
+    test(
       'Compaction merge is commutative and deterministic (CRDT property)',
       () async {
         final repo = ProfileRepositoryImpl(
@@ -876,10 +936,7 @@ void main() {
         expect(mergeYX.totalStars, 360);
         expect(mergeXY.totalStars, equals(mergeYX.totalStars));
         expect(mergeXY.starEvents, equals(mergeYX.starEvents));
-        expect(
-          mergeXY.compactedStarEvents,
-          equals(mergeYX.compactedStarEvents),
-        );
+        expect(mergeXY.foldedStarEvents, equals(mergeYX.foldedStarEvents));
       },
     );
 
@@ -917,7 +974,7 @@ void main() {
       );
 
       expect(compactedA.totalLearningMinutes, 220); // 110 * 2
-      expect(compactedA.compactedMinuteEvents.length, 10);
+      expect(compactedA.foldedMinuteEvents.length, 10);
       expect(compactedA.minuteEvents.length, 100);
 
       // Stale device B has first 20 events (which are compacted in A) plus min_b_new
@@ -953,7 +1010,7 @@ void main() {
       // 110 events from A + 1 from B = 111 * 2 = 222 minutes
       expect(mergedB.totalLearningMinutes, 222);
       expect(mergedB.minuteEvents.containsKey('min_b_new'), isTrue);
-      expect(mergedB.compactedMinuteEvents.contains('min_000'), isTrue);
+      expect(mergedB.foldedMinuteEvents.containsKey('min_000'), isTrue);
       expect(mergedB.minuteEvents.containsKey('min_000'), isFalse);
     });
   });

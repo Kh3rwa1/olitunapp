@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/minimum_tap_target.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
 import '../providers/mission_providers.dart';
@@ -224,43 +223,42 @@ class NextBestActionCard extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 20),
+          // One tappable for one action: a lone ElevatedButton carries the
+          // button semantics itself. Wrapping it in another tappable would
+          // announce two nested buttons for the same CTA to screen readers.
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: MinimumTapTarget(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(16),
-              child: ElevatedButton(
-                onPressed: onTap,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: color,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+            child: ElevatedButton(
+              onPressed: onTap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      ctaText,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
-                      ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    ctaText,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      fontSize: 15,
                     ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_rounded, size: 18)
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .slideX(
-                          begin: -0.35,
-                          end: 0,
-                          duration: 900.ms,
-                          curve: Curves.easeInOut,
-                        ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward_rounded, size: 18)
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .slideX(
+                        begin: -0.35,
+                        end: 0,
+                        duration: 900.ms,
+                        curve: Curves.easeInOut,
+                      ),
+                ],
               ),
             ),
           ),

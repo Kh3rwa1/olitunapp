@@ -18,12 +18,16 @@ class QuizEmptyView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              isNotFound ? Icons.error_outline_rounded : Icons.quiz_outlined,
-              size: 64,
-              color: isNotFound
-                  ? AppColors.error.withValues(alpha: 0.8)
-                  : AppColors.primary.withValues(alpha: 0.5),
+            // Decorative: the heading below already announces the state, so
+            // the icon must not produce a second, label-less announcement.
+            ExcludeSemantics(
+              child: Icon(
+                isNotFound ? Icons.error_outline_rounded : Icons.quiz_outlined,
+                size: 64,
+                color: isNotFound
+                    ? AppColors.error.withValues(alpha: 0.8)
+                    : AppColors.primary.withValues(alpha: 0.5),
+              ),
             ),
             const SizedBox(height: 24),
             Text(

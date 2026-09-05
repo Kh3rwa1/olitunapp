@@ -56,10 +56,14 @@ class QuizCompleteTrophy extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              isPassing ? Icons.emoji_events_rounded : Icons.refresh_rounded,
-              size: 64,
-              color: Colors.white,
+            // Decorative: the "Well done" / "Keep practicing" heading already
+            // announces the result, so the icon stays silent.
+            child: ExcludeSemantics(
+              child: Icon(
+                isPassing ? Icons.emoji_events_rounded : Icons.refresh_rounded,
+                size: 64,
+                color: Colors.white,
+              ),
             ),
           );
 

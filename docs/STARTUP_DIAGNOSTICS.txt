@@ -1,0 +1,41 @@
+Startup validation source: b4f06469f4d308301041202613d3a5f1ade3da2e
+Flutter 3.47.2 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision d3b14c8769 (9 days ago) • 2026-08-26 16:07:51 -0700
+Engine • hash 1cf1c4773fb941c4c74a7f8bb144a8837596c0f4 (revision a804b26164) (9 days ago) • 2026-08-26 18:46:13.000Z
+Tools • Dart 3.13.2 • DevTools 2.60.0
+00:00 +0: loading /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart
+00:00 +0: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +1: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +2: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +3: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +4: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +5: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +6: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +7: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +8: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+00:00 +9: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure shell invokes the supplied retry action
+00:00 +10: /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure content scrolls on a narrow large-text display
+00:08 +11: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: consent before SDK readiness cannot enable ads
+00:08 +12: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: SDK readiness without consent remains fail closed
+00:09 +13: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
+00:09 +14: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
+00:09 +15: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
+00:09 +16: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
+00:09 +17: /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
+AdState: isAdFreeUser set to true
+AdState: isAdFreeUser set to false
+00:09 +18: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
+ConsentManager: Reset failed: MissingPluginException(No implementation found for method ConsentInformation#reset on channel plugins.flutter.io/google_mobile_ads/ump)
+00:09 +19: /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
+00:09 +20: All tests passed!
+Analyzing olitunapp...                                          
+No issues found! (ran in 33.7s)
+
+🔍 Checked 666 Dart files in lib/ for color token compliance.
+📊 Found 173 total remaining literals across 67 grandfathered files.
+✅ Color token gate passed successfully! Zero unapproved raw color literals.
+
+
+Focused test exit: 0
+Analysis exit: 0
+Color gate exit: 0

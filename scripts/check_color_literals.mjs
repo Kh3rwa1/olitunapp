@@ -96,7 +96,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/quiz/presentation/widgets/quiz_out_of_hearts_screen.dart": 3,
   "lib/features/rhymes/presentation/widgets/binti_guru_form_sheet.dart": 1,
   "lib/features/rhymes/presentation/widgets/binti_guru_landing.dart": 4,
-  "lib/main.dart": 2
 };
 
 function getAllDartFiles(dir) {

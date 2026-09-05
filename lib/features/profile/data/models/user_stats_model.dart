@@ -18,6 +18,10 @@ class UserStatsModel extends UserStatsEntity {
     super.minuteEvents,
     super.compactedStarEvents,
     super.compactedMinuteEvents,
+    super.baseStarsByOrigin,
+    super.starCheckpoints,
+    super.baseMinutesByOrigin,
+    super.minuteCheckpoints,
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
@@ -70,26 +74,60 @@ class UserStatsModel extends UserStatsEntity {
       });
     }
 
+    final rawStarEvents = readIntMap(json['starEvents']);
+    final rawMinuteEvents = readIntMap(json['minuteEvents']);
+    final totalStarsVal = readInt('totalStars');
+    final totalMinutesVal = readInt('totalLearningMinutes');
+
+    var baseStarsMap = readIntMap(json['baseStarsByOrigin']);
+    if (baseStarsMap.isEmpty) {
+      final activeSum = rawStarEvents.values.fold<int>(0, (s, v) => s + v);
+      final legacyBase = totalStarsVal >= activeSum
+          ? totalStarsVal - activeSum
+          : totalStarsVal;
+      if (legacyBase > 0) {
+        baseStarsMap = {'__legacy__': legacyBase};
+      }
+    }
+
+    var baseMinutesMap = readIntMap(json['baseMinutesByOrigin']);
+    if (baseMinutesMap.isEmpty) {
+      final activeSum = rawMinuteEvents.values.fold<int>(0, (s, v) => s + v);
+      final legacyBase = totalMinutesVal >= activeSum
+          ? totalMinutesVal - activeSum
+          : totalMinutesVal;
+      if (legacyBase > 0) {
+        baseMinutesMap = {'__legacy__': legacyBase};
+      }
+    }
+
+    final starCheckpointsMap = readIntMap(json['starCheckpoints']);
+    final minuteCheckpointsMap = readIntMap(json['minuteCheckpoints']);
+
     return UserStatsModel(
       practicedLetters: Set<String>.from(json['practicedLetters'] ?? []),
       completedLessons: Set<String>.from(json['completedLessons'] ?? []),
       quizHistory: readQuizHistory(json['quizHistory']),
       categoryMastery: readMastery(json['categoryMastery']),
-      totalLearningMinutes: readInt('totalLearningMinutes'),
+      totalLearningMinutes: totalMinutesVal,
       lastActiveDate: json['lastActiveDate'] ?? '',
       currentStreak: readInt('currentStreak'),
-      totalStars: readInt('totalStars'),
+      totalStars: totalStarsVal,
       completedMissionsDates: Set<String>.from(
         json['completedMissionsDates'] ?? [],
       ),
       practiceDates: Set<String>.from(json['practiceDates'] ?? []),
       syncEpoch: readInt('syncEpoch'),
-      starEvents: readIntMap(json['starEvents']),
-      minuteEvents: readIntMap(json['minuteEvents']),
+      starEvents: rawStarEvents,
+      minuteEvents: rawMinuteEvents,
       compactedStarEvents: Set<String>.from(json['compactedStarEvents'] ?? []),
       compactedMinuteEvents: Set<String>.from(
         json['compactedMinuteEvents'] ?? [],
       ),
+      baseStarsByOrigin: baseStarsMap,
+      starCheckpoints: starCheckpointsMap,
+      baseMinutesByOrigin: baseMinutesMap,
+      minuteCheckpoints: minuteCheckpointsMap,
     );
   }
 
@@ -112,6 +150,10 @@ class UserStatsModel extends UserStatsEntity {
       'minuteEvents': minuteEvents,
       'compactedStarEvents': compactedStarEvents.toList(),
       'compactedMinuteEvents': compactedMinuteEvents.toList(),
+      'baseStarsByOrigin': baseStarsByOrigin,
+      'starCheckpoints': starCheckpoints,
+      'baseMinutesByOrigin': baseMinutesByOrigin,
+      'minuteCheckpoints': minuteCheckpoints,
     };
   }
 
@@ -132,6 +174,10 @@ class UserStatsModel extends UserStatsEntity {
       minuteEvents: entity.minuteEvents,
       compactedStarEvents: entity.compactedStarEvents,
       compactedMinuteEvents: entity.compactedMinuteEvents,
+      baseStarsByOrigin: entity.baseStarsByOrigin,
+      starCheckpoints: entity.starCheckpoints,
+      baseMinutesByOrigin: entity.baseMinutesByOrigin,
+      minuteCheckpoints: entity.minuteCheckpoints,
     );
   }
 }

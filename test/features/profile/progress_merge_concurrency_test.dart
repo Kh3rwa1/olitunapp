@@ -367,6 +367,188 @@ void main() {
     );
 
     test(
+      'Vector Checkpoint CRDT: 601 real events -> stale replay of old event remains 601 across repeated replays',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // 601 real events on Device A (each 1 star)
+        var deviceA = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 601; i++) {
+          deviceA = deviceA.recordStarReward(1, eventId: 'devA_$i');
+        }
+
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        // Sync and compact on cloud: 501 events folded into base, 100 active
+        final resultA = await repo.updateUserStats(deviceA);
+        final compactedA = resultA.getOrElse(
+          (_) => fail('updateUserStats failed'),
+        );
+
+        expect(compactedA.totalStars, 601);
+        expect(compactedA.starEvents.length, 100);
+        // Checkpoint must reflect sequence 500
+        expect(compactedA.starCheckpoints['devA'], 500);
+        expect(compactedA.baseStarsByOrigin['devA'], 501);
+
+        // A stale snapshot containing early events (devA_0..devA_9), which are well beyond
+        // the 500 tracking limit and would be evicted under simple set tombstoning.
+        var staleDevice = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 10; i++) {
+          staleDevice = staleDevice.recordStarReward(1, eventId: 'devA_$i');
+        }
+
+        // Mock cloud returning Device A's compacted stats
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(compactedA).toJson(),
+            ),
+          }),
+        );
+
+        // First stale replay: must remain 601 (NOT 602)
+        final replayResult1 = await repo.updateUserStats(staleDevice);
+        final replayed1 = replayResult1.getOrElse(
+          (_) => fail('replay 1 failed'),
+        );
+        expect(replayed1.totalStars, 601);
+
+        // Repeated stale replay: must still remain 601 (NOT 603)
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(replayed1).toJson(),
+            ),
+          }),
+        );
+        final replayResult2 = await repo.updateUserStats(staleDevice);
+        final replayed2 = replayResult2.getOrElse(
+          (_) => fail('replay 2 failed'),
+        );
+        expect(replayed2.totalStars, 601);
+      },
+    );
+
+    test(
+      'Vector Checkpoint CRDT: Two independently compacted devices (101 events on A + 101 on B) merge to exactly 202',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // Device A has 101 real events (1 star each, origin devA)
+        var deviceA = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 101; i++) {
+          deviceA = deviceA.recordStarReward(1, eventId: 'devA_$i');
+        }
+
+        // Device B has 101 different real events (1 star each, origin devB)
+        var deviceB = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 101; i++) {
+          deviceB = deviceB.recordStarReward(1, eventId: 'devB_$i');
+        }
+
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        // Device A compacts offline: 1 event folded into base (baseStarsByOrigin['devA'] = 1)
+        final resultA = await repo.updateUserStats(deviceA);
+        final compactedA = resultA.getOrElse((_) => fail('compact A failed'));
+        expect(compactedA.totalStars, 101);
+        expect(compactedA.starEvents.length, 100);
+        expect(compactedA.baseStarsByOrigin['devA'], 1);
+
+        // Device B compacts offline: 1 event folded into base (baseStarsByOrigin['devB'] = 1)
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        final resultB = await repo.updateUserStats(deviceB);
+        final compactedB = resultB.getOrElse((_) => fail('compact B failed'));
+        expect(compactedB.totalStars, 101);
+        expect(compactedB.starEvents.length, 100);
+        expect(compactedB.baseStarsByOrigin['devB'], 1);
+
+        // Now merge compacted Device A and compacted Device B through cloud sync
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(compactedA).toJson(),
+            ),
+          }),
+        );
+
+        final mergeResult = await repo.updateUserStats(compactedB);
+        final merged = mergeResult.getOrElse((_) => fail('merge failed'));
+
+        // MUST be 202, NOT 201!
+        expect(merged.totalStars, 202);
+        expect(merged.starEvents.length, 100);
+        expect(merged.baseStarsByOrigin['devA'], 101);
+        expect(merged.baseStarsByOrigin['devB'], 1);
+        expect(merged.starCheckpoints['devA'], 100);
+        expect(merged.starCheckpoints['devB'], 0);
+      },
+    );
+
+    test(
       'Compaction merge is commutative and deterministic (CRDT property)',
       () async {
         final repo = ProfileRepositoryImpl(

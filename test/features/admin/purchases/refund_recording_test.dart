@@ -312,6 +312,25 @@ void main() {
       expect(fake.recordCalls, 0);
       expect(find.textContaining('valid amount'), findsOneWidget);
     });
+
+    testWidgets('dialog completes on a 320px small screen without overflow', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      late FakeAdminPurchases fake;
+      fake = FakeAdminPurchases();
+      await pumpDialog(tester, () => fake);
+
+      await tester.tap(find.text('Record Refund'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Refund recorded and access revoked.'), findsOneWidget);
+    });
   });
 }
 

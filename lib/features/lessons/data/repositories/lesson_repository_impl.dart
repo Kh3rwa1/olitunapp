@@ -15,6 +15,11 @@ class LessonRepositoryImpl implements LessonRepository {
   final LessonRemoteDataSource remoteDataSource;
   final LessonLocalDataSource localDataSource;
   final NetworkInfo networkInfo;
+  final Future<String?> Function()? currentUserIdProvider;
+  final DateTime Function() _clock;
+
+  /// Default offline grace period for authorized lessons: 24 hours.
+  static const offlineGracePeriod = Duration(hours: 24);
 
   /// In-flight request deduplication map to prevent redundant concurrent fetches.
   final Map<String, Future<List<LessonModel>>> _inFlightRefreshes = {};
@@ -23,7 +28,9 @@ class LessonRepositoryImpl implements LessonRepository {
     required this.remoteDataSource,
     required this.localDataSource,
     required this.networkInfo,
-  });
+    this.currentUserIdProvider,
+    DateTime Function()? clock,
+  }) : _clock = clock ?? DateTime.now;
 
   ServerFailure _recordedServerFailure(ServerException e, [StackTrace? st]) {
     final f = ServerFailure(message: e.message, code: e.code);
@@ -294,30 +301,45 @@ class LessonRepositoryImpl implements LessonRepository {
 
   @override
   Future<Either<Failure, LessonEntity>> getLessonById(String id) async {
-    // Check local cache first
-    try {
-      final cached = await localDataSource.getLessons();
-      final lesson = cached.firstWhere((l) => l.id == id);
-      if (!lesson.isLocked && lesson.blocks.isNotEmpty) {
-        return Right(lesson.toEntity());
-      }
-    } catch (_) {
-      // Cache miss; proceed to authorized remote retrieval
-    }
+    final rawUserId = (await currentUserIdProvider?.call())?.trim();
+    final effectiveUserId = (rawUserId != null && rawUserId.isNotEmpty)
+        ? rawUserId
+        : 'guest';
 
     // Try remote if online
     if (await networkInfo.isConnected) {
       try {
         final result = await remoteDataSource.getAuthorizedLesson(id);
         if (result.isLocked) {
-          // Do not cache locked lesson content as playable
+          // Explicitly locked on server (e.g. not purchased or revoked)
+          // Invalidate user cache & record explicit denial
+          try {
+            await localDataSource.invalidateAuthorizedLesson(
+              userId: effectiveUserId,
+              lessonId: id,
+            );
+          } catch (cacheErr, cacheSt) {
+            AppLogger.warning(
+              'LessonRepositoryImpl: Failed to invalidate locked lesson cache: $cacheErr',
+            );
+            CrashReporting.recordFailure(
+              CacheFailure(message: 'Failed to invalidate cache: $cacheErr'),
+              cacheSt,
+            );
+          }
           return Right(result.toEntity());
         }
+
+        // Unlocked and authorized -> cache with 24-hour offline grace period
         try {
-          await localDataSource.cacheLessons([result]);
+          await localDataSource.cacheAuthorizedLesson(
+            userId: effectiveUserId,
+            lesson: result,
+            gracePeriod: offlineGracePeriod,
+          );
         } catch (cacheErr, cacheSt) {
           AppLogger.warning(
-            'LessonRepositoryImpl: Failed to cache lesson by id: $cacheErr',
+            'LessonRepositoryImpl: Failed to cache authorized lesson: $cacheErr',
           );
           CrashReporting.recordFailure(
             CacheFailure(message: 'Failed to cache lesson: $cacheErr'),
@@ -328,21 +350,95 @@ class LessonRepositoryImpl implements LessonRepository {
       } catch (e, st) {
         if (e is ServerException) {
           if (e.code == 403) {
+            // Explicitly forbidden by server -> invalidate and mark denial
+            try {
+              await localDataSource.invalidateAuthorizedLesson(
+                userId: effectiveUserId,
+                lessonId: id,
+              );
+            } catch (_) {}
             return const Left(
               AuthFailure(message: 'Access denied to protected lesson.'),
             );
           }
+          if (e.code == 404) {
+            return Left(ServerFailure(message: e.message, code: 404));
+          }
           _recordedServerFailure(e, st);
         }
+
+        // Online transient error (500, 503, network glitch mid-request):
+        // Allow fallback to valid offline grace cache if available for this user
+        try {
+          final cachedEntry = await localDataSource.getAuthorizedLesson(
+            userId: effectiveUserId,
+            lessonId: id,
+          );
+          if (cachedEntry != null &&
+              cachedEntry.userId == effectiveUserId &&
+              !cachedEntry.isExplicitlyDenied &&
+              !cachedEntry.isExpiredBy(_clock()) &&
+              !cachedEntry.lesson.isLocked) {
+            return Right(cachedEntry.lesson.toEntity());
+          }
+        } catch (_) {}
+
+        // Fallback to static seed lessons if applicable
+        try {
+          final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
+          return Right(seed);
+        } catch (_) {}
+
+        if (e is ServerException) {
+          return Left(ServerFailure(message: e.message, code: e.code));
+        }
+        return Left(ServerFailure(message: e.toString()));
       }
     }
 
-    // Seed fallback
+    // Offline mode: Check user-scoped authorized cache
+    try {
+      final cachedEntry = await localDataSource.getAuthorizedLesson(
+        userId: effectiveUserId,
+        lessonId: id,
+      );
+      if (cachedEntry != null) {
+        // Enforce user isolation: User A's cache cannot be read by User B
+        if (cachedEntry.userId != effectiveUserId) {
+          return const Left(
+            AuthFailure(
+              message: 'Access denied: lesson cache belongs to another user.',
+            ),
+          );
+        }
+        if (cachedEntry.isExplicitlyDenied) {
+          return const Left(
+            AuthFailure(message: 'Access denied to protected lesson.'),
+          );
+        }
+        if (cachedEntry.lesson.isLocked) {
+          return Right(cachedEntry.lesson.toEntity());
+        }
+        if (cachedEntry.isExpiredBy(_clock())) {
+          return const Left(
+            AuthFailure(
+              message:
+                  'Offline grace period expired. Connect to internet to verify lesson access.',
+            ),
+          );
+        }
+        return Right(cachedEntry.lesson.toEntity());
+      }
+    } catch (_) {
+      // Cache unreadable or missing
+    }
+
+    // Offline seed fallback (free intro lessons only)
     try {
       final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
       return Right(seed);
     } catch (_) {
-      // Not in the seed either — surface the miss as a cache failure.
+      // Not in cache and not a seed lesson
       return const Left(CacheFailure(message: 'Lesson not found in cache'));
     }
   }

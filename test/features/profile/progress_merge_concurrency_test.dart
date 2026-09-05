@@ -268,8 +268,271 @@ void main() {
         expect(merged.totalStars, 220);
         // Event map must be bounded to at most 100 entries
         expect(merged.starEvents.length, lessThanOrEqualTo(100));
+        // Compacted events must be recorded
+        expect(merged.compactedStarEvents, isNotEmpty);
       },
     );
+
+    test(
+      'Stale replay with 105 events does not re-credit compacted events',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // Device A records 105 events (each 5 stars = 525 stars)
+        var deviceA = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 105; i++) {
+          deviceA = deviceA.recordStarReward(
+            5,
+            eventId: 'evt_${i.toString().padLeft(3, '0')}',
+          );
+        }
+
+        // Simulate cloud having merged and compacted Device A's progress
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        final resultA = await repo.updateUserStats(deviceA);
+        final compactedA = resultA.getOrElse(
+          (_) => fail('updateUserStats failed'),
+        );
+
+        expect(compactedA.totalStars, 525);
+        expect(
+          compactedA.compactedStarEvents.length,
+          5,
+        ); // 105 - 100 = 5 compacted
+        expect(compactedA.starEvents.length, 100);
+
+        // Device B was an offline device that had a stale snapshot containing the first 50 events
+        // (including the 5 that A compacted: evt_000..evt_004) PLUS a brand-new event evt_b_unique (+5)
+        var deviceB = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 50; i++) {
+          deviceB = deviceB.recordStarReward(
+            5,
+            eventId: 'evt_${i.toString().padLeft(3, '0')}',
+          );
+        }
+        deviceB = deviceB.recordStarReward(5, eventId: 'evt_b_unique');
+        expect(deviceB.totalStars, 255);
+
+        // Mock cloud returning Device A's compacted stats to Device B
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(compactedA).toJson(),
+            ),
+          }),
+        );
+
+        // Device B syncs and merges with cloud
+        final resultB = await repo.updateUserStats(deviceB);
+        final mergedB = resultB.getOrElse((_) => fail('merge failed'));
+
+        // Total unique events: 105 from A + 1 unique from B = 106 events * 5 = 530 stars!
+        // Compacted events (evt_000..evt_004) MUST NOT be double-counted!
+        expect(mergedB.totalStars, 530);
+        expect(mergedB.starEvents.containsKey('evt_b_unique'), isTrue);
+        expect(mergedB.compactedStarEvents.contains('evt_000'), isTrue);
+        expect(mergedB.starEvents.containsKey('evt_000'), isFalse);
+      },
+    );
+
+    test(
+      'Compaction merge is commutative and deterministic (CRDT property)',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // Create state X with 60 events
+        var stateX = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 60; i++) {
+          stateX = stateX.recordStarReward(
+            3,
+            eventId: 'x_${i.toString().padLeft(3, '0')}',
+          );
+        }
+
+        // Create state Y with 60 events (some overlapping, some distinct)
+        var stateY = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 30; i < 90; i++) {
+          stateY = stateY.recordStarReward(
+            3,
+            eventId: 'x_${i.toString().padLeft(3, '0')}',
+          );
+        }
+        for (int i = 0; i < 30; i++) {
+          stateY = stateY.recordStarReward(
+            3,
+            eventId: 'y_${i.toString().padLeft(3, '0')}',
+          );
+        }
+
+        // Merge X then Y
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(stateX).toJson(),
+            ),
+          }),
+        );
+        final mergeXY = (await repo.updateUserStats(
+          stateY,
+        )).getOrElse((_) => fail('XY failed'));
+
+        // Merge Y then X
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(stateY).toJson(),
+            ),
+          }),
+        );
+        final mergeYX = (await repo.updateUserStats(
+          stateX,
+        )).getOrElse((_) => fail('YX failed'));
+
+        // Total unique events: 90 ('x_000'..'x_089') + 30 ('y_000'..'y_029') = 120 events * 3 = 360 stars
+        expect(mergeXY.totalStars, 360);
+        expect(mergeYX.totalStars, 360);
+        expect(mergeXY.totalStars, equals(mergeYX.totalStars));
+        expect(mergeXY.starEvents, equals(mergeYX.starEvents));
+        expect(
+          mergeXY.compactedStarEvents,
+          equals(mergeYX.compactedStarEvents),
+        );
+      },
+    );
+
+    test('Learning minutes compaction and stale replay deduplication', () async {
+      final repo = ProfileRepositoryImpl(auth, prefs, clock: () => fixedClock);
+
+      var deviceA = const UserStatsEntity(
+        practicedLetters: {},
+        completedLessons: {},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 0,
+        lastActiveDate: '2026-09-05',
+        currentStreak: 1,
+        totalStars: 0,
+      );
+      for (int i = 0; i < 110; i++) {
+        deviceA = deviceA.recordLearningMinutes(
+          2,
+          eventId: 'min_${i.toString().padLeft(3, '0')}',
+        );
+      }
+
+      when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
+      when(
+        () => auth.getUserPrefs(),
+      ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+      when(
+        () => auth.updateUserPrefs(any()),
+      ).thenAnswer((_) async => const Right(null));
+
+      final resultA = await repo.updateUserStats(deviceA);
+      final compactedA = resultA.getOrElse(
+        (_) => fail('updateUserStats failed'),
+      );
+
+      expect(compactedA.totalLearningMinutes, 220); // 110 * 2
+      expect(compactedA.compactedMinuteEvents.length, 10);
+      expect(compactedA.minuteEvents.length, 100);
+
+      // Stale device B has first 20 events (which are compacted in A) plus min_b_new
+      var deviceB = const UserStatsEntity(
+        practicedLetters: {},
+        completedLessons: {},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 0,
+        lastActiveDate: '2026-09-05',
+        currentStreak: 1,
+        totalStars: 0,
+      );
+      for (int i = 0; i < 20; i++) {
+        deviceB = deviceB.recordLearningMinutes(
+          2,
+          eventId: 'min_${i.toString().padLeft(3, '0')}',
+        );
+      }
+      deviceB = deviceB.recordLearningMinutes(2, eventId: 'min_b_new');
+
+      when(() => auth.getUserPrefs()).thenAnswer(
+        (_) async => Right(<String, dynamic>{
+          'user_progress_data': jsonEncode(
+            UserStatsModel.fromEntity(compactedA).toJson(),
+          ),
+        }),
+      );
+
+      final resultB = await repo.updateUserStats(deviceB);
+      final mergedB = resultB.getOrElse((_) => fail('merge failed'));
+
+      // 110 events from A + 1 from B = 111 * 2 = 222 minutes
+      expect(mergedB.totalLearningMinutes, 222);
+      expect(mergedB.minuteEvents.containsKey('min_b_new'), isTrue);
+      expect(mergedB.compactedMinuteEvents.contains('min_000'), isTrue);
+      expect(mergedB.minuteEvents.containsKey('min_000'), isFalse);
+    });
   });
 
   group('Dynamic Streak Derivation', () {

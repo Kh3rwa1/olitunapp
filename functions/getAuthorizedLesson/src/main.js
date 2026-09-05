@@ -34,46 +34,86 @@ function parseJsonField(field, defaultValue) {
   return defaultValue;
 }
 
-export function evaluateLessonAccess({ category, lesson, callerUserId, purchases = [] }) {
-  if (!category) {
-    return { granted: false, reason: 'category_unresolved' };
-  }
+export function extractAuthorizedLessonMedia(lessonDoc, defaultBucketId = 'paid_media') {
+  const authorized = new Map(); // fileId -> Set<bucketId>
 
-  const mode = typeof category.unlockMode === 'string'
-    ? category.unlockMode.trim().toLowerCase()
-    : '';
-
-  if (mode === 'free') {
-    return { granted: true, reason: 'free_category' };
-  }
-
-  // Explicit deterministic preview takes precedence over order number heuristics
-  if (lesson.isPreview === true) {
-    return { granted: true, reason: 'explicit_preview' };
-  }
-
-  // Legacy order-window preview check for backward compatibility
-  const order = Number(lesson.order);
-  const previews = Number(category.previewLessonCount || 0);
-  if (Number.isInteger(order) && order > 0 && previews > 0 && order <= previews) {
-    if (PAID_UNLOCK_MODES.has(mode)) {
-      return { granted: true, reason: 'legacy_order_window_preview' };
+  function addRef(fileId, bucketId) {
+    const f = text(fileId, 64);
+    const b = text(bucketId || defaultBucketId, 64);
+    if (!f || !b) return;
+    if (!authorized.has(f)) {
+      authorized.set(f, new Set());
     }
-    return { granted: false, reason: `unknown_unlock_mode_${mode}` };
+    authorized.get(f).add(b);
   }
 
-  // If unlockMode is not recognized, fail closed
-  if (!PAID_UNLOCK_MODES.has(mode)) {
-    return { granted: false, reason: mode ? `unknown_unlock_mode_${mode}` : 'unlock_mode_missing' };
+  function parseStringRef(str) {
+    if (typeof str !== 'string' || !str.trim()) return;
+    const trimmed = str.trim();
+
+    // 1. Appwrite REST URL pattern: /storage/buckets/{bucketId}/files/{fileId}
+    const urlMatch = trimmed.match(/(?:^|\/)storage\/buckets\/([a-zA-Z0-9._-]+)\/files\/([a-zA-Z0-9._-]+)/);
+    if (urlMatch) {
+      addRef(urlMatch[2], urlMatch[1]);
+      return;
+    }
+
+    // 2. URI patterns: appwrite-storage://{bucketId}/{fileId} or appwrite-file:{bucketId}:{fileId}
+    const uriMatch = trimmed.match(/^(?:appwrite-storage:\/\/|appwrite-file:)([a-zA-Z0-9._-]+)[/:]([a-zA-Z0-9._-]+)$/);
+    if (uriMatch) {
+      addRef(uriMatch[2], uriMatch[1]);
+      return;
+    }
   }
 
-  // Requires purchase: check authenticated caller identity
+  function scanValue(val, depth = 0) {
+    if (!val || depth > 8) return;
+    if (typeof val === 'string') {
+      parseStringRef(val);
+      const trimmed = val.trim();
+      if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+        try {
+          const parsed = JSON.parse(trimmed);
+          scanValue(parsed, depth + 1);
+        } catch (_) {}
+      }
+      return;
+    }
+    if (Array.isArray(val)) {
+      for (const item of val) scanValue(item, depth + 1);
+      return;
+    }
+    if (typeof val === 'object') {
+      if (val.fileId || val.mediaFileId) {
+        addRef(val.fileId || val.mediaFileId, val.bucketId);
+      }
+      for (const key of Object.keys(val)) {
+        scanValue(val[key], depth + 1);
+      }
+    }
+  }
+
+  scanValue(lessonDoc.thumbnailUrl);
+  scanValue(lessonDoc.heroMediaUrl);
+  scanValue(lessonDoc.heroPosterUrl);
+  scanValue(lessonDoc.audioUrl);
+  scanValue(lessonDoc.hero_media);
+  scanValue(lessonDoc.mediaFileId);
+  scanValue(lessonDoc.mediaFileIds);
+  scanValue(lessonDoc.mediaFiles);
+  scanValue(lessonDoc.data);
+  scanValue(lessonDoc.blocks);
+
+  return authorized;
+}
+
+function _checkPurchaseEntitlement({ callerUserId, purchases = [], categoryId }) {
   if (!callerUserId || typeof callerUserId !== 'string' || callerUserId.trim().length === 0) {
     return { granted: false, reason: 'unauthenticated' };
   }
 
-  // Check verified entitlement in course_purchases ledger
   const validPurchase = purchases.find((doc) => {
+    if (categoryId && doc.categoryId && doc.categoryId !== categoryId) return false;
     if (doc.status !== 'verified') return false;
     if (doc.status === 'revoked' || doc.status === 'disputed' || doc.status === 'refunded') return false;
     if (doc.refundStatus === 'fully_refunded') return false;
@@ -87,6 +127,49 @@ export function evaluateLessonAccess({ category, lesson, callerUserId, purchases
   }
 
   return { granted: false, reason: 'purchase_required' };
+}
+
+export function evaluateLessonAccess({ category, lesson, callerUserId, purchases = [] }) {
+  if (!category) {
+    return { granted: false, reason: 'category_unresolved' };
+  }
+
+  const mode = typeof category.unlockMode === 'string'
+    ? category.unlockMode.trim().toLowerCase()
+    : '';
+
+  if (!mode) {
+    return { granted: false, reason: 'unlock_mode_missing' };
+  }
+
+  const categoryId = category.$id || lesson.categoryId;
+
+  // Item explicitly marked isPremium requires verified entitlement regardless of category or preview
+  if (lesson.isPremium === true) {
+    return _checkPurchaseEntitlement({ callerUserId, purchases, categoryId });
+  }
+
+  if (mode === 'free') {
+    return { granted: true, reason: 'free_category' };
+  }
+
+  if (!PAID_UNLOCK_MODES.has(mode)) {
+    return { granted: false, reason: `unknown_unlock_mode_${mode}` };
+  }
+
+  // Explicit deterministic preview takes precedence over order number heuristics
+  if (lesson.isPreview === true) {
+    return { granted: true, reason: 'explicit_preview' };
+  }
+
+  // Legacy order-window preview check for backward compatibility
+  const order = Number(lesson.order);
+  const previews = Number(category.previewLessonCount || 0);
+  if (Number.isInteger(order) && order > 0 && previews > 0 && order <= previews) {
+    return { granted: true, reason: 'legacy_order_window_preview' };
+  }
+
+  return _checkPurchaseEntitlement({ callerUserId, purchases, categoryId });
 }
 
 export function createGetAuthorizedLessonHandler({
@@ -199,17 +282,46 @@ export function createGetAuthorizedLessonHandler({
         return res.json({ ok: false, message: 'Missing or invalid fileId' }, 400);
       }
 
+      const requestedBucketId = text(body.bucketId, 64) || paidMediaBucketId;
+      const authorizedMedia = extractAuthorizedLessonMedia(lessonDoc, paidMediaBucketId);
+
+      if (!authorizedMedia.has(fileId)) {
+        return res.json({
+          ok: false,
+          error: 'media_not_associated',
+          message: 'Requested file is not associated with this lesson',
+        }, 403);
+      }
+
+      const permittedBuckets = authorizedMedia.get(fileId);
+      if (!permittedBuckets.has(requestedBucketId)) {
+        return res.json({
+          ok: false,
+          error: 'bucket_mismatch',
+          message: 'File is not associated with the requested bucket',
+        }, 403);
+      }
+
+      if (requestedBucketId !== paidMediaBucketId) {
+        return res.json({
+          ok: false,
+          error: 'bucket_not_permitted',
+          message: 'Requested bucket is not a private media bucket',
+        }, 403);
+      }
+
       try {
         if (!storage) {
           return res.json({ ok: false, message: 'Storage not configured' }, 500);
         }
-        const fileBuffer = await storage.getFileDownload(paidMediaBucketId, fileId);
+        const fileBuffer = await storage.getFileDownload(requestedBucketId, fileId);
         const base64Data = Buffer.isBuffer(fileBuffer)
           ? fileBuffer.toString('base64')
           : Buffer.from(fileBuffer).toString('base64');
         return res.json({
           ok: true,
           fileId,
+          bucketId: requestedBucketId,
           base64: base64Data,
         });
       } catch (err) {

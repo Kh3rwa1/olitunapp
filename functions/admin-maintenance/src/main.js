@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import {
   Client,
   Databases,
@@ -8,6 +9,10 @@ import {
 } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { withPaymentStateGuard } from './shared/payment_state.js';
+
+function stableId(value) {
+  return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
 
 export const DATABASE_ID = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
 export const ADMIN_TEAM_ID = process.env.ADMIN_TEAM_ID || 'admins';
@@ -233,7 +238,18 @@ export async function executeAdminRefund({
     throw Object.assign(new Error('Missing purchase ID.'), { status: 400 });
   }
 
-  // 1. Fetch current purchase document
+  // 1. Transactions are mandatory; fail closed if unavailable before any state changes
+  if (
+    typeof databases.createTransaction !== 'function' ||
+    typeof databases.updateTransaction !== 'function'
+  ) {
+    throw Object.assign(new Error('Payment transactions are unavailable.'), {
+      status: 503,
+      code: 503,
+    });
+  }
+
+  // 2. Fetch current purchase document
   let purchase;
   try {
     purchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
@@ -245,10 +261,11 @@ export async function executeAdminRefund({
   }
 
   const expectedPaise = Math.round(Number(purchase.expectedAmount || 0) * 100);
+  const currentRefundedPaise = Number(purchase.refundedAmountPaise || 0);
   const isAlreadyRefunded =
     purchase.status === 'refunded' ||
     purchase.refundStatus === 'fully_refunded' ||
-    (expectedPaise > 0 && Number(purchase.refundedAmountPaise || 0) >= expectedPaise);
+    (expectedPaise > 0 && currentRefundedPaise >= expectedPaise);
 
   if (isAlreadyRefunded) {
     return {
@@ -257,10 +274,35 @@ export async function executeAdminRefund({
       status: purchase.status,
       refundStatus: purchase.refundStatus,
       refundedAmountPaise: purchase.refundedAmountPaise,
+      refundEpoch: purchase.refundEpoch,
     };
   }
 
-  // 2. Validate current status allows refund
+  // 3. Durable Idempotency Check: check if externalRefundId was already claimed/processed
+  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
+  const claimId = externalRefundId ? stableId(`refund:${externalRefundId}`) : null;
+
+  if (claimId) {
+    try {
+      const existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
+      if (existingClaim && (existingClaim.status === 'committed' || existingClaim.status === 'claimed')) {
+        return {
+          alreadyRefunded: true,
+          purchaseId,
+          status: purchase.status,
+          refundStatus: purchase.refundStatus,
+          refundedAmountPaise: purchase.refundedAmountPaise,
+          refundEpoch: purchase.refundEpoch,
+        };
+      }
+    } catch (err) {
+      if (err.code !== 404 && err.status !== 404) {
+        // Document does not exist or collection query threw; proceed
+      }
+    }
+  }
+
+  // 4. Validate current status allows refund
   if (!['verified', 'disputed', 'failed'].includes(purchase.status)) {
     throw Object.assign(
       new Error(`Cannot refund purchase in status '${purchase.status}'.`),
@@ -268,66 +310,135 @@ export async function executeAdminRefund({
     );
   }
 
+  // 5. Amount validation: must be a positive safe integer and not exceed expected amount
+  let refundAmountPaise;
+  if (body.amountPaise !== undefined) {
+    const rawAmount = Number(body.amountPaise);
+    if (!Number.isSafeInteger(rawAmount) || rawAmount <= 0) {
+      throw Object.assign(
+        new Error('Invalid refund amount: amountPaise must be a positive integer.'),
+        { status: 400 },
+      );
+    }
+    if (expectedPaise > 0 && rawAmount > expectedPaise) {
+      throw Object.assign(
+        new Error(`Refund amount (${rawAmount} paise) exceeds purchase amount (${expectedPaise} paise).`),
+        { status: 400 },
+      );
+    }
+    refundAmountPaise = rawAmount;
+  } else {
+    refundAmountPaise = expectedPaise || (Number(purchase.paidAmount || 0) * 100);
+    if (!Number.isSafeInteger(refundAmountPaise) || refundAmountPaise <= 0) {
+      throw Object.assign(new Error('Unable to determine refund amount from purchase.'), { status: 400 });
+    }
+  }
+
   const now = new Date().toISOString();
   const reason = String(body.reason || 'Admin recorded refund').trim();
-  const externalRefundId = String(body.externalRefundId || body.idempotencyKey || '').trim();
-  const refundAmountPaise = Number(body.amountPaise) || expectedPaise || (Number(purchase.paidAmount || 0) * 100);
+  const targetRefundedPaise = Math.max(currentRefundedPaise, refundAmountPaise);
+  const isFullRefund = !(expectedPaise > 0) || targetRefundedPaise >= expectedPaise;
 
-  // 3. Monotonic epoch computation
+  // 6. Monotonic epoch computation
   const currentEpoch = Number(purchase.refundEpoch || 0);
   const targetEpoch = currentEpoch + 1;
 
-  // 4. Update course_purchases via guarded databases
-  let guardedDb = databases;
-  if (typeof databases.createTransaction === 'function') {
-    guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
+  // 7. Claim reservation in refund_claims (if externalRefundId provided)
+  if (claimId) {
+    try {
+      await databases.createDocument(
+        databaseId,
+        'refund_claims',
+        claimId,
+        {
+          refundId: externalRefundId,
+          paymentId: purchase.providerPaymentId || `admin_${purchaseId}`,
+          purchaseId,
+          amountPaise: refundAmountPaise,
+          currency: purchase.currency || 'INR',
+          status: 'claimed',
+          claimedAt: now,
+          committedAt: null,
+          lastError: '',
+        },
+      );
+    } catch (claimErr) {
+      if (claimErr.code === 409 || claimErr.status === 409) {
+        return {
+          alreadyRefunded: true,
+          purchaseId,
+          status: purchase.status,
+          refundStatus: purchase.refundStatus,
+          refundedAmountPaise: purchase.refundedAmountPaise,
+          refundEpoch: purchase.refundEpoch,
+        };
+      }
+    }
   }
 
+  // 8. Update course_purchases via guarded databases
+  const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
   const updatedPurchase = await guardedDb.updateDocument(
     databaseId,
     'course_purchases',
     purchaseId,
     {
-      status: 'refunded',
-      refundStatus: 'fully_refunded',
-      refundedAmountPaise: Math.max(Number(purchase.refundedAmountPaise || 0), refundAmountPaise),
+      status: isFullRefund ? 'refunded' : purchase.status,
+      refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
+      refundedAmountPaise: targetRefundedPaise,
       refundEpoch: targetEpoch,
     },
   );
 
-  // 5. Write audit log to admin_audit_logs collection (fail-safe)
-  try {
-    await databases.createDocument(
-      databaseId,
-      'admin_audit_logs',
-      ID.unique(),
-      {
-        action: 'refund_recorded',
-        actorUserId,
-        targetType: 'course_purchase',
-        targetId: purchaseId,
-        metadata: JSON.stringify({
-          userId: purchase.userId,
-          categoryId: purchase.categoryId,
-          externalRefundId,
-          reason,
-          refundAmountPaise,
-          previousStatus: purchase.status,
-          refundEpoch: targetEpoch,
-        }),
-        success: true,
-        createdAt: now,
-      },
-    );
-  } catch (auditErr) {
-    console.error(`Warning: Failed to write admin audit log for refund: ${auditErr.message}`);
+  // 9. Mark claim committed if claimed
+  if (claimId) {
+    try {
+      await databases.updateDocument(
+        databaseId,
+        'refund_claims',
+        claimId,
+        {
+          status: 'committed',
+          committedAt: new Date().toISOString(),
+        },
+      );
+    } catch {
+      // Non-fatal if claim status update fails after course_purchases is committed
+    }
   }
+
+  // 10. Write audit log to admin_audit_logs collection (fail-closed: do not swallow error)
+  await databases.createDocument(
+    databaseId,
+    'admin_audit_logs',
+    ID.unique(),
+    {
+      action: 'refund_recorded',
+      actorUserId,
+      targetType: 'course_purchase',
+      targetId: purchaseId,
+      metadata: JSON.stringify({
+        userId: purchase.userId,
+        categoryId: purchase.categoryId,
+        externalRefundId,
+        reason,
+        refundAmountPaise,
+        totalRefundedPaise: updatedPurchase.refundedAmountPaise,
+        previousStatus: purchase.status,
+        newStatus: updatedPurchase.status,
+        refundStatus: updatedPurchase.refundStatus,
+        refundEpoch: targetEpoch,
+      }),
+      success: true,
+      createdAt: now,
+    },
+  );
 
   return {
     alreadyRefunded: false,
     purchaseId,
-    status: 'refunded',
-    refundStatus: 'fully_refunded',
+    status: updatedPurchase.status,
+    refundStatus: updatedPurchase.refundStatus,
     refundedAmountPaise: updatedPurchase.refundedAmountPaise,
     refundEpoch: targetEpoch,
   };

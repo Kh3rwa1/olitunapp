@@ -137,9 +137,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       categoryMastery[key] = valB > valA ? valB : valA;
     });
 
-    // Merge star reward events with deduplication and base preservation
-    final starEvents = Map<String, int>.from(a.starEvents)
-      ..addAll(b.starEvents);
+    // Merge star reward events with deduplication, compaction tracking, and base preservation
+    final allCompactedStarEvents = Set<String>.from(a.compactedStarEvents)
+      ..addAll(b.compactedStarEvents);
+
     final sumStarEventsA = a.starEvents.values.fold<int>(
       0,
       (sum, val) => sum + val,
@@ -148,29 +149,65 @@ class ProfileRepositoryImpl implements ProfileRepository {
       0,
       (sum, val) => sum + val,
     );
-    final int baseStarsA = a.totalStars >= sumStarEventsA
+    int baseStarsA = a.totalStars >= sumStarEventsA
         ? a.totalStars - sumStarEventsA
         : a.totalStars;
-    final int baseStarsB = b.totalStars >= sumStarEventsB
+    int baseStarsB = b.totalStars >= sumStarEventsB
         ? b.totalStars - sumStarEventsB
         : b.totalStars;
-    int baseStars = math.max<int>(baseStarsA, baseStarsB);
 
-    const maxEvents = 100;
-    if (starEvents.length > maxEvents) {
-      final sortedKeys = starEvents.keys.toList()..sort();
-      final overflowCount = starEvents.length - maxEvents;
-      for (int i = 0; i < overflowCount; i++) {
-        final key = sortedKeys[i];
-        baseStars += starEvents.remove(key) ?? 0;
+    // Account for any events compacted on B that were still active in A
+    for (final key in b.compactedStarEvents) {
+      if (a.starEvents.containsKey(key) &&
+          !a.compactedStarEvents.contains(key)) {
+        baseStarsA += a.starEvents[key]!;
       }
     }
-    final int totalStars =
-        baseStars + starEvents.values.fold<int>(0, (sum, val) => sum + val);
+    // Account for any events compacted on A that were still active in B
+    for (final key in a.compactedStarEvents) {
+      if (b.starEvents.containsKey(key) &&
+          !b.compactedStarEvents.contains(key)) {
+        baseStarsB += b.starEvents[key]!;
+      }
+    }
+    int baseStars = math.max<int>(baseStarsA, baseStarsB);
 
-    // Merge learning minute events with deduplication and base preservation
-    final minuteEvents = Map<String, int>.from(a.minuteEvents)
-      ..addAll(b.minuteEvents);
+    final mergedStarEvents = <String, int>{};
+    final allStarEventKeys = {...a.starEvents.keys, ...b.starEvents.keys};
+    for (final key in allStarEventKeys) {
+      if (allCompactedStarEvents.contains(key)) {
+        continue;
+      }
+      final valA = a.starEvents[key] ?? 0;
+      final valB = b.starEvents[key] ?? 0;
+      mergedStarEvents[key] = math.max(valA, valB);
+    }
+
+    const maxEvents = 100;
+    const maxCompactedTracking = 500;
+    if (mergedStarEvents.length > maxEvents) {
+      final sortedKeys = mergedStarEvents.keys.toList()..sort();
+      final overflowCount = mergedStarEvents.length - maxEvents;
+      for (int i = 0; i < overflowCount; i++) {
+        final key = sortedKeys[i];
+        baseStars += mergedStarEvents.remove(key) ?? 0;
+        allCompactedStarEvents.add(key);
+      }
+    }
+    if (allCompactedStarEvents.length > maxCompactedTracking) {
+      final sortedCompacted = allCompactedStarEvents.toList()..sort();
+      allCompactedStarEvents.retainAll(
+        sortedCompacted.sublist(sortedCompacted.length - maxCompactedTracking),
+      );
+    }
+    final int totalStars =
+        baseStars +
+        mergedStarEvents.values.fold<int>(0, (sum, val) => sum + val);
+
+    // Merge learning minute events with deduplication, compaction tracking, and base preservation
+    final allCompactedMinuteEvents = Set<String>.from(a.compactedMinuteEvents)
+      ..addAll(b.compactedMinuteEvents);
+
     final sumMinuteEventsA = a.minuteEvents.values.fold<int>(
       0,
       (sum, val) => sum + val,
@@ -179,24 +216,56 @@ class ProfileRepositoryImpl implements ProfileRepository {
       0,
       (sum, val) => sum + val,
     );
-    final int baseMinutesA = a.totalLearningMinutes >= sumMinuteEventsA
+    int baseMinutesA = a.totalLearningMinutes >= sumMinuteEventsA
         ? a.totalLearningMinutes - sumMinuteEventsA
         : a.totalLearningMinutes;
-    final int baseMinutesB = b.totalLearningMinutes >= sumMinuteEventsB
+    int baseMinutesB = b.totalLearningMinutes >= sumMinuteEventsB
         ? b.totalLearningMinutes - sumMinuteEventsB
         : b.totalLearningMinutes;
-    int baseMinutes = math.max<int>(baseMinutesA, baseMinutesB);
 
-    if (minuteEvents.length > maxEvents) {
-      final sortedKeys = minuteEvents.keys.toList()..sort();
-      final overflowCount = minuteEvents.length - maxEvents;
-      for (int i = 0; i < overflowCount; i++) {
-        final key = sortedKeys[i];
-        baseMinutes += minuteEvents.remove(key) ?? 0;
+    for (final key in b.compactedMinuteEvents) {
+      if (a.minuteEvents.containsKey(key) &&
+          !a.compactedMinuteEvents.contains(key)) {
+        baseMinutesA += a.minuteEvents[key]!;
       }
     }
+    for (final key in a.compactedMinuteEvents) {
+      if (b.minuteEvents.containsKey(key) &&
+          !b.compactedMinuteEvents.contains(key)) {
+        baseMinutesB += b.minuteEvents[key]!;
+      }
+    }
+    int baseMinutes = math.max<int>(baseMinutesA, baseMinutesB);
+
+    final mergedMinuteEvents = <String, int>{};
+    final allMinuteEventKeys = {...a.minuteEvents.keys, ...b.minuteEvents.keys};
+    for (final key in allMinuteEventKeys) {
+      if (allCompactedMinuteEvents.contains(key)) {
+        continue;
+      }
+      final valA = a.minuteEvents[key] ?? 0;
+      final valB = b.minuteEvents[key] ?? 0;
+      mergedMinuteEvents[key] = math.max(valA, valB);
+    }
+
+    if (mergedMinuteEvents.length > maxEvents) {
+      final sortedKeys = mergedMinuteEvents.keys.toList()..sort();
+      final overflowCount = mergedMinuteEvents.length - maxEvents;
+      for (int i = 0; i < overflowCount; i++) {
+        final key = sortedKeys[i];
+        baseMinutes += mergedMinuteEvents.remove(key) ?? 0;
+        allCompactedMinuteEvents.add(key);
+      }
+    }
+    if (allCompactedMinuteEvents.length > maxCompactedTracking) {
+      final sortedCompacted = allCompactedMinuteEvents.toList()..sort();
+      allCompactedMinuteEvents.retainAll(
+        sortedCompacted.sublist(sortedCompacted.length - maxCompactedTracking),
+      );
+    }
     final int totalLearningMinutes =
-        baseMinutes + minuteEvents.values.fold<int>(0, (sum, val) => sum + val);
+        baseMinutes +
+        mergedMinuteEvents.values.fold<int>(0, (sum, val) => sum + val);
 
     String lastActiveDate = a.lastActiveDate;
     if (b.lastActiveDate.isNotEmpty) {
@@ -232,8 +301,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
       currentStreak: currentStreak,
       totalStars: totalStars,
       syncEpoch: a.syncEpoch,
-      starEvents: starEvents,
-      minuteEvents: minuteEvents,
+      starEvents: mergedStarEvents,
+      minuteEvents: mergedMinuteEvents,
+      compactedStarEvents: allCompactedStarEvents,
+      compactedMinuteEvents: allCompactedMinuteEvents,
     );
   }
 
@@ -337,6 +408,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
               jsonDecode(cloudProgressData),
             );
             finalStats = _mergeStats(stats, cloudStats);
+          } else {
+            finalStats = _mergeStats(
+              stats,
+              _emptyStats(syncEpoch: stats.syncEpoch),
+            );
           }
           await _writeLocalStats(statsKey, finalStats);
 
@@ -352,6 +428,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
           });
         });
       } else {
+        finalStats = _mergeStats(
+          stats,
+          _emptyStats(syncEpoch: stats.syncEpoch),
+        );
+        await _writeLocalStats(statsKey, finalStats);
         synced = true;
       }
 

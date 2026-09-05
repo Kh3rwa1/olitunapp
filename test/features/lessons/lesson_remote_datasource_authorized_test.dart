@@ -151,5 +151,21 @@ void main() {
         throwsA(isA<ServerException>().having((e) => e.code, 'code', 404)),
       );
     });
+
+    test(
+      'throws ServerException with code 503 when functionsService is null without bypassing',
+      () async {
+        final unauthDataSource = LessonRemoteDataSourceImpl(mockDatabases);
+
+        expect(
+          () => unauthDataSource.getAuthorizedLesson('lesson_any'),
+          throwsA(isA<ServerException>().having((e) => e.code, 'code', 503)),
+        );
+        expect(
+          () => unauthDataSource.getLessonById('lesson_any'),
+          throwsA(isA<ServerException>().having((e) => e.code, 'code', 503)),
+        );
+      },
+    );
   });
 }

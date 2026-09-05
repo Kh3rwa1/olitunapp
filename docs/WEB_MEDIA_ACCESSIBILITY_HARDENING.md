@@ -10,8 +10,9 @@ Baseline: 72d7b56361b84123bc6d18f7e999fb494a65b339.
 
 ## Verification performed
 
-- `node --test functions/test/web_media_policy.test.js`: 4 passed, 0 failed locally on Node 24. CI uses Node 22 and must also pass.
-- The original home source was checked against its GitHub blob hash before the focused edit.
+- `node --test functions/test/web_media_policy.test.js`: 4 passed, 0 failed locally on Node 24. A negative control against the original CSP correctly failed.
+- A local headless Chromium probe using the exact policy loaded same-origin and blob WAV metadata, and emitted a media-src policy violation for a disallowed cross-origin media URL. This tests browser policy enforcement, not deployed Appwrite playback or autoplay.
+- Original home and Vercel sources were checked against their GitHub blob hashes. Vercel has only the intended media-src addition; home navigation destinations are unchanged.
 - Flutter and Dart are unavailable in the editing sandbox. Widget tests, Dart formatting and static analysis have NOT been executed locally. CI is required; do not merge a failing or pending branch.
 - No deployment, live data/permission mutation, actual device test, or whole-app accessibility certification was performed.
 

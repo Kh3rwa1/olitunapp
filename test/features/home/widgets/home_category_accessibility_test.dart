@@ -71,9 +71,7 @@ Future<void> _pump(WidgetTester tester, String categoryId) async {
 Finder _card(String id) => find.byKey(ValueKey('home_category_$id'));
 
 void main() {
-  testWidgets('category exposes one labelled actionable semantics node', (
-    tester,
-  ) async {
+  testWidgets('category semantics is actionable', (tester) async {
     final handle = tester.ensureSemantics();
     addTearDown(handle.dispose);
     await _pump(tester, 'words');
@@ -96,9 +94,7 @@ void main() {
   });
 
   for (final id in ['words', 'cat_alphabets', 'cat_letters', 'letters']) {
-    testWidgets('semantic activation preserves routing for $id', (
-      tester,
-    ) async {
+    testWidgets('semantic tap routes $id', (tester) async {
       final handle = tester.ensureSemantics();
       addTearDown(handle.dispose);
       await _pump(tester, id);
@@ -122,9 +118,7 @@ void main() {
   }
 
   for (final key in [LogicalKeyboardKey.enter, LogicalKeyboardKey.space]) {
-    testWidgets('keyboard activates the category with ${key.keyLabel}', (
-      tester,
-    ) async {
+    testWidgets('keyboard ${key.keyLabel}', (tester) async {
       await _pump(tester, 'words');
       await tester.sendKeyEvent(LogicalKeyboardKey.tab);
       await tester.pump();

@@ -7,19 +7,16 @@ export class PaymentStateConflict extends Error {
     this.code = 409;
   }
 }
-
 function fullyRefunded(doc) {
   const expected = Math.round(Number(doc.expectedAmount) * 100);
   return doc.status === 'refunded' || doc.refundStatus === 'fully_refunded' ||
     (expected > 0 && Number(doc.refundedAmountPaise || 0) >= expected);
 }
-
 export function assertCaptureAllowed(doc) {
   if (!['created', 'failed', 'verified'].includes(doc.status) || fullyRefunded(doc)) {
     throw new PaymentStateConflict('This purchase cannot be verified in its current state.');
   }
 }
-
 function assertBinding(current, expected) {
   for (const key of ['userId', 'categoryId', 'providerOrderId', 'providerPaymentId']) {
     if (expected?.[key] && current[key] !== expected[key] &&
@@ -28,11 +25,8 @@ function assertBinding(current, expected) {
     }
   }
 }
-
 function nextState(current, data, event) {
-  if (event === 'payment.failed') {
-    return ['created', 'failed'].includes(current.status) ? data : null;
-  }
+  if (event === 'payment.failed') return ['created', 'failed'].includes(current.status) ? data : null;
   if (event === 'refund.processed') {
     const total = Math.max(Number(current.refundedAmountPaise || 0), Number(data.refundedAmountPaise));
     const epoch = Number(data.refundEpoch);
@@ -40,17 +34,17 @@ function nextState(current, data, event) {
         epoch < Number(current.refundEpoch || 0)) throw new PaymentStateConflict();
     const expected = Math.round(Number(current.expectedAmount) * 100);
     const full = fullyRefunded(current) || !(expected > 0) || total >= expected;
-    return { ...data, refundedAmountPaise: total,
-      status: full ? 'refunded' : current.status,
+    return { ...data, refundedAmountPaise: total, status: full ? 'refunded' : current.status,
       refundStatus: full ? 'fully_refunded' : 'partially_refunded' };
   }
   if (event?.startsWith('payment.dispute.')) {
     if (fullyRefunded(current)) return { ...data, status: 'refunded' };
     if (current.status === 'revoked') return null;
-    if (data.status === 'verified' && !['disputed', 'verified'].includes(current.status)) {
-      throw new PaymentStateConflict();
-    }
-    return data;
+    // Delivery order is not authoritative. Restoration stays disabled until
+    // durable dispute identity/version reconciliation is deployed.
+    if (data.status === 'verified') return null;
+    if (data.status !== 'disputed') throw new PaymentStateConflict();
+    return { ...data, status: 'disputed' };
   }
   assertCaptureAllowed(current);
   if (data.status !== 'verified' || !data.providerPaymentId ||
@@ -66,26 +60,16 @@ function nextState(current, data, event) {
   }
   return data;
 }
-
-// Request-scoped adapter: preserve each handler's gateway/signature/claim logic,
-// but require every course_purchases update to pass the same transaction gate.
-// Reads retain order/payment binding so a late refund cannot affect a repurchase.
 export function withPaymentStateGuard(databases, { event = 'capture' } = {}) {
   const observed = new Map();
   const capture = ['capture', 'payment.captured', 'order.paid'].includes(event);
-  const remember = doc => {
-    if (doc?.$id && !observed.has(doc.$id)) observed.set(doc.$id, { ...doc });
-    return doc;
-  };
+  const remember = doc => { if (doc?.$id && !observed.has(doc.$id)) observed.set(doc.$id, { ...doc }); return doc; };
   return new Proxy(databases, {
     get(target, prop) {
       if (prop === 'getDocument') return async (...args) => {
         const col = typeof args[0] === 'object' ? args[0].collectionId : args[1];
         const doc = await target.getDocument(...args);
-        if (col === 'course_purchases') {
-          if (capture) assertCaptureAllowed(doc);
-          remember(doc);
-        }
+        if (col === 'course_purchases') { if (capture) assertCaptureAllowed(doc); remember(doc); }
         return doc;
       };
       if (prop === 'listDocuments') return async (...args) => {
@@ -103,10 +87,8 @@ export function withPaymentStateGuard(databases, { event = 'capture' } = {}) {
         return target.createDocument(...args);
       };
       if (prop === 'updateDocument') return async (...args) => {
-        const options = typeof args[0] === 'object' ? args[0] : {
-          databaseId: args[0], collectionId: args[1], documentId: args[2],
-          data: args[3], permissions: args[4],
-        };
+        const options = typeof args[0] === 'object' ? args[0] : { databaseId: args[0], collectionId: args[1],
+          documentId: args[2], data: args[3], permissions: args[4] };
         if (options.collectionId !== 'course_purchases') return target.updateDocument(...args);
         if (typeof target.createTransaction !== 'function' || typeof target.updateTransaction !== 'function') {
           throw Object.assign(new Error('Payment transactions are unavailable.'), { code: 503 });
@@ -129,7 +111,7 @@ export function withPaymentStateGuard(databases, { event = 'capture' } = {}) {
         } finally {
           if (!committed) {
             try { await target.updateTransaction({ transactionId: transaction.$id, rollback: true }); }
-            catch { /* Preserve the original failure; expiry also closes a transaction. */ }
+            catch { }
           }
         }
       };

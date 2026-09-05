@@ -28,6 +28,7 @@ jobs:
           channel: stable
           cache: true
       - name: Require an isolated staging project and credentials
+        id: staging_guard
         env:
           STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
           STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
@@ -35,20 +36,36 @@ jobs:
         run: |
           node --input-type=module - <<'JS'
           import fs from 'node:fs';
-          for (const key of ['STAGING_APPWRITE_ENDPOINT', 'STAGING_APPWRITE_PROJECT_ID', 'STAGING_APPWRITE_API_KEY']) {
-            if (!process.env[key]) throw new Error(`Missing mandatory staging configuration: ${key}`);
+          const required = ['STAGING_APPWRITE_ENDPOINT', 'STAGING_APPWRITE_PROJECT_ID', 'STAGING_APPWRITE_API_KEY'];
+          const missing = required.filter((key) => !process.env[key]);
+          const out = process.env.GITHUB_OUTPUT;
+          // Release and manual runs must fail closed: live staging
+          // verification is a release gate (see release-checklist.yml), so a
+          // missing staging project can never read as success there.
+          // The scheduled monitor instead reports BLOCKED (neutral) so a
+          // known-unprovisioned staging does not page as a health regression.
+          const mustFailClosed = process.env.GITHUB_EVENT_NAME !== 'schedule';
+          if (missing.length > 0) {
+            const message = `Staging verification BLOCKED — missing configuration: ${missing.join(', ')}. Provision per docs/STAGING_SETUP.md.`;
+            if (mustFailClosed) throw new Error(message);
+            console.log(`::warning::${message}`);
+            fs.appendFileSync(out, 'configured=false\n');
+            process.exit(0);
           }
           const production = JSON.parse(fs.readFileSync('appwrite.json', 'utf8')).projectId;
           if (process.env.STAGING_APPWRITE_PROJECT_ID === production) {
             throw new Error('A separate non-production Appwrite project is required');
           }
+          fs.appendFileSync(out, 'configured=true\n');
           JS
       - name: Install dependencies
+        if: steps.staging_guard.outputs.configured == 'true'
         run: |
           npm ci
           npm ci --prefix functions/translator
           flutter pub get
       - name: Staging Appwrite Smoke Test
+        if: steps.staging_guard.outputs.configured == 'true'
         env:
           STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
           STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
@@ -57,6 +74,7 @@ jobs:
             --dart-define=STAGING_APPWRITE_ENDPOINT="$STAGING_APPWRITE_ENDPOINT" \
             --dart-define=STAGING_APPWRITE_PROJECT_ID="$STAGING_APPWRITE_PROJECT_ID"
       - name: Required real Appwrite concurrency verification
+        if: steps.staging_guard.outputs.configured == 'true'
         env:
           STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
           STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
@@ -64,6 +82,7 @@ jobs:
           CI_STAGING_MANDATORY: 'true'
         run: node --test functions/translator/test/appwrite_staging_concurrency.test.js
       - name: Required staging schema drift detection
+        if: steps.staging_guard.outputs.configured == 'true'
         env:
           APPWRITE_API_KEY: ${{ secrets.STAGING_APPWRITE_API_KEY }}
           APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
@@ -71,3 +90,11 @@ jobs:
         run: |
           node scripts/snapshot_appwrite_schema.mjs
           git diff --exit-code test/fixtures/schema/
+      - name: Staging verification status
+        if: always()
+        run: |
+          if [ "${{ steps.staging_guard.outputs.configured }}" = "true" ]; then
+            echo "Staging live verification ran (see steps above)."
+          else
+            echo "Staging live verification BLOCKED — no isolated staging project is configured. See docs/STAGING_SETUP.md. Release flows calling this workflow still fail closed."
+          fi

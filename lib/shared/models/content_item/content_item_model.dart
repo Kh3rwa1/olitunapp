@@ -135,6 +135,10 @@ class ContentItem extends Equatable {
     };
   }
 
+  /// Direct Appwrite attribute serialization without publication boundary checks.
+  Map<String, dynamic> toAppwriteAttributes() =>
+      ContentItemSerialization.toAppwrite(this);
+
   /// Serializes content for legacy generic upsert paths.
   ///
   /// Those paths create documents with anonymous read permission and cannot
@@ -152,7 +156,7 @@ class ContentItem extends Equatable {
         'Premium content cannot use the anonymous generic publication path.',
       );
     }
-    return ContentItemSerialization.toAppwrite(this);
+    return toAppwriteAttributes();
   }
 
   ContentItem copyWith({

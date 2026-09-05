@@ -69,7 +69,7 @@ class BakhedRepository {
   Future<Either<Failure, Unit>> upsert(ContentItem item) async {
     if (await _networkInfo.isConnected) {
       try {
-        final payload = item.toAppwrite();
+        final payload = item.toAppwriteAttributes();
         try {
           // Attempt update first
           await _dbService.updateDocument('rhymes', item.id, payload);

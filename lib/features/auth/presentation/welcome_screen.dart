@@ -341,8 +341,8 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
       final auth = ref.read(authControllerProvider);
       final result = await auth.signInWithGoogle();
 
-      result.fold(
-        (failure) {
+      await result.fold(
+        (failure) async {
           if (!mounted) return;
           setState(() => _isLoading = false);
 
@@ -360,9 +360,14 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
             ),
           );
         },
-        (_) {
+        (_) async {
           if (mounted) {
-            ref.invalidate(isAuthenticatedProvider);
+            try {
+              final _ = await ref.refresh(isAuthenticatedProvider.future);
+              ref.invalidate(currentUserProvider);
+            } catch (_) {}
+            if (!mounted) return;
+            setState(() => _isLoading = false);
             final showOnboarding = ref.read(onboardingProvider);
             if (!kIsWeb) {
               if (showOnboarding) {

@@ -76,6 +76,11 @@ GoRoute _modalRoute({
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  final refreshNotifier = ValueNotifier<int>(0);
+  ref.onDispose(refreshNotifier.dispose);
+  ref.listen(isAuthenticatedProvider, (_, _) => refreshNotifier.value++);
+  ref.listen(onboardingProvider, (_, _) => refreshNotifier.value++);
+
   FutureOr<String?> adminRedirect(
     BuildContext context,
     GoRouterState state,
@@ -106,6 +111,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
       final hostRedirect = adminHostRedirectFor(Uri.base.host, state.uri.path);
       if (hostRedirect != null) return hostRedirect;
@@ -133,29 +139,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         }
       }
 
-      final path = state.uri.path;
-      final isPublicAuthPath =
-          path == '/welcome' ||
-          path == '/splash' ||
-          path == '/login' ||
-          path == '/privacy' ||
-          path == '/terms' ||
-          path.startsWith('/admin');
-
-      // Enforce mandatory authentication: confirmed logged-out users cannot access learning/profile routes
-      final isAuth = ref.read(isAuthenticatedProvider).asData?.value;
-      if (isAuth == false && !isPublicAuthPath) {
-        return '/welcome';
-      }
-
-      // Check onboarding: if onboarding not completed and user is on an unallowed path, redirect to /welcome
-      final showOnboarding = ref.read(onboardingProvider);
-      final isAllowedDuringOnboarding =
-          isPublicAuthPath || path == '/onboarding';
-      if (showOnboarding && !isAllowedDuringOnboarding) {
-        return '/welcome';
-      }
-      return null;
+      return authAndOnboardingRedirectFor(
+        path: state.uri.path,
+        isAuth: ref.read(isAuthenticatedProvider).asData?.value,
+        showOnboarding: ref.read(onboardingProvider),
+      );
     },
     routes: [
       StatefulShellRoute.indexedStack(

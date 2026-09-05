@@ -61,6 +61,152 @@ void main() {
         isNull,
       );
     });
+
+    group('authAndOnboardingRedirectFor', () {
+      test('unauthenticated users cannot access protected routes', () {
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/',
+            isAuth: false,
+            showOnboarding: false,
+          ),
+          '/welcome',
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/categories',
+            isAuth: false,
+            showOnboarding: false,
+          ),
+          '/welcome',
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/onboarding',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          '/welcome',
+        );
+      });
+
+      test('unauthenticated users can access public auth and legal routes', () {
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/welcome',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          isNull,
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/login',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          isNull,
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/splash',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          isNull,
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/privacy',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          isNull,
+        );
+        expect(
+          authAndOnboardingRedirectFor(
+            path: '/terms',
+            isAuth: false,
+            showOnboarding: true,
+          ),
+          isNull,
+        );
+      });
+
+      test(
+        'authenticated users on welcome or login are routed away from login',
+        () {
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/welcome',
+              isAuth: true,
+              showOnboarding: false,
+            ),
+            '/',
+          );
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/welcome',
+              isAuth: true,
+              showOnboarding: true,
+            ),
+            '/onboarding',
+          );
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/login',
+              isAuth: true,
+              showOnboarding: false,
+            ),
+            '/',
+          );
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/login',
+              isAuth: true,
+              showOnboarding: true,
+            ),
+            '/onboarding',
+          );
+        },
+      );
+
+      test(
+        'authenticated users needing onboarding are gated to /onboarding',
+        () {
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/',
+              isAuth: true,
+              showOnboarding: true,
+            ),
+            '/onboarding',
+          );
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/onboarding',
+              isAuth: true,
+              showOnboarding: true,
+            ),
+            isNull,
+          );
+        },
+      );
+
+      test(
+        'authenticated users with onboarding completed access home directly',
+        () {
+          expect(
+            authAndOnboardingRedirectFor(
+              path: '/',
+              isAuth: true,
+              showOnboarding: false,
+            ),
+            isNull,
+          );
+        },
+      );
+    });
   });
 
   group('StatefulShellRoute & Deep Links', () {

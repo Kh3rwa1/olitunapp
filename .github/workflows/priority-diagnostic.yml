@@ -1,0 +1,29 @@
+name: Priority patch diagnostics
+on:
+  push:
+    branches: [fix/review-priority-hardening-20260905]
+    paths: [.github/workflows/priority-diagnostic.yml]
+permissions:
+  contents: write
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/review-priority-hardening-20260905
+      - name: Record isolated patch result
+        shell: bash
+        run: |
+          set +e
+          (python3 scripts/refine_priority_hardening.py && python3 scripts/apply_priority_hardening.py) > /tmp/patch-diagnostic.txt 2>&1
+          result=$?
+          mkdir -p docs
+          cp /tmp/patch-diagnostic.txt docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          echo "Patch exit code: $result" >> docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          git add docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          git config user.name 'Notion AI'
+          git config user.email 'noreply@notion.so'
+          git commit -m 'chore: record patch diagnostics on review branch'
+          git push origin HEAD:fix/review-priority-hardening-20260905

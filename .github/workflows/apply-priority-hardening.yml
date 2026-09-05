@@ -1,8 +1,8 @@
-name: Apply isolated priority hardening
+name: Final priority hardening validation
 on:
   push:
     branches: [fix/review-priority-hardening-20260905]
-    paths: [.github/workflows/apply-priority-hardening.yml, scripts/refine_priority_hardening.py]
+    paths: [.github/workflows/apply-priority-hardening.yml, scripts/finalize_priority_hardening.py]
 concurrency:
   group: isolated-priority-hardening
   cancel-in-progress: true
@@ -12,7 +12,7 @@ defaults:
   run:
     shell: bash
 jobs:
-  apply:
+  finalize:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -20,49 +20,72 @@ jobs:
         with:
           ref: fix/review-priority-hardening-20260905
           fetch-depth: 30
-      - name: Apply reviewed exact-match patch
+      - name: Finalize source and release gates
         run: |
-          git show b7ed8df6761e1c1028b7cae249c98f391b523a0d:scripts/apply_priority_hardening.py > scripts/apply_priority_hardening.py
-          python3 scripts/refine_priority_hardening.py 2>&1 | tee /tmp/priority.log
-          python3 scripts/apply_priority_hardening.py 2>&1 | tee -a /tmp/priority.log
+          git show b7ed8df6761e1c1028b7cae249c98f391b523a0d:scripts/apply_priority_hardening.py > /tmp/review_patch.py
+          python3 scripts/finalize_priority_hardening.py > /tmp/finalize.log 2>&1
       - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
         with:
           channel: stable
           cache: true
-      - name: Format and verify source before committing
-        run: |
-          python3 - <<'PY' 2>&1 | tee -a /tmp/priority.log
-          import json,subprocess
-          paths=json.load(open('/tmp/priority_changed_paths.json'))
-          subprocess.run(['dart','format',*[p for p in paths if p.endswith('.dart')]],check=True)
-          for p in paths:
-            if p.endswith(('.js','.mjs')): subprocess.run(['node','--check',p],check=True)
-          subprocess.run(['node','scripts/verify_function_deployment.mjs'],check=True)
-          subprocess.run(['git','add','--',*[p for p in paths if not p.startswith('.github/')]],check=True)
-          subprocess.run(['git','config','user.name','Notion AI'],check=True)
-          subprocess.run(['git','config','user.email','noreply@notion.so'],check=True)
-          subprocess.run(['git','commit','-m','fix: address priority findings with regression coverage'],check=True)
-          subprocess.run(['git','push','origin','HEAD:fix/review-priority-hardening-20260905'],check=True)
-          PY
       - name: Install dependencies
         run: |
-          flutter pub get 2>&1 | tee -a /tmp/priority.log
-          npm ci 2>&1 | tee -a /tmp/priority.log
-          npm ci --prefix functions/translator 2>&1 | tee -a /tmp/priority.log
+          flutter pub get > /tmp/dependencies.log 2>&1
+          npm ci >> /tmp/dependencies.log 2>&1
+          npm ci --prefix functions/translator >> /tmp/dependencies.log 2>&1
+      - name: Format and commit reviewed files
+        run: |
+          python3 - <<'PY' >> /tmp/finalize.log 2>&1
+          import json, subprocess
+          paths=json.load(open('/tmp/final_changed_paths.json'))
+          subprocess.run(['dart','format',*[p for p in paths if p.endswith('.dart')]],check=True)
+          subprocess.run(['node','scripts/verify_function_deployment.mjs'],check=True)
+          subprocess.run(['git','add','-A','--',*paths],check=True)
+          subprocess.run(['git','config','user.name','Notion AI'],check=True)
+          subprocess.run(['git','config','user.email','noreply@notion.so'],check=True)
+          subprocess.run(['git','commit','-m','fix: complete release gates scoped budgets and regression validation'],check=True)
+          subprocess.run(['git','push','origin','HEAD:fix/review-priority-hardening-20260905'],check=True)
+          PY
       - name: Static analysis
-        run: flutter analyze --fatal-infos 2>&1 | tee -a /tmp/priority.log
-      - name: Targeted regression tests
+        run: |
+          set +e
+          flutter analyze --fatal-infos > /tmp/analyze.log 2>&1
+          result=$?
+          echo "Analysis exit: $result" >> /tmp/outcomes
+          exit $result
+      - name: Flutter regression tests
         if: success() || failure()
         run: |
-          flutter test test/core/ads test/core/payments test/shared/offline 2>&1 | tee -a /tmp/priority.log
-          npm test 2>&1 | tee -a /tmp/priority.log
-      - name: Persist diagnostics on this review branch
+          set +e
+          flutter test test/core/ads test/core/payments test/shared/offline > /tmp/flutter.log 2>&1
+          result=$?
+          echo "Flutter regression exit: $result" >> /tmp/outcomes
+          exit $result
+      - name: Backend regression tests
+        if: success() || failure()
+        run: |
+          set +e
+          npm test > /tmp/backend.log 2>&1
+          result=$?
+          echo "Backend exit: $result" >> /tmp/outcomes
+          exit $result
+      - name: Persist concise verification results
         if: always()
         run: |
-          mkdir -p docs
-          { echo "Source commit: $(git rev-parse HEAD)"; cat /tmp/priority.log; } > docs/PRIORITY_PATCH_DIAGNOSTICS.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          import subprocess
+          sections=['Source commit: '+subprocess.check_output(['git','rev-parse','HEAD'],text=True)]
+          for name in ['finalize','outcomes','analyze','flutter','backend','dependencies']:
+            p=Path('/tmp/'+name+('.log' if name!='outcomes' else ''))
+            if p.exists():
+              text=p.read_text()
+              if len(text)>18000: text=text[:3000]+'\n...\n'+text[-15000:]
+              sections.append('\n## '+name+'\n'+text)
+          Path('docs/PRIORITY_PATCH_DIAGNOSTICS.txt').write_text('\n'.join(sections))
+          PY
           git add docs/PRIORITY_PATCH_DIAGNOSTICS.txt
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
-          git diff --cached --quiet || git commit -m 'chore: record exact validation results on review branch'
+          git diff --cached --quiet || git commit -m 'chore: record priority verification results'
           git push origin HEAD:fix/review-priority-hardening-20260905

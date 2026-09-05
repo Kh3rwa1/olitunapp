@@ -61,7 +61,10 @@ class SplashController {
               'Splash: OAuth token exchange succeeded, navigating to /',
             );
             ref.read(onboardingProvider.notifier).completeOnboarding();
-            ref.invalidate(isAuthenticatedProvider);
+            try {
+              final _ = await ref.refresh(isAuthenticatedProvider.future);
+              ref.invalidate(currentUserProvider);
+            } catch (_) {}
             targetLocation = '/';
           } else {
             AppLogger.debug('Splash: OAuth token exchange failed');
@@ -87,6 +90,10 @@ class SplashController {
         AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');
 
         if (isLoggedIn) {
+          try {
+            final _ = await ref.refresh(isAuthenticatedProvider.future);
+            ref.invalidate(currentUserProvider);
+          } catch (_) {}
           ref.read(onboardingProvider.notifier).completeOnboarding();
           targetLocation = '/';
         } else {

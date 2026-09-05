@@ -122,8 +122,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           .read(authControllerProvider)
           .verifyOtp(userId: _userId!, secret: code);
 
-      result.fold(
-        (failure) {
+      await result.fold(
+        (failure) async {
           setState(() {
             _isLoading = false;
             _errorMessage = failure.message;
@@ -131,7 +131,12 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         },
         (_) async {
           if (mounted) {
-            ref.invalidate(isAuthenticatedProvider);
+            try {
+              final _ = await ref.refresh(isAuthenticatedProvider.future);
+              ref.invalidate(currentUserProvider);
+            } catch (_) {}
+            if (!mounted) return;
+            setState(() => _isLoading = false);
             final showOnboarding = ref.read(onboardingProvider);
             if (showOnboarding) {
               context.go('/onboarding');

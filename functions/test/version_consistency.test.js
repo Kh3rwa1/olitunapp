@@ -31,7 +31,7 @@ test("Version Consistency: verifyReleaseVersion validates live repo metadata", (
   assert.equal(result.valid, true);
   assert.equal(result.errors.length, 0);
   assert.equal(result.semver, "1.3.0");
-  assert.equal(result.buildNumber, 24);
+  assert.equal(result.buildNumber, 25);
 });
 
 test("Version Consistency: detect release tag drift", () => {

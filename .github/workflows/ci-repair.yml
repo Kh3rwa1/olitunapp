@@ -24,13 +24,37 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Apply the repository formatter to both tests
+      - name: Simplify exhaustive collection mappings without changing behavior
         run: |
-          dart format test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('lib/shared/repositories/content_repository.dart')
+          s=p.read_text()
+          start=s.index('  String _getCollectionId(ContentKind kind) {')
+          end=s.index('  bool _hasOrderAttribute',start)
+          replacement="""  String _getCollectionId(ContentKind kind) => switch (kind) {
+              ContentKind.letter => 'letters',
+              ContentKind.number => 'numbers',
+              ContentKind.word => 'words',
+              ContentKind.sentence => 'sentences',
+              ContentKind.lesson => 'lessons',
+              ContentKind.rhyme => 'rhymes',
+            };
+          
+            String? _categoryAttribute(ContentKind kind) => switch (kind) {
+              ContentKind.lesson || ContentKind.rhyme => 'categoryId',
+              ContentKind.word || ContentKind.sentence => 'category',
+              ContentKind.letter || ContentKind.number => null,
+            };
+          
+          """
+          p.write_text(s[:start]+replacement+s[end:])
+          PY
+          dart format lib/shared/repositories/content_repository.dart
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
-          git add test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart
-          git diff --cached --quiet || git commit -m 'style: format offline and entitlement regression tests'
+          git add lib/shared/repositories/content_repository.dart
+          git commit -m 'refactor: use exhaustive content collection switch expressions'
           git push origin HEAD:fix/review-priority-hardening-20260905
       - name: Run all formatting and static policy gates
         run: |
@@ -48,9 +72,9 @@ jobs:
             failed |= result.returncode != 0
           raise SystemExit(1 if failed else 0)
           PY
-      - name: Verify the previously failing repository test
+      - name: Verify repository and purchase regression suites
         if: success() || failure()
-        run: flutter test test/shared/repositories/content_repository_offline_test.dart test/core/payments/purchase_repository_entitlements_test.dart > /tmp/repaired-tests.log 2>&1
+        run: flutter test test/shared/repositories test/core/payments > /tmp/repaired-tests.log 2>&1
       - name: Persist focused verification results
         if: always()
         run: |
@@ -66,5 +90,5 @@ jobs:
           git config user.name 'Notion AI'
           git config user.email 'noreply@notion.so'
           git add docs/CI_REPAIR_DIAGNOSTICS.txt
-          git diff --cached --quiet || git commit -m 'chore: record repaired test and policy gate results'
+          git diff --cached --quiet || git commit -m 'chore: record complete static gate and regression results'
           git push origin HEAD:fix/review-priority-hardening-20260905

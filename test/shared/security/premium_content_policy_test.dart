@@ -33,7 +33,6 @@ void main() {
       expect(
         PremiumContentPolicy.forContentItem(
           isPremium: false,
-          categoryUnlockMode: null,
         ).allowAnonymousRead,
         isFalse,
       );

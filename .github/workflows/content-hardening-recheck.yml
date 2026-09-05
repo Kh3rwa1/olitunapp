@@ -17,17 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           ref: ${{ github.sha }}
-      - name: Remove the diagnosed redundant null argument
-        run: |
-          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path('test/shared/security/premium_content_policy_test.dart')
-          s = p.read_text()
-          old = '          categoryUnlockMode: null,\n'
-          assert s.count(old) == 1
-          p.write_text(s.replace(old, '', 1))
-          PY
+          fetch-depth: 0
       - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
         with:
           flutter-version: '3.47.2'
@@ -37,7 +27,7 @@ jobs:
       - name: Record focused validation without weakening gates
         run: |
           REPORT=docs/CONTENT_HARDENING_DIAGNOSTICS.txt
-          printf 'Source before lint correction: %s\n' "$GITHUB_SHA" > "$REPORT"
+          printf 'Validated branch input: %s\n' "$GITHUB_SHA" > "$REPORT"
           flutter --version >> "$REPORT"
           dart format test/shared/security/premium_content_policy_test.dart >> "$REPORT" 2>&1
           set +e
@@ -55,7 +45,8 @@ jobs:
           git add test/shared/security/premium_content_policy_test.dart docs/CONTENT_HARDENING_DIAGNOSTICS.txt
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'test(content): clear analyzer warning and record focused recheck'
+          git commit -m 'test(content): record focused recheck and remove temporary workflow'
+          git pull --rebase origin fix/premium-content-boundary-20260905
           git push origin HEAD:refs/heads/fix/premium-content-boundary-20260905
       - name: Require all checks to pass
         run: test "$TEST_EXIT" = 0 && test "$ANALYZE_EXIT" = 0 && test "$NODE_EXIT" = 0

@@ -1,9 +1,21 @@
-name: Experience measurement validator
+name: Experience evaluation
 
 on:
   pull_request:
     paths:
+      - 'lib/core/accessibility/**'
+      - 'lib/core/motion/**'
+      - 'lib/shared/widgets/buttons/pressable_button.dart'
+      - 'lib/shared/widgets/bento_grid.dart'
+      - 'lib/features/lessons/**'
+      - 'lib/main.dart'
+      - 'test/core/accessibility/**'
+      - 'test/core/motion/**'
+      - 'test/shared/widgets/experience_controls_test.dart'
+      - 'test/features/lessons/lessons_experience_test.dart'
+      - 'integration_test/experience_performance_test.dart'
       - 'tool/experience_frame_budget*'
+      - 'tool/report_experience_checks.py'
       - '.github/workflows/experience-evaluation.yml'
   push:
     branches: [main]
@@ -15,6 +27,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: experience-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   measurement-validator:
     name: Performance measurement validator tests
@@ -22,7 +38,46 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
         with:
           node-version: 22
       - run: node --test tool/experience_frame_budget.test.mjs
+
+  targeted-flutter-diagnostics:
+    name: Experience Flutter diagnostics
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Collect targeted diagnostics
+        env:
+          TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python3 tool/report_experience_checks.py
+      - name: Publish diagnostic report on this PR
+        if: always() && hashFiles('build/experience-diagnostics/comment.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --input build/experience-diagnostics/comment.json
+      - name: Preserve full diagnostic output
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
+        with:
+          name: experience-diagnostics
+          path: build/experience-diagnostics/
+          retention-days: 7

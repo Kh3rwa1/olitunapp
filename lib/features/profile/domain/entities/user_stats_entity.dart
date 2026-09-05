@@ -20,6 +20,10 @@ class UserStatsEntity extends Equatable {
   final int totalStars;
   final Set<String> completedMissionsDates;
 
+  /// Monotonically increasing generation for destructive progress resets.
+  /// Legacy payloads belong to generation zero.
+  final int syncEpoch;
+
   /// Local dates (yyyy-MM-dd) on which the learner completed ANY practice
   /// activity (quiz, lesson, typing). Capped to the most recent entries.
   final Set<String> practiceDates;
@@ -35,6 +39,7 @@ class UserStatsEntity extends Equatable {
     required this.totalStars,
     this.completedMissionsDates = const {},
     this.practiceDates = const {},
+    this.syncEpoch = 0,
   });
 
   @override
@@ -49,6 +54,7 @@ class UserStatsEntity extends Equatable {
     totalStars,
     completedMissionsDates,
     practiceDates,
+    syncEpoch,
   ];
 
   UserStatsEntity copyWith({
@@ -62,6 +68,7 @@ class UserStatsEntity extends Equatable {
     int? totalStars,
     Set<String>? completedMissionsDates,
     Set<String>? practiceDates,
+    int? syncEpoch,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -75,10 +82,9 @@ class UserStatsEntity extends Equatable {
       completedMissionsDates:
           completedMissionsDates ?? this.completedMissionsDates,
       practiceDates: practiceDates ?? this.practiceDates,
+      syncEpoch: syncEpoch ?? this.syncEpoch,
     );
   }
-
-  // ============== COMPUTED PROPERTIES ==============
 
   double _masteryProgress(List<String> keys) {
     for (final key in keys) {
@@ -88,23 +94,19 @@ class UserStatsEntity extends Equatable {
     return 0.0;
   }
 
-  /// Alphabet mastery: based on how many letters have been practiced
   double get alphabetProgress {
     final trackedMastery = _masteryProgress(['alphabets', 'alphabet']);
     if (trackedMastery > 0) return trackedMastery;
     return (practicedLetters.length / alphabetLetterCount).clamp(0.0, 1.0);
   }
 
-  /// Numbers mastery: from categoryMastery map or completed lessons
   double get numbersProgress {
     final trackedMastery = _masteryProgress(['numbers', 'number']);
     if (trackedMastery > 0) return trackedMastery;
-    // Fallback: estimate from total completed lessons
     final total = completedLessons.length;
     return (total / 15).clamp(0.0, 1.0) * 0.5;
   }
 
-  /// Vocabulary mastery: from categoryMastery map or completed lessons
   double get vocabularyProgress {
     final trackedMastery = _masteryProgress(['words', 'vocabulary']);
     if (trackedMastery > 0) return trackedMastery;
@@ -112,7 +114,6 @@ class UserStatsEntity extends Equatable {
     return (total / 20).clamp(0.0, 1.0) * 0.4;
   }
 
-  /// Sentences mastery
   double get sentencesProgress {
     final trackedMastery = _masteryProgress(['sentences', 'sentence']);
     if (trackedMastery > 0) return trackedMastery;
@@ -120,7 +121,6 @@ class UserStatsEntity extends Equatable {
     return (total / 25).clamp(0.0, 1.0) * 0.3;
   }
 
-  /// Rhymes mastery
   double get rhymesProgress {
     final trackedMastery = _masteryProgress(['rhymes', 'rhyme', 'bakhed']);
     if (trackedMastery > 0) return trackedMastery;

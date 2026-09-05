@@ -8,6 +8,7 @@
     "reconcilePaymentAttempts": ["payment_reconcile.js", "payment_state.js"],
     "reconcileOrphanedDeletions": ["delete_account_core.js"],
     "verifyCoursePurchase": ["payment_state.js"],
-    "razorpayWebhook": ["payment_state.js"]
+    "razorpayWebhook": ["payment_state.js"],
+    "admin-maintenance": ["payment_state.js"]
   }
 }

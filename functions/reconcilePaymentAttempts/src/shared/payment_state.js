@@ -44,6 +44,19 @@ function nextState(current, data, event) {
       status: full ? 'refunded' : current.status,
       refundStatus: full ? 'fully_refunded' : 'partially_refunded' };
   }
+  if (event === 'admin.refund') {
+    if (fullyRefunded(current)) return { ...current, status: 'refunded', refundStatus: 'fully_refunded' };
+    const expected = Math.round(Number(current.expectedAmount || 0) * 100);
+    const total = Math.max(Number(current.refundedAmountPaise || 0), Number(data.refundedAmountPaise || expected));
+    const epoch = Number(data.refundEpoch || (Number(current.refundEpoch || 0) + 1));
+    return {
+      ...data,
+      refundedAmountPaise: total,
+      refundEpoch: epoch,
+      status: 'refunded',
+      refundStatus: 'fully_refunded',
+    };
+  }
   if (event?.startsWith('payment.dispute.')) {
     if (fullyRefunded(current)) return { ...data, status: 'refunded' };
     if (current.status === 'revoked') return null;
@@ -54,6 +67,16 @@ function nextState(current, data, event) {
     if (data.status === 'verified') return null;
     if (data.status !== 'disputed') throw new PaymentStateConflict();
     return data;
+  }
+  if (event === 'reconcile.dispute') {
+    if (fullyRefunded(current)) return { ...data, status: 'refunded', refundStatus: 'fully_refunded' };
+    if (current.status === 'revoked' && data.status !== 'revoked') return null;
+    // Server-authoritative dispute reconciliation restores access if won,
+    // revokes entitlement if lost, and maintains disputed if pending.
+    if (data.status === 'verified' || data.status === 'revoked' || data.status === 'disputed') {
+      return data;
+    }
+    throw new PaymentStateConflict(`Unexpected dispute reconciliation status: ${data.status}`);
   }
   assertCaptureAllowed(current);
   if (data.status !== 'verified' || !data.providerPaymentId ||

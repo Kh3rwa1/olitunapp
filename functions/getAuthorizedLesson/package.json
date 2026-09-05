@@ -1,0 +1,10 @@
+{
+  "name": "getAuthorizedLesson",
+  "version": "1.0.0",
+  "description": "Appwrite serverless function for server-authoritative lesson content retrieval and entitlement enforcement",
+  "main": "src/main.js",
+  "type": "module",
+  "dependencies": {
+    "node-appwrite": "25.1.0"
+  }
+}

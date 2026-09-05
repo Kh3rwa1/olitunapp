@@ -262,6 +262,12 @@ class PurchaseRepository {
   Future<void> clearUserCache(String userId) =>
       clearUserEntitlementCache(userId);
 
+  /// Forces a fresh re-validation of user purchases from server, bypassing local cache.
+  Future<EntitlementResult> restorePurchases(String userId) async {
+    await clearUserEntitlementCache(userId);
+    return fetchEntitlements(userId, skipRevalidate: true);
+  }
+
   /// Backward-compatible alias for clearing caches.
   Future<void> clearAllCaches() async {
     // Purge legacy key if any still exists

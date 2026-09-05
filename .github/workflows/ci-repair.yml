@@ -1,0 +1,44 @@
+name: Temporary CI failure diagnostics
+on:
+  push:
+    branches: [fix/review-priority-hardening-20260905]
+    paths: [.github/workflows/ci-repair.yml]
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: priority-ci-repair
+  cancel-in-progress: true
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: fix/review-priority-hardening-20260905
+      - name: Retrieve failed checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view 33953278225 --repo "$GITHUB_REPOSITORY" --log-failed > /tmp/failed-checks.log 2>&1
+      - name: Persist focused failure details
+        if: always()
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('/tmp/failed-checks.log')
+          lines=re.sub(r'\x1b\[[0-9;]*m','',p.read_text() if p.exists() else 'No log produced').splitlines()
+          keep=set(range(min(100,len(lines)))) | set(range(max(0,len(lines)-100),len(lines)))
+          needles=['[E]','failed','ERROR','Error','error','Changed ','exceeds','❌','FAIL','coverage','Format','gate','Gate','Expected:','Actual:']
+          for i,line in enumerate(lines):
+            if any(n in line for n in needles): keep.update(range(max(0,i-3),min(len(lines),i+14)))
+          text='\n'.join(lines[i] for i in sorted(keep))
+          Path('docs/CI_REPAIR_DIAGNOSTICS.txt').write_text('Failed source: 6ce0c8de5e29bad504725ed83a217f9ee5fe9938\n'+text[:180000])
+          PY
+          git config user.name 'Notion AI'
+          git config user.email 'noreply@notion.so'
+          git add docs/CI_REPAIR_DIAGNOSTICS.txt
+          git diff --cached --quiet || git commit -m 'chore: record precise failed check diagnostics'
+          git push origin HEAD:fix/review-priority-hardening-20260905

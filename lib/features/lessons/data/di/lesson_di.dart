@@ -41,7 +41,8 @@ final lessonRepositoryProvider = Provider<LessonRepository>((ref) {
         if (user != null && user.id.isNotEmpty) return user.id;
         final authRepo = ref.read(authRepositoryProvider);
         final result = await authRepo.getCurrentUser();
-        return result.fold((_) => null, (u) => u?.id);
+        final String? userId = result.fold<String?>((_) => null, (u) => u?.id);
+        return userId;
       } catch (_) {
         return null;
       }

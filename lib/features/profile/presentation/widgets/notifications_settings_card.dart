@@ -72,8 +72,9 @@ class NotificationsSettingsCard extends ConsumerWidget {
                     title: Text(
                       freq.label,
                       style: TextStyle(
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isDark ? Colors.white : Colors.black87,
                       ),
                     ),

@@ -150,7 +150,8 @@ final routerProvider = Provider<GoRouter>((ref) {
 
       // Check onboarding: if onboarding not completed and user is on an unallowed path, redirect to /welcome
       final showOnboarding = ref.read(onboardingProvider);
-      final isAllowedDuringOnboarding = isPublicAuthPath || path == '/onboarding';
+      final isAllowedDuringOnboarding =
+          isPublicAuthPath || path == '/onboarding';
       if (showOnboarding && !isAllowedDuringOnboarding) {
         return '/welcome';
       }

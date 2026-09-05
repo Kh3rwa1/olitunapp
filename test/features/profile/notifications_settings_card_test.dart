@@ -75,43 +75,44 @@ void main() {
       },
     );
 
-    testWidgets('opening frequency picker and selecting balanced updates state', (
-      tester,
-    ) async {
-      SharedPreferences.setMockInitialValues({
-        'notifications_enabled': true,
-        'reminder_hour': 20,
-        'reminder_minute': 0,
-      });
-      final prefs = await SharedPreferences.getInstance();
+    testWidgets(
+      'opening frequency picker and selecting balanced updates state',
+      (tester) async {
+        SharedPreferences.setMockInitialValues({
+          'notifications_enabled': true,
+          'reminder_hour': 20,
+          'reminder_minute': 0,
+        });
+        final prefs = await SharedPreferences.getInstance();
 
-      await pumpCard(tester, prefs: prefs);
+        await pumpCard(tester, prefs: prefs);
 
-      // Tap on Reminder Frequency tile
-      await tester.tap(find.text('Reminder Frequency'));
-      await tester.pumpAndSettle();
+        // Tap on Reminder Frequency tile
+        await tester.tap(find.text('Reminder Frequency'));
+        await tester.pumpAndSettle();
 
-      // Modal bottom sheet should be displayed
-      expect(find.text('Balanced (2x daily)'), findsOneWidget);
-      expect(find.text('Relaxed (1x daily)'), findsOneWidget);
+        // Modal bottom sheet should be displayed
+        expect(find.text('Balanced (2x daily)'), findsOneWidget);
+        expect(find.text('Relaxed (1x daily)'), findsOneWidget);
 
-      // Select Balanced
-      await tester.tap(find.text('Balanced (2x daily)'));
-      await tester.pumpAndSettle();
+        // Select Balanced
+        await tester.tap(find.text('Balanced (2x daily)'));
+        await tester.pumpAndSettle();
 
-      // Check that provider and prefs were updated
-      final context = tester.element(find.byType(NotificationsSettingsCard));
-      final container = ProviderScope.containerOf(context);
-      expect(
-        container.read(notificationFrequencyProvider),
-        equals(NotificationFrequency.balanced),
-      );
-      expect(prefs.getString('notification_frequency'), equals('balanced'));
+        // Check that provider and prefs were updated
+        final context = tester.element(find.byType(NotificationsSettingsCard));
+        final container = ProviderScope.containerOf(context);
+        expect(
+          container.read(notificationFrequencyProvider),
+          equals(NotificationFrequency.balanced),
+        );
+        expect(prefs.getString('notification_frequency'), equals('balanced'));
 
-      // Under balanced, Midday and Night saver are not displayed
-      expect(find.text('Night Streak Saver'), findsNothing);
-      expect(find.text('Morning Kickstart'), findsOneWidget);
-    });
+        // Under balanced, Midday and Night saver are not displayed
+        expect(find.text('Night Streak Saver'), findsNothing);
+        expect(find.text('Morning Kickstart'), findsOneWidget);
+      },
+    );
 
     testWidgets('toggling switch toggles notificationsEnabledProvider', (
       tester,

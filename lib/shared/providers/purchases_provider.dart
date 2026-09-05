@@ -145,6 +145,17 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
   /// Pure financial metrics calculated from current loaded items.
   PurchaseMetricsResult get currentMetrics => state.metrics;
 
+  /// Canonical provider wins; legacy values apply only to unmigrated rows.
+  String _providerFilter(String provider) {
+    return Query.or([
+      Query.equal('provider', provider),
+      Query.and([
+        Query.or([Query.isNull('provider'), Query.equal('provider', '')]),
+        Query.equal('unlockMethod', provider),
+      ]),
+    ]);
+  }
+
   /// Loads initial page with optional server-side filter and search query.
   Future<void> loadPurchases({String? filter, String? search}) async {
     final gen = ++_generationCounter;
@@ -164,16 +175,16 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final queries = <String>[
-        Query.orderDesc('purchasedAt'),
+        Query.orderDesc('\$createdAt'),
         Query.limit(pageSize),
       ];
 
-      // Status & unlockMethod filtering
+      // Status and canonical/legacy provider filtering
       if (newFilter == 'razorpay') {
-        queries.add(Query.equal('unlockMethod', 'razorpay'));
+        queries.add(_providerFilter('razorpay'));
         queries.add(Query.equal('status', 'verified'));
       } else if (newFilter == 'review') {
-        queries.add(Query.equal('unlockMethod', 'play_store_review'));
+        queries.add(_providerFilter('play_store_review'));
       } else if (newFilter == 'refunded') {
         queries.add(Query.equal('status', 'refunded'));
       }
@@ -232,16 +243,16 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final queries = <String>[
-        Query.orderDesc('purchasedAt'),
+        Query.orderDesc('\$createdAt'),
         Query.cursorAfter(cursor),
         Query.limit(pageSize),
       ];
 
       if (state.activeFilter == 'razorpay') {
-        queries.add(Query.equal('unlockMethod', 'razorpay'));
+        queries.add(_providerFilter('razorpay'));
         queries.add(Query.equal('status', 'verified'));
       } else if (state.activeFilter == 'review') {
-        queries.add(Query.equal('unlockMethod', 'play_store_review'));
+        queries.add(_providerFilter('play_store_review'));
       } else if (state.activeFilter == 'refunded') {
         queries.add(Query.equal('status', 'refunded'));
       }
@@ -435,7 +446,7 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
       }
 
       final queries = <String>[
-        Query.orderDesc('purchasedAt'),
+        Query.orderDesc('\$createdAt'),
         Query.limit(pageSize),
       ];
 
@@ -444,10 +455,10 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
       }
 
       if (effectiveFilter == 'razorpay') {
-        queries.add(Query.equal('unlockMethod', 'razorpay'));
+        queries.add(_providerFilter('razorpay'));
         queries.add(Query.equal('status', 'verified'));
       } else if (effectiveFilter == 'review') {
-        queries.add(Query.equal('unlockMethod', 'play_store_review'));
+        queries.add(_providerFilter('play_store_review'));
       } else if (effectiveFilter == 'refunded') {
         queries.add(Query.equal('status', 'refunded'));
       }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +22,7 @@ class MockUserStatsNotifier extends UserStatsNotifier {
   final List<QuizResultEntity> savedResults = [];
   final List<int> starsAdded = [];
   bool throwOnSave = false;
+  Completer<void>? saveGate;
 
   MockUserStatsNotifier(this._initial);
 
@@ -30,6 +33,8 @@ class MockUserStatsNotifier extends UserStatsNotifier {
   Future<void> saveQuizResult(QuizResultEntity result) async {
     if (throwOnSave) throw Exception('Appwrite offline error');
     savedResults.add(result);
+    final gate = saveGate;
+    if (gate != null) await gate.future;
   }
 
   @override
@@ -144,6 +149,7 @@ void main() {
         quizTakenTodayProvider.overrideWith(() => mockQuizTakenToday),
       ],
     );
+    container.listen(quizSessionNotifierProvider('test_quiz_id'), (_, _) {});
   });
 
   tearDown(() {
@@ -158,22 +164,15 @@ void main() {
           quizSessionNotifierProvider('test_quiz_id').notifier,
         );
         notifier.startQuiz(mockQuiz);
-
-        // Select answer for the single question
         final displayedQ = notifier.displayedQuestion(mockQuiz);
         notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
-
-        // Complete the quiz
         await notifier.nextQuestion(mockQuiz);
-
         final state = container.read(
           quizSessionNotifierProvider('test_quiz_id'),
         );
         expect(state.isQuizComplete, isTrue);
-
-        // Verify we saved result and added stars
         expect(mockUserStats.savedResults.length, 1);
-        expect(mockUserStats.starsAdded, [(1 * 5) + 0]);
+        expect(mockUserStats.starsAdded, [5]);
         expect(mockQuizTakenToday.setCompletedCalls, 1);
       },
     );
@@ -181,26 +180,105 @@ void main() {
     test(
       'Completion handles exceptions thrown by userStatsProvider gracefully',
       () async {
-        // Configure mockUserStats to throw an exception when saving quiz result
         mockUserStats.throwOnSave = true;
-
         final notifier = container.read(
           quizSessionNotifierProvider('test_quiz_id').notifier,
         );
         notifier.startQuiz(mockQuiz);
-
         final displayedQ = notifier.displayedQuestion(mockQuiz);
         notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
-
-        // Trigger nextQuestion which completes the quiz and persists.
-        // This should run without throwing because we wrapped it in a try-catch.
         await expectLater(notifier.nextQuestion(mockQuiz), completes);
-
         final state = container.read(
           quizSessionNotifierProvider('test_quiz_id'),
         );
         expect(state.isQuizComplete, isTrue);
+        expect(mockUserStats.starsAdded, isEmpty);
       },
     );
+
+    test('concurrent and repeated completion pays once', () async {
+      final notifier = container.read(
+        quizSessionNotifierProvider('test_quiz_id').notifier,
+      );
+      notifier.startQuiz(mockQuiz);
+      final question = notifier.displayedQuestion(mockQuiz);
+      notifier.selectAnswer(question.correctIndex, question, mockQuiz);
+      final gate = Completer<void>();
+      mockUserStats.saveGate = gate;
+      final first = notifier.nextQuestion(mockQuiz);
+      await notifier.nextQuestion(mockQuiz);
+      expect(mockUserStats.savedResults.length, 1);
+      expect(mockUserStats.starsAdded, isEmpty);
+      gate.complete();
+      await first;
+      await notifier.nextQuestion(mockQuiz);
+      expect(mockUserStats.savedResults.length, 1);
+      expect(mockUserStats.starsAdded, [5]);
+      expect(mockQuizTakenToday.setCompletedCalls, 1);
+    });
+
+    test('an unanswered question cannot be completed', () async {
+      final notifier = container.read(
+        quizSessionNotifierProvider('test_quiz_id').notifier,
+      );
+      notifier.startQuiz(mockQuiz);
+      await notifier.nextQuestion(mockQuiz);
+      expect(mockUserStats.savedResults, isEmpty);
+      expect(mockUserStats.starsAdded, isEmpty);
+      expect(
+        container
+            .read(quizSessionNotifierProvider('test_quiz_id'))
+            .isQuizComplete,
+        isFalse,
+      );
+    });
+
+    test('reset during save does not change the earned reward', () async {
+      final notifier = container.read(
+        quizSessionNotifierProvider('test_quiz_id').notifier,
+      );
+      notifier.startQuiz(mockQuiz);
+      final question = notifier.displayedQuestion(mockQuiz);
+      notifier.selectAnswer(question.correctIndex, question, mockQuiz);
+      final gate = Completer<void>();
+      mockUserStats.saveGate = gate;
+      final completion = notifier.nextQuestion(mockQuiz);
+      notifier.reset();
+      gate.complete();
+      await completion;
+      expect(mockUserStats.starsAdded, [5]);
+      expect(
+        container.read(quizSessionNotifierProvider('test_quiz_id')).hasStarted,
+        isFalse,
+      );
+    });
+
+    test('running out of hearts records progress but pays no stars', () async {
+      final quiz = QuizModel(
+        id: mockQuiz.id,
+        categoryId: mockQuiz.categoryId,
+        title: mockQuiz.title,
+        questions: List.generate(4, (_) => mockQuiz.questions.single),
+      );
+      final notifier = container.read(
+        quizSessionNotifierProvider('test_quiz_id').notifier,
+      );
+      notifier.startQuiz(quiz);
+      for (var index = 0; index < 4; index++) {
+        final question = notifier.displayedQuestion(quiz);
+        final answer = index == 0
+            ? question.correctIndex
+            : (question.correctIndex + 1) % question.optionsLatin.length;
+        notifier.selectAnswer(answer, question, quiz);
+        if (index < 3) await notifier.nextQuestion(quiz);
+      }
+      await Future<void>.delayed(Duration.zero);
+      await notifier.nextQuestion(quiz);
+      expect(mockUserStats.savedResults.length, 1);
+      expect(mockUserStats.savedResults.single.failedNoHearts, isTrue);
+      expect(mockUserStats.savedResults.single.score, 1);
+      expect(mockUserStats.starsAdded, isEmpty);
+      expect(mockQuizTakenToday.setCompletedCalls, 0);
+    });
   });
 }

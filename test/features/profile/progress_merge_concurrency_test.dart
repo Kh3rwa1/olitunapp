@@ -4,14 +4,21 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
+import 'package:itun/features/profile/presentation/providers/user_stats_provider.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
+
+class _MockAnalyticsService extends Mock implements LearningAnalyticsService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -545,6 +552,240 @@ void main() {
         expect(merged.baseStarsByOrigin['devB'], 1);
         expect(merged.starCheckpoints['devA'], 100);
         expect(merged.starCheckpoints['devB'], 0);
+      },
+    );
+
+    test(
+      'Two devices using default star_<timestamp> format merge to 202 instead of 101',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // Device A has 101 unsequenced events (e.g. star_<timestamp>)
+        var deviceA = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 101; i++) {
+          deviceA = deviceA.recordStarReward(1, eventId: 'star_1725547382$i');
+        }
+
+        // Device B has 101 different unsequenced events
+        var deviceB = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 101; i++) {
+          deviceB = deviceB.recordStarReward(1, eventId: 'star_1725547383$i');
+        }
+
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        // Device A uploads its 101 star_<timestamp> events to cloud
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(deviceA).toJson(),
+            ),
+          }),
+        );
+
+        // Device B merges its 101 events with Device A's cloud progress
+        final mergeResult = await repo.updateUserStats(deviceB);
+        final merged = mergeResult.getOrElse((_) => fail('merge failed'));
+
+        // In the flawed algorithm, Device B's timestamp checkpoint on origin 'star'
+        // suppressed all 101 events of Device A, yielding only 101 instead of 202.
+        // With generic unsequenced origins treated as discrete, all 202 events are preserved.
+        expect(merged.totalStars, 202);
+      },
+    );
+
+    test(
+      'Previously unseen event arriving below a checkpoint remains preserved (103 not 102)',
+      () async {
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefs,
+          clock: () => fixedClock,
+        );
+
+        // Device A has 102 events on origin devA and compacts to checkpoint 1
+        var deviceA = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        );
+        for (int i = 0; i < 102; i++) {
+          deviceA = deviceA.recordStarReward(1, originId: 'devA', seq: i);
+        }
+
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        final resultA = await repo.updateUserStats(deviceA);
+        final compactedA = resultA.getOrElse((_) => fail('compact A failed'));
+        expect(compactedA.totalStars, 102);
+        expect(compactedA.starCheckpoints['devA'], 1);
+
+        // A previously unseen event arrives from another device / discrete source
+        final unseenDevice = const UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '2026-09-05',
+          currentStreak: 1,
+          totalStars: 0,
+        ).recordStarReward(1, eventId: 'unseen_external_event_1');
+
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(compactedA).toJson(),
+            ),
+          }),
+        );
+
+        final mergeResult = await repo.updateUserStats(unseenDevice);
+        final merged = mergeResult.getOrElse((_) => fail('merge failed'));
+
+        // MUST be 103, NOT 102!
+        expect(merged.totalStars, 103);
+        expect(
+          merged.starEvents.containsKey('unseen_external_event_1'),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'Real UserStatsNotifier: two client containers generate persistent origins and safe sequences, merging cleanly',
+      () async {
+        final mockAnalytics = _MockAnalyticsService();
+        when(
+          () => mockAnalytics.track(
+            any(),
+            source: any(named: 'source'),
+            sourceId: any(named: 'sourceId'),
+            learnerLevel: any(named: 'learnerLevel'),
+            scriptMode: any(named: 'scriptMode'),
+            metadata: any(named: 'metadata'),
+          ),
+        ).thenAnswer((_) async {});
+
+        // Client A SharedPreferences
+        SharedPreferences.setMockInitialValues({});
+        final prefsA = await SharedPreferences.getInstance();
+        final containerA = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefsA),
+            authRepositoryProvider.overrideWithValue(auth),
+            userStatsClockProvider.overrideWithValue(() => fixedClock),
+            learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
+          ],
+        );
+        addTearDown(containerA.dispose);
+
+        // Wait for container A to initialize
+        await containerA.read(userStatsProvider.notifier).loadStats();
+
+        // Client A awards 5 stars through the real notifier
+        await containerA.read(userStatsProvider.notifier).addStars(5);
+        final statsA = containerA.read(userStatsProvider).value!;
+        expect(statsA.totalStars, 5);
+        final eventKeyA = statsA.starEvents.keys.first;
+        expect(eventKeyA, startsWith('c_'));
+        expect(eventKeyA, endsWith('_1'));
+
+        // Client B SharedPreferences
+        SharedPreferences.setMockInitialValues({});
+        final prefsB = await SharedPreferences.getInstance();
+        final containerB = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefsB),
+            authRepositoryProvider.overrideWithValue(auth),
+            userStatsClockProvider.overrideWithValue(() => fixedClock),
+            learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
+          ],
+        );
+        addTearDown(containerB.dispose);
+
+        await containerB.read(userStatsProvider.notifier).loadStats();
+
+        // Client B awards 10 stars through the real notifier
+        await containerB.read(userStatsProvider.notifier).addStars(10);
+        final statsB = containerB.read(userStatsProvider).value!;
+        expect(statsB.totalStars, 10);
+        final eventKeyB = statsB.starEvents.keys.first;
+        expect(eventKeyB, startsWith('c_'));
+        expect(eventKeyB, endsWith('_1'));
+
+        // The two origins MUST be distinct
+        expect(eventKeyA, isNot(equals(eventKeyB)));
+
+        // Merge Client A and Client B stats through repository
+        final repo = ProfileRepositoryImpl(
+          auth,
+          prefsA,
+          clock: () => fixedClock,
+        );
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(() => auth.getUserPrefs()).thenAnswer(
+          (_) async => Right(<String, dynamic>{
+            'user_progress_data': jsonEncode(
+              UserStatsModel.fromEntity(statsA).toJson(),
+            ),
+          }),
+        );
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
+
+        final mergeResult = await repo.updateUserStats(statsB);
+        final merged = mergeResult.getOrElse((_) => fail('merge failed'));
+
+        // Must preserve both earnings: 5 + 10 = 15!
+        expect(merged.totalStars, 15);
+        expect(merged.starEvents.length, 2);
       },
     );
 

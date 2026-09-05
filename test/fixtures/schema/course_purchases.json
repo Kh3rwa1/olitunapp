@@ -137,6 +137,13 @@
       "required": false
     },
     {
+      "key": "lastRefundClaimId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
       "key": "purchasedAt",
       "type": "string",
       "size": 30,

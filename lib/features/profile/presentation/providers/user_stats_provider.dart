@@ -11,6 +11,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/profile/domain/progress_origin_identity.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
 
@@ -201,9 +202,13 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     if (current == null) return;
 
     // 1. Award Stars
+    final prefs = ref.read(sharedPreferencesProvider);
+    final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+    final seq = ProgressOriginIdentity.nextStarSeq(prefs, originId, current);
     final updated = current.recordStarReward(
       starsAwarded,
-      eventId: 'practice_${contentId}_${DateTime.now().microsecondsSinceEpoch}',
+      originId: originId,
+      seq: seq,
     );
 
     // 2. Track Analytics
@@ -351,7 +356,12 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       if (current == null) return;
       if (count <= 0) return;
 
-      final updated = _withStreakUpdate(current.recordStarReward(count));
+      final prefs = ref.read(sharedPreferencesProvider);
+      final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+      final seq = ProgressOriginIdentity.nextStarSeq(prefs, originId, current);
+      final updated = _withStreakUpdate(
+        current.recordStarReward(count, originId: originId, seq: seq),
+      );
       await updateStats(updated);
     } catch (e, st) {
       AppLogger.debug('Failed to add stars: $e\n$st');
@@ -377,9 +387,17 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
 
     var updated = current.copyWith(completedLessons: updatedLessons);
     if (!alreadyCompleted) {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+      final seq = ProgressOriginIdentity.nextMinuteSeq(
+        prefs,
+        originId,
+        current,
+      );
       updated = updated.recordLearningMinutes(
         estimatedMinutes.clamp(0, 240),
-        eventId: 'lesson_$lessonId',
+        originId: originId,
+        seq: seq,
       );
     }
 

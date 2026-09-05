@@ -265,36 +265,20 @@ class ContentRepository {
     return list;
   }
 
-  String _getCollectionId(ContentKind kind) {
-    switch (kind) {
-      case ContentKind.letter:
-        return 'letters';
-      case ContentKind.number:
-        return 'numbers';
-      case ContentKind.word:
-        return 'words';
-      case ContentKind.sentence:
-        return 'sentences';
-      case ContentKind.lesson:
-        return 'lessons';
-      case ContentKind.rhyme:
-        return 'rhymes';
-    }
-  }
+  String _getCollectionId(ContentKind kind) => switch (kind) {
+    ContentKind.letter => 'letters',
+    ContentKind.number => 'numbers',
+    ContentKind.word => 'words',
+    ContentKind.sentence => 'sentences',
+    ContentKind.lesson => 'lessons',
+    ContentKind.rhyme => 'rhymes',
+  };
 
-  String? _categoryAttribute(ContentKind kind) {
-    switch (kind) {
-      case ContentKind.lesson:
-      case ContentKind.rhyme:
-        return 'categoryId';
-      case ContentKind.word:
-      case ContentKind.sentence:
-        return 'category';
-      case ContentKind.letter:
-      case ContentKind.number:
-        return null;
-    }
-  }
+  String? _categoryAttribute(ContentKind kind) => switch (kind) {
+    ContentKind.lesson || ContentKind.rhyme => 'categoryId',
+    ContentKind.word || ContentKind.sentence => 'category',
+    ContentKind.letter || ContentKind.number => null,
+  };
 
   bool _hasOrderAttribute(ContentKind kind) => kind != ContentKind.rhyme;
 

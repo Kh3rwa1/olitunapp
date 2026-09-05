@@ -35,16 +35,22 @@ class PressableScale extends StatefulWidget {
 
 class _PressableScaleState extends State<PressableScale>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: MotionTokens.quick,
-    reverseDuration: MotionTokens.short,
-  );
+  late final AnimationController _controller;
   bool _showFocus = false;
   bool _hasFocus = false;
 
   bool get _interactive =>
       widget.enabled && (widget.onTap != null || widget.onLongPress != null);
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: MotionTokens.quick,
+      reverseDuration: MotionTokens.short,
+    );
+  }
 
   @override
   void didUpdateWidget(covariant PressableScale oldWidget) {

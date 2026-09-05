@@ -4,6 +4,7 @@ import 'package:appwrite/appwrite.dart';
 import '../../../../core/api/appwrite_databases_pagination.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../shared/security/premium_content_policy.dart';
 import '../models/lesson_model.dart';
 
 abstract class LessonRemoteDataSource {
@@ -92,14 +93,48 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     }
   }
 
+  Future<PublicationDecision> _publicationDecisionFor(
+    LessonModel lesson,
+  ) async {
+    if (lesson.categoryId.trim().isEmpty) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: lesson.data?['isPremium'] == true,
+        categoryResolved: false,
+      );
+    }
+
+    try {
+      final category = await databases
+          .getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: lesson.categoryId,
+          )
+          .timeout(_readTimeout);
+      return PremiumContentPolicy.forContentItem(
+        isPremium: lesson.data?['isPremium'] == true,
+        categoryUnlockMode: category.data['unlockMode'] as String?,
+        lessonOrder: lesson.order,
+        previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+      );
+    } catch (_) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: lesson.data?['isPremium'] == true,
+        categoryResolved: false,
+      );
+    }
+  }
+
+  List<String> _readPermissions(PublicationDecision decision) =>
+      decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
+
   @override
   Future<void> createLesson(LessonModel lesson) async {
     try {
       final data = lesson.toJson()..remove('id');
-      // Appwrite expects blocks as a JSON string in some cases, or we can use relationships.
-      // Based on current implementation, it seems we use JSON string for blocks.
       data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
+      final decision = await _publicationDecisionFor(lesson);
 
       await databases
           .createDocument(
@@ -107,7 +142,7 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
             collectionId: 'lessons',
             documentId: lesson.id,
             data: data,
-            permissions: [Permission.read(Role.any())],
+            permissions: _readPermissions(decision),
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
@@ -129,6 +164,7 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       final data = lesson.toJson()..remove('id');
       data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
+      final decision = await _publicationDecisionFor(lesson);
 
       await databases
           .updateDocument(
@@ -136,6 +172,7 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
             collectionId: 'lessons',
             documentId: lesson.id,
             data: data,
+            permissions: _readPermissions(decision),
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

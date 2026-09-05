@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
+
 import '../config/ad_config.dart';
 import '../logging/app_logger.dart';
 import 'ad_error.dart';
@@ -19,6 +21,7 @@ class AdService with WidgetsBindingObserver {
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
+  bool get canServeAds => _isInitialized && consentManager.requestsAllowed;
 
   DateTime? _lastBackgroundedAt;
 
@@ -93,7 +96,7 @@ class AdService with WidgetsBindingObserver {
     void Function(Ad)? onImpression,
     void Function(Ad)? onClicked,
   }) {
-    if (kIsWeb) return null;
+    if (kIsWeb || !canServeAds) return null;
 
     final unitId = AdConfig.bannerAdUnitId;
     if (unitId.isEmpty) return null;
@@ -130,6 +133,12 @@ class AdService with WidgetsBindingObserver {
       return left<AdError, InterstitialAd>(const AdPlatformUnsupportedError());
     }
 
+    if (!canServeAds) {
+      return left<AdError, InterstitialAd>(
+        AdConsentError('Ad consent is not available.', 'consent_unavailable'),
+      );
+    }
+
     final unitId = AdConfig.interstitialAdUnitId;
     if (unitId.isEmpty) {
       return left<AdError, InterstitialAd>(
@@ -164,6 +173,12 @@ class AdService with WidgetsBindingObserver {
   Future<Either<AdError, RewardedAd>> loadRewardedAd() async {
     if (kIsWeb) {
       return left<AdError, RewardedAd>(const AdPlatformUnsupportedError());
+    }
+
+    if (!canServeAds) {
+      return left<AdError, RewardedAd>(
+        AdConsentError('Ad consent is not available.', 'consent_unavailable'),
+      );
     }
 
     final unitId = AdConfig.rewardedAdUnitId;
@@ -207,7 +222,7 @@ class AdService with WidgetsBindingObserver {
     void Function(Ad)? onImpression,
     void Function(Ad)? onClicked,
   }) {
-    if (kIsWeb) return null;
+    if (kIsWeb || !canServeAds) return null;
 
     final unitId = AdConfig.nativeAdUnitId;
     if (unitId.isEmpty) return null;

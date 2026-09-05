@@ -1,12 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 import '../../shared/providers/purchases_provider.dart';
 import '../config/ad_config.dart';
 import '../logging/app_logger.dart';
+import 'ad_service.dart';
 
 class AdState extends Equatable {
   final ConsentStatus consentStatus;
+  final bool consentAllowsAds;
   final bool isAdFreeUser;
   final bool isAdsEnabledGlobally;
   final Map<String, int> adLoadErrors;
@@ -18,6 +21,7 @@ class AdState extends Equatable {
 
   const AdState({
     this.consentStatus = ConsentStatus.unknown,
+    this.consentAllowsAds = false,
     this.isAdFreeUser = false,
     this.isAdsEnabledGlobally = true,
     this.adLoadErrors = const {},
@@ -30,7 +34,8 @@ class AdState extends Equatable {
   });
 
   /// Whether ads can be displayed to this user.
-  bool get shouldShowAds => isAdsEnabledGlobally && !isAdFreeUser;
+  bool get shouldShowAds =>
+      consentAllowsAds && isAdsEnabledGlobally && !isAdFreeUser;
 
   /// Check if interstitial ad is allowed based on frequency cap and user status.
   bool canShowInterstitial() {
@@ -45,6 +50,7 @@ class AdState extends Equatable {
   bool canShowRewarded() {
     if (isAdFreeUser) return true; // Ad-free users can claim rewards anytime
     if (!isAdsEnabledGlobally) return true;
+    if (!consentAllowsAds) return false;
     if (lastRewardedShownAt == null) return true;
 
     final elapsed = DateTime.now().difference(lastRewardedShownAt!);
@@ -63,6 +69,7 @@ class AdState extends Equatable {
 
   AdState copyWith({
     ConsentStatus? consentStatus,
+    bool? consentAllowsAds,
     bool? isAdFreeUser,
     bool? isAdsEnabledGlobally,
     Map<String, int>? adLoadErrors,
@@ -74,6 +81,7 @@ class AdState extends Equatable {
   }) {
     return AdState(
       consentStatus: consentStatus ?? this.consentStatus,
+      consentAllowsAds: consentAllowsAds ?? this.consentAllowsAds,
       isAdFreeUser: isAdFreeUser ?? this.isAdFreeUser,
       isAdsEnabledGlobally: isAdsEnabledGlobally ?? this.isAdsEnabledGlobally,
       adLoadErrors: adLoadErrors ?? this.adLoadErrors,
@@ -91,6 +99,7 @@ class AdState extends Equatable {
   @override
   List<Object?> get props => [
     consentStatus,
+    consentAllowsAds,
     isAdFreeUser,
     isAdsEnabledGlobally,
     adLoadErrors,
@@ -128,7 +137,14 @@ class AdStateNotifier extends Notifier<AdState> {
       // Defensive for headless test environments without full provider container setup
     }
 
-    return const AdState();
+    final consent = ref.watch(adServiceProvider).consentManager;
+    void onConsentChanged() {
+      state = state.copyWith(consentAllowsAds: consent.requestsAllowed);
+    }
+
+    consent.adsAllowed.addListener(onConsentChanged);
+    ref.onDispose(() => consent.adsAllowed.removeListener(onConsentChanged));
+    return AdState(consentAllowsAds: consent.requestsAllowed);
   }
 
   void setConsentStatus(ConsentStatus status) {

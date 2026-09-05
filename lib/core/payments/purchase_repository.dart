@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../api/appwrite_db_service.dart';
 import '../auth/appwrite_auth_service.dart';
 import '../storage/cache_service.dart';
@@ -37,9 +39,26 @@ class EntitlementResult {
       status == EntitlementStatus.staleCached;
 }
 
+final entitlementRevisionProvider = StateProvider.family<int, String>(
+  (ref, userId) => 0,
+);
+
 class PurchaseRepository {
   final Ref ref;
   PurchaseRepository(this.ref);
+  final Set<String> _revokedUsers = {};
+  final Map<String, int> _generations = {};
+  bool _disposed = false;
+  static const offlineEntitlementGrace = Duration(hours: 24);
+
+  void dispose() {
+    _disposed = true;
+  }
+
+  void _notify(String userId) {
+    if (!_disposed)
+      ref.read(entitlementRevisionProvider(userId).notifier).state++;
+  }
 
   static String _getCacheKey(String userId) =>
       'entitlements:production:$userId';
@@ -69,7 +88,10 @@ class PurchaseRepository {
       (json) => Set<String>.from(json['ids'] as List),
     );
 
-    if (cached != null) {
+    if (cached != null &&
+        meta != null &&
+        !meta.isExpired &&
+        !_revokedUsers.contains(userId)) {
       if (!skipRevalidate) {
         _triggerRevalidation(userId, userCacheKey, cached);
       }
@@ -102,6 +124,7 @@ class PurchaseRepository {
     String userId,
     String userCacheKey,
   ) async {
+    final generation = _generations[userId] ?? 0;
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
@@ -122,6 +145,13 @@ class PurchaseRepository {
           .where((id) => id.isNotEmpty)
           .toSet();
 
+      if (_disposed || generation != (_generations[userId] ?? 0)) {
+        return const EntitlementResult(
+          categoryIds: {},
+          status: EntitlementStatus.unauthenticated,
+        );
+      }
+      _revokedUsers.remove(userId);
       // Save user-scoped cache with 5 minute TTL
       await CacheService.set(userCacheKey, {
         'ids': categoryIds.toList(),
@@ -134,42 +164,61 @@ class PurchaseRepository {
     } catch (e) {
       AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
 
-      // Attempt to recover stale cache entry if server request fails
-      final staleCache = await CacheService.getIgnoringTtl(
-        userCacheKey,
-        (json) => Set<String>.from(json['ids'] as List),
-      );
-
-      if (staleCache != null && staleCache.isNotEmpty) {
-        return EntitlementResult(
-          categoryIds: staleCache,
-          status: EntitlementStatus.staleCached,
-          sanitizedErrorMessage:
-              'Unable to refresh purchases. Displaying cached entitlements.',
-          isFromCache: true,
-        );
-      }
-
-      final errorStr = e.toString().toLowerCase();
-      if (errorStr.contains('socketexception') ||
-          errorStr.contains('network') ||
-          errorStr.contains('connection')) {
+      if (_disposed || generation != (_generations[userId] ?? 0)) {
         return const EntitlementResult(
           categoryIds: {},
-          status: EntitlementStatus.networkUnavailable,
-          sanitizedErrorMessage:
-              'Network connection unavailable. Please check your internet connection.',
+          status: EntitlementStatus.unauthenticated,
         );
       }
-
-      if (errorStr.contains('401') ||
+      final errorStr = e.toString().toLowerCase();
+      final denied =
+          e is appwrite.AppwriteException && (e.code == 401 || e.code == 403) ||
+          errorStr.contains('401') ||
           errorStr.contains('403') ||
           errorStr.contains('unauthorized') ||
-          errorStr.contains('permission')) {
+          errorStr.contains('permission');
+      if (denied) {
+        final firstDenial = _revokedUsers.add(userId);
+        await CacheService.delete(userCacheKey);
+        if (firstDenial) _notify(userId);
         return const EntitlementResult(
           categoryIds: {},
           status: EntitlementStatus.permissionDenied,
           sanitizedErrorMessage: 'Access denied to purchase records.',
+        );
+      }
+      final isNetworkFailure =
+          e is TimeoutException ||
+          (e is appwrite.AppwriteException &&
+              (e.code == 0 || e.type == 'network_failure')) ||
+          errorStr.contains('socketexception') ||
+          errorStr.contains('network') ||
+          errorStr.contains('connection');
+      if (isNetworkFailure && !_revokedUsers.contains(userId)) {
+        final meta = await CacheService.getMeta(userCacheKey);
+        final age = meta == null
+            ? null
+            : DateTime.now().millisecondsSinceEpoch - meta.lastSyncAtMs;
+        if (age != null &&
+            age >= 0 &&
+            age <= offlineEntitlementGrace.inMilliseconds) {
+          final stale = await CacheService.getIgnoringTtl(
+            userCacheKey,
+            (json) => Set<String>.from(json['ids'] as List),
+          );
+          if (stale != null)
+            return EntitlementResult(
+              categoryIds: stale,
+              status: EntitlementStatus.staleCached,
+              isFromCache: true,
+              sanitizedErrorMessage:
+                  'Offline access is limited to 24 hours since verification.',
+            );
+        }
+        return const EntitlementResult(
+          categoryIds: {},
+          status: EntitlementStatus.networkUnavailable,
+          sanitizedErrorMessage: 'Reconnect to verify your purchases.',
         );
       }
 
@@ -188,42 +237,14 @@ class PurchaseRepository {
     Set<String> currentCached,
   ) {
     unawaited(
-      Future.microtask(() async {
-        try {
-          final db = ref.read(appwriteDbServiceProvider);
-          final result = await db.listDocuments(
-            'course_purchases',
-            queries: [
-              appwrite.Query.equal('userId', userId),
-              appwrite.Query.equal('status', 'verified'),
-            ],
-          );
-
-          final fresh = result
-              .map((doc) {
-                final raw = doc['categoryId'];
-                if (raw is String) return raw;
-                if (raw is Map) {
-                  return (raw['\$id'] ?? raw['id'] ?? '') as String;
-                }
-                return '';
-              })
-              .where((id) => id.isNotEmpty)
-              .toSet();
-
-          if (fresh.length != currentCached.length ||
-              !fresh.containsAll(currentCached)) {
-            AppLogger.debug(
-              'SWR Revalidation: Entitlements changed for user $userId. Updating cache.',
-            );
-            await CacheService.set(userCacheKey, {
-              'ids': fresh.toList(),
-            }, ttl: entitlementTtl);
-          }
-        } catch (e) {
-          AppLogger.debug(
-            'SWR Revalidation background fetch failed for $userId: $e',
-          );
+      Future<void>(() async {
+        if (_disposed) return;
+        final fresh = await _fetchFromServer(userId, userCacheKey);
+        if (_disposed) return;
+        if (fresh.status == EntitlementStatus.verified &&
+            (fresh.categoryIds.length != currentCached.length ||
+                !fresh.categoryIds.containsAll(currentCached))) {
+          _notify(userId);
         }
       }),
     );
@@ -232,7 +253,9 @@ class PurchaseRepository {
   /// Purge user-scoped entitlement cache upon refund, logout or account change.
   Future<void> clearUserEntitlementCache(String userId) async {
     if (userId.isNotEmpty) {
+      _generations[userId] = (_generations[userId] ?? 0) + 1;
       await CacheService.delete(_getCacheKey(userId));
+      _notify(userId);
     }
   }
 
@@ -312,5 +335,7 @@ class PurchaseRepository {
 }
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
-  return PurchaseRepository(ref);
+  final repo = PurchaseRepository(ref);
+  ref.onDispose(repo.dispose);
+  return repo;
 });

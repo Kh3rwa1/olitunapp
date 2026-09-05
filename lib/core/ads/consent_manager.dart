@@ -1,8 +1,10 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../config/ad_config.dart';
 import '../logging/app_logger.dart';
 import 'ad_error.dart';
@@ -11,6 +13,8 @@ class ConsentManager {
   static const String consentStatusPrefKey = 'admob_consent_status';
 
   final SharedPreferences? _prefs;
+  final ValueNotifier<bool> adsAllowed = ValueNotifier(false);
+  bool get requestsAllowed => adsAllowed.value;
 
   ConsentManager([this._prefs]);
 
@@ -39,10 +43,12 @@ class ConsentManager {
       () async {
         try {
           final status = await ConsentInformation.instance.getConsentStatus();
+          await canRequestAds();
           await _saveConsentStatus(status);
           AppLogger.debug('ConsentManager: Consent info updated: $status');
           completer.complete(right<AdError, ConsentStatus>(status));
         } catch (e) {
+          adsAllowed.value = false;
           AppLogger.debug('ConsentManager: Failed to read consent status: $e');
           completer.complete(
             right<AdError, ConsentStatus>(ConsentStatus.unknown),
@@ -50,6 +56,7 @@ class ConsentManager {
         }
       },
       (FormError error) {
+        adsAllowed.value = false;
         AppLogger.debug(
           'ConsentManager: UMP request failed: ${error.errorCode} - ${error.message}',
         );
@@ -74,6 +81,7 @@ class ConsentManager {
 
     ConsentForm.loadAndShowConsentFormIfRequired((FormError? formError) async {
       if (formError != null) {
+        adsAllowed.value = false;
         AppLogger.debug(
           'ConsentManager: Consent form error: ${formError.errorCode} - ${formError.message}',
         );
@@ -87,12 +95,14 @@ class ConsentManager {
 
       try {
         final status = await ConsentInformation.instance.getConsentStatus();
+        await canRequestAds();
         await _saveConsentStatus(status);
         AppLogger.debug(
           'ConsentManager: Consent form dismissed. Status: $status',
         );
         completer.complete(right<AdError, ConsentStatus>(status));
       } catch (e) {
+        adsAllowed.value = false;
         completer.complete(
           right<AdError, ConsentStatus>(ConsentStatus.unknown),
         );
@@ -106,11 +116,16 @@ class ConsentManager {
   Future<bool> canRequestAds() async {
     if (kIsWeb) return false;
     try {
-      return await ConsentInformation.instance.canRequestAds();
+      final status = await ConsentInformation.instance.getConsentStatus();
+      final allowed =
+          (status == ConsentStatus.obtained ||
+              status == ConsentStatus.notRequired) &&
+          await ConsentInformation.instance.canRequestAds();
+      adsAllowed.value = allowed;
+      return allowed;
     } catch (_) {
-      // UMP unavailable (e.g. before initialisation) — do not block ad
-      // serving; consent enforcement still happens at form level.
-      return true;
+      adsAllowed.value = false;
+      return false;
     }
   }
 
@@ -152,6 +167,7 @@ class ConsentManager {
 
   /// Reset consent status (useful for debug/testing).
   Future<void> reset() async {
+    adsAllowed.value = false;
     if (kIsWeb) return;
     try {
       await ConsentInformation.instance.reset();

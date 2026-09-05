@@ -1,4 +1,8 @@
 import 'dart:io';
+import 'dart:async';
+
+import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/storage/cache_service.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -22,6 +26,12 @@ class FakeNetworkInfo implements NetworkInfo {
   @override
   Stream<List<ConnectivityResult>> get onConnectivityChanged =>
       const Stream.empty();
+}
+
+class FailingOutbox extends MutationOutboxService {
+  @override
+  Future<void> enqueueMutation(PendingMutation mutation) async =>
+      throw StateError('disk full');
 }
 
 void main() {
@@ -55,6 +65,150 @@ void main() {
     isPublished: true,
     updatedAt: DateTime(2026, 9, 15),
   );
+
+  test(
+    'offline save fails when its durable queue is absent or unwritable',
+    () async {
+      for (final outbox in <MutationOutboxService?>[null, FailingOutbox()]) {
+        final repository = ContentRepository(
+          databases: Databases(Client()),
+          networkInfo: FakeNetworkInfo(connected: false),
+          mutationOutbox: outbox,
+        );
+        final result = await repository.upsert(buildItem());
+        expect(result.isLeft(), isTrue);
+      }
+    },
+  );
+
+  test(
+    'replay cannot acknowledge an offline re-enqueue as a server success',
+    () async {
+      final repository = ContentRepository(
+        databases: Databases(Client()),
+        networkInfo: FakeNetworkInfo(connected: false),
+        mutationOutbox: MutationOutboxService(),
+      );
+      final result = await repository.upsert(
+        buildItem(),
+        allowOfflineQueue: false,
+      );
+      expect(result.isLeft(), isTrue);
+      expect(
+        await MutationOutboxService().getPendingMutations(
+          contentMutationQueueUserId,
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test('durable edit survives Hive close and reopen before replay', () async {
+    final outbox = MutationOutboxService();
+    final repository = ContentRepository(
+      databases: Databases(Client()),
+      networkInfo: FakeNetworkInfo(connected: false),
+      mutationOutbox: outbox,
+    );
+    expect((await repository.upsert(buildItem())).isRight(), isTrue);
+    await Hive.close();
+    MutationOutboxService.resetForTesting();
+    CacheService.resetForTesting();
+    final reopened = MutationOutboxService();
+    expect(
+      await reopened.getPendingMutations(contentMutationQueueUserId),
+      hasLength(1),
+    );
+    var calls = 0;
+    final replay = ContentMutationReplay(
+      outbox: reopened,
+      networkInfo: FakeNetworkInfo(connected: true),
+      executeUpsert: (item) async {
+        calls++;
+        return right(item);
+      },
+    );
+    expect((await replay.replayPending()).replayed, 1);
+    expect(calls, 1);
+    expect(
+      await reopened.getPendingMutations(contentMutationQueueUserId),
+      isEmpty,
+    );
+  });
+
+  test(
+    'simultaneous replay triggers share one execution and await persistence',
+    () async {
+      final outbox = MutationOutboxService();
+      final item = buildItem();
+      await outbox.enqueueMutation(
+        PendingMutation(
+          operationId: 'single_flight',
+          userId: contentMutationQueueUserId,
+          operationType: 'content.upsert',
+          entityId: item.id,
+          payload: {'kind': item.kind.name, 'item': item.toJson()},
+          createdAt: DateTime.now(),
+        ),
+      );
+      final entered = Completer<void>();
+      final release = Completer<void>();
+      var calls = 0;
+      final replay = ContentMutationReplay(
+        outbox: outbox,
+        networkInfo: FakeNetworkInfo(connected: true),
+        executeUpsert: (item) async {
+          calls++;
+          entered.complete();
+          await release.future;
+          return right(item);
+        },
+      );
+      final first = replay.replayPending();
+      await entered.future.timeout(const Duration(seconds: 5));
+      final second = replay.replayPending();
+      expect(identical(first, second), isTrue);
+      release.complete();
+      await Future.wait([first, second]);
+      expect(calls, 1);
+      expect(
+        await outbox.getPendingMutations(contentMutationQueueUserId),
+        isEmpty,
+      );
+    },
+  );
+
+  test('a deferred older edit blocks newer edits of the same entity', () async {
+    final outbox = MutationOutboxService();
+    final item = buildItem();
+    for (var i = 0; i < 2; i++) {
+      await outbox.enqueueMutation(
+        PendingMutation(
+          operationId: 'ordered_$i',
+          userId: contentMutationQueueUserId,
+          operationType: 'content.upsert',
+          entityId: item.id,
+          payload: {'kind': item.kind.name, 'item': item.toJson()},
+          createdAt: DateTime.now().add(Duration(milliseconds: i)),
+          nextRetryAt: i == 0
+              ? DateTime.now().add(const Duration(hours: 1))
+              : DateTime.now(),
+        ),
+      );
+    }
+    final replay = ContentMutationReplay(
+      outbox: outbox,
+      networkInfo: FakeNetworkInfo(connected: true),
+      executeUpsert: (_) => throw StateError('must wait for the older edit'),
+    );
+    final result = await replay.replayPending();
+    expect(result.skipped, 2);
+    expect(result.replayed, 0);
+    expect(
+      await outbox.getPendingMutations(contentMutationQueueUserId),
+      hasLength(2),
+    );
+  });
 
   group('ContentMutationReplay', () {
     test('skips replay when the device is offline', () async {

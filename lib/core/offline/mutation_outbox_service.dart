@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
+
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
 
@@ -180,6 +182,7 @@ class MutationOutboxService {
       await box.put(key, jsonEncode(mutation.toJson()));
     } catch (e) {
       AppLogger.debug('Outbox: Failed to record failure for $operationId: $e');
+      rethrow;
     }
   }
 

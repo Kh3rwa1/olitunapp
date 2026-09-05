@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
+
 import '../analytics/analytics_service.dart';
 import '../logging/app_logger.dart';
 import 'ad_service.dart';
@@ -78,6 +80,14 @@ class InterstitialAdManager {
         'InterstitialAdManager: Ad not ready for trigger: $trigger',
       );
       unawaited(preload());
+      return false;
+    }
+
+    if (!await _ref.read(adServiceProvider).consentManager.canRequestAds() ||
+        !_ref.read(adStateProvider).shouldShowAds ||
+        _interstitialAd == null) {
+      _interstitialAd?.dispose();
+      _interstitialAd = null;
       return false;
     }
 
@@ -190,6 +200,13 @@ final interstitialAdManagerProvider = Provider<InterstitialAdManager>((ref) {
   final manager = InterstitialAdManager(ref);
   // Kick off initial background preload
   Future.microtask(manager.preload);
+  ref.listen<AdState>(adStateProvider, (previous, next) {
+    if (next.shouldShowAds && previous?.shouldShowAds != true) {
+      Future.microtask(manager.preload);
+    } else if (!next.shouldShowAds) {
+      manager.dispose();
+    }
+  });
   ref.onDispose(manager.dispose);
   return manager;
 });

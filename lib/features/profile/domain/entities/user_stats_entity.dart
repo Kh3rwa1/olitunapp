@@ -86,6 +86,8 @@ class UserStatsEntity extends Equatable {
     );
   }
 
+  // ============== COMPUTED PROPERTIES ==============
+
   double _masteryProgress(List<String> keys) {
     for (final key in keys) {
       final value = categoryMastery[key];
@@ -94,19 +96,23 @@ class UserStatsEntity extends Equatable {
     return 0.0;
   }
 
+  /// Alphabet mastery: based on how many letters have been practiced
   double get alphabetProgress {
     final trackedMastery = _masteryProgress(['alphabets', 'alphabet']);
     if (trackedMastery > 0) return trackedMastery;
     return (practicedLetters.length / alphabetLetterCount).clamp(0.0, 1.0);
   }
 
+  /// Numbers mastery: from categoryMastery map or completed lessons
   double get numbersProgress {
     final trackedMastery = _masteryProgress(['numbers', 'number']);
     if (trackedMastery > 0) return trackedMastery;
+    // Fallback: estimate from total completed lessons
     final total = completedLessons.length;
     return (total / 15).clamp(0.0, 1.0) * 0.5;
   }
 
+  /// Vocabulary mastery: from categoryMastery map or completed lessons
   double get vocabularyProgress {
     final trackedMastery = _masteryProgress(['words', 'vocabulary']);
     if (trackedMastery > 0) return trackedMastery;
@@ -114,6 +120,7 @@ class UserStatsEntity extends Equatable {
     return (total / 20).clamp(0.0, 1.0) * 0.4;
   }
 
+  /// Sentences mastery
   double get sentencesProgress {
     final trackedMastery = _masteryProgress(['sentences', 'sentence']);
     if (trackedMastery > 0) return trackedMastery;
@@ -121,6 +128,7 @@ class UserStatsEntity extends Equatable {
     return (total / 25).clamp(0.0, 1.0) * 0.3;
   }
 
+  /// Rhymes mastery
   double get rhymesProgress {
     final trackedMastery = _masteryProgress(['rhymes', 'rhyme', 'bakhed']);
     if (trackedMastery > 0) return trackedMastery;

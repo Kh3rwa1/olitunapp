@@ -135,7 +135,10 @@ class AdService with WidgetsBindingObserver {
 
     if (!canServeAds) {
       return left<AdError, InterstitialAd>(
-        AdConsentError('Ad consent is not available.', 'consent_unavailable'),
+        const AdConsentError(
+          'Ad consent is not available.',
+          'consent_unavailable',
+        ),
       );
     }
 
@@ -177,7 +180,10 @@ class AdService with WidgetsBindingObserver {
 
     if (!canServeAds) {
       return left<AdError, RewardedAd>(
-        AdConsentError('Ad consent is not available.', 'consent_unavailable'),
+        const AdConsentError(
+          'Ad consent is not available.',
+          'consent_unavailable',
+        ),
       );
     }
 

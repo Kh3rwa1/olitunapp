@@ -9,6 +9,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { schemaAttribute } from './lib/schema_attribute.mjs';
 
 function readProjectIdFromConfig() {
   try {
@@ -143,31 +144,7 @@ async function run() {
     });
 
     // Map attributes to clean spec
-    const mappedAttributes = rawAttributes.map(attr => {
-      const spec = {
-        key: attr.key,
-        type: attr.type,
-      };
-      if (attr.size !== undefined && attr.size !== null) {
-        spec.size = attr.size;
-      }
-      spec.array = attr.array || false;
-      spec.required = attr.required || false;
-      
-      // Handle enum elements
-      if (attr.elements && attr.elements.length > 0) {
-        spec.elements = attr.elements;
-      }
-      
-      // Handle min/max for integer/float
-      if (attr.min !== undefined && attr.min !== null) {
-        spec.min = attr.min;
-      }
-      if (attr.max !== undefined && attr.max !== null) {
-        spec.max = attr.max;
-      }
-
-    });
+    const mappedAttributes = rawAttributes.map(schemaAttribute);
 
     // Write fixture JSON
     const fixturePath = join(schemaDir, `${colId}.json`);

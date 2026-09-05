@@ -56,8 +56,9 @@ class PurchaseRepository {
   }
 
   void _notify(String userId) {
-    if (!_disposed)
+    if (!_disposed) {
       ref.read(entitlementRevisionProvider(userId).notifier).state++;
+    }
   }
 
   static String _getCacheKey(String userId) =>
@@ -95,12 +96,9 @@ class PurchaseRepository {
       if (!skipRevalidate) {
         _triggerRevalidation(userId, userCacheKey, cached);
       }
-      final isStale = meta?.isExpired ?? false;
       return EntitlementResult(
         categoryIds: cached,
-        status: isStale
-            ? EntitlementStatus.staleCached
-            : EntitlementStatus.cached,
+        status: EntitlementStatus.cached,
         isFromCache: true,
       );
     }
@@ -206,7 +204,7 @@ class PurchaseRepository {
             userCacheKey,
             (json) => Set<String>.from(json['ids'] as List),
           );
-          if (stale != null)
+          if (stale != null) {
             return EntitlementResult(
               categoryIds: stale,
               status: EntitlementStatus.staleCached,
@@ -214,6 +212,7 @@ class PurchaseRepository {
               sanitizedErrorMessage:
                   'Offline access is limited to 24 hours since verification.',
             );
+          }
         }
         return const EntitlementResult(
           categoryIds: {},

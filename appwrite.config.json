@@ -77,7 +77,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "users.read"
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -376,7 +377,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {

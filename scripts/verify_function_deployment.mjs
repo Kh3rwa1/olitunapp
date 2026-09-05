@@ -13,4 +13,8 @@ for (const id of ['reconcileOrphanedDeletions', 'reconcilePaymentAttempts']) {
       assert.ok(fn.scopes.includes(scope), `${id} missing ${scope}`);
   }
 }
-console.log('Function manifests, schedules, execution roles and deletion scopes verified.');
+const translator = canonical.find(f => f.name === 'translator');
+for (const scope of ['documents.read', 'documents.write']) {
+  assert.ok(translator.scopes.includes(scope), `translator missing ${scope}`);
+}
+console.log('Function manifests, schedules, execution roles and required scopes verified.');

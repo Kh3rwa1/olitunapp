@@ -1,10 +1,8 @@
 {
   "name": "verifyCoursePurchase",
   "version": "1.0.0",
-  "description": "Appwrite function to verify course purchases via Razorpay or Play Store review",
+  "description": "Appwrite function to verify Razorpay course purchases with guarded state transitions",
   "main": "src/main.js",
   "type": "module",
-  "dependencies": {
-    "node-appwrite": "^14.0.0"
-  }
+  "dependencies": { "node-appwrite": "25.1.0" }
 }

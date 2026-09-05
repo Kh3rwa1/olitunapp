@@ -340,7 +340,15 @@ export async function executeAdminRefund({
   }
 
   // 6. Check if already refunded on purchase (only short-circuit if NOT resuming an incomplete claim)
-  const isResumingAudit = existingClaim && existingClaim.status === 'ledger_committed';
+  const isThisClaimLedgerCommitted = Boolean(
+    existingClaim && (
+      existingClaim.status === 'ledger_committed' ||
+      existingClaim.status === 'audit_committed' ||
+      existingClaim.status === 'committed' ||
+      (purchase.lastRefundClaimId && purchase.lastRefundClaimId === claimId)
+    )
+  );
+  const isResumingAudit = Boolean(existingClaim && isThisClaimLedgerCommitted);
   const isAlreadyRefunded =
     purchase.status === 'refunded' ||
     purchase.refundStatus === 'fully_refunded' ||
@@ -408,9 +416,7 @@ export async function executeAdminRefund({
 
   // 9. Phase 2: Update course_purchases via guarded databases (Skipped if ledger was already committed)
   let updatedPurchase = purchase;
-  const isLedgerAlreadyCommitted = Boolean(
-    existingClaim && (existingClaim.status === 'ledger_committed' || existingClaim.status === 'committed')
-  );
+  const isLedgerAlreadyCommitted = isThisClaimLedgerCommitted;
 
   if (!isLedgerAlreadyCommitted) {
     const guardedDb = withPaymentStateGuard(databases, { event: 'admin.refund' });
@@ -423,6 +429,7 @@ export async function executeAdminRefund({
         refundStatus: isFullRefund ? 'fully_refunded' : 'partially_refunded',
         refundedAmountPaise: targetRefundedPaise,
         refundEpoch: targetEpoch,
+        lastRefundClaimId: claimId,
       },
     );
 
@@ -443,32 +450,44 @@ export async function executeAdminRefund({
     }
   }
 
-  // 10. Phase 3: Write audit log to admin_audit_logs collection (fail-closed: do not swallow error)
-  await databases.createDocument(
-    databaseId,
-    'admin_audit_logs',
-    ID.unique(),
-    {
-      action: 'refund_recorded',
-      actorUserId,
-      targetType: 'course_purchase',
-      targetId: purchaseId,
-      metadata: JSON.stringify({
-        userId: purchase.userId,
-        categoryId: purchase.categoryId,
-        externalRefundId,
-        reason,
-        refundAmountPaise,
-        totalRefundedPaise: updatedPurchase.refundedAmountPaise,
-        previousStatus: purchase.status,
-        newStatus: updatedPurchase.status,
-        refundStatus: updatedPurchase.refundStatus,
-        refundEpoch: updatedPurchase.refundEpoch || targetEpoch,
-      }),
-      success: true,
-      createdAt: now,
-    },
-  );
+  // 10. Phase 3: Write audit log to admin_audit_logs collection (idempotent write bound to claimId)
+  const auditDocId = claimId
+    ? stableId(`audit:${claimId}`)
+    : stableId(`audit:${purchaseId}_${updatedPurchase.refundEpoch || targetEpoch}`);
+
+  try {
+    await databases.createDocument(
+      databaseId,
+      'admin_audit_logs',
+      auditDocId,
+      {
+        action: 'refund_recorded',
+        actorUserId,
+        targetType: 'course_purchase',
+        targetId: purchaseId,
+        metadata: JSON.stringify({
+          userId: purchase.userId,
+          categoryId: purchase.categoryId,
+          externalRefundId,
+          reason,
+          refundAmountPaise,
+          totalRefundedPaise: updatedPurchase.refundedAmountPaise,
+          previousStatus: purchase.status,
+          newStatus: updatedPurchase.status,
+          refundStatus: updatedPurchase.refundStatus,
+          refundEpoch: updatedPurchase.refundEpoch || targetEpoch,
+        }),
+        success: true,
+        createdAt: now,
+      },
+    );
+  } catch (auditErr) {
+    if (auditErr.code === 409 || auditErr.status === 409) {
+      // Audit log already written for this operation (idempotent retry)
+    } else {
+      throw auditErr;
+    }
+  }
 
   // 11. Finalize claim in refund_claims to audit_committed
   if (claimId) {
@@ -479,6 +498,7 @@ export async function executeAdminRefund({
         claimId,
         {
           status: 'audit_committed',
+          committedAt: new Date().toISOString(),
         },
       );
     } catch {

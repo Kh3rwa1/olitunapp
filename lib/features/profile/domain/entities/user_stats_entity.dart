@@ -147,11 +147,14 @@ class UserStatsEntity extends Equatable {
     int count, {
     String? eventId,
     String? originId,
+    int? seq,
   }) {
     if (count <= 0) return this;
     final id =
         eventId ??
-        (originId != null
+        (originId != null && seq != null
+            ? '${originId}_$seq'
+            : originId != null
             ? '${originId}_${DateTime.now().microsecondsSinceEpoch}'
             : 'star_${DateTime.now().microsecondsSinceEpoch}');
     final updatedEvents = Map<String, int>.from(starEvents)..[id] = count;
@@ -163,11 +166,14 @@ class UserStatsEntity extends Equatable {
     int minutes, {
     String? eventId,
     String? originId,
+    int? seq,
   }) {
     if (minutes <= 0) return this;
     final id =
         eventId ??
-        (originId != null
+        (originId != null && seq != null
+            ? '${originId}_$seq'
+            : originId != null
             ? '${originId}_${DateTime.now().microsecondsSinceEpoch}'
             : 'min_${DateTime.now().microsecondsSinceEpoch}');
     final updatedEvents = Map<String, int>.from(minuteEvents)..[id] = minutes;

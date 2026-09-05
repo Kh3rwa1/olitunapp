@@ -11,36 +11,48 @@ class ProgressEventKey {
   const ProgressEventKey({required this.origin, this.seq, required this.rawId});
 }
 
+bool _isGenericUnsequencedOrigin(String origin) {
+  final lower = origin.toLowerCase();
+  return lower == 'star' ||
+      lower == 'min' ||
+      lower.startsWith('practice') ||
+      lower.startsWith('lesson');
+}
+
 ProgressEventKey parseProgressEvent(String key) {
   if (key.contains(':')) {
     final idx = key.lastIndexOf(':');
     final suffix = key.substring(idx + 1);
     final seq = int.tryParse(suffix);
-    if (seq != null) {
-      return ProgressEventKey(
-        origin: key.substring(0, idx),
-        seq: seq,
-        rawId: key,
-      );
+    final origin = key.substring(0, idx);
+    if (seq != null &&
+        seq >= 0 &&
+        seq < 1000000000 &&
+        !_isGenericUnsequencedOrigin(origin)) {
+      return ProgressEventKey(origin: origin, seq: seq, rawId: key);
     }
   }
   if (key.contains('_')) {
     final idx = key.lastIndexOf('_');
     final suffix = key.substring(idx + 1);
     final seq = int.tryParse(suffix);
-    if (seq != null) {
-      return ProgressEventKey(
-        origin: key.substring(0, idx),
-        seq: seq,
-        rawId: key,
-      );
+    final origin = key.substring(0, idx);
+    if (seq != null &&
+        seq >= 0 &&
+        seq < 1000000000 &&
+        !_isGenericUnsequencedOrigin(origin)) {
+      return ProgressEventKey(origin: origin, seq: seq, rawId: key);
     }
   }
   final match = RegExp(r'^([a-zA-Z0-9_-]+?)(\d+)$').firstMatch(key);
   if (match != null) {
+    final origin = match.group(1)!;
     final seq = int.tryParse(match.group(2)!);
-    if (seq != null) {
-      return ProgressEventKey(origin: match.group(1)!, seq: seq, rawId: key);
+    if (seq != null &&
+        seq >= 0 &&
+        seq < 1000000000 &&
+        !_isGenericUnsequencedOrigin(origin)) {
+      return ProgressEventKey(origin: origin, seq: seq, rawId: key);
     }
   }
   return ProgressEventKey(origin: key, rawId: key);

@@ -773,6 +773,7 @@ const collections = [
       { type: 'string', key: 'razorpayPaymentId', size: 255, required: false },
       { type: 'string', key: 'razorpayOrderId', size: 255, required: false },
       { type: 'string', key: 'purchasedAt', size: 30, required: false },
+      { type: 'string', key: 'lastRefundClaimId', size: 255, required: false },
       { type: 'string', key: 'verifiedAt', size: 30, required: false },
     ],
     indexes: [

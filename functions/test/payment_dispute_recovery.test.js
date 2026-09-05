@@ -841,4 +841,85 @@ describe('Priority 0B: Admin-Authorized Refund Endpoint', () => {
       (err) => err.status === 409 && /Idempotency conflict/.test(err.message),
     );
   });
+
+  test('Crash window recovery: crash after purchase ledger committed but before claim updated to ledger_committed recovers audit write on retry', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const claimId = stableId('refund:rfnd_crash_window_1');
+
+    // Simulate pre-crash state:
+    // 1. Claim was reserved as 'claimed'
+    await db.createDocument('olitun_db', 'refund_claims', claimId, {
+      refundId: 'rfnd_crash_window_1',
+      paymentId: 'admin_purchase',
+      purchaseId: 'purchase',
+      amountPaise: 49900,
+      currency: 'INR',
+      status: 'claimed', // Stuck in 'claimed' because process died before updating to 'ledger_committed'
+      claimedAt: new Date().toISOString(),
+      committedAt: null,
+      lastError: '',
+    });
+
+    // 2. Purchase ledger was committed to refunded with lastRefundClaimId: claimId
+    await db.updateDocument('olitun_db', 'course_purchases', 'purchase', {
+      status: 'refunded',
+      refundStatus: 'fully_refunded',
+      refundedAmountPaise: 49900,
+      refundEpoch: 1,
+      lastRefundClaimId: claimId,
+    });
+
+    // 3. No audit record was written
+    const logsBefore = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsBefore.documents.length, 0);
+
+    const transactional = withTransactions(db);
+
+    // Retry with the same externalRefundId: MUST detect lastRefundClaimId on ledger, NOT skip audit write!
+    const retryResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_crash_window_1' },
+    });
+
+    assert.equal(retryResult.alreadyRefunded, true);
+    assert.equal(retryResult.status, 'refunded');
+
+    // Audit log was recovered and written to admin_audit_logs
+    const logsAfter = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsAfter.documents.length, 1);
+    assert.equal(logsAfter.documents[0].targetId, 'purchase');
+    assert.match(logsAfter.documents[0].metadata, /rfnd_crash_window_1/);
+
+    // Claim was finalized to audit_committed
+    const claimDoc = await db.getDocument('olitun_db', 'refund_claims', claimId);
+    assert.equal(claimDoc.status, 'audit_committed');
+  });
+
+  test('Idempotent audit logging: retry after audit record already written handles 409 gracefully without throwing', async () => {
+    const db = new MemoryDatabase({ ...basePurchase });
+    const transactional = withTransactions(db);
+
+    // Initial refund commits ledger and writes audit record
+    const firstResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_idem_audit_1' },
+    });
+    assert.equal(firstResult.alreadyRefunded, false);
+
+    const logsFirst = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsFirst.documents.length, 1);
+
+    // Replay with the same externalRefundId: must handle existing audit record gracefully
+    const secondResult = await executeAdminRefund({
+      databases: transactional,
+      actorUserId: 'admin_ops_1',
+      body: { purchaseId: 'purchase', externalRefundId: 'rfnd_idem_audit_1' },
+    });
+    assert.equal(secondResult.alreadyRefunded, true);
+
+    const logsSecond = await db.listDocuments('olitun_db', 'admin_audit_logs');
+    assert.equal(logsSecond.documents.length, 1); // Exact same single audit record
+  });
 });

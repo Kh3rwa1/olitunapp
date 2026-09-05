@@ -137,14 +137,19 @@ class AdStateNotifier extends Notifier<AdState> {
       // Defensive for headless test environments without full provider container setup
     }
 
-    final consent = ref.watch(adServiceProvider).consentManager;
-    void onConsentChanged() {
-      state = state.copyWith(consentAllowsAds: consent.requestsAllowed);
+    final service = ref.watch(adServiceProvider);
+    final consent = service.consentManager;
+    void onEligibilityChanged() {
+      state = state.copyWith(consentAllowsAds: service.canServeAds);
     }
 
-    consent.adsAllowed.addListener(onConsentChanged);
-    ref.onDispose(() => consent.adsAllowed.removeListener(onConsentChanged));
-    return AdState(consentAllowsAds: consent.requestsAllowed);
+    consent.adsAllowed.addListener(onEligibilityChanged);
+    service.readiness.addListener(onEligibilityChanged);
+    ref.onDispose(() {
+      consent.adsAllowed.removeListener(onEligibilityChanged);
+      service.readiness.removeListener(onEligibilityChanged);
+    });
+    return AdState(consentAllowsAds: service.canServeAds);
   }
 
   void setConsentStatus(ConsentStatus status) {

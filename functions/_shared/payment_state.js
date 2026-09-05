@@ -47,10 +47,12 @@ function nextState(current, data, event) {
   if (event?.startsWith('payment.dispute.')) {
     if (fullyRefunded(current)) return { ...data, status: 'refunded' };
     if (current.status === 'revoked') return null;
-    if (data.status === 'verified' && !['disputed', 'verified'].includes(current.status)) {
-      throw new PaymentStateConflict();
-    }
-    return data;
+    // Webhook delivery order is not authoritative. Until a durable dispute
+    // identity/version is stored (or all active disputes are reconciled from
+    // Razorpay), terminal events must never restore entitlement.
+    if (data.status === 'verified') return null;
+    if (data.status !== 'disputed') throw new PaymentStateConflict();
+    return { ...data, status: 'disputed' };
   }
   assertCaptureAllowed(current);
   if (data.status !== 'verified' || !data.providerPaymentId ||

@@ -202,7 +202,7 @@ class QuizSessionNotifier
   }
 
   void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
-    if (state.isAnswered || state.hearts <= 0) return;
+    if (state.isAnswered || state.isQuizComplete || state.hearts <= 0) return;
 
     final isCorrect = index == question.correctIndex;
     final scoredState = applyQuizAnswerResult(state, isCorrect: isCorrect);
@@ -285,14 +285,6 @@ class QuizSessionNotifier
       // Failed quizzes pay no stars: paying out on failure inflates the
       // star economy (and rewards grinding hearts away). Score is still
       // recorded so progress/analytics stay intact.
-      if (state.score > 0) {
-        await statsNotifier.addStars(
-          QuizScoringRules.calculateStars(
-            state.score,
-            bonusStars: state.bonusStars,
-          ),
-        );
-      }
 
       unawaited(
         ref
@@ -318,7 +310,9 @@ class QuizSessionNotifier
   }
 
   Future<void> nextQuestion(QuizModel quiz) async {
-    if (state.isOutOfHearts) return;
+    if (state.isQuizComplete || !state.isAnswered || state.isOutOfHearts) {
+      return;
+    }
     if (state.currentQuestion < quiz.questions.length - 1) {
       state = state.copyWith(
         currentQuestion: state.currentQuestion + 1,
@@ -326,6 +320,12 @@ class QuizSessionNotifier
         isAnswered: false,
       );
     } else {
+      // Snapshot the reward before awaiting persistence: a reset may start
+      // a new session while the previous result is being saved.
+      final earnedStars = QuizScoringRules.calculateStars(
+        state.score,
+        bonusStars: state.bonusStars,
+      );
       state = state.copyWith(isQuizComplete: true);
       if (_shouldUseHaptics) {
         HapticFeedback.mediumImpact();
@@ -346,12 +346,7 @@ class QuizSessionNotifier
             completedAt: completedAt,
           ),
         );
-        await statsNotifier.addStars(
-          QuizScoringRules.calculateStars(
-            state.score,
-            bonusStars: state.bonusStars,
-          ),
-        );
+        await statsNotifier.addStars(earnedStars);
         ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
       } catch (e, st) {
         AppLogger.debug('Failed to finish quiz: $e\n$st');

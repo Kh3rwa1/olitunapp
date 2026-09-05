@@ -250,10 +250,7 @@ class _BentoCategoryCard extends ConsumerWidget {
     // Excluding the PressableScale subtree also excluded its tap action.
     return PressableScale(
       key: ValueKey('home_category_${category.id}'),
-      semanticLabel: [
-        primaryTitle,
-        ?secondaryTitle,
-      ].join(', '),
+      semanticLabel: [primaryTitle, ?secondaryTitle].join(', '),
       onTap: () {
         final id = category.id;
         final isAlphabet =

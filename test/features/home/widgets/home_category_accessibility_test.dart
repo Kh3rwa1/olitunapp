@@ -74,23 +74,23 @@ void main() {
   testWidgets('category semantics is actionable', (tester) async {
     final handle = tester.ensureSemantics();
     try {
-    await _pump(tester, 'words');
+      await _pump(tester, 'words');
 
-    final data = tester.getSemantics(_card('words')).getSemanticsData();
-    expect(data.flagsCollection.isButton, isTrue);
-    expect(data.hasAction(SemanticsAction.tap), isTrue);
-    expect(data.label, isNotEmpty);
-    expect(data.label, isNot(contains('Double tap')));
-    final action = tester.widget<PressableScale>(_card('words'));
-    expect(data.label, action.semanticLabel);
-    final semanticWidgets = find.descendant(
-      of: _card('words'),
-      matching: find.byWidgetPredicate(
-        (widget) => widget is Semantics && widget.properties.onTap != null,
-      ),
-    );
-    expect(semanticWidgets, findsOneWidget);
-    expect(tester.takeException(), isNull);
+      final data = tester.getSemantics(_card('words')).getSemanticsData();
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
+      expect(data.label, isNotEmpty);
+      expect(data.label, isNot(contains('Double tap')));
+      final action = tester.widget<PressableScale>(_card('words'));
+      expect(data.label, action.semanticLabel);
+      final semanticWidgets = find.descendant(
+        of: _card('words'),
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Semantics && widget.properties.onTap != null,
+        ),
+      );
+      expect(semanticWidgets, findsOneWidget);
+      expect(tester.takeException(), isNull);
     } finally {
       handle.dispose();
     }
@@ -100,23 +100,24 @@ void main() {
     testWidgets('semantic tap routes $id', (tester) async {
       final handle = tester.ensureSemantics();
       try {
-      await _pump(tester, id);
-      final data = tester.getSemantics(_card(id)).getSemanticsData();
-      expect(data.hasAction(SemanticsAction.tap), isTrue);
-      final semantics = tester.widget<Semantics>(
-        find.descendant(
-          of: _card(id),
-          matching: find.byWidgetPredicate(
-            (widget) => widget is Semantics && widget.properties.onTap != null,
+        await _pump(tester, id);
+        final data = tester.getSemantics(_card(id)).getSemanticsData();
+        expect(data.hasAction(SemanticsAction.tap), isTrue);
+        final semantics = tester.widget<Semantics>(
+          find.descendant(
+            of: _card(id),
+            matching: find.byWidgetPredicate(
+              (widget) =>
+                  widget is Semantics && widget.properties.onTap != null,
+            ),
           ),
-        ),
-      );
-      semantics.properties.onTap!();
-      await tester.pumpAndSettle();
-      expect(
-        find.text(id == 'words' ? 'opened:words' : 'opened:alphabet'),
-        findsOneWidget,
-      );
+        );
+        semantics.properties.onTap!();
+        await tester.pumpAndSettle();
+        expect(
+          find.text(id == 'words' ? 'opened:words' : 'opened:alphabet'),
+          findsOneWidget,
+        );
       } finally {
         handle.dispose();
       }

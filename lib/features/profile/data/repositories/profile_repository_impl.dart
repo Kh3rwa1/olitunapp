@@ -13,300 +13,153 @@ class ProfileRepositoryImpl implements ProfileRepository {
   final AuthRepository _authRepository;
   final SharedPreferences _prefs;
   static const _statsKey = 'user_progress_data';
-
   ProfileRepositoryImpl(this._authRepository, this._prefs);
 
-  CacheFailure _recordedCacheFailure(Object e, [StackTrace? st]) {
-    final f = CacheFailure(message: e.toString());
-    CrashReporting.recordFailure(f, st);
-    return f;
+  CacheFailure _failure(Object e, [StackTrace? st]) {
+    final failure = CacheFailure(message: e.toString());
+    CrashReporting.recordFailure(failure, st);
+    return failure;
   }
 
-  UserStatsEntity _mergeStats(UserStatsEntity a, UserStatsEntity b) {
-    // A reset starts a new generation. Data from an older generation must
-    // never be unioned back in, even when an offline device reconnects later.
-    if (a.syncEpoch != b.syncEpoch) {
-      return a.syncEpoch > b.syncEpoch ? a : b;
-    }
+  UserStatsEntity get _empty => const UserStatsEntity(practicedLetters: {}, completedLessons: {}, quizHistory: {}, categoryMastery: {}, totalLearningMinutes: 0, lastActiveDate: '', currentStreak: 0, totalStars: 0);
+  bool _isEmpty(UserStatsEntity s) => s.practicedLetters.isEmpty && s.completedLessons.isEmpty && s.quizHistory.isEmpty && s.categoryMastery.isEmpty && s.completedMissionsDates.isEmpty && s.practiceDates.isEmpty && s.totalLearningMinutes == 0 && s.lastActiveDate.isEmpty && s.currentStreak == 0 && s.totalStars == 0;
+  String _encode(UserStatsEntity s) => jsonEncode(UserStatsModel.fromEntity(s).toJson());
+  UserStatsEntity _decode(String s) => UserStatsModel.fromJson(jsonDecode(s));
 
-    final letters = Set<String>.from(a.practicedLetters)
-      ..addAll(b.practicedLetters);
-    final lessons = Set<String>.from(a.completedLessons)
-      ..addAll(b.completedLessons);
-
-    final quizHistory = Map<String, QuizResultEntity>.from(a.quizHistory);
-    b.quizHistory.forEach((key, resultB) {
-      if (quizHistory.containsKey(key)) {
-        final resultA = quizHistory[key]!;
-        if (resultB.score > resultA.score) quizHistory[key] = resultB;
-      } else {
-        quizHistory[key] = resultB;
-      }
+  UserStatsEntity _merge(UserStatsEntity a, UserStatsEntity b) {
+    if (a.syncEpoch != b.syncEpoch) return a.syncEpoch > b.syncEpoch ? a : b;
+    final quizzes = Map<String, QuizResultEntity>.from(a.quizHistory);
+    b.quizHistory.forEach((key, value) {
+      final old = quizzes[key];
+      if (old == null || value.score > old.score) quizzes[key] = value;
     });
-
-    const maxQuizHistoryEntries = 50;
-    if (quizHistory.length > maxQuizHistoryEntries) {
-      final recentKeys = quizHistory.keys.toList()
-        ..sort(
-          (x, y) => quizHistory[y]!.completedAt.compareTo(
-            quizHistory[x]!.completedAt,
-          ),
-        );
-      final retained = recentKeys.take(maxQuizHistoryEntries).toSet();
-      quizHistory.removeWhere((key, _) => !retained.contains(key));
+    if (quizzes.length > 50) {
+      final keys = quizzes.keys.toList()..sort((x, y) => quizzes[y]!.completedAt.compareTo(quizzes[x]!.completedAt));
+      final keep = keys.take(50).toSet();
+      quizzes.removeWhere((key, _) => !keep.contains(key));
     }
-
-    final categoryMastery = Map<String, int>.from(a.categoryMastery);
-    b.categoryMastery.forEach((key, valB) {
-      final valA = categoryMastery[key] ?? 0;
-      categoryMastery[key] = valB > valA ? valB : valA;
+    final mastery = Map<String, int>.from(a.categoryMastery);
+    b.categoryMastery.forEach((key, value) {
+      if (value > (mastery[key] ?? 0)) mastery[key] = value;
     });
-
-    final totalStars = a.totalStars > b.totalStars ? a.totalStars : b.totalStars;
-    final totalLearningMinutes = a.totalLearningMinutes > b.totalLearningMinutes
-        ? a.totalLearningMinutes
-        : b.totalLearningMinutes;
-    final currentStreak = a.currentStreak > b.currentStreak
-        ? a.currentStreak
-        : b.currentStreak;
-
-    String lastActiveDate = a.lastActiveDate;
-    if (b.lastActiveDate.isNotEmpty &&
-        (lastActiveDate.isEmpty ||
-            b.lastActiveDate.compareTo(lastActiveDate) > 0)) {
-      lastActiveDate = b.lastActiveDate;
-    }
-
+    final lastDate = a.lastActiveDate.compareTo(b.lastActiveDate) >= 0 ? a.lastActiveDate : b.lastActiveDate;
     return UserStatsEntity(
-      practicedLetters: letters,
-      completedLessons: lessons,
-      quizHistory: quizHistory,
-      categoryMastery: categoryMastery,
-      completedMissionsDates: {
-        ...a.completedMissionsDates,
-        ...b.completedMissionsDates,
-      },
+      practicedLetters: {...a.practicedLetters, ...b.practicedLetters},
+      completedLessons: {...a.completedLessons, ...b.completedLessons},
+      quizHistory: quizzes,
+      categoryMastery: mastery,
+      completedMissionsDates: {...a.completedMissionsDates, ...b.completedMissionsDates},
       practiceDates: {...a.practiceDates, ...b.practiceDates},
-      totalLearningMinutes: totalLearningMinutes,
-      lastActiveDate: lastActiveDate,
-      currentStreak: currentStreak,
-      totalStars: totalStars,
+      totalLearningMinutes: a.totalLearningMinutes > b.totalLearningMinutes ? a.totalLearningMinutes : b.totalLearningMinutes,
+      lastActiveDate: lastDate,
+      currentStreak: a.currentStreak > b.currentStreak ? a.currentStreak : b.currentStreak,
+      totalStars: a.totalStars > b.totalStars ? a.totalStars : b.totalStars,
       syncEpoch: a.syncEpoch,
     );
   }
 
-  UserStatsEntity get _emptyStats => const UserStatsEntity(
-    practicedLetters: {},
-    completedLessons: {},
-    quizHistory: {},
-    categoryMastery: {},
-    totalLearningMinutes: 0,
-    lastActiveDate: '',
-    currentStreak: 0,
-    totalStars: 0,
-  );
+  Future<bool> _loggedIn() async => (await _authRepository.isLoggedIn()).getOrElse((_) => false);
+  Future<void> _setSynced(bool value) => _prefs.setBool('is_stats_synced', value);
 
   @override
   Future<Either<Failure, UserStatsEntity>> getUserStats() async {
     try {
-      final storedLocal = _prefs.getString(_statsKey);
-      UserStatsEntity? localStats;
-      if (storedLocal != null) {
-        localStats = UserStatsModel.fromJson(jsonDecode(storedLocal));
+      final rawLocal = _prefs.getString(_statsKey);
+      final local = rawLocal == null ? null : _decode(rawLocal);
+      if (!await _loggedIn()) {
+        await _setSynced(true);
+        return Right(local ?? _empty);
       }
-
-      final loggedInResult = await _authRepository.isLoggedIn();
-      final isLoggedIn = loggedInResult.getOrElse((_) => false);
-
-      if (isLoggedIn) {
-        final prefsResult = await _authRepository.getUserPrefs();
-        return await prefsResult.fold(
-          (failure) => Right(localStats ?? _emptyStats),
-          (cloudPrefs) async {
-            final cloudProgressData = cloudPrefs[_statsKey];
-            if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
-              final cloudStats = UserStatsModel.fromJson(
-                jsonDecode(cloudProgressData),
-              );
-
-              if (localStats != null) {
-                final resolvedStats = _mergeStats(localStats, cloudStats);
-                final resolvedJson = jsonEncode(
-                  UserStatsModel.fromEntity(resolvedStats).toJson(),
-                );
-                await _prefs.setString(_statsKey, resolvedJson);
-                final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-                  ..[_statsKey] = resolvedJson;
-                final cloudResult = await _authRepository.updateUserPrefs(
-                  cloudUpdate,
-                );
-                await cloudResult.fold(
-                  (failure) async =>
-                      await _prefs.setBool('is_stats_synced', false),
-                  (_) async => await _prefs.setBool('is_stats_synced', true),
-                );
-                return Right(resolvedStats);
-              }
-
-              await _prefs.setString(
-                _statsKey,
-                jsonEncode(UserStatsModel.fromEntity(cloudStats).toJson()),
-              );
-              await _prefs.setBool('is_stats_synced', true);
-              return Right(cloudStats);
-            }
-
-            final currentLocal = localStats;
-            if (currentLocal != null) {
-              final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-                ..[_statsKey] = jsonEncode(
-                  UserStatsModel.fromEntity(currentLocal).toJson(),
-                );
-              final cloudResult = await _authRepository.updateUserPrefs(
-                cloudUpdate,
-              );
-              await cloudResult.fold(
-                (failure) async =>
-                    await _prefs.setBool('is_stats_synced', false),
-                (_) async => await _prefs.setBool('is_stats_synced', true),
-              );
-              return Right(currentLocal);
-            }
-
-            await _prefs.setBool('is_stats_synced', true);
-            return Right(_emptyStats);
-          },
-        );
-      }
-
-      await _prefs.setBool('is_stats_synced', true);
-      return Right(localStats ?? _emptyStats);
+      final cloudResult = await _authRepository.getUserPrefs();
+      return await cloudResult.fold((_) async => Right(local ?? _empty), (cloudPrefs) async {
+        final rawCloud = cloudPrefs[_statsKey];
+        final cloud = rawCloud is String && rawCloud.isNotEmpty ? _decode(rawCloud) : null;
+        final resolved = local == null ? (cloud ?? _empty) : cloud == null ? local : _merge(local, cloud);
+        await _prefs.setString(_statsKey, _encode(resolved));
+        if (local != null || cloud == null) {
+          final result = await _authRepository.updateUserPrefs({...cloudPrefs, _statsKey: _encode(resolved)});
+          await result.fold((_) => _setSynced(false), (_) => _setSynced(true));
+        } else {
+          await _setSynced(true);
+        }
+        return Right(resolved);
+      });
     } catch (e, st) {
-      return Left(_recordedCacheFailure(e, st));
+      return Left(_failure(e, st));
     }
   }
 
   @override
-  Future<Either<Failure, UserStatsEntity>> updateUserStats(
-    UserStatsEntity stats,
-  ) async {
+  Future<Either<Failure, UserStatsEntity>> updateUserStats(UserStatsEntity stats) async {
     try {
-      final jsonStr = jsonEncode(UserStatsModel.fromEntity(stats).toJson());
-      await _prefs.setString(_statsKey, jsonStr);
-
-      final loggedInResult = await _authRepository.isLoggedIn();
-      final isLoggedIn = loggedInResult.getOrElse((_) => false);
-      UserStatsEntity finalStats = stats;
-      bool synced = false;
-
-      if (isLoggedIn) {
-        final prefsResult = await _authRepository.getUserPrefs();
-        await prefsResult.fold((failure) => null, (cloudPrefs) async {
-          final cloudProgressData = cloudPrefs[_statsKey];
-          if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
-            final cloudStats = UserStatsModel.fromJson(
-              jsonDecode(cloudProgressData),
-            );
-            finalStats = _mergeStats(stats, cloudStats);
-          }
-          final finalJsonStr = jsonEncode(
-            UserStatsModel.fromEntity(finalStats).toJson(),
-          );
-          await _prefs.setString(_statsKey, finalJsonStr);
-
-          final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-            ..[_statsKey] = finalJsonStr;
-          final updateResult = await _authRepository.updateUserPrefs(
-            cloudUpdate,
-          );
-          updateResult.fold((failure) => null, (_) => synced = true);
-        });
-      } else {
-        synced = true;
+      final rawLocal = _prefs.getString(_statsKey);
+      final previous = rawLocal == null ? null : _decode(rawLocal);
+      var submitted = stats;
+      if (_isEmpty(stats) && previous != null && !_isEmpty(previous) && stats.syncEpoch <= previous.syncEpoch) {
+        submitted = stats.copyWith(syncEpoch: previous.syncEpoch + 1);
       }
-
-      await _prefs.setBool('is_stats_synced', synced);
+      await _prefs.setString(_statsKey, _encode(submitted));
+      if (!await _loggedIn()) {
+        await _setSynced(true);
+        return Right(submitted);
+      }
+      var finalStats = submitted;
+      var synced = false;
+      final cloudResult = await _authRepository.getUserPrefs();
+      await cloudResult.fold((_) {}, (cloudPrefs) async {
+        final rawCloud = cloudPrefs[_statsKey];
+        if (rawCloud is String && rawCloud.isNotEmpty) {
+          final cloud = _decode(rawCloud);
+          if (_isEmpty(submitted) && !_isEmpty(cloud) && submitted.syncEpoch <= cloud.syncEpoch) {
+            submitted = submitted.copyWith(syncEpoch: cloud.syncEpoch + 1);
+          }
+          finalStats = _merge(submitted, cloud);
+        }
+        await _prefs.setString(_statsKey, _encode(finalStats));
+        final result = await _authRepository.updateUserPrefs({...cloudPrefs, _statsKey: _encode(finalStats)});
+        result.fold((_) {}, (_) => synced = true);
+      });
+      await _setSynced(synced);
       return Right(finalStats);
     } catch (e, st) {
-      await _prefs.setBool('is_stats_synced', false);
-      return Left(_recordedCacheFailure(e, st));
+      await _setSynced(false);
+      return Left(_failure(e, st));
     }
   }
 
   @override
   Future<Either<Failure, void>> syncPendingStats() async {
     try {
-      final isSynced = _prefs.getBool('is_stats_synced') ?? true;
-      if (isSynced) return const Right(null);
-
-      final loggedInResult = await _authRepository.isLoggedIn();
-      final isLoggedIn = loggedInResult.getOrElse((_) => false);
-      if (!isLoggedIn) {
-        await _prefs.setBool('is_stats_synced', true);
-        return const Right(null);
-      }
-
-      final storedLocal = _prefs.getString(_statsKey);
-      if (storedLocal == null) {
-        await _prefs.setBool('is_stats_synced', true);
-        return const Right(null);
-      }
-
-      final localStats = UserStatsModel.fromJson(jsonDecode(storedLocal));
-      final prefsResult = await _authRepository.getUserPrefs();
-      return await prefsResult.fold(Left.new, (cloudPrefs) async {
-        UserStatsEntity finalStats = localStats;
-        final cloudProgressData = cloudPrefs[_statsKey];
-        if (cloudProgressData is String && cloudProgressData.isNotEmpty) {
-          final cloudStats = UserStatsModel.fromJson(
-            jsonDecode(cloudProgressData),
-          );
-          finalStats = _mergeStats(localStats, cloudStats);
-        }
-
-        final finalJsonStr = jsonEncode(
-          UserStatsModel.fromEntity(finalStats).toJson(),
-        );
-        await _prefs.setString(_statsKey, finalJsonStr);
-
-        final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-          ..[_statsKey] = finalJsonStr;
-        final updateResult = await _authRepository.updateUserPrefs(cloudUpdate);
-        return await updateResult.fold(Left.new, (_) async {
-          await _prefs.setBool('is_stats_synced', true);
-          return const Right(null);
-        });
+      if (_prefs.getBool('is_stats_synced') ?? true) return const Right(null);
+      if (!await _loggedIn()) { await _setSynced(true); return const Right(null); }
+      final raw = _prefs.getString(_statsKey);
+      if (raw == null) { await _setSynced(true); return const Right(null); }
+      final local = _decode(raw);
+      final cloudResult = await _authRepository.getUserPrefs();
+      return await cloudResult.fold(Left.new, (cloudPrefs) async {
+        final rawCloud = cloudPrefs[_statsKey];
+        final resolved = rawCloud is String && rawCloud.isNotEmpty ? _merge(local, _decode(rawCloud)) : local;
+        await _prefs.setString(_statsKey, _encode(resolved));
+        final result = await _authRepository.updateUserPrefs({...cloudPrefs, _statsKey: _encode(resolved)});
+        return result.fold(Left.new, (_) async { await _setSynced(true); return const Right(null); });
       });
-    } catch (e, st) {
-      return Left(_recordedCacheFailure(e, st));
-    }
+    } catch (e, st) { return Left(_failure(e, st)); }
   }
 
   @override
   Future<Either<Failure, void>> updateDisplayName(String name) async {
     try {
       await _prefs.setString('user_name', name);
-      final result = await _authRepository.isLoggedIn();
-      await result.fold(
-        (failure) async => CrashReporting.recordFailure(failure),
-        (isLoggedIn) async {
-          if (isLoggedIn) {
-            final syncResult = await _authRepository.updateDisplayName(name);
-            syncResult.fold(CrashReporting.recordFailure, (_) {});
-          }
-        },
-      );
+      final status = await _authRepository.isLoggedIn();
+      await status.fold((f) async => CrashReporting.recordFailure(f), (loggedIn) async {
+        if (loggedIn) (await _authRepository.updateDisplayName(name)).fold(CrashReporting.recordFailure, (_) {});
+      });
       return const Right(null);
-    } catch (e, st) {
-      return Left(_recordedCacheFailure(e, st));
-    }
+    } catch (e, st) { return Left(_failure(e, st)); }
   }
 
   @override
-  Future<Either<Failure, void>> updateAvatar(
-    String emoji,
-    int colorIndex,
-  ) async {
+  Future<Either<Failure, void>> updateAvatar(String emoji, int colorIndex) async {
     await _prefs.setString('user_avatar_emoji', emoji);
     await _prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);

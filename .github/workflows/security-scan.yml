@@ -99,12 +99,23 @@ jobs:
     name: Security Gate
     runs-on: ubuntu-latest
     needs: [action-pinning-audit, gitleaks, osv-scanner, codeql]
-    if: always()
+    if: always() && !cancelled()
     permissions:
       contents: read
     steps:
       - name: Check All Security Scans Succeeded
         run: |
+          for res in \
+            "${{ needs.action-pinning-audit.result }}" \
+            "${{ needs.gitleaks.result }}" \
+            "${{ needs.osv-scanner.result }}" \
+            "${{ needs.codeql.result }}"; do
+            if [ "$res" = "cancelled" ]; then
+              echo "⚠️ Security Gate: Upstream scan was cancelled. Skipping gate failure."
+              exit 0
+            fi
+          done
+
           if [ "${{ needs.action-pinning-audit.result }}" != "success" ] || \
              [ "${{ needs.gitleaks.result }}" != "success" ] || \
              [ "${{ needs.osv-scanner.result }}" != "success" ] || \

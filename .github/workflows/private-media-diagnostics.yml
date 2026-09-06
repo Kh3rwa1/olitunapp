@@ -27,8 +27,9 @@ jobs:
           if [ ! -f functions/test/authorized_media_access.test.js ]; then
             python3 tool/finalize_private_media.py
           fi
-          npm install --prefix functions/getAuthorizedLesson --ignore-scripts --save-exact node-appwrite@27.1.0
+          npm ci --prefix functions/getAuthorizedLesson --ignore-scripts
           flutter pub get
+          dart fix --apply --code=curly_braces_in_flow_control_structures,unnecessary_lambdas
           git diff --name-only origin/main...HEAD -- '*.dart' | xargs -r dart format
       - name: Validate transport and playback
         run: |
@@ -48,7 +49,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'fix(media): preserve regressions and validate native storage delivery'
+            git commit -m 'fix(media): format validated playback and retry paths'
             gh auth setup-git
             git push origin HEAD:refs/heads/fix/authorized-media-streaming-20260906
           fi

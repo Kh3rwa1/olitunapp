@@ -17,14 +17,16 @@ class AccountScope {
   final String? userId;
   final bool isGuest;
   final bool isExplicitlySignedOut;
+  final bool _mayIdentify;
 
   AccountScope._(
     this._prefs,
     this._record,
     this.userId,
     this.isGuest,
-    this.isExplicitlySignedOut,
-  );
+    this.isExplicitlySignedOut, [
+    this._mayIdentify = false,
+  ]);
 
   factory AccountScope.capture(SharedPreferences prefs) {
     final record = prefs.getString(storageKey);
@@ -57,6 +59,9 @@ class AccountScope {
   String get syncKey => 'is_stats_synced_$_suffix';
 
   bool get isCurrent {
+    // Only the login operation that created an unresolved incarnation can
+    // identify it. Concurrent session validation must not adopt the old cookie.
+    if (_record != null && !isKnown && !_mayIdentify) return false;
     final current = AccountScope.capture(_prefs);
     return current._record == _record &&
         current.userId == userId && current.isGuest == isGuest;
@@ -88,7 +93,7 @@ class AccountScope {
       'userId': userId,
       'revision': List.generate(16, (_) => Random.secure().nextInt(256)),
     });
-    final scope = AccountScope._(prefs, record, userId, state == 'guest', state == 'guest');
+    final scope = AccountScope._(prefs, record, userId, state == 'guest', state == 'guest', true);
     if (!await prefs.setString(storageKey, record)) {
       throw StateError('Could not persist account scope');
     }

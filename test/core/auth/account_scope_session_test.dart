@@ -165,10 +165,11 @@ void main() {
     when(account.createAnonymousSession).thenAnswer((_) {
       started.complete(); return created.future;
     });
+    when(() => account.getSession(sessionId: 'current')).thenAnswer((_) async => session);
     final login = service.signInAnonymously();
     await started.future;
     expect(await service.isLoggedIn(), isFalse);
-    verifyNever(() => account.getSession(sessionId: any(named: 'sessionId')));
+    expect(AccountScope.capture(prefs).userId, isNull);
     when(() => session.userId).thenReturn('b');
     created.complete(session);
     await login;

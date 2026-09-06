@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../core/media/authorized_media.dart';
+import 'authorized_media_display.dart';
+
 /// A reusable, memory-safe video playback widget.
 ///
 /// Supports autoplay, looping, muting, and handles loading and error states.
@@ -53,6 +56,7 @@ class _VideoDisplayState extends State<VideoDisplay> {
   }
 
   Future<void> _initializeController() async {
+    if (PrivateMediaReference.parse(widget.url) != null) return;
     setState(() {
       _initialized = false;
       _hasError = false;
@@ -107,6 +111,20 @@ class _VideoDisplayState extends State<VideoDisplay> {
 
   @override
   Widget build(BuildContext context) {
+    if (PrivateMediaReference.parse(widget.url) != null) {
+      return SizedBox(
+        width: widget.width,
+        height: widget.height,
+        child: AuthorizedMediaDisplay(
+          source: widget.url,
+          fit: widget.fit,
+          autoplay: widget.autoplay,
+          loop: widget.loop,
+          muted: widget.muted,
+          fallback: widget.errorWidget ?? _buildErrorPlaceholder(),
+        ),
+      );
+    }
     if (_hasError) {
       return widget.errorWidget ?? _buildErrorPlaceholder();
     }

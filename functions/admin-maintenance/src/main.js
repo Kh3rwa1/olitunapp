@@ -9,6 +9,7 @@ import {
 } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { withPaymentStateGuard } from './shared/payment_state.js';
+import { restoreValidatedContent } from './restore_backup.js';
 
 export function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -193,38 +194,16 @@ export function sanitizeDocument(doc) {
 }
 
 export async function restoreContent({ databases, storage, fileId }) {
-  const buffer = await storage.getFileDownload(BACKUP_BUCKET_ID, fileId);
-  const backupData = JSON.parse(buffer.toString('utf-8'));
-  if (!backupData || typeof backupData !== 'object' || !backupData.collections) {
-    throw new Error('Invalid backup file structure.');
-  }
-
-  const deleted = {};
-  for (const collectionId of CONTENT_COLLECTIONS) {
-    deleted[collectionId] = await deleteCollectionDocuments(
-      databases,
-      collectionId,
-    );
-  }
-
-  const restored = {};
-  for (const collectionId of CONTENT_COLLECTIONS) {
-    const docs = backupData.collections[collectionId] || [];
-    restored[collectionId] = 0;
-    for (const doc of docs) {
-      const sanitized = sanitizeDocument(doc);
-      await databases.createDocument(
-        DATABASE_ID,
-        collectionId,
-        doc.$id,
-        sanitized,
-        doc.$permissions
-      );
-      restored[collectionId] += 1;
-    }
-  }
-
-  return { restored, deleted };
+  return restoreValidatedContent({
+    databases,
+    storage,
+    fileId,
+    databaseId: DATABASE_ID,
+    bucketId: BACKUP_BUCKET_ID,
+    collectionIds: CONTENT_COLLECTIONS,
+    deleteCollection: collectionId => deleteCollectionDocuments(databases, collectionId),
+    sanitizeDocument,
+  });
 }
 
 export async function executeAdminRefund({

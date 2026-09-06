@@ -21,6 +21,7 @@ class AdminMaintenanceController {
     String? operationId,
     void Function(Map<String, dynamic>)? onProgress,
     bool Function()? shouldContinue,
+    bool dryRun = false,
   }) async {
     final service = ref.read(appwriteAuthServiceProvider);
     if (!await service.isLoggedIn()) {
@@ -49,14 +50,59 @@ class AdminMaintenanceController {
       operationId: operationId,
       onProgress: onProgress,
       shouldContinue: shouldContinue,
+      dryRun: dryRun,
     );
     // A local cache error must not turn an acknowledged restore into a new
     // destructive operation on the next UI retry.
+    if (!dryRun) {
+      try {
+        await CacheService.clear();
+      } catch (error) {
+        CrashReporting.addAdminMaintenanceBreadcrumb(
+          action: 'restore_cache_clear',
+          success: false,
+          error: error.toString(),
+        );
+      }
+    }
+    return result;
+  }
+
+  Future<Map<String, dynamic>> rollbackContent(
+    String restoreId, {
+    void Function(Map<String, dynamic>)? onProgress,
+  }) async {
+    final service = ref.read(appwriteAuthServiceProvider);
+    if (!await service.isLoggedIn()) {
+      throw AppwriteException('Sign in as an admin before rolling back.', 401);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final functions = Functions(service.client);
+    final client = AdminRestoreClient(
+      prefs: prefs,
+      projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
+      execute: (payload) async {
+        final execution = await functions.createExecution(
+          functionId: 'admin-maintenance',
+          body: jsonEncode(payload),
+          xasync: false,
+          method: ExecutionMethod.pOST,
+        );
+        return parseAdminRestoreResponse(
+          statusCode: execution.responseStatusCode,
+          body: execution.responseBody,
+        );
+      },
+    );
+    final result = await client.rollback(
+      restoreId: restoreId,
+      onProgress: onProgress,
+    );
     try {
       await CacheService.clear();
     } catch (error) {
       CrashReporting.addAdminMaintenanceBreadcrumb(
-        action: 'restore_cache_clear',
+        action: 'rollback_cache_clear',
         success: false,
         error: error.toString(),
       );

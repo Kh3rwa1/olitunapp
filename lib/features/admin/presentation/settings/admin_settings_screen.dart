@@ -206,12 +206,23 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
               onProgress: onProgress,
               shouldContinue: shouldContinue,
             ),
+        onDryRun: (fileId, operationId) => controller.restoreContent(
+          fileId,
+          operationId: operationId,
+          dryRun: true,
+        ),
+        onRollback: (restoreId, onProgress) =>
+            controller.rollbackContent(restoreId, onProgress: onProgress),
       ),
     );
     if (!mounted || result == null) return;
+    if (result['dryRun'] == true) {
+      _showSnackBar('Dry run validation completed.', AppColors.success);
+      return;
+    }
     final backup = result['backup'];
     _showSnackBar(
-      'Restore completed. Safety backup: ${backup is Map ? backup['fileId'] : 'see operation record'}',
+      'Operation completed. Safety backup: ${backup is Map ? backup['fileId'] : 'see operation record'}',
       AppColors.success,
     );
   }

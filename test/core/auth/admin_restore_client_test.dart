@@ -148,4 +148,56 @@ void main() {
       throwsA(isA<AppwriteException>()),
     );
   });
+
+  test('dryRun passes dryRun flag and does not persist pending key', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final requests = <Map<String, dynamic>>[];
+    final client = AdminRestoreClient(
+      prefs: prefs,
+      projectId: 'test',
+      newId: () => 'dry_run_id',
+      execute: (request) async {
+        requests.add(request);
+        return {
+          'success': true,
+          'complete': true,
+          'dryRun': true,
+          'jobId': request['restoreId'],
+          'fileId': request['fileId'],
+          'totalDocuments': 10,
+        };
+      },
+    );
+    final result = await client.restore(fileId: 'backup', dryRun: true);
+    expect(result['dryRun'], isTrue);
+    expect(requests.single['dryRun'], isTrue);
+    expect(prefs.containsKey(client.pendingKey('backup')), isFalse);
+  });
+
+  test(
+    'rollback invokes rollback_restore action and returns completed',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final requests = <Map<String, dynamic>>[];
+      final client = AdminRestoreClient(
+        prefs: prefs,
+        projectId: 'test',
+        execute: (request) async {
+          requests.add(request);
+          return {
+            'success': true,
+            'complete': true,
+            'jobId': 'rollback-op1',
+            'phase': 'complete',
+          };
+        },
+      );
+      final result = await client.rollback(restoreId: 'op1');
+      expect(result['complete'], isTrue);
+      expect(requests.single['action'], 'rollback_restore');
+      expect(requests.single['restoreId'], 'op1');
+    },
+  );
 }

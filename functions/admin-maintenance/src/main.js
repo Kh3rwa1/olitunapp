@@ -9,7 +9,7 @@ import {
 } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { withPaymentStateGuard } from './shared/payment_state.js';
-import { runResumableRestore } from './resumable_restore.js';
+import { runResumableRestore, runRollbackRestore } from './resumable_restore.js';
 
 export function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -33,6 +33,7 @@ const ACTIONS = new Set([
   'backup_content',
   'wipe_content',
   'restore_content',
+  'rollback_restore',
   'record_refund',
 ]);
 
@@ -78,6 +79,10 @@ export function validateRequest({ method, userId, body }) {
 
   if (body.action === 'restore_content' && !body.fileId) {
     return { status: 400, message: 'Missing backup file ID.' };
+  }
+
+  if (body.action === 'rollback_restore' && !body.restoreId) {
+    return { status: 400, message: 'Missing restore operation ID for rollback.' };
   }
 
   if (body.action === 'record_refund' && !body.purchaseId) {
@@ -215,9 +220,21 @@ export async function ensureRestoreSafetyBackup({ databases, storage, actorUserI
   }
 }
 
-export async function restoreContent({ databases, storage, fileId, restoreId, actorUserId }) {
+export async function restoreContent({ databases, storage, fileId, restoreId, actorUserId, dryRun = false }) {
   return runResumableRestore({
     databases, storage, fileId, restoreId, actorUserId,
+    databaseId: DATABASE_ID, bucketId: BACKUP_BUCKET_ID,
+    collectionIds: CONTENT_COLLECTIONS, sanitizeDocument,
+    journalCollectionId: process.env.ADMIN_RESTORE_JOBS_COLLECTION_ID || 'admin_restore_jobs',
+    pageQueries: limit => [Query.limit(limit), Query.orderAsc('$id')],
+    ensureSafetyBackup: options => ensureRestoreSafetyBackup({ databases, storage, ...options }),
+    dryRun,
+  });
+}
+
+export async function rollbackContent({ databases, storage, restoreId, actorUserId }) {
+  return runRollbackRestore({
+    databases, storage, restoreId, actorUserId,
     databaseId: DATABASE_ID, bucketId: BACKUP_BUCKET_ID,
     collectionIds: CONTENT_COLLECTIONS, sanitizeDocument,
     journalCollectionId: process.env.ADMIN_RESTORE_JOBS_COLLECTION_ID || 'admin_restore_jobs',
@@ -727,11 +744,23 @@ export default async ({ req, res, log, error }) => {
       const result = await restoreContent({
         databases, storage, fileId: body.fileId,
         restoreId: body.restoreId, actorUserId: userId,
+        dryRun: body.dryRun === true,
       });
-      log(`Admin restore ${result.jobId}: ${result.phase}.`);
+      log(`Admin restore ${result.jobId}: ${result.phase || (result.dryRun ? 'dry_run' : '')}.`);
       return json(res, result.complete ? 200 : 202, {
         success: true, ...result,
-        message: result.complete ? 'Restore completed.' : 'Restore checkpoint saved; resume the same operation.',
+        message: result.message || (result.complete ? 'Restore completed.' : 'Restore checkpoint saved; resume the same operation.'),
+      });
+    }
+
+    if (body.action === 'rollback_restore') {
+      const result = await rollbackContent({
+        databases, storage, restoreId: body.restoreId, actorUserId: userId,
+      });
+      log(`Admin rollback ${result.jobId}: ${result.phase}.`);
+      return json(res, result.complete ? 200 : 202, {
+        success: true, ...result,
+        message: result.complete ? 'Rollback completed.' : 'Rollback checkpoint saved; resume the same operation.',
       });
     }
     const backup = await createContentBackup({

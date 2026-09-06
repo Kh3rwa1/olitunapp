@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { runResumableRestore } from '../admin-maintenance/src/resumable_restore.js';
+import { runResumableRestore, runRollbackRestore } from '../admin-maintenance/src/resumable_restore.js';
 
 const clone = value => structuredClone(value);
 const error = code => Object.assign(new Error(`injected ${code}`), { code });
@@ -75,7 +75,29 @@ function fixture() {
     }, counts: { words: 2, numbers: 0 },
   };
   f.options = {
-    databases: db, storage: { getFileDownload: async () => Buffer.from(JSON.stringify(f.payload)) },
+    databases: db,
+    storage: {
+      getFileDownload: async (bucketId, fileId) => {
+        if (f.backups.has(fileId)) {
+          const snapshotDocs = f.backups.get(fileId);
+          const words = [];
+          const numbers = [];
+          for (const [key, doc] of snapshotDocs.entries()) {
+            if (key.startsWith('words/')) words.push(doc);
+            if (key.startsWith('numbers/')) numbers.push(doc);
+          }
+          const safetyPayload = {
+            schemaVersion: 1,
+            createdAt: new Date().toISOString(),
+            databaseId: 'db',
+            collections: { words, numbers },
+            counts: { words: words.length, numbers: numbers.length },
+          };
+          return Buffer.from(JSON.stringify(safetyPayload));
+        }
+        return Buffer.from(JSON.stringify(f.payload));
+      },
+    },
     fileId: 'source', restoreId: 'operation1', actorUserId: 'admin', databaseId: 'db', bucketId: 'backups',
     collectionIds: ['words', 'numbers'], pageQueries: limit => [limit],
     sanitizeDocument: doc => Object.fromEntries(Object.entries(doc).filter(([key]) => !key.startsWith('$'))),
@@ -191,3 +213,29 @@ for (const corrupt of ['active', 'history']) {
     assert.equal(f.db.contentOps.length, before);
   });
 }
+test('dryRun validates payload and collection counts without database writes', async () => {
+  const f = fixture();
+  const result = await f.run({ dryRun: true });
+  assert.equal(result.complete, true);
+  assert.equal(result.dryRun, true);
+  assert.equal(result.totalDocuments, 2);
+  assert.deepEqual(result.collectionCounts, { words: 2, numbers: 0 });
+  assert.equal(f.db.contentOps.length, 0);
+  assert.equal(f.backupCreates, 0);
+});
+test('rollback reverts restored state to the safety backup', async () => {
+  const f = fixture();
+  await f.run();
+  assertRestored(f);
+  // Now run rollback using the completed restore's operation ID
+  const rollbackResult = await runRollbackRestore({
+    ...f.options,
+    restoreId: 'operation1',
+  });
+  assert.equal(rollbackResult.complete, true);
+  // Should have reverted to the original documents in f.db (words/old and numbers/old)
+  const content = [...f.db.docs.keys()].filter(key => !key.startsWith('admin_restore_jobs/')).sort();
+  assert.deepEqual(content, ['numbers/old', 'words/old']);
+  assert.equal(f.db.docs.get('words/old').title, 'Before');
+});
+

@@ -7,6 +7,41 @@ const PAID_UNLOCK_MODES = new Set([
   'review_only',
 ]);
 
+export function createSlidingWindowRateLimiter({
+  windowMs = 60000,
+  maxPerWindow = 60,
+  clock = Date.now,
+} = {}) {
+  const records = new Map(); // key -> Array of timestamps
+
+  return {
+    isAllowed(key) {
+      if (!key) return { allowed: true, remaining: maxPerWindow, retryAfterSec: 0 };
+      const now = clock();
+      const cutoff = now - windowMs;
+      let timestamps = records.get(key) || [];
+      timestamps = timestamps.filter(t => t > cutoff);
+      if (timestamps.length >= maxPerWindow) {
+        const oldest = timestamps[0];
+        const retryAfterSec = Math.max(1, Math.ceil((oldest + windowMs - now) / 1000));
+        records.set(key, timestamps);
+        return { allowed: false, remaining: 0, retryAfterSec };
+      }
+      timestamps.push(now);
+      records.set(key, timestamps);
+      return { allowed: true, remaining: maxPerWindow - timestamps.length, retryAfterSec: 0 };
+    },
+    reset() {
+      records.clear();
+    },
+  };
+}
+
+const defaultRateLimiter = createSlidingWindowRateLimiter({
+  windowMs: 60000,
+  maxPerWindow: 60,
+});
+
 function parseBody(req) {
   if (typeof req.body === 'object' && req.body !== null) {
     return req.body;
@@ -177,14 +212,31 @@ export function createGetAuthorizedLessonHandler({
   databases: customDatabases,
   storage: customStorage,
   tokens: customTokens,
+  rateLimiter: customRateLimiter,
   clock = Date.now,
 } = {}) {
+  const rateLimiter = customRateLimiter || defaultRateLimiter;
+
   return async ({ req, res, error = console.error, log = () => {} }) => {
     if (req.method !== 'POST') {
       return res.json({ ok: false, message: 'Method not allowed' }, 405);
     }
 
     const callerUserId = req.headers['x-appwrite-user-id'] || null;
+    const clientIp = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || 'anonymous';
+    const rateLimitKey = callerUserId ? `user:${callerUserId}` : `ip:${clientIp}`;
+
+    const rateLimitResult = rateLimiter.isAllowed(rateLimitKey);
+    if (!rateLimitResult.allowed) {
+      return res.json({
+        ok: false,
+        error: 'rate_limit_exceeded',
+        message: 'Too many requests. Please retry later.',
+        retryAfter: rateLimitResult.retryAfterSec,
+      }, 429, {
+        'retry-after': String(rateLimitResult.retryAfterSec),
+      });
+    }
 
     const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
     const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;

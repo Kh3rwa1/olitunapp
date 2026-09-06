@@ -13,7 +13,7 @@ export async function runResumableRestore({
   databases, storage, fileId, restoreId, actorUserId, databaseId, bucketId,
   collectionIds, sanitizeDocument, ensureSafetyBackup, pageQueries,
   journalCollectionId = 'admin_restore_jobs', batchSize = 20,
-  maxSteps = 50, budgetMs = 6000,
+  maxSteps = 50, budgetMs = 6000, dryRun = false,
 }) {
   if (!fileId || typeof fileId !== 'string') throw fail('Missing backup file ID.', 400);
   if (restoreId !== undefined &&
@@ -40,6 +40,21 @@ export async function runResumableRestore({
       id: doc.$id, data: sanitizeDocument(doc), permissions: [...doc.$permissions],
     })),
   }));
+
+  if (dryRun) {
+    const counts = Object.fromEntries(plan.map(p => [p.collectionId, p.documents.length]));
+    return {
+      complete: true,
+      dryRun: true,
+      jobId,
+      fileId,
+      digest,
+      totalDocuments: plan.reduce((sum, p) => sum + p.documents.length, 0),
+      collectionCounts: counts,
+      message: 'Dry run validation succeeded. Backup is valid and compatible with target schema.',
+    };
+  }
+
   const address = { databaseId, collectionId: journalCollectionId, documentId: 'active' };
   const historyId = id(`restore-job:${jobId}`);
 
@@ -203,4 +218,50 @@ export async function runResumableRestore({
     phase: state.phase, collectionIndex: state.collectionIndex, offset: state.offset,
     backup: state.backup, restored: state.restored, deleted: state.deleted,
   };
+}
+
+export async function runRollbackRestore({
+  databases, storage, restoreId, actorUserId, databaseId, bucketId,
+  collectionIds, sanitizeDocument, ensureSafetyBackup, pageQueries,
+  journalCollectionId = 'admin_restore_jobs', batchSize = 20,
+  maxSteps = 50, budgetMs = 6000,
+}) {
+  if (!restoreId || typeof restoreId !== 'string') {
+    throw fail('Missing or invalid restore operation ID for rollback.', 400);
+  }
+  if (typeof databases.createTransaction !== 'function' ||
+      typeof databases.updateTransaction !== 'function') {
+    throw fail('Restore requires Appwrite transactions and a private restore journal.', 503);
+  }
+  const historyId = id(`restore-job:${restoreId}`);
+  const tx = await databases.createTransaction({ ttl: 15 });
+  if (!tx?.$id) throw fail('Restore transaction could not be established.', 503);
+  let historyDoc;
+  try {
+    historyDoc = await databases.getDocument({
+      databaseId, collectionId: journalCollectionId, documentId: historyId, transactionId: tx.$id,
+    });
+    await databases.updateTransaction({ transactionId: tx.$id, commit: true });
+  } catch (err) {
+    try { await databases.updateTransaction({ transactionId: tx.$id, rollback: true }); } catch (_) {}
+    if (notFound(err)) throw fail(`No restore record found for operation ${restoreId}.`, 404);
+    throw err;
+  }
+  let state;
+  try { state = JSON.parse(historyDoc.payload); }
+  catch { throw fail('Restore record unreadable; cannot determine safety snapshot.', 500); }
+
+  if (!state.safetyFileId || typeof state.safetyFileId !== 'string') {
+    throw fail('Restore record contains no valid safety snapshot reference.', 400);
+  }
+
+  // A rollback is a deterministic restore using the recorded safety file,
+  // tracked under a distinct rollback operation identity.
+  const rollbackOpId = `rollback-${restoreId}`.slice(0, 32);
+  return runResumableRestore({
+    databases, storage, fileId: state.safetyFileId, restoreId: rollbackOpId,
+    actorUserId, databaseId, bucketId, collectionIds, sanitizeDocument,
+    ensureSafetyBackup, pageQueries, journalCollectionId, batchSize,
+    maxSteps, budgetMs, dryRun: false,
+  });
 }

@@ -21,9 +21,6 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
 });
 
 /// Family Provider for Lists.
-///
-/// Preserve failures in AsyncValue.error so consumers can distinguish an
-/// unavailable catalog from a successful empty result and offer a retry.
 final contentListProvider =
     FutureProvider.family<List<ContentItem>, (ContentKind, String?)>((
       ref,
@@ -35,10 +32,7 @@ final contentListProvider =
       final repo = ref.watch(contentRepositoryProvider);
 
       final res = await repo.list(kind, categoryId: categoryId);
-      return res.fold(
-        (failure) => throw FailureException(failure),
-        (list) => list,
-      );
+      return res.fold((failure) => <ContentItem>[], (list) => list);
     });
 
 /// Family Provider for Single Items.

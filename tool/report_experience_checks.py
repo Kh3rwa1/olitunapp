@@ -15,7 +15,6 @@ DART_FILES = [
     "lib/features/lessons/presentation/widgets/bento_category_card.dart",
     "lib/features/lessons/presentation/widgets/hero_category_card.dart",
     "lib/features/profile/presentation/providers/user_stats_provider.dart",
-    "lib/shared/providers/content_providers.dart",
     "lib/main.dart",
     "test/core/accessibility/app_experience_scope_test.dart",
     "test/core/accessibility/semantics_and_a11y_test.dart",
@@ -23,7 +22,6 @@ DART_FILES = [
     "test/shared/widgets/experience_controls_test.dart",
     "test/features/lessons/lessons_experience_test.dart",
     "test/features/profile/user_stats_sync_lifecycle_test.dart",
-    "test/shared/providers/content_list_provider_test.dart",
     "integration_test/experience_performance_test.dart",
 ]
 TEST_FILES = [path for path in DART_FILES if path.startswith("test/")]

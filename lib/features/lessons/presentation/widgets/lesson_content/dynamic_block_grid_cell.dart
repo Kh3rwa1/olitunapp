@@ -42,7 +42,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
             ? _resolveNavRoute(ref, lessonId, textLatin)
             : null);
 
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).valueOrNull ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blocks = lesson?.blocks ?? [];
     final blockIndex = blocks.indexOf(block);
@@ -128,7 +128,8 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           if (activeRoute.contains('/word/')) {
                             final wordId = activeRoute.split('/').last;
                             final matchedWord =
-                                ref.read(learnerWordsProvider).value ?? [];
+                                ref.read(learnerWordsProvider).valueOrNull ??
+                                [];
                             final matchedWordEntity = matchedWord
                                 .where((w) => w.id == wordId)
                                 .firstOrNull;
@@ -138,7 +139,10 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           } else if (activeRoute.contains('/sentence/')) {
                             final sentenceId = activeRoute.split('/').last;
                             final matchedSentence =
-                                ref.read(learnerSentencesProvider).value ?? [];
+                                ref
+                                    .read(learnerSentencesProvider)
+                                    .valueOrNull ??
+                                [];
                             final matchedSentenceEntity = matchedSentence
                                 .where((s) => s.id == sentenceId)
                                 .firstOrNull;
@@ -207,7 +211,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
               .toList()
         : [t];
 
-    final letters = ref.read(learnerLettersProvider).value ?? [];
+    final letters = ref.read(learnerLettersProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = letters
           .where(
@@ -219,7 +223,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/letter/$lessonId/${matched.charOlChiki}';
     }
 
-    final numbers = ref.read(learnerNumbersProvider).value ?? [];
+    final numbers = ref.read(learnerNumbersProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = numbers
           .where(
@@ -233,7 +237,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/number/$lessonId/${matched.id}';
     }
 
-    final words = ref.read(learnerWordsProvider).value ?? [];
+    final words = ref.read(learnerWordsProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = words
           .where(
@@ -246,7 +250,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/word/$lessonId/${matched.id}';
     }
 
-    final sentences = ref.read(learnerSentencesProvider).value ?? [];
+    final sentences = ref.read(learnerSentencesProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = sentences
           .where(

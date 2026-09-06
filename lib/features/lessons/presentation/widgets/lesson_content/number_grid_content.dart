@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itun/shared/widgets/content_load_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,8 +24,18 @@ class NumberGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allNumbers = ref.watch(learnerNumbersProvider).value ?? [];
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final contentAsync = ref.watch(learnerNumbersProvider);
+    final lessonsAsync = ref.watch(learnerLessonsProvider);
+    final loadState = buildContentLoadGuard(
+      [contentAsync, lessonsAsync],
+      onRetry: () {
+        ref.invalidate(contentListProvider((ContentKind.number, null)));
+        ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+      },
+    );
+    if (loadState != null) return loadState;
+    final allNumbers = contentAsync.requireValue;
+    final lessons = lessonsAsync.requireValue;
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final numbers = _scopeNumbers(allNumbers, lesson);

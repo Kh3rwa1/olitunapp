@@ -32,7 +32,10 @@ final contentListProvider =
       final repo = ref.watch(contentRepositoryProvider);
 
       final res = await repo.list(kind, categoryId: categoryId);
-      return res.fold((failure) => <ContentItem>[], (list) => list);
+      return res.fold(
+        (failure) => throw FailureException(failure),
+        (list) => list,
+      );
     });
 
 /// Family Provider for Single Items.

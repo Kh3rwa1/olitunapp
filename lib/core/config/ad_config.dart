@@ -130,6 +130,27 @@ class AdConfig {
     return testAndroidNativeId;
   }
 
+  /// Universal test fallback ad unit IDs (guaranteed fill from Google sample units)
+  static String get fallbackBannerAdUnitId {
+    if (kIsWeb) return '';
+    return Platform.isIOS ? testIosBannerId : testAndroidBannerId;
+  }
+
+  static String get fallbackInterstitialAdUnitId {
+    if (kIsWeb) return '';
+    return Platform.isIOS ? testIosInterstitialId : testAndroidInterstitialId;
+  }
+
+  static String get fallbackRewardedAdUnitId {
+    if (kIsWeb) return '';
+    return Platform.isIOS ? testIosRewardedId : testAndroidRewardedId;
+  }
+
+  static String get fallbackNativeAdUnitId {
+    if (kIsWeb) return '';
+    return Platform.isIOS ? testIosNativeId : testAndroidNativeId;
+  }
+
   /// Test Device IDs for physical device verification.
   static List<String> get testDeviceIds {
     const definedDevices = String.fromEnvironment('ADMOB_TEST_DEVICES');

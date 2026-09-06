@@ -55,11 +55,11 @@ class ConsentManager {
           );
         }
       },
-      (FormError error) {
-        adsAllowed.value = false;
+      (FormError error) async {
         AppLogger.debug(
           'ConsentManager: UMP request failed: ${error.errorCode} - ${error.message}',
         );
+        await canRequestAds();
         completer.complete(
           left<AdError, ConsentStatus>(
             AdConsentError(error.message, error.errorCode.toString()),
@@ -148,11 +148,7 @@ class ConsentManager {
   Future<bool> canRequestAds() async {
     if (kIsWeb) return false;
     try {
-      final status = await ConsentInformation.instance.getConsentStatus();
-      final allowed =
-          (status == ConsentStatus.obtained ||
-              status == ConsentStatus.notRequired) &&
-          await ConsentInformation.instance.canRequestAds();
+      final allowed = await ConsentInformation.instance.canRequestAds();
       adsAllowed.value = allowed;
       return allowed;
     } catch (_) {

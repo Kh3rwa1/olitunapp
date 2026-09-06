@@ -15,5 +15,12 @@ void main() {
       expect(AdConfig.defaultInterstitialIntervalMinutes, equals(3));
       expect(AdConfig.defaultRewardedCooldownMinutes, equals(10));
     });
+
+    test('provides non-empty sample fallback ad unit IDs', () {
+      expect(AdConfig.fallbackBannerAdUnitId, isNotEmpty);
+      expect(AdConfig.fallbackInterstitialAdUnitId, isNotEmpty);
+      expect(AdConfig.fallbackRewardedAdUnitId, isNotEmpty);
+      expect(AdConfig.fallbackNativeAdUnitId, isNotEmpty);
+    });
   });
 }

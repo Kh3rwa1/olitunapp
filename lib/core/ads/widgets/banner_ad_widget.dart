@@ -86,6 +86,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
             return;
           }
           setState(() {
+            _bannerAd = ad as BannerAd;
             _isLoaded = true;
             _retryCount = 0;
             _hasPersistentError = false;
@@ -148,6 +149,10 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
           }
         },
       );
+
+      if (_bannerAd == null) {
+        _scheduleRetry();
+      }
     } catch (e) {
       AppLogger.debug('BannerAdWidget: Error loading banner ad: $e');
     }
@@ -179,6 +184,10 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           if (next.shouldShowAds) {
+            setState(() {
+              _hasPersistentError = false;
+              _retryCount = 0;
+            });
             _loadAd();
           } else {
             _bannerAd?.dispose();

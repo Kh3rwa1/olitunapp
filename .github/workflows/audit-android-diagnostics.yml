@@ -1,0 +1,48 @@
+name: Audit Android Failure Diagnostics
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  actions: read
+  pull-requests: write
+
+jobs:
+  inspect-failure:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/audit-restore-startup-release-20260906'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+      - name: Inspect known failed Android job without deployment secrets
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node --input-type=module - <<'JS'
+          const base = ['https:', '', 'api.github.com', 'repos', process.env.GITHUB_REPOSITORY].join('/');
+          const headers = {Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'};
+          const jobId = '101412833904';
+          const metadata = await fetch(`${base}/actions/jobs/${jobId}`, {headers});
+          if (!metadata.ok) throw new Error(`Job metadata HTTP ${metadata.status}`);
+          const job = await metadata.json();
+          if (job.head_sha !== 'd4dc6b6d57dec71c186703d4fa6c337c5df69923' || job.conclusion !== 'failure') throw new Error('Unexpected job identity or state');
+          const response = await fetch(`${base}/actions/jobs/${jobId}/logs`, {headers});
+          if (!response.ok) throw new Error(`Job log HTTP ${response.status}`);
+          const lines = (await response.text()).replace(/\x1b\[[0-9;]*m/g, '').split('\n');
+          const selected = new Set();
+          for (let i = 0; i < lines.length; i++) {
+            if (/\[E\]|Error:|error:|FAIL|Exception|failed|offline|timed out|Expected:|Actual:|Which:|No devices|device not found/i.test(lines[i])) {
+              for (let j = Math.max(0, i - 2); j <= Math.min(lines.length - 1, i + 4); j++) selected.add(j);
+            }
+          }
+          const excerpt = [...selected].sort((a,b) => a-b).slice(-240).map(i => lines[i].slice(0, 800)).join('\n').slice(-28000)
+            .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]').replace(/\b(?:ghp_|github_pat_)[A-Za-z0-9_]+/g, '[REDACTED]');
+          const steps = (job.steps || []).map(step => `${step.name}: ${step.conclusion || step.status}`).join('\n');
+          const body = `## Android E2E failure diagnostics\nSource commit: d4dc6b6d57dec71c186703d4fa6c337c5df69923\nFailed job: ${job.html_url}\n\n\`\`\`text\n${steps}\n\`\`\`\n\nSelected error context (not a full log):\n\`\`\`text\n${excerpt || '(No matching error lines)'}\n\`\`\``;
+          const posted = await fetch(`${base}/issues/${process.env.PR_NUMBER}/comments`, {method:'POST', headers:{...headers, 'Content-Type':'application/json'}, body:JSON.stringify({body})});
+          if (!posted.ok) throw new Error(`Diagnostic comment HTTP ${posted.status}`);
+          JS

@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/ads/ad_service.dart';
+import '../../../core/notifications/notification_service.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -67,7 +68,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (!mounted) return;
       ref.read(homePrefetchProvider.notifier).prefetch();
       unawaited(ref.read(adServiceProvider).showConsentFormIfNeeded(context));
+      _requestNotificationPermissionIfNeeded();
     });
+  }
+
+  void _requestNotificationPermissionIfNeeded() {
+    final notificationsEnabled = ref.read(notificationsEnabledProvider);
+    if (notificationsEnabled) {
+      unawaited(NotificationService.instance.requestPermission());
+    }
   }
 
   Future<void> _onRefresh() async {

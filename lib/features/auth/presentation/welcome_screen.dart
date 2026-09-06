@@ -80,7 +80,7 @@ class WelcomeScreen extends ConsumerWidget {
                   const Spacer(),
 
                   // CTA Buttons
-                  _buildCTAButtons(context, isDark),
+                  _buildCTAButtons(context, ref, isDark),
 
                   const SizedBox(height: 24),
                 ],
@@ -274,7 +274,7 @@ class WelcomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildCTAButtons(BuildContext context, bool isDark) {
+  Widget _buildCTAButtons(BuildContext context, WidgetRef ref, bool isDark) {
     return Column(
       children: [
         // Google Sign-In Button
@@ -316,6 +316,42 @@ class WelcomeScreen extends ConsumerWidget {
             ),
           ),
         ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
+
+        const SizedBox(height: 10),
+
+        // Explore as Guest Button — allows users & Play Store reviewers instant access
+        TextButton.icon(
+          onPressed: () async {
+            HapticFeedback.lightImpact();
+            try {
+              await ref.read(authControllerProvider).signInAnonymously();
+            } catch (_) {}
+            if (context.mounted) {
+              final showOnboarding = ref.read(onboardingProvider);
+              if (showOnboarding) {
+                context.go('/onboarding');
+              } else {
+                context.go('/');
+              }
+            }
+          },
+          icon: Icon(
+            Icons.person_outline_rounded,
+            size: 18,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+          label: Text(
+            'Explore as Guest',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white70 : Colors.black54,
+            ),
+          ),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          ),
+        ).animate().fadeIn(delay: 900.ms, duration: 500.ms).slideY(begin: 0.3),
       ],
     );
   }

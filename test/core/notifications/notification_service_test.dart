@@ -109,6 +109,8 @@ void main() {
         expect(service.cancelDailyReminder, returnsNormally);
         expect(service.cancelAllReminders, returnsNormally);
         expect(await service.requestPermission(), isFalse);
+        expect(await service.areNotificationsEnabled(), isFalse);
+        expect(await service.showInstantTestNotification(), isFalse);
       },
     );
   });

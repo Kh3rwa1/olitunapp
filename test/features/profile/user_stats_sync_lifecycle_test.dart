@@ -129,9 +129,9 @@ void main() {
   });
 
   test('live sync failures still mark stats unsynced', () async {
-    when(repo.syncPendingStats).thenAnswer(
-      (_) async => const Left(ServerFailure(message: 'offline')),
-    );
+    when(
+      repo.syncPendingStats,
+    ).thenAnswer((_) async => const Left(ServerFailure(message: 'offline')));
 
     await notifier.syncPendingStats();
 

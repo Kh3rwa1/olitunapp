@@ -66,9 +66,9 @@ void main() {
   }
 
   test('invalidation retries and recovers from an error', () async {
-    when(list).thenAnswer(
-      (_) async => const Left(NetworkFailure(message: 'Offline')),
-    );
+    when(
+      list,
+    ).thenAnswer((_) async => const Left(NetworkFailure(message: 'Offline')));
     await expectLater(
       container.read(provider.future),
       throwsA(isA<FailureException>()),

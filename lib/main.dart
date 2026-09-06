@@ -13,6 +13,7 @@ import 'core/accessibility/app_experience_scope.dart';
 import 'core/config/appwrite_config.dart';
 import 'core/observability/app_observability.dart';
 import 'core/observability/crash_reporting.dart';
+import 'core/startup/post_frame_startup.dart';
 import 'core/startup/startup_status_app.dart';
 import 'core/startup/startup_tasks.dart';
 import 'core/storage/hive_service.dart';
@@ -95,7 +96,7 @@ Future<void> _startApplication() async {
     // A timeout keeps the underlying storage operation alive. A retry waits
     // for that same operation instead of opening a second set of Hive boxes.
     final prefs = await _storageStartup.run();
-    final optionalWork = _optionalStartup.runAll({
+    final optionalTasks = <String, Future<void> Function()>{
       'display': () async {
         await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         SystemChrome.setSystemUIOverlayStyle(
@@ -142,23 +143,19 @@ Future<void> _startApplication() async {
           );
         }
       },
-    });
+    };
     // An audio timeout shows the retry shell, rather than launching players
     // against an unfinished platform. Retry reuses the same pending future.
     await _audioStartup.run(timeout: const Duration(seconds: 8));
-    final outcomes = await optionalWork;
-    for (final outcome in outcomes) {
-      AppLogger.debug(
-        'Startup ${outcome.name}: ${outcome.status.name} '
-        'after ${outcome.elapsed.inMilliseconds}ms',
-      );
-    }
 
     runApp(
       ProviderScope(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
         observers: const [DailyMissionsObserver(), AppProviderObserver()],
-        child: const OlitunApp(),
+        child: PostFrameStartup(
+          onStart: () => unawaited(_startOptionalTasks(optionalTasks)),
+          child: const OlitunApp(),
+        ),
       ),
     );
   } catch (error, stack) {
@@ -174,6 +171,20 @@ Future<void> _startApplication() async {
     );
   } finally {
     _startupInProgress = false;
+  }
+}
+
+Future<void> _startOptionalTasks(
+  Map<String, Future<void> Function()> tasks,
+) async {
+  // Individual SDK errors/timeouts become outcomes, not startup failures.
+  // The runner retains in-flight work so retries cannot duplicate SDK setup.
+  final outcomes = await _optionalStartup.runAll(tasks);
+  for (final outcome in outcomes) {
+    AppLogger.debug(
+      'Startup ${outcome.name}: ${outcome.status.name} '
+      'after ${outcome.elapsed.inMilliseconds}ms',
+    );
   }
 }
 

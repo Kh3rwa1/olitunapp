@@ -1,3 +1,5 @@
+import '../../core/media/authorized_media.dart';
+
 enum MediaKind { image, svg, lottie, video, html, audio, unknown }
 
 class MediaTypeResolver {
@@ -55,6 +57,9 @@ class MediaTypeResolver {
   static String appwriteHeroMediaType(String? url) => resolve(url).name;
 
   static bool isRenderableHero(String? url) {
+    // Private file IDs have no extension. Their authorized metadata supplies
+    // the MIME type; do not discard them before the resolver can run.
+    if (url != null && PrivateMediaReference.parse(url) != null) return true;
     switch (resolve(url)) {
       case MediaKind.image:
       case MediaKind.svg:

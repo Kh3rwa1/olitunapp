@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/lessons/domain/entities/lesson_entity.dart';
+import '../../features/lessons/domain/entities/scoped_lesson_media.dart';
 import '../models/content_models.dart';
 import '../repositories/content_repository.dart';
 
 final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
   return ref
       .watch(contentListProvider((ContentKind.lesson, null)))
-      .whenData((list) => list.map((item) => item.toLessonEntity()).toList());
+      .whenData((list) => list
+          .map((item) => scopeLessonMedia(item.toLessonEntity()))
+          .toList());
 });
 
 final learnerWordsProvider = Provider<AsyncValue<List<WordModel>>>((ref) {

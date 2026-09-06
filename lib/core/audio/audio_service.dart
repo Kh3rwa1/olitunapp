@@ -6,13 +6,23 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../media/authorized_media.dart';
+import '../media/authorized_media_provider.dart';
+import 'private_audio_playback.dart';
 import 'audio_service_stub.dart'
     if (dart.library.js_interop) 'audio_service_web.dart';
 
-final audioServiceProvider = Provider((ref) => AudioService());
+final audioServiceProvider = Provider((ref) {
+  final service = AudioService(
+    mediaService: ref.watch(authorizedMediaServiceProvider),
+  );
+  ref.onDispose(service.dispose);
+  return service;
+});
 
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
+  PrivateAudioPlayback? _privatePlayback;
 
   /// Grace period after a clip finishes before the media session is
   /// released. Must comfortably exceed the playback controller's
@@ -22,7 +32,10 @@ class AudioService {
 
   StreamSubscription<ProcessingState>? _sessionReleaseSub;
 
-  AudioService() {
+  AudioService({AuthorizedMediaService? mediaService}) {
+    if (mediaService != null) {
+      _privatePlayback = PrivateAudioPlayback(_player, mediaService);
+    }
     _initWebCrossOrigin();
     _initMediaSessionRelease();
   }
@@ -60,10 +73,11 @@ class AudioService {
     // started during the grace period — leave those alone.
     if (_player.processingState != ProcessingState.completed) return;
     try {
+      _privatePlayback?.cancel();
       await _player.stop();
       AppLogger.debug('AudioService: media session released after completion');
-    } catch (e) {
-      AppLogger.warning('AudioService: media session release failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService: media session release failed');
     }
   }
 
@@ -93,6 +107,11 @@ class AudioService {
   /// silently swallowing failures.
   Future<bool> tryPlayUrl(String url) async {
     if (url.isEmpty) return false;
+    if (PrivateMediaReference.parse(url) != null) {
+      _initWebCrossOrigin();
+      return await _privatePlayback?.play(url) ?? false;
+    }
+    _privatePlayback?.cancel();
     try {
       _initWebCrossOrigin();
       if (_player.playing) {
@@ -142,26 +161,34 @@ class AudioService {
   Future<void> pause() async {
     try {
       await _player.pause();
-    } catch (e) {
-      AppLogger.warning('AudioService pause failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService pause failed');
     }
   }
 
   /// Resumes paused playback. Does nothing when nothing is loaded.
   Future<void> resume() async {
+    if (_privatePlayback?.active ?? false) {
+      await _privatePlayback!.resume();
+      return;
+    }
     try {
       await _player.play();
-    } catch (e) {
-      AppLogger.warning('AudioService resume failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService resume failed');
     }
   }
 
   /// Seeks within the loaded source (spec §11: seek where relevant).
   Future<void> seek(Duration position) async {
+    if (_privatePlayback?.active ?? false) {
+      await _privatePlayback!.seek(position);
+      return;
+    }
     try {
       await _player.seek(position);
-    } catch (e) {
-      AppLogger.warning('AudioService seek failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService seek failed');
     }
   }
 
@@ -169,16 +196,17 @@ class AudioService {
   Future<void> setSpeed(double speed) async {
     try {
       await _player.setSpeed(speed);
-    } catch (e) {
-      AppLogger.warning('AudioService setSpeed failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService setSpeed failed');
     }
   }
 
   Future<void> stop() async {
+    _privatePlayback?.cancel();
     try {
       await _player.stop();
-    } catch (e) {
-      AppLogger.warning('AudioService: stop failed: $e');
+    } catch (_) {
+      AppLogger.warning('AudioService: stop failed');
     }
     if (kIsWeb) {
       try {
@@ -190,6 +218,7 @@ class AudioService {
   }
 
   void dispose() {
+    _privatePlayback?.cancel();
     unawaited(_sessionReleaseSub?.cancel());
     if (kIsWeb) {
       try {

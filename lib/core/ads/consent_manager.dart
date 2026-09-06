@@ -81,10 +81,11 @@ class ConsentManager {
 
     ConsentForm.loadAndShowConsentFormIfRequired((FormError? formError) async {
       if (formError != null) {
-        adsAllowed.value = false;
         AppLogger.debug(
           'ConsentManager: Consent form error: ${formError.errorCode} - ${formError.message}',
         );
+        // Even if the form has an error, evaluate if ads can still be requested (e.g. non-EEA or cached)
+        await canRequestAds();
         completer.complete(
           left<AdError, ConsentStatus>(
             AdConsentError(formError.message, formError.errorCode.toString()),
@@ -106,6 +107,37 @@ class ConsentManager {
         completer.complete(
           right<AdError, ConsentStatus>(ConsentStatus.unknown),
         );
+      }
+    });
+
+    return completer.future;
+  }
+
+  /// Show privacy options form if required by UMP regulations (e.g. GDPR revocation/change).
+  Future<Either<AdError, void>> showPrivacyOptionsForm() async {
+    if (kIsWeb) return right<AdError, void>(null);
+
+    final completer = Completer<Either<AdError, void>>();
+    ConsentForm.showPrivacyOptionsForm((FormError? formError) async {
+      if (formError != null) {
+        AppLogger.debug(
+          'ConsentManager: Privacy options form error: ${formError.errorCode} - ${formError.message}',
+        );
+        completer.complete(
+          left<AdError, void>(
+            AdConsentError(formError.message, formError.errorCode.toString()),
+          ),
+        );
+        return;
+      }
+
+      try {
+        final status = await ConsentInformation.instance.getConsentStatus();
+        await canRequestAds();
+        await _saveConsentStatus(status);
+        completer.complete(right<AdError, void>(null));
+      } catch (e) {
+        completer.complete(right<AdError, void>(null));
       }
     });
 

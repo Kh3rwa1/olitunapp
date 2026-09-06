@@ -92,6 +92,12 @@ class AdService with WidgetsBindingObserver {
     return consentManager.showConsentFormIfRequired();
   }
 
+  /// Show privacy options form if available (e.g. settings screen GDPR options).
+  Future<Either<AdError, void>> showPrivacyOptionsForm() async {
+    if (kIsWeb) return right<AdError, void>(null);
+    return consentManager.showPrivacyOptionsForm();
+  }
+
   /// Helper to create and load a responsive BannerAd.
   BannerAd? createBannerAd({
     required AdSize size,

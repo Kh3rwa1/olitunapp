@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/ads/ad_service.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -390,6 +391,27 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
         subtitle: 'Manage lesson contents and authored quizzes',
         isDark: isDark,
         onTap: () => context.go('/admin'),
+      ),
+      const SizedBox(height: 10),
+      SettingTile(
+        icon: Icons.ads_click_rounded,
+        title: 'Ad Privacy Choices',
+        subtitle: 'Manage personalized ads and privacy preferences',
+        isDark: isDark,
+        onTap: () async {
+          final result = await AdService.instance.showPrivacyOptionsForm();
+          result.fold((err) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Ad privacy settings are not required for your region.',
+                  ),
+                ),
+              );
+            }
+          }, (_) {});
+        },
       ),
       const SizedBox(height: 10),
       const DiagnosticsTile(),

@@ -91,10 +91,12 @@ void main() {
     final guard = buildContentLoadGuard([
       AsyncValue<Object?>.error(const NetworkFailure(), StackTrace.current),
     ], onRetry: () => retried = true);
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: guard)));
+    await tester.pumpWidget(
+      ProviderScope(child: MaterialApp(home: Scaffold(body: guard))),
+    );
     expect(find.byType(AppErrorState), findsOneWidget);
     final state = tester.widget<AppErrorState>(find.byType(AppErrorState));
-    state.onRetry!();
+    state.onRetry();
     expect(retried, isTrue);
   });
 

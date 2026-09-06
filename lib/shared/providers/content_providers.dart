@@ -20,7 +20,7 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
   );
 });
 
-/// Family Provider for Lists
+/// Family Provider for Lists.
 final contentListProvider =
     FutureProvider.family<List<ContentItem>, (ContentKind, String?)>((
       ref,

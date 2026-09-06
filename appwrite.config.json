@@ -160,7 +160,10 @@
         "users.read",
         "databases.read",
         "databases.write",
-        "files.write"
+        "files.write",
+        "documents.read",
+        "documents.write",
+        "files.read"
       ]
     },
     {

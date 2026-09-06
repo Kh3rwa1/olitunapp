@@ -42,10 +42,10 @@ export function parseBody(body) {
   return JSON.parse(body);
 }
 
-export function requireConfig(env = process.env) {
+export function requireConfig(env = process.env, runtimeApiKey) {
   const endpoint = env.APPWRITE_FUNCTION_API_ENDPOINT || env.APPWRITE_ENDPOINT;
   const projectId = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
-  const apiKey = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY;
+  const apiKey = runtimeApiKey || env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY;
 
   if (!endpoint || !projectId || !apiKey) {
     throw new Error(
@@ -688,7 +688,7 @@ export default async ({ req, res, log, error }) => {
       });
     }
 
-    const { endpoint, projectId, apiKey } = requireConfig();
+    const { endpoint, projectId, apiKey } = requireConfig(process.env, req.headers['x-appwrite-key']);
     const client = new Client()
       .setEndpoint(endpoint)
       .setProject(projectId)

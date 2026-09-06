@@ -97,8 +97,10 @@ class TranslationOverrideService {
     }
 
     if (pronunciation != null && pronunciation.trim().isNotEmpty) {
-      final langMap =
-          _pronunciations.putIfAbsent(lowerKey, () => <String, String>{});
+      final langMap = _pronunciations.putIfAbsent(
+        lowerKey,
+        () => <String, String>{},
+      );
       langMap[lang] = pronunciation.trim();
     } else if (pronunciation != null && pronunciation.trim().isEmpty) {
       _pronunciations[lowerKey]?.remove(lang);

@@ -458,90 +458,113 @@ void main() {
   });
 
   group('Admin Multilingual Editing & OV Transliteration Regression', () {
-    test('Ol Chiki letter OV (ᱶ) and Nowa do ced kana? transliteration fix', () {
-      // ᱶ must not be transliterated to chandrabindu (ঁ)
-      expect(OlChikiMultilingualHelper.toBengali('ᱶ'), 'ওয়');
-      expect(OlChikiMultilingualHelper.toHindi('ᱶ'), 'व');
-      expect(OlChikiMultilingualHelper.toOdia('ᱶ'), 'ୱ');
-      expect(OlChikiMultilingualHelper.toLatin('ᱶ'), 'w');
+    test(
+      'Ol Chiki letter OV (ᱶ) and Nowa do ced kana? transliteration fix',
+      () {
+        // ᱶ must not be transliterated to chandrabindu (ঁ)
+        expect(OlChikiMultilingualHelper.toBengali('ᱶ'), 'ওয়');
+        expect(OlChikiMultilingualHelper.toHindi('ᱶ'), 'व');
+        expect(OlChikiMultilingualHelper.toOdia('ᱶ'), 'ୱ');
+        expect(OlChikiMultilingualHelper.toLatin('ᱶ'), 'w');
 
-      // ᱱᱚᱶᱟ (Nowa) must not be corrupted to নঁা
-      final nowaBn = OlChikiMultilingualHelper.toBengali('ᱱᱚᱶᱟ');
-      expect(nowaBn.contains('ঁ'), isFalse);
-      expect(nowaBn, 'নোওয়া');
+        // ᱱᱚᱶᱟ (Nowa) must not be corrupted to নঁা
+        final nowaBn = OlChikiMultilingualHelper.toBengali('ᱱᱚᱶᱟ');
+        expect(nowaBn.contains('ঁ'), isFalse);
+        expect(nowaBn, 'নোওয়া');
 
-      final nowaHi = OlChikiMultilingualHelper.toHindi('ᱱᱚᱶᱟ');
-      expect(nowaHi.contains('ँ'), isFalse);
-      expect(nowaHi, 'नोवा');
+        final nowaHi = OlChikiMultilingualHelper.toHindi('ᱱᱚᱶᱟ');
+        expect(nowaHi.contains('ँ'), isFalse);
+        expect(nowaHi, 'नोवा');
 
-      final nowaOr = OlChikiMultilingualHelper.toOdia('ᱱᱚᱶᱟ');
-      expect(nowaOr.contains('ଁ'), isFalse);
-      expect(nowaOr, 'ନୋୱା');
+        final nowaOr = OlChikiMultilingualHelper.toOdia('ᱱᱚᱶᱟ');
+        expect(nowaOr.contains('ଁ'), isFalse);
+        expect(nowaOr, 'ନୋୱା');
 
-      // Nowa do ced kana? sentence
-      final sentenceBn = OlChikiMultilingualHelper.toBengali('ᱱᱚᱶᱟ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ?');
-      expect(sentenceBn.contains('ঁ'), isFalse);
-      expect(sentenceBn, 'নোওয়া দ চেদ কানা?');
+        // Nowa do ced kana? sentence
+        final sentenceBn = OlChikiMultilingualHelper.toBengali(
+          'ᱱᱚᱶᱟ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ?',
+        );
+        expect(sentenceBn.contains('ঁ'), isFalse);
+        expect(sentenceBn, 'নোওয়া দ চেদ কানা?');
 
-      // Dictionary lookup for Nowa do ced kana?
-      expect(
-        IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'bn'),
-        'এটা কি?',
-      );
-      expect(
-        IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'hi'),
-        'यह क्या है?',
-      );
-      expect(
-        IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'or'),
-        'ଏହା କ’ଣ?',
-      );
-    });
+        // Dictionary lookup for Nowa do ced kana?
+        expect(
+          IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'bn'),
+          'এটা কি?',
+        );
+        expect(
+          IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'hi'),
+          'यह क्या है?',
+        );
+        expect(
+          IndicTranslationsDictionary.lookup('Nowa do ced kana?', 'or'),
+          'ଏହା କ’ଣ?',
+        );
+      },
+    );
 
-    test('TranslationOverrideService persists overrides and takes priority', () async {
-      final service = TranslationOverrideService.instance;
-      await service.init();
+    test(
+      'TranslationOverrideService persists overrides and takes priority',
+      () async {
+        final service = TranslationOverrideService.instance;
+        await service.init();
 
-      await service.setOverride(
-        key: 'test_key_sample',
-        langCode: 'bn',
-        meaning: 'কাস্টম অর্থ',
-        pronunciation: 'কাস্টম উচ্চারণ',
-      );
+        await service.setOverride(
+          key: 'test_key_sample',
+          langCode: 'bn',
+          meaning: 'কাস্টম অর্থ',
+          pronunciation: 'কাস্টম উচ্চারণ',
+        );
 
-      expect(service.getMeaningOverride('test_key_sample', 'bn'), 'কাস্টম অর্থ');
-      expect(service.getPronunciationOverride('test_key_sample', 'bn'), 'কাস্টম উচ্চারণ');
+        expect(
+          service.getMeaningOverride('test_key_sample', 'bn'),
+          'কাস্টম অর্থ',
+        );
+        expect(
+          service.getPronunciationOverride('test_key_sample', 'bn'),
+          'কাস্টম উচ্চারণ',
+        );
 
-      // Dictionary lookup respects the override
-      expect(IndicTranslationsDictionary.lookup('test_key_sample', 'bn'), 'কাস্টম অর্থ');
+        // Dictionary lookup respects the override
+        expect(
+          IndicTranslationsDictionary.lookup('test_key_sample', 'bn'),
+          'কাস্টম অর্থ',
+        );
 
-      // Transliteration helper respects the override
-      expect(
-        OlChikiMultilingualHelper.transliterateOlChiki('test_key_sample', 'bn'),
-        'কাস্টম উচ্চারণ',
-      );
+        // Transliteration helper respects the override
+        expect(
+          OlChikiMultilingualHelper.transliterateOlChiki(
+            'test_key_sample',
+            'bn',
+          ),
+          'কাস্টম উচ্চারণ',
+        );
 
-      // Clean up
-      await service.clearOverride('test_key_sample', 'bn');
-      expect(service.getMeaningOverride('test_key_sample', 'bn'), null);
-    });
+        // Clean up
+        await service.clearOverride('test_key_sample', 'bn');
+        expect(service.getMeaningOverride('test_key_sample', 'bn'), null);
+      },
+    );
 
-    test('TranslationEntry uses customTranslations and customTransliterations', () {
-      const entry = TranslationEntry(
-        id: 'blk_1',
-        kind: TranslationKind.lesson,
-        textOlChiki: 'ᱱᱚᱶᱟ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ?',
-        textLatin: 'Nowa do ced kana?',
-        englishMeaning: 'What is this?',
-        customTranslations: {'bn': 'এটা কি?', 'hi': 'यह क्या है?'},
-        customTransliterations: {'bn': 'নওয়া দ চেদ কানা?'},
-      );
+    test(
+      'TranslationEntry uses customTranslations and customTransliterations',
+      () {
+        const entry = TranslationEntry(
+          id: 'blk_1',
+          kind: TranslationKind.lesson,
+          textOlChiki: 'ᱱᱚᱶᱟ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ?',
+          textLatin: 'Nowa do ced kana?',
+          englishMeaning: 'What is this?',
+          customTranslations: {'bn': 'এটা কি?', 'hi': 'यह क्या है?'},
+          customTransliterations: {'bn': 'নওয়া দ চেদ কানা?'},
+        );
 
-      expect(entry.meaningFor('bn'), 'এটা কি?');
-      expect(entry.meaningFor('hi'), 'यह क्या है?');
-      expect(entry.transliterationFor('bn'), 'নওয়া দ চেদ কানা?');
-      expect(entry.isTranslatedFor('bn'), isTrue);
-      expect(entry.isTranslatedFor('hi'), isTrue);
-    });
+        expect(entry.meaningFor('bn'), 'এটা কি?');
+        expect(entry.meaningFor('hi'), 'यह क्या है?');
+        expect(entry.transliterationFor('bn'), 'নওয়া দ চেদ কানা?');
+        expect(entry.isTranslatedFor('bn'), isTrue);
+        expect(entry.isTranslatedFor('hi'), isTrue);
+      },
+    );
   });
 }

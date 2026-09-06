@@ -11,6 +11,8 @@ import '../../widgets/multilingual_preview_box.dart';
 import '../models/translation_entry.dart';
 import '../providers/translation_entries_provider.dart';
 
+part 'translation_edit_dialog_inputs.dart';
+
 class TranslationEditDialog extends ConsumerStatefulWidget {
   final TranslationEntry entry;
   final String activeLang;
@@ -58,13 +60,6 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
   late String _currentLang;
   bool _isSaving = false;
 
-  static const _transLangs = [
-    {'code': 'bn', 'label': 'Bengali (বাংলা)', 'flag': '🇧🇩'},
-    {'code': 'hi', 'label': 'Hindi (हिन्दी)', 'flag': '🇮🇳'},
-    {'code': 'or', 'label': 'Odia (ଓଡ଼ିଆ)', 'flag': '🇮🇳'},
-    {'code': 'en', 'label': 'English', 'flag': '🇬🇧'},
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -73,18 +68,10 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
     _olChikiCtrl = TextEditingController(text: widget.entry.textOlChiki);
     _latinCtrl = TextEditingController(text: widget.entry.textLatin);
 
-    _meaningBnCtrl = TextEditingController(
-      text: widget.entry.meaningFor('bn'),
-    );
-    _meaningHiCtrl = TextEditingController(
-      text: widget.entry.meaningFor('hi'),
-    );
-    _meaningOrCtrl = TextEditingController(
-      text: widget.entry.meaningFor('or'),
-    );
-    _meaningEnCtrl = TextEditingController(
-      text: widget.entry.meaningFor('en'),
-    );
+    _meaningBnCtrl = TextEditingController(text: widget.entry.meaningFor('bn'));
+    _meaningHiCtrl = TextEditingController(text: widget.entry.meaningFor('hi'));
+    _meaningOrCtrl = TextEditingController(text: widget.entry.meaningFor('or'));
+    _meaningEnCtrl = TextEditingController(text: widget.entry.meaningFor('en'));
 
     _textBengaliCtrl = TextEditingController(
       text: widget.entry.transliterationFor('bn'),
@@ -111,216 +98,73 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
     super.dispose();
   }
 
-  void _autoSuggestMeaning(String lang) {
+  void _suggestMeaning(String lang) {
     final query = _meaningEnCtrl.text.trim().isNotEmpty
         ? _meaningEnCtrl.text.trim()
         : _latinCtrl.text.trim();
-    if (query.isEmpty) return;
-
-    final match = IndicTranslationsDictionary.lookup(query, lang);
-    if (match != null && match.isNotEmpty) {
-      setState(() {
-        switch (lang) {
-          case 'bn':
-            _meaningBnCtrl.text = match;
-            break;
-          case 'hi':
-            _meaningHiCtrl.text = match;
-            break;
-          case 'or':
-            _meaningOrCtrl.text = match;
-            break;
-          case 'en':
-            _meaningEnCtrl.text = match;
-            break;
-        }
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Auto-suggested meaning: $match'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('No dictionary entry found for "$query" in $lang'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
+    _suggestTranslationMeaning(
+      context: context,
+      query: query,
+      lang: lang,
+      onMatch: (match) {
+        setState(() {
+          switch (lang) {
+            case 'bn':
+              _meaningBnCtrl.text = match;
+              break;
+            case 'hi':
+              _meaningHiCtrl.text = match;
+              break;
+            case 'or':
+              _meaningOrCtrl.text = match;
+              break;
+            case 'en':
+              _meaningEnCtrl.text = match;
+              break;
+          }
+        });
+      },
+    );
   }
 
-  void _autoTransliterate(String lang) {
-    final olChiki = _olChikiCtrl.text.trim();
-    if (olChiki.isEmpty) return;
-
-    final transliterated = OlChikiMultilingualHelper.transliterateOlChiki(
-      olChiki,
-      lang,
+  void _transliterateScript(String lang) {
+    _autoTransliterateOlChiki(
+      context: context,
+      olChiki: _olChikiCtrl.text.trim(),
+      lang: lang,
+      onTransliterated: (transliterated) {
+        setState(() {
+          switch (lang) {
+            case 'bn':
+              _textBengaliCtrl.text = transliterated;
+              break;
+            case 'hi':
+              _textHindiCtrl.text = transliterated;
+              break;
+            case 'or':
+              _textOdiaCtrl.text = transliterated;
+              break;
+          }
+        });
+      },
     );
-    if (transliterated.isNotEmpty) {
-      setState(() {
-        switch (lang) {
-          case 'bn':
-            _textBengaliCtrl.text = transliterated;
-            break;
-          case 'hi':
-            _textHindiCtrl.text = transliterated;
-            break;
-          case 'or':
-            _textOdiaCtrl.text = transliterated;
-            break;
-        }
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Auto-transliterated: $transliterated'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-    }
   }
 
   Future<void> _handleSave() async {
     setState(() => _isSaving = true);
 
     try {
-      final bnMeaning = _meaningBnCtrl.text.trim();
-      final hiMeaning = _meaningHiCtrl.text.trim();
-      final orMeaning = _meaningOrCtrl.text.trim();
-      final enMeaning = _meaningEnCtrl.text.trim();
-
-      final bnPron = _textBengaliCtrl.text.trim();
-      final hiPron = _textHindiCtrl.text.trim();
-      final orPron = _textOdiaCtrl.text.trim();
-
-      // 1. Save to TranslationOverrideService for immediate local effect & fast fallback
-      final keysToOverride = <String>{
-        widget.entry.textOlChiki.trim(),
-        widget.entry.textLatin.trim(),
-        widget.entry.englishMeaning.trim(),
-      }..removeWhere((k) => k.isEmpty);
-
-      for (final key in keysToOverride) {
-        if (bnMeaning.isNotEmpty || bnPron.isNotEmpty) {
-          await TranslationOverrideService.instance.setOverride(
-            key: key,
-            langCode: 'bn',
-            meaning: bnMeaning.isNotEmpty ? bnMeaning : null,
-            pronunciation: bnPron.isNotEmpty ? bnPron : null,
-          );
-        }
-        if (hiMeaning.isNotEmpty || hiPron.isNotEmpty) {
-          await TranslationOverrideService.instance.setOverride(
-            key: key,
-            langCode: 'hi',
-            meaning: hiMeaning.isNotEmpty ? hiMeaning : null,
-            pronunciation: hiPron.isNotEmpty ? hiPron : null,
-          );
-        }
-        if (orMeaning.isNotEmpty || orPron.isNotEmpty) {
-          await TranslationOverrideService.instance.setOverride(
-            key: key,
-            langCode: 'or',
-            meaning: orMeaning.isNotEmpty ? orMeaning : null,
-            pronunciation: orPron.isNotEmpty ? orPron : null,
-          );
-        }
-        if (enMeaning.isNotEmpty) {
-          await TranslationOverrideService.instance.setOverride(
-            key: key,
-            langCode: 'en',
-            meaning: enMeaning,
-          );
-        }
-      }
-
-      // 2. Dual persistence to ContentRepository if it corresponds to an entity
-      final repo = ref.read(contentRepositoryProvider);
-      final blockMatch = RegExp(r'^(.+)_block_(\d+)$').firstMatch(widget.entry.id);
-
-      if (blockMatch != null) {
-        final lessonId = blockMatch.group(1)!;
-        final blockIdx = int.tryParse(blockMatch.group(2)!) ?? 0;
-        final res = await repo.get(ContentKind.lesson, lessonId);
-        await res.fold((_) async {}, (item) async {
-          final lesson = item.toLessonEntity();
-          if (blockIdx < lesson.blocks.length) {
-            final blocks = List<LessonBlockEntity>.from(lesson.blocks);
-            final currentBlock = blocks[blockIdx];
-            final blockData = Map<String, dynamic>.from(currentBlock.data ?? {});
-            blockData['meaning_bn'] = bnMeaning;
-            blockData['meaning_hi'] = hiMeaning;
-            blockData['meaning_or'] = orMeaning;
-            blockData['meaning_en'] = enMeaning;
-            if (enMeaning.isNotEmpty) {
-              blockData['meaning'] = enMeaning;
-            }
-
-            blocks[blockIdx] = LessonBlockEntity(
-              type: currentBlock.type,
-              textOlChiki: currentBlock.textOlChiki,
-              textLatin: currentBlock.textLatin,
-              textBengali: bnPron.isNotEmpty ? bnPron : null,
-              textHindi: hiPron.isNotEmpty ? hiPron : null,
-              textOdia: orPron.isNotEmpty ? orPron : null,
-              imageUrl: currentBlock.imageUrl,
-              audioUrl: currentBlock.audioUrl,
-              data: blockData,
-            );
-
-            final contentBlocks = blocks
-                .asMap()
-                .entries
-                .map((e) => e.value.toContentBlock(e.key))
-                .toList();
-
-            final updatedItem = item.copyWith(
-              blocks: contentBlocks,
-              updatedAt: DateTime.now(),
-            );
-            await repo.upsert(updatedItem);
-          }
-        });
-        ref.invalidate(contentListProvider((ContentKind.lesson, null)));
-        ref.invalidate(lessonNotifierProvider);
-      } else if (widget.entry.kind == TranslationKind.lesson) {
-        final res = await repo.get(ContentKind.lesson, widget.entry.id);
-        await res.fold((_) async {}, (item) async {
-          final updatedItem = item.copyWith(
-            subtitle: enMeaning.isNotEmpty ? enMeaning : item.subtitle,
-            updatedAt: DateTime.now(),
-          );
-          await repo.upsert(updatedItem);
-        });
-        ref.invalidate(contentListProvider((ContentKind.lesson, null)));
-        ref.invalidate(lessonNotifierProvider);
-      } else if (widget.entry.kind == TranslationKind.word) {
-        final res = await repo.get(ContentKind.word, widget.entry.id);
-        await res.fold((_) async {}, (item) async {
-          final updatedItem = item.copyWith(
-            subtitle: enMeaning.isNotEmpty ? enMeaning : item.subtitle,
-            updatedAt: DateTime.now(),
-          );
-          await repo.upsert(updatedItem);
-        });
-        ref.invalidate(contentListProvider((ContentKind.word, null)));
-        ref.invalidate(wordsProvider);
-      } else if (widget.entry.kind == TranslationKind.sentence) {
-        final res = await repo.get(ContentKind.sentence, widget.entry.id);
-        await res.fold((_) async {}, (item) async {
-          final updatedItem = item.copyWith(
-            subtitle: enMeaning.isNotEmpty ? enMeaning : item.subtitle,
-            updatedAt: DateTime.now(),
-          );
-          await repo.upsert(updatedItem);
-        });
-        ref.invalidate(contentListProvider((ContentKind.sentence, null)));
-        ref.invalidate(sentencesProvider);
-      }
-
-      ref.invalidate(translationEntriesProvider);
+      await _saveTranslationEntry(
+        ref: ref,
+        entry: widget.entry,
+        bnMeaning: _meaningBnCtrl.text.trim(),
+        hiMeaning: _meaningHiCtrl.text.trim(),
+        orMeaning: _meaningOrCtrl.text.trim(),
+        enMeaning: _meaningEnCtrl.text.trim(),
+        bnPron: _textBengaliCtrl.text.trim(),
+        hiPron: _textHindiCtrl.text.trim(),
+        orPron: _textOdiaCtrl.text.trim(),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -493,23 +337,31 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
                         onChanged: (_) => setState(() {}),
                         decoration: InputDecoration(
                           labelText: 'English Meaning',
-                          helperText: 'Base meaning used for dictionary translation',
+                          helperText:
+                              'Base meaning used for dictionary translation',
                           prefixIcon: const Icon(Icons.menu_book_rounded),
                           suffixIcon: IconButton(
-                            icon: const Icon(Icons.auto_fix_high_rounded, size: 18),
+                            icon: const Icon(
+                              Icons.auto_fix_high_rounded,
+                              size: 18,
+                            ),
                             tooltip: 'Auto-suggest from English dictionary',
-                            onPressed: () => _autoSuggestMeaning('en'),
+                            onPressed: () => _suggestMeaning('en'),
                           ),
                         ),
                       ),
                       const SizedBox(height: 18),
 
                       // Language Tabs
-                      _buildTranslationLangTabs(isDark),
+                      _TranslationEditLangTabs(
+                        currentLang: _currentLang,
+                        isDark: isDark,
+                        onSelect: (lang) => setState(() => _currentLang = lang),
+                      ),
                       const SizedBox(height: 14),
 
                       // Active Language Editor
-                      _buildActiveTranslationInputs(isDark),
+                      _buildActiveInputs(isDark),
                       const SizedBox(height: 20),
 
                       // Live Preview Box
@@ -570,7 +422,9 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
                             ),
                           )
                         : const Icon(Icons.check_rounded, size: 18),
-                    label: Text(_isSaving ? 'Saving...' : 'Confirm Translation'),
+                    label: Text(
+                      _isSaving ? 'Saving...' : 'Confirm Translation',
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
@@ -589,62 +443,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
     );
   }
 
-  Widget _buildTranslationLangTabs(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AdminTokens.sunken(isDark),
-        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-        border: Border.all(color: AdminTokens.border(isDark)),
-      ),
-      child: Row(
-        children: _transLangs.map((lang) {
-          final isSelected = lang['code'] == _currentLang;
-          return Expanded(
-            child: InkWell(
-              onTap: () => setState(() => _currentLang = lang['code']!),
-              borderRadius: BorderRadius.circular(AdminTokens.radiusSm - 2),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.12)
-                      : Colors.transparent,
-                  borderRadius:
-                      BorderRadius.circular(AdminTokens.radiusSm - 2),
-                  border: isSelected
-                      ? Border.all(color: AppColors.primary, width: 1.5)
-                      : null,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(lang['flag']!, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      lang['label']!.split(' ').first,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
-                        color: isSelected
-                            ? AppColors.primary
-                            : AdminTokens.textSecondary(isDark),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildActiveTranslationInputs(bool isDark) {
+  Widget _buildActiveInputs(bool isDark) {
     final TextEditingController meaningCtrl;
     final TextEditingController? pronCtrl;
     final String langName;
@@ -673,80 +472,17 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
         break;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AdminTokens.sunken(isDark),
-        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-        border: Border.all(color: AdminTokens.border(isDark)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Text(
-                '$langName Fields',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AdminTokens.textPrimary(isDark),
-                ),
-              ),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: [
-                  TextButton.icon(
-                    onPressed: () => _autoSuggestMeaning(_currentLang),
-                    icon: const Icon(Icons.auto_awesome_rounded, size: 14),
-                    label: const Text(
-                      'Auto-suggest meaning',
-                      style: TextStyle(fontSize: 11),
-                    ),
-                  ),
-                  if (pronCtrl != null)
-                    TextButton.icon(
-                      onPressed: () => _autoTransliterate(_currentLang),
-                      icon: const Icon(Icons.transform_rounded, size: 14),
-                      label: const Text(
-                        'Auto-transliterate',
-                        style: TextStyle(fontSize: 11),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          TextFormField(
-            controller: meaningCtrl,
-            onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
-              labelText: 'Meaning ($langName)*',
-              helperText: 'Displayed as translation meaning for learners',
-              prefixIcon: const Icon(Icons.translate_rounded),
-            ),
-          ),
-          if (pronCtrl != null) ...[
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: pronCtrl,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: 'Pronunciation Guide ($langName script)',
-                helperText: 'Brahmic transliteration guide for pronunciation',
-                prefixIcon: const Icon(Icons.record_voice_over_rounded),
-              ),
-            ),
-          ],
-        ],
-      ),
+    return _TranslationEditActiveInputs(
+      isDark: isDark,
+      currentLang: _currentLang,
+      meaningCtrl: meaningCtrl,
+      pronCtrl: pronCtrl,
+      langName: langName,
+      onAutoSuggest: () => _suggestMeaning(_currentLang),
+      onAutoTransliterate: pronCtrl != null
+          ? () => _transliterateScript(_currentLang)
+          : null,
+      onStateChange: () => setState(() {}),
     );
   }
 }

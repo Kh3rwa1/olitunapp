@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:appwrite/models.dart' as models;
-import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -23,7 +21,6 @@ export 'session_persistence.dart';
 
 import 'account_deletion_handler.dart';
 import 'oauth_helpers.dart';
-import 'admin_functions_client.dart';
 import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
@@ -575,62 +572,9 @@ class AppwriteAuthService {
     }
   }
 
-  Future<Map<String, dynamic>> executeAdminMaintenance({
-    required String action,
-    required String confirmation,
-  }) async {
-    await _restoreWebSession();
-    final execution = await _functions.createExecution(
-      functionId: 'admin-maintenance',
-      body: jsonEncode({'action': action, 'confirmation': confirmation}),
-      xasync: false,
-      method: ExecutionMethod.pOST,
-    );
+  Functions get functions => _functions;
 
-    // ignore: invalid_use_of_visible_for_testing_member
-    return parseAdminMaintenanceResponse(
-      statusCode: execution.responseStatusCode,
-      body: execution.responseBody,
-    );
-  }
-
-  Future<Map<String, dynamic>> executeAdminAccess(
-    Map<String, dynamic> payload,
-  ) async {
-    await _restoreWebSession();
-    final execution = await _functions.createExecution(
-      functionId: 'manageAdminAccess',
-      body: jsonEncode(payload),
-      xasync: false,
-      method: ExecutionMethod.pOST,
-    );
-
-    final decoded = execution.responseBody.trim().isEmpty
-        ? <String, dynamic>{}
-        : jsonDecode(execution.responseBody);
-    if (decoded is! Map<String, dynamic>) {
-      throw AppwriteException(
-        'Unexpected admin access response.',
-        execution.responseStatusCode,
-        'invalid_response',
-      );
-    }
-
-    if (execution.responseStatusCode < 200 ||
-        execution.responseStatusCode >= 300 ||
-        decoded['ok'] != true) {
-      final message = decoded['message']?.toString();
-      throw AppwriteException(
-        message == null || message.isEmpty
-            ? 'Admin access request failed.'
-            : message,
-        execution.responseStatusCode,
-        'admin_access_failed',
-      );
-    }
-
-    return decoded;
-  }
+  Future<void> restoreWebSession() => _restoreWebSession();
 }
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {

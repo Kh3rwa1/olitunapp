@@ -67,10 +67,7 @@ models.Document _buildCategoryDoc({
   $updatedAt: '2026-09-01T00:00:00.000Z',
   $permissions: [],
   $sequence: 1,
-  data: {
-    'unlockMode': unlockMode,
-    'previewLessonCount': previewLessonCount,
-  },
+  data: {'unlockMode': unlockMode, 'previewLessonCount': previewLessonCount},
 );
 
 models.Document _buildLessonDoc(Map<String, dynamic> data) => models.Document(
@@ -111,113 +108,119 @@ void main() {
   });
 
   group('ContentRepository.upsert category-aware lesson publication', () {
-    test('successfully upserts a lesson in a free category with public permissions', () async {
-      when(
-        () => databases.getDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'categories',
-          documentId: 'cat_sentences',
-        ),
-      ).thenAnswer(
-        (_) async => _buildCategoryDoc(
-          categoryId: 'cat_sentences',
-          unlockMode: 'free',
-        ),
-      );
+    test(
+      'successfully upserts a lesson in a free category with public permissions',
+      () async {
+        when(
+          () => databases.getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: 'cat_sentences',
+          ),
+        ).thenAnswer(
+          (_) async => _buildCategoryDoc(
+            categoryId: 'cat_sentences',
+            unlockMode: 'free',
+          ),
+        );
 
-      when(
-        () => databases.createDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
-          data: any(named: 'data'),
-          permissions: any(named: 'permissions'),
-        ),
-      ).thenAnswer(
-        (invocation) async => _buildLessonDoc(
-          invocation.namedArguments[#data] as Map<String, dynamic>,
-        ),
-      );
+        when(
+          () => databases.createDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: any(named: 'permissions'),
+          ),
+        ).thenAnswer(
+          (invocation) async => _buildLessonDoc(
+            invocation.namedArguments[#data] as Map<String, dynamic>,
+          ),
+        );
 
-      final lesson = _buildLessonItem();
-      final result = await repo.upsert(lesson);
+        final lesson = _buildLessonItem();
+        final result = await repo.upsert(lesson);
 
-      expect(result.isRight(), isTrue);
-      result.fold(
-        (failure) => fail('Upsert should have succeeded: ${failure.message}'),
-        (saved) {
-          expect(saved.id, 'lesson_basics_1');
-          expect(saved.kind, ContentKind.lesson);
-          expect(saved.blocks.length, 1);
-        },
-      );
+        expect(result.isRight(), isTrue);
+        result.fold(
+          (failure) => fail('Upsert should have succeeded: ${failure.message}'),
+          (saved) {
+            expect(saved.id, 'lesson_basics_1');
+            expect(saved.kind, ContentKind.lesson);
+            expect(saved.blocks.length, 1);
+          },
+        );
 
-      final captured = verify(
-        () => databases.createDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
-          data: any(named: 'data'),
-          permissions: captureAny(named: 'permissions'),
-        ),
-      ).captured;
+        final captured = verify(
+          () => databases.createDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: captureAny(named: 'permissions'),
+          ),
+        ).captured;
 
-      final perms = captured.first as List<String>;
-      expect(perms, contains(Permission.read(Role.any())));
-    });
+        final perms = captured.first as List<String>;
+        expect(perms, contains(Permission.read(Role.any())));
+      },
+    );
 
-    test('updates existing lesson (409 Conflict) without throwing Bad State', () async {
-      when(
-        () => databases.getDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'categories',
-          documentId: 'cat_sentences',
-        ),
-      ).thenAnswer(
-        (_) async => _buildCategoryDoc(
-          categoryId: 'cat_sentences',
-          unlockMode: 'free',
-        ),
-      );
+    test(
+      'updates existing lesson (409 Conflict) without throwing Bad State',
+      () async {
+        when(
+          () => databases.getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: 'cat_sentences',
+          ),
+        ).thenAnswer(
+          (_) async => _buildCategoryDoc(
+            categoryId: 'cat_sentences',
+            unlockMode: 'free',
+          ),
+        );
 
-      when(
-        () => databases.createDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
-          data: any(named: 'data'),
-          permissions: any(named: 'permissions'),
-        ),
-      ).thenThrow(AppwriteException('Document already exists', 409));
+        when(
+          () => databases.createDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: any(named: 'permissions'),
+          ),
+        ).thenThrow(AppwriteException('Document already exists', 409));
 
-      when(
-        () => databases.updateDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
-          data: any(named: 'data'),
-          permissions: any(named: 'permissions'),
-        ),
-      ).thenAnswer(
-        (invocation) async => _buildLessonDoc(
-          invocation.namedArguments[#data] as Map<String, dynamic>,
-        ),
-      );
+        when(
+          () => databases.updateDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: any(named: 'permissions'),
+          ),
+        ).thenAnswer(
+          (invocation) async => _buildLessonDoc(
+            invocation.namedArguments[#data] as Map<String, dynamic>,
+          ),
+        );
 
-      final lesson = _buildLessonItem();
-      final result = await repo.upsert(lesson);
+        final lesson = _buildLessonItem();
+        final result = await repo.upsert(lesson);
 
-      expect(result.isRight(), isTrue);
-      verify(
-        () => databases.updateDocument(
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
-          data: any(named: 'data'),
-          permissions: any(named: 'permissions'),
-        ),
-      ).called(1);
-    });
+        expect(result.isRight(), isTrue);
+        verify(
+          () => databases.updateDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: any(named: 'permissions'),
+          ),
+        ).called(1);
+      },
+    );
 
     test('protects paid lessons outside preview window', () async {
       when(

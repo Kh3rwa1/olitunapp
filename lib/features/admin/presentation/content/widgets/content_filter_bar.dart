@@ -150,10 +150,7 @@ class _ContentFilterBarState extends State<ContentFilterBar> {
             ] else ...[
               Row(
                 children: [
-                  Expanded(
-                    flex: 3,
-                    child: searchField,
-                  ),
+                  Expanded(flex: 3, child: searchField),
                   if (widget.supportsPublished) ...[
                     const SizedBox(width: 12),
                     _buildDropdown(

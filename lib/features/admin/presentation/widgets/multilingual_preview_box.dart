@@ -74,14 +74,15 @@ class _MultilingualPreviewBoxState extends State<MultilingualPreviewBox> {
     final customMeaning = widget.meaningsByLang?[_selectedLang];
     final activeMeaning =
         (customMeaning != null && customMeaning.trim().isNotEmpty)
-            ? customMeaning.trim()
-            : (widget.explicitMeaning.isNotEmpty ? widget.explicitMeaning : '');
+        ? customMeaning.trim()
+        : (widget.explicitMeaning.isNotEmpty ? widget.explicitMeaning : '');
 
     final customTransliteration = widget.transliterationsByLang?[_selectedLang];
     final activePron =
-        (customTransliteration != null && customTransliteration.trim().isNotEmpty)
-            ? customTransliteration.trim()
-            : widget.explicitPronunciation;
+        (customTransliteration != null &&
+            customTransliteration.trim().isNotEmpty)
+        ? customTransliteration.trim()
+        : widget.explicitPronunciation;
 
     final resolvedTextBengali =
         widget.transliterationsByLang?['bn'] ?? widget.textBengali;

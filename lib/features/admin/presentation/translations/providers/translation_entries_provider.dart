@@ -67,8 +67,9 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
               ? l.description!
               : l.titleLatin,
           category: l.categoryId,
-          customTranslations:
-              lCustomTranslations.isNotEmpty ? lCustomTranslations : null,
+          customTranslations: lCustomTranslations.isNotEmpty
+              ? lCustomTranslations
+              : null,
         ),
       );
       for (var i = 0; i < l.blocks.length; i++) {
@@ -77,7 +78,8 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
             (b.textLatin != null && b.textLatin!.isNotEmpty)) {
           final dataMeaning = b.data?['meaning'] as String?;
           final dataTrans = b.data?['translation'] as String?;
-          final meaningEn = (b.data?['meaning_en'] as String?) ??
+          final meaningEn =
+              (b.data?['meaning_en'] as String?) ??
               dataMeaning ??
               dataTrans ??
               b.textLatin ??
@@ -114,10 +116,12 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
               pronunciation: b.data?['pronunciation'] as String?,
               category: l.titleLatin,
               audioUrl: b.audioUrl,
-              customTranslations:
-                  customTranslations.isNotEmpty ? customTranslations : null,
-              customTransliterations:
-                  customTransliterations.isNotEmpty ? customTransliterations : null,
+              customTranslations: customTranslations.isNotEmpty
+                  ? customTranslations
+                  : null,
+              customTransliterations: customTransliterations.isNotEmpty
+                  ? customTransliterations
+                  : null,
             ),
           );
         }

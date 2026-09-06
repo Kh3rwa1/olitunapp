@@ -191,10 +191,7 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
               _buildHeader(isDark),
             ],
             const SizedBox(height: 8),
-            if (hasBoundedHeight)
-              Expanded(child: contentList)
-            else
-              contentList,
+            if (hasBoundedHeight) Expanded(child: contentList) else contentList,
             const SizedBox(height: 8),
             _buildPagination(isDark),
           ],
@@ -247,8 +244,10 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                borderSide:
-                    const BorderSide(color: AdminTokens.accent, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AdminTokens.accent,
+                  width: 1.5,
+                ),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -328,8 +327,7 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
                   col.label,
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     color: isSelected
                         ? Colors.white
                         : AdminTokens.textSecondary(isDark),
@@ -363,8 +361,9 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
 
   Widget _buildMobileCard(T item, bool isDark) {
     final firstCol = widget.columns.isNotEmpty ? widget.columns.first : null;
-    final otherCols =
-        widget.columns.length > 1 ? widget.columns.sublist(1) : <AdminColumn<T>>[];
+    final otherCols = widget.columns.length > 1
+        ? widget.columns.sublist(1)
+        : <AdminColumn<T>>[];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),

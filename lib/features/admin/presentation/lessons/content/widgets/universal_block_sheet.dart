@@ -11,6 +11,7 @@ import '../../../widgets/admin_form_widgets.dart';
 import '../../../widgets/multilingual_preview_box.dart';
 import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 part 'universal_block_sheet_sections.dart';
+part 'universal_block_sheet_advanced.dart';
 
 /// One sheet to rule them all. Replaces AddBlockSheet + per-type EditBlockSheet
 /// variants. The block "type" is inferred from what the user actually fills in,
@@ -94,15 +95,19 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       final data = b.data ?? const {};
       _pronCtrl.text = (data['pronunciation'] as String?) ?? '';
 
-      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(b.textLatin ?? '');
-      _meaningEnCtrl.text = (data['meaning_en'] as String?) ??
+      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(
+        b.textLatin ?? '',
+      );
+      _meaningEnCtrl.text =
+          (data['meaning_en'] as String?) ??
           (data['meaning'] as String?) ??
           parsed.meaningEnglish;
       _meaningBnCtrl.text = (data['meaning_bn'] as String?) ?? '';
       _meaningHiCtrl.text = (data['meaning_hi'] as String?) ?? '';
       _meaningOrCtrl.text = (data['meaning_or'] as String?) ?? '';
 
-      _textBengaliCtrl.text = b.textBengali ?? (data['textBengali'] as String?) ?? '';
+      _textBengaliCtrl.text =
+          b.textBengali ?? (data['textBengali'] as String?) ?? '';
       _textHindiCtrl.text = b.textHindi ?? (data['textHindi'] as String?) ?? '';
       _textOdiaCtrl.text = b.textOdia ?? (data['textOdia'] as String?) ?? '';
 
@@ -326,10 +331,41 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                         'Edit translated meaning and pronunciation guide per language',
                     isDark: isDark,
                   ),
-                  const SizedBox(height: 12),
-                  _buildTranslationLangTabs(isDark),
-                  const SizedBox(height: 12),
-                  _buildActiveTranslationInputs(isDark),
+                  _BlockTranslationLangTabs(
+                    currentLang: _translationLang,
+                    isDark: isDark,
+                    onSelect: (code) => setState(() => _translationLang = code),
+                    hasCustomMap: {
+                      'bn':
+                          _meaningBnCtrl.text.trim().isNotEmpty ||
+                          _textBengaliCtrl.text.trim().isNotEmpty,
+                      'hi':
+                          _meaningHiCtrl.text.trim().isNotEmpty ||
+                          _textHindiCtrl.text.trim().isNotEmpty,
+                      'or':
+                          _meaningOrCtrl.text.trim().isNotEmpty ||
+                          _textOdiaCtrl.text.trim().isNotEmpty,
+                      'en': _meaningEnCtrl.text.trim().isNotEmpty,
+                    },
+                  ),
+                  _BlockActiveTranslationInputs(
+                    isDark: isDark,
+                    currentLang: _translationLang,
+                    olChiki: _olChikiCtrl.text,
+                    baseEnglish: _meaningEnCtrl.text.trim().isNotEmpty
+                        ? _meaningEnCtrl.text.trim()
+                        : _latinCtrl.text.trim(),
+                    latinText: _latinCtrl.text,
+                    meaningBnCtrl: _meaningBnCtrl,
+                    textBengaliCtrl: _textBengaliCtrl,
+                    meaningHiCtrl: _meaningHiCtrl,
+                    textHindiCtrl: _textHindiCtrl,
+                    meaningOrCtrl: _meaningOrCtrl,
+                    textOdiaCtrl: _textOdiaCtrl,
+                    meaningEnCtrl: _meaningEnCtrl,
+                    pronCtrl: _pronCtrl,
+                    onStateChange: () => setState(() {}),
+                  ),
 
                   if (_olChikiCtrl.text.isNotEmpty ||
                       _latinCtrl.text.isNotEmpty ||
@@ -411,7 +447,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                       label: 'Poster image (optional)',
                       subtitle: 'Shown before the video plays',
                       icon: Icons.image_rounded,
-                      accent: const Color(0xFF22D3EE),
+                      accent: AppColors.accentCyan,
                       currentUrl: _posterUrl,
                       uploadFolder: 'lesson-media',
                       fileType: FileType.custom,
@@ -423,419 +459,43 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                   const SizedBox(height: 28),
 
                   // ── Advanced ──────────────────────────────────────────────
-                  _AdvancedToggle(
+                  _BlockAdvancedSection(
                     open: _advancedOpen,
-                    onTap: () => setState(() => _advancedOpen = !_advancedOpen),
+                    onToggleOpen: () =>
+                        setState(() => _advancedOpen = !_advancedOpen),
                     isDark: isDark,
+                    audioUrl: _audioUrl,
+                    onAudioUploaded: (url) => setState(() => _audioUrl = url),
+                    pronCtrl: _pronCtrl,
+                    quizzesAsync: quizzesAsync,
+                    quizRefCtrl: _quizRefCtrl,
+                    showCustomQuizIdInput: _showCustomQuizIdInput,
+                    onCustomQuizIdToggled: (show) =>
+                        setState(() => _showCustomQuizIdInput = show),
+                    calloutVariant: _calloutVariant,
+                    onCalloutChanged: (v) =>
+                        setState(() => _calloutVariant = v),
+                    tracingAllowed: widget._tracingAllowed,
+                    tracingEnabled: _tracingEnabled,
+                    onTracingToggled: (v) =>
+                        setState(() => _tracingEnabled = v),
+                    themeColor: _themeColor,
+                    onThemeColorChanged: (c) => setState(() => _themeColor = c),
+                    onStateChange: () => setState(() {}),
                   ),
-                  if (_advancedOpen) ...[
-                    const SizedBox(height: 16),
-                    AdminMediaField(
-                      label: 'Pronunciation audio (optional)',
-                      icon: Icons.mic_rounded,
-                      accent: const Color(0xFFF472B6),
-                      currentUrl: _audioUrl,
-                      uploadFolder: 'lesson-audio',
-                      fileType: FileType.custom,
-                      allowedExtensions: const [
-                        'mp3',
-                        'wav',
-                        'ogg',
-                        'm4a',
-                        'aac',
-                      ],
-                      onUploaded: (url) => setState(() => _audioUrl = url),
-                    ),
-                    const SizedBox(height: 16),
-                    AdminTextField(
-                      label: 'Pronunciation guide (text)',
-                      controller: _pronCtrl,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 16),
-                    quizzesAsync.when(
-                      loading: () => const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      error: (err, _) => Text(
-                        'Failed to load quizzes: $err',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                      data: (quizzesList) {
-                        final currentValue = _quizRefCtrl.text.trim();
-                        final inList = quizzesList.any(
-                          (q) => q.id == currentValue,
-                        );
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Quiz Invitation (Optional)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white70 : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: _showCustomQuizIdInput
-                                  ? '__custom__'
-                                  : (inList ? currentValue : ''),
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
-                              items: [
-                                const DropdownMenuItem<String>(
-                                  value: '',
-                                  child: Text('None / Clear Quiz'),
-                                ),
-                                for (final q in quizzesList)
-                                  DropdownMenuItem<String>(
-                                    value: q.id,
-                                    child: Text(
-                                      '${q.title ?? 'Untitled Quiz'} (${q.id})',
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                const DropdownMenuItem<String>(
-                                  value: '__custom__',
-                                  child: Text('Custom ID (Manual Entry)...'),
-                                ),
-                              ],
-                              onChanged: (val) {
-                                if (val == '__custom__') {
-                                  setState(() {
-                                    _showCustomQuizIdInput = true;
-                                    _quizRefCtrl.clear();
-                                  });
-                                } else {
-                                  setState(() {
-                                    _showCustomQuizIdInput = false;
-                                    _quizRefCtrl.text = val ?? '';
-                                  });
-                                }
-                              },
-                            ),
-                            if (_showCustomQuizIdInput) ...[
-                              const SizedBox(height: 12),
-                              AdminTextField(
-                                label: 'Custom Quiz ID',
-                                controller: _quizRefCtrl,
-                                hint: 'Paste Appwrite Quiz ID here',
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ],
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _CalloutPicker(
-                      value: _calloutVariant,
-                      onChanged: (v) => setState(() => _calloutVariant = v),
-                      isDark: isDark,
-                    ),
-                    if (widget._tracingAllowed) ...[
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Enable tracing practice',
-                          style: AdminTokens.bodyStrong(isDark),
-                        ),
-                        subtitle: Text(
-                          'Finger-trace strokes — alphabets & numbers only',
-                          style: AdminTokens.label(isDark),
-                        ),
-                        value: _tracingEnabled,
-                        activeThumbColor: AppColors.primary,
-                        onChanged: (v) => setState(() => _tracingEnabled = v),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _ThemeColorPicker(
-                      value: _themeColor,
-                      onChanged: (c) => setState(() => _themeColor = c),
-                      isDark: isDark,
-                    ),
-                  ],
 
                   const SizedBox(height: 32),
                 ],
               ),
             ),
-            Divider(height: 1, color: AdminTokens.divider(isDark)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: AdminTokens.borderStrong(isDark),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: _save,
-                      child: const Text(
-                        'Save Changes',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _SheetFooter(
+              isDark: isDark,
+              onCancel: () => Navigator.of(context).pop(),
+              onSave: _save,
             ),
           ],
         ),
       ),
     );
   }
-
-  static const _transLangs = [
-    {'code': 'bn', 'label': 'বাংলা', 'flag': '🇧🇩', 'name': 'Bengali'},
-    {'code': 'hi', 'label': 'हिन्दी', 'flag': '🇮🇳', 'name': 'Hindi'},
-    {'code': 'or', 'label': 'ଓଡ଼ିଆ', 'flag': '🇮🇳', 'name': 'Odia'},
-    {'code': 'en', 'label': 'English', 'flag': '🇬🇧', 'name': 'English'},
-  ];
-
-  Widget _buildTranslationLangTabs(bool isDark) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: _transLangs.map((lang) {
-          final isSelected = lang['code'] == _translationLang;
-          final hasCustom = switch (lang['code']) {
-            'bn' =>
-              _meaningBnCtrl.text.trim().isNotEmpty ||
-                  _textBengaliCtrl.text.trim().isNotEmpty,
-            'hi' =>
-              _meaningHiCtrl.text.trim().isNotEmpty ||
-                  _textHindiCtrl.text.trim().isNotEmpty,
-            'or' =>
-              _meaningOrCtrl.text.trim().isNotEmpty ||
-                  _textOdiaCtrl.text.trim().isNotEmpty,
-            'en' => _meaningEnCtrl.text.trim().isNotEmpty,
-            _ => false,
-          };
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => setState(() => _translationLang = lang['code']!),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary
-                      : AdminTokens.raised(isDark),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : AdminTokens.border(isDark),
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(lang['flag']!, style: const TextStyle(fontSize: 13)),
-                    const SizedBox(width: 6),
-                    Text(
-                      lang['label']!,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 12,
-                        fontWeight: isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: isSelected
-                            ? Colors.white
-                            : AdminTokens.textPrimary(isDark),
-                      ),
-                    ),
-                    if (hasCustom) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isSelected
-                              ? Colors.white
-                              : const Color(0xFF10B981),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildActiveTranslationInputs(bool isDark) {
-    final baseEnglish = _meaningEnCtrl.text.trim().isNotEmpty
-        ? _meaningEnCtrl.text.trim()
-        : _latinCtrl.text.trim();
-
-    final (
-      TextEditingController meaningCtrl,
-      TextEditingController pronCtrl,
-      String meaningLabel,
-      String pronLabel,
-      String suggestedMeaning,
-      String suggestedPron,
-    ) = switch (_translationLang) {
-      'bn' => (
-        _meaningBnCtrl,
-        _textBengaliCtrl,
-        'Translated Meaning (বাংলা অর্থ)',
-        'Pronunciation Guide / Transliteration (বাংলা উচ্চারণ)',
-        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'bn'),
-        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'bn'),
-      ),
-      'hi' => (
-        _meaningHiCtrl,
-        _textHindiCtrl,
-        'Translated Meaning (हिन्दी अर्थ)',
-        'Pronunciation Guide / Transliteration (हिन्दी उच्चारण)',
-        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'hi'),
-        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'hi'),
-      ),
-      'or' => (
-        _meaningOrCtrl,
-        _textOdiaCtrl,
-        'Translated Meaning (ଓଡ଼ିଆ ଅର୍ଥ)',
-        'Pronunciation Guide / Transliteration (ଓଡ଼ିଆ ଉଚ୍ଚାରଣ)',
-        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'or'),
-        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'or'),
-      ),
-      _ => (
-        _meaningEnCtrl,
-        _pronCtrl,
-        'Translated Meaning (English Meaning)',
-        'Pronunciation Guide (Romanized Santali)',
-        baseEnglish,
-        _latinCtrl.text,
-      ),
-    };
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AdminTokens.sunken(isDark),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AdminTokens.border(isDark)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: AdminTextField(
-                  label: meaningLabel,
-                  controller: meaningCtrl,
-                  hint: suggestedMeaning.isNotEmpty
-                      ? 'e.g. $suggestedMeaning'
-                      : 'Enter translation',
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              if (suggestedMeaning.isNotEmpty &&
-                  meaningCtrl.text.trim() != suggestedMeaning) ...[
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 22),
-                  child: IconButton(
-                    tooltip: 'Fill suggested: $suggestedMeaning',
-                    icon: const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 20,
-                      color: AppColors.primary,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        meaningCtrl.text = suggestedMeaning;
-                      });
-                    },
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: AdminTextField(
-                  label: pronLabel,
-                  controller: pronCtrl,
-                  hint: suggestedPron.isNotEmpty
-                      ? 'e.g. $suggestedPron'
-                      : 'Enter pronunciation guide',
-                  onChanged: (_) => setState(() {}),
-                ),
-              ),
-              if (suggestedPron.isNotEmpty &&
-                  pronCtrl.text.trim() != suggestedPron) ...[
-                  const SizedBox(width: 8),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 22),
-                    child: IconButton(
-                      tooltip: 'Fill auto-transliteration: $suggestedPron',
-                      icon: const Icon(
-                        Icons.spellcheck_rounded,
-                        size: 20,
-                        color: AppColors.primary,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          pronCtrl.text = suggestedPron;
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-  }
+}

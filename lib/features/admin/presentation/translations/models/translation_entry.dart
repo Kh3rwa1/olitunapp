@@ -44,16 +44,21 @@ class TranslationEntry {
       return customTranslations![lang]!;
     }
     // Check TranslationOverrideService
-    final override = TranslationOverrideService.instance.getMeaningOverride(
-      textOlChiki,
-      lang,
-    ) ?? TranslationOverrideService.instance.getMeaningOverride(
-      textLatin,
-      lang,
-    ) ?? (englishMeaning.isNotEmpty ? TranslationOverrideService.instance.getMeaningOverride(
-      englishMeaning,
-      lang,
-    ) : null);
+    final override =
+        TranslationOverrideService.instance.getMeaningOverride(
+          textOlChiki,
+          lang,
+        ) ??
+        TranslationOverrideService.instance.getMeaningOverride(
+          textLatin,
+          lang,
+        ) ??
+        (englishMeaning.isNotEmpty
+            ? TranslationOverrideService.instance.getMeaningOverride(
+                englishMeaning,
+                lang,
+              )
+            : null);
     if (override != null && override.isNotEmpty) return override;
 
     if (lang == 'en') {
@@ -74,13 +79,15 @@ class TranslationEntry {
         customTransliterations![lang]!.trim().isNotEmpty) {
       return customTransliterations![lang]!;
     }
-    final override = TranslationOverrideService.instance.getPronunciationOverride(
-      textOlChiki,
-      lang,
-    ) ?? TranslationOverrideService.instance.getPronunciationOverride(
-      textLatin,
-      lang,
-    );
+    final override =
+        TranslationOverrideService.instance.getPronunciationOverride(
+          textOlChiki,
+          lang,
+        ) ??
+        TranslationOverrideService.instance.getPronunciationOverride(
+          textLatin,
+          lang,
+        );
     if (override != null && override.isNotEmpty) return override;
 
     if (lang == 'en') {

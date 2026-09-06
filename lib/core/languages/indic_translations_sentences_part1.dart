@@ -27,18 +27,8 @@ class IndicTranslationsSentencesPart1 {
       'or': 'ଏହା କ’ଣ',
       'en': 'What is this',
     },
-    'nowa': {
-      'bn': 'এটা / এই',
-      'hi': 'यह',
-      'or': 'ଏହା',
-      'en': 'This',
-    },
-    'ced': {
-      'bn': 'কি',
-      'hi': 'क्या',
-      'or': 'କଣ',
-      'en': 'What',
-    },
+    'nowa': {'bn': 'এটা / এই', 'hi': 'यह', 'or': 'ଏହା', 'en': 'This'},
+    'ced': {'bn': 'কি', 'hi': 'क्या', 'or': 'କଣ', 'en': 'What'},
     'what is your name?': {
       'bn': 'তোমার নাম কি?',
       'hi': 'आपका क्या नाम है?',

@@ -147,8 +147,9 @@ class ContentListTile extends StatelessWidget {
                               borderRadius: BorderRadius.circular(
                                 AdminTokens.radiusSm,
                               ),
-                              border:
-                                  Border.all(color: AdminTokens.border(isDark)),
+                              border: Border.all(
+                                color: AdminTokens.border(isDark),
+                              ),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(
@@ -172,9 +173,9 @@ class ContentListTile extends StatelessWidget {
                               children: [
                                 Text(
                                   item.title,
-                                  style: AdminTokens.cardTitle(isDark).copyWith(
-                                    fontSize: 15,
-                                  ),
+                                  style: AdminTokens.cardTitle(
+                                    isDark,
+                                  ).copyWith(fontSize: 15),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -245,8 +246,9 @@ class ContentListTile extends StatelessWidget {
                             borderRadius: BorderRadius.circular(
                               AdminTokens.radiusMd,
                             ),
-                            border:
-                                Border.all(color: AdminTokens.border(isDark)),
+                            border: Border.all(
+                              color: AdminTokens.border(isDark),
+                            ),
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(
@@ -286,8 +288,9 @@ class ContentListTile extends StatelessWidget {
                                   style: TextStyle(
                                     fontFamily: 'OlChiki',
                                     fontSize: 16,
-                                    color:
-                                        isDark ? Colors.white60 : Colors.black54,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
                                   ),
                                 ),
                               ],

@@ -137,8 +137,7 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
             'textBengali': textBengali,
           if (textHindi != null && textHindi!.isNotEmpty)
             'textHindi': textHindi,
-          if (textOdia != null && textOdia!.isNotEmpty)
-            'textOdia': textOdia,
+          if (textOdia != null && textOdia!.isNotEmpty) 'textOdia': textOdia,
           ...?data,
         }..removeWhere(
           (k, _) => const {

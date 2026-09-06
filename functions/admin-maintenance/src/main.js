@@ -9,7 +9,7 @@ import {
 } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { withPaymentStateGuard } from './shared/payment_state.js';
-import { restoreValidatedContent } from './restore_backup.js';
+import { runResumableRestore } from './resumable_restore.js';
 
 export function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -42,10 +42,10 @@ export function parseBody(body) {
   return JSON.parse(body);
 }
 
-export function requireConfig(env = process.env) {
+export function requireConfig(env = process.env, runtimeApiKey) {
   const endpoint = env.APPWRITE_FUNCTION_API_ENDPOINT || env.APPWRITE_ENDPOINT;
   const projectId = env.APPWRITE_FUNCTION_PROJECT_ID || env.APPWRITE_PROJECT_ID;
-  const apiKey = env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY;
+  const apiKey = runtimeApiKey || env.APPWRITE_FUNCTION_API_KEY || env.APPWRITE_API_KEY;
 
   if (!endpoint || !projectId || !apiKey) {
     throw new Error(
@@ -142,6 +142,7 @@ export async function createContentBackup({
   storage,
   actorUserId,
   createdAt = new Date().toISOString(),
+  fileId = ID.unique(),
 }) {
   const payload = await buildBackupPayload(databases, actorUserId, createdAt);
   const fileName = backupFileName(createdAt);
@@ -151,7 +152,7 @@ export async function createContentBackup({
   );
   const uploaded = await storage.createFile(
     BACKUP_BUCKET_ID,
-    ID.unique(),
+    fileId,
     file,
   );
 
@@ -193,16 +194,35 @@ export function sanitizeDocument(doc) {
   return data;
 }
 
-export async function restoreContent({ databases, storage, fileId }) {
-  return restoreValidatedContent({
-    databases,
-    storage,
-    fileId,
-    databaseId: DATABASE_ID,
-    bucketId: BACKUP_BUCKET_ID,
-    collectionIds: CONTENT_COLLECTIONS,
-    deleteCollection: collectionId => deleteCollectionDocuments(databases, collectionId),
-    sanitizeDocument,
+export async function ensureRestoreSafetyBackup({ databases, storage, actorUserId, fileId }) {
+  const confirmed = file => {
+    if (!Number.isInteger(file.chunksTotal) || file.chunksTotal < 1 ||
+        file.chunksUploaded !== file.chunksTotal) {
+      throw Object.assign(new Error('Safety backup upload is incomplete. No restore deletion is allowed. Inspect the upload before retrying.'), { status: 503 });
+    }
+    return { bucketId: BACKUP_BUCKET_ID, fileId: file.$id, fileName: file.name };
+  };
+  try {
+    return confirmed(await storage.getFile(BACKUP_BUCKET_ID, fileId));
+  } catch (err) {
+    if (err.code !== 404 && err.status !== 404) throw err;
+  }
+  try {
+    return await createContentBackup({ databases, storage, actorUserId, fileId });
+  } catch (err) {
+    if (err.code !== 409 && err.status !== 409) throw err;
+    return confirmed(await storage.getFile(BACKUP_BUCKET_ID, fileId));
+  }
+}
+
+export async function restoreContent({ databases, storage, fileId, restoreId, actorUserId }) {
+  return runResumableRestore({
+    databases, storage, fileId, restoreId, actorUserId,
+    databaseId: DATABASE_ID, bucketId: BACKUP_BUCKET_ID,
+    collectionIds: CONTENT_COLLECTIONS, sanitizeDocument,
+    journalCollectionId: process.env.ADMIN_RESTORE_JOBS_COLLECTION_ID || 'admin_restore_jobs',
+    pageQueries: limit => [Query.limit(limit), Query.orderAsc('$id')],
+    ensureSafetyBackup: options => ensureRestoreSafetyBackup({ databases, storage, ...options }),
   });
 }
 
@@ -668,7 +688,7 @@ export default async ({ req, res, log, error }) => {
       });
     }
 
-    const { endpoint, projectId, apiKey } = requireConfig();
+    const { endpoint, projectId, apiKey } = requireConfig(process.env, req.headers['x-appwrite-key']);
     const client = new Client()
       .setEndpoint(endpoint)
       .setProject(projectId)
@@ -701,6 +721,19 @@ export default async ({ req, res, log, error }) => {
     }
 
     const storage = new Storage(client);
+    // Restore owns its safety backup and durable identity; do not create a new
+    // backup of a partially restored database on retries.
+    if (body.action === 'restore_content') {
+      const result = await restoreContent({
+        databases, storage, fileId: body.fileId,
+        restoreId: body.restoreId, actorUserId: userId,
+      });
+      log(`Admin restore ${result.jobId}: ${result.phase}.`);
+      return json(res, result.complete ? 200 : 202, {
+        success: true, ...result,
+        message: result.complete ? 'Restore completed.' : 'Restore checkpoint saved; resume the same operation.',
+      });
+    }
     const backup = await createContentBackup({
       databases,
       storage,
@@ -714,24 +747,6 @@ export default async ({ req, res, log, error }) => {
       return json(res, 200, {
         success: true,
         backup,
-      });
-    }
-
-    if (body.action === 'restore_content') {
-      const { restored, deleted } = await restoreContent({
-        databases,
-        storage,
-        fileId: body.fileId,
-      });
-
-      log(
-        `Admin maintenance restore_content completed by ${userId} using backup ${body.fileId}; safety backup ${backup.fileId}.`,
-      );
-      return json(res, 200, {
-        success: true,
-        backup,
-        restored,
-        deleted,
       });
     }
 

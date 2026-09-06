@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart';
-import 'appwrite_auth_service.dart';
 
 @visibleForTesting
 Map<String, dynamic> parseAdminMaintenanceResponse({
@@ -44,7 +43,10 @@ String? adminMaintenanceBackupFileId(Map<String, dynamic> response) {
   return fileId;
 }
 
-extension AdminFunctionsAppwriteAuth on AppwriteAuthService {
+mixin AdminFunctionsMixin {
+  Functions get functions;
+  Future<void> restoreWebSession();
+
   Future<Map<String, dynamic>> executeAdminMaintenance({
     required String action,
     required String confirmation,

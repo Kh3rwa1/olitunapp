@@ -24,8 +24,9 @@ import 'oauth_helpers.dart';
 import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
+import 'admin_functions_client.dart';
 
-class AppwriteAuthService {
+class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // Singleton pattern — one SDK Client shared across the app
@@ -572,8 +573,10 @@ class AppwriteAuthService {
     }
   }
 
+  @override
   Functions get functions => _functions;
 
+  @override
   Future<void> restoreWebSession() => _restoreWebSession();
 }
 

@@ -97,13 +97,13 @@ void main() {
   });
 
   group('signOut', () {
-    test('returns NetworkFailure when offline', () async {
+    test('runs local cleanup even when offline', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
+      when(() => remote.signOut()).thenAnswer((_) async {});
       final result = await repo.signOut();
-      result.match(
-        (f) => expect(f, isA<NetworkFailure>()),
-        (_) => fail('expected Left'),
-      );
+      expect(result.isRight(), true);
+      verify(() => remote.signOut()).called(1);
+      verifyNever(() => network.isConnected);
     });
 
     test('returns Right(null) on success', () async {

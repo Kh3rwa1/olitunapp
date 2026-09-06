@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
@@ -153,6 +154,10 @@ void main() {
   );
 
   group('Bi-directional Cloud Sync Tests', () {
+    setUp(() async {
+      await AccountScope.capture(prefs).identify('test-user');
+    });
+
     test(
       'getUserStats uploads local stats to cloud when cloud is empty',
       () async {
@@ -177,7 +182,7 @@ void main() {
           totalStars: 15,
         );
         await prefs.setString(
-          'user_progress_data',
+          'user_stats_test-user',
           jsonEncode(UserStatsModel.fromEntity(local).toJson()),
         );
 
@@ -227,7 +232,7 @@ void main() {
       ).thenAnswer((_) async => const Right(null));
 
       await prefs.setString(
-        'user_progress_data',
+        'user_stats_test-user',
         jsonEncode(UserStatsModel.fromEntity(local).toJson()),
       );
 

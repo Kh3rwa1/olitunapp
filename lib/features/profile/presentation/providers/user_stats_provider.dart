@@ -118,8 +118,13 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> syncPendingStats() async {
+    if (_disposed) return;
     ref.read(syncStatusProvider.notifier).state = SyncStatus.syncing;
-    final result = await _repository.syncPendingStats();
+    final repository = _repository;
+    final result = await repository.syncPendingStats();
+    // Connectivity-triggered sync may outlive its ProviderScope. Keep the
+    // repository operation, but never publish results into a disposed scope.
+    if (_disposed) return;
     await result.fold(
       (failure) async {
         ref.read(syncStatusProvider.notifier).state = SyncStatus.error;
@@ -129,7 +134,8 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
         ref.read(syncStatusProvider.notifier).state = SyncStatus.success;
         ref.read(isStatsSyncedProvider.notifier).state = true;
         // Silent reload of stats to get the merged cloud progress without flashing loading state
-        final statsResult = await _repository.getUserStats();
+        final statsResult = await repository.getUserStats();
+        if (_disposed) return;
         statsResult.fold((failure) => null, (mergedStats) {
           state = AsyncValue.data(mergedStats);
           _updateSyncStateFromPrefs();

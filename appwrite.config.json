@@ -580,7 +580,8 @@
       "scopes": [
         "databases.read",
         "documents.read",
-        "files.read"
+        "files.read",
+        "tokens.write"
       ]
     }
   ],

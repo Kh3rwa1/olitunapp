@@ -1,6 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGetAuthorizedLessonHandler, evaluateLessonAccess } from '../getAuthorizedLesson/src/main.js';
+import { createGetAuthorizedLessonHandler as rawCreateHandler, evaluateLessonAccess } from '../getAuthorizedLesson/src/main.js';
+
+process.env.MEDIA_PUBLIC_ENDPOINT = 'https://media.example.test/v1';
+process.env.APPWRITE_PROJECT_ID = 'test_project';
+function createGetAuthorizedLessonHandler(options = {}) {
+  return rawCreateHandler({
+    ...options,
+    storage: {
+      getFile: async ({ fileId }) => ({ $id: fileId, mimeType: 'audio/mpeg', sizeOriginal: 1 }),
+      ...options.storage,
+      getFileDownload: async () => assert.fail('Media bytes must not pass through the function'),
+    },
+    tokens: { createFileToken: async ({ expire }) => ({ secret: 'test-only-grant', expire }) },
+  });
+}
 
 function mockRes() {
   const res = {
@@ -532,7 +546,7 @@ test('Authorized Lesson: Private media action allows entitled buyer and denies n
     headers: { 'x-appwrite-user-id': 'non_buyer_user' },
     body: JSON.stringify({
       lessonId: 'lesson_paid_1',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'audio_secure_123',
     }),
   };
@@ -547,7 +561,7 @@ test('Authorized Lesson: Private media action allows entitled buyer and denies n
     headers: { 'x-appwrite-user-id': 'buyer_user' },
     body: JSON.stringify({
       lessonId: 'lesson_paid_1',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'audio_secure_123',
     }),
   };
@@ -556,7 +570,7 @@ test('Authorized Lesson: Private media action allows entitled buyer and denies n
   assert.equal(authRes.statusCode, 200);
   assert.equal(authRes.body.ok, true);
   assert.equal(authRes.body.fileId, 'audio_secure_123');
-  assert.ok(authRes.body.base64);
+  assert.ok(authRes.body.url);
 });
 
 test('Fix 1 Regression: Buyer of course A requests a file belonging only to course B: denied', async () => {
@@ -607,7 +621,7 @@ test('Fix 1 Regression: Buyer of course A requests a file belonging only to cour
     headers: { 'x-appwrite-user-id': 'buyer_of_a' },
     body: JSON.stringify({
       lessonId: 'lesson_course_a',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'audio_course_b',
     }),
   };
@@ -652,7 +666,7 @@ test('Fix 1 Regression: Caller uses accessible free lesson with unrelated privat
     headers: {},
     body: JSON.stringify({
       lessonId: 'free_lesson_1',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'secret_paid_file_999',
     }),
   };
@@ -704,7 +718,7 @@ test('Fix 1 Regression: Correct file ID with wrong bucket: denied', async () => 
     headers: { 'x-appwrite-user-id': 'buyer_1' },
     body: JSON.stringify({
       lessonId: 'lesson_paid_1',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'audio_legit',
       bucketId: 'other_bucket', // Wrong bucket!
     }),
@@ -759,7 +773,7 @@ test('Fix 1 Regression: Refunded or disputed users cannot retrieve associated pa
     headers: { 'x-appwrite-user-id': 'refunded_user' },
     body: JSON.stringify({
       lessonId: 'lesson_paid_1',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'audio_legit',
     }),
   };
@@ -816,7 +830,7 @@ test('Fix 1 Regression: Nested block references are correctly extracted and auth
     headers: { 'x-appwrite-user-id': 'buyer_1' },
     body: JSON.stringify({
       lessonId: 'lesson_nested',
-      action: 'get_media',
+      action: 'get_media', protocolVersion: 2,
       fileId: 'nested_img_777',
     }),
   };
@@ -826,7 +840,7 @@ test('Fix 1 Regression: Nested block references are correctly extracted and auth
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.ok, true);
   assert.equal(res.body.fileId, 'nested_img_777');
-  assert.ok(res.body.base64);
+  assert.ok(res.body.url);
 });
 
 test('Fix 1 Regression: Conflicting isPremium=true and isPreview=true requires entitlement', async () => {

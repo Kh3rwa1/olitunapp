@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/media/authorized_media.dart';
+import '../../../../shared/widgets/authorized_media_display.dart';
 import '../../../../shared/utils/media_type_resolver.dart';
 import 'platform_view_stub.dart'
     if (dart.library.js_interop) 'platform_view_web.dart';
@@ -80,6 +82,9 @@ class _HeroMediaSource extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (PrivateMediaReference.parse(url) != null) {
+      return AuthorizedMediaDisplay(source: url, fallback: fallback);
+    }
     final resolvedKind = mediaKind != null && mediaKind != MediaKind.unknown
         ? mediaKind!
         : MediaTypeResolver.resolve(url);
@@ -119,6 +124,12 @@ class _HeroMediaSource extends StatelessWidget {
     final image = fallbackUrl?.trim();
     if (image != null && image.isNotEmpty) {
       final centeredFallback = Center(child: fallback);
+      if (PrivateMediaReference.parse(image) != null) {
+        return AuthorizedMediaDisplay(
+          source: image,
+          fallback: centeredFallback,
+        );
+      }
       switch (MediaTypeResolver.resolve(image)) {
         case MediaKind.video:
           return _InteractiveVideoHero(url: image, fallback: centeredFallback);

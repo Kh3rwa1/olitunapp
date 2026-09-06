@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../logging/app_logger.dart';
 import '../logging/redaction_helper.dart';
 import 'session_validator.dart';
+import 'account_scope.dart';
 
 class SessionPersistence {
   static const String webSessionSecretKey = 'olitun_appwrite_session_secret';
@@ -81,6 +82,12 @@ class SessionPersistence {
     required Client client,
     required SharedPreferences prefs,
   }) async {
+    // Invalidate in-flight progress before any asynchronous credential cleanup.
+    try {
+      await AccountScope.signOut(prefs);
+    } catch (e) {
+      AppLogger.debug('Appwrite: Failed to persist sign-out scope: ${RedactionHelper.sanitize(e.toString())}');
+    }
     client.setSession('');
     try {
       try {

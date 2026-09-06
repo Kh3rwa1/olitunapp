@@ -6,9 +6,10 @@ extension _UserStatsNotifierHelpers on UserStatsNotifier {
   void _updateSyncStateFromPrefs() {
     if (_disposed) return;
     try {
-      final isSynced =
-          ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ??
-          true;
+      final prefs = ref.read(sharedPreferencesProvider);
+      final scope = AccountScope.capture(prefs);
+      final isSynced = prefs.getBool(scope.syncKey) ??
+          (scope.isGuest ? prefs.getBool('is_stats_synced') ?? true : false);
       ref.read(isStatsSyncedProvider.notifier).state = isSynced;
     } catch (_) {
       // Prefs/container unavailable (e.g. during teardown) — skip the

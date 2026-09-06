@@ -63,7 +63,8 @@ jobs:
             echo '```text'
             cat /tmp/scope-status.log
             tail -c 5000 /tmp/scope-analyze.log
-            tail -c 24000 /tmp/scope-tests.log
+            grep -B2 -A22 '\[E\]' /tmp/scope-tests.log | head -c 24000 || true
+            tail -n 12 /tmp/scope-tests.log
             echo
             echo '```'
           } > /tmp/scope-report.md

@@ -1,0 +1,56 @@
+name: Audit Fix Diagnostics
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  diagnose:
+    if: github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/audit-restore-startup-release-20260906'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
+        with:
+          channel: stable
+          cache: true
+      - name: Capture scoped diagnostics without deployment secrets
+        shell: bash
+        run: |
+          set +e
+          npm ci > /tmp/audit-node.log 2>&1
+          npm ci --prefix functions/translator >> /tmp/audit-node.log 2>&1
+          npm run test:backend >> /tmp/audit-node.log 2>&1
+          echo "$?" > /tmp/audit-node-status
+          flutter pub get > /tmp/audit-flutter.log 2>&1
+          dart format lib/main.dart lib/core/startup/post_frame_startup.dart test/core/startup/post_frame_startup_test.dart >> /tmp/audit-flutter.log 2>&1
+          git diff -- lib/main.dart lib/core/startup/post_frame_startup.dart test/core/startup/post_frame_startup_test.dart > /tmp/audit-format.diff
+          exit 0
+      - name: Post bounded test failures and formatter diff to this PR
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const read = p => fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : 'unavailable';
+          const failures = read('/tmp/audit-node.log').split('\n').filter(line => /not ok|error:|code:|expected:|actual:|operator:|AssertionError|Error:|✗ Drift|npm error/.test(line)).slice(0, 120).join('\n');
+          const diff = read('/tmp/audit-format.diff').slice(0, 16000);
+          const status = read('/tmp/audit-node-status').trim();
+          const body = `## Scoped audit diagnostics\nCommit: ${process.env.SOURCE_SHA}\nBackend exit: ${status}\n\n\`\`\`text\n${failures || '(no matching error lines)'}\n\`\`\`\n\nFormatter diff (not committed):\n\`\`\`diff\n${diff || '(no changes)'}\n\`\`\``;
+          const response = await fetch(`{{https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}}}/issues/${process.env.PR_NUMBER}/comments`, {method:'POST', headers:{Authorization:`Bearer ${process.env.GITHUB_TOKEN}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'}, body:JSON.stringify({body})});
+          if (!response.ok) throw new Error(`Could not publish diagnostics: HTTP ${response.status}`);
+          JS

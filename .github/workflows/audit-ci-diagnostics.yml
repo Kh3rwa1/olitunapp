@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  actions: read
+  contents: read
   pull-requests: write
 
 jobs:
@@ -14,25 +14,24 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
       - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
         with:
           node-version: 22
-      - name: Read failed Chrome log without deployment secrets
+      - name: Locate content list consumers without executing app code
         env:
           GITHUB_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           node --input-type=module - <<'JS'
+          import {execFileSync} from 'node:child_process';
+          const matches = execFileSync('git', ['grep', '-n', '-B', '5', '-A', '8', 'contentListProvider', '--', 'lib'], {encoding:'utf8'});
           const base = ['https:', '', 'api.github.com', 'repos', process.env.GITHUB_REPOSITORY].join('/');
-          const headers = {Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json'};
-          const response = await fetch(`${base}/actions/jobs/101418213455/logs`, {headers});
-          if (!response.ok) throw new Error(`Job log HTTP ${response.status}`);
-          const lines = (await response.text()).replace(/\x1b\[[0-9;]*m/g, '').split('\n').map(line => line.replace(/^\S+Z\s+/, ''));
-          const excerpt = lines.slice(-240).join('\n').slice(-32000)
-            .replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]')
-            .replace(/((?:x-appwrite-key|authorization)\s*[:=]\s*)\S+/gi, '$1[REDACTED]')
-            .replace(/([?&](?:token|key|secret|password)=)[^&\s]+/gi, '$1[REDACTED]');
-          const body = `## Chrome integration failure log\nSource: failed job 101418213455 on b3cee9fd84ec. Read-only log retrieval; no application or deployment code executed.\n\n\`\`\`text\n${excerpt}\n\`\`\``;
-          const posted = await fetch(`${base}/issues/${process.env.PR_NUMBER}/comments`, {method:'POST', headers:{...headers, 'Content-Type':'application/json'}, body:JSON.stringify({body})});
+          const headers = {Authorization: `Bearer ${process.env.GITHUB_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type':'application/json'};
+          const body = `## Content-list consumer inventory\nRead-only source search for the Chrome failure. No application code executed.\n\n\`\`\`text\n${matches.slice(0, 52000)}\n\`\`\``;
+          const posted = await fetch(`${base}/issues/${process.env.PR_NUMBER}/comments`, {method:'POST', headers, body:JSON.stringify({body})});
           if (!posted.ok) throw new Error(`Diagnostic comment HTTP ${posted.status}`);
           JS

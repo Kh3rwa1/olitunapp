@@ -9,6 +9,7 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/home/presentation/providers/home_prefetch_provider.dart';
 import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/shared/widgets/content_load_guard.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
@@ -93,6 +94,7 @@ void main() {
     ], onRetry: () => retried = true);
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [reduceVisualEffectsProvider.overrideWithValue(true)],
         child: MaterialApp(home: Scaffold(body: guard)),
       ),
     );

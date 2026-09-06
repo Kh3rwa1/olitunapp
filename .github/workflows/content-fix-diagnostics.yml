@@ -1,0 +1,60 @@
+name: Temporary content fix diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/content-fix-diagnostics.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  diagnose:
+    if: github.repository == 'Kh3rwa1/olitunapp' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/content-list-errors-20260906'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Capture focused diagnostics
+        shell: bash
+        run: |
+          mkdir -p /tmp/content-fix
+          dart format lib/shared/providers/content_providers.dart test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart > /tmp/content-fix/format.txt 2>&1
+          git diff -- lib/shared/providers/content_providers.dart test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart > /tmp/content-fix/format.patch
+          set +e
+          flutter analyze --fatal-infos > /tmp/content-fix/analyze.txt 2>&1
+          echo "Analyze exit: $?" > /tmp/content-fix/status.txt
+          flutter test test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart --reporter expanded > /tmp/content-fix/test.txt 2>&1
+          echo "Focused test exit: $?" >> /tmp/content-fix/status.txt
+      - name: Report diagnostic results on this PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          node --input-type=module - <<'JS'
+          import fs from 'node:fs';
+          const read = (name, limit) => fs.existsSync(`/tmp/content-fix/${name}`) ? fs.readFileSync(`/tmp/content-fix/${name}`, 'utf8').slice(-limit) : 'Not available';
+          const body = '## Temporary content-fix diagnostics\n\n' +
+            '```text\n' + read('status.txt', 1000) + '\n```\n' +
+            '### Formatter patch\n```diff\n' + read('format.patch', 18000) + '\n```\n' +
+            '### Static analysis\n```text\n' + read('analyze.txt', 10000) + '\n```\n' +
+            '### Focused tests\n```text\n' + read('test.txt', 18000) + '\n```';
+          const url = new URL(`/repos/${process.env.REPOSITORY}/issues/${process.env.PR_NUMBER}/comments`, 'https://api.github.com');
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({ body }),
+          });
+          if (!response.ok) throw new Error(`Diagnostic comment failed: ${response.status}`);
+          JS

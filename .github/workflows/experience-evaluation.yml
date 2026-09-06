@@ -8,11 +8,13 @@ on:
       - 'lib/shared/widgets/buttons/pressable_button.dart'
       - 'lib/shared/widgets/bento_grid.dart'
       - 'lib/features/lessons/**'
+      - 'lib/features/profile/presentation/providers/user_stats_provider.dart'
       - 'lib/main.dart'
       - 'test/core/accessibility/**'
       - 'test/core/motion/**'
       - 'test/shared/widgets/experience_controls_test.dart'
       - 'test/features/lessons/lessons_experience_test.dart'
+      - 'test/features/profile/user_stats_sync_lifecycle_test.dart'
       - 'integration_test/experience_performance_test.dart'
       - 'tool/experience_frame_budget*'
       - 'tool/report_experience_checks.py'
@@ -63,10 +65,24 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Collect fast targeted diagnostics
+        continue-on-error: true
+        env:
+          TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python3 tool/report_experience_checks.py
+      - name: Publish early diagnostic report on this PR
+        if: always() && hashFiles('build/experience-diagnostics/comment.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --input build/experience-diagnostics/comment.json
       - name: Collect full Flutter diagnostics
         env:
           TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
-        run: python3 tool/report_experience_checks.py --full
+        run: |
+          rm -f build/experience-diagnostics/comment.json
+          python3 tool/report_experience_checks.py --full
       - name: Publish diagnostic report on this PR
         if: always() && hashFiles('build/experience-diagnostics/comment.json') != ''
         env:

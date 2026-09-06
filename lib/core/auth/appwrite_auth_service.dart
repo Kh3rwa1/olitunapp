@@ -36,18 +36,10 @@ class AppwriteAuthService {
     _client = Client();
     final endpoint = AppwriteConfig.endpoint;
     final projectId = AppwriteConfig.projectId;
-
-    if (endpoint.isNotEmpty) {
-      _client.setEndpoint(endpoint);
-    } else {
-      _client.setEndpoint('https://localhost/v1');
-    }
-
-    if (projectId.isNotEmpty) {
-      _client.setProject(projectId);
-    } else {
-      _client.setProject('placeholder');
-    }
+    _client.setEndpoint(
+      endpoint.isNotEmpty ? endpoint : 'https://localhost/v1',
+    );
+    _client.setProject(projectId.isNotEmpty ? projectId : 'placeholder');
 
     if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
       _client.setSelfSigned();

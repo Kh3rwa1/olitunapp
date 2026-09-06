@@ -15,6 +15,7 @@ import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/lessons/data/models/lesson_model.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/models/content_item_extensions.dart';
+import 'package:itun/shared/security/premium_content_policy.dart';
 
 // Provider-level API lives in ../providers/content_providers.dart;
 // re-exported here for compatibility.
@@ -450,6 +451,46 @@ class ContentRepository {
     }
   }
 
+  Future<PublicationDecision> _publicationDecisionFor(ContentItem item) async {
+    if (item.kind != ContentKind.lesson) {
+      if (item.isPremium) {
+        return const PublicationDecision.protected('item-marked-premium');
+      }
+      return const PublicationDecision.public('non-lesson-content');
+    }
+
+    if (item.categoryId.trim().isEmpty) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryResolved: false,
+      );
+    }
+
+    try {
+      final category = await _databases
+          .getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: item.categoryId,
+          )
+          .timeout(const Duration(seconds: 6));
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryUnlockMode: category.data['unlockMode'] as String?,
+        lessonOrder: item.order,
+        previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+      );
+    } catch (_) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryResolved: false,
+      );
+    }
+  }
+
+  List<String> _readPermissions(PublicationDecision decision) =>
+      decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
+
   /// Upserts a content item to Appwrite and updates the local cache.
   Future<Either<Failure, ContentItem>> upsert(
     ContentItem item, {
@@ -467,7 +508,9 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
-        final appwritePayload = item.toAppwrite();
+        final decision = await _publicationDecisionFor(item);
+        final permissions = _readPermissions(decision);
+        final appwritePayload = item.toAppwriteAttributes();
 
         ContentItem? resultItem;
         try {
@@ -477,7 +520,7 @@ class ContentRepository {
             collectionId: collectionId,
             documentId: item.id,
             data: appwritePayload,
-            permissions: [Permission.read(Role.any())],
+            permissions: permissions,
           );
           resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
         } on AppwriteException catch (ae) {
@@ -488,6 +531,7 @@ class ContentRepository {
               collectionId: collectionId,
               documentId: item.id,
               data: appwritePayload,
+              permissions: permissions,
             );
             resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
           } else {

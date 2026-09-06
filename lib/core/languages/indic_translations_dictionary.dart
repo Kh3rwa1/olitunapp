@@ -2,6 +2,7 @@ import 'indic_translations_lessons.dart';
 import 'indic_translations_sentences.dart';
 import 'indic_translations_stories.dart';
 import 'indic_translations_words.dart';
+import 'translation_override_service.dart';
 
 /// Aggregated Indic translations dictionary covering Bengali (`bn`),
 /// Hindi (`hi`), Odia (`or`), and English (`en`) for Santali learning content.
@@ -265,6 +266,15 @@ class IndicTranslationsDictionary {
   static String? lookup(String key, String targetLang) {
     final lower = key.toLowerCase().trim();
     if (lower.isEmpty) return null;
+
+    // 0. Manual / Admin Overrides
+    final override = TranslationOverrideService.instance.getMeaningOverride(
+      lower,
+      targetLang,
+    );
+    if (override != null && override.isNotEmpty) {
+      return override;
+    }
 
     // 1. Direct curated vocabulary
     if (_vocabulary.containsKey(lower) &&

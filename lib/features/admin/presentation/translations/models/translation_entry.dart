@@ -1,4 +1,5 @@
-import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import '../../../../../core/languages/ol_chiki_multilingual_helper.dart';
+import '../../../../../core/languages/translation_override_service.dart';
 
 enum TranslationKind { word, sentence, lesson, category, rhyme }
 
@@ -12,6 +13,7 @@ class TranslationEntry {
   final String? category;
   final String? audioUrl;
   final Map<String, String>? customTranslations;
+  final Map<String, String>? customTransliterations;
 
   const TranslationEntry({
     required this.id,
@@ -23,6 +25,7 @@ class TranslationEntry {
     this.category,
     this.audioUrl,
     this.customTranslations,
+    this.customTransliterations,
   });
 
   String get kindLabel => switch (kind) {
@@ -35,13 +38,26 @@ class TranslationEntry {
 
   String meaningFor(String lang) {
     if (lang == 'sat') return '';
-    if (lang == 'en') {
-      return englishMeaning.isNotEmpty ? englishMeaning : textLatin;
-    }
     if (customTranslations != null &&
         customTranslations!.containsKey(lang) &&
         customTranslations![lang]!.trim().isNotEmpty) {
       return customTranslations![lang]!;
+    }
+    // Check TranslationOverrideService
+    final override = TranslationOverrideService.instance.getMeaningOverride(
+      textOlChiki,
+      lang,
+    ) ?? TranslationOverrideService.instance.getMeaningOverride(
+      textLatin,
+      lang,
+    ) ?? (englishMeaning.isNotEmpty ? TranslationOverrideService.instance.getMeaningOverride(
+      englishMeaning,
+      lang,
+    ) : null);
+    if (override != null && override.isNotEmpty) return override;
+
+    if (lang == 'en') {
+      return englishMeaning.isNotEmpty ? englishMeaning : textLatin;
     }
     final translated = OlChikiMultilingualHelper.translateMeaning(
       englishMeaning,
@@ -53,6 +69,20 @@ class TranslationEntry {
 
   String transliterationFor(String lang) {
     if (lang == 'sat') return textOlChiki;
+    if (customTransliterations != null &&
+        customTransliterations!.containsKey(lang) &&
+        customTransliterations![lang]!.trim().isNotEmpty) {
+      return customTransliterations![lang]!;
+    }
+    final override = TranslationOverrideService.instance.getPronunciationOverride(
+      textOlChiki,
+      lang,
+    ) ?? TranslationOverrideService.instance.getPronunciationOverride(
+      textLatin,
+      lang,
+    );
+    if (override != null && override.isNotEmpty) return override;
+
     if (lang == 'en') {
       return pronunciation?.isNotEmpty == true
           ? pronunciation!

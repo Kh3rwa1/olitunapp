@@ -86,9 +86,12 @@ class DashboardHeroMetric extends StatelessWidget {
             ).copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 22),
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              if (weekDelta != null) ...[
+              if (weekDelta != null)
                 _pill(
                   isDark,
                   weekDelta! >= 0
@@ -97,8 +100,6 @@ class DashboardHeroMetric extends StatelessWidget {
                   '${weekDelta! >= 0 ? '+' : ''}${weekDelta!.toStringAsFixed(0)}% wk',
                   weekDelta! >= 0 ? AppColors.primary : AppColors.accentOchre,
                 ),
-                const SizedBox(width: 8),
-              ],
               _pill(isDark, Icons.history_rounded, 'Updated just now', null),
             ],
           ),

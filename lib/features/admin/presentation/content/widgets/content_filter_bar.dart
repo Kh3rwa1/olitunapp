@@ -58,110 +58,157 @@ class _ContentFilterBarState extends State<ContentFilterBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: TextField(
-                onChanged: _onSearchInput,
-                style: TextStyle(
-                  color: widget.isDark ? Colors.white : Colors.black87,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Search ${widget.title}...',
-                  hintStyle: TextStyle(
-                    color: widget.isDark ? Colors.white30 : Colors.black26,
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: widget.isDark ? Colors.white30 : Colors.black26,
-                    size: 20,
-                  ),
-                  filled: true,
-                  fillColor: widget.isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.black.withValues(alpha: 0.03),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: widget.isDark ? Colors.white10 : Colors.black12,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: widget.isDark ? Colors.white10 : Colors.black12,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
-                  isDense: true,
-                ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 600;
+
+        final searchField = TextField(
+          onChanged: _onSearchInput,
+          style: TextStyle(
+            color: widget.isDark ? Colors.white : Colors.black87,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Search ${widget.title}...',
+            hintStyle: TextStyle(
+              color: widget.isDark ? Colors.white30 : Colors.black26,
+            ),
+            prefixIcon: Icon(
+              Icons.search_rounded,
+              color: widget.isDark ? Colors.white30 : Colors.black26,
+              size: 20,
+            ),
+            filled: true,
+            fillColor: widget.isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: widget.isDark ? Colors.white10 : Colors.black12,
               ),
             ),
-            if (widget.supportsPublished) ...[
-              const SizedBox(width: 12),
-              _buildDropdown(
-                value: widget.publishFilter,
-                items: const ['All', 'Published', 'Draft'],
-                onChanged: (v) {
-                  if (v != null) widget.onPublishFilterChanged(v);
-                },
-                isDark: widget.isDark,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: widget.isDark ? Colors.white10 : Colors.black12,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+            isDense: true,
+          ),
+        );
+
+        final hasDropdowns = widget.supportsPublished || widget.supportsPremium;
+
+        return Column(
+          children: [
+            if (isMobile) ...[
+              searchField,
+              if (hasDropdowns) ...[
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    if (widget.supportsPublished)
+                      Expanded(
+                        child: _buildDropdown(
+                          value: widget.publishFilter,
+                          items: const ['All', 'Published', 'Draft'],
+                          onChanged: (v) {
+                            if (v != null) widget.onPublishFilterChanged(v);
+                          },
+                          isDark: widget.isDark,
+                          isExpanded: true,
+                        ),
+                      ),
+                    if (widget.supportsPublished && widget.supportsPremium)
+                      const SizedBox(width: 8),
+                    if (widget.supportsPremium)
+                      Expanded(
+                        child: _buildDropdown(
+                          value: widget.premiumFilter,
+                          items: const ['All', 'Premium', 'Free'],
+                          onChanged: (v) {
+                            if (v != null) widget.onPremiumFilterChanged(v);
+                          },
+                          isDark: widget.isDark,
+                          isExpanded: true,
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ] else ...[
+              Row(
+                children: [
+                  Expanded(
+                    flex: 3,
+                    child: searchField,
+                  ),
+                  if (widget.supportsPublished) ...[
+                    const SizedBox(width: 12),
+                    _buildDropdown(
+                      value: widget.publishFilter,
+                      items: const ['All', 'Published', 'Draft'],
+                      onChanged: (v) {
+                        if (v != null) widget.onPublishFilterChanged(v);
+                      },
+                      isDark: widget.isDark,
+                    ),
+                  ],
+                  if (widget.supportsPremium) ...[
+                    const SizedBox(width: 8),
+                    _buildDropdown(
+                      value: widget.premiumFilter,
+                      items: const ['All', 'Premium', 'Free'],
+                      onChanged: (v) {
+                        if (v != null) widget.onPremiumFilterChanged(v);
+                      },
+                      isDark: widget.isDark,
+                    ),
+                  ],
+                ],
               ),
             ],
-            if (widget.supportsPremium) ...[
-              const SizedBox(width: 8),
-              _buildDropdown(
-                value: widget.premiumFilter,
-                items: const ['All', 'Premium', 'Free'],
-                onChanged: (v) {
-                  if (v != null) widget.onPremiumFilterChanged(v);
-                },
-                isDark: widget.isDark,
+            if (widget.supportsCategory && widget.categories.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip(
+                      label: 'All Categories',
+                      isSelected: widget.selectedCategoryId == null,
+                      onTap: () => widget.onCategoryChanged(null),
+                      isDark: widget.isDark,
+                    ),
+                    ...widget.categories.map(
+                      (cat) => Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: _buildFilterChip(
+                          label: cat.titleLatin,
+                          isSelected: widget.selectedCategoryId == cat.id,
+                          onTap: () => widget.onCategoryChanged(cat.id),
+                          isDark: widget.isDark,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ],
-        ),
-        if (widget.supportsCategory && widget.categories.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildFilterChip(
-                  label: 'All Categories',
-                  isSelected: widget.selectedCategoryId == null,
-                  onTap: () => widget.onCategoryChanged(null),
-                  isDark: widget.isDark,
-                ),
-                ...widget.categories.map(
-                  (cat) => Padding(
-                    padding: const EdgeInsets.only(left: 8),
-                    child: _buildFilterChip(
-                      label: cat.titleLatin,
-                      isSelected: widget.selectedCategoryId == cat.id,
-                      onTap: () => widget.onCategoryChanged(cat.id),
-                      isDark: widget.isDark,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
+        );
+      },
     );
   }
 
@@ -170,6 +217,7 @@ class _ContentFilterBarState extends State<ContentFilterBar> {
     required List<String> items,
     required ValueChanged<String?> onChanged,
     required bool isDark,
+    bool isExpanded = false,
   }) {
     return Semantics(
       label: 'Dropdown filter for $value',
@@ -186,6 +234,7 @@ class _ContentFilterBarState extends State<ContentFilterBar> {
         child: DropdownButtonHideUnderline(
           child: DropdownButton<String>(
             value: value,
+            isExpanded: isExpanded,
             dropdownColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
             style: TextStyle(
               fontSize: 13,

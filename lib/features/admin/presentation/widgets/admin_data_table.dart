@@ -79,6 +79,8 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
     return _filtered.sublist(start, end);
   }
 
+  bool _preferTableView = false;
+
   @override
   void didUpdateWidget(covariant AdminDataTable<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -97,78 +99,330 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isMobile = constraints.maxWidth < 720;
+        final hasBoundedHeight = constraints.hasBoundedHeight;
+        final isCardMode = isMobile && !_preferTableView;
+
+        final double minTableWidth = widget.columns.fold<double>(
+          widget.trailingBuilder != null ? 60.0 : 0.0,
+          (sum, col) => sum + (col.flex * 120.0).clamp(90.0, 320.0),
+        );
+
+        Widget contentList;
+        if (_pageItems.isEmpty) {
+          contentList = Container(
+            padding: const EdgeInsets.symmetric(vertical: 40),
+            alignment: Alignment.center,
+            child: Text(
+              'No results found',
+              style: AdminTokens.body(
+                isDark,
+              ).copyWith(color: AdminTokens.textTertiary(isDark)),
+            ),
+          );
+        } else if (isCardMode) {
+          contentList = ListView.builder(
+            shrinkWrap: !hasBoundedHeight,
+            physics: !hasBoundedHeight
+                ? const NeverScrollableScrollPhysics()
+                : const AlwaysScrollableScrollPhysics(),
+            itemCount: _pageItems.length,
+            itemBuilder: (context, index) =>
+                _buildMobileCard(_pageItems[index], isDark),
+          );
+        } else if (isMobile) {
+          // Mobile table view with horizontal scrolling
+          contentList = SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: minTableWidth > constraints.maxWidth
+                  ? minTableWidth
+                  : constraints.maxWidth,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildHeader(isDark),
+                  if (hasBoundedHeight)
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: _pageItems.length,
+                        itemBuilder: (context, index) =>
+                            _buildRow(_pageItems[index], isDark),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _pageItems.length,
+                      itemBuilder: (context, index) =>
+                          _buildRow(_pageItems[index], isDark),
+                    ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          // Desktop table view
+          contentList = ListView.builder(
+            shrinkWrap: !hasBoundedHeight,
+            physics: !hasBoundedHeight
+                ? const NeverScrollableScrollPhysics()
+                : const AlwaysScrollableScrollPhysics(),
+            itemCount: _pageItems.length,
+            itemBuilder: (context, index) =>
+                _buildRow(_pageItems[index], isDark),
+          );
+        }
+
+        return Column(
+          mainAxisSize: hasBoundedHeight ? MainAxisSize.max : MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildSearchBar(isDark, isMobile),
+            if (isMobile && isCardMode) ...[
+              const SizedBox(height: 8),
+              _buildMobileSortChips(isDark),
+            ],
+            if (!isMobile) ...[
+              const SizedBox(height: 12),
+              _buildHeader(isDark),
+            ],
+            const SizedBox(height: 8),
+            if (hasBoundedHeight)
+              Expanded(child: contentList)
+            else
+              contentList,
+            const SizedBox(height: 8),
+            _buildPagination(isDark),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSearchBar(bool isDark, bool isMobile) {
+    return Row(
       children: [
-        _buildSearchBar(isDark),
-        const SizedBox(height: 12),
-        _buildHeader(isDark),
         Expanded(
-          child: _pageItems.isEmpty
-              ? Center(
-                  child: Text(
-                    'No results found',
-                    style: AdminTokens.body(
-                      isDark,
-                    ).copyWith(color: AdminTokens.textTertiary(isDark)),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: _pageItems.length,
-                  itemBuilder: (context, index) =>
-                      _buildRow(_pageItems[index], isDark),
-                ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: (_) => setState(() => _currentPage = 0),
+            style: AdminTokens.bodyStrong(isDark),
+            decoration: InputDecoration(
+              hintText: widget.searchHint,
+              hintStyle: AdminTokens.body(
+                isDark,
+              ).copyWith(color: AdminTokens.textTertiary(isDark)),
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                color: AdminTokens.textTertiary(isDark),
+                size: 20,
+              ),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.clear_rounded,
+                        size: 18,
+                        color: AdminTokens.textTertiary(isDark),
+                      ),
+                      tooltip: 'Clear search',
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() => _currentPage = 0);
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: AdminTokens.sunken(isDark),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                borderSide: BorderSide(color: AdminTokens.border(isDark)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                borderSide: BorderSide(color: AdminTokens.border(isDark)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                borderSide:
+                    const BorderSide(color: AdminTokens.accent, width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
+            ),
+          ),
         ),
-        _buildPagination(isDark),
+        if (isMobile) ...[
+          const SizedBox(width: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: AdminTokens.sunken(isDark),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(color: AdminTokens.border(isDark)),
+            ),
+            child: IconButton(
+              icon: Icon(
+                _preferTableView
+                    ? Icons.view_agenda_rounded
+                    : Icons.table_rows_rounded,
+                size: 20,
+                color: AppColors.primary,
+              ),
+              tooltip: _preferTableView
+                  ? 'Switch to Card view'
+                  : 'Switch to Horizontal Table view',
+              onPressed: () =>
+                  setState(() => _preferTableView = !_preferTableView),
+            ),
+          ),
+        ],
       ],
     );
   }
 
-  Widget _buildSearchBar(bool isDark) {
-    return TextField(
-      controller: _searchController,
-      onChanged: (_) => setState(() => _currentPage = 0),
-      style: AdminTokens.bodyStrong(isDark),
-      decoration: InputDecoration(
-        hintText: widget.searchHint,
-        hintStyle: AdminTokens.body(
-          isDark,
-        ).copyWith(color: AdminTokens.textTertiary(isDark)),
-        prefixIcon: Icon(
-          Icons.search_rounded,
-          color: AdminTokens.textTertiary(isDark),
-          size: 20,
-        ),
-        suffixIcon: _searchController.text.isNotEmpty
-            ? IconButton(
-                icon: Icon(
-                  Icons.clear_rounded,
-                  size: 18,
-                  color: AdminTokens.textTertiary(isDark),
+  Widget _buildMobileSortChips(bool isDark) {
+    final sortableColumns = widget.columns
+        .asMap()
+        .entries
+        .where((e) => e.value.comparator != null)
+        .toList();
+
+    if (sortableColumns.isEmpty) return const SizedBox.shrink();
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: Text(
+              'SORT:',
+              style: AdminTokens.eyebrow(isDark).copyWith(fontSize: 10),
+            ),
+          ),
+          ...sortableColumns.map((entry) {
+            final idx = entry.key;
+            final col = entry.value;
+            final isSelected = _sortColumnIndex == idx;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: ActionChip(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                avatar: isSelected
+                    ? Icon(
+                        _sortAscending
+                            ? Icons.arrow_upward_rounded
+                            : Icons.arrow_downward_rounded,
+                        size: 13,
+                        color: Colors.white,
+                      )
+                    : null,
+                label: Text(
+                  col.label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight:
+                        isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected
+                        ? Colors.white
+                        : AdminTokens.textSecondary(isDark),
+                  ),
                 ),
-                tooltip: 'Clear search',
+                backgroundColor: isSelected
+                    ? AppColors.primary
+                    : AdminTokens.sunken(isDark),
+                side: BorderSide(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AdminTokens.border(isDark),
+                ),
                 onPressed: () {
-                  _searchController.clear();
-                  setState(() => _currentPage = 0);
+                  setState(() {
+                    if (_sortColumnIndex == idx) {
+                      _sortAscending = !_sortAscending;
+                    } else {
+                      _sortColumnIndex = idx;
+                      _sortAscending = true;
+                    }
+                  });
                 },
-              )
-            : null,
-        filled: true,
-        fillColor: AdminTokens.sunken(isDark),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-          borderSide: BorderSide(color: AdminTokens.border(isDark)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-          borderSide: BorderSide(color: AdminTokens.border(isDark)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-          borderSide: const BorderSide(color: AdminTokens.accent, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileCard(T item, bool isDark) {
+    final firstCol = widget.columns.isNotEmpty ? widget.columns.first : null;
+    final otherCols =
+        widget.columns.length > 1 ? widget.columns.sublist(1) : <AdminColumn<T>>[];
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        border: Border.all(color: AdminTokens.border(isDark)),
+        boxShadow: AdminTokens.raisedShadow(isDark),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: widget.onRowTap != null ? () => widget.onRowTap!(item) : null,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    if (firstCol != null)
+                      Expanded(child: firstCol.cellBuilder(item)),
+                    if (widget.trailingBuilder != null)
+                      widget.trailingBuilder!(item),
+                  ],
+                ),
+                if (otherCols.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Divider(height: 1, color: AdminTokens.divider(isDark)),
+                  const SizedBox(height: 8),
+                  for (final col in otherCols)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3.5),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              col.label,
+                              style: AdminTokens.label(isDark).copyWith(
+                                fontSize: 11,
+                                color: AdminTokens.textTertiary(isDark),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(child: col.cellBuilder(item)),
+                        ],
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );

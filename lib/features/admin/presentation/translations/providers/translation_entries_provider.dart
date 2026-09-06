@@ -47,6 +47,16 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
   final lessonsAsync = ref.watch(lessonNotifierProvider);
   lessonsAsync.whenData((lessons) {
     for (final l in lessons) {
+      final lCustomTranslations = <String, String>{};
+      if (l.data != null) {
+        for (final k in ['bn', 'hi', 'or', 'en']) {
+          final val = l.data!['meaning_$k'] as String?;
+          if (val != null && val.trim().isNotEmpty) {
+            lCustomTranslations[k] = val.trim();
+          }
+        }
+      }
+
       entries.add(
         TranslationEntry(
           id: l.id,
@@ -57,6 +67,8 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
               ? l.description!
               : l.titleLatin,
           category: l.categoryId,
+          customTranslations:
+              lCustomTranslations.isNotEmpty ? lCustomTranslations : null,
         ),
       );
       for (var i = 0; i < l.blocks.length; i++) {
@@ -65,16 +77,47 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
             (b.textLatin != null && b.textLatin!.isNotEmpty)) {
           final dataMeaning = b.data?['meaning'] as String?;
           final dataTrans = b.data?['translation'] as String?;
+          final meaningEn = (b.data?['meaning_en'] as String?) ??
+              dataMeaning ??
+              dataTrans ??
+              b.textLatin ??
+              '';
+
+          final customTranslations = <String, String>{};
+          if (b.data != null) {
+            for (final k in ['bn', 'hi', 'or', 'en']) {
+              final val = b.data!['meaning_$k'] as String?;
+              if (val != null && val.trim().isNotEmpty) {
+                customTranslations[k] = val.trim();
+              }
+            }
+          }
+
+          final customTransliterations = <String, String>{};
+          if (b.textBengali != null && b.textBengali!.trim().isNotEmpty) {
+            customTransliterations['bn'] = b.textBengali!.trim();
+          }
+          if (b.textHindi != null && b.textHindi!.trim().isNotEmpty) {
+            customTransliterations['hi'] = b.textHindi!.trim();
+          }
+          if (b.textOdia != null && b.textOdia!.trim().isNotEmpty) {
+            customTransliterations['or'] = b.textOdia!.trim();
+          }
+
           entries.add(
             TranslationEntry(
               id: '${l.id}_block_$i',
               kind: TranslationKind.lesson,
               textOlChiki: b.textOlChiki ?? '',
               textLatin: b.textLatin ?? '',
-              englishMeaning: dataMeaning ?? dataTrans ?? b.textLatin ?? '',
+              englishMeaning: meaningEn,
               pronunciation: b.data?['pronunciation'] as String?,
               category: l.titleLatin,
               audioUrl: b.audioUrl,
+              customTranslations:
+                  customTranslations.isNotEmpty ? customTranslations : null,
+              customTransliterations:
+                  customTransliterations.isNotEmpty ? customTransliterations : null,
             ),
           );
         }

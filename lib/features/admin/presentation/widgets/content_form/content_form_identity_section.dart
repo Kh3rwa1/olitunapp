@@ -184,33 +184,70 @@ class ContentFormIdentitySection extends StatelessWidget {
               ],
 
               if (_supportsPublished || _supportsPremium)
-                Row(
-                  children: [
-                    if (_supportsPublished)
-                      Expanded(
-                        child: SwitchListTile(
-                          title: const Text(
-                            'Published',
-                            style: TextStyle(fontSize: 13),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isNarrow = constraints.maxWidth < 460;
+                    if (isNarrow) {
+                      return Column(
+                        children: [
+                          if (_supportsPublished)
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'Published',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: isPublished,
+                              activeTrackColor: AppColors.primary,
+                              onChanged: onPublishedChanged,
+                            ),
+                          if (_supportsPremium)
+                            SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'Premium',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: isPremium,
+                              activeTrackColor: AppColors.accentGold,
+                              onChanged: onPremiumChanged,
+                            ),
+                        ],
+                      );
+                    }
+                    return Row(
+                      children: [
+                        if (_supportsPublished)
+                          Expanded(
+                            child: SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'Published',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: isPublished,
+                              activeTrackColor: AppColors.primary,
+                              onChanged: onPublishedChanged,
+                            ),
                           ),
-                          value: isPublished,
-                          activeTrackColor: AppColors.primary,
-                          onChanged: onPublishedChanged,
-                        ),
-                      ),
-                    if (_supportsPremium)
-                      Expanded(
-                        child: SwitchListTile(
-                          title: const Text(
-                            'Premium',
-                            style: TextStyle(fontSize: 13),
+                        if (_supportsPremium) ...[
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: SwitchListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: const Text(
+                                'Premium',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: isPremium,
+                              activeTrackColor: AppColors.accentGold,
+                              onChanged: onPremiumChanged,
+                            ),
                           ),
-                          value: isPremium,
-                          activeTrackColor: AppColors.accentGold,
-                          onChanged: onPremiumChanged,
-                        ),
-                      ),
-                  ],
+                        ],
+                      ],
+                    );
+                  },
                 ),
               const SizedBox(height: 12),
 

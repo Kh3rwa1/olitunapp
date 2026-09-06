@@ -9,6 +9,7 @@ import '../../../../../../shared/providers/providers.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 import '../../../widgets/multilingual_preview_box.dart';
+import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 part 'universal_block_sheet_sections.dart';
 
 /// One sheet to rule them all. Replaces AddBlockSheet + per-type EditBlockSheet
@@ -50,9 +51,17 @@ class UniversalBlockSheet extends ConsumerStatefulWidget {
 class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   final _olChikiCtrl = TextEditingController();
   final _latinCtrl = TextEditingController();
+  final _meaningEnCtrl = TextEditingController();
+  final _meaningBnCtrl = TextEditingController();
+  final _meaningHiCtrl = TextEditingController();
+  final _meaningOrCtrl = TextEditingController();
+  final _textBengaliCtrl = TextEditingController();
+  final _textHindiCtrl = TextEditingController();
+  final _textOdiaCtrl = TextEditingController();
   final _pronCtrl = TextEditingController();
   final _quizRefCtrl = TextEditingController();
 
+  String _translationLang = 'bn';
   String? _mediaUrl;
   String? _posterUrl;
   String? _audioUrl;
@@ -84,6 +93,19 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       _audioUrl = b.audioUrl;
       final data = b.data ?? const {};
       _pronCtrl.text = (data['pronunciation'] as String?) ?? '';
+
+      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(b.textLatin ?? '');
+      _meaningEnCtrl.text = (data['meaning_en'] as String?) ??
+          (data['meaning'] as String?) ??
+          parsed.meaningEnglish;
+      _meaningBnCtrl.text = (data['meaning_bn'] as String?) ?? '';
+      _meaningHiCtrl.text = (data['meaning_hi'] as String?) ?? '';
+      _meaningOrCtrl.text = (data['meaning_or'] as String?) ?? '';
+
+      _textBengaliCtrl.text = b.textBengali ?? (data['textBengali'] as String?) ?? '';
+      _textHindiCtrl.text = b.textHindi ?? (data['textHindi'] as String?) ?? '';
+      _textOdiaCtrl.text = b.textOdia ?? (data['textOdia'] as String?) ?? '';
+
       _quizRefCtrl.text =
           (data['quizId'] as String?) ?? (data['quizRefId'] as String?) ?? '';
       _posterUrl = data['posterUrl'] as String?;
@@ -110,6 +132,13 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   void dispose() {
     _olChikiCtrl.dispose();
     _latinCtrl.dispose();
+    _meaningEnCtrl.dispose();
+    _meaningBnCtrl.dispose();
+    _meaningHiCtrl.dispose();
+    _meaningOrCtrl.dispose();
+    _textBengaliCtrl.dispose();
+    _textHindiCtrl.dispose();
+    _textOdiaCtrl.dispose();
     _pronCtrl.dispose();
     _quizRefCtrl.dispose();
     super.dispose();
@@ -164,6 +193,22 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
         'posterUrl': _posterUrl,
       if (_pronCtrl.text.trim().isNotEmpty)
         'pronunciation': _pronCtrl.text.trim(),
+      if (_meaningEnCtrl.text.trim().isNotEmpty) ...{
+        'meaning': _meaningEnCtrl.text.trim(),
+        'meaning_en': _meaningEnCtrl.text.trim(),
+      },
+      if (_meaningBnCtrl.text.trim().isNotEmpty)
+        'meaning_bn': _meaningBnCtrl.text.trim(),
+      if (_meaningHiCtrl.text.trim().isNotEmpty)
+        'meaning_hi': _meaningHiCtrl.text.trim(),
+      if (_meaningOrCtrl.text.trim().isNotEmpty)
+        'meaning_or': _meaningOrCtrl.text.trim(),
+      if (_textBengaliCtrl.text.trim().isNotEmpty)
+        'textBengali': _textBengaliCtrl.text.trim(),
+      if (_textHindiCtrl.text.trim().isNotEmpty)
+        'textHindi': _textHindiCtrl.text.trim(),
+      if (_textOdiaCtrl.text.trim().isNotEmpty)
+        'textOdia': _textOdiaCtrl.text.trim(),
       if (_quizRefCtrl.text.trim().isNotEmpty)
         'quizId': _quizRefCtrl.text.trim(),
       if (_calloutVariant != null) 'calloutVariant': _calloutVariant,
@@ -192,6 +237,15 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
           ? null
           : _olChikiCtrl.text.trim(),
       textLatin: _latinCtrl.text.trim().isEmpty ? null : _latinCtrl.text.trim(),
+      textBengali: _textBengaliCtrl.text.trim().isEmpty
+          ? null
+          : _textBengaliCtrl.text.trim(),
+      textHindi: _textHindiCtrl.text.trim().isEmpty
+          ? null
+          : _textHindiCtrl.text.trim(),
+      textOdia: _textOdiaCtrl.text.trim().isEmpty
+          ? null
+          : _textOdiaCtrl.text.trim(),
       imageUrl: (type == 'image' || type == 'svg' || type == 'lottie')
           ? _mediaUrl
           : (type == 'video' ? _posterUrl : null),
@@ -237,32 +291,77 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                 controller: scroll,
                 padding: const EdgeInsets.all(20),
                 children: [
-                  // ── Headline ─────────────────────────────────────────────
+                  // ── Headline & Script ────────────────────────────────────
                   _SectionLabel(
-                    'Headline',
-                    subtitle: 'Both fields optional',
+                    'Headline & Script',
+                    subtitle: 'Ol Chiki target text and Romanized Santali',
                     isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
-                    label: 'Ol Chiki',
+                    label: 'Ol Chiki Script',
                     controller: _olChikiCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
-                    label: 'Latin / translation',
+                    label: 'Latin / Romanized Santali',
                     controller: _latinCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
+                  const SizedBox(height: 12),
+                  AdminTextField(
+                    label: 'English / Base Meaning',
+                    controller: _meaningEnCtrl,
+                    hint: 'e.g. What is this?',
+                    onChanged: (_) => setState(() {}),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Multilingual Translations ───────────────────────────
+                  _SectionLabel(
+                    'Language Translations & Pronunciations',
+                    subtitle:
+                        'Edit translated meaning and pronunciation guide per language',
+                    isDark: isDark,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildTranslationLangTabs(isDark),
+                  const SizedBox(height: 12),
+                  _buildActiveTranslationInputs(isDark),
+
                   if (_olChikiCtrl.text.isNotEmpty ||
-                      _latinCtrl.text.isNotEmpty) ...[
-                    const SizedBox(height: 16),
+                      _latinCtrl.text.isNotEmpty ||
+                      _meaningEnCtrl.text.isNotEmpty) ...[
+                    const SizedBox(height: 20),
                     MultilingualPreviewBox(
                       textOlChiki: _olChikiCtrl.text,
                       textLatin: _latinCtrl.text,
+                      meaningsByLang: {
+                        'bn': _meaningBnCtrl.text,
+                        'hi': _meaningHiCtrl.text,
+                        'or': _meaningOrCtrl.text,
+                        'en': _meaningEnCtrl.text,
+                      },
+                      transliterationsByLang: {
+                        'bn': _textBengaliCtrl.text,
+                        'hi': _textHindiCtrl.text,
+                        'or': _textOdiaCtrl.text,
+                        'en': _pronCtrl.text,
+                      },
+                      textBengali: _textBengaliCtrl.text,
+                      textHindi: _textHindiCtrl.text,
+                      textOdia: _textOdiaCtrl.text,
+                      explicitMeaning: _meaningEnCtrl.text,
                       explicitPronunciation: _pronCtrl.text,
                       isDark: isDark,
+                      initialLang: _translationLang,
+                      onLanguageChanged: (lang) {
+                        if (_translationLang != lang) {
+                          setState(() => _translationLang = lang);
+                        }
+                      },
                     ),
                   ],
 
@@ -517,4 +616,226 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       ),
     );
   }
-}
+
+  static const _transLangs = [
+    {'code': 'bn', 'label': 'বাংলা', 'flag': '🇧🇩', 'name': 'Bengali'},
+    {'code': 'hi', 'label': 'हिन्दी', 'flag': '🇮🇳', 'name': 'Hindi'},
+    {'code': 'or', 'label': 'ଓଡ଼ିଆ', 'flag': '🇮🇳', 'name': 'Odia'},
+    {'code': 'en', 'label': 'English', 'flag': '🇬🇧', 'name': 'English'},
+  ];
+
+  Widget _buildTranslationLangTabs(bool isDark) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _transLangs.map((lang) {
+          final isSelected = lang['code'] == _translationLang;
+          final hasCustom = switch (lang['code']) {
+            'bn' =>
+              _meaningBnCtrl.text.trim().isNotEmpty ||
+                  _textBengaliCtrl.text.trim().isNotEmpty,
+            'hi' =>
+              _meaningHiCtrl.text.trim().isNotEmpty ||
+                  _textHindiCtrl.text.trim().isNotEmpty,
+            'or' =>
+              _meaningOrCtrl.text.trim().isNotEmpty ||
+                  _textOdiaCtrl.text.trim().isNotEmpty,
+            'en' => _meaningEnCtrl.text.trim().isNotEmpty,
+            _ => false,
+          };
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => setState(() => _translationLang = lang['code']!),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AdminTokens.raised(isDark),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AdminTokens.border(isDark),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(lang['flag']!, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Text(
+                      lang['label']!,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : AdminTokens.textPrimary(isDark),
+                      ),
+                    ),
+                    if (hasCustom) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isSelected
+                              ? Colors.white
+                              : const Color(0xFF10B981),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildActiveTranslationInputs(bool isDark) {
+    final baseEnglish = _meaningEnCtrl.text.trim().isNotEmpty
+        ? _meaningEnCtrl.text.trim()
+        : _latinCtrl.text.trim();
+
+    final (
+      TextEditingController meaningCtrl,
+      TextEditingController pronCtrl,
+      String meaningLabel,
+      String pronLabel,
+      String suggestedMeaning,
+      String suggestedPron,
+    ) = switch (_translationLang) {
+      'bn' => (
+        _meaningBnCtrl,
+        _textBengaliCtrl,
+        'Translated Meaning (বাংলা অর্থ)',
+        'Pronunciation Guide / Transliteration (বাংলা উচ্চারণ)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'bn'),
+        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'bn'),
+      ),
+      'hi' => (
+        _meaningHiCtrl,
+        _textHindiCtrl,
+        'Translated Meaning (हिन्दी अर्थ)',
+        'Pronunciation Guide / Transliteration (हिन्दी उच्चारण)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'hi'),
+        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'hi'),
+      ),
+      'or' => (
+        _meaningOrCtrl,
+        _textOdiaCtrl,
+        'Translated Meaning (ଓଡ଼ିଆ ଅର୍ଥ)',
+        'Pronunciation Guide / Transliteration (ଓଡ଼ିଆ ଉଚ୍ଚାରଣ)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'or'),
+        OlChikiMultilingualHelper.transliterateOlChiki(_olChikiCtrl.text, 'or'),
+      ),
+      _ => (
+        _meaningEnCtrl,
+        _pronCtrl,
+        'Translated Meaning (English Meaning)',
+        'Pronunciation Guide (Romanized Santali)',
+        baseEnglish,
+        _latinCtrl.text,
+      ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AdminTokens.sunken(isDark),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AdminTokens.border(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AdminTextField(
+                  label: meaningLabel,
+                  controller: meaningCtrl,
+                  hint: suggestedMeaning.isNotEmpty
+                      ? 'e.g. $suggestedMeaning'
+                      : 'Enter translation',
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              if (suggestedMeaning.isNotEmpty &&
+                  meaningCtrl.text.trim() != suggestedMeaning) ...[
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 22),
+                  child: IconButton(
+                    tooltip: 'Fill suggested: $suggestedMeaning',
+                    icon: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        meaningCtrl.text = suggestedMeaning;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AdminTextField(
+                  label: pronLabel,
+                  controller: pronCtrl,
+                  hint: suggestedPron.isNotEmpty
+                      ? 'e.g. $suggestedPron'
+                      : 'Enter pronunciation guide',
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              if (suggestedPron.isNotEmpty &&
+                  pronCtrl.text.trim() != suggestedPron) ...[
+                  const SizedBox(width: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 22),
+                    child: IconButton(
+                      tooltip: 'Fill auto-transliteration: $suggestedPron',
+                      icon: const Icon(
+                        Icons.spellcheck_rounded,
+                        size: 20,
+                        color: AppColors.primary,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          pronCtrl.text = suggestedPron;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+  }

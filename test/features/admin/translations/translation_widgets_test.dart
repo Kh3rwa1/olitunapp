@@ -112,7 +112,7 @@ void main() {
       expect(find.text('Word · greetings'), findsOneWidget);
       expect(find.text('Ol Chiki Script'), findsOneWidget);
       expect(find.text('Romanized Santali'), findsOneWidget);
-      expect(find.text('English Base Meaning'), findsOneWidget);
+      expect(find.text('English Meaning'), findsOneWidget);
     });
 
     testWidgets('prefills the meaning field from custom translations', (
@@ -125,7 +125,7 @@ void main() {
       );
 
       expect(find.text('নমস্কার'), findsWidgets);
-      expect(find.text('Translated Meaning (BN)*'), findsOneWidget);
+      expect(find.text('Meaning (Bengali (বাংলা))*'), findsOneWidget);
     });
 
     testWidgets('close button dismisses the dialog', (tester) async {

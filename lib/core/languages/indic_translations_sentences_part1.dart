@@ -3,6 +3,42 @@ class IndicTranslationsSentencesPart1 {
   const IndicTranslationsSentencesPart1._();
 
   static const Map<String, Map<String, String>> translations = {
+    'nowa do ced kana?': {
+      'bn': 'এটা কি?',
+      'hi': 'यह क्या है?',
+      'or': 'ଏହା କ’ଣ?',
+      'en': 'What is this?',
+    },
+    'nowa do ced kana': {
+      'bn': 'এটা কি',
+      'hi': 'यह क्या है',
+      'or': 'ଏହା କ’ଣ',
+      'en': 'What is this',
+    },
+    'what is this?': {
+      'bn': 'এটা কি?',
+      'hi': 'यह क्या है?',
+      'or': 'ଏହା କ’ଣ?',
+      'en': 'What is this?',
+    },
+    'what is this': {
+      'bn': 'এটা কি',
+      'hi': 'यह क्या है',
+      'or': 'ଏହା କ’ଣ',
+      'en': 'What is this',
+    },
+    'nowa': {
+      'bn': 'এটা / এই',
+      'hi': 'यह',
+      'or': 'ଏହା',
+      'en': 'This',
+    },
+    'ced': {
+      'bn': 'কি',
+      'hi': 'क्या',
+      'or': 'କଣ',
+      'en': 'What',
+    },
     'what is your name?': {
       'bn': 'তোমার নাম কি?',
       'hi': 'आपका क्या नाम है?',
@@ -98,18 +134,6 @@ class IndicTranslationsSentencesPart1 {
       'hi': 'मैं गांव से आया हूं',
       'or': 'ମୁଁ ଗାଁରୁ ଆସିଥିଲି',
       'en': 'I came from the village',
-    },
-    'what is this?': {
-      'bn': 'এটা কি?',
-      'hi': 'यह क्या है?',
-      'or': 'ଏହା କ’ଣ?',
-      'en': 'What is this?',
-    },
-    'what is this': {
-      'bn': 'এটা কি',
-      'hi': 'यह क्या है',
-      'or': 'ଏହା କ’ଣ',
-      'en': 'What is this',
     },
     'this is a tree': {
       'bn': 'এটি একটি গাছ',

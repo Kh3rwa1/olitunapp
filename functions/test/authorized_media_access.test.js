@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGetAuthorizedLessonHandler } from '../getAuthorizedLesson/src/main.js';
+import { createGetAuthorizedLessonHandler, createSlidingWindowRateLimiter } from '../getAuthorizedLesson/src/main.js';
 import { MEDIA_TTL_MS, createMediaAccess } from '../getAuthorizedLesson/src/media-access.js';
 
 process.env.MEDIA_PUBLIC_ENDPOINT = 'https://media.example.test/v1';
@@ -34,7 +34,8 @@ function harness({ lesson = {}, category = {}, purchases = [buyer], ledgerError 
     if (tokenError) throw tokenError;
     return { secret: 'test-only-token', expire: args.expire };
   } };
-  const handler = createGetAuthorizedLessonHandler({ databases, storage, tokens, clock: () => NOW });
+  const rateLimiter = createSlidingWindowRateLimiter({ windowMs: 60000, maxPerWindow: 60, clock: () => NOW });
+  const handler = createGetAuthorizedLessonHandler({ databases, storage, tokens, rateLimiter, clock: () => NOW });
   async function request({ user = 'buyer', action = 'get_media', ...body } = {}) {
     const res = { status: 0, body: null, headers: {}, json(data, status = 200, headers = {}) { Object.assign(this, { body: data, status, headers }); return this; } };
     await handler({ req: { method: 'POST', headers: user ? { 'x-appwrite-user-id': user } : {}, body: { lessonId: 'lesson', action, fileId: 'file', protocolVersion: 2, ...body } }, res, error() {}, log() {} });
@@ -155,3 +156,19 @@ test('invalid/unbounded token or insecure public endpoint fails closed', async (
   }
   await assert.rejects(createMediaAccess({ publicEndpoint: 'http://internal/v1', projectId: 'test_project', now: NOW }));
 });
+
+test('rate limiting returns 429 when max requests per window is reached', async () => {
+  const h = harness();
+  let lastRes;
+  // Send 60 requests (default window max)
+  for (let i = 0; i < 60; i++) {
+    lastRes = await h.request();
+    assert.equal(lastRes.status, 200);
+  }
+  // 61st request should be throttled with HTTP 429
+  const throttled = await h.request();
+  assert.equal(throttled.status, 429);
+  assert.equal(throttled.body.error, 'rate_limit_exceeded');
+  assert.ok(throttled.headers['retry-after']);
+});
+

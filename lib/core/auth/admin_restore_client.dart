@@ -62,6 +62,7 @@ class AdminRestoreClient {
     void Function(Map<String, dynamic>)? onProgress,
     bool Function()? shouldContinue,
     int maxChunks = 80,
+    bool dryRun = false,
   }) {
     final key = pendingKey(fileId);
     final active = _inFlight[key];
@@ -73,11 +74,40 @@ class AdminRestoreClient {
           onProgress: onProgress,
           shouldContinue: shouldContinue,
           maxChunks: maxChunks,
+          dryRun: dryRun,
         ).whenComplete(() {
           _inFlight.remove(key);
         });
     _inFlight[key] = work;
     return work;
+  }
+
+  Future<Map<String, dynamic>> rollback({
+    required String restoreId,
+    void Function(Map<String, dynamic>)? onProgress,
+    int maxChunks = 80,
+  }) async {
+    final validId = RegExp(r'^[a-zA-Z0-9][a-zA-Z0-9._-]{0,35}$');
+    if (!validId.hasMatch(restoreId)) {
+      throw AppwriteException('Enter a valid restore operation ID.', 400);
+    }
+    for (var step = 0; step < maxChunks; step++) {
+      final response = await execute({
+        'action': 'rollback_restore',
+        'restoreId': restoreId,
+      });
+      if (response['complete'] is! bool || response['success'] != true) {
+        throw AppwriteException(
+          'Rollback response does not match this operation.',
+          502,
+        );
+      }
+      onProgress?.call(response);
+      if (response['complete'] == true) {
+        return response;
+      }
+    }
+    throw AppwriteException('Rollback paused; retry to resume.', 202);
   }
 
   Future<Map<String, dynamic>> _run({
@@ -86,6 +116,7 @@ class AdminRestoreClient {
     required void Function(Map<String, dynamic>)? onProgress,
     required bool Function()? shouldContinue,
     required int maxChunks,
+    required bool dryRun,
   }) async {
     final validId = RegExp(r'^[a-zA-Z0-9][a-zA-Z0-9._-]{0,35}$');
     if (!validId.hasMatch(fileId)) {
@@ -99,7 +130,7 @@ class AdminRestoreClient {
     if (!validId.hasMatch(restoreId)) {
       throw AppwriteException('Enter a valid restore operation ID.', 400);
     }
-    if (!await prefs.setString(key, restoreId)) {
+    if (!dryRun && !await prefs.setString(key, restoreId)) {
       throw AppwriteException('Could not save the restore recovery ID.', 503);
     }
     for (var step = 0; step < maxChunks; step++) {
@@ -109,6 +140,7 @@ class AdminRestoreClient {
         'fileId': fileId,
         'restoreId': restoreId,
         'confirmation': 'RESTORE CONTENT',
+        if (dryRun) 'dryRun': true,
       });
       if (response['jobId'] != restoreId ||
           response['fileId'] != fileId ||
@@ -121,7 +153,7 @@ class AdminRestoreClient {
       }
       onProgress?.call(response);
       if (response['complete'] == true) {
-        if (!await prefs.remove(key)) {
+        if (!dryRun && !await prefs.remove(key)) {
           throw AppwriteException(
             'Restore completed, but its local recovery ID could not be cleared. Retry safely.',
             503,

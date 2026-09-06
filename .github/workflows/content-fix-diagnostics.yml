@@ -1,15 +1,17 @@
 name: Temporary content fix diagnostics
-
 on:
   pull_request:
     branches: [main]
     paths:
       - '.github/workflows/content-fix-diagnostics.yml'
-
+      - 'tool/migrate_content_errors.py'
+      - 'test/shared/providers/content_error_consumers_test.dart'
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
-
+concurrency:
+  group: content-fix-diagnostics-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   diagnose:
     if: github.repository == 'Kh3rwa1/olitunapp' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'fix/content-list-errors-20260906'
@@ -18,24 +20,47 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
         with:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Capture focused diagnostics
-        shell: bash
+      - name: Apply checked migration and format review files
         run: |
           mkdir -p /tmp/content-fix
-          dart format lib/shared/providers/content_providers.dart test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart > /tmp/content-fix/format.txt 2>&1
-          git diff -- lib/shared/providers/content_providers.dart test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart > /tmp/content-fix/format.patch
+          if [ ! -f lib/shared/widgets/content_load_guard.dart ]; then
+            python3 tool/migrate_content_errors.py
+          fi
+          git diff --name-only -- '*.dart' > /tmp/content-fix/files.txt
+          printf '%s\n' lib/shared/widgets/content_load_guard.dart lib/shared/providers/content_providers.dart test/shared/providers/content_list_provider_test.dart test/shared/providers/content_error_consumers_test.dart test/features/admin/content/admin_content_list_error_test.dart >> /tmp/content-fix/files.txt
+          sort -u /tmp/content-fix/files.txt -o /tmp/content-fix/files.txt
+          xargs dart format < /tmp/content-fix/files.txt > /tmp/content-fix/format.txt
+          touch /tmp/content-fix/migration-ok
+      - name: Test migrated consumers
+        run: |
           set +e
           flutter analyze --fatal-infos > /tmp/content-fix/analyze.txt 2>&1
           echo "Analyze exit: $?" > /tmp/content-fix/status.txt
-          flutter test test/shared/providers/content_list_provider_test.dart test/features/admin/content/admin_content_list_error_test.dart --reporter expanded > /tmp/content-fix/test.txt 2>&1
+          flutter test test/shared/providers/content_list_provider_test.dart test/shared/providers/content_error_consumers_test.dart test/features/admin/content/admin_content_list_error_test.dart --reporter expanded > /tmp/content-fix/test.txt 2>&1
           echo "Focused test exit: $?" >> /tmp/content-fix/status.txt
-      - name: Report diagnostic results on this PR
+      - name: Save generated code only to this review branch
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f /tmp/content-fix/migration-ok
+          xargs git add -- < /tmp/content-fix/files.txt
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'fix(content): migrate error consumers and format regressions'
+            gh auth setup-git
+            git push https://github.com/Kh3rwa1/olitunapp.git HEAD:refs/heads/fix/content-list-errors-20260906
+          fi
+          git rev-parse HEAD > /tmp/content-fix/head.txt
+      - name: Report results on this PR
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,16 +70,8 @@ jobs:
           node --input-type=module - <<'JS'
           import fs from 'node:fs';
           const read = (name, limit) => fs.existsSync(`/tmp/content-fix/${name}`) ? fs.readFileSync(`/tmp/content-fix/${name}`, 'utf8').slice(-limit) : 'Not available';
-          const body = '## Temporary content-fix diagnostics\n\n' +
-            '```text\n' + read('status.txt', 1000) + '\n```\n' +
-            '### Formatter patch\n```diff\n' + read('format.patch', 18000) + '\n```\n' +
-            '### Static analysis\n```text\n' + read('analyze.txt', 10000) + '\n```\n' +
-            '### Focused tests\n```text\n' + read('test.txt', 18000) + '\n```';
+          const body = '## Content consumer validation\n\nHead: ' + read('head.txt', 100) + '\n```text\n' + read('status.txt', 1000) + '\n```\n### Analysis\n```text\n' + read('analyze.txt', 14000) + '\n```\n### Focused tests\n```text\n' + read('test.txt', 24000) + '\n```';
           const url = new URL(`/repos/${process.env.REPOSITORY}/issues/${process.env.PR_NUMBER}/comments`, 'https://api.github.com');
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' },
-            body: JSON.stringify({ body }),
-          });
+          const response = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${process.env.GH_TOKEN}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify({ body }) });
           if (!response.ok) throw new Error(`Diagnostic comment failed: ${response.status}`);
           JS

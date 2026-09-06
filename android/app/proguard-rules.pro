@@ -29,6 +29,11 @@
 -dontwarn com.google.android.play.core.**
 -dontwarn com.google.android.gms.**
 
+# Flutter Local Notifications & GSON
+-keep class com.dexterous.flutterlocalnotifications.** { *; }
+-keep class com.google.gson.** { *; }
+-dontwarn com.google.gson.**
+
 # Allow obfuscation of most things, but keep some essentials
 -keepattributes Signature
 -keepattributes *Annotation*

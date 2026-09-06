@@ -237,6 +237,44 @@ class NotificationsSettingsCard extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () async {
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final success = await NotificationService.instance
+                    .showInstantTestNotification();
+                scaffoldMessenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      success
+                          ? 'Test notification sent! Check your notification bar.'
+                          : 'Could not show notification. Please verify notification permissions in device settings.',
+                    ),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.send_rounded, size: 16),
+              label: const Text('Send Test Notification'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor:
+                    isDark ? AppColors.primaryLight : AppColors.primaryDark,
+                side: BorderSide(
+                  color: (isDark ? AppColors.primaryLight : AppColors.primaryDark)
+                      .withValues(alpha: 0.4),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ),
         ],
       ],
     );

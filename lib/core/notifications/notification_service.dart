@@ -115,13 +115,16 @@ class NotificationService {
     }
 
     try {
-      // 1. Initialize timezone database
+      // 1. Initialize timezone database and guarantee UTC baseline
       tz.initializeTimeZones();
+      try {
+        tz.setLocalLocation(tz.UTC);
+      } catch (_) {}
       try {
         final timezoneInfo = await FlutterTimezone.getLocalTimezone();
         tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));
       } catch (e) {
-        AppLogger.debug('NotificationService: timezone lookup fallback: $e');
+        AppLogger.debug('NotificationService: timezone lookup fallback to UTC: $e');
       }
 
       // 2. Setup platform initialization settings
@@ -179,11 +182,14 @@ class NotificationService {
   }
 
   /// Explicitly requests notification permissions from the user.
-  /// Recommended to call when the user enables reminders in Settings or finishes their first lesson.
+  /// Recommended to call on startup or when the user enables reminders in Settings.
   Future<bool> requestPermission() async {
     if (kIsWeb) return false;
 
     try {
+      if (!_isInitialized) {
+        await initialize();
+      }
       if (Platform.isAndroid) {
         final androidPlugin = _plugin
             .resolvePlatformSpecificImplementation<
@@ -192,13 +198,26 @@ class NotificationService {
         final granted =
             await androidPlugin?.requestNotificationsPermission() ?? false;
         return granted;
-      } else if (Platform.isIOS || Platform.isMacOS) {
-        final darwinPlugin = _plugin
+      } else if (Platform.isIOS) {
+        final iosPlugin = _plugin
             .resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin
             >();
         final granted =
-            await darwinPlugin?.requestPermissions(
+            await iosPlugin?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+        return granted;
+      } else if (Platform.isMacOS) {
+        final macosPlugin = _plugin
+            .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin
+            >();
+        final granted =
+            await macosPlugin?.requestPermissions(
               alert: true,
               badge: true,
               sound: true,
@@ -210,6 +229,76 @@ class NotificationService {
       AppLogger.debug('NotificationService: requestPermission error: $e');
     }
     return false;
+  }
+
+  /// Checks whether notifications are currently allowed on the device.
+  Future<bool> areNotificationsEnabled() async {
+    if (kIsWeb) return false;
+
+    try {
+      if (!_isInitialized) {
+        await initialize();
+      }
+      if (Platform.isAndroid) {
+        final androidPlugin = _plugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
+        return await androidPlugin?.areNotificationsEnabled() ?? false;
+      } else if (Platform.isIOS) {
+        final iosPlugin = _plugin
+            .resolvePlatformSpecificImplementation<
+              IOSFlutterLocalNotificationsPlugin
+            >();
+        final permissions = await iosPlugin?.checkPermissions();
+        return permissions?.isEnabled ?? false;
+      } else if (Platform.isMacOS) {
+        final macosPlugin = _plugin
+            .resolvePlatformSpecificImplementation<
+              MacOSFlutterLocalNotificationsPlugin
+            >();
+        final permissions = await macosPlugin?.checkPermissions();
+        return permissions?.isEnabled ?? false;
+      }
+    } catch (e) {
+      AppLogger.debug('NotificationService: areNotificationsEnabled error: $e');
+    }
+    return false;
+  }
+
+  /// Displays an immediate test notification to verify that notification channels
+  /// and permissions are fully operational on this device.
+  Future<bool> showInstantTestNotification({
+    String title = 'Olitun Reminder Test 🔥',
+    String body =
+        'Notifications are working perfectly! Keep up your Ol Chiki practice.',
+  }) async {
+    if (kIsWeb) return false;
+
+    try {
+      if (!_isInitialized) {
+        await initialize();
+      }
+      final granted = await requestPermission();
+      if (!granted) {
+        final isEnabled = await areNotificationsEnabled();
+        if (!isEnabled) return false;
+      }
+
+      await _plugin.show(
+        id: 999,
+        title: title,
+        body: body,
+        notificationDetails: _notificationDetails,
+      );
+      AppLogger.debug('NotificationService: instant test notification shown.');
+      return true;
+    } catch (e) {
+      AppLogger.debug(
+        'NotificationService: showInstantTestNotification error: $e',
+      );
+      return false;
+    }
   }
 
   /// Calculates the next scheduled instance for [hour]:[minute].
@@ -285,7 +374,10 @@ class NotificationService {
     int hour = 20,
     int minute = 0,
   }) async {
-    if (kIsWeb || !_isInitialized) return;
+    if (kIsWeb) return;
+    if (!_isInitialized) {
+      await initialize();
+    }
 
     try {
       await cancelAllReminders();
@@ -368,7 +460,10 @@ class NotificationService {
     int minute = 0,
     NotificationFrequency frequency = NotificationFrequency.high,
   }) async {
-    if (kIsWeb || !_isInitialized) return;
+    if (kIsWeb) return;
+    if (!_isInitialized) {
+      await initialize();
+    }
 
     try {
       final now = tz.TZDateTime.now(tz.local);
@@ -443,7 +538,10 @@ class NotificationService {
 
   /// Cancels all scheduled habit, streak, and inactivity reminders.
   Future<void> cancelAllReminders() async {
-    if (kIsWeb || !_isInitialized) return;
+    if (kIsWeb) return;
+    if (!_isInitialized) {
+      await initialize();
+    }
 
     try {
       for (final id in allReminderNotificationIds) {

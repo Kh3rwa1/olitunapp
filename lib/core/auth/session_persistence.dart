@@ -71,6 +71,7 @@ class SessionPersistence {
       // Expired credentials are not an explicit logout. Offline progress still
       // belongs to its original account, and a valid cookie may be identified
       // online. Never turn expiry into guest ownership or a logout tombstone.
+      await AccountScope.preserveLegacyOwner(prefs);
       await clearLocalSessionState(
         client: client,
         prefs: prefs,

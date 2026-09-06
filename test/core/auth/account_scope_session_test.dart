@@ -145,7 +145,8 @@ void main() {
         () => account.getSession(sessionId: 'current'),
       ).thenThrow(AppwriteException('expired', 401));
       expect(await service.isLoggedIn(), isFalse);
-      expect(AccountScope.capture(prefs).isGuest, isTrue);
+      expect(AccountScope.capture(prefs).userId, 'a');
+      expect(prefs.getBool(SessionPersistence.hasLocalSessionKey), isFalse);
     },
   );
 

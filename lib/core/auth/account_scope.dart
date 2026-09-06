@@ -46,6 +46,7 @@ class AccountScope {
         id == null || id.isEmpty ? null : id,
         guest,
         guest,
+        data['state'] == 'unresolved',
       );
     } catch (_) {
       // Corrupt identity metadata is unknown, never guest.
@@ -126,6 +127,15 @@ class AccountScope {
     });
     _sdkQueue = pending.then((_) {}, onError: (Object _) {});
     return pending;
+  }
+
+  // Keep legacy ownership unknown even after its credential flag is cleared.
+  // Unlike an active sign-in, this state may be identified by server validation.
+  static Future<void> preserveLegacyOwner(SharedPreferences prefs) async {
+    if (prefs.getString(storageKey) == null &&
+        prefs.getBool('olitun_has_local_session') == true) {
+      await _write(prefs, 'unresolved', null);
+    }
   }
 
   static Future<AccountScope> beginSignIn(SharedPreferences prefs) =>

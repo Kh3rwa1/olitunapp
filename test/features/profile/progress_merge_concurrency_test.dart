@@ -82,7 +82,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -139,7 +139,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -196,7 +196,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -265,7 +265,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(statsA).toJson(),
@@ -360,7 +360,7 @@ void main() {
         expect(deviceB.totalStars, 255);
 
         // Mock cloud returning Device A's compacted stats to Device B
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -446,7 +446,7 @@ void main() {
         }
 
         // Mock cloud returning Device A's compacted stats
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -462,7 +462,7 @@ void main() {
         expect(replayed1.totalStars, 601);
 
         // Repeated stale replay: must still remain 601 (NOT 603)
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(replayed1).toJson(),
@@ -544,7 +544,7 @@ void main() {
         expect(compactedB.foldedStarEvents, equals({'devB_0': 1}));
 
         // Now merge compacted Device A and compacted Device B through cloud sync
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -619,7 +619,7 @@ void main() {
         ).thenAnswer((_) async => const Right(null));
 
         // Device A uploads its 101 star_<timestamp> events to cloud
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -692,7 +692,7 @@ void main() {
           totalStars: 0,
         ).recordStarReward(1, eventId: 'unseen_external_event_1');
 
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -788,7 +788,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(statsA).toJson(),
@@ -919,7 +919,7 @@ void main() {
           () => auth.updateUserPrefs(any()),
         ).thenAnswer((_) async => const Right(null));
 
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(stateX).toJson(),
@@ -931,7 +931,7 @@ void main() {
         )).getOrElse((_) => fail('XY failed'));
 
         // Merge Y then X
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(stateY).toJson(),
@@ -1007,7 +1007,7 @@ void main() {
       }
       deviceB = deviceB.recordLearningMinutes(2, eventId: 'min_b_new');
 
-      when(() => auth.getUserPrefs()).thenAnswer(
+      when(auth.getUserPrefs).thenAnswer(
         (_) async => Right(<String, dynamic>{
           'user_progress_data': jsonEncode(
             UserStatsModel.fromEntity(compactedA).toJson(),
@@ -1100,7 +1100,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),

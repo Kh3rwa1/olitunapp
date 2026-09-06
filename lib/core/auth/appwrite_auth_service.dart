@@ -111,10 +111,6 @@ class AppwriteAuthService {
 
   bool get _isWeb => _isWebOverride ?? kIsWeb;
 
-  bool _isWebSessionValid(int? ts) =>
-      // ignore: invalid_use_of_visible_for_testing_member
-      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
-
   void _requireCurrent(AccountScope scope) {
     if (!scope.isCurrent) throw AppwriteException('Account changed', 409);
   }
@@ -292,31 +288,34 @@ class AppwriteAuthService {
     );
   }
 
-  Future<void> _restoreWebSession() async {
-    final prefs = await _getPrefs();
-    await SessionPersistence.restoreWebSession(
-      client: _client,
-      prefs: prefs,
-      isWeb: _isWeb,
-      nowProvider: _nowProvider,
-    );
+  Future<void> _restoreWebSession() async =>
+      _restoreWebSessionFor(await _getPrefs());
+
+  Future<void> _restoreWebSessionFor(SharedPreferences prefs) {
+    final scope = AccountScope.capture(prefs);
+    if (!scope.isCurrent) return Future<void>.value();
+    return AccountScope.dispatch(() async {
+      if (!scope.isCurrent) return;
+      await SessionPersistence.restoreWebSession(
+        client: _client,
+        prefs: prefs,
+        isWeb: _isWeb,
+        nowProvider: _nowProvider,
+      );
+    });
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!_isWeb) return;
-    _client.setSession('');
-    final ts = prefs.getInt(SessionPersistence.webSessionTimestampKey);
-    final hasSession =
-        prefs.getBool(SessionPersistence.hasLocalSessionKey) ?? false;
-
-    if (!hasSession || ts == null || !_isWebSessionValid(ts)) {
-      AppLogger.debug(
-        'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
-      );
-      unawaited(_clearLocalSessionState(preserveAccount: true));
-      return;
-    }
-    AppLogger.debug('Appwrite: Web session validated synchronously ✅');
+    // Startup remains non-blocking, but credential mutation shares the same
+    // queue as logins and progress requests instead of clearing a newer login.
+    unawaited(
+      _restoreWebSessionFor(prefs).catchError((Object error) {
+        AppLogger.debug(
+          'Appwrite: Session restoration failed: ${RedactionHelper.sanitize(error.toString())}',
+        );
+      }),
+    );
   }
 
   Future<void> _clearLocalSessionState({bool preserveAccount = false}) async {
@@ -402,8 +401,9 @@ class AppwriteAuthService {
       await scope.identify(user.$id);
       return user;
     } on AppwriteException catch (e) {
-      if (e.code == 401 && scope.isCurrent)
+      if (e.code == 401 && scope.isCurrent) {
         await _clearLocalSessionState(preserveAccount: true);
+      }
       rethrow;
     }
   }
@@ -469,8 +469,9 @@ class AppwriteAuthService {
           'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
         );
       } finally {
-        if (scope.isCurrent)
+        if (scope.isCurrent) {
           await _clearLocalSessionState(preserveAccount: true);
+        }
       }
     });
   }

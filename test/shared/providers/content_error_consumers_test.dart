@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/error/failures.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/home/presentation/providers/home_prefetch_provider.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -95,7 +96,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [reduceVisualEffectsProvider.overrideWithValue(true)],
-        child: MaterialApp(home: Scaffold(body: guard)),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: guard),
+        ),
       ),
     );
     expect(find.byType(AppErrorState), findsOneWidget);

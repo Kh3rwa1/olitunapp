@@ -92,7 +92,9 @@ void main() {
       AsyncValue<Object?>.error(const NetworkFailure(), StackTrace.current),
     ], onRetry: () => retried = true);
     await tester.pumpWidget(
-      ProviderScope(child: MaterialApp(home: Scaffold(body: guard))),
+      ProviderScope(
+        child: MaterialApp(home: Scaffold(body: guard)),
+      ),
     );
     expect(find.byType(AppErrorState), findsOneWidget);
     final state = tester.widget<AppErrorState>(find.byType(AppErrorState));

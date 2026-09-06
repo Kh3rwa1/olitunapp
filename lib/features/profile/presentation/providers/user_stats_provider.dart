@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
@@ -26,9 +27,10 @@ enum SyncStatus { idle, syncing, success, error }
 final syncStatusProvider = StateProvider<SyncStatus>((ref) => SyncStatus.idle);
 
 final isStatsSyncedProvider = StateProvider<bool>((ref) {
-  final val =
-      ref.watch(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
-  return val;
+  final prefs = ref.watch(sharedPreferencesProvider);
+  final scope = AccountScope.capture(prefs);
+  return prefs.getBool(scope.syncKey) ??
+      (scope.isGuest ? prefs.getBool('is_stats_synced') ?? true : false);
 });
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -64,6 +66,7 @@ final quizzesCompletedProvider = Provider<int>((ref) {
 
 class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   bool _disposed = false;
+  AccountScope? _stateScope;
 
   /// Serializes read-modify-write mutations. Overlapping calls (e.g. two
   /// rapid `addStars`) must not snapshot the same stale state and drop one
@@ -72,7 +75,14 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   Future<void> _mutationChain = Future<void>.value();
 
   Future<void> _runSerialized(Future<void> Function() action) {
-    final pending = _mutationChain.then((_) => action());
+    if (_disposed) return Future<void>.value();
+    final scope = AccountScope.capture(ref.read(sharedPreferencesProvider));
+    final pending = _mutationChain.then((_) async {
+      if (_disposed || !scope.isCurrent || _stateScope?.isCurrent != true) {
+        return;
+      }
+      await action();
+    });
     _mutationChain = pending.then((_) {}, onError: (_) {});
     return pending;
   }
@@ -84,7 +94,20 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   @override
   AsyncValue<UserStatsEntity> build() {
     _disposed = false;
-    ref.onDispose(() => _disposed = true);
+    final prefs = ref.read(sharedPreferencesProvider);
+    _stateScope = AccountScope.capture(prefs);
+    final subscription = AccountScope.changes.listen((changedPrefs) {
+      if (_disposed || !identical(prefs, changedPrefs)) return;
+      _stateScope = AccountScope.capture(prefs);
+      // Clear the previous account immediately; pending mutations retain their
+      // entry scope and cannot apply A's state or rewards to B.
+      state = const AsyncValue.loading();
+      unawaited(loadStats());
+    });
+    ref.onDispose(() {
+      _disposed = true;
+      unawaited(subscription.cancel());
+    });
     // Deferred: `state` may not be read or written inside build().
     Future.microtask(loadStats);
     Future.microtask(_syncProfileFromCloud);
@@ -119,12 +142,11 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> syncPendingStats() async {
     if (_disposed) return;
+    final scope = AccountScope.capture(ref.read(sharedPreferencesProvider));
     ref.read(syncStatusProvider.notifier).state = SyncStatus.syncing;
     final repository = _repository;
     final result = await repository.syncPendingStats();
-    // Connectivity-triggered sync may outlive its ProviderScope. Keep the
-    // repository operation, but never publish results into a disposed scope.
-    if (_disposed) return;
+    if (_disposed || !scope.isCurrent) return;
     await result.fold(
       (failure) async {
         ref.read(syncStatusProvider.notifier).state = SyncStatus.error;
@@ -135,13 +157,14 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
         ref.read(isStatsSyncedProvider.notifier).state = true;
         // Silent reload of stats to get the merged cloud progress without flashing loading state
         final statsResult = await repository.getUserStats();
-        if (_disposed) return;
+        if (_disposed || !scope.isCurrent) return;
         statsResult.fold((failure) => null, (mergedStats) {
+          _stateScope = scope;
           state = AsyncValue.data(mergedStats);
           _updateSyncStateFromPrefs();
         });
         Future.delayed(const Duration(seconds: 3), () {
-          if (_disposed) return;
+          if (_disposed || !scope.isCurrent) return;
           try {
             if (ref.read(syncStatusProvider) == SyncStatus.success) {
               ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
@@ -156,12 +179,14 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> loadStats() async {
     if (_disposed) return;
+    final scope = AccountScope.capture(ref.read(sharedPreferencesProvider));
     state = const AsyncValue.loading();
     final result = await _repository.getUserStats();
-    if (_disposed) return;
+    if (_disposed || !scope.isCurrent) return;
     result.fold(
       (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (stats) {
+        _stateScope = scope;
         state = AsyncValue.data(stats);
         _updateSyncStateFromPrefs();
       },
@@ -172,7 +197,9 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   Future<void> _syncProfileFromCloud() async {
     try {
       final authRepo = ref.read(authRepositoryProvider);
+      final scope = AccountScope.capture(ref.read(sharedPreferencesProvider));
       final userResult = await authRepo.getCurrentUser();
+      if (_disposed || !scope.isCurrent) return;
 
       userResult.fold(
         (failure) =>
@@ -198,8 +225,11 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateStats(UserStatsEntity stats) async {
+    final scope = _stateScope;
+    if (_disposed || scope == null || !scope.isCurrent) return;
     final previous = state.valueOrNull;
     final result = await _repository.updateUserStats(stats);
+    if (_disposed || !scope.isCurrent) return;
     result.fold((failure) => null, (mergedStats) {
       state = AsyncValue.data(mergedStats);
       _updateSyncStateFromPrefs();
@@ -522,8 +552,9 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> resetProgress() {
     return _runSerialized(() async {
+      final scope = _stateScope!;
       final result = await _repository.resetUserStats();
-      if (_disposed) return;
+      if (_disposed || !scope.isCurrent) return;
       result.fold(
         (failure) => state = AsyncValue.error(failure, StackTrace.current),
         (stats) {

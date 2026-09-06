@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -31,7 +32,14 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    await (await AccountScope.beginSignIn(prefs)).identify('test_user');
     auth = _MockAuthRepository();
+    when(
+      () => auth.getUserPrefs(),
+    ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+    when(
+      () => auth.updateUserPrefs(any()),
+    ).thenAnswer((_) async => const Right(null));
     when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));
     when(
       () => auth.getCurrentUser(),
@@ -74,7 +82,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -131,7 +139,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -188,7 +196,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -257,7 +265,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(statsA).toJson(),
@@ -352,7 +360,7 @@ void main() {
         expect(deviceB.totalStars, 255);
 
         // Mock cloud returning Device A's compacted stats to Device B
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -438,7 +446,7 @@ void main() {
         }
 
         // Mock cloud returning Device A's compacted stats
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -454,7 +462,7 @@ void main() {
         expect(replayed1.totalStars, 601);
 
         // Repeated stale replay: must still remain 601 (NOT 603)
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(replayed1).toJson(),
@@ -536,7 +544,7 @@ void main() {
         expect(compactedB.foldedStarEvents, equals({'devB_0': 1}));
 
         // Now merge compacted Device A and compacted Device B through cloud sync
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -611,7 +619,7 @@ void main() {
         ).thenAnswer((_) async => const Right(null));
 
         // Device A uploads its 101 star_<timestamp> events to cloud
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -684,7 +692,7 @@ void main() {
           totalStars: 0,
         ).recordStarReward(1, eventId: 'unseen_external_event_1');
 
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(compactedA).toJson(),
@@ -722,6 +730,7 @@ void main() {
         // Client A SharedPreferences
         SharedPreferences.setMockInitialValues({});
         final prefsA = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsA)).identify('test_user');
         final containerA = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsA),
@@ -746,6 +755,7 @@ void main() {
         // Client B SharedPreferences
         SharedPreferences.setMockInitialValues({});
         final prefsB = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsB)).identify('test_user');
         final containerB = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsB),
@@ -778,7 +788,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(statsA).toJson(),
@@ -815,6 +825,7 @@ void main() {
 
         SharedPreferences.setMockInitialValues({});
         final prefsA = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsA)).identify('test_user');
         final containerA = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsA),
@@ -908,7 +919,7 @@ void main() {
           () => auth.updateUserPrefs(any()),
         ).thenAnswer((_) async => const Right(null));
 
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(stateX).toJson(),
@@ -920,7 +931,7 @@ void main() {
         )).getOrElse((_) => fail('XY failed'));
 
         // Merge Y then X
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(stateY).toJson(),
@@ -996,7 +1007,7 @@ void main() {
       }
       deviceB = deviceB.recordLearningMinutes(2, eventId: 'min_b_new');
 
-      when(() => auth.getUserPrefs()).thenAnswer(
+      when(auth.getUserPrefs).thenAnswer(
         (_) async => Right(<String, dynamic>{
           'user_progress_data': jsonEncode(
             UserStatsModel.fromEntity(compactedA).toJson(),
@@ -1089,7 +1100,7 @@ void main() {
         when(
           () => auth.isLoggedIn(),
         ).thenAnswer((_) async => const Right(true));
-        when(() => auth.getUserPrefs()).thenAnswer(
+        when(auth.getUserPrefs).thenAnswer(
           (_) async => Right(<String, dynamic>{
             'user_progress_data': jsonEncode(
               UserStatsModel.fromEntity(deviceA).toJson(),
@@ -1129,6 +1140,7 @@ void main() {
         );
         const userBob = UserEntity(id: 'usr_bob', email: 'bob@example.com');
 
+        await (await AccountScope.beginSignIn(prefs)).identify(userAlice.id);
         // 1. User Alice logs in and saves stats
         when(
           () => auth.isLoggedIn(),
@@ -1161,6 +1173,7 @@ void main() {
         expect(aliceLocal, isNotNull);
         expect(aliceLocal, contains('"totalStars":100'));
 
+        await (await AccountScope.beginSignIn(prefs)).identify(userBob.id);
         // 2. User Bob logs in on the same device
         when(
           () => auth.getCurrentUser(),
@@ -1204,6 +1217,7 @@ void main() {
     );
 
     test('Guest user uses isolated user_stats_guest storage', () async {
+      await AccountScope.signOut(prefs);
       final repo = ProfileRepositoryImpl(auth, prefs, clock: () => fixedClock);
 
       when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));

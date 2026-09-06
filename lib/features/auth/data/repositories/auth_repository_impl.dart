@@ -66,15 +66,13 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, void>> signOut() async {
-    if (await networkInfo.isConnected) {
-      try {
-        await remoteDataSource.signOut();
-        return const Right(null);
-      } on ServerException catch (e) {
-        return Left(_serverFailure(e));
-      }
-    } else {
-      return const Left(NetworkFailure());
+    // The service always clears local credentials, even when revocation cannot
+    // reach the server. Do not gate this cleanup on connectivity.
+    try {
+      await remoteDataSource.signOut();
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(_serverFailure(e));
     }
   }
 

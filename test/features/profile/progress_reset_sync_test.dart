@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
@@ -53,6 +54,7 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
+      await AccountScope.capture(prefs).identify('test-user');
       final auth = _Auth();
       when(auth.isLoggedIn).thenAnswer((_) async => const Right(true));
       when(auth.getUserPrefs).thenAnswer(
@@ -99,11 +101,12 @@ void main() {
 
   test('explicit logged-in reset wins over cloud and uploads', () async {
     SharedPreferences.setMockInitialValues({
-      'user_progress_data': jsonEncode(
+      'user_stats_test-user': jsonEncode(
         UserStatsModel.fromEntity(_progress).toJson(),
       ),
     });
     final prefs = await SharedPreferences.getInstance();
+    await AccountScope.capture(prefs).identify('test-user');
     final auth = _Auth();
     when(auth.isLoggedIn).thenAnswer((_) async => const Right(true));
     when(auth.getUserPrefs).thenAnswer(
@@ -136,11 +139,12 @@ void main() {
   test('older cloud epoch cannot restore reset progress', () async {
     final reset = _empty.copyWith(syncEpoch: 2);
     SharedPreferences.setMockInitialValues({
-      'user_progress_data': jsonEncode(
+      'user_stats_test-user': jsonEncode(
         UserStatsModel.fromEntity(reset).toJson(),
       ),
     });
     final prefs = await SharedPreferences.getInstance();
+    await AccountScope.capture(prefs).identify('test-user');
     final auth = _Auth();
     when(auth.isLoggedIn).thenAnswer((_) async => const Right(true));
     when(auth.getUserPrefs).thenAnswer(

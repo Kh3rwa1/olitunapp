@@ -26,6 +26,7 @@ import 'oauth_helpers.dart';
 import 'admin_functions_client.dart';
 import 'session_validator.dart';
 import 'session_persistence.dart';
+import 'account_scope.dart';
 
 class AppwriteAuthService {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
@@ -35,18 +36,10 @@ class AppwriteAuthService {
     _client = Client();
     final endpoint = AppwriteConfig.endpoint;
     final projectId = AppwriteConfig.projectId;
-
-    if (endpoint.isNotEmpty) {
-      _client.setEndpoint(endpoint);
-    } else {
-      _client.setEndpoint('https://localhost/v1');
-    }
-
-    if (projectId.isNotEmpty) {
-      _client.setProject(projectId);
-    } else {
-      _client.setProject('placeholder');
-    }
+    _client.setEndpoint(
+      endpoint.isNotEmpty ? endpoint : 'https://localhost/v1',
+    );
+    _client.setProject(projectId.isNotEmpty ? projectId : 'placeholder');
 
     if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
       _client.setSelfSigned();
@@ -67,6 +60,7 @@ class AppwriteAuthService {
   SharedPreferences? _prefsOverride;
   DateTime Function()? _nowProvider;
   bool? _isWebOverride;
+  Future<List<ConnectivityResult>> Function()? _connectivityOverride;
 
   @visibleForTesting
   AppwriteAuthService.forTesting({
@@ -76,6 +70,7 @@ class AppwriteAuthService {
     SharedPreferences? prefs,
     DateTime Function()? nowProvider,
     bool? isWebOverride,
+    Future<List<ConnectivityResult>> Function()? connectivity,
     Future<String> Function({
       required String url,
       required String callbackUrlScheme,
@@ -87,6 +82,7 @@ class AppwriteAuthService {
        _prefsOverride = prefs,
        _nowProvider = nowProvider,
        _isWebOverride = isWebOverride,
+       _connectivityOverride = connectivity,
        _browserAuthenticate =
            browserAuthenticate ?? FlutterWebAuth2.authenticate;
 
@@ -107,9 +103,38 @@ class AppwriteAuthService {
 
   bool get _isWeb => _isWebOverride ?? kIsWeb;
 
-  bool _isWebSessionValid(int? ts) =>
-      // ignore: invalid_use_of_visible_for_testing_member
-      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
+  void _requireCurrent(AccountScope scope) {
+    if (!scope.isCurrent) throw AppwriteException('Account changed', 409);
+  }
+
+  Future<models.Session> _createSession(
+    Future<models.Session> Function() create,
+  ) async {
+    final prefs = await _getPrefs();
+    final scope = await AccountScope.beginSignIn(prefs);
+    return AccountScope.dispatch(() async {
+      _requireCurrent(scope);
+      final session = await create();
+      final owner = await scope.identify(session.userId);
+      _requireCurrent(owner);
+      await prefs.setBool(_hasLocalSessionKey, true);
+      if (_isWeb) {
+        await prefs.setInt(
+          SessionPersistence.webSessionTimestampKey,
+          (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+        );
+      }
+      _requireCurrent(owner);
+      return session;
+    });
+  }
+
+  Future<models.Session> signInWithEmail({
+    required String email,
+    required String password,
+  }) => _createSession(
+    () => _account.createEmailPasswordSession(email: email, password: password),
+  );
 
   /// Ping Appwrite backend to verify setup
   Future<void> ping() async {
@@ -126,10 +151,7 @@ class AppwriteAuthService {
   /// Sign in anonymously (for guest/offline mode access to remote Appwrite collections)
   Future<models.Session> signInAnonymously() async {
     AppLogger.debug('Appwrite: Creating anonymous session');
-    final session = await _account.createAnonymousSession();
-    final prefs = await _getPrefs();
-    await prefs.setBool(_hasLocalSessionKey, true);
-    return session;
+    return _createSession(_account.createAnonymousSession);
   }
 
   // ─── Email OTP ───
@@ -150,13 +172,9 @@ class AppwriteAuthService {
     required String secret,
   }) async {
     AppLogger.debug('Appwrite: Verifying OTP token');
-    final session = await _account.createSession(
-      userId: userId,
-      secret: secret,
+    return _createSession(
+      () => _account.createSession(userId: userId, secret: secret),
     );
-    final prefs = await _getPrefs();
-    await prefs.setBool(_hasLocalSessionKey, true);
-    return session;
   }
 
   // ─── Google OAuth ───
@@ -195,15 +213,13 @@ class AppwriteAuthService {
         final completion = parseWebOAuthCompletion(result);
         final exchanged =
             completion.kind == WebOAuthCompletionKind.persistSession
-            ? await _persistWebSession(completion.secret).then((_) => true)
+            ? await exchangeOAuthToken('a_session_callback', completion.secret)
             : await exchangeOAuthToken(completion.userId!, completion.secret);
         if (!exchanged) {
           throw AppwriteException(
             'Google sign-in failed: session could not be created.',
           );
         }
-        final prefs = await _getPrefs();
-        await prefs.setBool(_hasLocalSessionKey, true);
       }
     } on AppwriteException catch (e) {
       AppLogger.debug(
@@ -220,23 +236,34 @@ class AppwriteAuthService {
 
   /// Exchange OAuth token for session (called from splash screen after redirect)
   Future<bool> exchangeOAuthToken(String userId, String secret) async {
+    final prefs = await _getPrefs();
+    final scope = await AccountScope.beginSignIn(prefs);
     try {
-      if (userId.startsWith('a_session_')) {
-        await _persistWebSession(secret);
-      } else {
-        final session = await _account.createSession(
-          userId: userId,
-          secret: secret,
-        );
-        if (_isWeb) {
-          await _persistWebSession(session.secret);
+      await AccountScope.dispatch(() async {
+        _requireCurrent(scope);
+        String ownerId;
+        if (userId.startsWith('a_session_')) {
+          await _persistWebSession(secret);
+          _requireCurrent(scope);
+          final user = await _account.get();
+          ownerId = user.$id;
+        } else {
+          final session = await _account.createSession(
+            userId: userId,
+            secret: secret,
+          );
+          _requireCurrent(scope);
+          ownerId = session.userId;
+          if (_isWeb) await _persistWebSession(session.secret);
         }
-      }
-      AppLogger.debug('Appwrite: OAuth session created ✅');
+        final owner = await scope.identify(ownerId);
+        _requireCurrent(owner);
+        await prefs.setBool(_hasLocalSessionKey, true);
+      });
       return true;
     } catch (e) {
       AppLogger.debug(
-        'Appwrite: Failed to create session from token: ${RedactionHelper.sanitize(e.toString())}',
+        'Appwrite: OAuth session failed: ${RedactionHelper.sanitize(e.toString())}',
       );
       return false;
     }
@@ -253,38 +280,42 @@ class AppwriteAuthService {
     );
   }
 
-  Future<void> _restoreWebSession() async {
-    final prefs = await _getPrefs();
-    await SessionPersistence.restoreWebSession(
-      client: _client,
-      prefs: prefs,
-      isWeb: _isWeb,
-      nowProvider: _nowProvider,
-    );
+  Future<void> _restoreWebSession() async =>
+      _restoreWebSessionFor(await _getPrefs());
+
+  Future<void> _restoreWebSessionFor(SharedPreferences prefs) {
+    final scope = AccountScope.capture(prefs);
+    if (!scope.isCurrent) return Future<void>.value();
+    return AccountScope.dispatch(() async {
+      if (!scope.isCurrent) return;
+      await SessionPersistence.restoreWebSession(
+        client: _client,
+        prefs: prefs,
+        isWeb: _isWeb,
+        nowProvider: _nowProvider,
+      );
+    });
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!_isWeb) return;
-    _client.setSession('');
-    final ts = prefs.getInt(SessionPersistence.webSessionTimestampKey);
-    final hasSession =
-        prefs.getBool(SessionPersistence.hasLocalSessionKey) ?? false;
-
-    if (!hasSession || ts == null || !_isWebSessionValid(ts)) {
-      AppLogger.debug(
-        'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
-      );
-      unawaited(_clearLocalSessionState());
-      return;
-    }
-    AppLogger.debug('Appwrite: Web session validated synchronously ✅');
+    // Startup remains non-blocking, but credential mutation shares the same
+    // queue as logins and progress requests instead of clearing a newer login.
+    unawaited(
+      _restoreWebSessionFor(prefs).catchError((Object error) {
+        AppLogger.debug(
+          'Appwrite: Session restoration failed: ${RedactionHelper.sanitize(error.toString())}',
+        );
+      }),
+    );
   }
 
-  Future<void> _clearLocalSessionState() async {
+  Future<void> _clearLocalSessionState({bool preserveAccount = false}) async {
     final prefs = await _getPrefs();
     await SessionPersistence.clearLocalSessionState(
       client: _client,
       prefs: prefs,
+      forgetAccount: !preserveAccount,
     );
   }
 
@@ -294,9 +325,12 @@ class AppwriteAuthService {
   Future<bool> isLoggedIn() async {
     final prefs = await _getPrefs();
 
+    if (AccountScope.capture(prefs).isExplicitlySignedOut) return false;
     if (_isWeb) {
       await _restoreWebSession();
     }
+    final scope = AccountScope.capture(prefs);
+    if (scope.isExplicitlySignedOut) return false;
 
     final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
     if (!hasLocal && !_isWeb) {
@@ -304,9 +338,11 @@ class AppwriteAuthService {
     }
 
     try {
-      await _account
+      final session = await _account
           .getSession(sessionId: 'current')
           .timeout(const Duration(seconds: 3));
+      final owner = await scope.identify(session.userId);
+      _requireCurrent(owner);
       AppLogger.debug('Appwrite: Session active ✅');
       await prefs.setBool(_hasLocalSessionKey, true);
       return true;
@@ -315,6 +351,7 @@ class AppwriteAuthService {
         'Appwrite: isLoggedIn error: ${RedactionHelper.sanitize(e.toString())}',
       );
 
+      if (!scope.isCurrent) return false;
       final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
       // ignore: invalid_use_of_visible_for_testing_member
       if (hasLocal && isTransientSessionValidationFailure(e)) {
@@ -328,7 +365,7 @@ class AppwriteAuthService {
         AppLogger.debug(
           'Appwrite: Session expired (401). Clearing local flag.',
         );
-        await _clearLocalSessionState();
+        await _clearLocalSessionState(preserveAccount: true);
       }
 
       return false;
@@ -337,17 +374,37 @@ class AppwriteAuthService {
 
   /// Get current user profile
   Future<models.User> getMe() async {
-    final connectivityResults = await Connectivity().checkConnectivity();
+    final prefs = await _getPrefs();
+    if (AccountScope.capture(prefs).isExplicitlySignedOut) {
+      throw AppwriteException('Signed out', 401);
+    }
+    await _restoreWebSession();
+    final scope = AccountScope.capture(prefs);
+    if (scope.isExplicitlySignedOut) throw AppwriteException('Signed out', 401);
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    await _restoreWebSession();
-    return await _account.get().timeout(const Duration(seconds: 3));
+    _requireCurrent(scope);
+    try {
+      final user = await _account.get().timeout(const Duration(seconds: 3));
+      await scope.identify(user.$id);
+      return user;
+    } on AppwriteException catch (e) {
+      if (e.code == 401 && scope.isCurrent) {
+        await _clearLocalSessionState(preserveAccount: true);
+      }
+      rethrow;
+    }
   }
 
   /// Update user display name
   Future<models.User> updateName(String name) async {
-    final connectivityResults = await Connectivity().checkConnectivity();
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
@@ -358,38 +415,57 @@ class AppwriteAuthService {
 
   /// Update user preferences (for progress sync)
   Future<void> updatePrefs(Map<String, dynamic> prefs) async {
-    final connectivityResults = await Connectivity().checkConnectivity();
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    await _account
-        .updatePrefs(prefs: prefs)
-        .timeout(const Duration(seconds: 3));
+    await AccountScope.dispatch(
+      () => _account
+          .updatePrefs(prefs: prefs)
+          .timeout(const Duration(seconds: 3)),
+    );
+    AccountScope.checkOperation();
   }
 
   /// Get user preferences
   Future<models.Preferences> getPrefs() async {
-    final connectivityResults = await Connectivity().checkConnectivity();
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    return await _account.getPrefs().timeout(const Duration(seconds: 3));
+    final result = await AccountScope.dispatch(
+      () => _account.getPrefs().timeout(const Duration(seconds: 3)),
+    );
+    AccountScope.checkOperation();
+    return result;
   }
 
   /// Sign out — delete current session
   Future<void> signOut() async {
-    try {
-      await _restoreWebSession();
-      await _account
-          .deleteSession(sessionId: 'current')
-          .timeout(const Duration(seconds: 5));
-    } catch (e) {
-      AppLogger.debug(
-        'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
-      );
-    } finally {
-      await _clearLocalSessionState();
-    }
+    final prefs = await _getPrefs();
+    // Local sign-out is unconditional, including offline. The tombstone prevents
+    // a surviving SDK/browser cookie from silently restoring the old account.
+    final scope = await AccountScope.signOut(prefs);
+    await AccountScope.dispatch(() async {
+      if (!scope.isCurrent) return;
+      try {
+        await _account
+            .deleteSession(sessionId: 'current')
+            .timeout(const Duration(seconds: 5));
+      } catch (e) {
+        AppLogger.debug(
+          'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
+        );
+      } finally {
+        if (scope.isCurrent) {
+          await _clearLocalSessionState(preserveAccount: true);
+        }
+      }
+    });
   }
 
   /// Permanently delete the user account from Appwrite and clear all local state.

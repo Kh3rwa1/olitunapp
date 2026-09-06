@@ -31,9 +31,10 @@ Map<String, dynamic> parseAdminRestoreResponse({
 
 String _newRestoreId() {
   final random = Random.secure();
-  return List<int>.generate(16, (_) => random.nextInt(256))
-      .map((value) => value.toRadixString(16).padLeft(2, '0'))
-      .join();
+  return List<int>.generate(
+    16,
+    (_) => random.nextInt(256),
+  ).map((value) => value.toRadixString(16).padLeft(2, '0')).join();
 }
 
 /// A durable operation identity survives app restarts and ambiguous responses.
@@ -52,7 +53,8 @@ class AdminRestoreClient {
   final String Function() _newId;
   static final _inFlight = <String, Future<Map<String, dynamic>>>{};
 
-  String pendingKey(String fileId) => 'admin_restore_pending:$projectId:$fileId';
+  String pendingKey(String fileId) =>
+      'admin_restore_pending:$projectId:$fileId';
 
   Future<Map<String, dynamic>> restore({
     required String fileId,
@@ -64,13 +66,16 @@ class AdminRestoreClient {
     final key = pendingKey(fileId);
     final active = _inFlight[key];
     if (active != null) return active;
-    final work = _run(
-      fileId: fileId,
-      operationId: operationId,
-      onProgress: onProgress,
-      shouldContinue: shouldContinue,
-      maxChunks: maxChunks,
-    ).whenComplete(() => _inFlight.remove(key));
+    final work =
+        _run(
+          fileId: fileId,
+          operationId: operationId,
+          onProgress: onProgress,
+          shouldContinue: shouldContinue,
+          maxChunks: maxChunks,
+        ).whenComplete(() {
+          _inFlight.remove(key);
+        });
     _inFlight[key] = work;
     return work;
   }
@@ -105,14 +110,22 @@ class AdminRestoreClient {
         'restoreId': restoreId,
         'confirmation': 'RESTORE CONTENT',
       });
-      if (response['jobId'] != restoreId || response['fileId'] != fileId ||
-          response['complete'] is! bool || response['success'] != true) {
-        throw AppwriteException('Restore response does not match this operation.', 502);
+      if (response['jobId'] != restoreId ||
+          response['fileId'] != fileId ||
+          response['complete'] is! bool ||
+          response['success'] != true) {
+        throw AppwriteException(
+          'Restore response does not match this operation.',
+          502,
+        );
       }
       onProgress?.call(response);
       if (response['complete'] == true) {
         if (!await prefs.remove(key)) {
-          throw AppwriteException('Restore completed, but its local recovery ID could not be cleared. Retry safely.', 503);
+          throw AppwriteException(
+            'Restore completed, but its local recovery ID could not be cleared. Retry safely.',
+            503,
+          );
         }
         return response;
       }

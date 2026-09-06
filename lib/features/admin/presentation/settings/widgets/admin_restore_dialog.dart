@@ -8,7 +8,8 @@ class AdminRestoreDialog extends StatefulWidget {
     String? operationId,
     void Function(Map<String, dynamic>) onProgress,
     bool Function() shouldContinue,
-  ) onRestore;
+  )
+  onRestore;
 
   @override
   State<AdminRestoreDialog> createState() => _AdminRestoreDialogState();
@@ -85,7 +86,8 @@ class _AdminRestoreDialogState extends State<AdminRestoreDialog> {
                 enabled: !_busy,
                 decoration: const InputDecoration(
                   labelText: 'Recovery operation ID (optional)',
-                  helperText: 'For another device; leave blank to resume locally.',
+                  helperText:
+                      'For another device; leave blank to resume locally.',
                 ),
               ),
               const SizedBox(height: 12),
@@ -93,7 +95,9 @@ class _AdminRestoreDialogState extends State<AdminRestoreDialog> {
                 controller: _confirmation,
                 enabled: !_busy,
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(labelText: 'Type RESTORE to confirm'),
+                decoration: const InputDecoration(
+                  labelText: 'Type RESTORE to confirm',
+                ),
               ),
               if (_busy) ...[
                 const SizedBox(height: 16),
@@ -111,7 +115,9 @@ class _AdminRestoreDialogState extends State<AdminRestoreDialog> {
               if (_error != null) ...[
                 const SizedBox(height: 16),
                 SelectableText(_error!),
-                const Text('Retry with the same backup to resume. Do not wipe or re-seed.'),
+                const Text(
+                  'Retry with the same backup to resume. Do not wipe or re-seed.',
+                ),
               ],
             ],
           ),

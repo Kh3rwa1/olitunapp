@@ -16,6 +16,7 @@ import 'sections/admin_danger_zone_section.dart';
 import 'sections/admin_desktop_behavior_section.dart';
 import 'sections/admin_onboarding_video_section.dart';
 import 'widgets/admin_settings_section_card.dart';
+import 'widgets/admin_restore_dialog.dart';
 part 'widgets/admin_settings_sections.dart';
 
 class AdminSettingsScreen extends ConsumerStatefulWidget {
@@ -189,6 +190,29 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
           );
         }
       },
+    );
+  }
+
+  Future<void> _showRestoreDialog() async {
+    final controller = AdminMaintenanceController(ref);
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AdminRestoreDialog(
+        onRestore: (fileId, operationId, onProgress, shouldContinue) =>
+            controller.restoreContent(
+              fileId,
+              operationId: operationId,
+              onProgress: onProgress,
+              shouldContinue: shouldContinue,
+            ),
+      ),
+    );
+    if (!mounted || result == null) return;
+    final backup = result['backup'];
+    _showSnackBar(
+      'Restore completed. Safety backup: ${backup is Map ? backup['fileId'] : 'see operation record'}',
+      AppColors.success,
     );
   }
 
@@ -412,6 +436,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       child: AdminDangerZoneSection(
                         onBackup: _executeBackupContent,
                         onWipe: _showWipeConfirmationDialog,
+                        onRestore: _showRestoreDialog,
                       ),
                     ),
                   ],

@@ -19,24 +19,30 @@ void main() {
     'phase': complete ? 'complete' : 'restoring',
   };
 
-  test('partial responses retain one operation ID until acknowledged complete', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final requests = <Map<String, dynamic>>[];
-    final client = AdminRestoreClient(
-      prefs: prefs,
-      projectId: 'test',
-      newId: () => 'operation1',
-      execute: (request) async {
-        requests.add(request);
-        return reply(request, requests.length == 3);
-      },
-    );
-    final result = await client.restore(fileId: 'backup');
-    expect(result['complete'], isTrue);
-    expect(requests.map((request) => request['restoreId']), everyElement('operation1'));
-    expect(prefs.containsKey(client.pendingKey('backup')), isFalse);
-  });
+  test(
+    'partial responses retain one operation ID until acknowledged complete',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final requests = <Map<String, dynamic>>[];
+      final client = AdminRestoreClient(
+        prefs: prefs,
+        projectId: 'test',
+        newId: () => 'operation1',
+        execute: (request) async {
+          requests.add(request);
+          return reply(request, requests.length == 3);
+        },
+      );
+      final result = await client.restore(fileId: 'backup');
+      expect(result['complete'], isTrue);
+      expect(
+        requests.map((request) => request['restoreId']),
+        everyElement('operation1'),
+      );
+      expect(prefs.containsKey(client.pendingKey('backup')), isFalse);
+    },
+  );
 
   test('new client resumes persisted identity after a lost response', () async {
     SharedPreferences.setMockInitialValues({});
@@ -47,7 +53,10 @@ void main() {
       newId: () => 'original',
       execute: (_) async => throw AppwriteException('Lost response', 503),
     );
-    await expectLater(first.restore(fileId: 'backup'), throwsA(isA<AppwriteException>()));
+    await expectLater(
+      first.restore(fileId: 'backup'),
+      throwsA(isA<AppwriteException>()),
+    );
     expect(prefs.getString(first.pendingKey('backup')), 'original');
     final second = AdminRestoreClient(
       prefs: prefs,
@@ -61,23 +70,29 @@ void main() {
     await second.restore(fileId: 'backup');
   });
 
-  test('pause keeps a resumable operation without starting another chunk', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    var calls = 0;
-    final client = AdminRestoreClient(
-      prefs: prefs,
-      projectId: 'pause',
-      newId: () => 'paused',
-      execute: (request) async { calls++; return reply(request, false); },
-    );
-    await expectLater(
-      client.restore(fileId: 'backup', shouldContinue: () => calls == 0),
-      throwsA(isA<AppwriteException>()),
-    );
-    expect(calls, 1);
-    expect(prefs.getString(client.pendingKey('backup')), 'paused');
-  });
+  test(
+    'pause keeps a resumable operation without starting another chunk',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      var calls = 0;
+      final client = AdminRestoreClient(
+        prefs: prefs,
+        projectId: 'pause',
+        newId: () => 'paused',
+        execute: (request) async {
+          calls++;
+          return reply(request, false);
+        },
+      );
+      await expectLater(
+        client.restore(fileId: 'backup', shouldContinue: () => calls == 0),
+        throwsA(isA<AppwriteException>()),
+      );
+      expect(calls, 1);
+      expect(prefs.getString(client.pendingKey('backup')), 'paused');
+    },
+  );
 
   test('unrelated response cannot clear recovery identity', () async {
     SharedPreferences.setMockInitialValues({});
@@ -88,7 +103,10 @@ void main() {
       newId: () => 'mine',
       execute: (request) async => {...reply(request, true), 'jobId': 'other'},
     );
-    await expectLater(client.restore(fileId: 'backup'), throwsA(isA<AppwriteException>()));
+    await expectLater(
+      client.restore(fileId: 'backup'),
+      throwsA(isA<AppwriteException>()),
+    );
     expect(prefs.getString(client.pendingKey('backup')), 'mine');
   });
 
@@ -101,9 +119,15 @@ void main() {
       prefs: prefs,
       projectId: 'storage',
       newId: () => 'safe',
-      execute: (request) async { calls++; return reply(request, true); },
+      execute: (request) async {
+        calls++;
+        return reply(request, true);
+      },
     );
-    await expectLater(client.restore(fileId: 'backup'), throwsA(isA<AppwriteException>()));
+    await expectLater(
+      client.restore(fileId: 'backup'),
+      throwsA(isA<AppwriteException>()),
+    );
     expect(calls, 0);
   });
 
@@ -114,11 +138,13 @@ void main() {
     );
     expect(response['complete'], isFalse);
     expect(
-      () => parseAdminRestoreResponse(statusCode: 200, body: '{"success":true}'),
+      () =>
+          parseAdminRestoreResponse(statusCode: 200, body: '{"success":true}'),
       throwsA(isA<AppwriteException>()),
     );
     expect(
-      () => parseAdminRestoreResponse(statusCode: 503, body: '{"success":false}'),
+      () =>
+          parseAdminRestoreResponse(statusCode: 503, body: '{"success":false}'),
       throwsA(isA<AppwriteException>()),
     );
   });

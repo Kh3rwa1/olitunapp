@@ -30,7 +30,11 @@ jobs:
           if ! grep -q 'bool preserveAccount' lib/core/auth/appwrite_auth_service.dart; then
             python3 tool/fix_session_scope_edges.py
           fi
+          if ! grep -q 'preserveLegacyOwner' lib/core/auth/account_scope.dart; then
+            python3 tool/finalize_account_scope.py
+          fi
           flutter pub get
+          dart fix --apply --code=curly_braces_in_flow_control_structures,unnecessary_lambdas
           git diff --name-only origin/main...HEAD -- '*.dart' | xargs -r dart format
       - name: Validate auth and profile behavior
         run: |
@@ -48,7 +52,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'fix(auth): retain offline owner across credential expiry'
+            git commit -m 'fix(auth): fence legacy and web session restoration'
             gh auth setup-git
             git push origin HEAD:refs/heads/fix/offline-account-scoping-20260906
           fi

@@ -34,6 +34,12 @@ void main() {
     prefs = await SharedPreferences.getInstance();
     await (await AccountScope.beginSignIn(prefs)).identify('test_user');
     auth = _MockAuthRepository();
+    when(
+      () => auth.getUserPrefs(),
+    ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+    when(
+      () => auth.updateUserPrefs(any()),
+    ).thenAnswer((_) async => const Right(null));
     when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));
     when(
       () => auth.getCurrentUser(),

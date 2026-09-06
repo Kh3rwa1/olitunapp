@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart';
@@ -28,6 +29,19 @@ class MockSharedPreferences extends Mock implements SharedPreferences {
   MockSharedPreferences() {
     when(() => setString(any(), any())).thenAnswer((_) async => true);
   }
+}
+
+void _bindScopeStorage(MockSharedPreferences prefs) {
+  String? record;
+  when(() => prefs.setString(AccountScope.storageKey, any())).thenAnswer((
+    call,
+  ) async {
+    record = call.positionalArguments[1] as String;
+    return true;
+  });
+  when(
+    () => prefs.getString(AccountScope.storageKey),
+  ).thenAnswer((_) => record);
 }
 
 void main() {
@@ -636,6 +650,7 @@ void main() {
       ).thenThrow(Exception('Storage write error'));
       when(() => mockPrefs.remove(any())).thenAnswer((_) async => true);
       when(() => mockPrefs.getString(any())).thenReturn(null);
+      _bindScopeStorage(mockPrefs);
       when(() => mockPrefs.getInt(any())).thenReturn(null);
 
       final service = AppwriteAuthService.forTesting(
@@ -664,6 +679,7 @@ void main() {
           () => mockPrefs.remove('olitun_web_session_ts'),
         ).thenAnswer((_) async => true);
         when(() => mockPrefs.getString(any())).thenReturn(null);
+        _bindScopeStorage(mockPrefs);
 
         final service = AppwriteAuthService.forTesting(
           client: mockClient,

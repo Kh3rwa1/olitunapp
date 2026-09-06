@@ -313,17 +313,18 @@ class AppwriteAuthService {
       AppLogger.debug(
         'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
       );
-      unawaited(_clearLocalSessionState());
+      unawaited(_clearLocalSessionState(preserveAccount: true));
       return;
     }
     AppLogger.debug('Appwrite: Web session validated synchronously ✅');
   }
 
-  Future<void> _clearLocalSessionState() async {
+  Future<void> _clearLocalSessionState({bool preserveAccount = false}) async {
     final prefs = await _getPrefs();
     await SessionPersistence.clearLocalSessionState(
       client: _client,
       prefs: prefs,
+      forgetAccount: !preserveAccount,
     );
   }
 
@@ -373,7 +374,7 @@ class AppwriteAuthService {
         AppLogger.debug(
           'Appwrite: Session expired (401). Clearing local flag.',
         );
-        await _clearLocalSessionState();
+        await _clearLocalSessionState(preserveAccount: true);
       }
 
       return false;
@@ -401,7 +402,8 @@ class AppwriteAuthService {
       await scope.identify(user.$id);
       return user;
     } on AppwriteException catch (e) {
-      if (e.code == 401 && scope.isCurrent) await _clearLocalSessionState();
+      if (e.code == 401 && scope.isCurrent)
+        await _clearLocalSessionState(preserveAccount: true);
       rethrow;
     }
   }
@@ -467,7 +469,8 @@ class AppwriteAuthService {
           'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
         );
       } finally {
-        if (scope.isCurrent) await _clearLocalSessionState();
+        if (scope.isCurrent)
+          await _clearLocalSessionState(preserveAccount: true);
       }
     });
   }

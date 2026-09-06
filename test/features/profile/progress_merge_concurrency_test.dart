@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:itun/core/auth/account_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
@@ -31,6 +32,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
+    await (await AccountScope.beginSignIn(prefs)).identify('test_user');
     auth = _MockAuthRepository();
     when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));
     when(
@@ -722,6 +724,7 @@ void main() {
         // Client A SharedPreferences
         SharedPreferences.setMockInitialValues({});
         final prefsA = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsA)).identify('test_user');
         final containerA = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsA),
@@ -746,6 +749,7 @@ void main() {
         // Client B SharedPreferences
         SharedPreferences.setMockInitialValues({});
         final prefsB = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsB)).identify('test_user');
         final containerB = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsB),
@@ -815,6 +819,7 @@ void main() {
 
         SharedPreferences.setMockInitialValues({});
         final prefsA = await SharedPreferences.getInstance();
+        await (await AccountScope.beginSignIn(prefsA)).identify('test_user');
         final containerA = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefsA),
@@ -1129,6 +1134,7 @@ void main() {
         );
         const userBob = UserEntity(id: 'usr_bob', email: 'bob@example.com');
 
+        await (await AccountScope.beginSignIn(prefs)).identify(userAlice.id);
         // 1. User Alice logs in and saves stats
         when(
           () => auth.isLoggedIn(),
@@ -1161,6 +1167,7 @@ void main() {
         expect(aliceLocal, isNotNull);
         expect(aliceLocal, contains('"totalStars":100'));
 
+        await (await AccountScope.beginSignIn(prefs)).identify(userBob.id);
         // 2. User Bob logs in on the same device
         when(
           () => auth.getCurrentUser(),
@@ -1204,6 +1211,7 @@ void main() {
     );
 
     test('Guest user uses isolated user_stats_guest storage', () async {
+      await AccountScope.signOut(prefs);
       final repo = ProfileRepositoryImpl(auth, prefs, clock: () => fixedClock);
 
       when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));

@@ -16,11 +16,19 @@ class MockFunctions extends Mock implements Functions {}
 
 class MockExecution extends Mock implements models.Execution {}
 
-class MockSession extends Mock implements models.Session {}
+class MockSession extends Mock implements models.Session {
+  MockSession() {
+    when(() => userId).thenReturn('test_user_id');
+  }
+}
 
 class MockToken extends Mock implements models.Token {}
 
-class MockSharedPreferences extends Mock implements SharedPreferences {}
+class MockSharedPreferences extends Mock implements SharedPreferences {
+  MockSharedPreferences() {
+    when(() => setString(any(), any())).thenAnswer((_) async => true);
+  }
+}
 
 void main() {
   setUpAll(() {

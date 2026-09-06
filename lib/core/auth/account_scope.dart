@@ -54,7 +54,11 @@ class AccountScope {
   }
 
   bool get isKnown => isGuest || userId != null;
-  String get _suffix => isGuest ? 'guest' : userId == 'guest' ? 'account:guest' : '$userId';
+  String get _suffix => isGuest
+      ? 'guest'
+      : userId == 'guest'
+      ? 'account:guest'
+      : '$userId';
   String get statsKey => 'user_stats_$_suffix';
   String get syncKey => 'is_stats_synced_$_suffix';
 
@@ -64,12 +68,15 @@ class AccountScope {
     if (_record != null && !isKnown && !_mayIdentify) return false;
     final current = AccountScope.capture(_prefs);
     return current._record == _record &&
-        current.userId == userId && current.isGuest == isGuest;
+        current.userId == userId &&
+        current.isGuest == isGuest;
   }
 
   void check() {
     if (!isCurrent || !isKnown) {
-      throw StateError('Account changed or offline account identity is unknown');
+      throw StateError(
+        'Account changed or offline account identity is unknown',
+      );
     }
   }
 
@@ -93,7 +100,14 @@ class AccountScope {
       'userId': userId,
       'revision': List.generate(16, (_) => Random.secure().nextInt(256)),
     });
-    final scope = AccountScope._(prefs, record, userId, state == 'guest', state == 'guest', true);
+    final scope = AccountScope._(
+      prefs,
+      record,
+      userId,
+      state == 'guest',
+      state == 'guest',
+      true,
+    );
     if (!await prefs.setString(storageKey, record)) {
       throw StateError('Could not persist account scope');
     }

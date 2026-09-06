@@ -64,10 +64,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      await authService.signInWithEmail(
-        email: email,
-        password: password,
-      );
+      await authService.signInWithEmail(email: email, password: password);
       final user = await account.get();
       return UserModel.fromJson(user.toMap());
     } on AppwriteException catch (e) {

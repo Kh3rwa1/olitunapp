@@ -37,16 +37,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
     // Capture before even waiting for earlier operations. Never re-resolve in
     // a catch handler, and never turn auth/network failure into guest identity.
     final scope = AccountScope.capture(_prefs);
-    final pending = _operations.then((_) => scope.run(() async {
-      try {
-        scope.check();
-        final result = await operation(scope);
-        scope.check();
-        return result;
-      } catch (e, st) {
-        return Left<Failure, T>(_recordedCacheFailure(e, st));
-      }
-    }));
+    final pending = _operations.then(
+      (_) => scope.run(() async {
+        try {
+          scope.check();
+          final result = await operation(scope);
+          scope.check();
+          return result;
+        } catch (e, st) {
+          return Left<Failure, T>(_recordedCacheFailure(e, st));
+        }
+      }),
+    );
     _operations = pending.then((_) {}, onError: (Object _) {});
     return pending;
   }
@@ -63,7 +65,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
     return UserStatsModel.fromJson(jsonDecode(stored));
   }
 
-  Future<void> _writeLocalStats(AccountScope scope, UserStatsEntity stats) async {
+  Future<void> _writeLocalStats(
+    AccountScope scope,
+    UserStatsEntity stats,
+  ) async {
     // Mark dirty before persisting data so a crash cannot leave new data clean.
     await _setStatsSynced(scope, scope.isGuest);
     scope.check();
@@ -122,7 +127,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
     scope.check();
     final result = await _authRepository.updateUserPrefs(
       Map<String, dynamic>.from(cloudPrefs)
-        ..[_cloudStatsKey] = jsonEncode(UserStatsModel.fromEntity(stats).toJson()),
+        ..[_cloudStatsKey] = jsonEncode(
+          UserStatsModel.fromEntity(stats).toJson(),
+        ),
     );
     scope.check();
     await _setStatsSynced(scope, result.isRight());
@@ -139,43 +146,49 @@ class ProfileRepositoryImpl implements ProfileRepository {
         }
         final response = await _authRepository.getUserPrefs();
         scope.check();
-        return response.fold((failure) async {
-          // Offline/transient failure preserves both owner and pending state.
-          return Right<Failure, UserStatsEntity>(local ?? _emptyStats());
-        }, (cloudPrefs) async {
-          final cloud = _cloudStats(cloudPrefs);
-          final resolved = local == null
-              ? cloud ?? _emptyStats()
-              : cloud == null ? local : _mergeStats(local, cloud);
-          if (local != null || cloud != null) {
-            await _writeLocalStats(scope, resolved);
-          }
-          if (local != null) {
-            await _upload(scope, cloudPrefs, resolved);
-          } else {
-            await _setStatsSynced(scope, true);
-          }
-          return Right<Failure, UserStatsEntity>(resolved);
-        });
+        return response.fold(
+          (failure) async {
+            // Offline/transient failure preserves both owner and pending state.
+            return Right<Failure, UserStatsEntity>(local ?? _emptyStats());
+          },
+          (cloudPrefs) async {
+            final cloud = _cloudStats(cloudPrefs);
+            final resolved = local == null
+                ? cloud ?? _emptyStats()
+                : cloud == null
+                ? local
+                : _mergeStats(local, cloud);
+            if (local != null || cloud != null) {
+              await _writeLocalStats(scope, resolved);
+            }
+            if (local != null) {
+              await _upload(scope, cloudPrefs, resolved);
+            } else {
+              await _setStatsSynced(scope, true);
+            }
+            return Right<Failure, UserStatsEntity>(resolved);
+          },
+        );
       });
 
   @override
-  Future<Either<Failure, UserStatsEntity>> updateUserStats(UserStatsEntity stats) =>
-      _inScope((scope) async {
-        var resolved = _mergeStats(stats, _emptyStats(syncEpoch: stats.syncEpoch));
+  Future<Either<Failure, UserStatsEntity>> updateUserStats(
+    UserStatsEntity stats,
+  ) => _inScope((scope) async {
+    var resolved = _mergeStats(stats, _emptyStats(syncEpoch: stats.syncEpoch));
+    await _writeLocalStats(scope, resolved);
+    if (!scope.isGuest) {
+      final response = await _authRepository.getUserPrefs();
+      scope.check();
+      await response.fold((_) async {}, (cloudPrefs) async {
+        final cloud = _cloudStats(cloudPrefs);
+        if (cloud != null) resolved = _mergeStats(resolved, cloud);
         await _writeLocalStats(scope, resolved);
-        if (!scope.isGuest) {
-          final response = await _authRepository.getUserPrefs();
-          scope.check();
-          await response.fold((_) async {}, (cloudPrefs) async {
-            final cloud = _cloudStats(cloudPrefs);
-            if (cloud != null) resolved = _mergeStats(resolved, cloud);
-            await _writeLocalStats(scope, resolved);
-            await _upload(scope, cloudPrefs, resolved);
-          });
-        }
-        return Right(resolved);
+        await _upload(scope, cloudPrefs, resolved);
       });
+    }
+    return Right(resolved);
+  });
 
   @override
   Future<Either<Failure, UserStatsEntity>> resetUserStats() =>
@@ -198,25 +211,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
       });
 
   @override
-  Future<Either<Failure, void>> syncPendingStats() =>
-      _inScope((scope) async {
-        if (scope.isGuest) return const Right(null);
-        final local = _readLocalStats(scope);
-        // Missing account flag with existing scoped data is conservatively dirty.
-        // A legacy global flag from another account must not suppress this sync.
-        if ((_prefs.getBool(scope.syncKey) ?? (local == null)) || local == null) {
-          return const Right(null);
-        }
-        final response = await _authRepository.getUserPrefs();
-        scope.check();
-        return response.fold((failure) async => Left<Failure, void>(failure),
-            (cloudPrefs) async {
-          final cloud = _cloudStats(cloudPrefs);
-          final resolved = cloud == null ? local : _mergeStats(local, cloud);
-          await _writeLocalStats(scope, resolved);
-          return _upload(scope, cloudPrefs, resolved);
-        });
-      });
+  Future<Either<Failure, void>> syncPendingStats() => _inScope((scope) async {
+    if (scope.isGuest) return const Right(null);
+    final local = _readLocalStats(scope);
+    // Missing account flag with existing scoped data is conservatively dirty.
+    // A legacy global flag from another account must not suppress this sync.
+    if ((_prefs.getBool(scope.syncKey) ?? (local == null)) || local == null) {
+      return const Right(null);
+    }
+    final response = await _authRepository.getUserPrefs();
+    scope.check();
+    return response.fold((failure) async => Left<Failure, void>(failure), (
+      cloudPrefs,
+    ) async {
+      final cloud = _cloudStats(cloudPrefs);
+      final resolved = cloud == null ? local : _mergeStats(local, cloud);
+      await _writeLocalStats(scope, resolved);
+      return _upload(scope, cloudPrefs, resolved);
+    });
+  });
 
   @override
   Future<Either<Failure, void>> updateDisplayName(String name) async {
@@ -241,7 +254,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateAvatar(String emoji, int colorIndex) async {
+  Future<Either<Failure, void>> updateAvatar(
+    String emoji,
+    int colorIndex,
+  ) async {
     await _prefs.setString('user_avatar_emoji', emoji);
     await _prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);

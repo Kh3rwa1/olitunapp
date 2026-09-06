@@ -78,7 +78,9 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     if (_disposed) return Future<void>.value();
     final scope = AccountScope.capture(ref.read(sharedPreferencesProvider));
     final pending = _mutationChain.then((_) async {
-      if (_disposed || !scope.isCurrent || _stateScope?.isCurrent != true) return;
+      if (_disposed || !scope.isCurrent || _stateScope?.isCurrent != true) {
+        return;
+      }
       await action();
     });
     _mutationChain = pending.then((_) {}, onError: (_) {});

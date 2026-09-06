@@ -86,7 +86,9 @@ class SessionPersistence {
     try {
       await AccountScope.signOut(prefs);
     } catch (e) {
-      AppLogger.debug('Appwrite: Failed to persist sign-out scope: ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: Failed to persist sign-out scope: ${RedactionHelper.sanitize(e.toString())}',
+      );
     }
     client.setSession('');
     try {

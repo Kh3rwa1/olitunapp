@@ -131,8 +131,10 @@ class AppwriteAuthService {
       _requireCurrent(owner);
       await prefs.setBool(_hasLocalSessionKey, true);
       if (_isWeb) {
-        await prefs.setInt(SessionPersistence.webSessionTimestampKey,
-            (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch);
+        await prefs.setInt(
+          SessionPersistence.webSessionTimestampKey,
+          (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+        );
       }
       _requireCurrent(owner);
       return session;
@@ -142,9 +144,9 @@ class AppwriteAuthService {
   Future<models.Session> signInWithEmail({
     required String email,
     required String password,
-  }) => _createSession(() => _account.createEmailPasswordSession(
-    email: email, password: password,
-  ));
+  }) => _createSession(
+    () => _account.createEmailPasswordSession(email: email, password: password),
+  );
 
   /// Ping Appwrite backend to verify setup
   Future<void> ping() async {
@@ -182,9 +184,9 @@ class AppwriteAuthService {
     required String secret,
   }) async {
     AppLogger.debug('Appwrite: Verifying OTP token');
-    return _createSession(() => _account.createSession(
-      userId: userId, secret: secret,
-    ));
+    return _createSession(
+      () => _account.createSession(userId: userId, secret: secret),
+    );
   }
 
   // ─── Google OAuth ───
@@ -258,7 +260,10 @@ class AppwriteAuthService {
           final user = await _account.get();
           ownerId = user.$id;
         } else {
-          final session = await _account.createSession(userId: userId, secret: secret);
+          final session = await _account.createSession(
+            userId: userId,
+            secret: secret,
+          );
           _requireCurrent(scope);
           ownerId = session.userId;
           if (_isWeb) await _persistWebSession(session.secret);
@@ -269,7 +274,9 @@ class AppwriteAuthService {
       });
       return true;
     } catch (e) {
-      AppLogger.debug('Appwrite: OAuth session failed: ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: OAuth session failed: ${RedactionHelper.sanitize(e.toString())}',
+      );
       return false;
     }
   }
@@ -382,7 +389,9 @@ class AppwriteAuthService {
     await _restoreWebSession();
     final scope = AccountScope.capture(prefs);
     if (scope.isExplicitlySignedOut) throw AppwriteException('Signed out', 401);
-    final connectivityResults = await (_connectivityOverride?.call() ?? Connectivity().checkConnectivity());
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
@@ -399,7 +408,9 @@ class AppwriteAuthService {
 
   /// Update user display name
   Future<models.User> updateName(String name) async {
-    final connectivityResults = await (_connectivityOverride?.call() ?? Connectivity().checkConnectivity());
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
@@ -410,24 +421,31 @@ class AppwriteAuthService {
 
   /// Update user preferences (for progress sync)
   Future<void> updatePrefs(Map<String, dynamic> prefs) async {
-    final connectivityResults = await (_connectivityOverride?.call() ?? Connectivity().checkConnectivity());
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    await AccountScope.dispatch(() => _account
-        .updatePrefs(prefs: prefs)
-        .timeout(const Duration(seconds: 3)));
+    await AccountScope.dispatch(
+      () => _account
+          .updatePrefs(prefs: prefs)
+          .timeout(const Duration(seconds: 3)),
+    );
     AccountScope.checkOperation();
   }
 
   /// Get user preferences
   Future<models.Preferences> getPrefs() async {
-    final connectivityResults = await (_connectivityOverride?.call() ?? Connectivity().checkConnectivity());
+    final connectivityResults =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    final result = await AccountScope.dispatch(() =>
-        _account.getPrefs().timeout(const Duration(seconds: 3)));
+    final result = await AccountScope.dispatch(
+      () => _account.getPrefs().timeout(const Duration(seconds: 3)),
+    );
     AccountScope.checkOperation();
     return result;
   }
@@ -441,10 +459,13 @@ class AppwriteAuthService {
     await AccountScope.dispatch(() async {
       if (!scope.isCurrent) return;
       try {
-        await _account.deleteSession(sessionId: 'current')
+        await _account
+            .deleteSession(sessionId: 'current')
             .timeout(const Duration(seconds: 5));
       } catch (e) {
-        AppLogger.debug('Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}');
+        AppLogger.debug(
+          'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
+        );
       } finally {
         if (scope.isCurrent) await _clearLocalSessionState();
       }

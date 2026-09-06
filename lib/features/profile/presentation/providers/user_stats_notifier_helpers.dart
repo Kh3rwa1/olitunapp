@@ -8,7 +8,8 @@ extension _UserStatsNotifierHelpers on UserStatsNotifier {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       final scope = AccountScope.capture(prefs);
-      final isSynced = prefs.getBool(scope.syncKey) ??
+      final isSynced =
+          prefs.getBool(scope.syncKey) ??
           (scope.isGuest ? prefs.getBool('is_stats_synced') ?? true : false);
       ref.read(isStatsSyncedProvider.notifier).state = isSynced;
     } catch (_) {

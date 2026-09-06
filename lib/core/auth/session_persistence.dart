@@ -26,8 +26,7 @@ class SessionPersistence {
     final isWeb = isWebOverride ?? kIsWeb;
     try {
       if (isWeb) {
-        // On Web, NEVER store raw session secret in plain SharedPreferences (window.localStorage).
-        // Appwrite handles HTTP cookies (a_session_*). Store only validity metadata.
+        // Web credentials stay in the SDK/cookie, never in localStorage.
         await prefs.remove(webSessionSecretKey);
         await prefs.setInt(
           webSessionTimestampKey,
@@ -60,35 +59,39 @@ class SessionPersistence {
     final secret = prefs.getString(webSessionSecretKey);
     final ts = prefs.getInt(webSessionTimestampKey);
     final hasSession = prefs.getBool(hasLocalSessionKey) ?? false;
-
-    // Purge legacy plain secret string if present on Web
     if (secret != null && secret.isNotEmpty) {
       await prefs.remove(webSessionSecretKey);
     }
-
     if (!hasSession ||
         ts == null ||
         !isWebSessionValidTimestamp(ts, nowOverride: nowProvider?.call())) {
       AppLogger.debug(
-        'Appwrite: Web session timestamp invalid; failing closed and clearing',
+        'Appwrite: Web session timestamp invalid; clearing credential metadata',
       );
-      await clearLocalSessionState(client: client, prefs: prefs);
-      return;
+      // Expired credentials are not an explicit logout. Offline progress still
+      // belongs to its original account, and a valid cookie may be identified
+      // online. Never turn expiry into guest ownership or a logout tombstone.
+      await clearLocalSessionState(
+        client: client,
+        prefs: prefs,
+        forgetAccount: false,
+      );
     }
-    // On Web, session validation delegates to Appwrite cookie authentication via account.get()
   }
 
   static Future<void> clearLocalSessionState({
     required Client client,
     required SharedPreferences prefs,
+    bool forgetAccount = true,
   }) async {
-    // Invalidate in-flight progress before any asynchronous credential cleanup.
-    try {
-      await AccountScope.signOut(prefs);
-    } catch (e) {
-      AppLogger.debug(
-        'Appwrite: Failed to persist sign-out scope: ${RedactionHelper.sanitize(e.toString())}',
-      );
+    if (forgetAccount) {
+      try {
+        await AccountScope.signOut(prefs);
+      } catch (e) {
+        AppLogger.debug(
+          'Appwrite: Failed to persist sign-out scope: ${RedactionHelper.sanitize(e.toString())}',
+        );
+      }
     }
     client.setSession('');
     try {

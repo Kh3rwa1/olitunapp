@@ -27,9 +27,11 @@ jobs:
           if ! grep -q 'AccountScope.beginSignIn' test/features/profile/progress_merge_concurrency_test.dart; then
             python3 tool/migrate_account_scope_fixtures.py
           fi
+          if ! grep -q 'bool preserveAccount' lib/core/auth/appwrite_auth_service.dart; then
+            python3 tool/fix_session_scope_edges.py
+          fi
           flutter pub get
           git diff --name-only origin/main...HEAD -- '*.dart' | xargs -r dart format
-          dart format test/features/profile/progress_merge_concurrency_test.dart test/core/auth/appwrite_auth_service_test.dart lib/features/profile/presentation/providers/user_stats_provider.dart
       - name: Validate auth and profile behavior
         run: |
           set +e
@@ -38,7 +40,7 @@ jobs:
           flutter test test/core/auth test/features/auth test/features/profile --reporter expanded > /tmp/scope-tests.log 2>&1
           tests=$?
           printf 'Analyze exit: %s\nAuth/profile test exit: %s\n' "$analyze" "$tests" > /tmp/scope-status.log
-      - name: Commit fixture migration only to review branch
+      - name: Commit reviewed migration only to review branch
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -46,7 +48,7 @@ jobs:
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'test(auth): bind fixture owners and format scoped progress changes'
+            git commit -m 'fix(auth): retain offline owner across credential expiry'
             gh auth setup-git
             git push origin HEAD:refs/heads/fix/offline-account-scoping-20260906
           fi

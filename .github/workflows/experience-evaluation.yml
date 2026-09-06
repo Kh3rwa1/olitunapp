@@ -67,6 +67,18 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Collect fast targeted diagnostics
+        continue-on-error: true
+        env:
+          TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: python3 tool/report_experience_checks.py
+      - name: Publish early diagnostic report on this PR
+        if: always() && hashFiles('build/experience-diagnostics/comment.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --input build/experience-diagnostics/comment.json
       - name: Collect full Flutter diagnostics
         env:
           TESTED_HEAD: ${{ github.event.pull_request.head.sha }}

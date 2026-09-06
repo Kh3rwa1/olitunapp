@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itun/shared/widgets/content_load_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,8 +24,18 @@ class VocabularyListContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allWords = ref.watch(learnerWordsProvider).value ?? [];
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final contentAsync = ref.watch(learnerWordsProvider);
+    final lessonsAsync = ref.watch(learnerLessonsProvider);
+    final loadState = buildContentLoadGuard(
+      [contentAsync, lessonsAsync],
+      onRetry: () {
+        ref.invalidate(contentListProvider((ContentKind.word, null)));
+        ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+      },
+    );
+    if (loadState != null) return loadState;
+    final allWords = contentAsync.requireValue;
+    final lessons = lessonsAsync.requireValue;
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final words = _scopeWords(allWords, lesson);

@@ -103,6 +103,12 @@ final quizResultProvider =
         final lessonId = quizId.substring('listening_quiz_'.length);
         final lessonsAsync = ref.watch(learnerLessonsProvider);
 
+        if (lessonsAsync.hasError) {
+          return AsyncValue.error(
+            lessonsAsync.error!,
+            lessonsAsync.stackTrace ?? StackTrace.current,
+          );
+        }
         if (lessonsAsync.isLoading) {
           return const AsyncValue.loading();
         }
@@ -136,6 +142,12 @@ final quizResultProvider =
         final lessonId = quizId.substring('dynamic_quiz_'.length);
         final lessonsAsync = ref.watch(learnerLessonsProvider);
 
+        if (lessonsAsync.hasError) {
+          return AsyncValue.error(
+            lessonsAsync.error!,
+            lessonsAsync.stackTrace ?? StackTrace.current,
+          );
+        }
         if (lessonsAsync.isLoading) {
           return const AsyncValue.loading();
         }

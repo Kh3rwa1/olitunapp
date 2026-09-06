@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itun/shared/widgets/content_load_guard.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -24,8 +25,18 @@ class LetterGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allLetters = ref.watch(learnerLettersProvider).value ?? [];
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final contentAsync = ref.watch(learnerLettersProvider);
+    final lessonsAsync = ref.watch(learnerLessonsProvider);
+    final loadState = buildContentLoadGuard(
+      [contentAsync, lessonsAsync],
+      onRetry: () {
+        ref.invalidate(contentListProvider((ContentKind.letter, null)));
+        ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+      },
+    );
+    if (loadState != null) return loadState;
+    final allLetters = contentAsync.requireValue;
+    final lessons = lessonsAsync.requireValue;
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     // Scope letters to this lesson's blocks

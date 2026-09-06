@@ -14,7 +14,9 @@ Base: `0e0730f66c2e596305b7fca1a255255f6adcf7de`.
 
 - Executed locally in the editing sandbox: 30 new focused Node tests passed (18 production restore-path tests and 12 release-gate tests), using Node 24.14.1 and mocked I/O. No Appwrite/Razorpay/production mutations were performed.
 - Added three Flutter widget tests for post-frame start ordering, rebuild deduplication, and a hung/late-failing optional SDK.
-- Flutter/Dart and a full checkout were unavailable in the editing sandbox. Full Flutter formatting, analysis, tests, Node 22 compatibility, existing backend regressions, and platform builds must pass repository CI before merge. The local Node result is not the full backend-suite result.
+- Full Node Serverless Function Tests passed on GitHub CI with Node 22 at `34bdb98a8a26b4358dc4f74b80ee9740bbb602a5`, after correcting API URL construction and adding explicit request-target assertions. CI job: https://github.com/Kh3rwa1/olitunapp/actions/runs/34005804668/job/101412667690 .
+- Applied the Flutter formatter's reported change to the new widget test. A temporary same-repository diagnostics workflow was removed after diagnosis; its report is retained on PR #271.
+- Flutter/Dart and a full checkout were unavailable in the editing sandbox. The final branch head still requires green repository CI for formatting, static analysis, Flutter tests/coverage, security, and platform builds before merge. The successful Node job above is scoped to its recorded commit, not an assertion that all final-head checks passed.
 
 ## Important remaining limits
 

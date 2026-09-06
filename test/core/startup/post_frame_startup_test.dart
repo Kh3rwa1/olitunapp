@@ -35,10 +35,8 @@ void main() {
     tester,
   ) async {
     var starts = 0;
-    Widget app() => PostFrameStartup(
-      onStart: () => starts++,
-      child: const SizedBox(),
-    );
+    Widget app() =>
+        PostFrameStartup(onStart: () => starts++, child: const SizedBox());
     await tester.pumpWidget(app());
     await tester.pumpWidget(app());
     expect(starts, 1);

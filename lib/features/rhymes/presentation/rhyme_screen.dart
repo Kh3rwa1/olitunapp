@@ -107,7 +107,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      bottomNavigationBar: const BannerAdWidget(placement: 'rhymes_bottom'),
       body: Stack(
         children: [
           WhimsicalBackground(
@@ -184,6 +183,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       // --- Bento Grid ---
                       _buildBentoGrid(rhymesAsync, isDark, isTablet, isDesktop),
 
+                      const SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: RepaintBoundary(
+                            child: BannerAdWidget(placement: 'rhymes_bottom'),
+                          ),
+                        ),
+                      ),
                       const SliverToBoxAdapter(child: SizedBox(height: 120)),
                     ] else ...[
                       SliverToBoxAdapter(

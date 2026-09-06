@@ -7,9 +7,11 @@ import '../repositories/content_repository.dart';
 final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
   return ref
       .watch(contentListProvider((ContentKind.lesson, null)))
-      .whenData((list) => list
-          .map((item) => scopeLessonMedia(item.toLessonEntity()))
-          .toList());
+      .whenData(
+        (list) => list
+            .map((item) => scopeLessonMedia(item.toLessonEntity()))
+            .toList(),
+      );
 });
 
 final learnerWordsProvider = Provider<AsyncValue<List<WordModel>>>((ref) {

@@ -51,19 +51,21 @@ class PrivateAudioPlayback {
       });
       if (playing) {
         // play() completes at the END of the clip, not when playback starts.
-        unawaited(player.play().catchError((Object _) async {
-          if (generation == _generation) {
-            cancel();
-            await player.stop();
-          }
-        }));
+        unawaited(
+          player.play().catchError((Object _) async {
+            if (generation == _generation) {
+              cancel();
+              await _stopSafely();
+            }
+          }),
+        );
       }
       return true;
     } catch (_) {
       // Never log player errors: they may contain a tokenized URI.
       if (generation == _generation) {
         cancel();
-        await player.stop();
+        await _stopSafely();
       }
       return false;
     }
@@ -77,6 +79,14 @@ class PrivateAudioPlayback {
     // Seeking may initiate new range requests after a long pause. Obtain a
     // fresh, reauthorized lease rather than reusing an expired player URI.
     await _load(position, player.playing);
+  }
+
+  Future<void> _stopSafely() async {
+    try {
+      await player.stop();
+    } catch (_) {
+      // A disposed/failed player must not leak URI-bearing errors from timers.
+    }
   }
 
   void cancel() {

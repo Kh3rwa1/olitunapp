@@ -22,7 +22,7 @@ final audioServiceProvider = Provider((ref) {
 
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
-  PrivateAudioPlayback? _privatePlayback;
+  late final PrivateAudioPlayback? _privatePlayback;
 
   /// Grace period after a clip finishes before the media session is
   /// released. Must comfortably exceed the playback controller's
@@ -33,9 +33,9 @@ class AudioService {
   StreamSubscription<ProcessingState>? _sessionReleaseSub;
 
   AudioService({AuthorizedMediaService? mediaService}) {
-    if (mediaService != null) {
-      _privatePlayback = PrivateAudioPlayback(_player, mediaService);
-    }
+    _privatePlayback = mediaService == null
+        ? null
+        : PrivateAudioPlayback(_player, mediaService);
     _initWebCrossOrigin();
     _initMediaSessionRelease();
   }

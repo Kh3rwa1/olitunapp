@@ -125,7 +125,10 @@ class _HeroMediaSource extends StatelessWidget {
     if (image != null && image.isNotEmpty) {
       final centeredFallback = Center(child: fallback);
       if (PrivateMediaReference.parse(image) != null) {
-        return AuthorizedMediaDisplay(source: image, fallback: centeredFallback);
+        return AuthorizedMediaDisplay(
+          source: image,
+          fallback: centeredFallback,
+        );
       }
       switch (MediaTypeResolver.resolve(image)) {
         case MediaKind.video:

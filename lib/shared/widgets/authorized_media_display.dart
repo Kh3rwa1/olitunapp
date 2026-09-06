@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
@@ -69,7 +71,11 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
     final volume = preserve ? old?.value.volume : null;
     final speed = preserve ? old?.value.playbackSpeed : null;
     _controller = null;
-    if (mounted) setState(() { _lease = null; _failed = false; });
+    if (mounted)
+      setState(() {
+        _lease = null;
+        _failed = false;
+      });
     VideoPlayerController? candidate;
     try {
       await old?.dispose();
@@ -95,7 +101,8 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
         }
         _controller = candidate;
         candidate.addListener(_checkPlayerError);
-      } else if (!(lease.mimeType?.startsWith('image/') ?? false)) {
+      } else if (!(lease.mimeType?.startsWith('image/') ?? false) &&
+          lease.mimeType != 'application/json') {
         throw const MediaAccessException();
       }
       final delay = lease.refreshAfter(service.clock());
@@ -105,11 +112,16 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
       _refresh = Timer(delay, () => unawaited(_load()));
       if (mounted) setState(() => _lease = lease);
     } catch (_) {
-      await candidate?.dispose();
+      try {
+        await candidate?.dispose();
+      } catch (_) {}
       if (mounted && generation == _generation) {
         _controller = null;
         _refresh?.cancel();
-        setState(() { _lease = null; _failed = true; });
+        setState(() {
+          _lease = null;
+          _failed = true;
+        });
       }
     }
   }
@@ -122,7 +134,11 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
     final controller = _controller;
     _controller = null;
     unawaited(controller?.dispose());
-    if (mounted) setState(() { _failed = true; _lease = null; });
+    if (mounted)
+      setState(() {
+        _failed = true;
+        _lease = null;
+      });
   }
 
   @override
@@ -141,23 +157,42 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
       unawaited(_load(preserve: false));
     });
     if (_failed) {
-      return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        widget.fallback,
-        IconButton(
-          tooltip: 'Retry media',
-          onPressed: () => unawaited(_load(preserve: false)),
-          icon: const Icon(Icons.refresh),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            widget.fallback,
+            IconButton(
+              tooltip: 'Retry media',
+              onPressed: () => unawaited(_load(preserve: false)),
+              icon: const Icon(Icons.refresh),
+            ),
+          ],
         ),
-      ]));
+      );
     }
     final lease = _lease;
     if (lease == null) return const Center(child: CircularProgressIndicator());
     final controller = _controller;
     if (controller == null) {
+      if (lease.mimeType == 'image/svg+xml') {
+        return SvgPicture.network(
+          lease.uri.toString(),
+          fit: widget.fit,
+          errorBuilder: (_, _, _) => _retryView(),
+        );
+      }
+      if (lease.mimeType == 'application/json') {
+        return Lottie.network(
+          lease.uri.toString(),
+          fit: widget.fit,
+          errorBuilder: (_, _, _) => _retryView(),
+        );
+      }
       return Image.network(
         lease.uri.toString(),
         fit: widget.fit,
-        errorBuilder: (_, _, _) => widget.fallback,
+        errorBuilder: (_, _, _) => _retryView(),
       );
     }
     return GestureDetector(
@@ -180,6 +215,20 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
       ),
     );
   }
+
+  Widget _retryView() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        widget.fallback,
+        IconButton(
+          tooltip: 'Retry media',
+          onPressed: () => unawaited(_load(preserve: false)),
+          icon: const Icon(Icons.refresh),
+        ),
+      ],
+    ),
+  );
 
   Future<void> _resume() async {
     final generation = _generation + 1;

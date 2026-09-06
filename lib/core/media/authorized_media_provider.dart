@@ -6,7 +6,7 @@ import '../config/appwrite_config.dart';
 import 'authorized_media.dart';
 
 final authorizedMediaServiceProvider = Provider<AuthorizedMediaService>((ref) {
-  ref.watch(currentUserProvider.select((state) => state.value?.id));
+  ref.watch(currentUserProvider.select((state) => state.valueOrNull?.id));
   final functions = ref.watch(appwriteFunctionsServiceProvider);
   return AuthorizedMediaService(
     endpoint: AppwriteConfig.endpoint,

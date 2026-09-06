@@ -101,9 +101,8 @@ class MediaLease {
   }
 }
 
-typedef MediaExecute = Future<Map<String, dynamic>> Function(
-  Map<String, dynamic> body,
-);
+typedef MediaExecute =
+    Future<Map<String, dynamic>> Function(Map<String, dynamic> body);
 
 /// No token cache, disk writes, URL logging or binary downloads. Each call is
 /// reauthorized using the current Appwrite session, including every refresh.

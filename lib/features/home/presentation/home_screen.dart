@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itun/shared/widgets/content_load_guard.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -87,7 +88,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final statsAsync = ref.watch(userStatsProvider);
     final completedIds = statsAsync.value?.completedLessons ?? {};
-    final allLessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final lessonsAsync = ref.watch(learnerLessonsProvider);
+    final allLessons = lessonsAsync.valueOrNull ?? [];
     final nextLesson = continueLessonFor(
       lessons: allLessons,
       completedLessonIds: completedIds,
@@ -149,7 +151,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             : Column(
                 children: [
                   RepaintBoundary(
-                    child: NextBestActionCard(nextLessonId: nextLesson?.id),
+                    child:
+                        buildContentLoadGuard(
+                          [lessonsAsync],
+                          onRetry: () => ref.invalidate(
+                            contentListProvider((ContentKind.lesson, null)),
+                          ),
+                        ) ??
+                        NextBestActionCard(nextLessonId: nextLesson?.id),
                   ),
                   // Phase 7 (spec §15): proficiency-based path card, gated on
                   // the audio-quizzes flag so flag-off keeps home identical.

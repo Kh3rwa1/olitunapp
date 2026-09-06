@@ -60,8 +60,24 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
   void _updateDynamicQuizzes() {
     if (_disposed) return;
 
-    final words = ref.read(learnerWordsProvider).value;
-    final sentences = ref.read(learnerSentencesProvider).value;
+    final wordsAsync = ref.read(learnerWordsProvider);
+    final sentencesAsync = ref.read(learnerSentencesProvider);
+    if (wordsAsync.hasError || sentencesAsync.hasError) {
+      // Base quizzes are independently valid cached/bundled content. Do not
+      // discard them, but do not invent empty success if no fallback exists.
+      if (_baseQuizzes.isNotEmpty) {
+        state = AsyncValue.data(_baseQuizzes);
+      } else {
+        final failed = wordsAsync.hasError ? wordsAsync : sentencesAsync;
+        state = AsyncValue.error(
+          failed.error!,
+          failed.stackTrace ?? StackTrace.current,
+        );
+      }
+      return;
+    }
+    final words = wordsAsync.valueOrNull;
+    final sentences = sentencesAsync.valueOrNull;
     if (words == null || sentences == null) {
       if (_baseQuizzes.isNotEmpty) {
         state = AsyncValue.data(_baseQuizzes);

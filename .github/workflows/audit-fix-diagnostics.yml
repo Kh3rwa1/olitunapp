@@ -51,6 +51,7 @@ jobs:
           const diff = read('/tmp/audit-format.diff').slice(0, 16000);
           const status = read('/tmp/audit-node-status').trim();
           const body = `## Scoped audit diagnostics\nCommit: ${process.env.SOURCE_SHA}\nBackend exit: ${status}\n\n\`\`\`text\n${failures || '(no matching error lines)'}\n\`\`\`\n\nFormatter diff (not committed):\n\`\`\`diff\n${diff || '(no changes)'}\n\`\`\``;
-          const response = await fetch(`{{https://api.github.com/repos/${process.env.GITHUB_REPOSITORY}}}/issues/${process.env.PR_NUMBER}/comments`, {method:'POST', headers:{Authorization:`Bearer ${process.env.GITHUB_TOKEN}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'}, body:JSON.stringify({body})});
+          const url = ['https:', '', 'api.github.com', 'repos', process.env.GITHUB_REPOSITORY, 'issues', process.env.PR_NUMBER, 'comments'].join('/');
+          const response = await fetch(url, {method:'POST', headers:{Authorization:`Bearer ${process.env.GITHUB_TOKEN}`, Accept:'application/vnd.github+json', 'Content-Type':'application/json'}, body:JSON.stringify({body})});
           if (!response.ok) throw new Error(`Could not publish diagnostics: HTTP ${response.status}`);
           JS

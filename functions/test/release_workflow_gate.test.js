@@ -36,6 +36,9 @@ test('workflow API requests are commit-scoped and both required workflows are ch
   const result = await requireReleaseWorkflows({ repository: 'owner/repo', sha, token: 'test-only',
     fetchImpl: async url => {
       urls.push(String(url));
+      assert.equal(url.hostname, 'api.github.com');
+      assert.ok(url.pathname.startsWith('/repos/owner/repo/actions/workflows/'));
+      assert.ok(url.pathname.endsWith('/runs'));
       assert.equal(url.searchParams.get('head_sha'), sha);
       assert.equal(url.searchParams.get('event'), 'push');
       return { ok: true, json: async () => ({ total_count: 1, workflow_runs: [{ ...success }] }) };

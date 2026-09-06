@@ -27,7 +27,7 @@ export async function requireReleaseWorkflows({ repository, sha, token, fetchImp
   }
   const runsByWorkflow = {};
   for (const workflow of REQUIRED_WORKFLOWS) {
-    const url = new URL(`{{https://api.github.com/repos/${repository}}}/actions/workflows/${workflow}/runs`);
+    const url = new URL(['https:', '', 'api.github.com', 'repos', repository, 'actions', 'workflows', workflow, 'runs'].join('/'));
     url.searchParams.set('head_sha', sha);
     url.searchParams.set('event', 'push');
     url.searchParams.set('per_page', '100');

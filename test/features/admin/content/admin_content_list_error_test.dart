@@ -24,10 +24,10 @@ void main() {
     final repository = MockContentRepository();
     final categories = MockCategoryRepository();
     when(
-      () => categories.getCategories(),
+      categories.getCategories,
     ).thenAnswer((_) async => const Right(<CategoryEntity>[]));
     when(
-      () => repository.list(ContentKind.word, categoryId: null),
+      () => repository.list(ContentKind.word),
     ).thenAnswer((_) async => const Left(NetworkFailure()));
 
     final container = ProviderContainer(
@@ -57,7 +57,7 @@ void main() {
     expect(find.text('CSV Export'), findsNothing);
 
     when(
-      () => repository.list(ContentKind.word, categoryId: null),
+      () => repository.list(ContentKind.word),
     ).thenAnswer((_) async => const Right(<ContentItem>[]));
     await tester.tap(find.text('Try again'));
     await tester.pumpAndSettle();
@@ -65,9 +65,7 @@ void main() {
     expect(find.byType(AdminErrorState), findsNothing);
     expect(find.text('No items found'), findsOneWidget);
     expect(find.text('CSV Export'), findsOneWidget);
-    verify(
-      () => repository.list(ContentKind.word, categoryId: null),
-    ).called(2);
+    verify(() => repository.list(ContentKind.word)).called(2);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox.shrink());
   });

@@ -57,7 +57,7 @@ void main() {
   for (final kind in ContentKind.values) {
     test('empty successful ${kind.name} catalog remains data', () async {
       when(
-        () => repository.list(kind, categoryId: null),
+        () => repository.list(kind),
       ).thenAnswer((_) async => const Right(<ContentItem>[]));
       final provider = contentListProvider((kind, null));
 
@@ -92,7 +92,7 @@ void main() {
 
   test('retry clears the error after a successful fetch', () async {
     when(
-      () => repository.list(ContentKind.word, categoryId: null),
+      () => repository.list(ContentKind.word),
     ).thenAnswer((_) async => const Left(NetworkFailure()));
     final provider = contentListProvider((ContentKind.word, null));
     await expectLater(
@@ -101,15 +101,13 @@ void main() {
     );
 
     when(
-      () => repository.list(ContentKind.word, categoryId: null),
+      () => repository.list(ContentKind.word),
     ).thenAnswer((_) async => const Right(<ContentItem>[]));
     container.invalidate(provider);
 
     expect(await container.read(provider.future), isEmpty);
     expect(container.read(provider).hasError, isFalse);
     expect(container.read(provider).asData, isNotNull);
-    verify(
-      () => repository.list(ContentKind.word, categoryId: null),
-    ).called(2);
+    verify(() => repository.list(ContentKind.word)).called(2);
   });
 }

@@ -107,40 +107,64 @@ class AdService with WidgetsBindingObserver {
     void Function(Ad)? onClosed,
     void Function(Ad)? onImpression,
     void Function(Ad)? onClicked,
+    bool enableFallback = true,
   }) {
     if (kIsWeb || !canServeAds) return null;
 
-    final unitId = AdConfig.bannerAdUnitId;
-    if (unitId.isEmpty) return null;
+    final primaryUnitId = AdConfig.bannerAdUnitId;
+    final fallbackUnitId = AdConfig.fallbackBannerAdUnitId;
+    if (primaryUnitId.isEmpty) return null;
 
-    BannerAd? banner;
-    banner = BannerAd(
-      adUnitId: unitId,
-      size: size,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (ad) {
-          _activeAds.add(ad);
-          onLoaded(ad);
-        },
-        onAdFailedToLoad: (ad, error) {
-          _activeAds.remove(ad);
-          ad.dispose();
-          onFailed(ad, error);
-        },
-        onAdOpened: onOpened,
-        onAdClosed: onClosed,
-        onAdImpression: onImpression,
-        onAdClicked: onClicked,
-      ),
-    );
+    BannerAd createInstance(String unitId, bool isFallback) {
+      late BannerAd banner;
+      banner = BannerAd(
+        adUnitId: unitId,
+        size: size,
+        request: const AdRequest(),
+        listener: BannerAdListener(
+          onAdLoaded: (ad) {
+            _activeAds.add(ad);
+            onLoaded(ad);
+          },
+          onAdFailedToLoad: (ad, error) {
+            _activeAds.remove(ad);
+            ad.dispose();
+            if (!isFallback &&
+                enableFallback &&
+                fallbackUnitId.isNotEmpty &&
+                primaryUnitId != fallbackUnitId &&
+                (error.code == 3 || error.code == 0)) {
+              AppLogger.debug(
+                'AdService: Banner ad failed with code ${error.code} ($primaryUnitId). Falling back to test unit ($fallbackUnitId).',
+              );
+              try {
+                final fallbackBanner = createInstance(fallbackUnitId, true);
+                fallbackBanner.load();
+                return;
+              } catch (e) {
+                AppLogger.debug('AdService: Fallback banner failed: $e');
+              }
+            }
+            onFailed(ad, error);
+          },
+          onAdOpened: onOpened,
+          onAdClosed: onClosed,
+          onAdImpression: onImpression,
+          onAdClicked: onClicked,
+        ),
+      );
+      return banner;
+    }
 
+    final banner = createInstance(primaryUnitId, false);
     banner.load();
     return banner;
   }
 
   /// Load Interstitial Ad.
-  Future<Either<AdError, InterstitialAd>> loadInterstitialAd() async {
+  Future<Either<AdError, InterstitialAd>> loadInterstitialAd({
+    bool enableFallback = true,
+  }) async {
     if (kIsWeb) {
       return left<AdError, InterstitialAd>(const AdPlatformUnsupportedError());
     }
@@ -154,8 +178,9 @@ class AdService with WidgetsBindingObserver {
       );
     }
 
-    final unitId = AdConfig.interstitialAdUnitId;
-    if (unitId.isEmpty) {
+    final primaryUnitId = AdConfig.interstitialAdUnitId;
+    final fallbackUnitId = AdConfig.fallbackInterstitialAdUnitId;
+    if (primaryUnitId.isEmpty) {
       return left<AdError, InterstitialAd>(
         const AdInitError('Interstitial ad unit ID is empty'),
       );
@@ -163,29 +188,45 @@ class AdService with WidgetsBindingObserver {
 
     final completer = Completer<Either<AdError, InterstitialAd>>();
 
-    InterstitialAd.load(
-      adUnitId: unitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _activeAds.add(ad);
-          completer.complete(right<AdError, InterstitialAd>(ad));
-        },
-        onAdFailedToLoad: (error) {
-          completer.complete(
-            left<AdError, InterstitialAd>(
-              AdLoadError(error.message, error.code.toString()),
-            ),
-          );
-        },
-      ),
-    );
+    void loadWithUnit(String unitId, bool isFallback) {
+      InterstitialAd.load(
+        adUnitId: unitId,
+        request: const AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (ad) {
+            _activeAds.add(ad);
+            completer.complete(right<AdError, InterstitialAd>(ad));
+          },
+          onAdFailedToLoad: (error) {
+            if (!isFallback &&
+                enableFallback &&
+                fallbackUnitId.isNotEmpty &&
+                primaryUnitId != fallbackUnitId &&
+                (error.code == 3 || error.code == 0)) {
+              AppLogger.debug(
+                'AdService: Interstitial failed with code ${error.code} ($primaryUnitId). Falling back to test unit ($fallbackUnitId).',
+              );
+              loadWithUnit(fallbackUnitId, true);
+              return;
+            }
+            completer.complete(
+              left<AdError, InterstitialAd>(
+                AdLoadError(error.message, error.code.toString()),
+              ),
+            );
+          },
+        ),
+      );
+    }
 
+    loadWithUnit(primaryUnitId, false);
     return completer.future;
   }
 
   /// Load Rewarded Ad.
-  Future<Either<AdError, RewardedAd>> loadRewardedAd() async {
+  Future<Either<AdError, RewardedAd>> loadRewardedAd({
+    bool enableFallback = true,
+  }) async {
     if (kIsWeb) {
       return left<AdError, RewardedAd>(const AdPlatformUnsupportedError());
     }
@@ -199,8 +240,9 @@ class AdService with WidgetsBindingObserver {
       );
     }
 
-    final unitId = AdConfig.rewardedAdUnitId;
-    if (unitId.isEmpty) {
+    final primaryUnitId = AdConfig.rewardedAdUnitId;
+    final fallbackUnitId = AdConfig.fallbackRewardedAdUnitId;
+    if (primaryUnitId.isEmpty) {
       return left<AdError, RewardedAd>(
         const AdInitError('Rewarded ad unit ID is empty'),
       );
@@ -208,24 +250,38 @@ class AdService with WidgetsBindingObserver {
 
     final completer = Completer<Either<AdError, RewardedAd>>();
 
-    RewardedAd.load(
-      adUnitId: unitId,
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          _activeAds.add(ad);
-          completer.complete(right<AdError, RewardedAd>(ad));
-        },
-        onAdFailedToLoad: (error) {
-          completer.complete(
-            left<AdError, RewardedAd>(
-              AdLoadError(error.message, error.code.toString()),
-            ),
-          );
-        },
-      ),
-    );
+    void loadWithUnit(String unitId, bool isFallback) {
+      RewardedAd.load(
+        adUnitId: unitId,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (ad) {
+            _activeAds.add(ad);
+            completer.complete(right<AdError, RewardedAd>(ad));
+          },
+          onAdFailedToLoad: (error) {
+            if (!isFallback &&
+                enableFallback &&
+                fallbackUnitId.isNotEmpty &&
+                primaryUnitId != fallbackUnitId &&
+                (error.code == 3 || error.code == 0)) {
+              AppLogger.debug(
+                'AdService: Rewarded ad failed with code ${error.code} ($primaryUnitId). Falling back to test unit ($fallbackUnitId).',
+              );
+              loadWithUnit(fallbackUnitId, true);
+              return;
+            }
+            completer.complete(
+              left<AdError, RewardedAd>(
+                AdLoadError(error.message, error.code.toString()),
+              ),
+            );
+          },
+        ),
+      );
+    }
 
+    loadWithUnit(primaryUnitId, false);
     return completer.future;
   }
 
@@ -239,35 +295,57 @@ class AdService with WidgetsBindingObserver {
     void Function(Ad)? onClosed,
     void Function(Ad)? onImpression,
     void Function(Ad)? onClicked,
+    bool enableFallback = true,
   }) {
     if (kIsWeb || !canServeAds) return null;
 
-    final unitId = AdConfig.nativeAdUnitId;
-    if (unitId.isEmpty) return null;
+    final primaryUnitId = AdConfig.nativeAdUnitId;
+    final fallbackUnitId = AdConfig.fallbackNativeAdUnitId;
+    if (primaryUnitId.isEmpty) return null;
 
-    NativeAd? nativeAd;
-    nativeAd = NativeAd(
-      adUnitId: unitId,
-      factoryId: factoryId,
-      nativeTemplateStyle: nativeTemplateStyle,
-      request: const AdRequest(),
-      listener: NativeAdListener(
-        onAdLoaded: (ad) {
-          _activeAds.add(ad);
-          onLoaded(ad);
-        },
-        onAdFailedToLoad: (ad, error) {
-          _activeAds.remove(ad);
-          ad.dispose();
-          onFailed(ad, error);
-        },
-        onAdOpened: onOpened,
-        onAdClosed: onClosed,
-        onAdImpression: onImpression,
-        onAdClicked: onClicked,
-      ),
-    );
+    NativeAd createInstance(String unitId, bool isFallback) {
+      late NativeAd nativeAd;
+      nativeAd = NativeAd(
+        adUnitId: unitId,
+        factoryId: factoryId,
+        nativeTemplateStyle: nativeTemplateStyle,
+        request: const AdRequest(),
+        listener: NativeAdListener(
+          onAdLoaded: (ad) {
+            _activeAds.add(ad);
+            onLoaded(ad);
+          },
+          onAdFailedToLoad: (ad, error) {
+            _activeAds.remove(ad);
+            ad.dispose();
+            if (!isFallback &&
+                enableFallback &&
+                fallbackUnitId.isNotEmpty &&
+                primaryUnitId != fallbackUnitId &&
+                (error.code == 3 || error.code == 0)) {
+              AppLogger.debug(
+                'AdService: Native ad failed with code ${error.code} ($primaryUnitId). Falling back to test unit ($fallbackUnitId).',
+              );
+              try {
+                final fallbackAd = createInstance(fallbackUnitId, true);
+                fallbackAd.load();
+                return;
+              } catch (e) {
+                AppLogger.debug('AdService: Fallback native ad failed: $e');
+              }
+            }
+            onFailed(ad, error);
+          },
+          onAdOpened: onOpened,
+          onAdClosed: onClosed,
+          onAdImpression: onImpression,
+          onAdClicked: onClicked,
+        ),
+      );
+      return nativeAd;
+    }
 
+    final nativeAd = createInstance(primaryUnitId, false);
     nativeAd.load();
     return nativeAd;
   }

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +9,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../analytics/analytics_service.dart';
 import '../../logging/app_logger.dart';
+import '../../network/network_info.dart';
 import '../../theme/app_colors.dart';
 import '../ad_service.dart';
 import '../ad_state.dart';
@@ -30,6 +33,10 @@ class NativeAdWidget extends ConsumerStatefulWidget {
 class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
   NativeAd? _nativeAd;
   bool _isLoaded = false;
+  bool _hasPersistentError = false;
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
+  Timer? _retryTimer;
 
   @override
   void initState() {
@@ -41,6 +48,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
 
   @override
   void dispose() {
+    _retryTimer?.cancel();
     _nativeAd?.dispose();
     _nativeAd = null;
     super.dispose();
@@ -51,7 +59,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
     if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
 
     final adState = ref.read(adStateProvider);
-    if (!adState.shouldShowAds) return;
+    if (!adState.shouldShowAds || _hasPersistentError) return;
 
     try {
       final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -82,6 +90,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
         ),
       );
 
+      _nativeAd?.dispose();
+      _nativeAd = null;
+
       final adService = ref.read(adServiceProvider);
       _nativeAd = adService.createNativeAd(
         nativeTemplateStyle: templateStyle,
@@ -90,7 +101,12 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
             ad.dispose();
             return;
           }
-          setState(() => _isLoaded = true);
+          setState(() {
+            _nativeAd = ad as NativeAd;
+            _isLoaded = true;
+            _retryCount = 0;
+            _hasPersistentError = false;
+          });
           try {
             ref
                 .read(learningAnalyticsServiceProvider)
@@ -129,6 +145,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
               'NativeAdWidget: failed to log load-fail event: $e',
             );
           }
+          _scheduleRetry();
         },
         onClicked: (ad) {
           try {
@@ -146,9 +163,30 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
           }
         },
       );
+
+      if (_nativeAd == null) {
+        _scheduleRetry();
+      }
     } catch (e) {
       AppLogger.debug('NativeAdWidget: Error loading native ad: $e');
     }
+  }
+
+  void _scheduleRetry() {
+    if (_retryCount >= _maxRetries) {
+      setState(() => _hasPersistentError = true);
+      AppLogger.debug('NativeAdWidget: Max retries exceeded. Hiding ad.');
+      return;
+    }
+
+    _retryCount++;
+    final delaySeconds = 1 << (_retryCount - 1); // 1s, 2s, 4s
+    _retryTimer?.cancel();
+    _retryTimer = Timer(Duration(seconds: delaySeconds), () {
+      if (mounted && !_isLoaded) {
+        _loadNativeAd();
+      }
+    });
   }
 
   @override
@@ -160,6 +198,10 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           if (next.shouldShowAds) {
+            setState(() {
+              _hasPersistentError = false;
+              _retryCount = 0;
+            });
             _loadNativeAd();
           } else {
             _nativeAd?.dispose();
@@ -169,6 +211,24 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
         });
       }
     });
+
+    // Auto-recover when connectivity restored
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(
+      connectivityStreamProvider,
+      (previous, next) {
+        final wasOffline =
+            previous?.value?.contains(ConnectivityResult.none) ?? false;
+        final isOnline =
+            !(next.value?.contains(ConnectivityResult.none) ?? true);
+        if (wasOffline && isOnline && (!_isLoaded || _hasPersistentError)) {
+          setState(() {
+            _hasPersistentError = false;
+            _retryCount = 0;
+          });
+          _loadNativeAd();
+        }
+      },
+    );
     final adState = ref.watch(adStateProvider);
     if (!adState.shouldShowAds || !_isLoaded || _nativeAd == null) {
       return const SizedBox.shrink();

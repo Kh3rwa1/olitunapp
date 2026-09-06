@@ -259,11 +259,13 @@ class NotificationsSettingsCard extends ConsumerWidget {
               icon: const Icon(Icons.send_rounded, size: 16),
               label: const Text('Send Test Notification'),
               style: OutlinedButton.styleFrom(
-                foregroundColor:
-                    isDark ? AppColors.primaryLight : AppColors.primaryDark,
+                foregroundColor: isDark
+                    ? AppColors.primaryLight
+                    : AppColors.primaryDark,
                 side: BorderSide(
-                  color: (isDark ? AppColors.primaryLight : AppColors.primaryDark)
-                      .withValues(alpha: 0.4),
+                  color:
+                      (isDark ? AppColors.primaryLight : AppColors.primaryDark)
+                          .withValues(alpha: 0.4),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

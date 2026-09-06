@@ -65,9 +65,6 @@ class ProgressScreen extends ConsumerWidget {
           backgroundColor: isDark
               ? AppColors.darkBackground
               : AppColors.lightBackground,
-          bottomNavigationBar: const BannerAdWidget(
-            placement: 'profile_bottom',
-          ),
           body: BrandedRefreshIndicator(
             onRefresh: () async {
               ref.invalidate(userStatsProvider);
@@ -211,6 +208,10 @@ class ProgressScreen extends ConsumerWidget {
                           },
                           onShare: () =>
                               _shareProgress(context, userName, stats),
+                        ),
+                        const SizedBox(height: 24),
+                        const RepaintBoundary(
+                          child: BannerAdWidget(placement: 'profile_bottom'),
                         ),
                         // Clears the floating nav: 80 (nav) + 15 (margin) + viewPadding.bottom
                         // + breathing room, so the last card never sits under it.

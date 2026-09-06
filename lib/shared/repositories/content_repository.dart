@@ -1,20 +1,16 @@
 // ignore_for_file: deprecated_member_use
-import 'dart:convert';
-
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
-import 'package:itun/core/observability/crash_reporting.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
-import 'package:itun/features/lessons/data/models/lesson_model.dart';
+import 'content_seed_loader.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/models/content_item_extensions.dart';
+import 'package:itun/shared/security/premium_content_policy.dart';
 
 // Provider-level API lives in ../providers/content_providers.dart;
 // re-exported here for compatibility.
@@ -39,215 +35,10 @@ class ContentRepository {
        _networkInfo = networkInfo,
        _mutationOutbox = mutationOutbox;
 
-  static List<ContentItem>? _cachedBundledSentenceLessons;
-  static List<ContentItem>? _cachedBundledVocabLessons;
-  static List<ContentItem>? _cachedBundledSentences;
-  static List<ContentItem>? _cachedBundledWords;
-
   static Future<List<ContentItem>> _loadBundledSeedItems(
     ContentKind kind,
     String? categoryId,
-  ) async {
-    try {
-      if (kind == ContentKind.lesson) {
-        final List<ContentItem> allLessons = [];
-
-        // 1. Sentence & Grammar & Folktale Lessons (23 lessons)
-        if (_cachedBundledSentenceLessons == null) {
-          try {
-            final jsonStr = await rootBundle.loadString(
-              'assets/seed/sentence_lessons.json',
-            );
-            final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledSentenceLessons = raw
-                .cast<Map<String, dynamic>>()
-                .map((map) {
-                  final lesson = LessonModel.fromJson(map);
-                  return ContentItem(
-                    id: lesson.id,
-                    kind: ContentKind.lesson,
-                    categoryId: lesson.categoryId.isNotEmpty
-                        ? lesson.categoryId
-                        : 'cat_sentences',
-                    title: lesson.titleLatin,
-                    titleOlChiki: lesson.titleOlChiki.isNotEmpty
-                        ? lesson.titleOlChiki
-                        : null,
-                    subtitle: lesson.description,
-                    order: lesson.order,
-                    durationSeconds: lesson.estimatedMinutes * 60,
-                    blocks: lesson.blocks
-                        .asMap()
-                        .entries
-                        .map((e) => e.value.toContentBlock(e.key))
-                        .toList(),
-                    isPublished: true,
-                    updatedAt: DateTime(2026, 8, 30),
-                  );
-                })
-                .toList();
-          } catch (e, stack) {
-            _cachedBundledSentenceLessons = [];
-            _logSeedLoadFailure('sentence lessons', e, stack);
-          }
-        }
-
-        // 2. Vocab Lessons (14 lessons)
-        if (_cachedBundledVocabLessons == null) {
-          try {
-            final jsonStr = await rootBundle.loadString(
-              'assets/seed/vocab_lessons.json',
-            );
-            final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledVocabLessons = raw.cast<Map<String, dynamic>>().map((
-              map,
-            ) {
-              final lesson = LessonModel.fromJson(map);
-              return ContentItem(
-                id: lesson.id,
-                kind: ContentKind.lesson,
-                categoryId: lesson.categoryId.isNotEmpty
-                    ? lesson.categoryId
-                    : 'cat_vocab',
-                title: lesson.titleLatin,
-                titleOlChiki: lesson.titleOlChiki.isNotEmpty
-                    ? lesson.titleOlChiki
-                    : null,
-                subtitle: lesson.description,
-                order: lesson.order,
-                durationSeconds: lesson.estimatedMinutes * 60,
-                blocks: lesson.blocks
-                    .asMap()
-                    .entries
-                    .map((e) => e.value.toContentBlock(e.key))
-                    .toList(),
-                isPublished: true,
-                updatedAt: DateTime(2026, 8, 30),
-              );
-            }).toList();
-          } catch (e, stack) {
-            _cachedBundledVocabLessons = [];
-            _logSeedLoadFailure('lessons', e, stack);
-          }
-        }
-
-        allLessons.addAll(_cachedBundledSentenceLessons ?? []);
-        allLessons.addAll(_cachedBundledVocabLessons ?? []);
-
-        if (categoryId != null && categoryId.isNotEmpty) {
-          return allLessons.where((l) {
-            if (categoryId == 'cat_sentences' ||
-                categoryId == 'seed_sentences' ||
-                categoryId.contains('sentence')) {
-              return l.categoryId == 'cat_sentences' ||
-                  l.categoryId == 'seed_sentences' ||
-                  l.id.contains('sentence') ||
-                  l.id.contains('grammar') ||
-                  l.id.contains('story');
-            }
-            if (categoryId == 'cat_vocab' ||
-                categoryId == 'cat_words' ||
-                categoryId == 'seed_words' ||
-                categoryId.contains('vocab') ||
-                categoryId.contains('word')) {
-              return l.categoryId == 'cat_vocab' ||
-                  l.categoryId == 'cat_words' ||
-                  l.categoryId == 'seed_words' ||
-                  l.id.contains('vocab');
-            }
-            return l.categoryId == categoryId;
-          }).toList();
-        }
-        return allLessons;
-      }
-
-      if (kind == ContentKind.sentence) {
-        if (_cachedBundledSentences == null) {
-          try {
-            final jsonStr = await rootBundle.loadString(
-              'assets/seed/sentences.json',
-            );
-            final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledSentences = raw.cast<Map<String, dynamic>>().map((s) {
-              return ContentItem(
-                id: s['id'] as String? ?? '',
-                kind: ContentKind.sentence,
-                categoryId: s['category'] as String? ?? 'cat_sentences',
-                category: s['category'] as String? ?? 'General',
-                title: s['sentenceLatin'] as String? ?? '',
-                titleOlChiki: s['sentenceOlChiki'] as String?,
-                olChiki: s['sentenceOlChiki'] as String?,
-                subtitle: s['meaning'] as String?,
-                order: s['order'] as int? ?? 1,
-                audioUrl: s['audioUrl'] as String? ?? s['audio_url'] as String?,
-                blocks: const [],
-                tags: [
-                  if (s['usage'] != null) s['usage'] as String,
-                  if (s['pronunciation'] != null)
-                    'pronunciation:${s['pronunciation']}',
-                ],
-                isPublished: s['isActive'] as bool? ?? true,
-                updatedAt: DateTime(2026, 8, 30),
-              );
-            }).toList();
-          } catch (e, stack) {
-            _cachedBundledSentences = [];
-            _logSeedLoadFailure('sentences', e, stack);
-          }
-        }
-        return _cachedBundledSentences ?? [];
-      }
-
-      if (kind == ContentKind.word) {
-        if (_cachedBundledWords == null) {
-          try {
-            final jsonStr = await rootBundle.loadString(
-              'assets/seed/words.json',
-            );
-            final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledWords = raw.cast<Map<String, dynamic>>().map((w) {
-              return ContentItem(
-                id: w['id'] as String? ?? '',
-                kind: ContentKind.word,
-                categoryId: w['category'] as String? ?? 'cat_vocab',
-                category: w['category'] as String? ?? 'General',
-                title: w['wordLatin'] as String? ?? '',
-                titleOlChiki: w['wordOlChiki'] as String?,
-                olChiki: w['wordOlChiki'] as String?,
-                subtitle: w['meaning'] as String?,
-                order: w['order'] as int? ?? 1,
-                audioUrl: w['audioUrl'] as String? ?? w['audio_url'] as String?,
-                blocks: const [],
-                tags: [
-                  if (w['pronunciation'] != null)
-                    'pronunciation:${w['pronunciation']}',
-                ],
-                isPublished: w['isActive'] as bool? ?? true,
-                updatedAt: DateTime(2026, 8, 30),
-              );
-            }).toList();
-          } catch (e, stack) {
-            _cachedBundledWords = [];
-            _logSeedLoadFailure('words', e, stack);
-          }
-        }
-        return _cachedBundledWords ?? [];
-      }
-    } catch (e, stack) {
-      _logSeedLoadFailure('bundled seed', e, stack);
-    }
-    return [];
-  }
-
-  /// Seed loading failure is data-critical: the app loses its offline-first
-  /// fallback dataset, so surface it to logs AND crash reporting.
-  static void _logSeedLoadFailure(String what, Object e, StackTrace stack) {
-    AppLogger.error(
-      'ContentRepository: failed to load bundled seed $what: $e',
-      name: 'ContentRepository',
-    );
-    CrashReporting.recordError(e, stack);
-  }
+  ) => ContentSeedLoader.loadBundledSeedItems(kind, categoryId);
 
   static List<ContentItem> _mergeContentItems(
     List<ContentItem> bundled,
@@ -450,6 +241,46 @@ class ContentRepository {
     }
   }
 
+  Future<PublicationDecision> _publicationDecisionFor(ContentItem item) async {
+    if (item.kind != ContentKind.lesson) {
+      if (item.isPremium) {
+        return const PublicationDecision.protected('item-marked-premium');
+      }
+      return const PublicationDecision.public('non-lesson-content');
+    }
+
+    if (item.categoryId.trim().isEmpty) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryResolved: false,
+      );
+    }
+
+    try {
+      final category = await _databases
+          .getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: item.categoryId,
+          )
+          .timeout(const Duration(seconds: 6));
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryUnlockMode: category.data['unlockMode'] as String?,
+        lessonOrder: item.order,
+        previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+      );
+    } catch (_) {
+      return PremiumContentPolicy.forContentItem(
+        isPremium: item.isPremium,
+        categoryResolved: false,
+      );
+    }
+  }
+
+  List<String> _readPermissions(PublicationDecision decision) =>
+      decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
+
   /// Upserts a content item to Appwrite and updates the local cache.
   Future<Either<Failure, ContentItem>> upsert(
     ContentItem item, {
@@ -467,7 +298,9 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
-        final appwritePayload = item.toAppwrite();
+        final decision = await _publicationDecisionFor(item);
+        final permissions = _readPermissions(decision);
+        final appwritePayload = item.toAppwriteAttributes();
 
         ContentItem? resultItem;
         try {
@@ -477,7 +310,7 @@ class ContentRepository {
             collectionId: collectionId,
             documentId: item.id,
             data: appwritePayload,
-            permissions: [Permission.read(Role.any())],
+            permissions: permissions,
           );
           resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
         } on AppwriteException catch (ae) {
@@ -488,6 +321,7 @@ class ContentRepository {
               collectionId: collectionId,
               documentId: item.id,
               data: appwritePayload,
+              permissions: permissions,
             );
             resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
           } else {

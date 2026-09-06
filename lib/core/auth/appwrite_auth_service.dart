@@ -1,11 +1,9 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:appwrite/models.dart' as models;
-import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -23,12 +21,12 @@ export 'session_persistence.dart';
 
 import 'account_deletion_handler.dart';
 import 'oauth_helpers.dart';
-import 'admin_functions_client.dart';
 import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
+import 'admin_functions_client.dart';
 
-class AppwriteAuthService {
+class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // Singleton pattern — one SDK Client shared across the app
@@ -194,14 +192,12 @@ class AppwriteAuthService {
             '&scopes[]=${Uri.encodeComponent("profile")}';
         redirectToUrl(oauthUrl);
       } else {
-        // Mobile: drive flutter_web_auth_2 directly instead of the SDK's
-        // createOAuth2Token. The SDK's internal callback parser requires
-        // `key` + `secret`, but the token endpoint returns `userId` +
-        // `secret` — so every successful Google consent ended in
-        // "Invalid OAuth2 Response. Key and Secret not available." and no
-        // session was ever created. Parsing with the app's own
-        // parseWebOAuthCompletion (same contract as the web flow) and then
-        // exchanging via exchangeOAuthToken yields a real server session.
+        // Clear any dangling guest/anonymous session before starting OAuth so the
+        // backend doesn't reject session creation with a 401/409 session conflict.
+        try {
+          await _account.deleteSession(sessionId: 'current');
+        } catch (_) {}
+
         final oauthUrl = buildMobileGoogleOAuthUrl(
           endpoint: AppwriteConfig.endpoint,
           projectId: AppwriteConfig.projectId,
@@ -213,8 +209,16 @@ class AppwriteAuthService {
         final completion = parseWebOAuthCompletion(result);
         final exchanged =
             completion.kind == WebOAuthCompletionKind.persistSession
-            ? await exchangeOAuthToken('a_session_callback', completion.secret)
-            : await exchangeOAuthToken(completion.userId!, completion.secret);
+            ? await exchangeOAuthToken(
+                'a_session_callback',
+                completion.secret,
+                throwOnError: true,
+              )
+            : await exchangeOAuthToken(
+                completion.userId!,
+                completion.secret,
+                throwOnError: true,
+              );
         if (!exchanged) {
           throw AppwriteException(
             'Google sign-in failed: session could not be created.',
@@ -234,8 +238,12 @@ class AppwriteAuthService {
     }
   }
 
-  /// Exchange OAuth token for session (called from splash screen after redirect)
-  Future<bool> exchangeOAuthToken(String userId, String secret) async {
+  /// Exchange OAuth token for session (called from splash screen after redirect or mobile OAuth flow).
+  Future<bool> exchangeOAuthToken(
+    String userId,
+    String secret, {
+    bool throwOnError = false,
+  }) async {
     final prefs = await _getPrefs();
     final scope = await AccountScope.beginSignIn(prefs);
     try {
@@ -248,13 +256,45 @@ class AppwriteAuthService {
           final user = await _account.get();
           ownerId = user.$id;
         } else {
-          final session = await _account.createSession(
-            userId: userId,
-            secret: secret,
-          );
+          models.Session session;
+          try {
+            session = await _account.createSession(
+              userId: userId,
+              secret: secret,
+            );
+          } on AppwriteException catch (e) {
+            final isSessionConflict =
+                e.code == 401 ||
+                e.code == 409 ||
+                (e.message?.toLowerCase().contains('session is active') ??
+                    false) ||
+                (e.type == 'user_session_already_exists');
+            if (isSessionConflict) {
+              AppLogger.warning(
+                'Appwrite: Active session detected during OAuth token exchange. Deleting current session and retrying.',
+              );
+              try {
+                await _account.deleteSession(sessionId: 'current');
+              } catch (_) {}
+              session = await _account.createSession(
+                userId: userId,
+                secret: secret,
+              );
+            } else {
+              rethrow;
+            }
+          }
           _requireCurrent(scope);
           ownerId = session.userId;
-          if (_isWeb) await _persistWebSession(session.secret);
+          String? sessionSecret;
+          try {
+            sessionSecret = session.secret;
+          } catch (_) {}
+          if (sessionSecret != null && sessionSecret.isNotEmpty) {
+            await _persistWebSession(sessionSecret);
+          } else if (_isWeb && secret.isNotEmpty) {
+            await _persistWebSession(secret);
+          }
         }
         final owner = await scope.identify(ownerId);
         _requireCurrent(owner);
@@ -262,9 +302,13 @@ class AppwriteAuthService {
       });
       return true;
     } catch (e) {
-      AppLogger.debug(
+      AppLogger.warning(
         'Appwrite: OAuth session failed: ${RedactionHelper.sanitize(e.toString())}',
       );
+      if (throwOnError) {
+        if (e is AppwriteException) rethrow;
+        throw AppwriteException(e.toString());
+      }
       return false;
     }
   }
@@ -529,62 +573,11 @@ class AppwriteAuthService {
     }
   }
 
-  Future<Map<String, dynamic>> executeAdminMaintenance({
-    required String action,
-    required String confirmation,
-  }) async {
-    await _restoreWebSession();
-    final execution = await _functions.createExecution(
-      functionId: 'admin-maintenance',
-      body: jsonEncode({'action': action, 'confirmation': confirmation}),
-      xasync: false,
-      method: ExecutionMethod.pOST,
-    );
+  @override
+  Functions get functions => _functions;
 
-    // ignore: invalid_use_of_visible_for_testing_member
-    return parseAdminMaintenanceResponse(
-      statusCode: execution.responseStatusCode,
-      body: execution.responseBody,
-    );
-  }
-
-  Future<Map<String, dynamic>> executeAdminAccess(
-    Map<String, dynamic> payload,
-  ) async {
-    await _restoreWebSession();
-    final execution = await _functions.createExecution(
-      functionId: 'manageAdminAccess',
-      body: jsonEncode(payload),
-      xasync: false,
-      method: ExecutionMethod.pOST,
-    );
-
-    final decoded = execution.responseBody.trim().isEmpty
-        ? <String, dynamic>{}
-        : jsonDecode(execution.responseBody);
-    if (decoded is! Map<String, dynamic>) {
-      throw AppwriteException(
-        'Unexpected admin access response.',
-        execution.responseStatusCode,
-        'invalid_response',
-      );
-    }
-
-    if (execution.responseStatusCode < 200 ||
-        execution.responseStatusCode >= 300 ||
-        decoded['ok'] != true) {
-      final message = decoded['message']?.toString();
-      throw AppwriteException(
-        message == null || message.isEmpty
-            ? 'Admin access request failed.'
-            : message,
-        execution.responseStatusCode,
-        'admin_access_failed',
-      );
-    }
-
-    return decoded;
-  }
+  @override
+  Future<void> restoreWebSession() => _restoreWebSession();
 }
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {

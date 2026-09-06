@@ -5,6 +5,15 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.3.1] (2026-09-06)
+
+### Bug Fixes
+
+* **admin:** multilingual translation editing, mobile responsive overhaul, and category-aware lesson publisher
+* **ads:** resolve AdMob serving, consent false-negative, and add test unit fallback
+* **auth:** recover from active session conflicts during mobile Google OAuth
+* **ui:** prevent banner ads from overlapping floating bottom navigation
+
 ## [1.3.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.2...olitun-v1.3.0) (2026-08-09)
 
 

@@ -31,7 +31,6 @@ const EXEMPT_DIRECTORIES = [
 const GRANDFATHERED_COUNTS = {
   "lib/features/quiz/presentation/widgets/quiz_complete_mistakes_sheet.dart": 3,
   "lib/features/content/presentation/widgets/story_player_body_views.dart": 1,
-  "lib/features/admin/presentation/lessons/content/widgets/universal_block_sheet_sections.dart": 6,
   "lib/features/admin/presentation/lessons/content/widgets/lesson_block_card_sections.dart": 2,
   "lib/core/ads/widgets/native_ad_widget.dart": 1,
   "lib/features/admin/presentation/affirmations/admin_affirmations_screen.dart": 5,
@@ -52,7 +51,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/admin/presentation/lessons/content/widgets/lesson_content_top_bar.dart": 6,
   "lib/features/admin/presentation/lessons/content/widgets/lesson_editor_block_list.dart": 1,
   "lib/features/admin/presentation/lessons/content/widgets/lesson_mockup_preview.dart": 8,
-  "lib/features/admin/presentation/lessons/content/widgets/universal_block_sheet.dart": 2,
   "lib/features/admin/presentation/lessons/widgets/lesson_card.dart": 2,
   "lib/features/admin/presentation/login/widgets/admin_login_background.dart": 3,
   "lib/features/admin/presentation/numbers/widgets/number_grid.dart": 3,

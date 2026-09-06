@@ -9,7 +9,9 @@ import '../../../../../../shared/providers/providers.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 import '../../../widgets/multilingual_preview_box.dart';
+import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 part 'universal_block_sheet_sections.dart';
+part 'universal_block_sheet_advanced.dart';
 
 /// One sheet to rule them all. Replaces AddBlockSheet + per-type EditBlockSheet
 /// variants. The block "type" is inferred from what the user actually fills in,
@@ -50,9 +52,17 @@ class UniversalBlockSheet extends ConsumerStatefulWidget {
 class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   final _olChikiCtrl = TextEditingController();
   final _latinCtrl = TextEditingController();
+  final _meaningEnCtrl = TextEditingController();
+  final _meaningBnCtrl = TextEditingController();
+  final _meaningHiCtrl = TextEditingController();
+  final _meaningOrCtrl = TextEditingController();
+  final _textBengaliCtrl = TextEditingController();
+  final _textHindiCtrl = TextEditingController();
+  final _textOdiaCtrl = TextEditingController();
   final _pronCtrl = TextEditingController();
   final _quizRefCtrl = TextEditingController();
 
+  String _translationLang = 'bn';
   String? _mediaUrl;
   String? _posterUrl;
   String? _audioUrl;
@@ -84,6 +94,23 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       _audioUrl = b.audioUrl;
       final data = b.data ?? const {};
       _pronCtrl.text = (data['pronunciation'] as String?) ?? '';
+
+      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(
+        b.textLatin ?? '',
+      );
+      _meaningEnCtrl.text =
+          (data['meaning_en'] as String?) ??
+          (data['meaning'] as String?) ??
+          parsed.meaningEnglish;
+      _meaningBnCtrl.text = (data['meaning_bn'] as String?) ?? '';
+      _meaningHiCtrl.text = (data['meaning_hi'] as String?) ?? '';
+      _meaningOrCtrl.text = (data['meaning_or'] as String?) ?? '';
+
+      _textBengaliCtrl.text =
+          b.textBengali ?? (data['textBengali'] as String?) ?? '';
+      _textHindiCtrl.text = b.textHindi ?? (data['textHindi'] as String?) ?? '';
+      _textOdiaCtrl.text = b.textOdia ?? (data['textOdia'] as String?) ?? '';
+
       _quizRefCtrl.text =
           (data['quizId'] as String?) ?? (data['quizRefId'] as String?) ?? '';
       _posterUrl = data['posterUrl'] as String?;
@@ -110,6 +137,13 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   void dispose() {
     _olChikiCtrl.dispose();
     _latinCtrl.dispose();
+    _meaningEnCtrl.dispose();
+    _meaningBnCtrl.dispose();
+    _meaningHiCtrl.dispose();
+    _meaningOrCtrl.dispose();
+    _textBengaliCtrl.dispose();
+    _textHindiCtrl.dispose();
+    _textOdiaCtrl.dispose();
     _pronCtrl.dispose();
     _quizRefCtrl.dispose();
     super.dispose();
@@ -164,6 +198,22 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
         'posterUrl': _posterUrl,
       if (_pronCtrl.text.trim().isNotEmpty)
         'pronunciation': _pronCtrl.text.trim(),
+      if (_meaningEnCtrl.text.trim().isNotEmpty) ...{
+        'meaning': _meaningEnCtrl.text.trim(),
+        'meaning_en': _meaningEnCtrl.text.trim(),
+      },
+      if (_meaningBnCtrl.text.trim().isNotEmpty)
+        'meaning_bn': _meaningBnCtrl.text.trim(),
+      if (_meaningHiCtrl.text.trim().isNotEmpty)
+        'meaning_hi': _meaningHiCtrl.text.trim(),
+      if (_meaningOrCtrl.text.trim().isNotEmpty)
+        'meaning_or': _meaningOrCtrl.text.trim(),
+      if (_textBengaliCtrl.text.trim().isNotEmpty)
+        'textBengali': _textBengaliCtrl.text.trim(),
+      if (_textHindiCtrl.text.trim().isNotEmpty)
+        'textHindi': _textHindiCtrl.text.trim(),
+      if (_textOdiaCtrl.text.trim().isNotEmpty)
+        'textOdia': _textOdiaCtrl.text.trim(),
       if (_quizRefCtrl.text.trim().isNotEmpty)
         'quizId': _quizRefCtrl.text.trim(),
       if (_calloutVariant != null) 'calloutVariant': _calloutVariant,
@@ -192,6 +242,15 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
           ? null
           : _olChikiCtrl.text.trim(),
       textLatin: _latinCtrl.text.trim().isEmpty ? null : _latinCtrl.text.trim(),
+      textBengali: _textBengaliCtrl.text.trim().isEmpty
+          ? null
+          : _textBengaliCtrl.text.trim(),
+      textHindi: _textHindiCtrl.text.trim().isEmpty
+          ? null
+          : _textHindiCtrl.text.trim(),
+      textOdia: _textOdiaCtrl.text.trim().isEmpty
+          ? null
+          : _textOdiaCtrl.text.trim(),
       imageUrl: (type == 'image' || type == 'svg' || type == 'lottie')
           ? _mediaUrl
           : (type == 'video' ? _posterUrl : null),
@@ -237,32 +296,108 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                 controller: scroll,
                 padding: const EdgeInsets.all(20),
                 children: [
-                  // ── Headline ─────────────────────────────────────────────
+                  // ── Headline & Script ────────────────────────────────────
                   _SectionLabel(
-                    'Headline',
-                    subtitle: 'Both fields optional',
+                    'Headline & Script',
+                    subtitle: 'Ol Chiki target text and Romanized Santali',
                     isDark: isDark,
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
-                    label: 'Ol Chiki',
+                    label: 'Ol Chiki Script',
                     controller: _olChikiCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
-                    label: 'Latin / translation',
+                    label: 'Latin / Romanized Santali',
                     controller: _latinCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
+                  const SizedBox(height: 12),
+                  AdminTextField(
+                    label: 'English / Base Meaning',
+                    controller: _meaningEnCtrl,
+                    hint: 'e.g. What is this?',
+                    onChanged: (_) => setState(() {}),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ── Multilingual Translations ───────────────────────────
+                  _SectionLabel(
+                    'Language Translations & Pronunciations',
+                    subtitle:
+                        'Edit translated meaning and pronunciation guide per language',
+                    isDark: isDark,
+                  ),
+                  _BlockTranslationLangTabs(
+                    currentLang: _translationLang,
+                    isDark: isDark,
+                    onSelect: (code) => setState(() => _translationLang = code),
+                    hasCustomMap: {
+                      'bn':
+                          _meaningBnCtrl.text.trim().isNotEmpty ||
+                          _textBengaliCtrl.text.trim().isNotEmpty,
+                      'hi':
+                          _meaningHiCtrl.text.trim().isNotEmpty ||
+                          _textHindiCtrl.text.trim().isNotEmpty,
+                      'or':
+                          _meaningOrCtrl.text.trim().isNotEmpty ||
+                          _textOdiaCtrl.text.trim().isNotEmpty,
+                      'en': _meaningEnCtrl.text.trim().isNotEmpty,
+                    },
+                  ),
+                  _BlockActiveTranslationInputs(
+                    isDark: isDark,
+                    currentLang: _translationLang,
+                    olChiki: _olChikiCtrl.text,
+                    baseEnglish: _meaningEnCtrl.text.trim().isNotEmpty
+                        ? _meaningEnCtrl.text.trim()
+                        : _latinCtrl.text.trim(),
+                    latinText: _latinCtrl.text,
+                    meaningBnCtrl: _meaningBnCtrl,
+                    textBengaliCtrl: _textBengaliCtrl,
+                    meaningHiCtrl: _meaningHiCtrl,
+                    textHindiCtrl: _textHindiCtrl,
+                    meaningOrCtrl: _meaningOrCtrl,
+                    textOdiaCtrl: _textOdiaCtrl,
+                    meaningEnCtrl: _meaningEnCtrl,
+                    pronCtrl: _pronCtrl,
+                    onStateChange: () => setState(() {}),
+                  ),
+
                   if (_olChikiCtrl.text.isNotEmpty ||
-                      _latinCtrl.text.isNotEmpty) ...[
-                    const SizedBox(height: 16),
+                      _latinCtrl.text.isNotEmpty ||
+                      _meaningEnCtrl.text.isNotEmpty) ...[
+                    const SizedBox(height: 20),
                     MultilingualPreviewBox(
                       textOlChiki: _olChikiCtrl.text,
                       textLatin: _latinCtrl.text,
+                      meaningsByLang: {
+                        'bn': _meaningBnCtrl.text,
+                        'hi': _meaningHiCtrl.text,
+                        'or': _meaningOrCtrl.text,
+                        'en': _meaningEnCtrl.text,
+                      },
+                      transliterationsByLang: {
+                        'bn': _textBengaliCtrl.text,
+                        'hi': _textHindiCtrl.text,
+                        'or': _textOdiaCtrl.text,
+                        'en': _pronCtrl.text,
+                      },
+                      textBengali: _textBengaliCtrl.text,
+                      textHindi: _textHindiCtrl.text,
+                      textOdia: _textOdiaCtrl.text,
+                      explicitMeaning: _meaningEnCtrl.text,
                       explicitPronunciation: _pronCtrl.text,
                       isDark: isDark,
+                      initialLang: _translationLang,
+                      onLanguageChanged: (lang) {
+                        if (_translationLang != lang) {
+                          setState(() => _translationLang = lang);
+                        }
+                      },
                     ),
                   ],
 
@@ -312,7 +447,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                       label: 'Poster image (optional)',
                       subtitle: 'Shown before the video plays',
                       icon: Icons.image_rounded,
-                      accent: const Color(0xFF22D3EE),
+                      accent: AppColors.accentCyan,
                       currentUrl: _posterUrl,
                       uploadFolder: 'lesson-media',
                       fileType: FileType.custom,
@@ -324,193 +459,39 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                   const SizedBox(height: 28),
 
                   // ── Advanced ──────────────────────────────────────────────
-                  _AdvancedToggle(
+                  _BlockAdvancedSection(
                     open: _advancedOpen,
-                    onTap: () => setState(() => _advancedOpen = !_advancedOpen),
+                    onToggleOpen: () =>
+                        setState(() => _advancedOpen = !_advancedOpen),
                     isDark: isDark,
+                    audioUrl: _audioUrl,
+                    onAudioUploaded: (url) => setState(() => _audioUrl = url),
+                    pronCtrl: _pronCtrl,
+                    quizzesAsync: quizzesAsync,
+                    quizRefCtrl: _quizRefCtrl,
+                    showCustomQuizIdInput: _showCustomQuizIdInput,
+                    onCustomQuizIdToggled: (show) =>
+                        setState(() => _showCustomQuizIdInput = show),
+                    calloutVariant: _calloutVariant,
+                    onCalloutChanged: (v) =>
+                        setState(() => _calloutVariant = v),
+                    tracingAllowed: widget._tracingAllowed,
+                    tracingEnabled: _tracingEnabled,
+                    onTracingToggled: (v) =>
+                        setState(() => _tracingEnabled = v),
+                    themeColor: _themeColor,
+                    onThemeColorChanged: (c) => setState(() => _themeColor = c),
+                    onStateChange: () => setState(() {}),
                   ),
-                  if (_advancedOpen) ...[
-                    const SizedBox(height: 16),
-                    AdminMediaField(
-                      label: 'Pronunciation audio (optional)',
-                      icon: Icons.mic_rounded,
-                      accent: const Color(0xFFF472B6),
-                      currentUrl: _audioUrl,
-                      uploadFolder: 'lesson-audio',
-                      fileType: FileType.custom,
-                      allowedExtensions: const [
-                        'mp3',
-                        'wav',
-                        'ogg',
-                        'm4a',
-                        'aac',
-                      ],
-                      onUploaded: (url) => setState(() => _audioUrl = url),
-                    ),
-                    const SizedBox(height: 16),
-                    AdminTextField(
-                      label: 'Pronunciation guide (text)',
-                      controller: _pronCtrl,
-                      onChanged: (_) => setState(() {}),
-                    ),
-                    const SizedBox(height: 16),
-                    quizzesAsync.when(
-                      loading: () => const Center(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      error: (err, _) => Text(
-                        'Failed to load quizzes: $err',
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                      data: (quizzesList) {
-                        final currentValue = _quizRefCtrl.text.trim();
-                        final inList = quizzesList.any(
-                          (q) => q.id == currentValue,
-                        );
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Quiz Invitation (Optional)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white70 : Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              initialValue: _showCustomQuizIdInput
-                                  ? '__custom__'
-                                  : (inList ? currentValue : ''),
-                              isExpanded: true,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                              ),
-                              items: [
-                                const DropdownMenuItem<String>(
-                                  value: '',
-                                  child: Text('None / Clear Quiz'),
-                                ),
-                                for (final q in quizzesList)
-                                  DropdownMenuItem<String>(
-                                    value: q.id,
-                                    child: Text(
-                                      '${q.title ?? 'Untitled Quiz'} (${q.id})',
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                const DropdownMenuItem<String>(
-                                  value: '__custom__',
-                                  child: Text('Custom ID (Manual Entry)...'),
-                                ),
-                              ],
-                              onChanged: (val) {
-                                if (val == '__custom__') {
-                                  setState(() {
-                                    _showCustomQuizIdInput = true;
-                                    _quizRefCtrl.clear();
-                                  });
-                                } else {
-                                  setState(() {
-                                    _showCustomQuizIdInput = false;
-                                    _quizRefCtrl.text = val ?? '';
-                                  });
-                                }
-                              },
-                            ),
-                            if (_showCustomQuizIdInput) ...[
-                              const SizedBox(height: 12),
-                              AdminTextField(
-                                label: 'Custom Quiz ID',
-                                controller: _quizRefCtrl,
-                                hint: 'Paste Appwrite Quiz ID here',
-                                onChanged: (_) => setState(() {}),
-                              ),
-                            ],
-                          ],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 16),
-                    _CalloutPicker(
-                      value: _calloutVariant,
-                      onChanged: (v) => setState(() => _calloutVariant = v),
-                      isDark: isDark,
-                    ),
-                    if (widget._tracingAllowed) ...[
-                      const SizedBox(height: 16),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(
-                          'Enable tracing practice',
-                          style: AdminTokens.bodyStrong(isDark),
-                        ),
-                        subtitle: Text(
-                          'Finger-trace strokes — alphabets & numbers only',
-                          style: AdminTokens.label(isDark),
-                        ),
-                        value: _tracingEnabled,
-                        activeThumbColor: AppColors.primary,
-                        onChanged: (v) => setState(() => _tracingEnabled = v),
-                      ),
-                    ],
-                    const SizedBox(height: 16),
-                    _ThemeColorPicker(
-                      value: _themeColor,
-                      onChanged: (c) => setState(() => _themeColor = c),
-                      isDark: isDark,
-                    ),
-                  ],
 
                   const SizedBox(height: 32),
                 ],
               ),
             ),
-            Divider(height: 1, color: AdminTokens.divider(isDark)),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(
-                          color: AdminTokens.borderStrong(isDark),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      child: const Text('Cancel'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 2,
-                    child: FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      onPressed: _save,
-                      child: const Text(
-                        'Save Changes',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+            _SheetFooter(
+              isDark: isDark,
+              onCancel: () => Navigator.of(context).pop(),
+              onSave: _save,
             ),
           ],
         ),

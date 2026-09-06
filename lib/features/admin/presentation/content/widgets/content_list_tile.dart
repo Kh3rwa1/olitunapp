@@ -64,151 +64,262 @@ class ContentListTile extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24.5),
-            child: Row(
-              children: [
-                // Leading section
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Semantics(
-                      label: 'Select ${item.title}',
-                      checked: isSelected,
-                      child: Checkbox(
-                        value: isSelected,
-                        activeColor: AppColors.primary,
-                        onChanged: onSelectChanged,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    ContentTypeBadge(type: badgeType),
-                    const SizedBox(width: 8),
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: AdminTokens.accentSoft(isDark),
-                        borderRadius: BorderRadius.circular(
-                          AdminTokens.radiusMd,
-                        ),
-                        border: Border.all(color: AdminTokens.border(isDark)),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(
-                          AdminTokens.radiusMd,
-                        ),
-                        child: CoverThumbnail(
-                          media: item.heroMedia,
-                          coverMediaType: item.coverMediaType,
-                          fallback: Icon(
-                            fallbackIcon,
-                            color: AdminTokens.accent,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 16),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isMobile = constraints.maxWidth < 640;
 
-                // Middle section: Title, Subtitle, Chips
-                Expanded(
+              final chipsList = Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  if (isMobile) ContentTypeBadge(type: badgeType),
+                  if (supportsPublished)
+                    _buildStatusChip(
+                      label: item.isPublished ? 'Published' : 'Draft',
+                      color: item.isPublished
+                          ? const Color(0xFF10B981)
+                          : Colors.grey,
+                      isDark: isDark,
+                    ),
+                  if (supportsPremium)
+                    _buildStatusChip(
+                      label: item.isPremium ? 'Premium' : 'Free',
+                      color: item.isPremium ? Colors.amber : Colors.blue,
+                      isDark: isDark,
+                    ),
+                  if (supportsTags)
+                    ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
+                ],
+              );
+
+              final actionButtons = Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (onEditBlocks != null) ...[
+                    AdminIconAction(
+                      icon: Icons.dashboard_customize_rounded,
+                      tooltip: 'Edit content blocks',
+                      onTap: onEditBlocks!,
+                    ),
+                    const SizedBox(width: 4),
+                  ],
+                  AdminIconAction(
+                    icon: Icons.edit_rounded,
+                    tooltip: 'Edit metadata',
+                    onTap: onEditMetadata,
+                  ),
+                  const SizedBox(width: 4),
+                  AdminIconAction(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Delete',
+                    destructive: true,
+                    onTap: onDelete,
+                  ),
+                ],
+              );
+
+              if (isMobile) {
+                return Padding(
+                  padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          Text(
-                            item.title,
-                            style: AdminTokens.cardTitle(
-                              isDark,
-                            ).copyWith(fontSize: 16),
+                          Semantics(
+                            label: 'Select ${item.title}',
+                            checked: isSelected,
+                            child: Checkbox(
+                              value: isSelected,
+                              activeColor: AppColors.primary,
+                              onChanged: onSelectChanged,
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
                           ),
-                          if (item.titleOlChiki != null) ...[
-                            const SizedBox(width: 8),
-                            Text(
-                              '(${item.titleOlChiki})',
-                              style: TextStyle(
-                                fontFamily: 'OlChiki',
-                                fontSize: 16,
-                                color: isDark ? Colors.white60 : Colors.black54,
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AdminTokens.accentSoft(isDark),
+                              borderRadius: BorderRadius.circular(
+                                AdminTokens.radiusSm,
+                              ),
+                              border: Border.all(
+                                color: AdminTokens.border(isDark),
                               ),
                             ),
-                          ],
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(
+                                AdminTokens.radiusSm,
+                              ),
+                              child: CoverThumbnail(
+                                media: item.heroMedia,
+                                coverMediaType: item.coverMediaType,
+                                fallback: Icon(
+                                  fallbackIcon,
+                                  color: AdminTokens.accent,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.title,
+                                  style: AdminTokens.cardTitle(
+                                    isDark,
+                                  ).copyWith(fontSize: 15),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (item.titleOlChiki != null)
+                                  Text(
+                                    item.titleOlChiki!,
+                                    style: const TextStyle(
+                                      fontFamily: 'OlChiki',
+                                      fontSize: 14,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          actionButtons,
                         ],
                       ),
                       if (item.subtitle != null &&
                           item.subtitle!.isNotEmpty) ...[
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
                           item.subtitle!,
                           style: TextStyle(
                             color: isDark ? Colors.white60 : Colors.black54,
-                            fontSize: 13,
+                            fontSize: 12.5,
                           ),
                         ),
                       ],
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 6,
-                        runSpacing: 4,
-                        children: [
-                          if (supportsPublished)
-                            _buildStatusChip(
-                              label: item.isPublished ? 'Published' : 'Draft',
-                              color: item.isPublished
-                                  ? const Color(0xFF10B981)
-                                  : Colors.grey,
-                              isDark: isDark,
-                            ),
-                          if (supportsPremium)
-                            _buildStatusChip(
-                              label: item.isPremium ? 'Premium' : 'Free',
-                              color: item.isPremium
-                                  ? Colors.amber
-                                  : Colors.blue,
-                              isDark: isDark,
-                            ),
-                          if (supportsTags)
-                            ...item.tags.map(
-                              (tag) => _buildChip('#$tag', isDark),
-                            ),
-                        ],
-                      ),
+                      chipsList,
                     ],
                   ),
-                ),
-                const SizedBox(width: 16),
+                );
+              }
 
-                // Trailing actions section
-                Row(
-                  mainAxisSize: MainAxisSize.min,
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
+                child: Row(
                   children: [
-                    if (onEditBlocks != null) ...[
-                      AdminIconAction(
-                        icon: Icons.dashboard_customize_rounded,
-                        tooltip: 'Edit content blocks',
-                        onTap: onEditBlocks!,
+                    // Leading section
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Semantics(
+                          label: 'Select ${item.title}',
+                          checked: isSelected,
+                          child: Checkbox(
+                            value: isSelected,
+                            activeColor: AppColors.primary,
+                            onChanged: onSelectChanged,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ContentTypeBadge(type: badgeType),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AdminTokens.accentSoft(isDark),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
+                            border: Border.all(
+                              color: AdminTokens.border(isDark),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
+                            child: CoverThumbnail(
+                              media: item.heroMedia,
+                              coverMediaType: item.coverMediaType,
+                              fallback: Icon(
+                                fallbackIcon,
+                                color: AdminTokens.accent,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+
+                    // Middle section: Title, Subtitle, Chips
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                item.title,
+                                style: AdminTokens.cardTitle(
+                                  isDark,
+                                ).copyWith(fontSize: 16),
+                              ),
+                              if (item.titleOlChiki != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  '(${item.titleOlChiki})',
+                                  style: TextStyle(
+                                    fontFamily: 'OlChiki',
+                                    fontSize: 16,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (item.subtitle != null &&
+                              item.subtitle!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              item.subtitle!,
+                              style: TextStyle(
+                                color: isDark ? Colors.white60 : Colors.black54,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          chipsList,
+                        ],
                       ),
-                      const SizedBox(width: 6),
-                    ],
-                    AdminIconAction(
-                      icon: Icons.edit_rounded,
-                      tooltip: 'Edit metadata',
-                      onTap: onEditMetadata,
                     ),
-                    const SizedBox(width: 6),
-                    AdminIconAction(
-                      icon: Icons.delete_outline_rounded,
-                      tooltip: 'Delete',
-                      destructive: true,
-                      onTap: onDelete,
-                    ),
+                    const SizedBox(width: 16),
+
+                    // Trailing actions section
+                    actionButtons,
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

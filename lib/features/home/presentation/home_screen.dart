@@ -305,6 +305,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const RepaintBoundary(
               child: NativeAdWidget(placement: 'home_native_bottom'),
             ),
+            const SizedBox(height: 16),
+            const RepaintBoundary(
+              child: BannerAdWidget(placement: 'home_bottom'),
+            ),
           ],
         ),
 
@@ -318,7 +322,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           : isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
-      bottomNavigationBar: const BannerAdWidget(placement: 'home_bottom'),
       body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
         child: SafeArea(

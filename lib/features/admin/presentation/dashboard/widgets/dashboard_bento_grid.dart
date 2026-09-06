@@ -124,6 +124,9 @@ class DashboardBentoGrid extends ConsumerWidget {
         ],
       );
     }
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isCompactPhone = screenWidth < 480;
+
     return Column(
       children: [
         DashboardHeroMetric(
@@ -141,7 +144,7 @@ class DashboardBentoGrid extends ConsumerWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.55,
+          childAspectRatio: isCompactPhone ? 1.22 : 1.55,
           children: supporting
               .map(
                 (k) => DashboardKpiCard(

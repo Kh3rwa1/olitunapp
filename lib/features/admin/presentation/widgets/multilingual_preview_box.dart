@@ -10,8 +10,14 @@ class MultilingualPreviewBox extends StatefulWidget {
   final String textLatin;
   final String explicitMeaning;
   final String explicitPronunciation;
+  final Map<String, String>? meaningsByLang;
+  final Map<String, String>? transliterationsByLang;
+  final String? textBengali;
+  final String? textHindi;
+  final String? textOdia;
   final bool isDark;
   final String initialLang;
+  final ValueChanged<String>? onLanguageChanged;
 
   const MultilingualPreviewBox({
     super.key,
@@ -19,8 +25,14 @@ class MultilingualPreviewBox extends StatefulWidget {
     required this.textLatin,
     this.explicitMeaning = '',
     this.explicitPronunciation = '',
+    this.meaningsByLang,
+    this.transliterationsByLang,
+    this.textBengali,
+    this.textHindi,
+    this.textOdia,
     required this.isDark,
     this.initialLang = 'bn',
+    this.onLanguageChanged,
   });
 
   @override
@@ -45,13 +57,48 @@ class _MultilingualPreviewBoxState extends State<MultilingualPreviewBox> {
   }
 
   @override
+  void didUpdateWidget(covariant MultilingualPreviewBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialLang != oldWidget.initialLang &&
+        widget.initialLang != _selectedLang) {
+      setState(() {
+        _selectedLang = widget.initialLang;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = widget.isDark;
+
+    final customMeaning = widget.meaningsByLang?[_selectedLang];
+    final activeMeaning =
+        (customMeaning != null && customMeaning.trim().isNotEmpty)
+        ? customMeaning.trim()
+        : (widget.explicitMeaning.isNotEmpty ? widget.explicitMeaning : '');
+
+    final customTransliteration = widget.transliterationsByLang?[_selectedLang];
+    final activePron =
+        (customTransliteration != null &&
+            customTransliteration.trim().isNotEmpty)
+        ? customTransliteration.trim()
+        : widget.explicitPronunciation;
+
+    final resolvedTextBengali =
+        widget.transliterationsByLang?['bn'] ?? widget.textBengali;
+    final resolvedTextHindi =
+        widget.transliterationsByLang?['hi'] ?? widget.textHindi;
+    final resolvedTextOdia =
+        widget.transliterationsByLang?['or'] ?? widget.textOdia;
+
     final resolved = OlChikiMultilingualHelper.resolveBlockDisplay(
       textOlChiki: widget.textOlChiki.isNotEmpty ? widget.textOlChiki : 'ᱚ',
       textLatin: widget.textLatin.isNotEmpty ? widget.textLatin : 'ol',
-      explicitMeaning: widget.explicitMeaning,
-      explicitPronunciation: widget.explicitPronunciation,
+      textBengali: resolvedTextBengali,
+      textHindi: resolvedTextHindi,
+      textOdia: resolvedTextOdia,
+      explicitMeaning: activeMeaning,
+      explicitPronunciation: activePron,
       teachingLanguage: _selectedLang,
       scriptMode: 'both',
     );
@@ -117,7 +164,10 @@ class _MultilingualPreviewBoxState extends State<MultilingualPreviewBox> {
                   padding: const EdgeInsets.only(right: 6),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(6),
-                    onTap: () => setState(() => _selectedLang = lang['code']!),
+                    onTap: () {
+                      setState(() => _selectedLang = lang['code']!);
+                      widget.onLanguageChanged?.call(lang['code']!);
+                    },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,

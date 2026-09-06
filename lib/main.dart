@@ -25,6 +25,7 @@ import 'l10n/generated/app_localizations.dart';
 import 'core/ads/ad_service.dart';
 import 'core/ads/consent_manager.dart';
 import 'core/notifications/notification_service.dart';
+import 'core/languages/translation_override_service.dart';
 import 'features/home/presentation/providers/daily_missions_observer.dart';
 
 @visibleForTesting
@@ -96,6 +97,7 @@ Future<void> _startApplication() async {
     // A timeout keeps the underlying storage operation alive. A retry waits
     // for that same operation instead of opening a second set of Hive boxes.
     final prefs = await _storageStartup.run();
+    await TranslationOverrideService.instance.init(prefs);
     final optionalTasks = <String, Future<void> Function()>{
       'display': () async {
         await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

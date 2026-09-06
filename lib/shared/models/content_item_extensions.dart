@@ -10,11 +10,24 @@ extension ContentBlockToLegacy on ContentBlock {
         (self.meta['audioUrl'] as String?) ??
         (self.meta['audio_url'] as String?);
 
+    final resolvedTextBengali =
+        (self.meta['textBengali'] as String?) ??
+        (self.meta['text_bengali'] as String?);
+    final resolvedTextHindi =
+        (self.meta['textHindi'] as String?) ??
+        (self.meta['text_hindi'] as String?);
+    final resolvedTextOdia =
+        (self.meta['textOdia'] as String?) ??
+        (self.meta['text_odia'] as String?);
+
     if (self is TextBlock) {
       return LessonBlockEntity(
         type: 'text',
         textLatin: self.textLatin ?? self.markdown,
         textOlChiki: self.textOlChiki,
+        textBengali: resolvedTextBengali,
+        textHindi: resolvedTextHindi,
+        textOdia: resolvedTextOdia,
         audioUrl: resolvedAudioUrl,
         data: blockData,
       );
@@ -120,6 +133,11 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
         <String, dynamic>{
           if (audioUrl != null && type != 'audio' && type != 'video')
             'audioUrl': audioUrl,
+          if (textBengali != null && textBengali!.isNotEmpty)
+            'textBengali': textBengali,
+          if (textHindi != null && textHindi!.isNotEmpty)
+            'textHindi': textHindi,
+          if (textOdia != null && textOdia!.isNotEmpty) 'textOdia': textOdia,
           ...?data,
         }..removeWhere(
           (k, _) => const {

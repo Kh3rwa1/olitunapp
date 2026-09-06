@@ -26,6 +26,7 @@ class OlChikiCharMaps {
     'ᱡᱽ': 'জ',
     'ᱫᱽ': 'দ',
     'ᱵᱽ': 'ব',
+    'ᱚᱶ': 'োওয়',
   };
 
   static const Map<String, String> hindiDigraphs = {
@@ -51,6 +52,7 @@ class OlChikiCharMaps {
     'ᱡᱽ': 'ज',
     'ᱫᱽ': 'द',
     'ᱵᱽ': 'ब',
+    'ᱚᱶ': 'ोव',
   };
 
   static const Map<String, String> odiaDigraphs = {
@@ -76,6 +78,7 @@ class OlChikiCharMaps {
     'ᱡᱽ': 'ଜ',
     'ᱫᱽ': 'ଦ',
     'ᱵᱽ': 'ବ',
+    'ᱚᱶ': 'ୋୱ',
   };
 
   static const Map<String, String> latinDigraphs = {
@@ -101,6 +104,7 @@ class OlChikiCharMaps {
     'ᱡᱽ': 'j',
     'ᱫᱽ': 'd',
     'ᱵᱽ': 'b',
+    'ᱚᱶ': 'ow',
   };
 
   static const Map<String, String> toBengaliChar = {
@@ -132,7 +136,7 @@ class OlChikiCharMaps {
     'ᱲ': 'ড়',
     'ᱴ': 'ট',
     'ᱵ': 'ব',
-    'ᱶ': 'ঁ',
+    'ᱶ': 'ওয়',
     'ᱷ': 'হ',
     'ᱸ': 'ঁ',
     'ᱹ': '',
@@ -183,7 +187,7 @@ class OlChikiCharMaps {
     'ᱲ': 'ड़',
     'ᱴ': 'ट',
     'ᱵ': 'ब',
-    'ᱶ': 'ँ',
+    'ᱶ': 'व',
     'ᱷ': 'ह',
     'ᱸ': 'ँ',
     'ᱹ': '',
@@ -234,7 +238,7 @@ class OlChikiCharMaps {
     'ᱲ': 'ଡ଼',
     'ᱴ': 'ଟ',
     'ᱵ': 'ବ',
-    'ᱶ': 'ଁ',
+    'ᱶ': 'ୱ',
     'ᱷ': 'ହ',
     'ᱸ': 'ଁ',
     'ᱹ': '',
@@ -285,7 +289,7 @@ class OlChikiCharMaps {
     'ᱲ': 'r',
     'ᱴ': 't',
     'ᱵ': 'b',
-    'ᱶ': 'n',
+    'ᱶ': 'w',
     'ᱷ': 'h',
     'ᱸ': 'n',
     'ᱹ': '',

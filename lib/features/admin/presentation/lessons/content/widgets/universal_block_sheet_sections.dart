@@ -94,134 +94,308 @@ class _SectionLabel extends StatelessWidget {
   );
 }
 
-class _AdvancedToggle extends StatelessWidget {
-  final bool open;
-  final VoidCallback onTap;
+class _SheetFooter extends StatelessWidget {
   final bool isDark;
+  final VoidCallback onCancel;
+  final VoidCallback onSave;
 
-  const _AdvancedToggle({
-    required this.open,
-    required this.onTap,
+  const _SheetFooter({
     required this.isDark,
+    required this.onCancel,
+    required this.onSave,
   });
 
   @override
-  Widget build(BuildContext context) => InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(10),
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Row(
-        children: [
-          Icon(
-            open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
-            color: AdminTokens.textSecondary(isDark),
-          ),
-          const SizedBox(width: 8),
-          Text('Advanced', style: AdminTokens.bodyStrong(isDark)),
-        ],
-      ),
-    ),
-  );
-}
-
-class _CalloutPicker extends StatelessWidget {
-  final String? value;
-  final ValueChanged<String?> onChanged;
-  final bool isDark;
-
-  const _CalloutPicker({
-    required this.value,
-    required this.onChanged,
-    required this.isDark,
-  });
-
-  static const _options = <String?, String>{
-    null: 'None',
-    'info': 'Info',
-    'tip': 'Tip',
-    'warning': 'Warning',
-    'success': 'Success',
-  };
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('Callout style', style: AdminTokens.bodyStrong(isDark)),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: _options.entries
-            .map(
-              (e) => ChoiceChip(
-                label: Text(e.value),
-                selected: value == e.key,
-                selectedColor: AppColors.primary.withValues(alpha: 0.18),
-                onSelected: (_) => onChanged(e.key),
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Divider(height: 1, color: AdminTokens.divider(isDark)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AdminTokens.borderStrong(isDark)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: const Text('Cancel'),
+                ),
               ),
-            )
-            .toList(),
-      ),
-    ],
-  );
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: onSave,
+                  child: const Text(
+                    'Save Changes',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _ThemeColorPicker extends StatelessWidget {
-  final String? value;
-  final ValueChanged<String?> onChanged;
+class _BlockTranslationLangTabs extends StatelessWidget {
+  final String currentLang;
   final bool isDark;
+  final ValueChanged<String> onSelect;
+  final Map<String, bool> hasCustomMap;
 
-  const _ThemeColorPicker({
-    required this.value,
-    required this.onChanged,
+  const _BlockTranslationLangTabs({
+    required this.currentLang,
     required this.isDark,
+    required this.onSelect,
+    required this.hasCustomMap,
   });
 
-  static const _presets = <String, Color>{
-    '#34D399': Color(0xFF34D399),
-    '#22D3EE': Color(0xFF22D3EE),
-    '#60A5FA': Color(0xFF60A5FA),
-    '#F472B6': Color(0xFFF472B6),
-    '#FBBF24': Color(0xFFFBBF24),
-    '#374151': Color(0xFF374151),
-  };
+  static const _transLangs = [
+    {'code': 'bn', 'label': 'বাংলা', 'flag': '🇧🇩', 'name': 'Bengali'},
+    {'code': 'hi', 'label': 'हिन्दी', 'flag': '🇮🇳', 'name': 'Hindi'},
+    {'code': 'or', 'label': 'ଓଡ଼ିଆ', 'flag': '🇮🇳', 'name': 'Odia'},
+    {'code': 'en', 'label': 'English', 'flag': '🇬🇧', 'name': 'English'},
+  ];
 
   @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text('Theme color', style: AdminTokens.bodyStrong(isDark)),
-      const SizedBox(height: 8),
-      Wrap(
-        spacing: 10,
-        runSpacing: 10,
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: _transLangs.map((lang) {
+          final isSelected = lang['code'] == currentLang;
+          final hasCustom = hasCustomMap[lang['code']] ?? false;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => onSelect(lang['code']!),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary
+                      : AdminTokens.raised(isDark),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AdminTokens.border(isDark),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(lang['flag']!, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Text(
+                      lang['label']!,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 12,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected
+                            ? Colors.white
+                            : AdminTokens.textPrimary(isDark),
+                      ),
+                    ),
+                    if (hasCustom) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.success,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _BlockActiveTranslationInputs extends StatelessWidget {
+  final bool isDark;
+  final String currentLang;
+  final String olChiki;
+  final String baseEnglish;
+  final String latinText;
+  final TextEditingController meaningBnCtrl;
+  final TextEditingController textBengaliCtrl;
+  final TextEditingController meaningHiCtrl;
+  final TextEditingController textHindiCtrl;
+  final TextEditingController meaningOrCtrl;
+  final TextEditingController textOdiaCtrl;
+  final TextEditingController meaningEnCtrl;
+  final TextEditingController pronCtrl;
+  final VoidCallback onStateChange;
+
+  const _BlockActiveTranslationInputs({
+    required this.isDark,
+    required this.currentLang,
+    required this.olChiki,
+    required this.baseEnglish,
+    required this.latinText,
+    required this.meaningBnCtrl,
+    required this.textBengaliCtrl,
+    required this.meaningHiCtrl,
+    required this.textHindiCtrl,
+    required this.meaningOrCtrl,
+    required this.textOdiaCtrl,
+    required this.meaningEnCtrl,
+    required this.pronCtrl,
+    required this.onStateChange,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final (
+      TextEditingController meaningCtrl,
+      TextEditingController activePronCtrl,
+      String meaningLabel,
+      String pronLabel,
+      String suggestedMeaning,
+      String suggestedPron,
+    ) = switch (currentLang) {
+      'bn' => (
+        meaningBnCtrl,
+        textBengaliCtrl,
+        'Translated Meaning (বাংলা অর্থ)',
+        'Pronunciation Guide / Transliteration (বাংলা উচ্চারণ)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'bn'),
+        OlChikiMultilingualHelper.transliterateOlChiki(olChiki, 'bn'),
+      ),
+      'hi' => (
+        meaningHiCtrl,
+        textHindiCtrl,
+        'Translated Meaning (हिन्दी अर्थ)',
+        'Pronunciation Guide / Transliteration (हिन्दी উচ্চারণ)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'hi'),
+        OlChikiMultilingualHelper.transliterateOlChiki(olChiki, 'hi'),
+      ),
+      'or' => (
+        meaningOrCtrl,
+        textOdiaCtrl,
+        'Translated Meaning (ଓଡ଼ିଆ ଅର୍ଥ)',
+        'Pronunciation Guide / Transliteration (ଓଡ଼ିଆ ଉଚ୍ଚାରଣ)',
+        OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'or'),
+        OlChikiMultilingualHelper.transliterateOlChiki(olChiki, 'or'),
+      ),
+      _ => (
+        meaningEnCtrl,
+        pronCtrl,
+        'Translated Meaning (English Meaning)',
+        'Pronunciation Guide (Romanized Santali)',
+        baseEnglish,
+        latinText,
+      ),
+    };
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AdminTokens.sunken(isDark),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AdminTokens.border(isDark)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _swatch(null, Colors.transparent, isNone: true),
-          for (final e in _presets.entries) _swatch(e.key, e.value),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AdminTextField(
+                  label: meaningLabel,
+                  controller: meaningCtrl,
+                  hint: suggestedMeaning.isNotEmpty
+                      ? 'e.g. $suggestedMeaning'
+                      : 'Enter translation',
+                  onChanged: (_) => onStateChange(),
+                ),
+              ),
+              if (suggestedMeaning.isNotEmpty &&
+                  meaningCtrl.text.trim() != suggestedMeaning) ...[
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 22),
+                  child: IconButton(
+                    tooltip: 'Fill suggested: $suggestedMeaning',
+                    icon: const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: () {
+                      meaningCtrl.text = suggestedMeaning;
+                      onStateChange();
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: AdminTextField(
+                  label: pronLabel,
+                  controller: activePronCtrl,
+                  hint: suggestedPron.isNotEmpty
+                      ? 'e.g. $suggestedPron'
+                      : 'Enter pronunciation guide',
+                  onChanged: (_) => onStateChange(),
+                ),
+              ),
+              if (suggestedPron.isNotEmpty &&
+                  activePronCtrl.text.trim() != suggestedPron) ...[
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(top: 22),
+                  child: IconButton(
+                    tooltip: 'Fill auto-transliteration: $suggestedPron',
+                    icon: const Icon(
+                      Icons.spellcheck_rounded,
+                      size: 20,
+                      color: AppColors.primary,
+                    ),
+                    onPressed: () {
+                      activePronCtrl.text = suggestedPron;
+                      onStateChange();
+                    },
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
-    ],
-  );
-
-  Widget _swatch(String? key, Color color, {bool isNone = false}) =>
-      GestureDetector(
-        onTap: () => onChanged(key),
-        child: Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: value == key ? AppColors.primary : Colors.black12,
-              width: value == key ? 2.5 : 1,
-            ),
-          ),
-          child: isNone
-              ? const Icon(Icons.block_rounded, size: 16, color: Colors.grey)
-              : null,
-        ),
-      );
+    );
+  }
 }

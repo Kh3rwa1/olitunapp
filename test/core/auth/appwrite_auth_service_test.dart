@@ -20,6 +20,7 @@ class MockExecution extends Mock implements models.Execution {}
 class MockSession extends Mock implements models.Session {
   MockSession() {
     when(() => userId).thenReturn('test_user_id');
+    when(() => secret).thenReturn('test_session_secret');
   }
 }
 
@@ -874,6 +875,9 @@ void main() {
         SharedPreferences.setMockInitialValues({});
         final mockSession = MockSession();
         when(
+          () => mockAccount.deleteSession(sessionId: any(named: 'sessionId')),
+        ).thenAnswer((_) async => {});
+        when(
           () => mockAccount.createSession(
             userId: any(named: 'userId'),
             secret: any(named: 'secret'),
@@ -912,6 +916,157 @@ void main() {
         ).called(1);
 
         final prefs = await SharedPreferences.getInstance();
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
+      },
+    );
+
+    test(
+      '21. signInWithGoogle on mobile clears dangling session before opening browser',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final mockSession = MockSession();
+        when(
+          () => mockAccount.deleteSession(sessionId: 'current'),
+        ).thenAnswer((_) async => {});
+        when(
+          () => mockAccount.createSession(
+            userId: any(named: 'userId'),
+            secret: any(named: 'secret'),
+          ),
+        ).thenAnswer((_) async => mockSession);
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: false,
+          browserAuthenticate: ({required url, required callbackUrlScheme}) async {
+            return 'appwrite-callback-${AppwriteConfig.projectId}://success?userId=user_1&secret=session-secret';
+          },
+        );
+
+        await service.signInWithGoogle();
+
+        verify(() => mockAccount.deleteSession(sessionId: 'current')).called(1);
+      },
+    );
+
+    test(
+      '22. exchangeOAuthToken recovers from active session conflict by deleting session and retrying',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final mockSession = MockSession();
+        var callCount = 0;
+        when(
+          () => mockAccount.createSession(
+            userId: 'user_conflict',
+            secret: 'secret_conflict',
+          ),
+        ).thenAnswer((_) async {
+          callCount++;
+          if (callCount == 1) {
+            throw AppwriteException(
+              'Creation of a session is prohibited when a session is active.',
+              401,
+              'user_session_already_exists',
+            );
+          }
+          return mockSession;
+        });
+        when(
+          () => mockAccount.deleteSession(sessionId: 'current'),
+        ).thenAnswer((_) async => {});
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: false,
+        );
+
+        final result = await service.exchangeOAuthToken(
+          'user_conflict',
+          'secret_conflict',
+          throwOnError: true,
+        );
+
+        expect(result, isTrue);
+        expect(callCount, 2);
+        verify(() => mockAccount.deleteSession(sessionId: 'current')).called(1);
+      },
+    );
+
+    test(
+      '23. exchangeOAuthToken propagates underlying exception when throwOnError is true',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        when(
+          () => mockAccount.createSession(
+            userId: any(named: 'userId'),
+            secret: any(named: 'secret'),
+          ),
+        ).thenThrow(
+          AppwriteException('Invalid token', 401, 'user_invalid_token'),
+        );
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: false,
+        );
+
+        expect(
+          () => service.exchangeOAuthToken(
+            'bad_user',
+            'bad_secret',
+            throwOnError: true,
+          ),
+          throwsA(
+            isA<AppwriteException>().having(
+              (e) => e.type,
+              'type',
+              'user_invalid_token',
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
+      '24. exchangeOAuthToken on mobile persists credentials to local preferences and client',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final mockSession = MockSession();
+        when(() => mockSession.secret).thenReturn('persisted_secret_mobile');
+        when(
+          () => mockAccount.createSession(
+            userId: 'user_mobile',
+            secret: 'secret_token',
+          ),
+        ).thenAnswer((_) async => mockSession);
+
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: false,
+        );
+
+        final result = await service.exchangeOAuthToken(
+          'user_mobile',
+          'secret_token',
+        );
+
+        expect(result, isTrue);
+        verify(
+          () => mockClient.setSession('persisted_secret_mobile'),
+        ).called(1);
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getString('olitun_appwrite_session_secret'),
+          'persisted_secret_mobile',
+        );
         expect(prefs.getBool('olitun_has_local_session'), isTrue);
       },
     );

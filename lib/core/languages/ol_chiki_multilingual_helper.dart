@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'indic_translations_dictionary.dart';
 import 'ol_chiki_char_maps.dart';
+import 'translation_override_service.dart';
 
 /// Resolved localized presentation of an Ol Chiki learning item.
 @immutable
@@ -68,6 +69,12 @@ class OlChikiMultilingualHelper {
 
     final lang = targetLang.toLowerCase();
     if (lang == 'sat') return cleanText;
+
+    final override = TranslationOverrideService.instance
+        .getPronunciationOverride(cleanText, lang);
+    if (override != null && override.isNotEmpty) {
+      return override;
+    }
 
     final Map<String, String> digraphMap;
     final Map<String, String> charMap;

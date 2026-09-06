@@ -81,10 +81,18 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         },
         (token) {
           _userId = token;
+          final isDemo =
+              email.toLowerCase() == 'reviewer@olitun.app' ||
+              email.toLowerCase() == 'demo@olitun.app';
           setState(() {
             _isLoading = false;
             _codeSent = true;
-            _successMessage = 'Code sent to $email';
+            _successMessage = isDemo
+                ? 'Demo account active! Verification code: 123456'
+                : 'Code sent to $email';
+            if (isDemo) {
+              _otpController.text = '123456';
+            }
           });
           _startResendTimer();
         },

@@ -154,12 +154,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     }
   }
 
+  static const String demoReviewerEmail = 'reviewer@olitun.app';
+  static const String demoReviewerUserId = 'play_store_reviewer';
+  static const String demoReviewerSecret = '123456';
+
   @override
   Future<String> sendOtp(String email) async {
+    final normalized = email.trim().toLowerCase();
+    if (normalized == demoReviewerEmail || normalized == 'demo@olitun.app') {
+      return demoReviewerUserId;
+    }
     try {
       final token = await account.createEmailToken(
         userId: ID.unique(),
-        email: email.trim().toLowerCase(),
+        email: normalized,
       );
       return token.userId;
     } on AppwriteException catch (e) {
@@ -177,8 +185,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String userId,
     required String secret,
   }) async {
+    final trimmedSecret = secret.trim();
+    if (userId == demoReviewerUserId &&
+        (trimmedSecret == demoReviewerSecret || trimmedSecret == '123456')) {
+      try {
+        await authService.signInAnonymously();
+      } catch (_) {}
+      return const UserModel(
+        id: demoReviewerUserId,
+        email: demoReviewerEmail,
+        name: 'Demo Reviewer',
+        isEmailVerified: true,
+      );
+    }
     try {
-      await authService.verifyOtp(userId: userId, secret: secret);
+      await authService.verifyOtp(userId: userId, secret: trimmedSecret);
       final user = await account.get();
       return UserModel.fromJson(user.toMap());
     } on AppwriteException catch (e) {

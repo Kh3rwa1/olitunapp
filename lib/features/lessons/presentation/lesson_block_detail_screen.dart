@@ -73,7 +73,7 @@ class _LessonBlockDetailScreenState
     });
 
     // Auto-play audio for the new block if available.
-    final lessons = ref.read(learnerLessonsProvider).value ?? [];
+    final lessons = ref.read(learnerLessonsProvider).valueOrNull ?? [];
     final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
       final block = lesson.blocks[index];

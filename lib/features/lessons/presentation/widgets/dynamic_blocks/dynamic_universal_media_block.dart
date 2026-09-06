@@ -60,7 +60,7 @@ class DynamicUniversalMediaBlock extends ConsumerWidget {
     final url = blockVisualMediaUrl(block);
     if (url == null) return const SizedBox.shrink();
 
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).valueOrNull ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blockIndex = lesson?.blocks.indexOf(block) ?? -1;
     final route = blockIndex >= 0

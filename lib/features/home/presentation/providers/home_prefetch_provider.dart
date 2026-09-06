@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
-import '../../../../shared/providers/learner_content_providers.dart';
+import '../../../../shared/repositories/content_repository.dart';
+import '../../../../shared/models/content_item.dart';
 import '../../../categories/presentation/providers/category_notifier.dart';
 
 class HomePrefetchState {
@@ -33,11 +34,32 @@ class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
   }
 
   Future<void> prefetch({bool forceRefresh = false}) async {
-    // 1. Trigger reading of core learner content providers
-    ref.read(learnerWordsProvider);
-    ref.read(learnerNumbersProvider);
-    ref.read(learnerSentencesProvider);
-    ref.read(learnerLettersProvider);
+    if (_disposed) return;
+    // Observe each background Future immediately, including failures arriving
+    // after disposal. This handles only the prefetch task: provider error
+    // states remain available to visible screens and their retry controls.
+    final loads = <Future<void>>[];
+    for (final kind in [
+      ContentKind.word,
+      ContentKind.number,
+      ContentKind.sentence,
+      ContentKind.letter,
+    ]) {
+      final provider = contentListProvider((kind, null));
+      if (forceRefresh) ref.invalidate(provider);
+      loads.add(
+        ref
+            .read(provider.future)
+            .then<void>(
+              (_) {},
+              onError: (Object error, StackTrace stack) {
+                AppLogger.debug(
+                  'HomePrefetch: ${kind.name} unavailable: $error',
+                );
+              },
+            ),
+      );
+    }
 
     // 2. Check category list staleness and refresh if needed
     final lastRefresh = state.lastCategoryRefresh;
@@ -61,6 +83,7 @@ class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
         state = state.copyWith(isPrefetching: false);
       }
     }
+    await Future.wait(loads);
   }
 }
 

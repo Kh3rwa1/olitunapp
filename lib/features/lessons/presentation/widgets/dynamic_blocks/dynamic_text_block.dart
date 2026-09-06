@@ -60,7 +60,7 @@ class DynamicTextBlock extends ConsumerWidget {
 
     final navRoute = _resolveNavRoute(ref, lessonId, displayText);
 
-    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).valueOrNull ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blocks = lesson?.blocks ?? [];
     final blockIndex = blocks.indexOf(block);
@@ -183,7 +183,7 @@ class DynamicTextBlock extends ConsumerWidget {
     // --- PHASE 1: EXACT MATCHES (to prevent fuzzy hijacking) ---
 
     // 1. Letters exact match
-    final letters = ref.read(learnerLettersProvider).value ?? [];
+    final letters = ref.read(learnerLettersProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = letters
           .where(
@@ -198,7 +198,7 @@ class DynamicTextBlock extends ConsumerWidget {
     }
 
     // 2. Numbers exact match
-    final numbers = ref.read(learnerNumbersProvider).value ?? [];
+    final numbers = ref.read(learnerNumbersProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = numbers
           .where(
@@ -215,7 +215,7 @@ class DynamicTextBlock extends ConsumerWidget {
     }
 
     // 3. Words exact match
-    final words = ref.read(learnerWordsProvider).value ?? [];
+    final words = ref.read(learnerWordsProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = words
           .where(
@@ -231,7 +231,7 @@ class DynamicTextBlock extends ConsumerWidget {
     }
 
     // 4. Sentences exact match
-    final sentences = ref.read(learnerSentencesProvider).value ?? [];
+    final sentences = ref.read(learnerSentencesProvider).valueOrNull ?? [];
     for (final part in parts) {
       final matched = sentences
           .where(

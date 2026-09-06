@@ -71,11 +71,12 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
     final volume = preserve ? old?.value.volume : null;
     final speed = preserve ? old?.value.playbackSpeed : null;
     _controller = null;
-    if (mounted)
+    if (mounted) {
       setState(() {
         _lease = null;
         _failed = false;
       });
+    }
     VideoPlayerController? candidate;
     try {
       await old?.dispose();
@@ -134,11 +135,12 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
     final controller = _controller;
     _controller = null;
     unawaited(controller?.dispose());
-    if (mounted)
+    if (mounted) {
       setState(() {
         _failed = true;
         _lease = null;
       });
+    }
   }
 
   @override

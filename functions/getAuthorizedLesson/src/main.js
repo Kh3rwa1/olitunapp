@@ -1,4 +1,5 @@
-import { Client, Databases, Query, Storage } from 'node-appwrite';
+import { Client, Databases, Query, Tokens, Storage } from 'node-appwrite';
+import { createMediaAccess, MEDIA_HEADERS, scopeLessonMedia } from './media-access.js';
 
 const PAID_UNLOCK_MODES = new Set([
   'paid_only',
@@ -175,6 +176,8 @@ export function evaluateLessonAccess({ category, lesson, callerUserId, purchases
 export function createGetAuthorizedLessonHandler({
   databases: customDatabases,
   storage: customStorage,
+  tokens: customTokens,
+  clock = Date.now,
 } = {}) {
   return async ({ req, res, error = console.error, log = () => {} }) => {
     if (req.method !== 'POST') {
@@ -185,12 +188,14 @@ export function createGetAuthorizedLessonHandler({
 
     const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
     const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
-    const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
+    // Dynamic function keys are delivered in the runtime request header.
+    const apiKey = req.headers['x-appwrite-key'] || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
     const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
     const paidMediaBucketId = process.env.PAID_MEDIA_BUCKET_ID || 'paid_media';
 
     let databases = customDatabases;
     let storage = customStorage;
+    let tokens = customTokens;
 
     if (!databases) {
       if (!endpoint || !projectId || !apiKey) {
@@ -200,6 +205,7 @@ export function createGetAuthorizedLessonHandler({
       const client = new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
       databases = new Databases(client);
       storage = new Storage(client);
+      tokens = new Tokens(client);
     }
 
     const body = parseBody(req);
@@ -310,23 +316,25 @@ export function createGetAuthorizedLessonHandler({
         }, 403);
       }
 
+      // Old clients fail explicitly; never fall back to a whole-file payload.
+      if (body.protocolVersion !== 2) {
+        return res.json({ ok: false, error: 'media_client_upgrade_required' }, 426, MEDIA_HEADERS);
+      }
+      const publicEndpoint = process.env.MEDIA_PUBLIC_ENDPOINT;
+      if (!tokens || !storage || !publicEndpoint || !projectId) {
+        return res.json({ ok: false, error: 'media_not_configured' }, 503, MEDIA_HEADERS);
+      }
       try {
-        if (!storage) {
-          return res.json({ ok: false, message: 'Storage not configured' }, 500);
-        }
-        const fileBuffer = await storage.getFileDownload(requestedBucketId, fileId);
-        const base64Data = Buffer.isBuffer(fileBuffer)
-          ? fileBuffer.toString('base64')
-          : Buffer.from(fileBuffer).toString('base64');
-        return res.json({
-          ok: true,
-          fileId,
-          bucketId: requestedBucketId,
-          base64: base64Data,
+        const media = await createMediaAccess({
+          tokens, storage, bucketId: requestedBucketId, fileId,
+          publicEndpoint, projectId, now: clock(),
         });
+        return res.json(media, 200, MEDIA_HEADERS);
       } catch (err) {
-        error(`Failed to fetch media file ${fileId}: ${err.message || err}`);
-        return res.json({ ok: false, error: 'media_not_found', message: 'Media file unavailable' }, 404);
+        // SDK exceptions can contain request URLs or secrets; never log them.
+        error('Failed to issue private media access');
+        const code = err.code === 404 ? 404 : 503;
+        return res.json({ ok: false, error: code === 404 ? 'media_not_found' : 'media_unavailable' }, code, MEDIA_HEADERS);
       }
     }
 
@@ -372,8 +380,12 @@ export function createGetAuthorizedLessonHandler({
         isActive: lessonDoc.isActive !== false,
         isPreview: lessonDoc.isPreview === true,
         isLocked: false,
-        data: parsedData,
-        blocks: Array.isArray(parsedBlocks) ? parsedBlocks : [],
+        data: scopeLessonMedia(parsedData, lessonId, paidMediaBucketId),
+        blocks: scopeLessonMedia(Array.isArray(parsedBlocks) ? parsedBlocks : [], lessonId, paidMediaBucketId),
+        thumbnailUrl: scopeLessonMedia(lessonDoc.thumbnailUrl, lessonId, paidMediaBucketId),
+        heroMediaUrl: scopeLessonMedia(lessonDoc.heroMediaUrl, lessonId, paidMediaBucketId),
+        heroMediaType: lessonDoc.heroMediaType,
+        heroPosterUrl: scopeLessonMedia(lessonDoc.heroPosterUrl, lessonId, paidMediaBucketId),
       },
     });
   };

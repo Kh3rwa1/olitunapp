@@ -64,7 +64,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      await account.createEmailPasswordSession(
+      await authService.signInWithEmail(
         email: email,
         password: password,
       );
@@ -181,7 +181,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String secret,
   }) async {
     try {
-      await account.createSession(userId: userId, secret: secret);
+      await authService.verifyOtp(userId: userId, secret: secret);
       final user = await account.get();
       return UserModel.fromJson(user.toMap());
     } on AppwriteException catch (e) {

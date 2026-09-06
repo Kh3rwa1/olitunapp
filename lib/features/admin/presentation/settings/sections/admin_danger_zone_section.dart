@@ -9,10 +9,12 @@ class AdminDangerZoneSection extends StatelessWidget {
     super.key,
     required this.onBackup,
     required this.onWipe,
+    this.onRestore,
   });
 
   final VoidCallback onBackup;
   final VoidCallback onWipe;
+  final VoidCallback? onRestore;
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +53,13 @@ class AdminDangerZoneSection extends StatelessWidget {
                 icon: Icons.cloud_download_rounded,
                 onTap: onBackup,
               ),
+              if (onRestore != null)
+                AdminSecondaryButton(
+                  label: 'Restore / Resume',
+                  icon: Icons.settings_backup_restore_rounded,
+                  destructive: true,
+                  onTap: onRestore!,
+                ),
               AdminSecondaryButton(
                 label: 'Wipe & Re-seed',
                 icon: Icons.delete_forever_rounded,

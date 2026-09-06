@@ -1,4 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/enums.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../../../../../core/auth/admin_restore_client.dart';
+import '../../../../../core/config/appwrite_config.dart';
 
 import '../../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../../core/observability/crash_reporting.dart';
@@ -9,6 +15,54 @@ class AdminMaintenanceController {
   AdminMaintenanceController(this.ref);
 
   final WidgetRef ref;
+
+  Future<Map<String, dynamic>> restoreContent(
+    String fileId, {
+    String? operationId,
+    void Function(Map<String, dynamic>)? onProgress,
+    bool Function()? shouldContinue,
+  }) async {
+    final service = ref.read(appwriteAuthServiceProvider);
+    if (!await service.isLoggedIn()) {
+      throw AppwriteException('Sign in as an admin before restoring.', 401);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    final functions = Functions(service.client);
+    final client = AdminRestoreClient(
+      prefs: prefs,
+      projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
+      execute: (payload) async {
+        final execution = await functions.createExecution(
+          functionId: 'admin-maintenance',
+          body: jsonEncode(payload),
+          xasync: false,
+          method: ExecutionMethod.pOST,
+        );
+        return parseAdminRestoreResponse(
+          statusCode: execution.responseStatusCode,
+          body: execution.responseBody,
+        );
+      },
+    );
+    final result = await client.restore(
+      fileId: fileId,
+      operationId: operationId,
+      onProgress: onProgress,
+      shouldContinue: shouldContinue,
+    );
+    // A local cache error must not turn an acknowledged restore into a new
+    // destructive operation on the next UI retry.
+    try {
+      await CacheService.clear();
+    } catch (error) {
+      CrashReporting.addAdminMaintenanceBreadcrumb(
+        action: 'restore_cache_clear',
+        success: false,
+        error: error.toString(),
+      );
+    }
+    return result;
+  }
 
   Future<String?> backupContent() async {
     try {

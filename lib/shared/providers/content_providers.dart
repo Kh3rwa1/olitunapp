@@ -20,7 +20,12 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
   );
 });
 
-/// Family Provider for Lists
+/// Family Provider for Lists.
+///
+/// An empty successful catalog is distinct from an unavailable catalog.
+/// Preserve repository failures so consumers can display their error/retry
+/// state. Cached or bundled fallback data remains a successful repository
+/// result and is not converted into an error here.
 final contentListProvider =
     FutureProvider.family<List<ContentItem>, (ContentKind, String?)>((
       ref,
@@ -32,7 +37,10 @@ final contentListProvider =
       final repo = ref.watch(contentRepositoryProvider);
 
       final res = await repo.list(kind, categoryId: categoryId);
-      return res.fold((failure) => <ContentItem>[], (list) => list);
+      return res.fold(
+        (failure) => throw FailureException(failure),
+        (list) => list,
+      );
     });
 
 /// Family Provider for Single Items.

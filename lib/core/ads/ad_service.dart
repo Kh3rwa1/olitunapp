@@ -8,12 +8,19 @@ import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
 
 import '../config/ad_config.dart';
 import '../logging/app_logger.dart';
+import '../observability/crash_reporting.dart';
 import 'ad_error.dart';
 import 'consent_manager.dart';
 import 'native_ad_factory.dart';
 
 class AdService with WidgetsBindingObserver {
   AdService._();
+
+  @visibleForTesting
+  AdService.forTesting({Iterable<Ad> trackedAds = const <Ad>[]}) {
+    _activeAds.addAll(trackedAds);
+  }
+
   static final AdService instance = AdService._();
 
   ConsentManager? _consentManager;
@@ -27,7 +34,15 @@ class AdService with WidgetsBindingObserver {
 
   DateTime? _lastBackgroundedAt;
 
+  // Only ads not yet claimed by a widget/manager belong to the service.
+  // Disposing a claimed ad would leave its owner with an invalid native ID.
   final Set<Ad> _activeAds = {};
+  final Expando<bool> _releasedAds = Expando<bool>();
+
+  /// Transfer a loaded ad to its widget/manager. The recipient must dispose it.
+  void takeOwnership(Ad ad) {
+    _activeAds.remove(ad);
+  }
 
   /// Initialize MobileAds SDK and configuration safely.
   Future<Either<AdError, bool>> initialize({
@@ -128,7 +143,7 @@ class AdService with WidgetsBindingObserver {
           },
           onAdFailedToLoad: (ad, error) {
             _activeAds.remove(ad);
-            ad.dispose();
+            releaseAd(ad);
             if (!isFallback &&
                 enableFallback &&
                 AdConfig.isTestMode &&
@@ -320,7 +335,7 @@ class AdService with WidgetsBindingObserver {
           },
           onAdFailedToLoad: (ad, error) {
             _activeAds.remove(ad);
-            ad.dispose();
+            releaseAd(ad);
             if (!isFallback &&
                 enableFallback &&
                 AdConfig.isTestMode &&
@@ -370,22 +385,31 @@ class AdService with WidgetsBindingObserver {
     }
   }
 
-  /// Untrack and dispose an individual ad.
+  /// Untrack and dispose an individual ad without leaking async SDK failures.
   void releaseAd(Ad ad) {
     _activeAds.remove(ad);
-    ad.dispose();
+    if (_releasedAds[ad] == true) return;
+    _releasedAds[ad] = true;
+    unawaited(_disposeAd(ad));
   }
 
-  /// Dispose all tracked active ads.
-  void disposeAll() {
-    for (final ad in _activeAds) {
-      try {
-        ad.dispose();
-      } catch (_) {
-        // Best-effort cleanup: an already-disposed ad may rethrow.
-      }
+  Future<void> _disposeAd(Ad ad) async {
+    try {
+      await ad.dispose();
+    } catch (error, stack) {
+      AppLogger.warning('AdService: ad cleanup failed.');
+      CrashReporting.recordError(error, stack);
     }
+  }
+
+  /// Dispose unclaimed ads only. Mounted widgets and full-screen managers own
+  /// their claimed ads, so memory pressure cannot invalidate a live AdWidget.
+  void disposeAll() {
+    final unclaimed = _activeAds.toList();
     _activeAds.clear();
+    for (final ad in unclaimed) {
+      releaseAd(ad);
+    }
   }
 
   @override
@@ -406,7 +430,7 @@ class AdService with WidgetsBindingObserver {
   @override
   void didHaveMemoryPressure() {
     AppLogger.debug(
-      'AdService: Memory pressure detected. Disposing heavy ad objects.',
+      'AdService: Memory pressure detected. Releasing unclaimed ads.',
     );
     disposeAll();
   }

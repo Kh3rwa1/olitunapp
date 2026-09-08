@@ -1,5 +1,4 @@
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../logging/app_logger.dart';
 import '../logging/redaction_helper.dart';
@@ -11,6 +10,17 @@ class SessionPersistence {
   static const String webSessionTimestampKey = 'olitun_web_session_ts';
   static const String hasLocalSessionKey = 'olitun_has_local_session';
 
+  /// Removes the obsolete plaintext copy without changing SDK session state.
+  /// Safe to call on every startup, including while offline.
+  static Future<void> purgeLegacySessionSecret(SharedPreferences prefs) async {
+    if (prefs.getString(webSessionSecretKey) == null) return;
+    if (!await prefs.remove(webSessionSecretKey)) {
+      throw StateError('Could not remove legacy session credential.');
+    }
+  }
+
+  /// Credentials belong to the Appwrite SDK, not SharedPreferences.
+  /// [isWebOverride] is retained for compatibility; both platforms use this rule.
   static Future<void> persistWebSession({
     required Client client,
     required SharedPreferences prefs,
@@ -23,24 +33,15 @@ class SessionPersistence {
       throw AppwriteException('Cannot persist empty session secret.');
     }
     client.setSession(secret);
-    final isWeb = isWebOverride ?? kIsWeb;
     try {
-      if (isWeb) {
-        // Web credentials stay in the SDK/cookie, never in localStorage.
-        await prefs.remove(webSessionSecretKey);
-        await prefs.setInt(
-          webSessionTimestampKey,
-          (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-        );
-        await prefs.setBool(hasLocalSessionKey, true);
-      } else {
-        await prefs.setString(webSessionSecretKey, secret);
-        await prefs.setInt(
-          webSessionTimestampKey,
-          (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-        );
-        await prefs.setBool(hasLocalSessionKey, true);
-      }
+      // Native restoration never consumed this duplicate token. Remove it
+      // rather than creating another credential store to keep in sync.
+      await purgeLegacySessionSecret(prefs);
+      await prefs.setInt(
+        webSessionTimestampKey,
+        (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+      );
+      await prefs.setBool(hasLocalSessionKey, true);
     } catch (e) {
       await clearLocalSessionState(client: client, prefs: prefs);
       throw AppwriteException(
@@ -55,13 +56,10 @@ class SessionPersistence {
     required bool isWeb,
     DateTime Function()? nowProvider,
   }) async {
+    await purgeLegacySessionSecret(prefs);
     if (!isWeb) return;
-    final secret = prefs.getString(webSessionSecretKey);
     final ts = prefs.getInt(webSessionTimestampKey);
     final hasSession = prefs.getBool(hasLocalSessionKey) ?? false;
-    if (secret != null && secret.isNotEmpty) {
-      await prefs.remove(webSessionSecretKey);
-    }
     if (!hasSession ||
         ts == null ||
         !isWebSessionValidTimestamp(ts, nowOverride: nowProvider?.call())) {

@@ -11,6 +11,7 @@ import 'app/router/app_router.dart';
 import 'app/router/url_strategy.dart';
 import 'core/accessibility/app_experience_scope.dart';
 import 'core/config/appwrite_config.dart';
+import 'core/auth/session_persistence.dart';
 import 'core/observability/app_observability.dart';
 import 'core/observability/crash_reporting.dart';
 import 'core/startup/post_frame_startup.dart';
@@ -97,6 +98,7 @@ Future<void> _startApplication() async {
     // A timeout keeps the underlying storage operation alive. A retry waits
     // for that same operation instead of opening a second set of Hive boxes.
     final prefs = await _storageStartup.run();
+    await SessionPersistence.purgeLegacySessionSecret(prefs);
     await TranslationOverrideService.instance.init(prefs);
     final optionalTasks = <String, Future<void> Function()>{
       'display': () async {

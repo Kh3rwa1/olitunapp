@@ -35,6 +35,18 @@ DART_FILES = [
     "test/features/profile/user_stats_sync_lifecycle_test.dart",
     "integration_test/experience_performance_test.dart",
 ]
+# Include all regression files for the ad/offline/artwork paths, including new
+# files added in a later commit. Deduplicate existing explicitly listed tests.
+for folder in (
+    "lib/core/ads",
+    "lib/shared/repositories",
+    "lib/features/rhymes/presentation/providers",
+    "test/core/ads",
+    "test/shared/repositories",
+    "test/features/rhymes",
+):
+    DART_FILES.extend(str(path) for path in sorted(Path(folder).rglob("*.dart")))
+DART_FILES = list(dict.fromkeys(DART_FILES))
 TEST_FILES = [path for path in DART_FILES if path.startswith("test/")]
 
 

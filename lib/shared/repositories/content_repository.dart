@@ -268,7 +268,7 @@ class ContentRepository {
           .getDocument(
             databaseId: AppwriteConfig.databaseId,
             collectionId: 'categories',
-            documentId: item.id,
+            documentId: item.categoryId,
           )
           .timeout(const Duration(seconds: 6));
       return PremiumContentPolicy.forContentItem(
@@ -289,7 +289,7 @@ class ContentRepository {
       decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
 
   /// Upserts a content item to Appwrite and updates the local cache.
-  Future<Either<Failure, ContentItem>>> upsert(
+  Future<Either<Failure, ContentItem>> upsert(
     ContentItem item, {
     bool allowOfflineQueue = true,
   }) async {

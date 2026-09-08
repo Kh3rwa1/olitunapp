@@ -16,23 +16,26 @@ class _TrackedAd extends Fake implements Ad {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('memory pressure cannot invalidate a claimed widget or manager ad', () async {
-    final ad = _TrackedAd();
-    final service = AdService.forTesting(trackedAds: [ad]);
-    addTearDown(service.dispose);
+  test(
+    'memory pressure cannot invalidate a claimed widget or manager ad',
+    () async {
+      final ad = _TrackedAd();
+      final service = AdService.forTesting(trackedAds: [ad]);
+      addTearDown(service.dispose);
 
-    service.takeOwnership(ad);
-    service.didHaveMemoryPressure();
-    await Future<void>.value();
-    expect(ad.disposals, 0);
+      service.takeOwnership(ad);
+      service.didHaveMemoryPressure();
+      await Future<void>.value();
+      expect(ad.disposals, 0);
 
-    service.releaseAd(ad);
-    await Future<void>.value();
-    expect(ad.disposals, 1);
-    service.disposeAll();
-    await Future<void>.value();
-    expect(ad.disposals, 1);
-  });
+      service.releaseAd(ad);
+      await Future<void>.value();
+      expect(ad.disposals, 1);
+      service.disposeAll();
+      await Future<void>.value();
+      expect(ad.disposals, 1);
+    },
+  );
 
   test('unclaimed ads are still released under memory pressure', () async {
     final owned = _TrackedAd();
@@ -49,15 +52,17 @@ void main() {
     await Future<void>.value();
   });
 
-
-  test('duplicate releases are idempotent even when SDK disposal fails asynchronously', () async {
-    final ad = _TrackedAd()..failDispose = true;
-    final service = AdService.forTesting(trackedAds: [ad]);
-    addTearDown(service.dispose);
-    service.releaseAd(ad);
-    service.releaseAd(ad);
-    service.disposeAll();
-    await Future<void>.value();
-    expect(ad.disposals, 1);
-  });
+  test(
+    'duplicate releases are idempotent even when SDK disposal fails asynchronously',
+    () async {
+      final ad = _TrackedAd()..failDispose = true;
+      final service = AdService.forTesting(trackedAds: [ad]);
+      addTearDown(service.dispose);
+      service.releaseAd(ad);
+      service.releaseAd(ad);
+      service.disposeAll();
+      await Future<void>.value();
+      expect(ad.disposals, 1);
+    },
+  );
 }

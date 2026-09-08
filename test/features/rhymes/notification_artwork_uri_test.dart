@@ -11,20 +11,24 @@ void main() {
     expect(notificationArtworkUri('http://[invalid'), isNull);
   });
 
-  test('project and encoded file-token values survive thumbnail conversion', () {
-    final original = Uri.parse(
-      '$view?project=demo&token=sample%2B%2F%3D',
-    );
-    final result = notificationArtworkUri(original.toString())!;
+  test(
+    'project and encoded file-token values survive thumbnail conversion',
+    () {
+      final original = Uri.parse('$view?project=demo&token=sample%2B%2F%3D');
+      final result = notificationArtworkUri(original.toString())!;
 
-    expect(result.path, '/v1/storage/buckets/covers/files/cover/preview');
-    expect(result.queryParameters['project'], 'demo');
-    expect(result.queryParameters['token'], original.queryParameters['token']);
-    expect(result.queryParameters['width'], '300');
-    expect(result.queryParameters['height'], '300');
-    expect(result.queryParameters['output'], 'webp');
-    expect(result.toString().split('?').length, 2);
-  });
+      expect(result.path, '/v1/storage/buckets/covers/files/cover/preview');
+      expect(result.queryParameters['project'], 'demo');
+      expect(
+        result.queryParameters['token'],
+        original.queryParameters['token'],
+      );
+      expect(result.queryParameters['width'], '300');
+      expect(result.queryParameters['height'], '300');
+      expect(result.queryParameters['output'], 'webp');
+      expect(result.toString().split('?').length, 2);
+    },
+  );
 
   test('repeated parameters, port and fragment are preserved', () {
     final result = notificationArtworkUri(

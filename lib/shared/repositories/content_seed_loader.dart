@@ -12,12 +12,18 @@ class ContentSeedLoader {
   static List<ContentItem>? _cachedBundledVocabLessons;
   static List<ContentItem>? _cachedBundledSentences;
   static List<ContentItem>? _cachedBundledWords;
+  static final Map<ContentKind, List<ContentItem>> _cachedBundledBasics = {};
 
   static Future<List<ContentItem>> loadBundledSeedItems(
     ContentKind kind,
     String? categoryId,
   ) async {
     try {
+      if (kind == ContentKind.letter || kind == ContentKind.number) {
+        // These collections are global: the remote repository also ignores
+        // category filters for letters and numbers.
+        return await _loadBundledBasics(kind);
+      }
       if (kind == ContentKind.lesson) {
         final List<ContentItem> allLessons = [];
 
@@ -206,6 +212,29 @@ class ContentSeedLoader {
       _logSeedLoadFailure('bundled seed', e, stack);
     }
     return [];
+  }
+
+  static Future<List<ContentItem>> _loadBundledBasics(ContentKind kind) async {
+    final cached = _cachedBundledBasics[kind];
+    if (cached != null) return cached;
+    final asset = kind == ContentKind.letter
+        ? 'assets/seed/letters.json'
+        : 'assets/seed/numbers.json';
+    final raw = jsonDecode(await rootBundle.loadString(asset)) as List<dynamic>;
+    final items = raw.cast<Map<String, dynamic>>().map((row) {
+      // Legacy read models accept the existing catalog without inventing audio
+      // or tracing paths. Admin write validation remains unchanged.
+      return ContentItem.fromJson({
+        ...row,
+        'updatedAt': '2026-09-08T00:00:00.000Z',
+        if (kind == ContentKind.letter && row['exampleWord'] is String)
+          'exampleWordLatin': row['exampleWord'],
+      }, null, kind);
+    }).toList()..sort((a, b) => a.order.compareTo(b.order));
+    if (items.isEmpty) throw FormatException('Empty bundled catalog: $asset');
+    final result = List<ContentItem>.unmodifiable(items);
+    _cachedBundledBasics[kind] = result;
+    return result;
   }
 
   static void _logSeedLoadFailure(String what, Object e, StackTrace stack) {

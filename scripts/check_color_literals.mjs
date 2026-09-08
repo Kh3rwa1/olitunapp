@@ -70,7 +70,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/affirmations/presentation/widgets/affirmation_share_sheet.dart": 1,
   "lib/features/auth/presentation/email_auth/email_auth_screen.dart": 1,
   "lib/features/content/presentation/widgets/inline_media_players.dart": 2,
-  "lib/features/content/presentation/widgets/premium_bakhed_body.dart": 3,
   "lib/features/content/presentation/widgets/story_player_body.dart": 1,
   "lib/features/home/presentation/widgets/next_best_action_card.dart": 3,
   "lib/features/learn/presentation/screens/content_grid_screen.dart": 3,

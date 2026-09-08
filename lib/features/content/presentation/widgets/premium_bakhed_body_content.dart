@@ -4,6 +4,70 @@ part of 'premium_bakhed_body.dart';
 /// Lyrics / vocabulary / cultural-notes panel builders for
 /// [_PremiumBakhedBodyState], extracted into this library part.
 extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
+  Widget _buildActiveSubTabContent(
+    BakhedLearningContent content,
+    ContentItem item,
+    bool isPlaying,
+    int positionMs,
+    Color accentColor,
+  ) {
+    switch (_activeSubTab) {
+      case 0:
+        return _buildSyncedLyrics(
+          content.lyrics,
+          item,
+          positionMs,
+          accentColor,
+        );
+      case 1:
+        return _buildVocabularyList(content.vocabulary, accentColor);
+      case 2:
+        return _buildCulturalNotes(content.culturalNotes);
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
+  Widget _buildContentSurface(
+    AsyncValue<BakhedLearningContent?> learningContentAsync,
+    ContentItem item,
+    bool isPlaying,
+    int positionMs,
+    Color accentColor,
+  ) {
+    return learningContentAsync.when(
+      data: (content) {
+        if (content == null) {
+          return Center(
+            child: Text(
+              'No learning content available.',
+              style: AppTypography.inter(color: Colors.white38, fontSize: 14),
+            ),
+          );
+        }
+        return _buildActiveSubTabContent(
+          content,
+          item,
+          isPlaying,
+          positionMs,
+          accentColor,
+        );
+      },
+      loading: () => const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      ),
+      error: (err, _) => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(
+            'Error loading details: $err',
+            style: const TextStyle(color: Colors.white70),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildCulturalNotes(List<BakhedCulturalNote> notes) {
     final publishedNotes = notes.where((n) => n.isPublished).toList();
     if (publishedNotes.isEmpty) {

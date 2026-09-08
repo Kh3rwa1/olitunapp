@@ -47,7 +47,7 @@ for folder in (
 ):
     DART_FILES.extend(str(path) for path in sorted(Path(folder).rglob("*.dart")))
 DART_FILES = list(dict.fromkeys(DART_FILES))
-TEST_FILES = [path for path in DART_FILES if path.startswith("test/")]
+TEST_FILES = [path for path in DART_FILES if path.startswith("test/") and path.endswith("_test.dart")]
 
 
 def run(command, timeout=180):
@@ -136,7 +136,7 @@ def main(full=False):
         "Formatting happens only in the disposable CI checkout. No source is auto-committed. "
         "These checks do not replace visual/device evaluation or the existing release gates.\n\n"
         f"### Formatting: {'passed' if format_ok else 'needs correction'}\n"
-        f"```diff\n{clip(patch or format_log, 18000)}\n```\n\n"
+        f"```diff\n{clip(patch or format_log, 30000)}\n```\n\n"
         f"### Analyzer: {outcome(analyze_code)}\n"
         f"```text\n{clip(analyze_log, 5000)}\n```\n\n"
         f"### {suite}: {outcome(test_code)}\n"

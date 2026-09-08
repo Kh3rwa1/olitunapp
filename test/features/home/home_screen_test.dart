@@ -15,6 +15,9 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
+import 'package:itun/core/ads/widgets/native_ad_widget.dart';
+import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
+import 'package:itun/features/home/presentation/widgets/home_content_grid.dart';
 import '../../test_utils.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
@@ -131,6 +134,9 @@ void main() {
           lessonsCompletedProvider.overrideWith((ref) => 2),
           categoryNotifierProvider.overrideWith(() => categoryNotifier),
           lessonNotifierProvider.overrideWith(() => lessonNotifier),
+          contentListProvider((ContentKind.lesson, null)).overrideWith(
+            (ref) async => [],
+          ),
           quizzesProvider.overrideWith(MockQuizzesNotifier.new),
           userStatsProvider.overrideWith(() => userStatsNotifier),
           lastOpenedLessonIdProvider.overrideWith((ref) => null),
@@ -154,6 +160,13 @@ void main() {
     await tester.pump(const Duration(seconds: 1));
     expect(find.text('Johar, Test User!'), findsOneWidget);
     expect(find.text('Daily Progress: 0%'), findsNothing);
+    final ad = find.byType(NativeAdWidget);
+    expect(ad, findsOneWidget);
+    expect(find.byType(BannerAdWidget), findsNothing);
+    expect(
+      tester.getTopLeft(find.byType(HomeContentGrid)).dy,
+      lessThan(tester.getTopLeft(ad).dy),
+    );
   });
 
   group('continueLessonFor', () {

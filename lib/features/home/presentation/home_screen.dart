@@ -24,7 +24,6 @@ import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
-import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -152,10 +151,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: EdgeInsets.symmetric(vertical: 8.0),
           child: RepaintBoundary(child: TodayAffirmationCard()),
         ),
-        const SizedBox(height: 16),
-        const RepaintBoundary(
-          child: NativeAdWidget(placement: 'home_native_wisdom'),
-        ),
         const SizedBox(height: 20),
 
         // (4) NextBestActionCard & TodayMissionCard or Loading Skeleton
@@ -179,13 +174,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 16),
                     const RepaintBoundary(child: LearningPathCard()),
                   ],
-                  const SizedBox(height: 16),
-                  const RepaintBoundary(
-                    child: NativeAdWidget(
-                      placement: 'home_native',
-                      height: 120,
-                    ),
-                  ),
                   const SizedBox(height: 16),
                   const RepaintBoundary(child: TodayMissionCard()),
                 ],
@@ -302,12 +290,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
             const SizedBox(height: 20),
+            // One optional ad, after the learning actions and content grid.
             const RepaintBoundary(
               child: NativeAdWidget(placement: 'home_native_bottom'),
-            ),
-            const SizedBox(height: 16),
-            const RepaintBoundary(
-              child: BannerAdWidget(placement: 'home_bottom'),
             ),
           ],
         ),

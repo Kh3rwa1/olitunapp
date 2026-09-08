@@ -1034,7 +1034,7 @@ void main() {
     );
 
     test(
-      '24. exchangeOAuthToken on mobile persists credentials to local preferences and client',
+      '24. exchangeOAuthToken on mobile keeps credentials in the SDK and out of preferences',
       () async {
         SharedPreferences.setMockInitialValues({});
         final mockSession = MockSession();
@@ -1063,10 +1063,7 @@ void main() {
           () => mockClient.setSession('persisted_secret_mobile'),
         ).called(1);
         final prefs = await SharedPreferences.getInstance();
-        expect(
-          prefs.getString('olitun_appwrite_session_secret'),
-          'persisted_secret_mobile',
-        );
+        expect(prefs.getString('olitun_appwrite_session_secret'), isNull);
         expect(prefs.getBool('olitun_has_local_session'), isTrue);
       },
     );

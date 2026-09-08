@@ -16,7 +16,7 @@ void main() {
     when(() => mockClient.setSession(any())).thenReturn(mockClient);
   });
 
-  group('SessionPersistence Web Security & Regression Tests', () {
+  group('SessionPersistence Security & Regression Tests', () {
     test(
       '1. Web persistence NEVER writes raw secret string and purges any legacy secret from SharedPreferences',
       () async {
@@ -126,9 +126,11 @@ void main() {
     );
 
     test(
-      '5. Non-web platform (isWebOverride = false) persists secret string to secure local preferences',
+      '5. Non-web persistence keeps credentials in the SDK and purges plaintext preferences',
       () async {
-        SharedPreferences.setMockInitialValues({});
+        SharedPreferences.setMockInitialValues({
+          SessionPersistence.webSessionSecretKey: 'legacy_mobile_secret',
+        });
         final prefs = await SharedPreferences.getInstance();
 
         await SessionPersistence.persistWebSession(
@@ -138,10 +140,7 @@ void main() {
           isWebOverride: false,
         );
 
-        expect(
-          prefs.getString(SessionPersistence.webSessionSecretKey),
-          equals('mobile_secret_token_12345'),
-        );
+        expect(prefs.getString(SessionPersistence.webSessionSecretKey), isNull);
         expect(prefs.getBool(SessionPersistence.hasLocalSessionKey), isTrue);
         expect(
           prefs.getInt(SessionPersistence.webSessionTimestampKey),
@@ -149,5 +148,45 @@ void main() {
         );
       },
     );
+    for (final legacySecret in ['legacy_mobile_secret', '']) {
+      test('native restore purges legacy value: $legacySecret', () async {
+        SharedPreferences.setMockInitialValues({
+          SessionPersistence.webSessionSecretKey: legacySecret,
+          SessionPersistence.webSessionTimestampKey: 1,
+          SessionPersistence.hasLocalSessionKey: true,
+          'learning_progress': 'preserve-me',
+        });
+        final prefs = await SharedPreferences.getInstance();
+
+        await SessionPersistence.restoreWebSession(
+          client: mockClient,
+          prefs: prefs,
+          isWeb: false,
+        );
+
+        expect(prefs.getString(SessionPersistence.webSessionSecretKey), isNull);
+        expect(prefs.getBool(SessionPersistence.hasLocalSessionKey), isTrue);
+        expect(prefs.getInt(SessionPersistence.webSessionTimestampKey), 1);
+        expect(prefs.getString('learning_progress'), 'preserve-me');
+        verifyNever(() => mockClient.setSession(any()));
+      });
+    }
+
+    test('startup cleanup preserves progress and is repeatable', () async {
+      SharedPreferences.setMockInitialValues({
+        SessionPersistence.webSessionSecretKey: 'old-credential',
+        SessionPersistence.hasLocalSessionKey: true,
+        'learning_progress': 'preserve-me',
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await SessionPersistence.purgeLegacySessionSecret(prefs);
+      await SessionPersistence.purgeLegacySessionSecret(prefs);
+
+      expect(prefs.getString(SessionPersistence.webSessionSecretKey), isNull);
+      expect(prefs.getBool(SessionPersistence.hasLocalSessionKey), isTrue);
+      expect(prefs.getString('learning_progress'), 'preserve-me');
+      verifyZeroInteractions(mockClient);
+    });
   });
 }

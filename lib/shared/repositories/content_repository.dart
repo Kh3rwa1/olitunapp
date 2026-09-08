@@ -81,7 +81,14 @@ class ContentRepository {
     return 'content_item_${kind.name}_$id';
   }
 
-  /// Lists all content items of a specific kind, optionally filtered by category.
+  /// Reads bundled/cached content without checking connectivity or contacting
+  /// Appwrite. Missing content remains a failure, not a fabricated empty list.
+  Future<Either<Failure, List<ContentItem>>> cachedList(
+    ContentKind kind, {
+    String? categoryId,
+  }) => _getCachedList(kind, categoryId);
+
+  /// Refreshes content from the network, with the existing offline fallback.
   Future<Either<Failure, List<ContentItem>>> list(
     ContentKind kind, {
     String? categoryId,

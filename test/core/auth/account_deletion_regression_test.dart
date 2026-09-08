@@ -115,6 +115,7 @@ void main() {
     });
 
     test('missing function does not imply deletion', () async {
+      final sessionTimestamp = prefs.getInt('olitun_web_session_ts');
       when(
         () => functions.createExecution(functionId: 'delete-account'),
       ).thenThrow(AppwriteException('Function not found', 404));
@@ -123,7 +124,10 @@ void main() {
         throwsA(isA<AppwriteException>().having((e) => e.code, 'code', 404)),
       );
       expect(prefs.getBool('olitun_has_local_session'), isTrue);
-      expect(prefs.getString('olitun_appwrite_session_secret'), 'test-session');
+      // Legacy preference cleanup must not be mistaken for signing out.
+      expect(prefs.getString('olitun_appwrite_session_secret'), isNull);
+      expect(prefs.getInt('olitun_web_session_ts'), sessionTimestamp);
+      verifyNever(() => client.setSession(''));
     });
 
     test('nested function 404 is not proof that the user is absent', () async {

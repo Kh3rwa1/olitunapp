@@ -224,12 +224,16 @@ class ContentSeedLoader {
     final items = raw.cast<Map<String, dynamic>>().map((row) {
       // Legacy read models accept the existing catalog without inventing audio
       // or tracing paths. Admin write validation remains unchanged.
-      return ContentItem.fromJson({
-        ...row,
-        'updatedAt': '2026-09-08T00:00:00.000Z',
-        if (kind == ContentKind.letter && row['exampleWord'] is String)
-          'exampleWordLatin': row['exampleWord'],
-      }, null, kind);
+      return ContentItem.fromJson(
+        {
+          ...row,
+          'updatedAt': '2026-09-08T00:00:00.000Z',
+          if (kind == ContentKind.letter && row['exampleWord'] is String)
+            'exampleWordLatin': row['exampleWord'],
+        },
+        null,
+        kind,
+      );
     }).toList()..sort((a, b) => a.order.compareTo(b.order));
     if (items.isEmpty) throw FormatException('Empty bundled catalog: $asset');
     final result = List<ContentItem>.unmodifiable(items);

@@ -148,29 +148,32 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                 ),
               ),
               if (item.audioFileId.isNotEmpty)
-                Container(
-                  decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: accentColor.withOpacity(0.2)),
-                  ),
-                  child: IconButton(
-                    icon: Icon(Icons.volume_up_rounded, color: accentColor),
-                    tooltip: 'Play audio',
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      final db = ref.read(appwriteDbServiceProvider);
-                      final url = db.getFileViewUrl('audio', item.audioFileId);
-                      ref
-                          .read(playbackControllerProvider)
-                          .playSingle(
-                            id: url,
-                            contentKind: 'rhyme',
-                            contentId: item.id,
-                            trackType: 'targetNormal',
-                            languageCode: 'sat',
-                          );
-                    },
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: accentColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: accentColor.withOpacity(0.2)),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.volume_up_rounded, color: accentColor),
+                      tooltip: 'Play audio',
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        final db = ref.read(appwriteDbServiceProvider);
+                        final url = db.getFileViewUrl('audio', item.audioFileId);
+                        ref
+                            .read(playbackControllerProvider)
+                            .playSingle(
+                              id: url,
+                              contentKind: 'rhyme',
+                              contentId: item.id,
+                              trackType: 'targetNormal',
+                              languageCode: 'sat',
+                            );
+                      },
+                    ),
                   ),
                 ),
             ],
@@ -280,62 +283,77 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
         final line = lyrics[index];
         final isActive = index == activeIndex;
 
-        return GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            ref
-                .read(rhymeAudioProvider.notifier)
-                .seek(Duration(milliseconds: line.startMs));
-          },
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 250),
-            opacity: isActive ? 1.0 : 0.45,
-            child: AnimatedContainer(
+        return MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ref
+                  .read(rhymeAudioProvider.notifier)
+                  .seek(Duration(milliseconds: line.startMs));
+            },
+            child: AnimatedOpacity(
               duration: const Duration(milliseconds: 250),
-              margin: const EdgeInsets.only(bottom: 24.0),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? Colors.white.withOpacity(0.03)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
-                border: isActive
-                    ? Border.all(color: Colors.white.withOpacity(0.05))
-                    : null,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    line.olChiki,
-                    style: TextStyle(
-                      fontFamily: 'OlChiki',
-                      fontSize: isActive ? 26 : 23,
-                      fontWeight: FontWeight.bold,
-                      color: isActive ? AppColors.primary : Colors.white,
-                    ),
+              opacity: isActive ? 1.0 : 0.45,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.only(bottom: 20.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? AppColors.primary.withOpacity(0.08)
+                      : Colors.white.withOpacity(0.02),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isActive
+                        ? AppColors.primary.withOpacity(0.35)
+                        : Colors.white.withOpacity(0.04),
+                    width: isActive ? 1.2 : 1.0,
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    line.latin,
-                    style: AppTypography.inter(
-                      fontSize: isActive ? 16 : 15,
-                      fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  if (line.meaning.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withOpacity(0.14),
+                            blurRadius: 18,
+                            spreadRadius: -2,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      line.meaning,
-                      style: AppTypography.inter(
-                        fontSize: 13,
-                        color: Colors.white38,
-                        fontStyle: FontStyle.italic,
+                      line.olChiki,
+                      style: TextStyle(
+                        fontFamily: 'OlChiki',
+                        fontSize: isActive ? 26 : 22,
+                        fontWeight: FontWeight.bold,
+                        color: isActive ? AppColors.primary : Colors.white,
                       ),
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                      line.latin,
+                      style: AppTypography.inter(
+                        fontSize: isActive ? 16 : 14.5,
+                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                        color: isActive ? Colors.white : Colors.white70,
+                      ),
+                    ),
+                    if (line.meaning.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        line.meaning,
+                        style: AppTypography.inter(
+                          fontSize: 13,
+                          color: Colors.white38,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             ),
           ),

@@ -51,14 +51,7 @@ void main() {
   }) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
-    await OnboardingDraft(
-      step: 0,
-      teachingLanguage: 'en',
-      level: LearnerLevel.beginner,
-      scriptMode: 'both',
-      dailyGoal: 5,
-      goals: const [],
-    ).save(prefs);
+    await const OnboardingDraft(teachingLanguage: 'en').save(prefs);
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);

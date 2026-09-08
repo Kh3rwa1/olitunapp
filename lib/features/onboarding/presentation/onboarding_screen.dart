@@ -113,11 +113,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       updateScriptMode(ref, scriptMode);
       updateDailyGoalMinutes(ref, dailyGoal);
 
-      await ref.read(authControllerProvider).syncOnboardingPreferences(
-        targetLanguage: kDefaultTargetLanguage,
-        teachingLanguage: teachingLang,
-        goals: goals,
-      );
+      await ref
+          .read(authControllerProvider)
+          .syncOnboardingPreferences(
+            targetLanguage: kDefaultTargetLanguage,
+            teachingLanguage: teachingLang,
+            goals: goals,
+          );
       if (!mounted) return;
 
       await ref.read(onboardingProvider.notifier).completeOnboarding();
@@ -292,7 +294,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           Opacity(
                             opacity: _currentStep > 0 ? 1.0 : 0.0,
                             child: MinimumTapTarget(
-                              onTap: _currentStep > 0 && !_isCompleting ? _prevStep : null,
+                              onTap: _currentStep > 0 && !_isCompleting
+                                  ? _prevStep
+                                  : null,
                               borderRadius: BorderRadius.circular(12),
                               semanticLabel: 'Back',
                               child: Icon(

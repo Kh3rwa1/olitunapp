@@ -21,6 +21,7 @@ DART_FILES = [
     "lib/shared/repositories/content_repository.dart",
     "lib/features/home/presentation/home_screen.dart",
     "test/core/auth/session_persistence_test.dart",
+    "test/core/auth/account_deletion_regression_test.dart",
     "test/core/auth/appwrite_auth_service_test.dart",
     "test/shared/providers/content_list_provider_test.dart",
     "test/shared/providers/content_list_cache_first_test.dart",

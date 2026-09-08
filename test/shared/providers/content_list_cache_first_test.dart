@@ -171,9 +171,7 @@ void main() {
     disposed = true;
     await _flushEvents();
 
-    verifyNever(
-      () => repository.list(ContentKind.word, categoryId: 'vocab'),
-    );
+    verifyNever(() => repository.list(ContentKind.word, categoryId: 'vocab'));
   });
 
   test('cold loading times out with a typed failure', () async {

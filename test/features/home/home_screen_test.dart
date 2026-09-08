@@ -134,9 +134,10 @@ void main() {
           lessonsCompletedProvider.overrideWith((ref) => 2),
           categoryNotifierProvider.overrideWith(() => categoryNotifier),
           lessonNotifierProvider.overrideWith(() => lessonNotifier),
-          contentListProvider((ContentKind.lesson, null)).overrideWith(
-            (ref) async => [],
-          ),
+          contentListProvider((
+            ContentKind.lesson,
+            null,
+          )).overrideWith((ref) async => []),
           quizzesProvider.overrideWith(MockQuizzesNotifier.new),
           userStatsProvider.overrideWith(() => userStatsNotifier),
           lastOpenedLessonIdProvider.overrideWith((ref) => null),

@@ -34,9 +34,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     WidgetsBinding.instance.addObserver(this);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarDividerColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarIconBrightness: Brightness.dark,
       ),
     );
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

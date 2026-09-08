@@ -14,6 +14,7 @@ class RhymeAudioState {
   final ProcessingState processingState;
   final Duration position;
   final Duration duration;
+  final double speed;
 
   const RhymeAudioState({
     this.playingRhymeId,
@@ -21,6 +22,7 @@ class RhymeAudioState {
     this.processingState = ProcessingState.idle,
     this.position = Duration.zero,
     this.duration = Duration.zero,
+    this.speed = 1.0,
   });
 
   RhymeAudioState copyWith({
@@ -29,6 +31,7 @@ class RhymeAudioState {
     ProcessingState? processingState,
     Duration? position,
     Duration? duration,
+    double? speed,
   }) {
     return RhymeAudioState(
       playingRhymeId: playingRhymeId ?? this.playingRhymeId,
@@ -36,6 +39,7 @@ class RhymeAudioState {
       processingState: processingState ?? this.processingState,
       position: position ?? this.position,
       duration: duration ?? this.duration,
+      speed: speed ?? this.speed,
     );
   }
 }
@@ -200,6 +204,15 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
       AppLogger.debug('RhymeAudio: Error stopping player: $e');
     }
     state = const RhymeAudioState();
+  }
+
+  Future<void> setSpeed(double speed) async {
+    try {
+      await _player.setSpeed(speed);
+      state = state.copyWith(speed: speed);
+    } catch (e) {
+      AppLogger.debug('RhymeAudio: Error setting speed: $e');
+    }
   }
 
   String _notificationTitle(String? title) {

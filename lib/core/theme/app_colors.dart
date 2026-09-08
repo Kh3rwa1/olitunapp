@@ -94,6 +94,12 @@ class AppColors {
   static const Color darkSurfaceVariant = Color(0xFF2A2A2A);
   static const Color darkBorder = Color(0xFF3D3D3D);
 
+  // Bakhed player surface & dark tokens
+  static const Color bakhedBackground = Color(0xFF070B13);
+  static const Color bakhedCardDark = Color(0xFF131A26);
+  static const Color bakhedControlDark = Color(0xFF0A0E15);
+  static const Color bakhedGlowBlue = Color(0xFF1E3A8A);
+
   // Onboarding ambient mesh (gradient canvas behind the first-run flow).
   static const Color onboardingMeshDarkStart = Color(0xFF0B1220);
   static const Color onboardingMeshDarkEnd = Color(0xFF0E2A1D);

@@ -1,22 +1,23 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:math' as math;
 import 'dart:ui';
-import 'package:itun/core/theme/app_typography.dart';
-
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../../../core/api/appwrite_db_service.dart';
-import '../providers/audio_playback_providers.dart';
-import '../../../rhymes/presentation/widgets/cover_hero.dart';
-import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
-import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/theme/app_typography.dart';
 
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../../core/api/appwrite_db_service.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../shared/providers/bakhed_content_provider.dart';
+import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
+import '../../../rhymes/presentation/widgets/cover_hero.dart';
+import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import '../providers/audio_playback_providers.dart';
+
 part 'premium_bakhed_body_content.dart';
+part 'premium_bakhed_body_layouts.dart';
 
 /// Premium Bakhed immersive player & learning hub (lyrics / vocabulary /
 /// cultural notes). Owns its sub-tab selection state.
@@ -34,6 +35,8 @@ class PremiumBakhedBody extends ConsumerStatefulWidget {
 }
 
 class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
+  static const _speedCycle = <double>[1.0, 1.25, 1.5, 0.75];
+
   int _activeSubTab = 0; // 0 = Lyrics, 1 = Vocab, 2 = Cultural Notes
   late final ScrollController _lyricScrollController;
   int _lastActiveIndex = -1;
@@ -53,7 +56,13 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
   String _formatDuration(Duration d) {
     final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+    return '$minutes:$seconds';
+  }
+
+  void _onSelectSubTab(int index) {
+    setState(() {
+      _activeSubTab = index;
+    });
   }
 
   @override
@@ -67,69 +76,214 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     );
   }
 
-  Widget _buildActiveSubTabContent(
-    BakhedLearningContent content,
-    ContentItem item,
-    bool isPlaying,
-    int positionMs,
-    Color accentColor,
-  ) {
-    switch (_activeSubTab) {
-      case 0:
-        return _buildSyncedLyrics(
-          content.lyrics,
-          item,
-          positionMs,
-          accentColor,
-        );
-      case 1:
-        return _buildVocabularyList(content.vocabulary, accentColor);
-      case 2:
-        return _buildCulturalNotes(content.culturalNotes);
-      default:
-        return const SizedBox.shrink();
-    }
+  Widget _buildDesktopLayout({
+    required BuildContext context,
+    required ContentItem item,
+    required Color accentColor,
+    required RhymeAudioState audioState,
+    required AsyncValue<BakhedLearningContent?> learningContentAsync,
+    required bool isPlaying,
+    required int durationMs,
+    required int positionMs,
+    required bool hasValidDuration,
+    required double maxSliderVal,
+    required double currentSliderVal,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Left Column: Player Deck
+        SizedBox(
+          width: 440,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 20, 24, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top Bar
+                _buildTopBar(context, item, accentColor),
+                const SizedBox(height: 18),
+
+                // Artwork Card
+                Center(
+                  child: _buildArtworkCard(
+                    item,
+                    accentColor,
+                    isPlaying,
+                    maxHeight: 240,
+                  ),
+                ),
+                const Spacer(),
+
+                // Scrubber
+                _buildSliderSection(
+                  accentColor,
+                  maxSliderVal,
+                  currentSliderVal,
+                  hasValidDuration,
+                  positionMs,
+                  durationMs,
+                  isPlaying,
+                ),
+                const SizedBox(height: 14),
+
+                // Playback Controls Row
+                _buildControlsRow(
+                  item,
+                  accentColor,
+                  isPlaying,
+                  positionMs,
+                  durationMs,
+                  audioState.speed,
+                ),
+                const Spacer(),
+              ],
+            ),
+          ),
+        ),
+
+        // Vertical divider line
+        Container(width: 1, color: Colors.white.withOpacity(0.06)),
+
+        // Right Column: Learning Surface
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(28, 20, 28, 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSubTabsBar(),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.02),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: _buildContentSurface(
+                      learningContentAsync,
+                      item,
+                      isPlaying,
+                      positionMs,
+                      accentColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  Widget _buildSubTabButton(int index, IconData icon, String label) {
-    final isSelected = _activeSubTab == index;
-    return GestureDetector(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        setState(() {
-          _activeSubTab = index;
-        });
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Colors.white.withOpacity(0.08)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: Colors.white.withOpacity(0.12))
-              : null,
+  Widget _buildMobileLayout({
+    required BuildContext context,
+    required ContentItem item,
+    required Color accentColor,
+    required RhymeAudioState audioState,
+    required AsyncValue<BakhedLearningContent?> learningContentAsync,
+    required bool isPlaying,
+    required int durationMs,
+    required int positionMs,
+    required bool hasValidDuration,
+    required double maxSliderVal,
+    required double currentSliderVal,
+    required BoxConstraints constraints,
+  }) {
+    final double artMaxHeight = (constraints.maxHeight * 0.24).clamp(
+      150.0,
+      200.0,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Top Bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          child: _buildTopBar(context, item, accentColor, isCompact: true),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected ? AppColors.primary : Colors.white38,
+
+        // Artwork Card
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Center(
+            child: _buildArtworkCard(
+              item,
+              accentColor,
+              isPlaying,
+              maxHeight: artMaxHeight,
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: AppTypography.inter(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white38,
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Scrubber
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: _buildSliderSection(
+            accentColor,
+            maxSliderVal,
+            currentSliderVal,
+            hasValidDuration,
+            positionMs,
+            durationMs,
+            isPlaying,
+          ),
+        ),
+
+        // Playback Controls Row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: _buildControlsRow(
+            item,
+            accentColor,
+            isPlaying,
+            positionMs,
+            durationMs,
+            audioState.speed,
+            isCompact: true,
+          ),
+        ),
+
+        const SizedBox(height: 10),
+
+        // SubTabs Switcher
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: _buildSubTabsBar(isCompact: true),
+        ),
+
+        const SizedBox(height: 10),
+
+        // Expanded Scrolling Content Surface
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.02),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+              border: Border(
+                top: BorderSide(color: Colors.white.withOpacity(0.06)),
               ),
             ),
-          ],
+            clipBehavior: Clip.antiAlias,
+            child: _buildContentSurface(
+              learningContentAsync,
+              item,
+              isPlaying,
+              positionMs,
+              accentColor,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -174,397 +328,76 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             .clamp(0.0, maxSliderVal);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B13), // Deep premium midnight black
+      backgroundColor:
+          AppColors.bakhedBackground, // Deep premium midnight black
       body: Stack(
         children: [
-          // Ambient blurred accent background
+          // Ambient blurred accent background glows
           Positioned(
-            top: -100,
-            left: -100,
-            right: -100,
-            child: ClipOval(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
-                child: Container(
-                  height: 350,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: accentColor.withOpacity(0.12),
-                  ),
-                ),
+            top: -120,
+            left: -80,
+            child: Container(
+              width: 380,
+              height: 380,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: accentColor.withOpacity(0.14),
               ),
+            ),
+          ),
+          Positioned(
+            bottom: -100,
+            right: -80,
+            child: Container(
+              width: 350,
+              height: 350,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.bakhedGlowBlue.withOpacity(0.10),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+              child: const SizedBox.expand(),
             ),
           ),
 
           SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Custom glassy top bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.06),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
-                          ),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios_new_rounded,
-                            color: Colors.white,
-                            size: 20,
-                          ),
-                          tooltip: 'Go back',
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            Navigator.maybePop(context);
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              item.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppTypography.inter(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            if (item.subtitle != null &&
-                                item.subtitle!.isNotEmpty) ...[
-                              const SizedBox(height: 2),
-                              Text(
-                                item.subtitle!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppTypography.inter(
-                                  fontSize: 13,
-                                  color: Colors.white60,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Cover Art & Visualizer Panel
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: AspectRatio(
-                    aspectRatio: 1.6,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withOpacity(0.18),
-                            blurRadius: 36,
-                            spreadRadius: -4,
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(26),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            // Thumbnail / Cover Art Image / Video Autoplay
-                            CoverHero(
-                              media: item.heroMedia,
-                              coverMediaType: item.coverMediaType,
-                              fallback: Container(
-                                color: const Color(0xFF151C2A),
-                                child: Icon(
-                                  Icons.music_note_rounded,
-                                  size: 64,
-                                  color: accentColor,
-                                ),
-                              ),
-                            ),
-
-                            // Visualizer Overlay
-                            Positioned(
-                              left: 0,
-                              right: 0,
-                              bottom: 0,
-                              child: TickerMode(
-                                enabled: isPlaying,
-                                child: EnchantedVisualizer(
-                                  isPlaying: isPlaying,
-                                  color: Colors.white.withOpacity(0.25),
-                                  height: 80,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Audio Progress Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: SliderTheme(
-                    data: SliderThemeData(
-                      activeTrackColor: accentColor,
-                      inactiveTrackColor: Colors.white.withOpacity(0.12),
-                      thumbColor: Colors.white,
-                      trackHeight: 4,
-                      overlayColor: accentColor.withOpacity(0.16),
-                      thumbShape: const RoundSliderThumbShape(
-                        enabledThumbRadius: 6,
-                      ),
-                      overlayShape: const RoundSliderOverlayShape(
-                        overlayRadius: 16,
-                      ),
-                    ),
-                    child: Slider(
-                      max: maxSliderVal,
-                      value: currentSliderVal,
-                      onChanged: hasValidDuration
-                          ? (val) {
-                              ref
-                                  .read(rhymeAudioProvider.notifier)
-                                  .seek(Duration(milliseconds: val.toInt()));
-                            }
-                          : null,
-                    ),
-                  ),
-                ),
-
-                // Timestamps Row
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _formatDuration(Duration(milliseconds: positionMs)),
-                        style: AppTypography.inter(
-                          fontSize: 12,
-                          color: Colors.white60,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Text(
-                        hasValidDuration
-                            ? _formatDuration(
-                                Duration(milliseconds: durationMs),
-                              )
-                            : (isPlaying ? '--:--' : '00:00'),
-                        style: AppTypography.inter(
-                          fontSize: 12,
-                          color: Colors.white60,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Audio Playback Controls
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Replay 10s
-                      IconButton(
-                        icon: Icon(
-                          Icons.replay_10_rounded,
-                          color: Colors.white.withOpacity(0.8),
-                          size: 30,
-                        ),
-                        tooltip: 'Rewind 10 seconds',
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          final pos = Duration(milliseconds: positionMs);
-                          final target = pos - const Duration(seconds: 10);
-                          ref
-                              .read(rhymeAudioProvider.notifier)
-                              .seek(
-                                target < Duration.zero ? Duration.zero : target,
-                              );
-                        },
-                      ),
-                      const SizedBox(width: 24),
-                      // Grand Play/Pause Circle
-                      Semantics(
-                        button: true,
-                        label: isPlaying ? 'Pause audio' : 'Play audio',
-                        child: GestureDetector(
-                          onTap: () {
-                            HapticFeedback.mediumImpact();
-                            ref
-                                .read(rhymeAudioProvider.notifier)
-                                .togglePlay(
-                                  item.id,
-                                  item.effectiveAudioUrl,
-                                  title: item.title,
-                                  artworkUrl: item.heroMedia?.url,
-                                );
-                          },
-                          child: Container(
-                            width: 68,
-                            height: 68,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: accentColor.withOpacity(0.35),
-                                  blurRadius: 24,
-                                  spreadRadius: 1,
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              size: 38,
-                              color: const Color(0xFF0A0E15),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 24),
-                      // Forward 10s
-                      IconButton(
-                        icon: Icon(
-                          Icons.forward_10_rounded,
-                          color: Colors.white.withOpacity(0.8),
-                          size: 30,
-                        ),
-                        tooltip: 'Forward 10 seconds',
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          final pos = Duration(milliseconds: positionMs);
-                          final dur = Duration(milliseconds: durationMs);
-                          final target = pos + const Duration(seconds: 10);
-                          ref
-                              .read(rhymeAudioProvider.notifier)
-                              .seek(target > dur ? dur : target);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 28),
-
-                // Glassy Learning Sub-Tabs Control
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Container(
-                    height: 52,
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.04),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: _buildSubTabButton(
-                            0,
-                            Icons.lyrics_rounded,
-                            'Lyrics',
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildSubTabButton(
-                            1,
-                            Icons.menu_book_rounded,
-                            'Vocabulary',
-                          ),
-                        ),
-                        Expanded(
-                          child: _buildSubTabButton(
-                            2,
-                            Icons.auto_stories_rounded,
-                            'Notes',
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Scrolling Content Panel
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(32),
-                        topRight: Radius.circular(32),
-                      ),
-                      border: Border(
-                        top: BorderSide(color: Colors.white.withOpacity(0.06)),
-                      ),
-                    ),
-                    child: learningContentAsync.when(
-                      data: (content) {
-                        return _buildActiveSubTabContent(
-                          content,
-                          item,
-                          isPlaying,
-                          positionMs,
-                          accentColor,
-                        );
-                      },
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      error: (err, _) => Center(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24.0),
-                          child: Text(
-                            'Error loading details: $err',
-                            style: const TextStyle(color: Colors.white70),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth >= 840) {
+                  return _buildDesktopLayout(
+                    context: context,
+                    item: item,
+                    accentColor: accentColor,
+                    audioState: audioState,
+                    learningContentAsync: learningContentAsync,
+                    isPlaying: isPlaying,
+                    durationMs: durationMs,
+                    positionMs: positionMs,
+                    hasValidDuration: hasValidDuration,
+                    maxSliderVal: maxSliderVal,
+                    currentSliderVal: currentSliderVal,
+                  );
+                } else {
+                  return _buildMobileLayout(
+                    context: context,
+                    item: item,
+                    accentColor: accentColor,
+                    audioState: audioState,
+                    learningContentAsync: learningContentAsync,
+                    isPlaying: isPlaying,
+                    durationMs: durationMs,
+                    positionMs: positionMs,
+                    hasValidDuration: hasValidDuration,
+                    maxSliderVal: maxSliderVal,
+                    currentSliderVal: currentSliderVal,
+                    constraints: constraints,
+                  );
+                }
+              },
             ),
           ),
         ],

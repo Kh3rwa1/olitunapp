@@ -198,9 +198,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.06),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-              ),
+              border: Border.all(color: Colors.white.withOpacity(0.1)),
             ),
             child: IconButton(
               icon: const Icon(
@@ -365,12 +363,8 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             thumbColor: Colors.white,
             trackHeight: 3.5,
             overlayColor: accentColor.withOpacity(0.18),
-            thumbShape: const RoundSliderThumbShape(
-              enabledThumbRadius: 5.5,
-            ),
-            overlayShape: const RoundSliderOverlayShape(
-              overlayRadius: 14,
-            ),
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5.5),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
           ),
           child: MouseRegion(
             cursor: hasValidDuration
@@ -439,9 +433,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             child: GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
-                final nextSpeed = _speedCycle[
-                  (_speedCycle.indexOf(speed) + 1) % _speedCycle.length
-                ];
+                final nextSpeed =
+                    _speedCycle[(_speedCycle.indexOf(speed) + 1) %
+                        _speedCycle.length];
                 ref.read(rhymeAudioProvider.notifier).setSpeed(nextSpeed);
               },
               child: Container(
@@ -496,12 +490,14 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             child: GestureDetector(
               onTap: () {
                 HapticFeedback.mediumImpact();
-                ref.read(rhymeAudioProvider.notifier).togglePlay(
-                  item.id,
-                  item.effectiveAudioUrl,
-                  title: item.title,
-                  artworkUrl: item.heroMedia?.url,
-                );
+                ref
+                    .read(rhymeAudioProvider.notifier)
+                    .togglePlay(
+                      item.id,
+                      item.effectiveAudioUrl,
+                      title: item.title,
+                      artworkUrl: item.heroMedia?.url,
+                    );
               },
               child: Container(
                 width: isCompact ? 56 : 64,
@@ -664,10 +660,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
         ),
 
         // Vertical divider line
-        Container(
-          width: 1,
-          color: Colors.white.withOpacity(0.06),
-        ),
+        Container(width: 1, color: Colors.white.withOpacity(0.06)),
 
         // Right Column: Learning Surface
         Expanded(
@@ -683,9 +676,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.02),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.06),
-                      ),
+                      border: Border.all(color: Colors.white.withOpacity(0.06)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _buildContentSurface(
@@ -719,8 +710,10 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     required double currentSliderVal,
     required BoxConstraints constraints,
   }) {
-    final double artMaxHeight =
-        (constraints.maxHeight * 0.24).clamp(150.0, 200.0);
+    final double artMaxHeight = (constraints.maxHeight * 0.24).clamp(
+      150.0,
+      200.0,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

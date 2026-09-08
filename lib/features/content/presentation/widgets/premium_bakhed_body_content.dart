@@ -162,7 +162,10 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                       onPressed: () {
                         HapticFeedback.lightImpact();
                         final db = ref.read(appwriteDbServiceProvider);
-                        final url = db.getFileViewUrl('audio', item.audioFileId);
+                        final url = db.getFileViewUrl(
+                          'audio',
+                          item.audioFileId,
+                        );
                         ref
                             .read(playbackControllerProvider)
                             .playSingle(
@@ -298,7 +301,10 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 margin: const EdgeInsets.only(bottom: 20.0),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   color: isActive
                       ? AppColors.primary.withOpacity(0.08)
@@ -337,7 +343,9 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                       line.latin,
                       style: AppTypography.inter(
                         fontSize: isActive ? 16 : 14.5,
-                        fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                        fontWeight: isActive
+                            ? FontWeight.w600
+                            : FontWeight.w500,
                         color: isActive ? Colors.white : Colors.white70,
                       ),
                     ),

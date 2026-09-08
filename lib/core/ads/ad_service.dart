@@ -131,6 +131,7 @@ class AdService with WidgetsBindingObserver {
             ad.dispose();
             if (!isFallback &&
                 enableFallback &&
+                AdConfig.isTestMode &&
                 fallbackUnitId.isNotEmpty &&
                 primaryUnitId != fallbackUnitId &&
                 (error.code == 3 || error.code == 0)) {
@@ -200,6 +201,7 @@ class AdService with WidgetsBindingObserver {
           onAdFailedToLoad: (error) {
             if (!isFallback &&
                 enableFallback &&
+                AdConfig.isTestMode &&
                 fallbackUnitId.isNotEmpty &&
                 primaryUnitId != fallbackUnitId &&
                 (error.code == 3 || error.code == 0)) {
@@ -262,6 +264,7 @@ class AdService with WidgetsBindingObserver {
           onAdFailedToLoad: (error) {
             if (!isFallback &&
                 enableFallback &&
+                AdConfig.isTestMode &&
                 fallbackUnitId.isNotEmpty &&
                 primaryUnitId != fallbackUnitId &&
                 (error.code == 3 || error.code == 0)) {
@@ -320,6 +323,7 @@ class AdService with WidgetsBindingObserver {
             ad.dispose();
             if (!isFallback &&
                 enableFallback &&
+                AdConfig.isTestMode &&
                 fallbackUnitId.isNotEmpty &&
                 primaryUnitId != fallbackUnitId &&
                 (error.code == 3 || error.code == 0)) {

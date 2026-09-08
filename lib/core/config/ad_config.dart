@@ -130,24 +130,26 @@ class AdConfig {
     return testAndroidNativeId;
   }
 
-  /// Universal test fallback ad unit IDs (guaranteed fill from Google sample units)
+  /// Universal test fallback ad unit IDs (guaranteed fill from Google sample units).
+  /// Strictly restricted to test/debug mode so end users in production release
+  /// never receive test ads or native ad validator overlays.
   static String get fallbackBannerAdUnitId {
-    if (kIsWeb) return '';
+    if (kIsWeb || !isTestMode) return '';
     return Platform.isIOS ? testIosBannerId : testAndroidBannerId;
   }
 
   static String get fallbackInterstitialAdUnitId {
-    if (kIsWeb) return '';
+    if (kIsWeb || !isTestMode) return '';
     return Platform.isIOS ? testIosInterstitialId : testAndroidInterstitialId;
   }
 
   static String get fallbackRewardedAdUnitId {
-    if (kIsWeb) return '';
+    if (kIsWeb || !isTestMode) return '';
     return Platform.isIOS ? testIosRewardedId : testAndroidRewardedId;
   }
 
   static String get fallbackNativeAdUnitId {
-    if (kIsWeb) return '';
+    if (kIsWeb || !isTestMode) return '';
     return Platform.isIOS ? testIosNativeId : testAndroidNativeId;
   }
 

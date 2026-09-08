@@ -22,8 +22,7 @@ class InterstitialAdManager with WidgetsBindingObserver {
   bool _isLoading = false;
   bool _isCategorySwitchAdShownThisSession = false;
 
-  InterstitialAdManager(this._ref)
-    : _adService = _ref.read(adServiceProvider) {
+  InterstitialAdManager(this._ref) : _adService = _ref.read(adServiceProvider) {
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -40,12 +39,15 @@ class InterstitialAdManager with WidgetsBindingObserver {
       result.fold<void>(
         (error) {
           if (_disposed || generation != _generation) return;
-          AppLogger.debug('InterstitialAdManager: Preload failed: ${error.message}');
+          AppLogger.debug(
+            'InterstitialAdManager: Preload failed: ${error.message}',
+          );
           _ref.read(adStateProvider.notifier).recordError('interstitial');
         },
         (ad) {
           _adService.takeOwnership(ad);
-          if (_disposed || generation != _generation ||
+          if (_disposed ||
+              generation != _generation ||
               !_ref.read(adStateProvider).shouldShowAds) {
             _adService.releaseAd(ad);
             return;
@@ -116,7 +118,8 @@ class InterstitialAdManager with WidgetsBindingObserver {
       return false;
     }
     final currentState = _ref.read(adStateProvider);
-    if (!consentAllowed || !currentState.shouldShowAds ||
+    if (!consentAllowed ||
+        !currentState.shouldShowAds ||
         !currentState.canShowInterstitial() ||
         _interstitialAd == null) {
       clearCachedAd();

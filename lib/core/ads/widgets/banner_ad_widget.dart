@@ -50,7 +50,8 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
   }
 
   bool _accepts(int generation) =>
-      mounted && generation == _generation &&
+      mounted &&
+      generation == _generation &&
       ref.read(adStateProvider).shouldShowAds;
 
   void _releaseAfterFrame(Ad ad) {
@@ -295,10 +296,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
           ),
         ),
       ),
-      child: KeyedSubtree(
-          key: ObjectKey(ad),
-          child: _runtime.buildAd(ad),
-        ),
+      child: KeyedSubtree(key: ObjectKey(ad), child: _runtime.buildAd(ad)),
     );
   }
 }

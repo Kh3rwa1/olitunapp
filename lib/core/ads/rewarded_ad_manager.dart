@@ -24,12 +24,11 @@ class RewardedAdManager with WidgetsBindingObserver {
   RewardedAd? _rewardedAd;
   bool _isLoading = false;
 
-  RewardedAdManager(this._ref)
-    : _adService = _ref.read(adServiceProvider) {
+  RewardedAdManager(this._ref) : _adService = _ref.read(adServiceProvider) {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  /// Preload an rewarded ad without retaining obsolete async results.
+  /// Preload a rewarded ad without retaining obsolete async results.
   Future<void> preload() async {
     if (_disposed) return;
     final adState = _ref.read(adStateProvider);
@@ -42,12 +41,15 @@ class RewardedAdManager with WidgetsBindingObserver {
       result.fold<void>(
         (error) {
           if (_disposed || generation != _generation) return;
-          AppLogger.debug('RewardedAdManager: Preload failed: ${error.message}');
+          AppLogger.debug(
+            'RewardedAdManager: Preload failed: ${error.message}',
+          );
           _ref.read(adStateProvider.notifier).recordError('rewarded');
         },
         (ad) {
           _adService.takeOwnership(ad);
-          if (_disposed || generation != _generation ||
+          if (_disposed ||
+              generation != _generation ||
               !_ref.read(adStateProvider).shouldShowAds) {
             _adService.releaseAd(ad);
             return;
@@ -131,8 +133,10 @@ class RewardedAdManager with WidgetsBindingObserver {
       return false;
     }
     final currentState = _ref.read(adStateProvider);
-    if (!consentAllowed || !currentState.shouldShowAds ||
-        !currentState.canShowRewarded() || _rewardedAd == null) {
+    if (!consentAllowed ||
+        !currentState.shouldShowAds ||
+        !currentState.canShowRewarded() ||
+        _rewardedAd == null) {
       clearCachedAd();
       return false;
     }

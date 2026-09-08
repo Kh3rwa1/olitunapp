@@ -55,7 +55,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
   }
 
   bool _accepts(int generation) =>
-      mounted && generation == _generation &&
+      mounted &&
+      generation == _generation &&
       ref.read(adStateProvider).shouldShowAds;
 
   void _releaseAfterFrame(Ad ad) {
@@ -307,10 +308,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: KeyedSubtree(
-          key: ObjectKey(ad),
-          child: _runtime.buildAd(ad),
-        ),
+        child: KeyedSubtree(key: ObjectKey(ad), child: _runtime.buildAd(ad)),
       ),
     );
   }

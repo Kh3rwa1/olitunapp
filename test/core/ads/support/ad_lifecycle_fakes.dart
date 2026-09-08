@@ -328,8 +328,7 @@ class AdHarness {
         connectivityStreamProvider.overrideWith(
           (ref) => const Stream<List<ConnectivityResult>>.empty(),
         ),
-        if (runtime != null)
-          adWidgetRuntimeProvider.overrideWithValue(runtime),
+        if (runtime != null) adWidgetRuntimeProvider.overrideWithValue(runtime),
       ],
     );
     late BuildContext context;

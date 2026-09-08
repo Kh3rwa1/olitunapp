@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/languages/providers/target_language_provider.dart';
+import '../../../core/observability/crash_reporting.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
@@ -30,6 +31,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   static const int _totalSteps = 6;
   late final PageController _pageController;
   int _currentStep = 0;
+  bool _isCompleting = false;
 
   // Local state for user choices during onboarding.
   // Indigenous target language is permanent: Santali ('sat').
@@ -80,6 +82,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _selectTeachingLanguage(String code) {
+    if (_isCompleting) return;
     setState(() {
       _selectedTeachingLanguage = code;
     });
@@ -87,44 +90,57 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _completeOnboarding() async {
-    final teachingLang = _selectedTeachingLanguage ?? 'en';
+    if (!mounted || _isCompleting) return;
+    setState(() => _isCompleting = true);
+    try {
+      // Capture dependencies/data before awaits; completion may redirect and
+      // dispose this widget before its preference write has finished.
+      final prefs = ref.read(sharedPreferencesProvider);
+      final teachingLang = _selectedTeachingLanguage ?? 'en';
+      final goals = List<String>.of(_selectedGoals);
+      final level = _selectedLevel;
+      final scriptMode = _selectedScriptMode;
+      final dailyGoal = _selectedDailyGoal;
 
-    // Target indigenous language is permanent: Santali ('sat')
-    await ref
-        .read(targetLanguageCodeProvider.notifier)
-        .selectLanguage(kDefaultTargetLanguage);
+      await ref
+          .read(targetLanguageCodeProvider.notifier)
+          .selectLanguage(kDefaultTargetLanguage);
+      if (!mounted) return;
 
-    // Save teaching/UI language (English, Hindi, Bengali, Odia, Santali)
-    updateAppLanguage(ref, teachingLang);
-    updateTeachingLanguage(ref, teachingLang);
+      updateAppLanguage(ref, teachingLang);
+      updateTeachingLanguage(ref, teachingLang);
+      updateLearnerLevel(ref, level);
+      updateScriptMode(ref, scriptMode);
+      updateDailyGoalMinutes(ref, dailyGoal);
 
-    // Save choices to local settings
-    updateLearnerLevel(ref, _selectedLevel);
-    updateScriptMode(ref, _selectedScriptMode);
-    updateDailyGoalMinutes(ref, _selectedDailyGoal);
+      await ref
+          .read(authControllerProvider)
+          .syncOnboardingPreferences(
+            targetLanguage: kDefaultTargetLanguage,
+            teachingLanguage: teachingLang,
+            goals: goals,
+          );
+      if (!mounted) return;
 
-    // Save onboarding preferences to user prefs in Appwrite if logged in
-    await ref
-        .read(authControllerProvider)
-        .syncOnboardingPreferences(
-          targetLanguage: kDefaultTargetLanguage,
-          teachingLanguage: teachingLang,
-          goals: _selectedGoals,
+      await ref.read(onboardingProvider.notifier).completeOnboarding();
+      await OnboardingDraft.clear(prefs);
+      if (mounted) context.go('/');
+    } catch (error, stack) {
+      CrashReporting.recordError(error, stack);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not save your preferences. Please try again.'),
+          ),
         );
-
-    // Mark onboarding completed
-    await ref.read(onboardingProvider.notifier).completeOnboarding();
-
-    // The draft served its purpose — a later reinstall flow must never
-    // resume a completed onboarding.
-    await OnboardingDraft.clear(ref.read(sharedPreferencesProvider));
-
-    if (mounted) {
-      context.go('/');
+      }
+    } finally {
+      if (mounted) setState(() => _isCompleting = false);
     }
   }
 
   void _nextStep() {
+    if (_isCompleting) return;
     // Step 1 is the mandatory Teaching / Mother Tongue language selection step
     if (_currentStep == 1 && _selectedTeachingLanguage == null) {
       HapticFeedback.mediumImpact();
@@ -159,6 +175,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _prevStep() {
+    if (_isCompleting) return;
     if (_currentStep > 0) {
       setState(() {
         _currentStep--;
@@ -172,6 +189,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _selectLevel(LearnerLevel level) {
+    if (_isCompleting) return;
     setState(() {
       _selectedLevel = level;
     });
@@ -179,6 +197,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _selectScriptMode(String mode) {
+    if (_isCompleting) return;
     setState(() {
       _selectedScriptMode = mode;
     });
@@ -186,6 +205,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _selectDailyGoal(int goal) {
+    if (_isCompleting) return;
     setState(() {
       _selectedDailyGoal = goal;
     });
@@ -193,6 +213,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _toggleGoal(String goalId, bool isSelected) {
+    if (_isCompleting) return;
     setState(() {
       if (isSelected) {
         _selectedGoals.remove(goalId);
@@ -273,7 +294,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           Opacity(
                             opacity: _currentStep > 0 ? 1.0 : 0.0,
                             child: MinimumTapTarget(
-                              onTap: _currentStep > 0 ? _prevStep : null,
+                              onTap: _currentStep > 0 && !_isCompleting
+                                  ? _prevStep
+                                  : null,
                               borderRadius: BorderRadius.circular(12),
                               semanticLabel: 'Back',
                               child: Icon(
@@ -306,7 +329,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           // Skip Button: Hidden if mandatory language selection is pending
                           if (canSkip && _currentStep < _totalSteps - 1)
                             MinimumTapTarget(
-                              onTap: _completeOnboarding,
+                              onTap: _isCompleting ? null : _completeOnboarding,
                               borderRadius: BorderRadius.circular(12),
                               semanticLabel: 'Skip Onboarding',
                               child: Padding(
@@ -415,7 +438,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            _currentStep == _totalSteps - 1
+                            _isCompleting
+                                ? 'Saving…'
+                                : _currentStep == _totalSteps - 1
                                 ? 'Start Learning'
                                 : (isMandatoryPending
                                       ? 'Select Teaching Language'

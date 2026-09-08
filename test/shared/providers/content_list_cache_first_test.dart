@@ -112,7 +112,9 @@ void main() {
   test('no local content preserves the network failure contract', () async {
     when(
       () => repository.cachedList(ContentKind.word, categoryId: 'vocab'),
-    ).thenAnswer((_) async => const Left(CacheFailure()));
+    ).thenAnswer(
+      (_) async => const Left(CacheFailure(message: 'No offline catalog.')),
+    );
     const failure = NetworkFailure(message: 'Offline without a catalog');
     refresh.complete(const Left(failure));
 
@@ -178,7 +180,9 @@ void main() {
     container.dispose();
     when(
       () => repository.cachedList(ContentKind.word, categoryId: 'vocab'),
-    ).thenAnswer((_) async => const Left(CacheFailure()));
+    ).thenAnswer(
+      (_) async => const Left(CacheFailure(message: 'No offline catalog.')),
+    );
     container = ProviderContainer(
       overrides: [
         contentRepositoryProvider.overrideWithValue(repository),

@@ -12,7 +12,7 @@ import 'content_seed_loader.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/security/premium_content_policy.dart';
 
-// Provider-level API lives in ../providers/content_providers.dart';
+// Provider-level API lives in ../providers/content_providers.dart;
 // re-exported here for compatibility.
 export '../providers/content_providers.dart';
 
@@ -268,7 +268,7 @@ class ContentRepository {
           .getDocument(
             databaseId: AppwriteConfig.databaseId,
             collectionId: 'categories',
-            documentId: item.categoryId,
+            documentId: item.id,
           )
           .timeout(const Duration(seconds: 6));
       return PremiumContentPolicy.forContentItem(
@@ -289,7 +289,7 @@ class ContentRepository {
       decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
 
   /// Upserts a content item to Appwrite and updates the local cache.
-  Future<Either<Failure, ContentItem>> upsert(
+  Future<Either<Failure, ContentItem>>> upsert(
     ContentItem item, {
     bool allowOfflineQueue = true,
   }) async {

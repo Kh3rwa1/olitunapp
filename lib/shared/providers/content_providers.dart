@@ -38,7 +38,7 @@ Future<List<ContentItem>> _loadFreshContent(
     final result = await repo
         .list(kind, categoryId: categoryId)
         .timeout(timeout);
-    return result.fold(
+    return result.fold<List<ContentItem>>(
       (failure) => throw FailureException(failure),
       (items) => items,
     );

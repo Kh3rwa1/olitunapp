@@ -211,6 +211,17 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
   Uri? _safeUri(String? value) {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) return null;
+    // Downsample Appwrite storage URLs to compact 300x300 thumbnails for notification art
+    // to prevent high memory usage and satisfy Play Console bitmap downsampling guidance.
+    if (trimmed.contains('/storage/buckets/') &&
+        trimmed.contains('/files/') &&
+        trimmed.contains('/view')) {
+      final downsampled = trimmed.replaceFirst(
+        '/view',
+        '/preview?width=300&height=300&output=webp',
+      );
+      return Uri.tryParse(downsampled);
+    }
     return Uri.tryParse(trimmed);
   }
 

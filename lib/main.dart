@@ -105,16 +105,28 @@ Future<void> _startApplication() async {
         await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
         SystemChrome.setSystemUIOverlayStyle(
           const SystemUiOverlayStyle(
-            statusBarColor: Colors.transparent,
             statusBarIconBrightness: Brightness.dark,
-            systemNavigationBarColor: Colors.transparent,
             systemNavigationBarIconBrightness: Brightness.dark,
           ),
         );
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
+        final firstView =
+            WidgetsBinding.instance.platformDispatcher.views.firstOrNull;
+        final physicalWidth = firstView?.physicalSize.width ?? 0;
+        final pixelRatio = firstView?.devicePixelRatio ?? 1.0;
+        final isLargeScreen = (physicalWidth / pixelRatio) >= 600;
+        if (isLargeScreen) {
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+            DeviceOrientation.landscapeLeft,
+            DeviceOrientation.landscapeRight,
+          ]);
+        } else {
+          await SystemChrome.setPreferredOrientations([
+            DeviceOrientation.portraitUp,
+            DeviceOrientation.portraitDown,
+          ]);
+        }
       },
       'crash-reporting': CrashReporting.init,
       'ads': () async {

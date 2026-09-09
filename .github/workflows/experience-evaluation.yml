@@ -5,6 +5,13 @@ on:
     paths:
       - 'lib/core/accessibility/**'
       - 'lib/core/motion/**'
+      - 'lib/core/ads/**'
+      - 'lib/shared/repositories/**'
+      - 'lib/features/rhymes/presentation/providers/**'
+      - 'test/core/ads/**'
+      - 'test/shared/repositories/**'
+      - 'test/features/rhymes/**'
+      - 'assets/seed/**'
       - 'lib/shared/widgets/buttons/pressable_button.dart'
       - 'lib/shared/widgets/bento_grid.dart'
       - 'lib/features/lessons/**'

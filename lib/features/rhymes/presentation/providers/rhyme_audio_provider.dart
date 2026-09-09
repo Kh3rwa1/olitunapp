@@ -7,6 +7,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
 import 'listened_bakhed_provider.dart';
+import 'notification_artwork_uri.dart';
 
 class RhymeAudioState {
   final String? playingRhymeId;
@@ -168,7 +169,7 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
                 id: rhymeId,
                 album: 'Olitun Bakhed',
                 title: _notificationTitle(title),
-                artUri: _safeUri(artworkUrl),
+                artUri: notificationArtworkUri(artworkUrl),
               ),
             ),
           )
@@ -219,23 +220,6 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
     final trimmed = title?.trim();
     if (trimmed == null || trimmed.isEmpty) return 'Bakhed';
     return trimmed;
-  }
-
-  Uri? _safeUri(String? value) {
-    final trimmed = value?.trim();
-    if (trimmed == null || trimmed.isEmpty) return null;
-    // Downsample Appwrite storage URLs to compact 300x300 thumbnails for notification art
-    // to prevent high memory usage and satisfy Play Console bitmap downsampling guidance.
-    if (trimmed.contains('/storage/buckets/') &&
-        trimmed.contains('/files/') &&
-        trimmed.contains('/view')) {
-      final downsampled = trimmed.replaceFirst(
-        '/view',
-        '/preview?width=300&height=300&output=webp',
-      );
-      return Uri.tryParse(downsampled);
-    }
-    return Uri.tryParse(trimmed);
   }
 
   Future<void> _recordBakhedProgress({

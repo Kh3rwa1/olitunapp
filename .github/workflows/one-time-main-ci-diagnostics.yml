@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Collect latest main CI status
+      - name: Collect latest main CI status and failed logs
         shell: bash
         run: |
           set -euo pipefail
@@ -47,6 +47,13 @@ jobs:
             gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" \
               --jq '.jobs[] | [(.id|tostring), .name, .status, (.conclusion // ""), ((.steps // []) | map(select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | (.name + "=" + (.conclusion // ""))) | join(",")), .html_url] | @tsv' \
               >> ci-main-diagnostics.txt
+            echo "===== FAILED RUN $run_id LOG TAIL =====" >> ci-main-diagnostics.txt
+            set +e
+            gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --log-failed 2>&1 \
+              | sed -E 's/\x1B\[[0-9;]*[mK]//g' \
+              | tail -n 500 \
+              >> ci-main-diagnostics.txt
+            set -e
           done < <(jq -r '.workflow_runs[] | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required") | .id' "$runs_json")
 
           cat ci-main-diagnostics.txt
@@ -55,5 +62,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ci-main-diagnostics.txt
-          git commit -m 'ci: record post-merge main diagnostics'
+          git commit -m 'ci: record release workflow failure details'
           git push

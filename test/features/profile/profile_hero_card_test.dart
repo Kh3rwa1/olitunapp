@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lottie/lottie.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 import 'package:itun/features/profile/presentation/widgets/profile_hero_card.dart';
@@ -21,6 +23,7 @@ Widget _wrap({
   String? memberSince,
   WeeklyLeaderboardEntity? leaderboard,
   bool leaderboardError = false,
+  String avatarId = kDefaultAvatarId,
 }) {
   return ProviderScope(
     overrides: [
@@ -35,7 +38,7 @@ Widget _wrap({
           child: ProfileHeroCard(
             userName: 'Learner',
             avatarColors: const [Color(0xFF34C77B), Color(0xFF1B9E5A)],
-            avatarEmoji: '👶',
+            avatarId: avatarId,
             level: 'Beginner',
             levelIndex: 0,
             memberSince: memberSince,
@@ -51,6 +54,24 @@ Widget _wrap({
 }
 
 void main() {
+  testWidgets('shows the Lottie avatar animation, never an emoji', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap());
+    await tester.pump();
+    expect(find.byType(LottieBuilder), findsOneWidget);
+    expect(find.text('👶'), findsNothing);
+  });
+
+  testWidgets('shows the name initial when no avatar is selected', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(avatarId: ''));
+    await tester.pumpAndSettle();
+    expect(find.text('L'), findsOneWidget);
+    expect(find.byType(LottieBuilder), findsNothing);
+  });
+
   testWidgets('shows real weekly rank and points in the existing badge', (
     tester,
   ) async {

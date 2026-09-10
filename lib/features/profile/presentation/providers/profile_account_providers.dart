@@ -1,13 +1,14 @@
 // Account identity & preference providers: display name, avatar
-// (emoji + palette), badge names, membership date and real account
-// age. Split out of profile_providers.dart by feature area.
-import 'package:flutter/material.dart';
+// (Lottie animation id + palette), badge names, membership date and real
+// account age. Split out of profile_providers.dart by feature area.
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../domain/entities/profile_avatar.dart';
 
 /// Real account creation date from Appwrite (null for guests/offline).
 /// The profile hero hides its "Since ..." line rather than guessing.
@@ -32,9 +33,26 @@ final userNameProvider = StateProvider<String>((ref) {
       'Learner';
 });
 
-final userAvatarEmojiProvider = StateProvider<String>((ref) {
-  return ref.read(sharedPreferencesProvider).getString('user_avatar_emoji') ??
-      '👶';
+/// Selected Lottie avatar id (see [kProfileAvatars]). Legacy emoji values
+/// stored before the animation migration normalize to the default avatar.
+final userAvatarIdProvider = StateProvider<String>((ref) {
+  final stored = ref
+      .read(sharedPreferencesProvider)
+      .getString('user_avatar_id');
+  return normalizeAvatarId(stored);
+});
+
+/// Catalog entries whose animation file is actually bundled. Premium pack
+/// files appear here automatically once dropped into [avatarsAssetDir].
+final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
+  ref,
+) async {
+  final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+  final bundled = manifest.listAssets().toSet();
+  final available = kProfileAvatars
+      .where((avatar) => bundled.contains(avatar.assetPath))
+      .toList(growable: false);
+  return available.isEmpty ? [kProfileAvatars.first] : available;
 });
 
 final userAvatarColorIndexProvider = StateProvider<int>((ref) {

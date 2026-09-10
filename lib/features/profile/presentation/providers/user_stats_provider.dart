@@ -10,6 +10,7 @@ import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/progress_origin_identity.dart';
@@ -575,10 +576,12 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     );
   }
 
-  Future<void> updateAvatar(String emoji, int colorIndex) async {
-    final result = await _repository.updateAvatar(emoji, colorIndex);
+  Future<void> updateAvatar(String avatarId, int colorIndex) async {
+    final result = await _repository.updateAvatar(avatarId, colorIndex);
     result.fold((failure) => null, (_) {
-      ref.read(userAvatarEmojiProvider.notifier).state = emoji;
+      ref.read(userAvatarIdProvider.notifier).state = normalizeAvatarId(
+        avatarId,
+      );
       ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     });
   }

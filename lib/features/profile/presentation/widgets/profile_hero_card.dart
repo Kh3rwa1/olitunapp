@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:itun/core/theme/app_typography.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 
 import '../../../../core/motion/motion.dart';
@@ -9,7 +11,10 @@ import '../../../../core/theme/app_colors.dart';
 class ProfileHeroCard extends ConsumerWidget {
   final String userName;
   final List<Color> avatarColors;
-  final String avatarEmoji;
+
+  /// Catalog avatar id (see [kProfileAvatars]). Unknown ids show the
+  /// default animation; an empty id shows the name initial instead.
+  final String avatarId;
   final String level;
   final int levelIndex;
 
@@ -24,7 +29,7 @@ class ProfileHeroCard extends ConsumerWidget {
     super.key,
     required this.userName,
     required this.avatarColors,
-    required this.avatarEmoji,
+    required this.avatarId,
     required this.level,
     required this.levelIndex,
     this.memberSince,
@@ -131,21 +136,18 @@ class ProfileHeroCard extends ConsumerWidget {
                         ],
                       ),
                       child: Center(
-                        child: avatarEmoji.isNotEmpty
-                            ? Text(
-                                avatarEmoji,
-                                style: const TextStyle(fontSize: 32),
-                              )
-                            : Text(
-                                userName.isNotEmpty
-                                    ? userName[0].toUpperCase()
-                                    : 'L',
-                                style: AppTypography.inter(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                        child: avatarId.isNotEmpty
+                            ? ClipOval(
+                                child: Lottie.asset(
+                                  avatarAssetPath(avatarId),
+                                  width: 64,
+                                  height: 64,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _AvatarInitial(userName: userName),
                                 ),
-                              ),
+                              )
+                            : _AvatarInitial(userName: userName),
                       ),
                     ),
                     Positioned(
@@ -326,6 +328,26 @@ class ProfileHeroCard extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Name initial shown when no avatar is selected or its animation file
+/// fails to load. Never an emoji.
+class _AvatarInitial extends StatelessWidget {
+  final String userName;
+
+  const _AvatarInitial({required this.userName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
+      style: AppTypography.inter(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
       ),
     );
   }

@@ -109,11 +109,17 @@ void main() {
     expect(stored, contains('"totalStars":5'));
   });
 
-  test('updateAvatar writes both emoji and color index to prefs', () async {
-    final res = await repo.updateAvatar('🦊', 3);
+  test('updateAvatar writes avatar id and color index to prefs', () async {
+    final res = await repo.updateAvatar('boy_03', 3);
     expect(res.isRight(), isTrue);
-    expect(prefs.getString('user_avatar_emoji'), '🦊');
+    expect(prefs.getString('user_avatar_id'), 'boy_03');
     expect(prefs.getInt('user_avatar_color'), 3);
+  });
+
+  test('updateAvatar normalizes unknown ids to default', () async {
+    final res = await repo.updateAvatar('🦊', 1);
+    expect(res.isRight(), isTrue);
+    expect(prefs.getString('user_avatar_id'), 'default');
   });
 
   test(

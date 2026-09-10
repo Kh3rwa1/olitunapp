@@ -297,7 +297,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 ref.invalidate(isAuthenticatedProvider);
                 ref.invalidate(userStatsProvider);
                 ref.invalidate(userNameProvider);
-                ref.invalidate(userAvatarEmojiProvider);
+                ref.invalidate(userAvatarIdProvider);
                 ref.invalidate(userAvatarColorIndexProvider);
                 ref.invalidate(memberSinceProvider);
 

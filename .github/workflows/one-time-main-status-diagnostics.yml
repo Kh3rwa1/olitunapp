@@ -1,4 +1,4 @@
-name: One-time main status diagnostics
+name: One-time cancelled main run diagnostics
 
 on:
   push:
@@ -9,8 +9,6 @@ on:
 
 permissions:
   actions: read
-  checks: read
-  statuses: read
   contents: write
 
 jobs:
@@ -20,37 +18,29 @@ jobs:
       - name: Checkout diagnostic branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Inspect main status rollup
+      - name: Inspect cancelled main run
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           REPO="$GITHUB_REPOSITORY"
-          SHA="$(gh api "repos/$REPO/commits/main" --jq '.sha')"
-          gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/commits/$SHA/check-runs?filter=all&per_page=100" > /tmp/checks.json
-          gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/commits/$SHA/status?per_page=100" > /tmp/status.json
-          gh api -H 'Accept: application/vnd.github+json' "repos/$REPO/actions/workflows/flutter-ci.yml/runs?branch=main&per_page=20" > /tmp/flutter-runs.json
+          RUN_ID='34455909511'
+          gh api "repos/$REPO/actions/runs/$RUN_ID" > /tmp/run.json
+          gh api "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100" > /tmp/jobs.json
           {
-            echo '# Main status diagnostics'
+            echo '# Cancelled main run diagnostics'
+            jq -r '"- id: \(.id)\n- name: \(.name)\n- path: \(.path)\n- event: \(.event)\n- head branch: \(.head_branch)\n- head SHA: \(.head_sha)\n- status: \(.status)\n- conclusion: \(.conclusion)\n- run attempt: \(.run_attempt)\n- created: \(.created_at)\n- updated: \(.updated_at)\n- actor: \(.actor.login)\n- triggering actor: \(.triggering_actor.login)\n- URL: \(.html_url)"' /tmp/run.json
             echo
-            echo "Head: $SHA"
-            echo
-            echo '## Check runs'
-            jq -r '.check_runs | sort_by(.name)[] | "- \(.name): status=\(.status), conclusion=\(.conclusion // "pending"), \(.html_url // .details_url // "")"' /tmp/checks.json
-            echo
-            echo '## Legacy commit status rollup'
-            jq -r '"Combined state: \(.state)", (.statuses[] | "- \(.context): state=\(.state), description=\(.description // ""), \(.target_url // "")")' /tmp/status.json
-            echo
-            echo '## Latest Flutter CI runs on main'
-            jq -r '.workflow_runs[] | "- run=\(.id), event=\(.event), status=\(.status), conclusion=\(.conclusion // "pending"), sha=\(.head_sha), created=\(.created_at), \(.html_url)"' /tmp/flutter-runs.json
-          } > ci-main-status-diagnostics.md
+            echo '## Jobs'
+            jq -r '.jobs[] | "- \(.name): status=\(.status), conclusion=\(.conclusion // "pending")"' /tmp/jobs.json
+          } > ci-cancelled-main-run.md
 
-      - name: Commit status report
+      - name: Commit diagnostic report
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-main-status-diagnostics.md
-          git commit -m 'ci: record main commit status rollup'
+          git add ci-cancelled-main-run.md
+          git commit -m 'ci: record cancelled main run details'
           git push origin HEAD:${GITHUB_REF_NAME}

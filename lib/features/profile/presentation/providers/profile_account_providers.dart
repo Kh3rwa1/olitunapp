@@ -13,17 +13,13 @@ import '../../domain/entities/profile_avatar.dart';
 /// Real account creation date from Appwrite (null for guests/offline).
 /// The profile hero hides its "Since ..." line rather than guessing.
 final accountCreatedAtProvider = FutureProvider<DateTime?>((ref) async {
-  // Guests have no account record — skip the network call entirely.
   final authed = await ref.watch(isAuthenticatedProvider.future);
   if (!authed) return null;
   try {
     final authService = ref.watch(appwriteAuthServiceProvider);
     final account = await authService.account.get();
-    // Appwrite returns `registration` as an ISO string.
     return DateTime.tryParse(account.registration)?.toLocal();
   } catch (_) {
-    // Guest/offline — the profile hero hides the "Since ..." line instead
-    // of guessing (documented contract of this provider).
     return null;
   }
 });
@@ -33,8 +29,8 @@ final userNameProvider = StateProvider<String>((ref) {
       'Learner';
 });
 
-/// Selected Lottie avatar id (see [kProfileAvatars]). Legacy emoji values
-/// stored before the animation migration normalize to the default avatar.
+/// Selected animation id or the explicit name-initial choice. Unknown and
+/// legacy emoji values resolve to the bundled default without rendering emoji.
 final userAvatarIdProvider = StateProvider<String>((ref) {
   final stored = ref
       .read(sharedPreferencesProvider)
@@ -42,8 +38,8 @@ final userAvatarIdProvider = StateProvider<String>((ref) {
   return normalizeAvatarId(stored);
 });
 
-/// Catalog entries whose animation file is actually bundled. Premium pack
-/// files appear here automatically once dropped into [avatarsAssetDir].
+/// Only exposes catalog entries whose files are in Flutter's real asset
+/// manifest. This prevents a placeholder catalog from becoming selectable.
 final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
   ref,
 ) async {

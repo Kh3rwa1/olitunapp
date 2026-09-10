@@ -12,8 +12,8 @@ class ProfileHeroCard extends ConsumerWidget {
   final String userName;
   final List<Color> avatarColors;
 
-  /// Catalog avatar id (see [kProfileAvatars]). Unknown ids show the
-  /// default animation; an empty id shows the name initial instead.
+  /// Catalog avatar id or [kInitialAvatarId]. Unknown values show the default
+  /// animation while the explicit name-initial choice remains persistent.
   final String avatarId;
   final String level;
   final int levelIndex;
@@ -41,10 +41,10 @@ class ProfileHeroCard extends ConsumerWidget {
 
   Color _getLevelColor() {
     const colors = [
-      AppColors.xpNeutral, // Beginner — grey
-      AppColors.brandBlue, // Intermediate — blue
-      AppColors.accentOchre, // Advanced — orange
-      AppColors.accentGold, // Master — gold
+      AppColors.xpNeutral,
+      AppColors.brandBlue,
+      AppColors.accentOchre,
+      AppColors.accentGold,
     ];
     return colors[levelIndex.clamp(0, 3)];
   }
@@ -69,7 +69,6 @@ class ProfileHeroCard extends ConsumerWidget {
       ];
       return '${months[int.parse(parts[1])]} ${parts[2]}, ${parts[0]}';
     } catch (_) {
-      // Not a yyyy-MM-dd string — show the raw value rather than guessing.
       return iso;
     }
   }
@@ -83,10 +82,17 @@ class ProfileHeroCard extends ConsumerWidget {
           error: (_, _) => 'Leaderboard unavailable',
           loading: () => 'Leaderboard · Loading…',
         );
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final compact = MediaQuery.sizeOf(context).width < 380;
+    final avatarSize = compact ? 72.0 : 84.0;
+    final safeProgress = overallProgress.clamp(0.0, 1.0).toDouble();
+    final avatarLabel = usesProfileInitial(avatarId)
+        ? 'Name initial'
+        : profileAvatarById(avatarId)?.label ?? kProfileAvatars.first.label;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(compact ? 20 : 28),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -110,75 +116,84 @@ class ProfileHeroCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              // Avatar
-              PressableScale(
-                onTap: onEditAvatar,
-                haptic: HapticIntensity.selection,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 84,
-                      height: 84,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: avatarColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: avatarColors[0].withValues(alpha: 0.3),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: avatarId.isNotEmpty
-                            ? ClipOval(
-                                child: Lottie.asset(
-                                  avatarAssetPath(avatarId),
-                                  width: 84,
-                                  height: 84,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      _AvatarInitial(userName: userName),
-                                ),
-                              )
-                            : _AvatarInitial(userName: userName),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -2,
-                      right: -2,
-                      child: Container(
-                        width: 26,
-                        height: 26,
+              Semantics(
+                button: true,
+                label: 'Change profile avatar',
+                value: avatarLabel,
+                child: PressableScale(
+                  onTap: onEditAvatar,
+                  haptic: HapticIntensity.selection,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: avatarSize,
+                        height: avatarSize,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkSurfaceElevated
-                                : Colors.white,
-                            width: 2,
+                          gradient: LinearGradient(
+                            colors: avatarColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: avatarColors[0].withValues(alpha: 0.3),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          size: 13,
-                          color: Colors.black,
+                        child: Center(
+                          child: !usesProfileInitial(avatarId)
+                              ? ClipOval(
+                                  child: Lottie.asset(
+                                    avatarAssetPath(avatarId),
+                                    width: avatarSize,
+                                    height: avatarSize,
+                                    fit: BoxFit.cover,
+                                    animate: !reduceMotion,
+                                    repeat: !reduceMotion,
+                                    errorBuilder: (_, _, _) => _AvatarInitial(
+                                      userName: userName,
+                                      compact: compact,
+                                    ),
+                                  ),
+                                )
+                              : _AvatarInitial(
+                                  userName: userName,
+                                  compact: compact,
+                                ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: -2,
+                        right: -2,
+                        child: Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? AppColors.darkSurfaceElevated
+                                  : Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 13,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 20),
-
-              // Name + live leaderboard + member since
+              SizedBox(width: compact ? 12 : 20),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -189,7 +204,7 @@ class ProfileHeroCard extends ConsumerWidget {
                           child: Text(
                             userName,
                             style: AppTypography.inter(
-                              fontSize: 26,
+                              fontSize: compact ? 22 : 26,
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : Colors.black,
                             ),
@@ -197,13 +212,17 @@ class ProfileHeroCard extends ConsumerWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        PressableScale(
-                          onTap: onEditName,
-                          haptic: HapticIntensity.selection,
-                          child: Icon(
-                            Icons.edit_rounded,
-                            size: 16,
-                            color: isDark ? Colors.white30 : Colors.black26,
+                        Semantics(
+                          button: true,
+                          label: 'Edit display name',
+                          child: PressableScale(
+                            onTap: onEditName,
+                            haptic: HapticIntensity.selection,
+                            child: Icon(
+                              Icons.edit_rounded,
+                              size: 16,
+                              color: isDark ? Colors.white30 : Colors.black26,
+                            ),
                           ),
                         ),
                       ],
@@ -214,8 +233,6 @@ class ProfileHeroCard extends ConsumerWidget {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        // Live Appwrite data only. Loading, unranked, and error
-                        // states never invent a position or point total.
                         Semantics(
                           liveRegion: true,
                           label:
@@ -257,8 +274,6 @@ class ProfileHeroCard extends ConsumerWidget {
                             ),
                           ),
                         ),
-                        // Hidden entirely when creation date is unknown —
-                        // never guess a member-since date.
                         if (memberSince != null)
                           Text(
                             'Since ${_formatDate(memberSince!)}',
@@ -274,10 +289,7 @@ class ProfileHeroCard extends ConsumerWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 24),
-
-          // Overall progress bar
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -297,7 +309,7 @@ class ProfileHeroCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    '${(overallProgress * 100).toInt()}%',
+                    '${(safeProgress * 100).toInt()}%',
                     style: AppTypography.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w800,
@@ -310,8 +322,10 @@ class ProfileHeroCard extends ConsumerWidget {
               ClipRRect(
                 borderRadius: BorderRadius.circular(7),
                 child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: overallProgress),
-                  duration: const Duration(milliseconds: 1200),
+                  tween: Tween(begin: 0, end: safeProgress),
+                  duration: reduceMotion
+                      ? Duration.zero
+                      : const Duration(milliseconds: 1200),
                   curve: Curves.easeOutCubic,
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
@@ -333,19 +347,18 @@ class ProfileHeroCard extends ConsumerWidget {
   }
 }
 
-/// Name initial shown when no avatar is selected or its animation file
-/// fails to load. Never an emoji.
 class _AvatarInitial extends StatelessWidget {
-  final String userName;
+  const _AvatarInitial({required this.userName, required this.compact});
 
-  const _AvatarInitial({required this.userName});
+  final String userName;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
       style: AppTypography.inter(
-        fontSize: 34,
+        fontSize: compact ? 30 : 34,
         fontWeight: FontWeight.w700,
         color: Colors.white,
       ),

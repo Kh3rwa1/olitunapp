@@ -146,9 +146,9 @@ void main() {
       final container = containerFor();
       final notifier = await readyNotifier(container);
 
-      await notifier.updateAvatar('girl_02', 2);
+      await notifier.updateAvatar('river', 2);
 
-      expect(container.read(userAvatarIdProvider), 'girl_02');
+      expect(container.read(userAvatarIdProvider), 'river');
       expect(container.read(userAvatarColorIndexProvider), 2);
     },
   );

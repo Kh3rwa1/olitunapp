@@ -83,8 +83,14 @@ class CrashReporting {
       final rawUrl = request.url;
       if (rawUrl != null) {
         final uri = Uri.tryParse(rawUrl);
-        if (uri != null) {
-          request.url = uri.replace(query: '', fragment: '').toString();
+        if (uri != null && uri.hasScheme && uri.host.isNotEmpty) {
+          final sanitizedUri = Uri(
+            scheme: uri.scheme,
+            host: uri.host,
+            port: uri.hasPort ? uri.port : null,
+            path: uri.path,
+          );
+          request.url = RedactionHelper.sanitize(sanitizedUri.toString());
         } else {
           request.url = RedactionHelper.sanitize(rawUrl);
         }

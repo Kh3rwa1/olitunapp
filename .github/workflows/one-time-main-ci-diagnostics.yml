@@ -1,0 +1,59 @@
+name: One-time main CI diagnostics
+
+on:
+  push:
+    branches:
+      - fix/main-ci-after-profile-cleanup
+    paths:
+      - .github/workflows/one-time-main-ci-diagnostics.yml
+
+permissions:
+  actions: read
+  checks: read
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Check out diagnostic branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Collect latest main CI status
+        shell: bash
+        run: |
+          set -euo pipefail
+          target_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq '.sha')
+          runs_json=$(mktemp)
+          checks_json=$(mktemp)
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$target_sha&per_page=100" > "$runs_json"
+          gh api -H 'Accept: application/vnd.github+json' "repos/$GITHUB_REPOSITORY/commits/$target_sha/check-runs?per_page=100" > "$checks_json"
+
+          {
+            echo "TARGET_SHA=$target_sha"
+            echo "===== CHECK RUNS ====="
+            jq -r '.check_runs[] | [(.id|tostring), .name, .status, (.conclusion // ""), (.details_url // ""), (.output.title // ""), ((.output.summary // "") | gsub("\\n"; " ") | .[0:500])] | @tsv' "$checks_json"
+            echo "===== WORKFLOW RUNS ====="
+            jq -r '.workflow_runs[] | [(.id|tostring), .name, .event, .status, (.conclusion // ""), .html_url] | @tsv' "$runs_json"
+          } > ci-main-diagnostics.txt
+
+          while read -r run_id; do
+            [ -n "$run_id" ] || continue
+            echo "===== FAILED RUN $run_id JOBS =====" >> ci-main-diagnostics.txt
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" \
+              --jq '.jobs[] | [(.id|tostring), .name, .status, (.conclusion // ""), ((.steps // []) | map(select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out") | (.name + "=" + (.conclusion // ""))) | join(",")), .html_url] | @tsv' \
+              >> ci-main-diagnostics.txt
+          done < <(jq -r '.workflow_runs[] | select(.conclusion == "failure" or .conclusion == "cancelled" or .conclusion == "timed_out" or .conclusion == "action_required") | .id' "$runs_json")
+
+          cat ci-main-diagnostics.txt
+      - name: Commit diagnostic report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ci-main-diagnostics.txt
+          git commit -m 'ci: record post-merge main diagnostics'
+          git push

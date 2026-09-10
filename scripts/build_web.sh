@@ -1,46 +1,45 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
 # Olitun Web Production Build Wrapper
-# Compiles Flutter Web, patches the service worker to fix stale caching, and validates the output.
+# Compiles Flutter Web, patches the service worker, and validates the output.
 
-echo "🔍 Capturing Build Metadata..."
-# Capture git short SHA
+: "${APPWRITE_ENDPOINT:?Set APPWRITE_ENDPOINT for the production build}"
+: "${APPWRITE_PROJECT_ID:?Set APPWRITE_PROJECT_ID for the production build}"
+: "${TRANSLATE_URL:?Set TRANSLATE_URL for the production build}"
+
+APP_ENV="${APP_ENV:-production}"
 BUILD_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
-
-# Append -dirty if the working tree has uncommitted changes
 if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
   BUILD_SHA="${BUILD_SHA}-dirty"
 fi
-
-# Capture build timestamp
 BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
-echo "  - BUILD_SHA: $BUILD_SHA"
-echo "  - BUILT_AT:  $BUILT_AT"
+echo "Building Olitun web artifact"
+echo "  environment: $APP_ENV"
+echo "  revision:    $BUILD_SHA"
+echo "  built at:    $BUILT_AT"
 
-echo "🚀 Starting Flutter Web Build..."
 flutter build web --release --no-wasm-dry-run \
-  --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
-  --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 \
-  --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions \
-  --dart-define=SENTRY_DSN="${SENTRY_DSN:-https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248}" \
+  --dart-define=APP_ENV="$APP_ENV" \
+  --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
+  --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
+  --dart-define=ADMIN_TEAM_ID="${ADMIN_TEAM_ID:-admins}" \
+  --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
+  --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
   --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}" \
-  --dart-define=BUILD_SHA=$BUILD_SHA \
-  --dart-define=BUILT_AT=$BUILT_AT
+  --dart-define=BUILD_SHA="$BUILD_SHA" \
+  --dart-define=BUILT_AT="$BUILT_AT"
 
-echo "📝 Generating build-info.json..."
 cat <<EOF > build/web/build-info.json
 {
   "sha": "$BUILD_SHA",
-  "builtAt": "$BUILT_AT"
+  "builtAt": "$BUILT_AT",
+  "environment": "$APP_ENV"
 }
 EOF
 
-echo "🧹 Excluded bootstrap from Service Worker manifest..."
 node scripts/patch_service_worker.mjs
-
-echo "✅ Verifying patch correctness..."
 node scripts/verify_service_worker_patch.mjs
 
-echo "🎉 Web Build and Service Worker patching completed successfully!"
+echo "Web build and service-worker verification completed."

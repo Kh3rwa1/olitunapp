@@ -33,11 +33,32 @@ updates:
       - "dependencies"
 
   - package-ecosystem: "npm"
+    # The translator package is deliberately absent: its node-appwrite version
+    # is governed by scripts/verify_node_dependency_alignment.mjs.
     directories:
-      - "/functions/*"
+      - "/functions/admin-maintenance"
+      - "/functions/aggregateLearningAnalytics"
+      - "/functions/backupCollections"
+      - "/functions/bintiWaitlist"
+      - "/functions/cleanupAnalyticsEvents"
+      - "/functions/completeMistakeReview"
+      - "/functions/createRazorpayOrder"
+      - "/functions/delete-account"
+      - "/functions/generateAudio"
+      - "/functions/getAuthorizedLesson"
+      - "/functions/getUserGamificationSummary"
+      - "/functions/getUserMistakes"
+      - "/functions/manageAdminAccess"
+      - "/functions/markMistakeMastered"
+      - "/functions/razorpayWebhook"
+      - "/functions/reconcileOrphanedDeletions"
+      - "/functions/reconcilePaymentAttempts"
+      - "/functions/recordBakhedProgress"
+      - "/functions/recordMistake"
+      - "/functions/reviewContent"
+      - "/functions/syncDailyAffirmation"
+      - "/functions/verifyCoursePurchase"
       - "/scripts"
-    exclude-paths:
-      - "/functions/translator"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5

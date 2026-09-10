@@ -18,9 +18,10 @@ flutter config --enable-web
 flutter pub get
 
 flutter build web --release \
+  --dart-define=APP_ENV=production \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
   --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
   --dart-define=ADMIN_TEAM_ID="${ADMIN_TEAM_ID:-admins}" \
   --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
-  --dart-define=SENTRY_DSN="${SENTRY_DSN:-https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248}" \
+  --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
   --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}"

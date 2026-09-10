@@ -38,8 +38,6 @@ void main() {
     await outbox.enqueueMutation(mutation('learner', 'completion-1'));
     await Hive.close();
     Hive.init(directory.path);
-    // Intentionally keep the static references: an externally closed box
-    // must reopen, not return the completed Future for the now-closed box.
     final restarted = MutationOutboxService();
     final pending = await restarted.getPendingMutations('learner');
     expect(pending.map((item) => item.operationId), ['completion-1']);
@@ -92,5 +90,20 @@ void main() {
     expect(pending.single.status, MutationStatus.deadLetter);
     expect(pending.single.attemptCount, MutationOutboxService.maxRetryAttempts);
     expect(pending.single.lastError, 'offline');
+  });
+
+  test('persisted errors are bounded and redact credentials and PII', () async {
+    await outbox.enqueueMutation(mutation('learner', 'private-error'));
+    final rawError =
+        'Bearer very.secret.token for child@example.com ${'x' * 700}';
+
+    await outbox.recordAttemptFailed('learner', 'private-error', rawError);
+
+    final pending = await outbox.getPendingMutations('learner');
+    final storedError = pending.single.lastError!;
+    expect(storedError, contains('Bearer [REDACTED_TOKEN]'));
+    expect(storedError, contains('c***@example.com'));
+    expect(storedError, isNot(contains('very.secret.token')));
+    expect(storedError.length, lessThanOrEqualTo(512));
   });
 }

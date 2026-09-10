@@ -95,16 +95,12 @@ Downloading packages...
 Changed 7 dependencies!
 87 packages have newer versions incompatible with dependency constraints.
 Try `flutter pub outdated` for more information.
-
-===== git-status =====
- M pubspec.lock
-?? ci-profile-avatar-diagnostics.txt
-===== exit 0 =====
+Formatted lib/features/profile/presentation/widgets/live_achievements_section.dart
+Formatted 2 files (1 changed) in 0.02 seconds.
 
 ===== format =====
-Changed lib/features/profile/presentation/widgets/live_achievements_section.dart
-Formatted 1067 files (1 changed) in 4.31 seconds.
-===== exit 1 =====
+Formatted 1067 files (0 changed) in 4.35 seconds.
+===== exit 0 =====
 
 ===== file-length =====
 
@@ -168,37 +164,37 @@ TAP version 13
 # Subtest: Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
 ok 1 - Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
   ---
-  duration_ms: 1.808277
+  duration_ms: 1.547305
   type: 'test'
   ...
 # Subtest: Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
 ok 2 - Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
   ---
-  duration_ms: 0.175449
+  duration_ms: 0.191184
   type: 'test'
   ...
 # Subtest: Cert Normalization: Malformed non-hex or invalid length throws error
 ok 3 - Cert Normalization: Malformed non-hex or invalid length throws error
   ---
-  duration_ms: 0.461407
+  duration_ms: 0.484548
   type: 'test'
   ...
 # Subtest: Cert Verification: Matches valid apksigner standard output
 ok 4 - Cert Verification: Matches valid apksigner standard output
   ---
-  duration_ms: 0.481605
+  duration_ms: 0.497388
   type: 'test'
   ...
 # Subtest: Cert Verification: Fails on certificate digest mismatch
 ok 5 - Cert Verification: Fails on certificate digest mismatch
   ---
-  duration_ms: 0.829468
+  duration_ms: 1.076066
   type: 'test'
   ...
 # Subtest: Cert Verification: Fails on missing certificate or multiple signers
 ok 6 - Cert Verification: Fails on missing certificate or multiple signers
   ---
-  duration_ms: 0.209754
+  duration_ms: 0.204283
   type: 'test'
   ...
 1..6
@@ -209,7 +205,7 @@ ok 6 - Cert Verification: Fails on missing certificate or multiple signers
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 67.62913
+# duration_ms 67.06828
 ===== exit 0 =====
 
 ===== release-gate-tests =====
@@ -217,85 +213,85 @@ TAP version 13
 # Subtest: required jobs match the workflow prerequisites exactly
 ok 1 - required jobs match the workflow prerequisites exactly
   ---
-  duration_ms: 2.07105
+  duration_ms: 2.288724
   type: 'test'
   ...
 # Subtest: passes only when all mandatory jobs succeed
 ok 2 - passes only when all mandatory jobs succeed
   ---
-  duration_ms: 0.45205
+  duration_ms: 0.431861
   type: 'test'
   ...
 # Subtest: blocks "failure" in every required job
 ok 3 - blocks "failure" in every required job
   ---
-  duration_ms: 0.428736
+  duration_ms: 0.47229
   type: 'test'
   ...
 # Subtest: blocks "cancelled" in every required job
 ok 4 - blocks "cancelled" in every required job
   ---
-  duration_ms: 0.324469
+  duration_ms: 0.259695
   type: 'test'
   ...
 # Subtest: blocks "skipped" in every required job
 ok 5 - blocks "skipped" in every required job
   ---
-  duration_ms: 0.320252
+  duration_ms: 0.304511
   type: 'test'
   ...
 # Subtest: blocks "timed_out" in every required job
 ok 6 - blocks "timed_out" in every required job
   ---
-  duration_ms: 0.238388
+  duration_ms: 0.261568
   type: 'test'
   ...
 # Subtest: blocks "neutral" in every required job
 ok 7 - blocks "neutral" in every required job
   ---
-  duration_ms: 0.357642
+  duration_ms: 0.295298
   type: 'test'
   ...
 # Subtest: blocks "unknown" in every required job
 ok 8 - blocks "unknown" in every required job
   ---
-  duration_ms: 0.895703
+  duration_ms: 1.039282
   type: 'test'
   ...
 # Subtest: blocks "" in every required job
 ok 9 - blocks "" in every required job
   ---
-  duration_ms: 0.412295
+  duration_ms: 0.433593
   type: 'test'
   ...
 # Subtest: blocks null in every required job
 ok 10 - blocks null in every required job
   ---
-  duration_ms: 0.51094
+  duration_ms: 0.454173
   type: 'test'
   ...
 # Subtest: a cancellation cannot conceal a different failing job
 ok 11 - a cancellation cannot conceal a different failing job
   ---
-  duration_ms: 0.212639
+  duration_ms: 0.232475
   type: 'test'
   ...
 # Subtest: blocks missing jobs and malformed job records
 ok 12 - blocks missing jobs and malformed job records
   ---
-  duration_ms: 0.267652
+  duration_ms: 0.269961
   type: 'test'
   ...
 # Subtest: blocks absent, invalid, and non-object input
 ok 13 - blocks absent, invalid, and non-object input
   ---
-  duration_ms: 0.2075
+  duration_ms: 0.157914
   type: 'test'
   ...
 # Subtest: CLI returns a nonzero exit status for cancellation and missing input
 ok 14 - CLI returns a nonzero exit status for cancellation and missing input
   ---
-  duration_ms: 90.126596
+  duration_ms: 100.117029
   type: 'test'
   ...
 1..14
@@ -306,10 +302,10 @@ ok 14 - CLI returns a nonzero exit status for cancellation and missing input
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 162.184305
+# duration_ms 178.546383
 ===== exit 0 =====
 
 ===== analyzer =====
 Analyzing olitunapp...                                          
-No issues found! (ran in 29.7s)
+No issues found! (ran in 32.9s)
 ===== exit 0 =====

@@ -17,6 +17,7 @@ void main() {
           projectId: 'local-development',
           translateUrl: '',
           isReleaseMode: true,
+          requireTranslateUrl: false,
         ),
         throwsStateError,
       );
@@ -30,6 +31,7 @@ void main() {
           projectId: 'local-development',
           translateUrl: 'https://example.invalid/functions/translator',
           isReleaseMode: true,
+          requireTranslateUrl: false,
         ),
         throwsStateError,
       );
@@ -43,6 +45,7 @@ void main() {
           projectId: 'production-project',
           translateUrl: 'https://backend.example.com/functions/translator',
           isReleaseMode: true,
+          requireTranslateUrl: false,
         ),
         returnsNormally,
       );
@@ -56,6 +59,7 @@ void main() {
           projectId: 'production-project',
           translateUrl: 'https://backend.example.com/functions/translator',
           isReleaseMode: true,
+          requireTranslateUrl: false,
         ),
         throwsStateError,
       );

@@ -68,7 +68,7 @@ class AppwriteConfig {
     required String projectId,
     required String translateUrl,
     required bool isReleaseMode,
-    bool requireTranslateUrl = false,
+    required bool requireTranslateUrl,
   }) {
     final normalizedEnvironment = environment.trim().toLowerCase();
     if (!_knownEnvironments.contains(normalizedEnvironment)) {

@@ -23,19 +23,17 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Run changed tests
+      - name: Run complete profile tests
         shell: bash
         run: |
           set +e
           flutter pub get > ci-profile-test-diagnostics.txt 2>&1
           flutter test --reporter expanded \
-            test/features/profile/profile_avatar_test.dart \
-            test/features/profile/profile_avatar_picker_sheet_test.dart \
-            test/features/profile/live_achievements_section_test.dart \
+            test/features/profile \
             test/core/reviews/review_service_test.dart \
             >> ci-profile-test-diagnostics.txt 2>&1
           status=$?
-          echo "TARGETED_TEST_EXIT=$status" >> ci-profile-test-diagnostics.txt
+          echo "PROFILE_TEST_EXIT=$status" >> ci-profile-test-diagnostics.txt
           cat ci-profile-test-diagnostics.txt
           exit 0
       - name: Commit diagnostic report
@@ -44,5 +42,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ci-profile-test-diagnostics.txt
-          git commit -m 'ci: record profile test diagnostics'
+          git commit -m 'ci: record complete profile test diagnostics'
           git push

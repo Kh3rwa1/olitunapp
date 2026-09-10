@@ -45,7 +45,7 @@ void main() {
         final container = await containerFor({});
 
         expect(container.read(userNameProvider), 'Learner');
-        expect(container.read(userAvatarEmojiProvider), '👶');
+        expect(container.read(userAvatarIdProvider), 'default');
         expect(container.read(userAvatarColorIndexProvider), 0);
         expect(container.read(memberSinceProvider), 'April 2024');
       },
@@ -54,12 +54,12 @@ void main() {
     test('re-exports account providers honouring stored preferences', () async {
       final container = await containerFor({
         'user_name': 'Somi',
-        'user_avatar_emoji': '🦊',
+        'user_avatar_id': 'boy_03',
         'user_avatar_color': 2,
       });
 
       expect(container.read(userNameProvider), 'Somi');
-      expect(container.read(userAvatarEmojiProvider), '🦊');
+      expect(container.read(userAvatarIdProvider), 'boy_03');
       expect(container.read(userAvatarColorIndexProvider), 2);
     });
 

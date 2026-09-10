@@ -29,11 +29,11 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  test('account defaults to Learner, baby emoji and April 2024', () async {
+  test('account defaults to Learner, default avatar and April 2024', () async {
     final container = await containerFor({});
 
     expect(container.read(userNameProvider), 'Learner');
-    expect(container.read(userAvatarEmojiProvider), '👶');
+    expect(container.read(userAvatarIdProvider), 'default');
     expect(container.read(userAvatarColorIndexProvider), 0);
     expect(container.read(memberSinceProvider), 'April 2024');
   });
@@ -41,7 +41,7 @@ void main() {
   test('account providers read stored preference values', () async {
     final container = await containerFor({
       'user_name': 'Somi',
-      'user_avatar_emoji': '🦊',
+      'user_avatar_id': 'girl_02',
       'user_avatar_color': 3,
       'member_since': 'June 2025',
       'badge_traditional_archer_name': 'Custom Archer',
@@ -50,7 +50,7 @@ void main() {
     });
 
     expect(container.read(userNameProvider), 'Somi');
-    expect(container.read(userAvatarEmojiProvider), '🦊');
+    expect(container.read(userAvatarIdProvider), 'girl_02');
     expect(container.read(userAvatarColorIndexProvider), 3);
     expect(container.read(memberSinceProvider), 'June 2025');
     expect(container.read(badgeTraditionalArcherNameProvider), 'Custom Archer');
@@ -59,6 +59,12 @@ void main() {
       container.read(badgeTraditionalKherwalNameProvider),
       'Custom Kherwal',
     );
+  });
+
+  test('legacy emoji values normalize to the default avatar', () async {
+    final container = await containerFor({'user_avatar_id': '🦊'});
+
+    expect(container.read(userAvatarIdProvider), 'default');
   });
 
   test('badge providers fall back to traditional Santali names', () async {

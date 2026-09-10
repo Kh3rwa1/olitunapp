@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:itun/core/theme/app_typography.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 
 import '../../../../core/motion/motion.dart';
@@ -9,7 +11,10 @@ import '../../../../core/theme/app_colors.dart';
 class ProfileHeroCard extends ConsumerWidget {
   final String userName;
   final List<Color> avatarColors;
-  final String avatarEmoji;
+
+  /// Catalog avatar id (see [kProfileAvatars]). Unknown ids show the
+  /// default animation; an empty id shows the name initial instead.
+  final String avatarId;
   final String level;
   final int levelIndex;
 
@@ -24,7 +29,7 @@ class ProfileHeroCard extends ConsumerWidget {
     super.key,
     required this.userName,
     required this.avatarColors,
-    required this.avatarEmoji,
+    required this.avatarId,
     required this.level,
     required this.levelIndex,
     this.memberSince,
@@ -81,7 +86,7 @@ class ProfileHeroCard extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -113,8 +118,8 @@ class ProfileHeroCard extends ConsumerWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 64,
-                      height: 64,
+                      width: 84,
+                      height: 84,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: avatarColors,
@@ -131,29 +136,26 @@ class ProfileHeroCard extends ConsumerWidget {
                         ],
                       ),
                       child: Center(
-                        child: avatarEmoji.isNotEmpty
-                            ? Text(
-                                avatarEmoji,
-                                style: const TextStyle(fontSize: 32),
-                              )
-                            : Text(
-                                userName.isNotEmpty
-                                    ? userName[0].toUpperCase()
-                                    : 'L',
-                                style: AppTypography.inter(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                        child: avatarId.isNotEmpty
+                            ? ClipOval(
+                                child: Lottie.asset(
+                                  avatarAssetPath(avatarId),
+                                  width: 84,
+                                  height: 84,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _AvatarInitial(userName: userName),
                                 ),
-                              ),
+                              )
+                            : _AvatarInitial(userName: userName),
                       ),
                     ),
                     Positioned(
                       bottom: -2,
                       right: -2,
                       child: Container(
-                        width: 22,
-                        height: 22,
+                        width: 26,
+                        height: 26,
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
@@ -166,7 +168,7 @@ class ProfileHeroCard extends ConsumerWidget {
                         ),
                         child: const Icon(
                           Icons.camera_alt_rounded,
-                          size: 11,
+                          size: 13,
                           color: Colors.black,
                         ),
                       ),
@@ -174,7 +176,7 @@ class ProfileHeroCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 20),
 
               // Name + live leaderboard + member since
               Expanded(
@@ -187,7 +189,7 @@ class ProfileHeroCard extends ConsumerWidget {
                           child: Text(
                             userName,
                             style: AppTypography.inter(
-                              fontSize: 22,
+                              fontSize: 26,
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : Colors.black,
                             ),
@@ -221,8 +223,8 @@ class ProfileHeroCard extends ConsumerWidget {
                           child: ExcludeSemantics(
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 12,
+                                vertical: 6,
                               ),
                               decoration: BoxDecoration(
                                 color: _getLevelColor().withValues(alpha: 0.15),
@@ -238,14 +240,14 @@ class ProfileHeroCard extends ConsumerWidget {
                                 children: [
                                   Icon(
                                     Icons.emoji_events_rounded,
-                                    size: 12,
+                                    size: 14,
                                     color: _getLevelColor(),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
                                     leaderboardLabel,
                                     style: AppTypography.inter(
-                                      fontSize: 11,
+                                      fontSize: 12,
                                       fontWeight: FontWeight.w700,
                                       color: _getLevelColor(),
                                     ),
@@ -261,7 +263,7 @@ class ProfileHeroCard extends ConsumerWidget {
                           Text(
                             'Since ${_formatDate(memberSince!)}',
                             style: AppTypography.inter(
-                              fontSize: 11,
+                              fontSize: 12,
                               color: isDark ? Colors.white30 : Colors.black38,
                             ),
                           ),
@@ -273,7 +275,7 @@ class ProfileHeroCard extends ConsumerWidget {
             ],
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Overall progress bar
           Column(
@@ -288,7 +290,7 @@ class ProfileHeroCard extends ConsumerWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: AppTypography.inter(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white54 : Colors.black45,
                       ),
@@ -297,7 +299,7 @@ class ProfileHeroCard extends ConsumerWidget {
                   Text(
                     '${(overallProgress * 100).toInt()}%',
                     style: AppTypography.inter(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
                     ),
@@ -306,14 +308,14 @@ class ProfileHeroCard extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(7),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0, end: overallProgress),
                   duration: const Duration(milliseconds: 1200),
                   curve: Curves.easeOutCubic,
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
-                    minHeight: 8,
+                    minHeight: 10,
                     backgroundColor: isDark
                         ? Colors.white.withValues(alpha: 0.06)
                         : Colors.black.withValues(alpha: 0.06),
@@ -326,6 +328,26 @@ class ProfileHeroCard extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Name initial shown when no avatar is selected or its animation file
+/// fails to load. Never an emoji.
+class _AvatarInitial extends StatelessWidget {
+  final String userName;
+
+  const _AvatarInitial({required this.userName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
+      style: AppTypography.inter(
+        fontSize: 34,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
       ),
     );
   }

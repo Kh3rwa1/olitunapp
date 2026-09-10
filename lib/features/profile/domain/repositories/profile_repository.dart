@@ -9,6 +9,9 @@ abstract class ProfileRepository {
   );
   Future<Either<Failure, UserStatsEntity>> resetUserStats();
   Future<Either<Failure, void>> updateDisplayName(String name);
-  Future<Either<Failure, void>> updateAvatar(String emoji, int colorIndex);
+
+  /// Persists the selected Lottie avatar id (see [kProfileAvatars]) and the
+  /// background palette index. Unknown ids resolve to the default avatar.
+  Future<Either<Failure, void>> updateAvatar(String avatarId, int colorIndex);
   Future<Either<Failure, void>> syncPendingStats();
 }

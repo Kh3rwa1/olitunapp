@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
+
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -70,11 +71,13 @@ class ProfileHeroCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final leaderboardLabel = ref.watch(weeklyLeaderboardProvider).when(
-      data: (leaderboard) => leaderboard.badgeLabel,
-      error: (_, _) => 'Leaderboard unavailable',
-      loading: () => 'Leaderboard · Loading…',
-    );
+    final leaderboardLabel = ref
+        .watch(weeklyLeaderboardProvider)
+        .when(
+          data: (leaderboard) => leaderboard.badgeLabel,
+          error: (_, _) => 'Leaderboard unavailable',
+          loading: () => 'Leaderboard · Loading…',
+        );
 
     return Container(
       width: double.infinity,
@@ -225,7 +228,9 @@ class ProfileHeroCard extends ConsumerWidget {
                                 color: _getLevelColor().withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: _getLevelColor().withValues(alpha: 0.3),
+                                  color: _getLevelColor().withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               child: Row(

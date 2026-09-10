@@ -1,4 +1,4 @@
-name: One-time main CI repair
+name: One-time main CI verification
 
 on:
   push:
@@ -8,55 +8,43 @@ on:
       - .github/workflows/one-time-main-ci-diagnostics.yml
 
 permissions:
-  actions: write
+  actions: read
+  checks: read
   contents: write
 
 jobs:
-  repair:
+  verify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      FAILED_RUN_ID: '34511637243'
     steps:
-      - name: Check out repair branch
+      - name: Check out verification branch
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Rerun transient Release Please failure
+      - name: Collect repaired main status
         shell: bash
         run: |
-          set +e
+          set -euo pipefail
+          target_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq '.sha')
           {
-            echo "RUN_ID=$FAILED_RUN_ID"
-            echo "REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            response=$(gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$FAILED_RUN_ID/rerun-failed-jobs" 2>&1)
-            request_status=$?
-            echo "RERUN_REQUEST_EXIT=$request_status"
-            if [ -n "$response" ]; then
-              echo "$response"
-            fi
-
-            if [ "$request_status" -eq 0 ]; then
-              for attempt in $(seq 1 48); do
-                run_state=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$FAILED_RUN_ID" \
-                  --jq '[.run_attempt, .status, (.conclusion // "")] | @tsv' 2>&1)
-                echo "POLL_$attempt=$run_state"
-                status=$(printf '%s' "$run_state" | cut -f2)
-                if [ "$status" = "completed" ]; then
-                  break
-                fi
-                sleep 10
-              done
-            fi
-          } > ci-main-rerun.txt
-          cat ci-main-rerun.txt
-          exit 0
-      - name: Commit rerun report
-        if: always()
+            echo "TARGET_SHA=$target_sha"
+            echo "===== KEY WORKFLOW RUNS ====="
+            for run_id in 34511637243 34511637184 34512024872; do
+              gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" \
+                --jq '[.id, .name, .event, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
+            done
+            echo "===== CHECK RUNS ====="
+            gh api -H 'Accept: application/vnd.github+json' \
+              "repos/$GITHUB_REPOSITORY/commits/$target_sha/check-runs?per_page=100" \
+              --jq '.check_runs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), (.details_url // "")] | @tsv'
+          } > ci-main-final-status.txt
+          cat ci-main-final-status.txt
+      - name: Commit verification report
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-main-rerun.txt
-          git commit -m 'ci: record main Release Please rerun'
+          git add ci-main-final-status.txt
+          git commit -m 'ci: record repaired main status'
           git push

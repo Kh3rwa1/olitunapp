@@ -1,0 +1,60 @@
+## Targeted tests
+exit=1
+
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig development defaults are non-routable and safe
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects a development environment for release artifacts
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects placeholder production configuration
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig accepts explicit HTTPS production configuration
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects insecure production endpoints
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig adminTeamId defaults to admins
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting telemetry is opt-in in the test environment
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting recording APIs remain safe when disabled
+[Breadcrumb] Appwrite create on lessons/abc123 → FAIL: Timeout for k***@example.com
+[Breadcrumb] Admin create lesson (lesson-1)
+[Breadcrumb] Admin maintenance wipe_content backup=backup-1 OK
+[Breadcrumb] Upload letter_a.mp3 → audio OK
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent redacts email and tokens from messages and exceptions
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent recursively sanitizes breadcrumb payloads
+::endgroup::
+::group::❌ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent drops request credentials, query data, and user identity (failed)
+Expected: a string ending with '/v1/databases/x'
+  Actual: 'https://sgp.cloud.appwrite.io/v1/databases/x?#'
+
+package:matcher                                          expect
+package:flutter_test/src/widget_tester.dart 473:18       expect
+test/core/observability/crash_reporting_test.dart 140:9  main.<fn>.<fn>.<fn>
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent passes through events with no sensitive content unchanged
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queued work survives storage restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"completion-1"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: failed storage open can be retried
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue reads enforce exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue clearing enforces exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: completion only removes the acknowledged operation
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"done"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"still-pending"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: dead-letter state survives restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"retry-me"}}
+{"level":"debug","message":"[MutationOutbox] [WARNING] Mutation moved to dead-letter state.","fields":{"operationId":"retry-me","attemptCount":5}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: persisted errors are bounded and redact credentials and PII
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"private-error"}}
+::endgroup::
+
+::error::18 tests passed, 1 failed.

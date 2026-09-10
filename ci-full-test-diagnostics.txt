@@ -1,0 +1,1212 @@
+## Full Flutter tests
+exit=1
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/providers/typing_practice_controller_test.dart: TypingPracticeController 7. deleteLastChar deletes last char and resets wrongAtPosition
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/providers/typing_practice_controller_test.dart: TypingPracticeController 8. revealAndContinue sets typedSoFar to target, sets hint to true, and completes typing
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/providers/typing_practice_controller_test.dart: TypingPracticeController 9. tryAgain resets practice state but preserves hasAwardedStars and avoids duplicate recording
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/providers/typing_practice_controller_test.dart: TypingPracticeController 10. markCelebrationDone transitions phase from complete to done
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 1. Renders scaffolds, dashed outlines, and keyboard in typing phase
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 1. Renders key rows and actions in light theme without digits row when needsDigits is false
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 2. Renders dynamic digits row when needsDigits is true
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 2. Reveals button when attemptsTotal >= 6 and triggers controller
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 3. Keystroke interactions dispatch to controller
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 3. Triggers shake animation when attempts increases
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_complete_celebration_test.dart: TypingCompleteCelebration Widget Tests 1. Renders bounce checkmark and target text
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 4. Done state displays result and handles try again
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_complete_celebration_test.dart: TypingCompleteCelebration Widget Tests 2. Renders ConfettiPainter when reduceMotion is false
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 4. Done key triggers completed state transition
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_complete_celebration_test.dart: TypingCompleteCelebration Widget Tests 3. Skips ConfettiPainter when reduceMotion is true
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/data/typing_practice_settings_test.dart: TypingPracticeSettings 1. Defaults to enabled = true, lenientPunctuation = true when prefs are empty
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/data/typing_practice_settings_test.dart: TypingPracticeSettings 2. Restores saved settings from SharedPreferences
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/data/typing_practice_settings_test.dart: TypingPracticeSettings 3. toggleEnabled and setEnabled persists updates in SharedPreferences
+✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/data/typing_practice_settings_test.dart: TypingPracticeSettings 4. toggleLenientPunctuation persists update in SharedPreferences
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_complete_celebration_test.dart: TypingCompleteCelebration Widget Tests 4. Golden Test: TypingCompleteCelebration peak frame (light theme)
+Accepted golden difference: 0.76%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 5. Golden Test: OlChikiKeyboard light theme with digits
+Accepted golden difference: 4.67%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 5. Golden Test: TypingPracticePanel light theme half-typed
+Accepted golden difference: 2.70%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_complete_celebration_test.dart: TypingCompleteCelebration Widget Tests 5. Golden Test: TypingCompleteCelebration peak frame (dark theme)
+Accepted golden difference: 0.76%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 6. Golden Test: TypingPracticePanel dark theme done state
+Accepted golden difference: 2.08%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/ol_chiki_keyboard_test.dart: OlChikiKeyboard Widget Tests 6. Golden Test: OlChikiKeyboard dark theme without digits
+Accepted golden difference: 4.72%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 7. Golden Test: TypingPracticePanel wrong-shake mid-frame
+Accepted golden difference: 2.69%
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/features/practice/presentation/widgets/typing_practice_panel_test.dart: TypingPracticePanel Widget Tests 8. Golden Test: TypingPracticePanel with Reveal Button visible
+Accepted golden difference: 3.08%
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/presentation/providers/category_providers_test.dart: the barrel re-exports the appwrite-backed repository provider
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/presentation/providers/category_providers_test.dart: re-exported datasource providers resolve through the barrel
+::endgroup::
+Error getting device info: MissingPluginException(No implementation found for method getAll on channel dev.fluttercommunity.plus/package_info)
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/presentation/providers/category_providers_test.dart: the repository provider caches its instance when read via barrel
+::endgroup::
+Error getting device info: MissingPluginException(No implementation found for method getAll on channel dev.fluttercommunity.plus/package_info)
+Error getting device info: MissingPluginException(No implementation found for method getAll on channel dev.fluttercommunity.plus/package_info)
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/presentation/providers/category_providers_test.dart: overriding the barrel provider changes what consumers read
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/data/di/category_di_test.dart: remote datasource is appwrite-backed from the auth service client
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/data/di/category_di_test.dart: local datasource is the concrete offline store
+::endgroup::
+Error getting device info: MissingPluginException(No implementation found for method getAll on channel dev.fluttercommunity.plus/package_info)
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/data/di/category_di_test.dart: repository provider wires remote + local + network info
+::endgroup::
+Error getting device info: MissingPluginException(No implementation found for method getAll on channel dev.fluttercommunity.plus/package_info)
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_repository_impl_test.dart: returns remote categories and caches them when online
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_repository_impl_test.dart: falls back to cache when remote throws ServerException
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_repository_impl_test.dart: returns static seed categories when offline AND cache miss
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_repository_impl_test.dart: getCategoryById surfaces ServerFailure on remote error
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_model_entity_coverage_test.dart: Category Model & Entity Coverage Tests CategoryModel JSON serialization and deserialization
+✅ /home/runner/work/olitunapp/olitunapp/test/features/categories/category_model_entity_coverage_test.dart: Category Model & Entity Coverage Tests CategoryEntity properties and getters
+✅ /home/runner/work/olitunapp/olitunapp/test/core/reviews/review_eligibility_test.dart: returns false without any network call for guests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/reviews/review_eligibility_test.dart: queries verified play_store_review unlocks and caches the answer
+✅ /home/runner/work/olitunapp/olitunapp/test/core/reviews/review_eligibility_test.dart: returns false (and caches it) when no verified review exists
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/reviews/review_eligibility_test.dart: falls back to false when the remote query throws
+❌ Error checking review eligibility: Exception: offline
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: successful optional task reports success
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: synchronous failure is isolated from other tasks
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: asynchronous failure is reported without escaping
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: loading shell renders without initialized storage or providers
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure shell invokes the supplied retry action
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_status_app_test.dart: failure content scrolls on a narrow large-text display
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: hung optional task times out while another finishes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: retry does not duplicate a timed-out SDK initialization
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: required initialization caches success
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: required initialization retries a real synchronous failure
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/startup_tasks_test.dart: storage timeout retains the in-flight operation for retry
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/post_frame_startup_test.dart: usable child renders before optional initialization starts
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/post_frame_startup_test.dart: rebuilding the application does not repeat optional startup
+✅ /home/runner/work/olitunapp/olitunapp/test/core/startup/post_frame_startup_test.dart: hung SDK cannot block the shell and late failure is isolated
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/redaction_helper_test.dart: RedactionHelper Tests redactEmail masks username portion
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/redaction_helper_test.dart: RedactionHelper Tests redactSecret masks middle portion
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/redaction_helper_test.dart: RedactionHelper Tests sanitize redacts embedded emails, bearer tokens, and session secrets
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/app_logger_test.dart: AppLogger keeps simple debug output human-readable
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/app_logger_test.dart: AppLogger emits structured JSON when fields are supplied
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/adversarial_redaction_test.dart: Adversarial Log Redaction Suite Mixed case and complex email patterns are masked cleanly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/adversarial_redaction_test.dart: Adversarial Log Redaction Suite JWT tokens and bearer strings are redacted
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/adversarial_redaction_test.dart: Adversarial Log Redaction Suite Plaintext passwords and API keys are redacted
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/adversarial_redaction_test.dart: Adversarial Log Redaction Suite Razorpay payment credentials are masked
+✅ /home/runner/work/olitunapp/olitunapp/test/core/logging/adversarial_redaction_test.dart: Adversarial Log Redaction Suite IP addresses in error messages are masked
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_routing_test.dart: MediaUploader Bucket Routing Tests Video uploads correctly route to cover_videos bucket
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_routing_test.dart: MediaUploader Bucket Routing Tests Image uploads correctly route to images bucket
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_routing_test.dart: MediaUploader Bucket Routing Tests Audio uploads correctly route to audio bucket
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_routing_test.dart: MediaUploader Bucket Routing Tests Lottie uploads correctly route to animations bucket
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_guard_test.dart: MediaUploader deleteIfUnreferenced (Reference Guard) Tests 1. Empty fileId -> returns right(unit) without checks or deletion
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_guard_test.dart: MediaUploader deleteIfUnreferenced (Reference Guard) Tests 2. No references found -> proceeds to actual deletion
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_guard_test.dart: MediaUploader deleteIfUnreferenced (Reference Guard) Tests 3. File referenced by document -> refuses deletion and returns right(unit) no-op
+[MediaUploader] [WARNING] Refusing to delete actively-referenced file actively_referenced_file, referenced by rhymes/doc_abc
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_guard_test.dart: MediaUploader deleteIfUnreferenced (Reference Guard) Tests 4. Reference check query failure -> refuses deletion (fail-safe) and returns right(unit)
+[MediaUploader] [ERROR] Database reference check failed for collection rhymes: AppwriteException: , Connection timed out (500). Refusing deletion as a fail-safe.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_guard_test.dart: MediaUploader deleteIfUnreferenced (Reference Guard) Tests 5. Multiple field checks -> any reference blocks deletion
+[MediaUploader] [WARNING] Refusing to delete actively-referenced file multi_checked_file, referenced by rhymes/doc_xyz
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate accepts valid image
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects empty filename
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects unsupported extension
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects empty file
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects oversized image
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate accepts valid audio
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects oversized audio
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate accepts valid animation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects oversized animation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate accepts valid video
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate accepts valid html
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.validate rejects oversized html
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.sanitizeFilename strips path separators
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.sanitizeFilename replaces unsafe characters
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.sanitizeFilename empty filename returns fallback
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.shouldCompress png should compress
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.shouldCompress jpg should compress
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.shouldCompress svg should NOT compress
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.shouldCompress json should NOT compress
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.recommendedQuality large files get lower quality
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.recommendedQuality medium files get medium quality
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_rules_test.dart: UploadRules.recommendedQuality small files get high quality
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_duration_test.dart: MediaUploader Duration Probe Tests Mock a 15-second audio file (native) -> returns durationMs (15000)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_duration_test.dart: MediaUploader Duration Probe Tests On native VM: a file with null path and only bytes -> returns null safely to avoid memory loading on native
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_duration_test.dart: MediaUploader Duration Probe Tests Mock probe failure (throwing load exception) -> returns null safely
+{"level":"debug","message":"[MediaUploader] Audio duration probe failed","fields":{"error":"Exception: Mock platform load failed","stackTrace":"#0      FakeAudioPlayerPlatform.load (file:///home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_duration_test.dart:58:7)\n#1      AudioPlayer._load (package:just_audio/just_audio.dart:1013:12)\n<asynchronous suspension>\n#2      AudioPlayer._setPlatformActive.setPlatform (package:just_audio/just_audio.dart:1755:26)\n<asynchronous suspension>\n#3      AudioPlayer._setPlatformActive.<anonymous closure> (package:just_audio/just_audio.dart:1769:27)\n<asynchronous suspension>\n#4      AudioPlayer.load (package:just_audio/just_audio.dart:926:14)\n<asynchronous suspension>\n#5      AudioPlayer.setAudioSources (package:just_audio/just_audio.dart:897:18)\n<asynchronous suspension>\n#6      Future.timeout.<anonymous closure> (dart:async/future_impl.dart:1061:7)\n<asynchronous suspension>\n#7      MediaUploader._probeAudioDurationMs (package:itun/core/storage/media_uploader.dart:294:9)\n<asynchronous suspension>\n#8      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_duration_test.dart:173:26)\n<asynchronous suspension>\n#9      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)\n<asynchronous suspension>\n#10     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)\n<asynchronous suspension>\n#11     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)\n<asynchronous suspension>\n"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 1. Reject 11 MB video file with size error
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 2. Reject unsupported extension (.avi) with mime error
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 3. Mock duration probe returning 6 minutes -> reject
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 4. Mock duration probe returning 4 minutes -> accept
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 5. Mock duration probe throwing -> reject with graceful error message
+{"level":"debug","message":"[MediaUploader] [WARNING] Video duration probe failed","fields":{"error":"Exception: File read error","stackTrace":"#0      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart:97:11)\n#1      MediaUploader._probeVideoDurationMs (package:itun/core/storage/media_uploader.dart:357:50)\n#2      MediaUploader.validateFile (package:itun/core/storage/media_uploader.dart:338:28)\n#3      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart:100:36)\n#4      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)\n<asynchronous suspension>\n#5      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)\n<asynchronous suspension>\n#6      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)\n<asynchronous suspension>\n"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/media_uploader_validation_test.dart: MediaUploader Video Validation Tests 6. Non-video file kind (e.g. image) -> skips validation constraints
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheEntry fresh entry is not expired
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheEntry old entry is expired
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheEntry entry with no TTL never expires
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheEntry schema mismatch detected
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheEntry toJson / fromJson roundtrip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration set and get roundtrip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration strictly fresh lookup on expired entry returns null
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration 30-day offline simulation preserves cached lessons and categories
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration evictStale preserves valid learning content past TTL by default
+[Cache] evictStale: removed 0 entries
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration getMeta returns metadata
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration delete removes entry
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/cache_service_test.dart: CacheService integration getList roundtrip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_service_test.dart: AppwriteStorageUploadService maps supported media extensions to Appwrite buckets
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_service_test.dart: AppwriteStorageUploadService rejects unsupported file types before upload
+✅ /home/runner/work/olitunapp/olitunapp/test/core/storage/upload_service_test.dart: AppwriteStorageUploadService sanitizes logical folder and file names for Appwrite storage names
+✅ /home/runner/work/olitunapp/olitunapp/test/core/pwa/pwa_web_assets_test.dart: PWA web assets manifest is installable and learner-focused
+✅ /home/runner/work/olitunapp/olitunapp/test/core/pwa/pwa_web_assets_test.dart: PWA web assets manifest screenshots are real wide and narrow app captures
+✅ /home/runner/work/olitunapp/olitunapp/test/core/pwa/pwa_web_assets_test.dart: PWA web assets index keeps PWA metadata accessible
+✅ /home/runner/work/olitunapp/olitunapp/test/core/pwa/pwa_web_assets_test.dart: PWA web assets install prompt is accessible and standalone-aware
+✅ /home/runner/work/olitunapp/olitunapp/test/core/sharing/growth_share_service_test.dart: GrowthShareService Unit Tests copyTextToClipboard copies text to system clipboard
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/learning_semantics_test.dart: LearningSemantics builds descriptive Ol Chiki text labels
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/learning_semantics_test.dart: LearningSemantics builds quiz question labels without empty optional parts
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/learning_semantics_test.dart: LearningSemantics builds answer state labels
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/semantics_and_a11y_test.dart: Accessibility & Semantics Invariants CircleIconButton provides >=48dp tap target and button semantics
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/semantics_and_a11y_test.dart: Accessibility & Semantics Invariants PrimaryButton provides button semantics and reflects enabled/disabled
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/semantics_and_a11y_test.dart: Accessibility & Semantics Invariants DuoButton has focusable tap semantics
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/semantics_and_a11y_test.dart: Accessibility & Semantics Invariants MinimumTapTarget enforces minimum 48x48 dimensions on small widgets
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/semantics_and_a11y_test.dart: Accessibility & Semantics Invariants QuizOptionTile announces option index, selection and correct status
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: preserves the OS text scaler at 1.0x
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: preserves the OS text scaler at 2.0x
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: preserves the OS text scaler at 3.0x
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: motion respects OS=false and user=false
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: motion respects OS=false and user=true
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: motion respects OS=true and user=false
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/app_experience_scope_test.dart: motion respects OS=true and user=true
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: Dynamic Type 200% Text Scaling PrimaryButton renders without overflow under 200% text scale
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: Dynamic Type 200% Text Scaling DuoButton scales gracefully under 200% text scale
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: Dynamic Type 200% Text Scaling MagicTranslateDialog renders cleanly under 200% text scale without overflow
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: Focus Navigation & Semantics Tree PrimaryButton has interactive semantics button flag and tap action
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: WCAG AA Color Contrast Audit Light Theme Color Tokens Meet WCAG AA Contrast Standards
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/dynamic_type_scaling_and_semantics_test.dart: Accessibility: WCAG AA Color Contrast Audit Dark Theme Color Tokens Meet WCAG AA Contrast Standards
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance elevated button foreground passes normal text contrast on primary green
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance dark theme primary text passes normal text contrast on dark background
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance light theme primary text passes normal text contrast on light background
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance Santali terracotta accent passes normal text contrast on light surface
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance Santali Sal green accent passes normal text contrast on light surface
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance Santali Night Sky accent passes normal text contrast on light surface
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance Santali Ochre accent passes large text / UI component contrast on dark surface
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_theme_contrast_test.dart: WCAG 2.2 AA Theme Contrast Compliance minimum tap target helper enforces 48x48 logical pixels
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_audit_test.dart: WcagAudit calculates WCAG AA contrast thresholds
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_audit_test.dart: WcagAudit checks minimum 48dp tap targets
+✅ /home/runner/work/olitunapp/olitunapp/test/core/accessibility/wcag_audit_test.dart: WcagAudit documents the dynamic type audit scale up to 200 percent
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/breadcrumb_tracker_test.dart: BreadcrumbTracker Ring Buffer & Data Scrubbing Tests adds breadcrumbs and respects ring buffer max capacity limit
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/breadcrumb_tracker_test.dart: BreadcrumbTracker Ring Buffer & Data Scrubbing Tests scrubs sensitive tokens, passwords, and secrets from metadata
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/breadcrumb_tracker_test.dart: BreadcrumbTracker Ring Buffer & Data Scrubbing Tests clears all recorded breadcrumbs cleanly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart: AppObservability & AppProviderObserver Tests records navigation and interaction events into breadcrumb ring buffer
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart: AppObservability & AppProviderObserver Tests generates valid JSON diagnostics payload with redacted metadata
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart: AppObservability & AppProviderObserver Tests AppProviderObserver intercepts unhandled provider errors
+{"level":"debug","message":"[ERROR] Observability: [provider.FutureProvider<String>] Bad state: Provider test failure","fields":{"stack":"#0      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart:44:9)\n#1      FutureProvider._create (package:riverpod/src/future_provider/base.dart:71:65)\n#2      FutureProviderElement.create.<anonymous closure> (package:riverpod/src/future_provider/base.dart:117:22)\n#3      FutureHandlerProviderElementMixin.handleFuture.<anonymous closure> (package:riverpod/src/async_notifier/base.dart:341:30)\n#4      FutureHandlerProviderElementMixin._handleAsync (package:riverpod/src/async_notifier/base.dart:388:47)\n#5      FutureHandlerProviderElementMixin.handleFuture (package:riverpod/src/async_notifier/base.dart:335:5)\n#6      FutureProviderElement.create (package:riverpod/src/future_provider/base.dart:116:5)\n#7      ProviderElementBase.buildState (package:riverpod/src/framework/element.dart:426:7)\n#8      ProviderElementBase.mount (package:riverpod/src/framework/element.dart:228:5)\n#9      _StateReader._create (package:riverpod/src/framework/container.dart:47:11)\n#10     _StateReader.getElement (package:riverpod/src/framework/container.dart:35:52)\n#11     ProviderContainer.readProviderElement.<anonymous closure> (package:riverpod/src/framework/container.dart:440:40)\n#12     ProviderContainer.readProviderElement (package:riverpod/src/framework/container.dart:475:8)\n#13     ProviderBase.read (package:riverpod/src/framework/provider_base.dart:105:26)\n#14     ProviderContainer.read (package:riverpod/src/framework/container.dart:241:21)\n#15     main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart:52:17)\n#16     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)\n<asynchronous suspension>\n#17     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)\n<asynchronous suspension>\n#18     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)\n<asynchronous suspension>\n"}}
+{"level":"debug","message":"[ERROR] Observability: [provider.FutureProvider<String>] Bad state: Provider test failure","fields":{"stack":"#0      main.<anonymous closure>.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart:44:9)\n#1      FutureProvider._create (package:riverpod/src/future_provider/base.dart:71:65)\n#2      FutureProviderElement.create.<anonymous closure> (package:riverpod/src/future_provider/base.dart:117:22)\n#3      FutureHandlerProviderElementMixin.handleFuture.<anonymous closure> (package:riverpod/src/async_notifier/base.dart:341:30)\n#4      FutureHandlerProviderElementMixin._handleAsync (package:riverpod/src/async_notifier/base.dart:388:47)\n#5      FutureHandlerProviderElementMixin.handleFuture (package:riverpod/src/async_notifier/base.dart:335:5)\n#6      FutureProviderElement.create (package:riverpod/src/future_provider/base.dart:116:5)\n#7      ProviderElementBase.buildState (package:riverpod/src/framework/element.dart:426:7)\n#8      ProviderElementBase.mount (package:riverpod/src/framework/element.dart:228:5)\n#9      _StateReader._create (package:riverpod/src/framework/container.dart:47:11)\n#10     _StateReader.getElement (package:riverpod/src/framework/container.dart:35:52)\n#11     ProviderContainer.readProviderElement.<anonymous closure> (package:riverpod/src/framework/container.dart:440:40)\n#12     ProviderContainer.readProviderElement (package:riverpod/src/framework/container.dart:475:8)\n#13     ProviderBase.read (package:riverpod/src/framework/provider_base.dart:105:26)\n#14     ProviderContainer.read (package:riverpod/src/framework/container.dart:241:21)\n#15     main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/observability/app_observability_test.dart:52:17)\n#16     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:25)\n<asynchronous suspension>\n#17     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)\n<asynchronous suspension>\n#18     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)\n<asynchronous suspension>\n"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting telemetry is opt-in in the test environment
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting recording APIs remain safe when disabled
+[Breadcrumb] Appwrite create on lessons/abc123 → FAIL: Timeout for k***@example.com
+[Breadcrumb] Admin create lesson (lesson-1)
+[Breadcrumb] Admin maintenance wipe_content backup=backup-1 OK
+[Breadcrumb] Upload letter_a.mp3 → audio OK
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent redacts email and tokens from messages and exceptions
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent recursively sanitizes breadcrumb payloads
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent drops request credentials, query data, and user identity
+✅ /home/runner/work/olitunapp/olitunapp/test/core/observability/crash_reporting_test.dart: CrashReporting scrubEvent passes through events with no sensitive content unchanged
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_test.dart: PendingMutation Model & Invariant Tests serializes and deserializes cleanly with default status
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_test.dart: PendingMutation Model & Invariant Tests supports deadLetter status transition and max attempts threshold
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_test.dart: PendingMutation Model & Invariant Tests PendingMutation supports retry backoff timestamp calculation
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queued work survives storage restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"completion-1"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: failed storage open can be retried
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue reads enforce exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue clearing enforces exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: completion only removes the acknowledged operation
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"done"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"still-pending"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: dead-letter state survives restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"retry-me"}}
+{"level":"debug","message":"[MutationOutbox] [WARNING] Mutation moved to dead-letter state.","fields":{"operationId":"retry-me","attemptCount":5}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: persisted errors are bounded and redact credentials and PII
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"private-error"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/private_audio_playback_test.dart: private audio renews URI, preserves position, and stops on denial
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/private_audio_playback_test.dart: failed stop cleanup cannot leak a private resolution error
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: scoped references strip credentials, including nested encoded blocks
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: public media remains direct; private references require lesson identity
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: resolution uses protocol v2 and each refresh reauthorizes, never caches
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: revocation after successful playback never falls back to previous lease
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {protocolVersion: 1, base64: legacy}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {bucketId: other}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {fileId: other}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {ok: false}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {url: https://evil.test/v1/storage/buckets/paid_media/files/file/view?project=test&token=x}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {url: https://media.example.test/v1/storage/buckets/paid_media/files/other/view?project=test&token=x}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {url: https://media.example.test/v1/storage/buckets/paid_media/files/file/view?project=other&token=x}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {url: https://media.example.test/v1/storage/buckets/paid_media/files/file/view?project=test}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {expiresAt: 2026-09-06T00:00:00.000Z}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/media/authorized_media_test.dart: reject malformed, expired, unbounded or cross-file grant: {expiresAt: 2026-09-06T01:00:00.000Z}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/presentation/animations/fade_in_slide_test.dart: fades and slides in after mounting
+✅ /home/runner/work/olitunapp/olitunapp/test/core/presentation/animations/fade_in_slide_test.dart: index staggers the start of the animation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/presentation/animations/fade_in_slide_test.dart: offset drives the initial vertical translation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/presentation/animations/fade_in_slide_test.dart: disposes without leaking the controller
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: renders the expanded header with gradient and title
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: supports leading actions and a hero child
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: heroTag wraps the background in a Hero
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: heroChildFullBleed fills the expanded header
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: collapses when scrolled like a large app bar
+✅ /home/runner/work/olitunapp/olitunapp/test/core/widgets/parallax_hero_sliver_app_bar_test.dart: reduce-motion keeps the bar functional without stretch
+✅ /home/runner/work/olitunapp/olitunapp/test/core/web_stubs_test.dart: web_redirect resolves to the throwing stub on the VM
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants app identity
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants animation durations are ordered slow > pageTransition > normal > fast
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants radius scale is monotonically increasing
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants spacing scale is monotonically increasing
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants progress ring sizes match the icon/card scale boundaries
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants preference keys are unique
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants collection ids are unique
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants script modes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants gradient presets are unique
+✅ /home/runner/work/olitunapp/olitunapp/test/core/constants/app_constants_test.dart: AppConstants cannot be instantiated
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch requires a non-empty entity text
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch matches exact text case-insensitively
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch ignores surrounding whitespace
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch strips punctuation before comparing
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch letter mode allows substring matching inside a longer block
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch letter mode fails when the glyph is absent
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch word/sentence mode matches standalone tokens
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch word/sentence mode treats dashes, dots and punctuation as token separators
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch word/sentence mode does not do substring matching
+✅ /home/runner/work/olitunapp/olitunapp/test/core/utils/text_match_test.dart: isTextMatch matches Ol Chiki glyphs
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/language_manifest_test.dart: LanguageManifest & ScriptMetadata Model Tests validates script metadata graphemes and unicode range checking
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/language_manifest_test.dart: LanguageManifest & ScriptMetadata Model Tests validates language manifest properties and active readiness state
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper Transliteration & Digraphs transliterates basic Ol Chiki vowels and consonants to Bengali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper Transliteration & Digraphs transliterates aspirated consonant digraphs correctly into single Indic aspirated letters
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper Transliteration & Digraphs transliterates Ol Chiki to Hindi/Devanagari correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper Transliteration & Digraphs transliterates Ol Chiki to Odia correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper translateMeaning Zero-Leakage Guarantees translates English meanings into Bengali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper translateMeaning Zero-Leakage Guarantees returns empty string for missing non-English target languages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves 3-section layout for sentence with meaning at top, Ol Chiki middle, transliteration bottom
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves Bengali display for Mone Khel with zero English leakage and 3-section layout
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves Bengali display for cultural proverb with zero English leakage
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves Hindi display for family word
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves Odia display for family word
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves English display cleanly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout hides subtitle when script mode is olchiki
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves contaminated Ol Chiki and descriptive textLatin in Bengali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves contaminated pronouns in Bengali without leaking English
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves sentence lessons with composite textLatin in Bengali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout hides subtitle when teaching language is santali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout I am working sentence block correctly resolves meaning across bn, hi, or, en without Roman leakage in title
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout resolves tree shade resting sentence across Bengali, Hindi, Odia, and English with zero English leakage
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: WordModel and SentenceModel Multilingual Extensions WordModel returns localized transliterations and meanings
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: WordModel and SentenceModel Multilingual Extensions SentenceModel returns localized transliterations and meanings
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: Admin Multilingual Editing & OV Transliteration Regression Ol Chiki letter OV (ᱶ) and Nowa do ced kana? transliteration fix
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: Admin Multilingual Editing & OV Transliteration Regression TranslationOverrideService persists overrides and takes priority
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/ol_chiki_multilingual_helper_test.dart: Admin Multilingual Editing & OV Transliteration Regression TranslationEntry uses customTranslations and customTransliterations
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/language_registry_test.dart: LanguageRegistry Multi-Language Platform Tests contains all 5 canonical indigenous languages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/language_registry_test.dart: LanguageRegistry Multi-Language Platform Tests correctly categorizes active, preview, and coming soon languages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/languages/language_registry_test.dart: LanguageRegistry Multi-Language Platform Tests findByCode returns matching manifest or default fallback
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/pressable_scale_accessibility_test.dart: Enter and Space activate the focused action exactly once
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/pressable_scale_accessibility_test.dart: exposes one named tap action and a minimum touch target
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/pressable_scale_accessibility_test.dart: disabled controls cannot activate via pointer or keyboard
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/pressable_scale_accessibility_test.dart: reduced motion skips press transforms and entrance effects
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/pressable_scale_accessibility_test.dart: late list items never wait seconds for entrance motion
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports MotionTokens vocabulary is sane
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports PressableScale renders and responds to taps
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports AnimatedCounter renders its value
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: MotionTokens durations are in ascending order
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: MotionTokens pressedScale is between 0 and 1
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: MotionTokens staggerStep delay is non-negative
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: MotionTokens gentleSpring is a valid curve
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: MotionTokens standard easing is a valid curve
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports BrandedRefreshIndicator is a Scrollable wrapper
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports ConfettiBurst renders when triggered
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_barrel_test.dart: motion barrel exports FocusGlowField wraps its child with a glow surface
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig development defaults are non-routable and safe
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects a development environment for release artifacts
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects placeholder production configuration
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig accepts explicit HTTPS production configuration
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig rejects insecure production endpoints
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/appwrite_config_test.dart: AppwriteConfig adminTeamId defaults to admins
+✅ /home/runner/work/olitunapp/olitunapp/test/core/motion/motion_tokens_test.dart: RespectMotion returns false when no ancestor provides reduced motion
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings everything is off by default (safe fallback)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings empty settings map resolves to all-off
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings string "true" in app_settings enables a flag
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings boolean true in app_settings enables a flag
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings non-true values are treated as off
+✅ /home/runner/work/olitunapp/olitunapp/test/core/config/feature_flags_test.dart: FeatureFlags.fromSettings each flag resolves independently
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppSpacing Design Tokens spacing scale values are ascending and non-negative
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppSpacing Design Tokens EdgeInsets helpers match defined constants
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppSpacing Design Tokens Gap SizedBox widgets have correct dimensions
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppRadius Design Tokens radius scale values are ascending and positive
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppRadius Design Tokens BorderRadius presets have correct radii
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppColors Semantic Token Extensions Quiz feedback surface tokens are valid and distinct
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppColors Semantic Token Extensions Mistake review card tokens are valid and have dark/light pairs
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppColors Semantic Token Extensions Ambient background orb tokens are valid
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppColors Semantic Token Extensions AI translator surface tokens are valid
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/design_tokens_test.dart: AppColors Semantic Token Extensions Santali cultural palette and semantic accents are valid and distinct
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/script_typography_registry_test.dart: ScriptTypographyRegistry Tests resolves correct primary font family and fallbacks for Santali
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/script_typography_registry_test.dart: ScriptTypographyRegistry Tests resolves correct font style for Ol Chiki vs Latin/Inter languages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_typography_test.dart: AppTypography Invariants uses Inter as primary UI font family and OlChiki as fallback
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_typography_test.dart: AppTypography Invariants inter helper generates styles with Inter and OlChiki fallback
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_typography_test.dart: AppTypography Invariants olChiki helper generates styles with OlChiki font family
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_typography_test.dart: AppTypography Invariants all semantic styles have Inter font family
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_typography_test.dart: AppTypography Invariants AppTheme light and dark text themes use Inter font family
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors primary color is Olitun green
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors Santali cultural palette tokens are defined and non-null
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors avatarPalettes has at least 6 entries incorporating cultural colors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors each avatar palette has exactly 2 colors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors heroGradient is a LinearGradient
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors premiumGreen gradient is not null
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors success and error colors are distinct
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors dark surface colors are darker than light equivalents
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/app_colors_test.dart: AppColors semantic accent color palette has distinct entries
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens spacing scale is monotonically increasing
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens radius scale is monotonically increasing
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens surfaces dark base is darker than light base
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens surfaces raised is lighter than base in both modes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens typography display has Poppins family
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens typography metric uses tabular figures
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens typography font size hierarchy is correct
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens shadows raisedShadow returns non-empty list
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens shadows overlayShadow has larger blur than raised
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens shadows brandGlow respects strength
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/admin_tokens_test.dart: AdminTokens text colors primary text is readable in both modes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/wcag_audit_test.dart: theme button foreground contrast (WcagAudit) elevatedButtonFg on primary is WCAG AAA (>= 7.0:1)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/wcag_audit_test.dart: theme button foreground contrast (WcagAudit) elevatedButtonFg passes normal-text AA on bright tokens
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/wcag_audit_test.dart: theme button foreground contrast (WcagAudit) white on primary is a documented AA failure (< 3:1)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/wcag_audit_test.dart: theme button foreground contrast (WcagAudit) white on success is a documented AA failure (< 3:1)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/theme/wcag_audit_test.dart: theme button foreground contrast (WcagAudit) dark-theme button foreground (black) passes on primary
+✅ /home/runner/work/olitunapp/olitunapp/test/core/seed_assets_equivalence_test.dart: seed assets load, decode, and keep expected item counts
+✅ /home/runner/work/olitunapp/olitunapp/test/core/seed_assets_equivalence_test.dart: lesson assets keep non-empty block lists
+✅ /home/runner/work/olitunapp/olitunapp/test/core/seed_assets_equivalence_test.dart: seed assets stay in sync with pubspec asset declarations
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_permission_invariants_test.dart: Appwrite Permission Invariants Unit Test Suite createPublicContent generates explicit public read permission only
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_permission_invariants_test.dart: Appwrite Permission Invariants Unit Test Suite createOwnerPrivateRow restricts read and write strictly to specified user ID
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_permission_invariants_test.dart: Appwrite Permission Invariants Unit Test Suite adminOnlyPermissions dynamically binds strictly to AppwriteConfig.adminTeamId
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_permission_invariants_test.dart: Appwrite Permission Invariants Unit Test Suite createFunctionManagedRow creates empty permissions array for server-only access
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiConfig reverseTranslateUrl defaults to translateUrl
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiConfig maxTranslationChars is reasonable
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: TranslateResult creates a non-error result
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: TranslateResult creates an error result
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: unwrapAppwriteExecution parses direct JSON body
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: unwrapAppwriteExecution unwraps Appwrite Execution responseBody
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: unwrapAppwriteExecution returns null for non-map JSON
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: unwrapAppwriteExecution returns null for invalid JSON
+AiService: response parse failed: FormatException: Unexpected character (at character 1)
+not json
+^
+
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: unwrapAppwriteExecution returns null for Execution with empty responseBody
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiService.translate rejects text exceeding maxTranslationChars
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiService.translate returns error result when translation URL is not configured
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiService.translate returns error result on connection failure
+AiService error: Exception: Network down
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiService fail-closed 429 returns error result (fail closed)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/ai_service_test.dart: AiService fail-closed _failClosed always returns error TranslateResult
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult isCompleted is true only for completed status
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult bodyJson parses a valid JSON object
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult bodyJson coerces non-String-keyed maps
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult bodyJson returns null for an empty body
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult bodyJson returns null for malformed JSON and does not throw
+[AppwriteFunctionsService] [WARNING] FunctionExecutionResult: malformed response body: FormatException: Unexpected end of input (at character 13)
+{"ok": true,
+            ^
+
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult bodyJson returns null for non-object payloads
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_functions_service_test.dart: FunctionExecutionResult carries the HTTP status code of the execution
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries removes caller limit and offset before auto-pagination
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries adds limit and offset for subsequent pages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries omits offset on the first page
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries detects manually paginated and random queries
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries ignores malformed query strings when detecting methods
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_db_service_test.dart: AppwriteDbService pagination queries rejects invalid page sizes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery equal builds an equal query string
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery notEqual builds a notEqual query string
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery comparison builders carry their method name
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery limit caps results
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery order builders carry direction
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery search targets an attribute
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbQuery queries are plain JSON strings usable by the db service
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbId unique produces non-empty ids
+✅ /home/runner/work/olitunapp/olitunapp/test/core/api/appwrite_query_builders_test.dart: DbId unique produces distinct ids
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_stale_cache_test.dart: verified purchase -> TTL expires -> device offline -> entitlement remains available with staleCached status
+❌ fetchPurchasedCategoryIds failed: Exception: SocketException: Client error (offline)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: background refund refresh publishes a revision and removes the entitlement
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: permission denial revokes fresh cached access and notifies consumers
+❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
+❌ fetchPurchasedCategoryIds failed: AppwriteException: , not permitted (403)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: logout invalidates an in-flight verification before it can repopulate cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 1: fetchEntitlements returns verified categories from Appwrite and caches with user key
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 2: clearUserEntitlementCache purges user cache so next fetch hits server
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_entitlements_test.dart: PurchaseRepository - Entitlements & User-Scoped Cache Case 3: refunding one category leaves other verified categories intact
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite returns unauthenticated status when userId is empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite EntitlementResult helper properties evaluate correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/purchase_repository_test.dart: PurchaseRepository Typed Entitlements & Error Handling Suite clearUserCache purges user-specific entitlement cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries PurchaseRepository provider initializes correctly
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries User-scoped entitlement cache is isolated per userId
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Refunded or disputed status revokes entitlement from user cache
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Order ID and Payment ID strict verification contract
+✅ /home/runner/work/olitunapp/olitunapp/test/core/payments/payment_security_test.dart: Payment Security & Order Integrity Boundaries Captured status requirement validation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: googleOAuthUserMessage passes through raw OAuth errors for diagnosis
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: googleOAuthUserMessage preserves unknown provider errors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: googleOAuthUserMessage remaps disabled provider error message
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion parses Appwrite web session key redirects
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion parses userId and secret redirects
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion throws readable failure query messages
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion rejects redirects without a secret
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion rejects redirects without a usable session key or userId
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseWebOAuthCompletion parses mobile deep-link success callbacks (token contract)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: buildMobileGoogleOAuthUrl targets the token endpoint with deep-link callbacks
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: buildMobileGoogleOAuthUrl requests email and profile scopes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAdminMaintenanceResponse returns decoded success payload
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAdminMaintenanceResponse throws function message on failed response
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAdminMaintenanceResponse extracts backup file id when present
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: isTransientSessionValidationFailure allows cached session only for network and timeout failures
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: isTransientSessionValidationFailure fails closed for non-auth Appwrite errors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 1. HTTP 500 with authDeleted: true returns authDeletedReconciliationPending
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 2. HTTP 500 without authDeleted: true returns failed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 3. HTTP 2xx with ok: true returns completed outcome
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 4. Empty response fails closed as malformed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 5. Malformed JSON fails closed as malformed without leaking raw body
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution 6. Non-object JSON fails closed as malformed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: parseAccountDeletionExecution Execution status normalization handles uppercase status string
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 1. Missing secret with stale session calls setSession("")
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 2. Empty secret with stale session calls setSession("")
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 3. Secret with missing timestamp clears keys and calls setSession("")
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 4. Timestamp with no secret clears state and calls setSession("")
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 5. Zero timestamp clears state and calls setSession("")
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 6. Negative timestamp clears state and calls setSession("")
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 7. Expired timestamp (>24h) clears state and calls setSession("")
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 8. Future timestamp beyond 1 min skew clears state
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , Unauthorized (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 9. Timestamp within 1 min future skew is accepted as valid
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 10. Valid session restores once and does not clear state
+Appwrite: Session active ✅
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 11. Async restore and sync restore enforce identical validity policy
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 12. Rejected persisted session cannot be accepted during simulated network timeout
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: TimeoutException: Network timeout
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 13. Preference setBool failure still clears SDK state
+Appwrite: Sign out error: type 'Null' is not a subtype of type 'Future<dynamic>'
+Appwrite: Failed to clear local session flag: Exception: Storage write error
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 14. Secret-removal failure still attempts timestamp and local-flag cleanup
+Appwrite: Sign out error: type 'Null' is not a subtype of type 'Future<dynamic>'
+Appwrite: Failed to remove session secret: Exception: Disk read-only
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 15. deleteAccount HTTP 500 with authDeleted: true clears local session state and setSession("")
+[ERROR] Appwrite: deleteAccount error: Account deleted; final cleanup reconciliation is pending.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 16. deleteAccount HTTP 500 without authDeleted: true preserves valid local state
+[ERROR] Appwrite: deleteAccount error: Server error
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 17. deleteAccount HTTP 2xx with ok: true clears every session layer
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 18. exchangeOAuthToken on Web creates session and persists active session secret
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 19. isLoggedIn on Web validates with Appwrite when hasLocal is false
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: Session active ✅
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 20. signInWithGoogle on mobile exchanges the browser callback for a real session and sets local session flag
+Appwrite: Starting Google OAuth
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 21. signInWithGoogle on mobile clears dangling session before opening browser
+Appwrite: Starting Google OAuth
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 22. exchangeOAuthToken recovers from active session conflict by deleting session and retrying
+[WARNING] Appwrite: Active session detected during OAuth token exchange. Deleting current session and retrying.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 23. exchangeOAuthToken propagates underlying exception when throwOnError is true
+[WARNING] Appwrite: Active session detected during OAuth token exchange. Deleting current session and retrying.
+[WARNING] Appwrite: OAuth session failed: AppwriteException: user_invalid_token, Invalid token (401)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/appwrite_auth_service_test.dart: AppwriteAuthService Comprehensive Invariants 24. exchangeOAuthToken on mobile keeps credentials in the SDK and out of preferences
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: partial responses retain one operation ID until acknowledged complete
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: new client resumes persisted identity after a lost response
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: pause keeps a resumable operation without starting another chunk
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: unrelated response cannot clear recovery identity
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: storage failure prevents any destructive request
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: 202 means checkpointed progress, not completed restore
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: dryRun passes dryRun flag and does not persist pending key
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/admin_restore_client_test.dart: rollback invokes rollback_restore action and returns completed
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_isolation_test.dart: Account Isolation & Cache Key Isolation Tests Pending mutations are strictly isolated per userId
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued record_progress","fields":{"operationId":"op_1"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_isolation_test.dart: Account Isolation & Cache Key Isolation Tests Clearing user queue removes only targeted user outbox data
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued quiz","fields":{"operationId":"op_a"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued quiz","fields":{"operationId":"op_b"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract accepts the existing server confirmation with completed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract accepts the existing server confirmation with ExecutionStatus.completed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract accepts the existing server confirmation with COMPLETED
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract rejects unconfirmed deletion: {"ok":true}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract rejects unconfirmed deletion: {"ok":true,"authDeleted":false}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract rejects unconfirmed deletion: {"ok":true,"code":"account_deleted","authDeleted":false}
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract does not treat waiting as a completed execution
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract does not treat processing as a completed execution
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract does not treat unknown as a completed execution
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion confirmation contract does not treat  as a completed execution
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression transport 401 requires sign-in and never returns success
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression missing function does not imply deletion
+[ERROR] Appwrite: deleteAccount error: Function not found
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression nested function 404 is not proof that the user is absent
+[ERROR] Appwrite: deleteAccount error: Resource not found
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression nested function 401 requires reauthentication
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression generic success payload cannot clear the session
+[ERROR] Appwrite: deleteAccount error: Account deletion failed on server
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression confirmed server deletion clears persisted session state
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression partial deletion stays pending (401)
+[ERROR] Appwrite: deleteAccount error: Account deleted; final cleanup reconciliation is pending.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_deletion_regression_test.dart: Deletion service regression partial deletion stays pending (500)
+[ERROR] Appwrite: deleteAccount error: Account deleted; final cleanup reconciliation is pending.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/offline_session_ownership_test.dart: expired web metadata plus offline validation preserves progress owner
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: TimeoutException: offline
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/offline_session_ownership_test.dart: 401 invalidates credentials without redirecting pending progress to guest
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: AppwriteException: , expired (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/offline_session_ownership_test.dart: synchronous startup expiry also preserves ownership
+Appwrite: Web session timestamp invalid; clearing credential metadata
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/offline_session_ownership_test.dart: explicit logout still blocks surviving cookie adoption
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/offline_session_ownership_test.dart: a validated different cookie creates a new owner incarnation
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: Session active ✅
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests 1. Web persistence NEVER writes raw secret string and purges any legacy secret from SharedPreferences
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests 2. Web session restoration purges legacy secret string and delegates to cookie/timestamp state
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests 3. Expired or invalid web session restoration fails closed and clears all session metadata
+Appwrite: Web session timestamp invalid; clearing credential metadata
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests 4. Logout (clearLocalSessionState) purges all metadata and resets Client SDK session
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests 5. Non-web persistence keeps credentials in the SDK and purges plaintext preferences
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests native restore purges legacy value: legacy_mobile_secret
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests native restore purges legacy value: 
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/session_persistence_test.dart: SessionPersistence Security & Regression Tests startup cleanup preserves progress and is repeatable
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/legacy_session_owner_test.dart: legacy expiry cannot convert unknown ownership into a guest
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: isLoggedIn error: TimeoutException: offline
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/legacy_session_owner_test.dart: a server-validated session can resolve a legacy owner after expiry
+Appwrite: Web session timestamp invalid; clearing credential metadata
+Appwrite: Session active ✅
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/legacy_session_owner_test.dart: web validation during sign-in cannot clear or adopt the old cookie
+Appwrite: Creating anonymous session
+Appwrite: isLoggedIn error: Bad state: Account changed
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: email persists session owner before a profile fetch can fail
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: otp persists session owner before a profile fetch can fail
+Appwrite: Verifying OTP token
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: anonymous persists session owner before a profile fetch can fail
+Appwrite: Creating anonymous session
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: oauth persists session owner before a profile fetch can fail
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: used repository logout path clears identity offline and prevents cookie resurrection
+Appwrite: Sign out error: AppwriteException: , offline (0)
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: legacy session validation learns owner; transient validation keeps it
+Appwrite: Session active ✅
+Appwrite: isLoggedIn error: AppwriteException: , offline (0)
+Appwrite: transient session validation failure; using cached session.
+Appwrite: isLoggedIn error: AppwriteException: , expired (401)
+Appwrite: Session expired (401). Clearing local flag.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: late current-session validation cannot restore signed-out identity
+Appwrite: isLoggedIn error: Bad state: Account changed
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: SDK dispatch rechecks scope after connectivity awaits
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: session mutation waits for an already dispatched scoped request
+Appwrite: Creating anonymous session
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: validation during login cannot bind the previous SDK account
+Appwrite: Creating anonymous session
+Appwrite: isLoggedIn error: Bad state: Account changed
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/auth/account_scope_session_test.dart: corrupt metadata and preference clear/relogin fail closed for old work
+✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService singleton instance is non-null and constants are defined
+✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService NotificationFrequency extension returns expected properties
+✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService nextInstanceOfTime schedules for today when target is in the future
+✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService nextInstanceOfTime schedules for tomorrow when target has already passed today
+✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService nextInstanceOfTime handles exact time without producing past timestamps
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart: NotificationService safe execution of schedule, suppress, and cancel in test environment
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.scheduleAllReminders (package:itun/core/notifications/notification_service.dart:381:7)
+<asynchronous suspension>
+#6      NotificationService.scheduleDailyStreakReminder (package:itun/core/notifications/notification_service.dart:451:5)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.scheduleAllReminders (package:itun/core/notifications/notification_service.dart:381:7)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.suppressTodayReminderIfPracticed (package:itun/core/notifications/notification_service.dart:467:7)
+<asynchronous suspension>
+
+NotificationService: suppressTodayReminderIfPracticed error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.cancelAllReminders (package:itun/core/notifications/notification_service.dart:545:7)
+<asynchronous suspension>
+#6      NotificationService.cancelDailyReminder (package:itun/core/notifications/notification_service.dart:560:5)
+<asynchronous suspension>
+
+NotificationService: cancelAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.cancelAllReminders (package:itun/core/notifications/notification_service.dart:545:7)
+<asynchronous suspension>
+
+NotificationService: cancelAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.requestPermission (package:itun/core/notifications/notification_service.dart:193:9)
+<asynchronous suspension>
+#6      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart:111:16)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#9      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.cancelAllReminders (package:itun/core/notifications/notification_service.dart:545:7)
+<asynchronous suspension>
+#6      NotificationService.scheduleAllReminders (package:itun/core/notifications/notification_service.dart:385:7)
+<asynchronous suspension>
+#7      NotificationService.scheduleDailyStreakReminder (package:itun/core/notifications/notification_service.dart:451:5)
+<asynchronous suspension>
+
+NotificationService: cancelAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: scheduleAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.cancelAllReminders (package:itun/core/notifications/notification_service.dart:545:7)
+<asynchronous suspension>
+#6      NotificationService.scheduleAllReminders (package:itun/core/notifications/notification_service.dart:385:7)
+<asynchronous suspension>
+
+NotificationService: cancelAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: scheduleAllReminders error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.areNotificationsEnabled (package:itun/core/notifications/notification_service.dart:242:9)
+<asynchronous suspension>
+#6      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart:112:16)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#9      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.showInstantTestNotification (package:itun/core/notifications/notification_service.dart:282:9)
+<asynchronous suspension>
+#6      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart:113:16)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#9      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.requestPermission (package:itun/core/notifications/notification_service.dart:193:9)
+<asynchronous suspension>
+#6      NotificationService.showInstantTestNotification (package:itun/core/notifications/notification_service.dart:284:23)
+<asynchronous suspension>
+#7      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart:113:16)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#9      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#10     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+NotificationService: timezone lookup fallback to UTC: MissingPluginException(No implementation found for method getLocalTimezone on channel flutter_timezone)
+NotificationService: initialization error: LateInitializationError: Field '_instance@3080271368' has not been initialized.
+#0      FlutterLocalNotificationsPlatform._instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart)
+#1      FlutterLocalNotificationsPlatform.instance (package:flutter_local_notifications_platform_interface/flutter_local_notifications_platform_interface.dart:20:60)
+#2      FlutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:56:43)
+#3      FlutterLocalNotificationsPlugin.initialize (package:flutter_local_notifications/src/flutter_local_notifications_plugin.dart:132:14)
+#4      NotificationService.initialize (package:itun/core/notifications/notification_service.dart:152:21)
+<asynchronous suspension>
+#5      NotificationService.areNotificationsEnabled (package:itun/core/notifications/notification_service.dart:242:9)
+<asynchronous suspension>
+#6      NotificationService.showInstantTestNotification (package:itun/core/notifications/notification_service.dart:286:27)
+<asynchronous suspension>
+#7      main.<anonymous closure>.<anonymous closure> (file:///home/runner/work/olitunapp/olitunapp/test/core/notifications/notification_service_test.dart:113:16)
+<asynchronous suspension>
+#8      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#9      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#10     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests BannerAdWidget renders empty box when Ad-Free
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/admob_widgets_test.dart: AdMob Widgets Headless Tests NativeAdWidget renders empty box when Ad-Free
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests provides test ad unit IDs by default in test mode
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests default frequency caps have reasonable limits
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_config_test.dart: AdConfig Tests provides non-empty sample fallback ad unit IDs
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: native waits for load and frees a mounted ad only after its view leaves
+AdService: Memory pressure detected. Releasing unclaimed ads.
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: native clears loaded state and rejects stale callbacks on refresh
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: native ignores a load callback after widget disposal
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: banner waits for load and frees a mounted ad only after its view leaves
+AdService: Memory pressure detected. Releasing unclaimed ads.
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: banner clears loaded state and rejects stale callbacks on refresh
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: banner ignores a load callback after widget disposal
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: a replacement native identity creates a fresh platform-view subtree
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/embedded_ad_lifecycle_test.dart: obsolete banner sizing cannot create an ad after orientation changes
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: missing UMP platform and reset cannot authorize ad requests
+ConsentManager: Reset failed: MissingPluginException(No implementation found for method ConsentInformation#reset on channel plugins.flutter.io/google_mobile_ads/ump)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/consent_fail_closed_test.dart: eligibility changes preserve free rewards without requesting ads
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_ownership_test.dart: memory pressure cannot invalidate a claimed widget or manager ad
+AdService: Memory pressure detected. Releasing unclaimed ads.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_ownership_test.dart: unclaimed ads are still released under memory pressure
+AdService: Memory pressure detected. Releasing unclaimed ads.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_ownership_test.dart: duplicate releases are idempotent even when SDK disposal fails asynchronously
+[WARNING] AdService: ad cleanup failed.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests InterstitialAdManager respects ad-free and frequency rules
+InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
+AdState: isAdFreeUser set to true
+InterstitialAdManager: Suppressed (lesson_complete) - User is ad-free or ads disabled
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_managers_test.dart: Ad Managers Unit Tests RewardedAdManager instantly grants rewards to Ad-Free users without loading ads
+AdState: isAdFreeUser set to true
+RewardedAdManager: Ad-free user instant reward granted (quiz_reward_test)
+AdState: isAdFreeUser set to false
+RewardedAdManager: Credited 50 stars to user
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: late rewarded preload is released after provider disposal
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: memory pressure preserves a displayed reward and duplicate callbacks grant once
+RewardedAdManager: Ad showed (test_hearts)
+RewardedAdManager: User earned reward: 1 hearts
+AdService: Memory pressure detected. Releasing unclaimed ads.
+RewardedAdManager: Ad dismissed (test_hearts)
+RewardedAdManager: Refilled 1 hearts / quiz attempts
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: native reward show failure grants nothing (early callbacks: false)
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: native reward show failure grants nothing (early callbacks: true)
+RewardedAdManager: Ad showed (test_hearts)
+RewardedAdManager: User earned reward: 1 hearts
+RewardedAdManager: Ad dismissed (test_hearts)
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: a failing reward callback completes false rather than leaving show pending
+RewardedAdManager: Ad showed (test_hearts)
+RewardedAdManager: User earned reward: 1 hearts
+RewardedAdManager: Ad dismissed (test_hearts)
+RewardedAdManager: Refilled 1 hearts / quiz attempts
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/rewarded_lifecycle_test.dart: an unearned dismissal never grants a reward
+RewardedAdManager: Ad showed (test_hearts)
+RewardedAdManager: Ad dismissed (test_hearts)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: consent before SDK readiness cannot enable ads
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_readiness_test.dart: SDK readiness without consent remains fail closed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: late preload after provider disposal is released safely
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: suppression rejects an old load and permits a later preload
+InterstitialAdManager: Ad showed (lesson_exit)
+InterstitialAdManager: Ad dismissed (lesson_exit)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: a native show exception returns false instead of escaping navigation
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: concurrent requests and changed consent cannot show an ad
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: memory pressure drops a preload but not a displayed full-screen ad
+InterstitialAdManager: Ad showed (lesson_exit)
+AdService: Memory pressure detected. Releasing unclaimed ads.
+InterstitialAdManager: Ad dismissed (lesson_exit)
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/interstitial_lifecycle_test.dart: dismissal after provider disposal completes without reading a dead ref
+InterstitialAdManager: Ad showed (lesson_exit)
+InterstitialAdManager: Ad dismissed (lesson_exit)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests unknown consent fails closed for free users
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests ad-free user suppresses all ads and interstitial
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests interstitial frequency cap suppresses ad within cooldown window
+✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests rewarded cooldown enforces duration and remaining seconds
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/ads/ad_state_test.dart: AdState and AdStateNotifier Tests AdStateNotifier records impressions and errors accurately
+AdState: isAdFreeUser set to true
+AdState: isAdFreeUser set to false
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/analytics/analytics_service_test.dart: LearningAnalyticsService writes sanitized learning event payloads
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/analytics/analytics_service_test.dart: LearningAnalyticsService queues failed writes and flushes them later
+LearningAnalytics: queued event_1 (Exception: offline)
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/models/data_validation_result_test.dart: DataValidationResult ValidationSuccess carries its value
+✅ /home/runner/work/olitunapp/olitunapp/test/core/models/data_validation_result_test.dart: DataValidationResult ValidationFailure carries id, reason and raw payload
+✅ /home/runner/work/olitunapp/olitunapp/test/core/models/data_validation_result_test.dart: DataValidationResult ValidationFailure rawData is optional
+✅ /home/runner/work/olitunapp/olitunapp/test/core/models/data_validation_result_test.dart: DataValidationResult the two subtypes are distinguishable via pattern matching
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests match: identical SHAs
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests stale: mismatched SHAs
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests unknown client: unknown
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests unknown client: empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests unknown client: null
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests dirty client: tolerated
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests null server: malformed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: compareSha logic tests empty server: malformed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: buildVersionStatusProvider platform stream tests io_impl: non-web platforms short-circuit to match immediately
+✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: buildVersionStatusProvider platform stream tests html_impl: successful fetch loops in MockClient environment
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: buildVersionStatusProvider platform stream tests html_impl: HTTP 500 error is caught and parsed as unknown fetch-failed
+Version check failed with status: 500, Content-Type: text/html
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/version/build_version_checker_test.dart: buildVersionStatusProvider platform stream tests html_impl: Malformed JSON parses unconditionally but handles FormatException safely
+Version check JSON parse failed: FormatException: Unexpected character (at character 2)
+{invalid-json}
+ ^
+. Content-Type: text/html, Body: {invalid-json}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: PlaybackRequest chain links clips head-first and returns null when empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: PlaybackRequest withNext returns a copy with the new link
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: PlaybackRequest equality covers the five identity fields and ignores next
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: PlaybackState isIdle and isFor
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: PlaybackState copyWith keeps unspecified fields and can clear error with null
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play stops the previous clip first, then starts the new one
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play does not re-apply the default 1.0 speed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play playSingle builds the request with full metadata
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play missing track (empty id) yields "Audio unavailable"
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play failed start yields "Could not play audio"
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/media_session_release_test.dart: releases the media session (idle) after a clip completes
+AudioService: media session released after completion
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: play a newer request supersedes an older one
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: chain advancement completed clip advances to the next clip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: chain advancement waits for the inter-clip pause before the next clip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: chain advancement an unplayable follow-up clip is skipped gracefully
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: chain advancement non-completed processing states are ignored
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: chain advancement chain end settles into a stopped-but-loaded state
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: pause, resume and toggle pause stops playback and resume restarts it
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: pause, resume and toggle togglePlayPause flips between pause and resume
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: pause, resume and toggle toggle and resume do nothing when idle
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Failure hierarchy Failure is sealed — all subtypes are known
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: stop and replay stop clears the loaded clip but keeps the speed setting
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Failure hierarchy ServerFailure preserves code
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: stop and replay replay plays the root request again
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Failure hierarchy NetworkFailure has default message
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Failure hierarchy ValidationFailure carries field errors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: stop and replay replay does nothing when idle
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Failure hierarchy pattern matching covers all subtypes
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Exception hierarchy ServerException carries message and code
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: seek clamps to the loaded duration and to zero
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Exception hierarchy CacheException carries message
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: seek passes through when the duration is unknown
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Exception hierarchy AuthException carries message
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failures_test.dart: Exception hierarchy NetworkException carries message
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: setSpeed clamps to the [0.5, 2.0] range
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: setSpeed speed is re-applied to every new clip
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: semantics labels reflect idle, playing and paused states
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: state plumbing position stream updates the state position
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: state plumbing duration stream updates the state duration
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: state plumbing manual listeners are notified and can be removed
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: state plumbing stateStream broadcasts every state change
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/playback_controller_test.dart: dispose stops listening to the audio service streams
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/media_session_release_test.dart: does NOT release the session when a new clip starts during the grace window (bilingual sequencing)
+✅ /home/runner/work/olitunapp/olitunapp/test/core/audio/media_session_release_test.dart: a pause (no completion) never triggers a release
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/appwrite_error_classifier_test.dart: AppwriteErrorClassifier.infoOf extracts code, type and message from an AppwriteException
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/appwrite_error_classifier_test.dart: AppwriteErrorClassifier.infoOf defaults null classification fields to zero/empty
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/appwrite_error_classifier_test.dart: AppwriteErrorClassifier.infoOf returns null for non-Appwrite errors
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage empty message maps to the generic retry copy
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage socket exceptions map to the offline copy
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage 401/Unauthorized maps to the re-auth copy
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage 404 maps to the not-found copy
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage TracingRequired maps to the tracing copy
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage any other message is passed through verbatim
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage overlong messages are truncated to 140 chars with an ellipsis
+✅ /home/runner/work/olitunapp/olitunapp/test/core/error/failure_extensions_test.dart: FailureToUiMessage.toUiMessage messages at the 140-char boundary are not truncated
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants adminHostRedirectFor redirects admin host root to /admin
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants fragmentRedirectFor extracts hash location on web startup
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants fragmentRedirectFor rejects non-web or non-root paths
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants adminAccessRedirectFor blocks non-admin users from admin routes
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants adminAccessRedirectFor allows authenticated admin users
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants authAndOnboardingRedirectFor unauthenticated users cannot access protected routes
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants authAndOnboardingRedirectFor unauthenticated users can access public auth and legal routes
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants authAndOnboardingRedirectFor authenticated users on welcome or login are routed away from login
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants authAndOnboardingRedirectFor authenticated users needing onboarding are gated to /onboarding
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: Router Guards & Redirect Invariants authAndOnboardingRedirectFor authenticated users with onboarding completed access home directly
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/app_router_test.dart: StatefulShellRoute & Deep Links shellTabIndexForPath maps all main shell branches
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/url_strategy_web_test.dart: configureUrlStrategy (web implementation) configures the path URL strategy without throwing on the VM
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/url_strategy_web_test.dart: configureUrlStrategy (web implementation) is idempotent so app startup can safely call it repeatedly
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/url_strategy_web_test.dart: configureUrlStrategy (web implementation) stays contract-compatible with the mobile stub implementation
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_names_test.dart: RouteNames every shell and auth route name is stable
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_names_test.dart: RouteNames legal, admin and onboarding route names are stable
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_names_test.dart: RouteNames route names are unique so GoRouter can address each screen
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_names_test.dart: configureUrlStrategy resolves the platform strategy without throwing on mobile/VM
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminHostRedirectFor never redirects for a non-admin host
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminHostRedirectFor keeps admin paths on the admin host
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminHostRedirectFor bounces non-admin paths to the admin shell
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminHostRedirectFor matches the admin host case-insensitively
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor ignores fragments on non-web platforms
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor ignores fragments on deep paths (only root uses them)
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor redirects a rooted fragment at the root path
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor redirects a rooted fragment on /splash and /welcome startup paths
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor prefers the captured initial hash over the live fragment
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor falls back to the live fragment when no initial hash exists
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor rejects empty and non-path fragments
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: fragmentRedirectFor rejects protocol-relative and backslash open-redirect tricks
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminAccessRedirectFor allows public routes for everyone
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminAccessRedirectFor always allows the admin login route
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminAccessRedirectFor bounces non-admins from admin routes to the login page
+✅ /home/runner/work/olitunapp/olitunapp/test/app/router/route_guards_test.dart: adminAccessRedirectFor lets admins through to admin routes
+✅ /home/runner/work/olitunapp/olitunapp/test/goldens/learning_surfaces_golden_test.dart: quiz question card golden
+✅ /home/runner/work/olitunapp/olitunapp/test/goldens/learning_surfaces_golden_test.dart: answered quiz option golden
+✅ /home/runner/work/olitunapp/olitunapp/test/goldens/learning_surfaces_golden_test.dart: stroke order view smoke renders stable layout
+✅ /home/runner/work/olitunapp/olitunapp/test/smoke/legal_routes_smoke_test.dart: privacy and terms screens render in widget smoke tests
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/smoke/guest_flow_smoke_test.dart: Unauthenticated startup gates to WelcomeScreen when login is mandatory
+Splash: starting determineInitialLocation
+Splash: checking auth status...
+Splash: isLoggedIn = false
+Splash: User unauthenticated, routing to /welcome
+Splash: Navigating to /welcome
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/smoke/production_readiness_smoke_test.dart: Production Readiness Invariant Smoke Suite AppwriteConfig exposes non-empty database and admin configuration
+✅ /home/runner/work/olitunapp/olitunapp/test/smoke/production_readiness_smoke_test.dart: Production Readiness Invariant Smoke Suite AppwriteDbService creates valid permission arrays for domain objects
+✅ /home/runner/work/olitunapp/olitunapp/test/smoke/production_readiness_smoke_test.dart: Production Readiness Invariant Smoke Suite PendingMutation supports retry and deadLetter state boundaries
+✅ /home/runner/work/olitunapp/olitunapp/test/performance/quiz_engine_benchmark_test.dart: QuizEngine performance compiles a realistic catalog within an interactive budget
+::endgroup::
+
+::error::2058 tests passed, 14 failed, 2 skipped.
+
+## Coverage gate
+exit=0
+Critical learning coverage: 79.6% (951/1194 lines), minimum 70.0% [PASS]
+Path "/data/" coverage: 53.4% (1401/2623 lines), minimum 40.0% [PASS]
+Path "/domain/" coverage: 83.0% (926/1115 lines), minimum 70.0% [PASS]
+Path "/core/auth/" coverage: 75.7% (415/548 lines), minimum 50.0% [PASS]
+Untested files: 1 lib/ file(s) were never imported by any test and are invisible to all coverage thresholds [WARN]
+  untested: lib/core/reviews/review_service.dart
+Untested-files gate becomes blocking on 2026-10-01.

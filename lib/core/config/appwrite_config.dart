@@ -56,9 +56,7 @@ class AppwriteConfig {
       projectId: projectId,
       translateUrl: translateUrl,
       isReleaseMode: kReleaseMode,
-      requireTranslateUrl: const bool.fromEnvironment(
-        'REQUIRE_TRANSLATE_URL',
-      ),
+      requireTranslateUrl: const bool.fromEnvironment('REQUIRE_TRANSLATE_URL'),
     );
   }
 

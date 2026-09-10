@@ -2,66 +2,94 @@ import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const repoRoot = resolve('.');
+const governedNodeAppwriteVersion = '25.1.0';
+
+function listedDependabotPath(source, path) {
+  const escaped = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`^\\s*-\\s*["']?${escaped}["']?\\s*$`, 'm').test(source);
+}
 
 function auditNodeDependencies() {
-  console.log('🔍 Auditing Node.js & node-appwrite dependency alignment across repository...');
+  console.log('🔍 Auditing Node.js dependency governance...');
 
   const rootPkgPath = resolve(repoRoot, 'package.json');
   const transPkgPath = resolve(repoRoot, 'functions/translator/package.json');
-  const transLockPath = resolve(repoRoot, 'functions/translator/package-lock.json');
-  const ciWorkflowPath = resolve(repoRoot, '.github/workflows/flutter-ci.yml');
+  const transLockPath = resolve(
+    repoRoot,
+    'functions/translator/package-lock.json',
+  );
+  const ciWorkflowPath = resolve(
+    repoRoot,
+    '.github/workflows/flutter-ci.yml',
+  );
+  const dependabotPath = resolve(repoRoot, '.github/dependabot.yml');
 
-  if (!existsSync(rootPkgPath) || !existsSync(transPkgPath) || !existsSync(transLockPath)) {
-    throw new Error('Required package.json or package-lock.json files are missing.');
+  for (const path of [
+    rootPkgPath,
+    transPkgPath,
+    transLockPath,
+    ciWorkflowPath,
+    dependabotPath,
+  ]) {
+    if (!existsSync(path)) throw new Error(`Required file is missing: ${path}`);
   }
 
   const rootPkg = JSON.parse(readFileSync(rootPkgPath, 'utf8'));
   const transPkg = JSON.parse(readFileSync(transPkgPath, 'utf8'));
   const transLock = JSON.parse(readFileSync(transLockPath, 'utf8'));
   const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
+  const dependabot = readFileSync(dependabotPath, 'utf8');
 
   const rootAppwrite = rootPkg.dependencies?.['node-appwrite'];
   const transAppwrite = transPkg.dependencies?.['node-appwrite'];
-
-  if (!transAppwrite) {
-    throw new Error('functions/translator/package.json must declare node-appwrite dependency.');
-  }
-
   const lockAppwrite =
     transLock.packages?.['node_modules/node-appwrite']?.version ||
     transLock.dependencies?.['node-appwrite']?.version;
-  if (!lockAppwrite) {
-    throw new Error('functions/translator/package-lock.json must contain resolved node-appwrite package.');
+
+  if (rootAppwrite !== governedNodeAppwriteVersion) {
+    throw new Error(
+      `Root node-appwrite must remain exactly ${governedNodeAppwriteVersion}; found ${rootAppwrite ?? 'missing'}.`,
+    );
+  }
+  if (transAppwrite !== governedNodeAppwriteVersion) {
+    throw new Error(
+      `Translator node-appwrite must remain exactly ${governedNodeAppwriteVersion}; found ${transAppwrite ?? 'missing'}.`,
+    );
+  }
+  if (lockAppwrite !== governedNodeAppwriteVersion) {
+    throw new Error(
+      `Translator lockfile must resolve node-appwrite ${governedNodeAppwriteVersion}; found ${lockAppwrite ?? 'missing'}.`,
+    );
   }
 
-  console.log(`📦 Translator package.json node-appwrite: ${transAppwrite}`);
-  console.log(`📦 Translator package-lock.json node-appwrite: ${lockAppwrite}`);
-
-  if (rootAppwrite) {
-    console.log(`📦 Root package.json node-appwrite: ${rootAppwrite}`);
-    const rootMajor = rootAppwrite.replace(/^[\^~]/, '').split('.')[0];
-    const transMajor = transAppwrite.replace(/^[\^~]/, '').split('.')[0];
-    if (rootMajor !== transMajor) {
-      throw new Error(
-        `SDK major version mismatch: root is ${rootAppwrite} (v${rootMajor}), but translator is ${transAppwrite} (v${transMajor}).`
-      );
-    }
+  if (listedDependabotPath(dependabot, '/functions/*')) {
+    throw new Error(
+      'Dependabot must list function directories explicitly so the governed translator package is excluded.',
+    );
+  }
+  if (listedDependabotPath(dependabot, '/functions/translator')) {
+    throw new Error(
+      'Dependabot must not update the governed translator package.',
+    );
   }
 
-  // Verify CI runs translator tests from functions/translator
   if (
     !ciWorkflow.includes('npm ci --prefix functions/translator') ||
     !ciWorkflow.includes('npm test --prefix functions/translator')
   ) {
-    throw new Error('.github/workflows/flutter-ci.yml must install and test translator using --prefix functions/translator.');
+    throw new Error(
+      'Flutter CI must install and test the translator package independently.',
+    );
   }
 
-  console.log('✅ Node dependency alignment audit passed: Root and Translator SDKs are fully aligned with zero drift.');
+  console.log(
+    `✅ node-appwrite ${governedNodeAppwriteVersion} is pinned and protected from automated upgrades.`,
+  );
 }
 
 try {
   auditNodeDependencies();
-} catch (err) {
-  console.error(`❌ Node dependency alignment audit failed: ${err.message}`);
+} catch (error) {
+  console.error(`❌ Node dependency governance failed: ${error.message}`);
   process.exit(1);
 }

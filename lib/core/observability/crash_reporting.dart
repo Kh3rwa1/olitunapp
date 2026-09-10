@@ -1,26 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/logging/redaction_helper.dart';
-import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
 import '../error/failures.dart';
 
-/// Thin wrapper around Sentry so the rest of the codebase doesn't depend on
-/// the SDK directly. If `SENTRY_DSN` is not provided at build time, the
-/// init/recording calls become no-ops (still safe to call).
-///
-/// Configure via:
-///   --dart-define=SENTRY_DSN=[your-dsn]
-///   --dart-define=SENTRY_ENV=production|staging|development
+/// Thin wrapper around Sentry so the rest of the codebase does not depend on
+/// its SDK. Telemetry is opt-in: without an explicit `SENTRY_DSN`, every
+/// recording call is a no-op.
 class CrashReporting {
   CrashReporting._();
 
-  static const String _defaultDsn =
-      'https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248';
-
-  static const String _dsn = String.fromEnvironment(
-    'SENTRY_DSN',
-    defaultValue: _defaultDsn,
-  );
+  static const String _dsn = String.fromEnvironment('SENTRY_DSN');
   static const String _environment = String.fromEnvironment(
     'SENTRY_ENV',
     defaultValue: 'development',
@@ -34,7 +25,7 @@ class CrashReporting {
 
   static Future<void> init() async {
     if (!isEnabled) {
-      AppLogger.debug('CrashReporting: disabled (no DSN or running in debug).');
+      AppLogger.debug('CrashReporting: disabled.');
       return;
     }
     await SentryFlutter.init((options) {
@@ -42,9 +33,7 @@ class CrashReporting {
       options.environment = _environment;
       options.tracesSampleRate = 0.1;
       options.attachStacktrace = true;
-      // PII gate: filenames, document IDs and error strings can carry
-      // emails, tokens or user content. Scrub everything before upload —
-      // this keeps the Play Data Safety story honest for a learning app.
+      options.sendDefaultPii = false;
       options.beforeSend = (event, hint) async => scrubEvent(event);
     });
   }
@@ -54,12 +43,8 @@ class CrashReporting {
     Sentry.captureException(error, stackTrace: stack);
   }
 
-  /// PII scrubber applied to every event before upload (see `beforeSend`
-  /// wiring in [init]). Pure function so it stays unit-testable without
-  /// initializing the SDK: messages, exception values and breadcrumb
-  /// payloads go through [RedactionHelper.sanitize], request headers and
-  /// cookies are dropped outright, and any user-identity fields are
-  /// stripped (the app never sets Sentry user identity).
+  /// Scrubs identity, credentials, query parameters, and recursively nested
+  /// breadcrumb data before an event leaves the device.
   @visibleForTesting
   static SentryEvent scrubEvent(SentryEvent event) {
     final message = event.message;
@@ -69,24 +54,23 @@ class CrashReporting {
 
     final exceptions = event.exceptions;
     if (exceptions != null) {
-      for (final e in exceptions) {
-        if (e.value != null) {
-          e.value = RedactionHelper.sanitize(e.value!);
+      for (final exception in exceptions) {
+        if (exception.value != null) {
+          exception.value = RedactionHelper.sanitize(exception.value!);
         }
       }
     }
 
     final breadcrumbs = event.breadcrumbs;
     if (breadcrumbs != null) {
-      for (final b in breadcrumbs) {
-        if (b.message != null) {
-          b.message = RedactionHelper.sanitize(b.message!);
+      for (final breadcrumb in breadcrumbs) {
+        if (breadcrumb.message != null) {
+          breadcrumb.message = RedactionHelper.sanitize(breadcrumb.message!);
         }
-        final data = b.data;
+        final data = breadcrumb.data;
         if (data != null) {
           for (final key in data.keys.toList()) {
-            final value = data[key];
-            if (value is String) data[key] = RedactionHelper.sanitize(value);
+            data[key] = _sanitizeTelemetryValue(data[key], key: key);
           }
         }
       }
@@ -96,6 +80,21 @@ class CrashReporting {
     if (request != null) {
       request.headers = {};
       request.cookies = null;
+      final rawUrl = request.url;
+      if (rawUrl != null) {
+        final uri = Uri.tryParse(rawUrl);
+        if (uri != null && uri.hasScheme && uri.host.isNotEmpty) {
+          final sanitizedUri = Uri(
+            scheme: uri.scheme,
+            host: uri.host,
+            port: uri.hasPort ? uri.port : null,
+            path: uri.path,
+          );
+          request.url = RedactionHelper.sanitize(sanitizedUri.toString());
+        } else {
+          request.url = RedactionHelper.sanitize(rawUrl);
+        }
+      }
     }
 
     final user = event.user;
@@ -107,27 +106,53 @@ class CrashReporting {
     return event;
   }
 
+  static Object? _sanitizeTelemetryValue(Object? value, {String? key}) {
+    if (key != null && _isSensitiveTelemetryKey(key)) return '[REDACTED]';
+    if (value is String) return RedactionHelper.sanitize(value);
+    if (value is Map) {
+      return value.map<String, Object?>((rawKey, nestedValue) {
+        final nestedKey = rawKey.toString();
+        return MapEntry(
+          nestedKey,
+          _sanitizeTelemetryValue(nestedValue, key: nestedKey),
+        );
+      });
+    }
+    if (value is Iterable) {
+      return value.map(_sanitizeTelemetryValue).toList(growable: false);
+    }
+    return value;
+  }
+
+  static bool _isSensitiveTelemetryKey(String key) {
+    final normalized = key.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+    return normalized.contains('password') ||
+        normalized.contains('secret') ||
+        normalized.contains('token') ||
+        normalized.contains('authorization') ||
+        normalized.contains('cookie') ||
+        normalized.contains('email') ||
+        normalized.contains('phone') ||
+        normalized.contains('ipaddress') ||
+        normalized == 'userid';
+  }
+
   static void recordFlutterError(FlutterErrorDetails details) {
     if (!isEnabled) return;
     Sentry.captureException(details.exception, stackTrace: details.stack);
   }
 
-  /// Record a domain-layer [Failure] returned from a repository. Network and
-  /// validation failures are intentionally skipped — they are user-facing
-  /// expected outcomes, not bugs. Server/auth/cache failures are reported.
   static void recordFailure(Failure failure, [StackTrace? stack]) {
     if (!isEnabled) return;
     if (failure is NetworkFailure || failure is ValidationFailure) return;
+    final safeMessage = RedactionHelper.sanitize(failure.message);
     Sentry.captureMessage(
-      '${failure.runtimeType}: ${failure.message}'
+      '${failure.runtimeType}: $safeMessage'
       '${failure.code != null ? ' (code ${failure.code})' : ''}',
       level: SentryLevel.error,
     );
   }
 
-  // ─── Breadcrumbs ────────────────────────────────────────
-
-  /// Add a navigation breadcrumb (e.g. screen transitions).
   static void addNavigationBreadcrumb(String from, String to) {
     if (!isEnabled) return;
     Sentry.addBreadcrumb(
@@ -139,10 +164,6 @@ class CrashReporting {
     );
   }
 
-  /// Record an Appwrite API call result as a breadcrumb.
-  ///
-  /// On success, records collection/operation for tracing context.
-  /// On failure, adds the error message for faster root-cause analysis.
   static void addAppwriteBreadcrumb({
     required String operation,
     required String collection,
@@ -151,11 +172,12 @@ class CrashReporting {
     String? error,
     int? statusCode,
   }) {
+    final safeError = error == null ? null : RedactionHelper.sanitize(error);
     if (!isEnabled) {
       AppLogger.debug(
         '[Breadcrumb] Appwrite $operation on $collection'
         '${documentId != null ? '/$documentId' : ''}'
-        ' → ${success ? 'OK' : 'FAIL: $error'}',
+        ' → ${success ? 'OK' : 'FAIL: $safeError'}',
       );
       return;
     }
@@ -170,15 +192,13 @@ class CrashReporting {
           'collection': collection,
           'documentId': ?documentId,
           'success': success,
-          'error': ?error,
+          'error': ?safeError,
           'statusCode': ?statusCode,
         },
       ),
     );
   }
 
-  /// Record an admin write action (create/update/delete) as a breadcrumb
-  /// for auditing and debugging admin mutations.
   static void addAdminWriteBreadcrumb({
     required String action,
     required String entity,
@@ -203,18 +223,18 @@ class CrashReporting {
     );
   }
 
-  /// Record privileged maintenance requests such as content backup and reset.
   static void addAdminMaintenanceBreadcrumb({
     required String action,
     bool success = true,
     String? backupFileId,
     String? error,
   }) {
+    final safeError = error == null ? null : RedactionHelper.sanitize(error);
     if (!isEnabled) {
       AppLogger.debug(
         '[Breadcrumb] Admin maintenance $action'
         '${backupFileId != null ? ' backup=$backupFileId' : ''}'
-        ' ${success ? 'OK' : 'FAIL: $error'}',
+        ' ${success ? 'OK' : 'FAIL: $safeError'}',
       );
       return;
     }
@@ -228,13 +248,12 @@ class CrashReporting {
           'action': action,
           'success': success,
           'backupFileId': ?backupFileId,
-          'error': ?error,
+          'error': ?safeError,
         },
       ),
     );
   }
 
-  /// Record an upload attempt breadcrumb.
   static void addUploadBreadcrumb({
     required String filename,
     required String bucket,
@@ -242,9 +261,12 @@ class CrashReporting {
     String? error,
     int? sizeBytes,
   }) {
+    final safeFilename = RedactionHelper.sanitize(filename);
+    final safeError = error == null ? null : RedactionHelper.sanitize(error);
     if (!isEnabled) {
       AppLogger.debug(
-        '[Breadcrumb] Upload $filename → $bucket ${success ? 'OK' : 'FAIL: $error'}',
+        '[Breadcrumb] Upload $safeFilename → $bucket '
+        '${success ? 'OK' : 'FAIL: $safeError'}',
       );
       return;
     }
@@ -252,20 +274,19 @@ class CrashReporting {
       Breadcrumb(
         type: 'http',
         category: 'upload',
-        message: 'Upload $filename → $bucket',
+        message: 'Upload $safeFilename → $bucket',
         level: success ? SentryLevel.info : SentryLevel.error,
         data: {
-          'filename': filename,
+          'filename': safeFilename,
           'bucket': bucket,
           'success': success,
           'sizeBytes': ?sizeBytes,
-          'error': ?error,
+          'error': ?safeError,
         },
       ),
     );
   }
 
-  /// Record a cache operation breadcrumb.
   static void addCacheBreadcrumb({
     required String operation,
     required String key,
@@ -276,14 +297,13 @@ class CrashReporting {
       Breadcrumb(
         type: 'query',
         category: 'cache.$operation',
-        message: '$operation $key → ${hit ? 'HIT' : 'MISS'}',
+        message: '$operation cache entry → ${hit ? 'HIT' : 'MISS'}',
         level: SentryLevel.debug,
         data: {'key': key, 'hit': hit},
       ),
     );
   }
 
-  /// Record a UI user interaction breadcrumb.
   static void addUIBreadcrumb({
     required String element,
     required String action,
@@ -300,20 +320,20 @@ class CrashReporting {
     );
   }
 
-  /// Record an audio event breadcrumb.
   static void addAudioBreadcrumb({
     required String action,
     String? trackId,
     String? error,
   }) {
     if (!isEnabled) return;
+    final safeError = error == null ? null : RedactionHelper.sanitize(error);
     Sentry.addBreadcrumb(
       Breadcrumb(
         type: 'audio',
         category: 'audio',
-        message: error != null ? '$action: $error' : action,
-        level: error != null ? SentryLevel.error : SentryLevel.info,
-        data: {'action': action, 'trackId': ?trackId, 'error': ?error},
+        message: safeError != null ? '$action: $safeError' : action,
+        level: safeError != null ? SentryLevel.error : SentryLevel.info,
+        data: {'action': action, 'trackId': ?trackId, 'error': ?safeError},
       ),
     );
   }

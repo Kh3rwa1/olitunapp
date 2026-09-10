@@ -6,8 +6,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 
-import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
+import '../logging/redaction_helper.dart';
+import '../storage/cache_service.dart';
 
 enum MutationStatus { pending, syncing, completed, failed, deadLetter }
 
@@ -60,7 +61,7 @@ class PendingMutation {
         attemptCount: json['attemptCount'] as int? ?? 0,
         nextRetryAt: DateTime.parse(json['nextRetryAt'] as String),
         status: MutationStatus.values.firstWhere(
-          (e) => e.name == json['status'],
+          (value) => value.name == json['status'],
           orElse: () => MutationStatus.pending,
         ),
         lastError: json['lastError'] as String?,
@@ -71,6 +72,7 @@ class PendingMutation {
 class MutationOutboxService {
   static const String _outboxBoxName = 'durable_mutation_outbox';
   static const int maxRetryAttempts = 5;
+  static const int _maxStoredErrorLength = 512;
   static final Random _random = Random();
 
   static Box<String>? _box;
@@ -92,7 +94,6 @@ class MutationOutboxService {
       _box = await opening;
       return _box!;
     } finally {
-      // Cache only an in-flight open, never a rejected Future or closed box.
       if (identical(_openFuture, opening)) _openFuture = null;
     }
   }
@@ -100,22 +101,25 @@ class MutationOutboxService {
   static String _storageKey(String userId, String operationId) =>
       '${userId}_$operationId';
 
-  /// Add or update operation in dedicated durable storage.
-  /// Automatically migrates any legacy outbox records stored in CacheService.
+  static String _safeStoredError(String error) {
+    final redacted = RedactionHelper.sanitize(error).trim();
+    if (redacted.length <= _maxStoredErrorLength) return redacted;
+    return '${redacted.substring(0, _maxStoredErrorLength - 1)}…';
+  }
+
   Future<void> enqueueMutation(PendingMutation mutation) async {
     await _migrateLegacyOutboxIfNeeded(mutation.userId);
     final box = await _getBox();
     final key = _storageKey(mutation.userId, mutation.operationId);
-
-    final jsonStr = jsonEncode(mutation.toJson());
-    await box.put(key, jsonStr);
+    await box.put(key, jsonEncode(mutation.toJson()));
 
     AppLogger.debug(
-      'Outbox: Enqueued mutation ${mutation.operationId} (type: ${mutation.operationType}) for user ${mutation.userId}',
+      'Outbox: Enqueued ${mutation.operationType}',
+      name: 'MutationOutbox',
+      fields: {'operationId': mutation.operationId},
     );
   }
 
-  /// Retrieve all non-completed pending/failed mutations for a given user.
   Future<List<PendingMutation>> getPendingMutations(String userId) async {
     if (userId.isEmpty) return [];
     await _migrateLegacyOutboxIfNeeded(userId);
@@ -125,19 +129,22 @@ class MutationOutboxService {
     final result = <PendingMutation>[];
 
     for (final key in box.keys) {
-      if (key.toString().startsWith(prefix)) {
-        final raw = box.get(key);
-        if (raw == null) continue;
-        try {
-          final json = jsonDecode(raw) as Map<String, dynamic>;
-          final mutation = PendingMutation.fromJson(json);
-          if (mutation.userId == userId &&
-              mutation.status != MutationStatus.completed) {
-            result.add(mutation);
-          }
-        } catch (e) {
-          AppLogger.debug('Outbox: Corrupted record at key $key: $e');
+      if (!key.toString().startsWith(prefix)) continue;
+      final raw = box.get(key);
+      if (raw == null) continue;
+      try {
+        final json = jsonDecode(raw) as Map<String, dynamic>;
+        final mutation = PendingMutation.fromJson(json);
+        if (mutation.userId == userId &&
+            mutation.status != MutationStatus.completed) {
+          result.add(mutation);
         }
+      } catch (error) {
+        AppLogger.warning(
+          'Ignoring a corrupt outbox record.',
+          name: 'MutationOutbox',
+          fields: {'error': _safeStoredError(error.toString())},
+        );
       }
     }
 
@@ -145,7 +152,6 @@ class MutationOutboxService {
     return result;
   }
 
-  /// Record retry attempt with bounded exponential backoff and jitter.
   Future<void> recordAttemptFailed(
     String userId,
     String operationId,
@@ -161,39 +167,43 @@ class MutationOutboxService {
       final json = jsonDecode(raw) as Map<String, dynamic>;
       final mutation = PendingMutation.fromJson(json);
       mutation.attemptCount += 1;
-      mutation.lastError = error;
+      mutation.lastError = _safeStoredError(error);
 
       if (isPermanent || mutation.attemptCount >= maxRetryAttempts) {
         mutation.status = MutationStatus.deadLetter;
-        AppLogger.debug(
-          'Outbox: Operation $operationId moved to dead-letter state after ${mutation.attemptCount} attempts',
+        AppLogger.warning(
+          'Mutation moved to dead-letter state.',
+          name: 'MutationOutbox',
+          fields: {
+            'operationId': operationId,
+            'attemptCount': mutation.attemptCount,
+          },
         );
       } else {
         mutation.status = MutationStatus.failed;
-        // Bounded exponential backoff with jitter
         final baseSeconds = 1 << mutation.attemptCount;
         final jitter = 0.8 + (_random.nextDouble() * 0.4);
-        final backoffSeconds = (baseSeconds * jitter).round();
         mutation.nextRetryAt = DateTime.now().add(
-          Duration(seconds: backoffSeconds),
+          Duration(seconds: (baseSeconds * jitter).round()),
         );
       }
 
       await box.put(key, jsonEncode(mutation.toJson()));
-    } catch (e) {
-      AppLogger.debug('Outbox: Failed to record failure for $operationId: $e');
+    } catch (storageError) {
+      AppLogger.warning(
+        'Failed to persist an outbox retry.',
+        name: 'MutationOutbox',
+        fields: {'error': _safeStoredError(storageError.toString())},
+      );
       rethrow;
     }
   }
 
-  /// Remove completed mutation upon server confirmation.
   Future<void> markCompleted(String userId, String operationId) async {
     final box = await _getBox();
-    final key = _storageKey(userId, operationId);
-    await box.delete(key);
+    await box.delete(_storageKey(userId, operationId));
   }
 
-  /// Purge outbox queue on user logout.
   Future<void> clearQueueForUser(String userId) async {
     if (userId.isEmpty) return;
     final box = await _getBox();
@@ -205,16 +215,14 @@ class MutationOutboxService {
         final raw = box.get(key);
         if (raw == null) continue;
         final data = jsonDecode(raw) as Map<String, dynamic>;
-        // User IDs may contain underscores: a prefix is not ownership proof.
         if (data['userId'] == userId) keysToDelete.add(key);
       } catch (_) {
-        // Do not delete a record whose owner cannot be established.
+        // Never delete a record whose owner cannot be established.
       }
     }
     await box.deleteAll(keysToDelete);
   }
 
-  /// Migrate legacy mutations from old CacheService box into dedicated Hive outbox box.
   Future<void> _migrateLegacyOutboxIfNeeded(String userId) async {
     if (userId.isEmpty) return;
     final legacyKey = 'mutation_outbox:$userId';
@@ -233,19 +241,25 @@ class MutationOutboxService {
 
       if (legacyData != null && legacyData.isNotEmpty) {
         final box = await _getBox();
-        for (final m in legacyData) {
-          final k = _storageKey(userId, m.operationId);
-          if (!box.containsKey(k)) {
-            await box.put(k, jsonEncode(m.toJson()));
+        for (final mutation in legacyData) {
+          final key = _storageKey(userId, mutation.operationId);
+          if (!box.containsKey(key)) {
+            await box.put(key, jsonEncode(mutation.toJson()));
           }
         }
         await CacheService.delete(legacyKey);
         AppLogger.debug(
-          'Outbox: Successfully migrated ${legacyData.length} legacy operations for user $userId',
+          'Migrated legacy outbox operations.',
+          name: 'MutationOutbox',
+          fields: {'count': legacyData.length},
         );
       }
-    } catch (e) {
-      AppLogger.debug('Outbox: Legacy migration note: $e');
+    } catch (error) {
+      AppLogger.warning(
+        'Legacy outbox migration could not complete.',
+        name: 'MutationOutbox',
+        fields: {'error': _safeStoredError(error.toString())},
+      );
     }
   }
 }

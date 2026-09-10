@@ -1,39 +1,26 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/core/observability/crash_reporting.dart';
 import 'package:itun/core/error/failures.dart';
+import 'package:itun/core/observability/crash_reporting.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() {
   group('CrashReporting', () {
-    test('isEnabled is false in test environment', () {
+    test('telemetry is opt-in in the test environment', () {
       expect(CrashReporting.isEnabled, isFalse);
     });
 
-    test('addAppwriteBreadcrumb does not throw when disabled', () {
-      expect(
-        () => CrashReporting.addAppwriteBreadcrumb(
-          operation: 'list',
-          collection: 'categories',
-        ),
-        returnsNormally,
-      );
-    });
-
-    test('addAppwriteBreadcrumb with failure does not throw', () {
+    test('recording APIs remain safe when disabled', () {
       expect(
         () => CrashReporting.addAppwriteBreadcrumb(
           operation: 'create',
           collection: 'lessons',
           documentId: 'abc123',
           success: false,
-          error: 'Timeout',
+          error: 'Timeout for kid@example.com',
           statusCode: 408,
         ),
         returnsNormally,
       );
-    });
-
-    test('addAdminWriteBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addAdminWriteBreadcrumb(
           action: 'create',
@@ -43,9 +30,6 @@ void main() {
         ),
         returnsNormally,
       );
-    });
-
-    test('addAdminMaintenanceBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addAdminMaintenanceBreadcrumb(
           action: 'wipe_content',
@@ -53,9 +37,6 @@ void main() {
         ),
         returnsNormally,
       );
-    });
-
-    test('addUploadBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addUploadBreadcrumb(
           filename: 'letter_a.mp3',
@@ -64,28 +45,10 @@ void main() {
         ),
         returnsNormally,
       );
-    });
-
-    test('addUploadBreadcrumb with failure does not throw', () {
-      expect(
-        () => CrashReporting.addUploadBreadcrumb(
-          filename: 'huge.mp4',
-          bucket: 'videos',
-          success: false,
-          error: 'File too large',
-        ),
-        returnsNormally,
-      );
-    });
-
-    test('addNavigationBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addNavigationBreadcrumb('/home', '/admin'),
         returnsNormally,
       );
-    });
-
-    test('addCacheBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addCacheBreadcrumb(
           operation: 'get',
@@ -93,16 +56,10 @@ void main() {
         ),
         returnsNormally,
       );
-    });
-
-    test('recordError does not throw when disabled', () {
       expect(
         () => CrashReporting.recordError(Exception('test'), StackTrace.current),
         returnsNormally,
       );
-    });
-
-    test('recordFailure does not throw when disabled', () {
       expect(
         () => CrashReporting.recordFailure(
           const ServerFailure(message: 'test', code: 500),
@@ -136,28 +93,39 @@ void main() {
         );
       });
 
-      test('sanitizes breadcrumb payloads but keeps structure', () {
+      test('recursively sanitizes breadcrumb payloads', () {
         final event = SentryEvent(
           breadcrumbs: [
             Breadcrumb(
               message: 'Upload failed for kid@mail.com',
-              data: {'filename': 'photo.jpg', 'userId': 'user-1'},
+              data: {
+                'filename': 'photo.jpg',
+                'userId': 'user-1',
+                'nested': {
+                  'authorization': 'Bearer nested-secret',
+                  'note': 'contact parent@mail.com',
+                },
+              },
             ),
           ],
         );
 
         final scrubbed = CrashReporting.scrubEvent(event);
         final crumb = scrubbed.breadcrumbs!.first;
+        final nested = crumb.data!['nested'] as Map<String, Object?>;
 
         expect(crumb.message, contains('k***@mail.com'));
         expect(crumb.data!['filename'], 'photo.jpg');
-        expect(crumb.message, isNot(contains('kid@mail.com')));
+        expect(crumb.data!['userId'], '[REDACTED]');
+        expect(nested['authorization'], '[REDACTED]');
+        expect(nested['note'], contains('p***@mail.com'));
       });
 
-      test('drops request headers/cookies and user identity fields', () {
+      test('drops request credentials, query data, and user identity', () {
         final event = SentryEvent(
           request: SentryRequest(
-            url: 'https://sgp.cloud.appwrite.io/v1/databases/x',
+            url:
+                'https://sgp.cloud.appwrite.io/v1/databases/x?secret=abc#token',
             method: 'GET',
             headers: {'Authorization': 'Bearer secret'},
             cookies: 'a_session=abc',
@@ -169,7 +137,8 @@ void main() {
 
         expect(scrubbed.request!.headers, isEmpty);
         expect(scrubbed.request!.cookies, isNull);
-        expect(scrubbed.request!.url, contains('appwrite.io'));
+        expect(scrubbed.request!.url, endsWith('/v1/databases/x'));
+        expect(scrubbed.request!.url, isNot(contains('secret')));
         expect(scrubbed.user!.id, isNull);
         expect(scrubbed.user!.email, isNull);
         expect(scrubbed.user!.ipAddress, isNull);

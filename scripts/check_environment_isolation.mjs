@@ -30,8 +30,25 @@ const appwriteConfig = readFileSync(
   'lib/core/config/appwrite_config.dart',
   'utf8',
 );
-if (!appwriteConfig.includes('https://example.invalid/v1')) {
-  throw new Error('Development Appwrite defaults must remain non-routable.');
+const defaultEndpointMatch = appwriteConfig.match(
+  /defaultValue:\s*'(?<url>https?:\/\/[^']+)'/,
+);
+if (!defaultEndpointMatch?.groups?.url) {
+  throw new Error('AppwriteConfig must declare a development endpoint.');
+}
+
+const developmentEndpoint = new URL(defaultEndpointMatch.groups.url);
+if (
+  developmentEndpoint.protocol !== 'https:' ||
+  developmentEndpoint.hostname !== 'example.invalid' ||
+  developmentEndpoint.port !== '' ||
+  developmentEndpoint.pathname !== '/v1' ||
+  developmentEndpoint.search !== '' ||
+  developmentEndpoint.hash !== ''
+) {
+  throw new Error(
+    'The development Appwrite endpoint must be exactly https://example.invalid/v1.',
+  );
 }
 
 for (const path of ['scripts/build_web.sh', 'scripts/vercel_build.sh']) {
@@ -49,4 +66,6 @@ if (!releaseWorkflow.includes('--dart-define=APP_ENV=production')) {
   throw new Error('Production APK builds must set APP_ENV=production.');
 }
 
-console.log('✅ Runtime and release configuration are isolated from production literals.');
+console.log(
+  '✅ Runtime and release configuration are isolated from production literals.',
+);

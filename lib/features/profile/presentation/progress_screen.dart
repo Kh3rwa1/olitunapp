@@ -18,7 +18,6 @@ import 'widgets/stats_widgets.dart';
 import 'widgets/quiz_performance_card.dart';
 import 'widgets/edit_name_sheet.dart';
 import 'widgets/streak_calendar.dart';
-import 'widgets/badges_grid_widget.dart';
 import 'widgets/mastery_chart.dart';
 import 'widgets/next_milestone_card.dart';
 import 'widgets/progress_screen_sections.dart';
@@ -181,11 +180,6 @@ class ProgressScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 20),
                         MasteryTimelineChart(stats: stats),
-                        const SizedBox(height: 32),
-
-                        _buildSectionHeader('ACHIEVEMENT BADGES', isDark),
-                        const SizedBox(height: 16),
-                        BadgesGridWidget(stats: stats, isDark: isDark),
                         const SizedBox(height: 32),
 
                         _buildSectionHeader('MY BINTI GURU BOOKINGS', isDark),

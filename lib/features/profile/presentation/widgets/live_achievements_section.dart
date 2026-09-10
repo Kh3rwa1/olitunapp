@@ -40,8 +40,7 @@ class LiveAchievementsSection extends ConsumerWidget {
               return _StatusCard(
                 isDark: isDark,
                 icon: Icons.workspace_premium_outlined,
-                message:
-                    'No verified achievements yet. Complete learning activities to unlock them.',
+                message: 'No verified achievements yet. Complete learning activities to unlock them.',
               );
             }
 

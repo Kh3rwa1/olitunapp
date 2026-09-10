@@ -98,7 +98,10 @@ void main() {
       find.byKey(const ValueKey('avatar-option-$kInitialAvatarId')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Could not save avatar. Please try again.'), findsOneWidget);
+    expect(
+      find.text('Could not save avatar. Please try again.'),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(const ValueKey('avatar-color-2')));
     await tester.pumpAndSettle();

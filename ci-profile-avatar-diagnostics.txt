@@ -98,7 +98,7 @@ Try `flutter pub outdated` for more information.
 
 ===== format =====
 Changed lib/features/profile/presentation/widgets/live_achievements_section.dart
-Formatted 1067 files (1 changed) in 3.43 seconds.
+Formatted 1067 files (1 changed) in 4.63 seconds.
 ===== exit 1 =====
 
 ===== file-length =====
@@ -145,10 +145,5 @@ Formatted 1067 files (1 changed) in 3.43 seconds.
 
 ===== analyzer =====
 Analyzing olitunapp...                                          
-
-   info • Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?' • lib/features/profile/presentation/widgets/live_achievements_section.dart:220:9 • use_null_aware_elements
-   info • 'hasFlag' is deprecated and shouldn't be used. Use flagsCollection instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • test/features/profile/profile_avatar_picker_sheet_test.dart:103:29 • deprecated_member_use
-  error • Undefined name 'SemanticsFlag'. Try correcting the name to one that is defined, or defining the name • test/features/profile/profile_avatar_picker_sheet_test.dart:103:37 • undefined_identifier
-
-3 issues found. (ran in 23.9s)
-===== exit 1 =====
+No issues found! (ran in 32.3s)
+===== exit 0 =====

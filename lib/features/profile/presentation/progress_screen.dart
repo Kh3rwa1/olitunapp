@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
@@ -19,7 +20,6 @@ import 'widgets/edit_name_sheet.dart';
 import 'widgets/streak_calendar.dart';
 import 'widgets/badges_grid_widget.dart';
 import 'widgets/mastery_chart.dart';
-import 'widgets/mastery_milestones.dart';
 import 'widgets/next_milestone_card.dart';
 import 'widgets/progress_screen_sections.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
@@ -32,7 +32,7 @@ class ProgressScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userName = ref.watch(userNameProvider);
     final statsAsync = ref.watch(userStatsProvider);
-    final avatarEmoji = ref.watch(userAvatarEmojiProvider);
+    final avatarId = ref.watch(userAvatarIdProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
@@ -118,7 +118,7 @@ class ProgressScreen extends ConsumerWidget {
                         ProfileHeroCard(
                               userName: userName,
                               avatarColors: avatarColors,
-                              avatarEmoji: avatarEmoji,
+                              avatarId: avatarId,
                               level: stats.learnerLevel,
                               levelIndex: stats.levelIndex,
                               memberSince: memberSince,
@@ -181,11 +181,6 @@ class ProgressScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 20),
                         MasteryTimelineChart(stats: stats),
-                        const SizedBox(height: 32),
-
-                        _buildSectionHeader('MILESTONES', isDark),
-                        const SizedBox(height: 16),
-                        MasteryMilestonesCard(stats: stats),
                         const SizedBox(height: 32),
 
                         _buildSectionHeader('ACHIEVEMENT BADGES', isDark),
@@ -318,40 +313,7 @@ class ProgressScreen extends ConsumerWidget {
   void _showAvatarPicker(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final currentColorIndex = ref.read(userAvatarColorIndexProvider);
-    final currentEmoji = ref.read(userAvatarEmojiProvider);
-
-    const emojis = [
-      '😀',
-      '😎',
-      '🤓',
-      '🧑‍💻',
-      '👨‍🎓',
-      '👩‍🎓',
-      '🦊',
-      '🐱',
-      '🐶',
-      '🐼',
-      '🦁',
-      '🐸',
-      '🦋',
-      '🌸',
-      '🌺',
-      '🌻',
-      '🍀',
-      '⭐',
-      '🔥',
-      '💎',
-      '🎯',
-      '🎵',
-      '🎮',
-      '🏆',
-      '🚀',
-      '🌈',
-      '🎨',
-      '📚',
-      '💡',
-      '🦄',
-    ];
+    final currentAvatarId = ref.read(userAvatarIdProvider);
 
     showModalBottomSheet(
       context: context,
@@ -363,7 +325,7 @@ class ProgressScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) {
           int selectedColor = currentColorIndex;
-          String selectedEmoji = currentEmoji;
+          String selectedAvatar = currentAvatarId;
 
           return Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 28),
@@ -408,7 +370,7 @@ class ProgressScreen extends ConsumerWidget {
                         setSheetState(() => selectedColor = i);
                         ref
                             .read(userStatsProvider.notifier)
-                            .updateAvatar(currentEmoji, i);
+                            .updateAvatar(selectedAvatar, i);
                         HapticFeedback.selectionClick();
                       },
                       child: Container(
@@ -442,9 +404,9 @@ class ProgressScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Emoji grid
+                // Avatar animation grid (bundled Lottie only — no emoji)
                 Text(
-                  'Avatar Emoji',
+                  'Avatar Animation',
                   style: AppTypography.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -452,81 +414,122 @@ class ProgressScreen extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 10),
-                SizedBox(
-                  height: 180,
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 6,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
+                Consumer(
+                  builder: (ctx, ref, _) {
+                    final avatarsAsync = ref.watch(availableAvatarsProvider);
+                    return avatarsAsync.when(
+                      loading: () => const SizedBox(
+                        height: 120,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (_, _) => const SizedBox(
+                        height: 60,
+                        child: Center(
+                          child: Text('Could not load avatar animations'),
                         ),
-                    itemCount: emojis.length + 1,
-                    itemBuilder: (ctx, i) {
-                      if (i == 0) {
-                        final isSelected = selectedEmoji.isEmpty;
-                        return GestureDetector(
-                          onTap: () {
-                            setSheetState(() => selectedEmoji = '');
-                            ref
-                                .read(userStatsProvider.notifier)
-                                .updateAvatar('', selectedColor);
-                            HapticFeedback.selectionClick();
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.06)
-                                  : Colors.black.withValues(alpha: 0.04),
-                              borderRadius: BorderRadius.circular(14),
-                              border: isSelected
-                                  ? Border.all(
-                                      color: AppColors.primary,
-                                      width: 2,
-                                    )
-                                  : null,
-                            ),
-                            child: Center(
-                              child: Icon(
-                                Icons.person_rounded,
-                                size: 24,
-                                color: isDark ? Colors.white54 : Colors.black38,
+                      ),
+                      data: (avatars) => SizedBox(
+                        height: 264,
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 10,
+                                crossAxisSpacing: 10,
+                                childAspectRatio: 0.82,
                               ),
-                            ),
-                          ),
-                        );
-                      }
-                      final emoji = emojis[i - 1];
-                      final isSelected = emoji == selectedEmoji;
-                      return GestureDetector(
-                        onTap: () {
-                          setSheetState(() => selectedEmoji = emoji);
-                          ref
-                              .read(userStatsProvider.notifier)
-                              .updateAvatar(emoji, currentColorIndex);
-                          HapticFeedback.selectionClick();
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.06)
-                                : Colors.black.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(14),
-                            border: isSelected
-                                ? Border.all(color: AppColors.primary, width: 2)
-                                : null,
-                          ),
-                          child: Center(
-                            child: Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 24),
-                            ),
-                          ),
+                          itemCount: avatars.length + 1,
+                          itemBuilder: (ctx, i) {
+                            if (i == 0) {
+                              final isSelected = selectedAvatar.isEmpty;
+                              return GestureDetector(
+                                onTap: () {
+                                  setSheetState(() => selectedAvatar = '');
+                                  ref
+                                      .read(userStatsProvider.notifier)
+                                      .updateAvatar('', selectedColor);
+                                  HapticFeedback.selectionClick();
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.06)
+                                        : Colors.black.withValues(alpha: 0.04),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: isSelected
+                                        ? Border.all(
+                                            color: AppColors.primary,
+                                            width: 2,
+                                          )
+                                        : null,
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.person_rounded, size: 32),
+                                  ),
+                                ),
+                              );
+                            }
+                            final avatar = avatars[i - 1];
+                            final isSelected = avatar.id == selectedAvatar;
+                            return GestureDetector(
+                              onTap: () {
+                                setSheetState(() => selectedAvatar = avatar.id);
+                                ref
+                                    .read(userStatsProvider.notifier)
+                                    .updateAvatar(avatar.id, selectedColor);
+                                HapticFeedback.selectionClick();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.06)
+                                      : Colors.black.withValues(alpha: 0.04),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: isSelected
+                                      ? Border.all(
+                                          color: AppColors.primary,
+                                          width: 2,
+                                        )
+                                      : null,
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Lottie.asset(
+                                      avatar.assetPath,
+                                      width: 64,
+                                      height: 64,
+                                      fit: BoxFit.contain,
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(
+                                                Icons.person_rounded,
+                                                size: 32,
+                                              ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      avatar.label,
+                                      style: AppTypography.inter(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? Colors.white54
+                                            : Colors.black45,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

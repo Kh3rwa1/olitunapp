@@ -1,0 +1,10 @@
+== dart format ==
+Formatted 1065 files (0 changed) in 4.54 seconds.
+format_status=0
+== flutter analyze ==
+Analyzing olitunapp...                                          
+
+   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/features/profile/weekly_leaderboard_entity_test.dart:41:46 • avoid_redundant_argument_values
+
+1 issue found. (ran in 30.1s)
+analyze_status=1

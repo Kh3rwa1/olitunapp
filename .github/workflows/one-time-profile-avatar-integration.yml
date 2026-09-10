@@ -1,0 +1,189 @@
+name: One-time profile avatar integration
+
+on:
+  push:
+    branches:
+      - fix/profile-avatar-production-quality
+    paths:
+      - .github/workflows/one-time-profile-avatar-integration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Apply focused profile integration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one match, found {count}')
+              return text.replace(old, new, 1)
+
+          progress_path = Path('lib/features/profile/presentation/progress_screen.dart')
+          progress = progress_path.read_text()
+          progress = replace_once(
+              progress,
+              "import 'package:flutter/services.dart';\n",
+              '',
+              'remove obsolete services import',
+          )
+          progress = replace_once(
+              progress,
+              "import 'package:lottie/lottie.dart';\n",
+              '',
+              'remove inline lottie import',
+          )
+          progress = replace_once(
+              progress,
+              "import 'widgets/edit_name_sheet.dart';\n",
+              "import 'widgets/edit_name_sheet.dart';\nimport 'widgets/profile_avatar_picker_sheet.dart';\nimport 'widgets/live_achievements_section.dart';\n",
+              'add profile widgets',
+          )
+          progress = replace_once(
+              progress,
+              "                        MasteryTimelineChart(stats: stats),\n                        const SizedBox(height: 32),\n\n                        _buildSectionHeader('MY BINTI GURU BOOKINGS', isDark),",
+              "                        MasteryTimelineChart(stats: stats),\n                        const SizedBox(height: 32),\n\n                        _buildSectionHeader('ACHIEVEMENTS', isDark),\n                        const SizedBox(height: 16),\n                        const LiveAchievementsSection(),\n                        const SizedBox(height: 32),\n\n                        _buildSectionHeader('MY BINTI GURU BOOKINGS', isDark),",
+              'restore live achievements',
+          )
+          method_start = progress.index(
+              '  void _showAvatarPicker(BuildContext context, WidgetRef ref) {'
+          )
+          new_method = '''  void _showAvatarPicker(BuildContext context, WidgetRef ref) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final currentColorIndex = ref.read(userAvatarColorIndexProvider);
+            final currentAvatarId = ref.read(userAvatarIdProvider);
+
+            showModalBottomSheet<void>(
+              context: context,
+              isScrollControlled: true,
+              backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              ),
+              builder: (_) => ProfileAvatarPickerSheet(
+                initialAvatarId: currentAvatarId,
+                initialColorIndex: currentColorIndex,
+                onChanged: (avatarId, colorIndex) => ref
+                    .read(userStatsProvider.notifier)
+                    .updateAvatar(avatarId, colorIndex),
+              ),
+            );
+          }
+          }
+          '''
+          progress = progress[:method_start] + new_method
+          progress_path.write_text(progress)
+
+          hero_path = Path(
+              'lib/features/profile/presentation/widgets/profile_hero_card.dart'
+          )
+          hero = hero_path.read_text()
+          hero = replace_once(
+              hero,
+              '''  /// Catalog avatar id (see [kProfileAvatars]). Unknown ids show the
+              /// default animation; an empty id shows the name initial.
+              ''',
+              '''  /// Catalog avatar id or [kInitialAvatarId]. Unknown values show the
+              /// default animation while the explicit initial choice stays persistent.
+              ''',
+              'update avatar contract',
+          )
+          hero = replace_once(
+              hero,
+              '''        );
+
+            return Container(''',
+              '''        );
+            final reduceMotion = MediaQuery.disableAnimationsOf(context);
+            final compact = MediaQuery.sizeOf(context).width < 380;
+            final avatarSize = compact ? 72.0 : 84.0;
+
+            return Container(''',
+              'add responsive motion state',
+          )
+          hero = replace_once(
+              hero,
+              '      padding: const EdgeInsets.all(28),',
+              '      padding: EdgeInsets.all(compact ? 20 : 28),',
+              'responsive card padding',
+          )
+          hero = replace_once(
+              hero,
+              '''                      width: 84,
+                                  height: 84,''',
+              '''                      width: avatarSize,
+                                  height: avatarSize,''',
+              'responsive avatar container',
+          )
+          hero = replace_once(
+              hero,
+              '                        child: avatarId.isNotEmpty',
+              '                        child: !usesProfileInitial(avatarId)',
+              'persist initial avatar',
+          )
+          hero = replace_once(
+              hero,
+              '''                                  width: 84,
+                                          height: 84,
+                                          fit: BoxFit.cover,''',
+              '''                                  width: avatarSize,
+                                          height: avatarSize,
+                                          fit: BoxFit.cover,
+                                          animate: !reduceMotion,
+                                          repeat: !reduceMotion,''',
+              'respect reduced motion',
+          )
+          hero = replace_once(
+              hero,
+              '              const SizedBox(width: 20),',
+              '              SizedBox(width: compact ? 12 : 20),',
+              'responsive hero spacing',
+          )
+          hero = replace_once(
+              hero,
+              '                              fontSize: 26,',
+              '                              fontSize: compact ? 22 : 26,',
+              'responsive learner name',
+          )
+          hero = replace_once(
+              hero,
+              '                  duration: const Duration(milliseconds: 1200),',
+              '''                  duration: reduceMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 1200),''',
+              'respect reduced progress motion',
+          )
+          hero_path.write_text(hero)
+          PY
+
+          git diff --check
+          if git diff --name-only | grep -q '^functions/translator/'; then
+            echo 'Translator boundary violated.' >&2
+            exit 1
+          fi
+
+      - name: Commit integrated profile changes
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo 'No changes to commit.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/features/profile/presentation/progress_screen.dart \
+            lib/features/profile/presentation/widgets/profile_hero_card.dart
+          git commit -m 'fix(profile): integrate persistent avatar experience'
+          git push

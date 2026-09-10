@@ -16,10 +16,21 @@ class AppwriteDbService {
   final TablesDB _tablesDB;
   final Storage storage;
   final Client _client;
+  final bool _backendConfigured;
 
-  AppwriteDbService(this._client)
-    : _tablesDB = TablesDB(_client),
+  AppwriteDbService(this._client, {bool? backendConfigured})
+    : _backendConfigured =
+          backendConfigured ?? AppwriteConfig.isBackendConfigured,
+      _tablesDB = TablesDB(_client),
       storage = Storage(_client);
+
+  void _ensureBackendConfigured() {
+    if (_backendConfigured) return;
+    throw StateError(
+      'Appwrite backend is not configured. Provide APPWRITE_ENDPOINT and '
+      'APPWRITE_PROJECT_ID before making remote requests.',
+    );
+  }
 
   // Link-state APIs report whether a network interface exists, not whether the
   // backend is reachable. Requests therefore execute directly and their real
@@ -70,6 +81,7 @@ class AppwriteDbService {
     int pageSize = AppwriteQueryPaging.defaultPageSize,
   }) async {
     AppwriteQueryPaging.validatePageSize(pageSize);
+    _ensureBackendConfigured();
 
     if (!paginate || AppwriteQueryPaging.containsManualPagination(queries)) {
       return _listSinglePage(
@@ -136,6 +148,7 @@ class AppwriteDbService {
     String collectionId,
     String documentId,
   ) async {
+    _ensureBackendConfigured();
     final row = await _retryWithBackoff(
       () => _tablesDB
           .getRow(
@@ -158,6 +171,7 @@ class AppwriteDbService {
     Map<String, dynamic> data, {
     List<String>? permissions,
   }) async {
+    _ensureBackendConfigured();
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
@@ -244,6 +258,7 @@ class AppwriteDbService {
     Map<String, dynamic> data, {
     List<String>? permissions,
   }) async {
+    _ensureBackendConfigured();
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
@@ -287,6 +302,7 @@ class AppwriteDbService {
   ) => updateDocument(collectionId, documentId, {}, permissions: permissions);
 
   Future<void> deleteDocument(String collectionId, String documentId) async {
+    _ensureBackendConfigured();
     try {
       await _tablesDB
           .deleteRow(

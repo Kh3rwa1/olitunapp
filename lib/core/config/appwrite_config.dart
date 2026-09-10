@@ -25,6 +25,36 @@ class AppwriteConfig {
   static String get endpoint => _envEndpoint;
   static String get projectId => _envProjectId;
 
+  /// Whether the SDK has a real backend target rather than a safe placeholder.
+  static bool get isBackendConfigured => isBackendConfiguredValues(
+    endpoint: endpoint,
+    projectId: projectId,
+  );
+
+  @visibleForTesting
+  static bool isBackendConfiguredValues({
+    required String endpoint,
+    required String projectId,
+  }) {
+    final uri = Uri.tryParse(endpoint.trim());
+    if (uri == null ||
+        !uri.hasScheme ||
+        !uri.hasAuthority ||
+        (uri.scheme != 'http' && uri.scheme != 'https') ||
+        uri.host.toLowerCase().endsWith('.invalid')) {
+      return false;
+    }
+
+    const placeholderProjectIds = {
+      'local-development',
+      'ci-project',
+      'placeholder',
+    };
+    final normalizedProjectId = projectId.trim().toLowerCase();
+    return normalizedProjectId.isNotEmpty &&
+        !placeholderProjectIds.contains(normalizedProjectId);
+  }
+
   static const String databaseId = 'olitun_db';
 
   /// ID of the Appwrite Team that grants admin access.

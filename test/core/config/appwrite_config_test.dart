@@ -6,7 +6,32 @@ void main() {
     test('development defaults are non-routable and safe', () {
       expect(Uri.parse(AppwriteConfig.endpoint).host, 'example.invalid');
       expect(AppwriteConfig.projectId, 'local-development');
+      expect(AppwriteConfig.isBackendConfigured, isFalse);
       expect(AppwriteConfig.validate, returnsNormally);
+    });
+
+    test('recognizes only real backend targets as configured', () {
+      expect(
+        AppwriteConfig.isBackendConfiguredValues(
+          endpoint: 'https://example.invalid/v1',
+          projectId: 'production-project',
+        ),
+        isFalse,
+      );
+      expect(
+        AppwriteConfig.isBackendConfiguredValues(
+          endpoint: 'https://backend.example.com/v1',
+          projectId: 'local-development',
+        ),
+        isFalse,
+      );
+      expect(
+        AppwriteConfig.isBackendConfiguredValues(
+          endpoint: 'https://backend.example.com/v1',
+          projectId: 'production-project',
+        ),
+        isTrue,
+      );
     });
 
     test('rejects a development environment for release artifacts', () {

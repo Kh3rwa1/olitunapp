@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/theme/app_typography.dart';
+import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
+
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class ProfileHeroCard extends StatelessWidget {
+class ProfileHeroCard extends ConsumerWidget {
   final String userName;
   final List<Color> avatarColors;
   final String avatarEmoji;
@@ -67,7 +70,15 @@ class ProfileHeroCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final leaderboardLabel = ref
+        .watch(weeklyLeaderboardProvider)
+        .when(
+          data: (leaderboard) => leaderboard.badgeLabel,
+          error: (_, _) => 'Leaderboard unavailable',
+          loading: () => 'Leaderboard · Loading…',
+        );
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -165,7 +176,7 @@ class ProfileHeroCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
 
-              // Name + Level + Member Since
+              // Name + live leaderboard + member since
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,41 +212,47 @@ class ProfileHeroCard extends StatelessWidget {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        // Level badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getLevelColor().withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _getLevelColor().withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                levelIndex >= 3
-                                    ? Icons.workspace_premium_rounded
-                                    : levelIndex >= 2
-                                    ? Icons.diamond_rounded
-                                    : Icons.school_rounded,
-                                size: 12,
-                                color: _getLevelColor(),
+                        // Live Appwrite data only. Loading, unranked, and error
+                        // states never invent a position or point total.
+                        Semantics(
+                          liveRegion: true,
+                          label:
+                              '$leaderboardLabel. Current learner level: $level',
+                          child: ExcludeSemantics(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                level,
-                                style: AppTypography.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: _getLevelColor(),
+                              decoration: BoxDecoration(
+                                color: _getLevelColor().withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: _getLevelColor().withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.emoji_events_rounded,
+                                    size: 12,
+                                    color: _getLevelColor(),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    leaderboardLabel,
+                                    style: AppTypography.inter(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: _getLevelColor(),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                         // Hidden entirely when creation date is unknown —

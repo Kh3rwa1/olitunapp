@@ -165,7 +165,7 @@ class ProfileHeroCard extends StatelessWidget {
               ),
               const SizedBox(width: 16),
 
-              // Name + Level + Member Since
+              // Name + Leaderboard + Member Since
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,7 +201,8 @@ class ProfileHeroCard extends StatelessWidget {
                       runSpacing: 4,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        // Level badge
+                        // Inline leaderboard badge; intentionally non-interactive
+                        // so the profile layout gains no new screen or route.
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 10,
@@ -218,17 +219,13 @@ class ProfileHeroCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                levelIndex >= 3
-                                    ? Icons.workspace_premium_rounded
-                                    : levelIndex >= 2
-                                    ? Icons.diamond_rounded
-                                    : Icons.school_rounded,
+                                Icons.emoji_events_rounded,
                                 size: 12,
                                 color: _getLevelColor(),
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                level,
+                                'Leaderboard',
                                 style: AppTypography.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,

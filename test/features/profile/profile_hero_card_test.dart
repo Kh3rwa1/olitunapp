@@ -24,6 +24,15 @@ Widget _wrap({String? memberSince}) {
 }
 
 void main() {
+  testWidgets('shows an inline leaderboard badge instead of the level', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap());
+    expect(find.text('Leaderboard'), findsOneWidget);
+    expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+    expect(find.text('Beginner'), findsNothing);
+  });
+
   testWidgets('hides the Since line when creation date is unknown', (
     tester,
   ) async {

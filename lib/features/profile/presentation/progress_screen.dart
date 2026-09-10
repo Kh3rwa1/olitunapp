@@ -49,7 +49,6 @@ class ProgressScreen extends ConsumerWidget {
         ),
       ),
       data: (stats) {
-        final streak = stats.currentStreak;
         final stars = stats.totalStars;
         final quizzesCompleted = stats.quizzesCompletedCount;
         final avatarColors = [AppColors.primary, AppColors.primaryDark];
@@ -152,7 +151,6 @@ class ProgressScreen extends ConsumerWidget {
                         _buildSectionHeader('YOUR STATS', isDark),
                         const SizedBox(height: 14),
                         StatsGrid(
-                          streak: streak,
                           stars: stars,
                           quizzesCompleted: quizzesCompleted,
                           learningTime: learningTime,

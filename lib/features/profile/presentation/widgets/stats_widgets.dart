@@ -38,7 +38,6 @@ class SkillData {
 // ═══════════════ STATS GRID ═══════════════
 
 class StatsGrid extends StatelessWidget {
-  final int streak;
   final int stars;
   final int quizzesCompleted;
   final int learningTime;
@@ -47,7 +46,6 @@ class StatsGrid extends StatelessWidget {
 
   const StatsGrid({
     super.key,
-    required this.streak,
     required this.stars,
     required this.quizzesCompleted,
     required this.learningTime,
@@ -59,66 +57,7 @@ class StatsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Hero stat — streak spans full width
-        AnimatedBentoChild(
-          index: 0,
-          child: BentoCell(
-            padding: const EdgeInsets.all(20),
-            gradient: LinearGradient(
-              colors: [
-                AppColors.accentOchre.withValues(alpha: isDark ? 0.15 : 0.08),
-                AppColors.accentOchre.withValues(alpha: isDark ? 0.05 : 0.02),
-              ],
-            ),
-            border: Border.all(
-              color: AppColors.accentOchre.withValues(
-                alpha: isDark ? 0.2 : 0.12,
-              ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentOchre.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Icon(
-                    Icons.local_fire_department_rounded,
-                    color: AppColors.accentOchre,
-                    size: 28,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AnimatedCounter(
-                      value: streak,
-                      style: AppTypography.inter(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'DAY STREAK',
-                      style: AppTypography.inter(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                        color: AppColors.accentOchre,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        // 3 stat pills in a row
+        // 3 stat pills in a row (streak lives in the streak calendar above)
         Row(
           children: [
             Expanded(

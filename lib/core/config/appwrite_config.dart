@@ -26,10 +26,8 @@ class AppwriteConfig {
   static String get projectId => _envProjectId;
 
   /// Whether the SDK has a real backend target rather than a safe placeholder.
-  static bool get isBackendConfigured => isBackendConfiguredValues(
-    endpoint: endpoint,
-    projectId: projectId,
-  );
+  static bool get isBackendConfigured =>
+      isBackendConfiguredValues(endpoint: endpoint, projectId: projectId);
 
   @visibleForTesting
   static bool isBackendConfiguredValues({

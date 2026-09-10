@@ -23,9 +23,12 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Collect diagnostics
+      - name: Format and collect diagnostics
         shell: bash
         run: |
+          dart format \
+            lib/features/profile/presentation/widgets/live_achievements_section.dart \
+            test/features/profile/profile_avatar_picker_sheet_test.dart
           set +e
           flutter pub get > ci-profile-avatar-diagnostics.txt 2>&1
           run_step() {
@@ -47,11 +50,14 @@ jobs:
           run_step version dart run tool/verify_version_consistency.dart
           run_step analyzer flutter analyze --fatal-infos
           cat ci-profile-avatar-diagnostics.txt
-      - name: Commit diagnostic report
+      - name: Commit formatted files and diagnostic report
         if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-profile-avatar-diagnostics.txt
-          git commit -m 'ci: record profile static diagnostics'
+          git add \
+            lib/features/profile/presentation/widgets/live_achievements_section.dart \
+            test/features/profile/profile_avatar_picker_sheet_test.dart \
+            ci-profile-avatar-diagnostics.txt
+          git commit -m 'style(profile): format and verify analyzer fixes'
           git push

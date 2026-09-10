@@ -37,9 +37,7 @@ void main() {
 
   test('rejects contradictory or fabricated rank payloads', () {
     expect(
-      () => WeeklyLeaderboardEntity.fromJson(
-        _payload(rank: 9, totalParticipants: 8),
-      ),
+      () => WeeklyLeaderboardEntity.fromJson(_payload(rank: 9)),
       throwsFormatException,
     );
     expect(

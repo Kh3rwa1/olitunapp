@@ -60,11 +60,15 @@ export async function buildWeeklyLeaderboard(
   };
 }
 
-function appwriteClient() {
-  const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
-  const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
+function appwriteClient(req) {
+  const endpoint =
+    process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
+  const projectId =
+    process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
   const apiKey =
-    process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
+    req.headers["x-appwrite-key"] ||
+    process.env.APPWRITE_FUNCTION_API_KEY ||
+    process.env.APPWRITE_API_KEY;
 
   if (!endpoint || !projectId || !apiKey) {
     throw new Error("Missing Appwrite function environment variables.");
@@ -141,8 +145,8 @@ export default async ({ req, res, error }) => {
   }
 
   try {
-    const databases = new Databases(appwriteClient());
-    const body = parseBody(req.body);
+    const databases = new Databases(appwriteClient(req));
+    const body = parseBody(req.bodyJson ?? req.bodyText ?? req.body);
     if (body.scope === "leaderboard") {
       const leaderboard = await buildWeeklyLeaderboard(databases, userId);
       return res.json({ ok: true, leaderboard });

@@ -41,7 +41,7 @@ void main() {
   test('account providers read stored preference values', () async {
     final container = await containerFor({
       'user_name': 'Somi',
-      'user_avatar_id': 'girl_02',
+      'user_avatar_id': 'sunrise',
       'user_avatar_color': 3,
       'member_since': 'June 2025',
       'badge_traditional_archer_name': 'Custom Archer',
@@ -50,7 +50,7 @@ void main() {
     });
 
     expect(container.read(userNameProvider), 'Somi');
-    expect(container.read(userAvatarIdProvider), 'girl_02');
+    expect(container.read(userAvatarIdProvider), 'sunrise');
     expect(container.read(userAvatarColorIndexProvider), 3);
     expect(container.read(memberSinceProvider), 'June 2025');
     expect(container.read(badgeTraditionalArcherNameProvider), 'Custom Archer');

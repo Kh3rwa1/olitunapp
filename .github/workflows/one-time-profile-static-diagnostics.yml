@@ -23,11 +23,15 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Collect exact static-gate diagnostics
+      - name: Format after dependency resolution and verify
         shell: bash
         run: |
           set +e
           flutter pub get > ci-profile-avatar-diagnostics.txt 2>&1
+          dart format \
+            lib/features/profile/presentation/widgets/live_achievements_section.dart \
+            test/features/profile/profile_avatar_picker_sheet_test.dart \
+            >> ci-profile-avatar-diagnostics.txt 2>&1
           run_step() {
             label="$1"
             shift
@@ -39,7 +43,6 @@ jobs:
               echo "===== exit $status ====="
             } >> ci-profile-avatar-diagnostics.txt 2>&1
           }
-          run_step git-status git status --short
           run_step format dart format --output=none --set-exit-if-changed .
           run_step file-length node scripts/check_file_length.mjs
           run_step typography node scripts/check_typography.mjs
@@ -53,11 +56,14 @@ jobs:
           run_step release-gate-tests node --test scripts/check_release_gate.test.mjs
           run_step analyzer flutter analyze --fatal-infos
           cat ci-profile-avatar-diagnostics.txt
-      - name: Commit diagnostic report
+      - name: Commit formatted files and report
         if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-profile-avatar-diagnostics.txt
-          git commit -m 'ci: record exact profile static diagnostics'
+          git add \
+            lib/features/profile/presentation/widgets/live_achievements_section.dart \
+            test/features/profile/profile_avatar_picker_sheet_test.dart \
+            ci-profile-avatar-diagnostics.txt
+          git commit -m 'style(profile): apply resolved Dart formatting'
           git push

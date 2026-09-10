@@ -40,7 +40,8 @@ class LiveAchievementsSection extends ConsumerWidget {
               return _StatusCard(
                 isDark: isDark,
                 icon: Icons.workspace_premium_outlined,
-                message: 'No verified achievements yet. Complete learning activities to unlock them.',
+                message:
+                    'No verified achievements yet. Complete learning activities to unlock them.',
               );
             }
 
@@ -77,7 +78,7 @@ class _AchievementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasTarget = badge.target > 0;
     final progressRatio = hasTarget
-        ? (badge.progress / badge.target).clamp(0.0, 1.0)
+        ? (badge.progress / badge.target).clamp(0.0, 1.0).toDouble()
         : null;
     final stateLabel = badge.isUnlocked
         ? 'Unlocked'
@@ -217,7 +218,7 @@ class _StatusCard extends StatelessWidget {
             ),
           ),
         ),
-        if (action != null) action!,
+        ?action,
       ],
     ),
   );

@@ -66,6 +66,7 @@ void main() {
   testWidgets('rolls back optimistic selection when persistence fails', (
     tester,
   ) async {
+    final attempts = <(String, int)>[];
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
@@ -80,7 +81,12 @@ void main() {
                   label: 'Olitun',
                 ),
               ],
-              onChanged: (_, _) async => throw StateError('save failed'),
+              onChanged: (avatarId, colorIndex) async {
+                attempts.add((avatarId, colorIndex));
+                if (avatarId == kInitialAvatarId) {
+                  throw StateError('save failed');
+                }
+              },
             ),
           ),
         ),
@@ -92,14 +98,10 @@ void main() {
       find.byKey(const ValueKey('avatar-option-$kInitialAvatarId')),
     );
     await tester.pumpAndSettle();
+    expect(find.text('Could not save avatar. Please try again.'), findsOneWidget);
 
-    expect(
-      find.text('Could not save avatar. Please try again.'),
-      findsOneWidget,
-    );
-    final initialSemantics = tester.getSemantics(
-      find.byKey(const ValueKey('avatar-option-$kInitialAvatarId')),
-    );
-    expect(initialSemantics.hasFlag(SemanticsFlag.isSelected), isFalse);
+    await tester.tap(find.byKey(const ValueKey('avatar-color-2')));
+    await tester.pumpAndSettle();
+    expect(attempts.last, (kDefaultAvatarId, 2));
   });
 }

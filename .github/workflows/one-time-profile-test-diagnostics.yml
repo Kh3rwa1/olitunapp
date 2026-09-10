@@ -23,11 +23,37 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Run complete profile tests
+      - name: Align stale avatar fixtures
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              'test/features/profile/profile_account_providers_test.dart': ('girl_02', 'sunrise'),
+              'test/features/profile/user_stats_providers_test.dart': ('girl_02', 'river'),
+              'test/features/profile/profile_repository_impl_test.dart': ('boy_03', 'forest'),
+              'test/features/profile/profile_providers_barrel_test.dart': ('boy_03', 'night_sky'),
+          }
+          for file_name, (old, new) in replacements.items():
+              path = Path(file_name)
+              content = path.read_text()
+              count = content.count(old)
+              if count != 2:
+                  raise SystemExit(f'{file_name}: expected 2 occurrences of {old}, found {count}')
+              path.write_text(content.replace(old, new))
+          PY
+      - name: Verify complete profile tests
         shell: bash
         run: |
           set +e
           flutter pub get > ci-profile-test-diagnostics.txt 2>&1
+          dart format \
+            test/features/profile/profile_account_providers_test.dart \
+            test/features/profile/user_stats_providers_test.dart \
+            test/features/profile/profile_repository_impl_test.dart \
+            test/features/profile/profile_providers_barrel_test.dart \
+            >> ci-profile-test-diagnostics.txt 2>&1
           flutter test --reporter expanded \
             test/features/profile \
             test/core/reviews/review_service_test.dart \
@@ -36,11 +62,16 @@ jobs:
           echo "PROFILE_TEST_EXIT=$status" >> ci-profile-test-diagnostics.txt
           cat ci-profile-test-diagnostics.txt
           exit 0
-      - name: Commit diagnostic report
+      - name: Commit test fixes and diagnostic report
         if: always()
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-profile-test-diagnostics.txt
-          git commit -m 'ci: record complete profile test diagnostics'
+          git add \
+            test/features/profile/profile_account_providers_test.dart \
+            test/features/profile/user_stats_providers_test.dart \
+            test/features/profile/profile_repository_impl_test.dart \
+            test/features/profile/profile_providers_barrel_test.dart \
+            ci-profile-test-diagnostics.txt
+          git commit -m 'test(profile): use committed avatar catalog ids'
           git push

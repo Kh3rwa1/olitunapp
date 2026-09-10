@@ -210,9 +210,7 @@ class _ProfileAvatarPickerSheetState
                     final columns = constraints.maxWidth >= 520 ? 4 : 3;
                     final options = <Widget>[
                       _AvatarOption(
-                        key: const ValueKey(
-                          'avatar-option-$kInitialAvatarId',
-                        ),
+                        key: const ValueKey('avatar-option-$kInitialAvatarId'),
                         label: 'Name initial',
                         selected: usesProfileInitial(_selectedAvatarId),
                         enabled: !_isSaving,
@@ -244,9 +242,7 @@ class _ProfileAvatarPickerSheetState
                               errorBuilder: (_, _, _) => Icon(
                                 Icons.person_rounded,
                                 size: 42,
-                                color: isDark
-                                    ? Colors.white70
-                                    : Colors.black54,
+                                color: isDark ? Colors.white70 : Colors.black54,
                               ),
                             ),
                           ),
@@ -350,7 +346,9 @@ class _AvatarOption extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Expanded(child: Center(child: ExcludeSemantics(child: child))),
+                Expanded(
+                  child: Center(child: ExcludeSemantics(child: child)),
+                ),
                 const SizedBox(height: 4),
                 Text(
                   label,

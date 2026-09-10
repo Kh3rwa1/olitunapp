@@ -40,7 +40,9 @@ final userAvatarIdProvider = StateProvider<String>((ref) {
 
 /// Only exposes catalog entries whose files are in Flutter's real asset
 /// manifest. This prevents a placeholder catalog from becoming selectable.
-final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((ref) async {
+final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
+  ref,
+) async {
   final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
   final bundled = manifest.listAssets().toSet();
   final available = kProfileAvatars

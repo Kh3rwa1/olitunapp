@@ -247,7 +247,9 @@ class ProfileHeroCard extends ConsumerWidget {
                                 color: _getLevelColor().withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: _getLevelColor().withValues(alpha: 0.3),
+                                  color: _getLevelColor().withValues(
+                                    alpha: 0.3,
+                                  ),
                                 ),
                               ),
                               child: Row(

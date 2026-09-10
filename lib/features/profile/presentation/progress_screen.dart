@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
+
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../domain/entities/user_stats_entity.dart';
+
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 // Extracted widgets

@@ -93,7 +93,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Could not save avatar. Please try again.'), findsOneWidget);
+    expect(
+      find.text('Could not save avatar. Please try again.'),
+      findsOneWidget,
+    );
     final initialSemantics = tester.getSemantics(
       find.byKey(const ValueKey('avatar-option-$kInitialAvatarId')),
     );

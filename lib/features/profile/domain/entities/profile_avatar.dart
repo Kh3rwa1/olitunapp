@@ -71,7 +71,8 @@ ProfileAvatar? profileAvatarById(String id) {
 
 /// Empty values are accepted only as a backwards-compatible presentation
 /// alias. New writes persist [kInitialAvatarId] instead.
-bool usesProfileInitial(String? id) => id == null || id.isEmpty || id == kInitialAvatarId;
+bool usesProfileInitial(String? id) =>
+    id == null || id.isEmpty || id == kInitialAvatarId;
 
 /// Resolves an animation id to a bundled asset. The explicit initial option is
 /// never passed to Lottie by the UI; returning the default remains fail-safe.

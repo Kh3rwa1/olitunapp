@@ -5,9 +5,7 @@ import 'package:itun/features/profile/presentation/widgets/live_achievements_sec
 import 'package:itun/shared/providers/gamification_content_provider.dart';
 
 Widget _wrap(UserGamificationSummary summary) => ProviderScope(
-  overrides: [
-    userGamificationSummaryProvider.overrideWith((ref) => summary),
-  ],
+  overrides: [userGamificationSummaryProvider.overrideWith((ref) => summary)],
   child: const MaterialApp(
     home: Scaffold(
       body: SizedBox(width: 420, child: LiveAchievementsSection()),

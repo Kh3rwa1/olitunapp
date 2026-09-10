@@ -13,56 +13,57 @@ class LiveAchievementsSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ref.watch(userGamificationSummaryProvider).when(
-      loading: () => const SizedBox(
-        height: 120,
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (_, _) => _StatusCard(
-        isDark: isDark,
-        icon: Icons.cloud_off_rounded,
-        message: 'Achievements are temporarily unavailable.',
-        action: TextButton.icon(
-          onPressed: () => ref.invalidate(userGamificationSummaryProvider),
-          icon: const Icon(Icons.refresh_rounded),
-          label: const Text('Try again'),
-        ),
-      ),
-      data: (summary) {
-        final badges = summary.badges
-            .where((badge) => badge.badgeId.isNotEmpty && badge.name.isNotEmpty)
-            .toList(growable: false);
-        if (badges.isEmpty) {
-          return _StatusCard(
+    return ref
+        .watch(userGamificationSummaryProvider)
+        .when(
+          loading: () => const SizedBox(
+            height: 120,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+          error: (_, _) => _StatusCard(
             isDark: isDark,
-            icon: Icons.workspace_premium_outlined,
-            message:
-                'No verified achievements yet. Complete learning activities to unlock them.',
-          );
-        }
-
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final columns = constraints.maxWidth >= 700 ? 3 : 2;
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: badges.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: columns,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: constraints.maxWidth >= 700 ? 1.45 : 1.08,
-              ),
-              itemBuilder: (context, index) => _AchievementCard(
-                badge: badges[index],
+            icon: Icons.cloud_off_rounded,
+            message: 'Achievements are temporarily unavailable.',
+            action: TextButton.icon(
+              onPressed: () => ref.invalidate(userGamificationSummaryProvider),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Try again'),
+            ),
+          ),
+          data: (summary) {
+            final badges = summary.badges
+                .where(
+                  (badge) => badge.badgeId.isNotEmpty && badge.name.isNotEmpty,
+                )
+                .toList(growable: false);
+            if (badges.isEmpty) {
+              return _StatusCard(
                 isDark: isDark,
-              ),
+                icon: Icons.workspace_premium_outlined,
+                message: 'No verified achievements yet. Complete learning activities to unlock them.',
+              );
+            }
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final columns = constraints.maxWidth >= 700 ? 3 : 2;
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: badges.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: columns,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: constraints.maxWidth >= 700 ? 1.45 : 1.08,
+                  ),
+                  itemBuilder: (context, index) =>
+                      _AchievementCard(badge: badges[index], isDark: isDark),
+                );
+              },
             );
           },
         );
-      },
-    );
   }
 }
 
@@ -90,9 +91,7 @@ class _AchievementCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.045)
-              : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.045) : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: badge.isUnlocked
@@ -112,10 +111,11 @@ class _AchievementCard extends StatelessWidget {
                     height: 38,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: (badge.isUnlocked
-                              ? AppColors.primary
-                              : AppColors.xpNeutral)
-                          .withValues(alpha: 0.14),
+                      color:
+                          (badge.isUnlocked
+                                  ? AppColors.primary
+                                  : AppColors.xpNeutral)
+                              .withValues(alpha: 0.14),
                       shape: BoxShape.circle,
                     ),
                     child: Text(

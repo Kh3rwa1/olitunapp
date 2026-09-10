@@ -24,14 +24,14 @@ jobs:
       - name: Capture diagnostics
         run: |
           set +e
-          : > ci-static-diagnostics.log
+          : > ci-static-diagnostics.txt
           run_check() {
             label="$1"
             shift
-            echo "## $label" >> ci-static-diagnostics.log
-            "$@" >> ci-static-diagnostics.log 2>&1
-            echo "exit=$?" >> ci-static-diagnostics.log
-            echo >> ci-static-diagnostics.log
+            echo "## $label" >> ci-static-diagnostics.txt
+            "$@" >> ci-static-diagnostics.txt 2>&1
+            echo "exit=$?" >> ci-static-diagnostics.txt
+            echo >> ci-static-diagnostics.txt
           }
           run_check "pub get" flutter pub get
           run_check "format" dart format --output=none --set-exit-if-changed .
@@ -50,6 +50,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ci-static-diagnostics.log
+          git add ci-static-diagnostics.txt
           git commit -m "ci: record static-analysis diagnostics"
           git push origin HEAD:codex/production-hardening-no-translator

@@ -111,6 +111,25 @@ test('weekly scoring uses real owned events and removes duplicates', () => {
   assert.equal(scored.scores.has('user-b'), false);
 });
 
+test('rejects stale uploads and malformed mission source IDs', () => {
+  const scored = scoreWeeklyEvents(
+    [
+      event({
+        id: 'stale',
+        createdAt: '2026-09-18T10:00:01.000Z',
+      }),
+      event({
+        id: 'bad-mission',
+        name: 'daily_mission_completed',
+        sourceId: 'not-the-date',
+      }),
+    ],
+    '2026-09-07',
+    '2026-09-13',
+  );
+  assert.equal(scored.scores.size, 0);
+});
+
 test('daily caps prevent event spam from inflating points', () => {
   const quizzes = Array.from({ length: 8 }, (_, index) =>
     event({ id: `quiz-${index}`, sourceId: `quiz-${index}` }),
@@ -126,9 +145,7 @@ test('ranking is deterministic and gives equal scores equal ranks', () => {
       ['user-b', 80],
       ['user-c', 80],
     ]),
-    breakdowns: new Map([
-      ['user-b', { quiz_completed: 80 }],
-    ]),
+    breakdowns: new Map([['user-b', { quiz_completed: 80 }]]),
   };
   assert.deepEqual(leaderboardForUser(scored, 'user-b'), {
     rank: 2,

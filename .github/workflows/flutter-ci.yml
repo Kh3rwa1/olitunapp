@@ -277,15 +277,16 @@ jobs:
           BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           flutter build web --release \
-            --dart-define=APPWRITE_ENDPOINT=${{ secrets.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1' }} \
-            --dart-define=APPWRITE_PROJECT_ID=${{ secrets.APPWRITE_PROJECT_ID || '699495910038e39622c5' }} \
-            --dart-define=TRANSLATE_URL=${{ secrets.TRANSLATE_URL || 'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions' }} \
+            --dart-define=APP_ENV=ci \
+            --dart-define=APPWRITE_ENDPOINT=https://example.invalid/v1 \
+            --dart-define=APPWRITE_PROJECT_ID=ci-project \
+            --dart-define=TRANSLATE_URL=https://example.invalid/functions/translator \
             --dart-define=BUILD_SHA=$BUILD_SHA \
             --dart-define=BUILT_AT=$BUILT_AT
-          
+
           mkdir -p build/web
-          echo "{\"sha\": \"$BUILD_SHA\", \"builtAt\": \"$BUILT_AT\"}" > build/web/build-info.json
-          
+          echo "{\"sha\": \"$BUILD_SHA\", \"builtAt\": \"$BUILT_AT\", \"environment\": \"ci\"}" > build/web/build-info.json
+
           node scripts/patch_service_worker.mjs
           node scripts/verify_service_worker_patch.mjs
           (cd build/web && find . -type f -exec sha256sum {} + | sort > manifest.sha256)
@@ -330,9 +331,10 @@ jobs:
         run: |
           flutter build apk --release \
             --android-skip-build-dependency-validation \
-            --dart-define=APPWRITE_ENDPOINT=${{ secrets.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1' }} \
-            --dart-define=APPWRITE_PROJECT_ID=${{ secrets.APPWRITE_PROJECT_ID || '699495910038e39622c5' }} \
-            --dart-define=TRANSLATE_URL=${{ secrets.TRANSLATE_URL || 'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions' }}
+            --dart-define=APP_ENV=ci \
+            --dart-define=APPWRITE_ENDPOINT=https://example.invalid/v1 \
+            --dart-define=APPWRITE_PROJECT_ID=ci-project \
+            --dart-define=TRANSLATE_URL=https://example.invalid/functions/translator
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
       - name: Check APK performance budget
         run: dart run tool/check_size_budget.dart --path=build/app/outputs/flutter-apk/app-release.apk --budget-key=apkReleaseBytes --baseline=/tmp/base_performance_budgets.json --max-growth=10
@@ -371,9 +373,6 @@ jobs:
   dependency-freshness-gate:
     name: Dependency Freshness & Vulnerability Gate
     runs-on: ubuntu-latest
-    # pub outdated + npm audit are both registry-bound; 10 min is too tight
-    # when registries are slow (killed mid-audit repeatedly). The gate still
-    # fails loudly on real findings — this only allows slow networks room.
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

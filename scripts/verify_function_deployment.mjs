@@ -9,6 +9,7 @@ for (const id of ['reconcileOrphanedDeletions', 'reconcilePaymentAttempts']) {
   assert.deepEqual(fn.execute, [], `${id} must not be callable by ordinary users`);
   assert.ok(fs.existsSync(`${fn.path}/${fn.entrypoint}`));
   if (id === 'reconcileOrphanedDeletions') {
+    // Reconciliation reads account ownership but never mutates Appwrite users.
     for (const scope of ['users.read', 'documents.read', 'documents.write'])
       assert.ok(fn.scopes.includes(scope), `${id} missing ${scope}`);
     assert.ok(!fn.scopes.includes('users.write'), `${id} must not grant users.write`);

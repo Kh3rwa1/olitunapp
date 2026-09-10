@@ -1,0 +1,39 @@
+name: Temporary leaderboard formatter
+
+on:
+  push:
+    branches: [ feat/profile-leaderboard-badge ]
+
+permissions:
+  contents: write
+
+jobs:
+  format-and-remove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: feat/profile-leaderboard-badge
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
+        with:
+          channel: stable
+          cache: true
+      - name: Apply official Dart formatting
+        run: |
+          dart format \
+            lib/features/profile/domain/entities/weekly_leaderboard_entity.dart \
+            lib/features/profile/presentation/providers/profile_providers.dart \
+            lib/features/profile/presentation/providers/weekly_leaderboard_provider.dart \
+            lib/features/profile/presentation/widgets/profile_hero_card.dart \
+            test/features/profile/profile_hero_card_test.dart \
+            test/features/profile/weekly_leaderboard_entity_test.dart \
+            test/features/profile/weekly_leaderboard_provider_test.dart
+      - name: Remove one-off workflow and commit formatting
+        run: |
+          git rm .github/workflows/temporary-leaderboard-format.yml
+          git add lib test
+          git config user.name "ci-autoformat"
+          git config user.email "ci-autoformat@localhost"
+          git commit -m "style: apply Dart format to leaderboard"
+          git push origin HEAD:feat/profile-leaderboard-badge

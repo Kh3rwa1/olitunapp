@@ -94,8 +94,9 @@ void main() {
 
   test('persisted errors are bounded and redact credentials and PII', () async {
     await outbox.enqueueMutation(mutation('learner', 'private-error'));
+    final padding = List.filled(700, 'x').join();
     final rawError =
-        'Bearer very.secret.token for child@example.com ${'x' * 700}';
+        'Bearer very.secret.token for child@example.com $padding';
 
     await outbox.recordAttemptFailed('learner', 'private-error', rawError);
 

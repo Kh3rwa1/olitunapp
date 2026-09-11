@@ -1,0 +1,76 @@
+name: One-time duplicate main CI repair
+
+on:
+  push:
+    branches:
+      - fix/main-ci-after-leaderboard-animation
+    paths:
+      - .github/workflows/one-time-main-ci-repair.yml
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RUN_ID: '34548117745'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - name: Rerun duplicate main workflow and poll
+        shell: bash
+        run: |
+          set -u
+          {
+            echo "RUN_ID=$RUN_ID"
+            echo "REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "===== BEFORE ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+              --jq '[.id, .name, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
+          } > ci-main-duplicate-rerun.txt
+
+          set +e
+          response=$(gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/rerun" 2>&1)
+          request_exit=$?
+          set -e
+          {
+            echo "RERUN_REQUEST_EXIT=$request_exit"
+            echo "$response"
+          } >> ci-main-duplicate-rerun.txt
+
+          if [ "$request_exit" -eq 0 ]; then
+            for poll in $(seq 1 55); do
+              snapshot=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+                --jq '[.run_attempt, .status, (.conclusion // "")] | @tsv')
+              echo "POLL_$poll=$snapshot" >> ci-main-duplicate-rerun.txt
+              run_attempt=$(printf '%s' "$snapshot" | cut -f1)
+              run_status=$(printf '%s' "$snapshot" | cut -f2)
+              if [ "$run_attempt" -ge 2 ] && [ "$run_status" = "completed" ]; then
+                break
+              fi
+              sleep 20
+            done
+          fi
+
+          {
+            echo "===== FINAL RUN ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+              --jq '[.id, .name, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
+            echo "===== FINAL JOBS ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?per_page=100" \
+              --jq '.jobs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), .html_url] | @tsv'
+          } >> ci-main-duplicate-rerun.txt
+          cat ci-main-duplicate-rerun.txt
+      - name: Commit duplicate rerun report
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ci-main-duplicate-rerun.txt
+          git commit -m 'ci: record duplicate main workflow rerun'
+          git push

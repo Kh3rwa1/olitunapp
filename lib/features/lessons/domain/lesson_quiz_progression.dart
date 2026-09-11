@@ -10,7 +10,7 @@ abstract final class LessonQuizProgression {
     required String quizId,
     required int score,
     required int totalQuestions,
-    required Iterable<LessonEntity> lessons,
+    required Iterable<LessonEntity> Function() lessons,
   }) {
     final normalizedLessonId = lessonId?.trim();
     if (normalizedLessonId == null ||
@@ -19,7 +19,7 @@ abstract final class LessonQuizProgression {
       return null;
     }
 
-    for (final lesson in lessons) {
+    for (final lesson in lessons()) {
       if (lesson.id != normalizedLessonId) continue;
       if (_belongsToLesson(quizId, lesson)) return lesson;
       return null;

@@ -16,6 +16,7 @@ class AnimatedCounter extends StatefulWidget {
     this.haptic = true,
     this.pulseOnChange = true,
     this.textAlign,
+    this.from,
   });
 
   final int value;
@@ -27,6 +28,10 @@ class AnimatedCounter extends StatefulWidget {
   final bool haptic;
   final bool pulseOnChange;
   final TextAlign? textAlign;
+  final int? from;
+
+  /// Entrance start value. Defaults to [value] (no entrance motion);
+  /// pass 0 to count up on first appearance (e.g. reward screens).
 
   @override
   State<AnimatedCounter> createState() => _AnimatedCounterState();
@@ -34,7 +39,7 @@ class AnimatedCounter extends StatefulWidget {
 
 class _AnimatedCounterState extends State<AnimatedCounter>
     with SingleTickerProviderStateMixin {
-  late int _from = widget.value;
+  late int _from = widget.from ?? widget.value;
   late int _to = widget.value;
 
   late final AnimationController _pulse = AnimationController(

@@ -58,8 +58,11 @@ final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
   return kProfileAvatars;
 });
 
+/// Fresh installs start on the transparent background so the animation sits
+/// on the profile board itself. Explicitly stored indices are untouched.
 final userAvatarColorIndexProvider = StateProvider<int>((ref) {
-  return ref.read(sharedPreferencesProvider).getInt('user_avatar_color') ?? 0;
+  return ref.read(sharedPreferencesProvider).getInt('user_avatar_color') ??
+      AppColors.transparentAvatarPaletteIndex;
 });
 
 final badgeTraditionalArcherNameProvider = StateProvider<String>((ref) {

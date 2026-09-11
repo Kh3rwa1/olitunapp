@@ -37,6 +37,10 @@ class NextBestActionCard extends ConsumerWidget {
     Color color = AppColors.primary;
 
     final lessons = stats?.completedLessons;
+    final hasAnyProgress =
+        (lessons?.isNotEmpty ?? false) ||
+        streak > 0 ||
+        (stats?.totalStars ?? 0) > 0;
     final completedAlphabet =
         lessons != null && lessons.any((id) => id.contains('alphabet'));
     final hasCompletedAlphabet =
@@ -47,8 +51,21 @@ class NextBestActionCard extends ConsumerWidget {
     final hasCompletedNumbers =
         (stats?.numbersProgress ?? 0) >= 1 || completedNumbers;
 
-    if (isGuest || !hasCompletedAlphabet) {
+    // "Start here" is only for true newcomers. Returning learners with
+    // progress elsewhere (streak, stars, other lessons) get the honest
+    // "next step" framing instead of a permanently stuck start card.
+    if (!hasAnyProgress && (isGuest || !hasCompletedAlphabet)) {
       badgeText = l10n.nbaBadgeStartHere;
+      title = l10n.nbaTitleFirstLetters;
+      subtitle = l10n.nbaSubFirstLetters;
+      ctaText = l10n.nbaCtaBeginLesson;
+      icon = Icons.menu_book_rounded;
+      color = AppColors.primary;
+      onTap = () {
+        context.push('/letter/standalone/all');
+      };
+    } else if (!hasCompletedAlphabet) {
+      badgeText = l10n.nbaBadgeNextStep;
       title = l10n.nbaTitleFirstLetters;
       subtitle = l10n.nbaSubFirstLetters;
       ctaText = l10n.nbaCtaBeginLesson;

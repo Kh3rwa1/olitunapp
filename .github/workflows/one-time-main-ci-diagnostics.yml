@@ -22,51 +22,38 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Collect main workflow and failure details
+      - name: Capture current main status and failed web log
         shell: bash
         run: |
           set -euo pipefail
           target_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq '.sha')
-          gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$target_sha&per_page=100" > /tmp/runs.json
           {
             echo "TARGET_SHA=$target_sha"
             echo "COLLECTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo "===== WORKFLOW RUNS ====="
-            jq -r '.workflow_runs | sort_by(.id) | reverse[] | [.id, .name, .event, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv' /tmp/runs.json
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$target_sha&per_page=100" \
+              --jq '.workflow_runs | sort_by(.id) | reverse[] | [.id, .name, .event, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
             echo "===== CHECK RUNS ====="
             gh api -H 'Accept: application/vnd.github+json' \
               "repos/$GITHUB_REPOSITORY/commits/$target_sha/check-runs?per_page=100" \
               --jq '.check_runs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), (.details_url // "")] | @tsv'
+            echo "===== FAILED WEB RELEASE JOB ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/jobs/103104377469" \
+              --jq '[.id, .name, .status, (.conclusion // ""), .html_url, (.steps[] | select(.conclusion == "failure") | .name)] | @tsv'
+            echo "===== FAILED WEB RELEASE LOG ====="
           } > ci-main-diagnostics.txt
 
-          while read -r run_id; do
-            [ -n "$run_id" ] || continue
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id/jobs?per_page=100" > "/tmp/jobs-$run_id.json"
-            {
-              echo "===== FAILED JOBS FOR RUN $run_id ====="
-              jq -r '.jobs[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required") | [.id, .name, .status, (.conclusion // ""), .html_url] | @tsv' "/tmp/jobs-$run_id.json"
-            } >> ci-main-diagnostics.txt
-
-            while read -r job_id; do
-              [ -n "$job_id" ] || continue
-              echo "===== LOG FOR JOB $job_id =====" >> ci-main-diagnostics.txt
-              if gh api "repos/$GITHUB_REPOSITORY/actions/jobs/$job_id/logs" > "/tmp/job-$job_id.zip"; then
-                if unzip -tqq "/tmp/job-$job_id.zip" >/dev/null 2>&1; then
-                  unzip -p "/tmp/job-$job_id.zip" | tail -n 500 >> ci-main-diagnostics.txt
-                else
-                  tail -n 500 "/tmp/job-$job_id.zip" >> ci-main-diagnostics.txt
-                fi
-              else
-                echo "Unable to download job log." >> ci-main-diagnostics.txt
-              fi
-            done < <(jq -r '.jobs[] | select(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required") | .id' "/tmp/jobs-$run_id.json")
-          done < <(jq -r '.workflow_runs[] | select(.status == "completed" and (.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required")) | .id' /tmp/runs.json)
-
+          gh api "repos/$GITHUB_REPOSITORY/actions/jobs/103104377469/logs" > /tmp/web-release-log.zip
+          if unzip -tqq /tmp/web-release-log.zip >/dev/null 2>&1; then
+            unzip -p /tmp/web-release-log.zip | tail -n 800 >> ci-main-diagnostics.txt
+          else
+            tail -n 800 /tmp/web-release-log.zip >> ci-main-diagnostics.txt
+          fi
           cat ci-main-diagnostics.txt
       - name: Commit diagnostic report
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ci-main-diagnostics.txt
-          git commit -m 'ci: record leaderboard main failure diagnostics'
+          git commit -m 'ci: record failed main web release log'
           git push

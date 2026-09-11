@@ -61,6 +61,13 @@ Future<void> _pumpPath(
   WidgetTester tester, {
   required Set<String> completedLessonIds,
 }) async {
+  tester.view.physicalSize = const Size(1080, 2400);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
   final router = GoRouter(

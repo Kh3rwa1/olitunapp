@@ -94,7 +94,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                   Text(
                     isDismissed
                         ? 'You can take “${quiz.title ?? 'the quiz'}” anytime. Pass it to unlock the next lesson.'
-                        : 'Great job! Take “${quiz.title ?? 'the quiz'}” now to test your knowledge and unlock the next lesson.',
+                        : 'Great job! Take "${quiz.title ?? 'the quiz'}" now to test your knowledge.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,

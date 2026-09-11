@@ -146,12 +146,19 @@ class _ProfileAvatarPickerSheetState
                 runSpacing: 8,
                 children: List.generate(AppColors.avatarPalettes.length, (i) {
                   final selected = i == _selectedColorIndex;
+                  final isTransparent = AppColors.avatarPalettes[i].every(
+                    (color) => color.a == 0.0,
+                  );
                   return Semantics(
-                    label: 'Avatar background ${i + 1}',
+                    label: isTransparent
+                        ? 'Transparent background'
+                        : 'Avatar background ${i + 1}',
                     button: true,
                     selected: selected,
                     child: Tooltip(
-                      message: 'Background ${i + 1}',
+                      message: isTransparent
+                          ? 'Transparent background'
+                          : 'Background ${i + 1}',
                       child: Material(
                         color: Colors.transparent,
                         child: InkResponse(
@@ -174,7 +181,11 @@ class _ProfileAvatarPickerSheetState
                               border: Border.all(
                                 color: selected
                                     ? (isDark ? Colors.white : Colors.black87)
-                                    : Colors.transparent,
+                                    : (isTransparent
+                                          ? (isDark
+                                                ? Colors.white38
+                                                : Colors.black38)
+                                          : Colors.transparent),
                                 width: 2.5,
                               ),
                               boxShadow: selected

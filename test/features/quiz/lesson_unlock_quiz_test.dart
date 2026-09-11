@@ -116,7 +116,6 @@ void main() {
           promptLatin: 'Choose the sound',
           optionsOlChiki: const ['a', 'e'],
           optionsLatin: const ['a', 'e'],
-          correctIndex: 0,
         ),
       ],
     );

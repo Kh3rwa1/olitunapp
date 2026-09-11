@@ -29,7 +29,6 @@ void main() {
     categoryId: 'category_1',
     titleOlChiki: 'Inactive',
     titleLatin: 'Inactive',
-    order: 0,
     isActive: false,
   );
 

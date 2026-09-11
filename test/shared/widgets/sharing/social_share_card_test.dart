@@ -84,9 +84,7 @@ void main() {
         ),
       );
 
-      final subtitle = tester.widget<Text>(
-        find.text('ᱫᱤᱱᱟᱹᱢ ᱦᱤᱞᱚᱜ ᱚᱞ ᱪᱤᱠᱤ'),
-      );
+      final subtitle = tester.widget<Text>(find.text('ᱫᱤᱱᱟᱹᱢ ᱦᱤᱞᱚᱜ ᱚᱞ ᱪᱤᱠᱤ'));
       expect(subtitle.style?.color, Colors.white);
 
       final metric = tester.widget<Text>(find.text('Top Learner 🏆'));

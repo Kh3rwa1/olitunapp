@@ -69,7 +69,7 @@ dependencies:
   url_launcher: ^6.3.2
 
   # Ads & Monetization
-  google_mobile_ads: ^7.0.0
+  google_mobile_ads: ^9.1.0
 
   # Notifications & Habit Retention
   flutter_local_notifications: ^20.1.0

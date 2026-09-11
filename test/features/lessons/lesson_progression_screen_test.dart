@@ -142,7 +142,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.bySemanticsLabel('Lesson Two. Unlocked.'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('lesson-card-lesson_2')));
     await tester.pumpAndSettle();

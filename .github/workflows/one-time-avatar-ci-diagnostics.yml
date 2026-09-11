@@ -21,17 +21,15 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Collect corrected avatar PR failure
+      - name: Collect final avatar static failure
         shell: bash
         run: |
           set +e
           {
             echo "COLLECTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "===== RUN DETAILS ====="
-            gh run view 34551683703 --repo "$GITHUB_REPOSITORY" \
-              --json databaseId,name,event,status,conclusion,url,jobs
-            echo "===== FAILED LOGS ====="
-            gh run view 34551683703 --repo "$GITHUB_REPOSITORY" --log-failed
+            echo "===== STATIC JOB ====="
+            gh run view 34552402935 --repo "$GITHUB_REPOSITORY" \
+              --job 103117855513 --log
           } > ci-avatar-diagnostics.txt 2>&1
           cat ci-avatar-diagnostics.txt
           exit 0
@@ -40,5 +38,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add ci-avatar-diagnostics.txt
-          git commit -m 'ci: update animated avatar failure report'
+          git commit -m 'ci: update animated avatar static report'
           git push

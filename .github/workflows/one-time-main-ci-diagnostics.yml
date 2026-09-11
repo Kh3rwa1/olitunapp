@@ -1,4 +1,4 @@
-name: One-time main CI diagnostics
+name: One-time main CI repair
 
 on:
   push:
@@ -8,52 +8,70 @@ on:
       - .github/workflows/one-time-main-ci-diagnostics.yml
 
 permissions:
-  actions: read
-  checks: read
+  actions: write
   contents: write
 
 jobs:
-  diagnose:
+  repair:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     env:
       GH_TOKEN: ${{ github.token }}
+      RUN_ID: '34547897302'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Capture current main status and failed web log
+      - name: Rerun failed main jobs and poll
         shell: bash
         run: |
-          set -euo pipefail
-          target_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq '.sha')
+          set -u
           {
-            echo "TARGET_SHA=$target_sha"
-            echo "COLLECTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            echo "===== WORKFLOW RUNS ====="
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs?head_sha=$target_sha&per_page=100" \
-              --jq '.workflow_runs | sort_by(.id) | reverse[] | [.id, .name, .event, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
-            echo "===== CHECK RUNS ====="
-            gh api -H 'Accept: application/vnd.github+json' \
-              "repos/$GITHUB_REPOSITORY/commits/$target_sha/check-runs?per_page=100" \
-              --jq '.check_runs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), (.details_url // "")] | @tsv'
-            echo "===== FAILED WEB RELEASE JOB ====="
-            gh api "repos/$GITHUB_REPOSITORY/actions/jobs/103104377469" \
-              --jq '[.id, .name, .status, (.conclusion // ""), .html_url, (.steps[] | select(.conclusion == "failure") | .name)] | @tsv'
-            echo "===== FAILED WEB RELEASE LOG ====="
-          } > ci-main-diagnostics.txt
+            echo "RUN_ID=$RUN_ID"
+            echo "REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > ci-main-rerun.txt
 
-          gh api "repos/$GITHUB_REPOSITORY/actions/jobs/103104377469/logs" > /tmp/web-release-log.zip
-          if unzip -tqq /tmp/web-release-log.zip >/dev/null 2>&1; then
-            unzip -p /tmp/web-release-log.zip | tail -n 800 >> ci-main-diagnostics.txt
+          set +e
+          response=$(gh api --method POST \
+            "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/rerun-failed-jobs" 2>&1)
+          request_exit=$?
+          set -e
+          {
+            echo "RERUN_REQUEST_EXIT=$request_exit"
+            echo "$response"
+          } >> ci-main-rerun.txt
+
+          if [ "$request_exit" -ne 0 ]; then
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+              --jq '[.run_attempt, .status, (.conclusion // ""), .html_url] | @tsv' \
+              >> ci-main-rerun.txt || true
           else
-            tail -n 800 /tmp/web-release-log.zip >> ci-main-diagnostics.txt
+            for poll in $(seq 1 45); do
+              snapshot=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+                --jq '[.run_attempt, .status, (.conclusion // "")] | @tsv')
+              echo "POLL_$poll=$snapshot" >> ci-main-rerun.txt
+              run_attempt=$(printf '%s' "$snapshot" | cut -f1)
+              run_status=$(printf '%s' "$snapshot" | cut -f2)
+              if [ "$run_attempt" -ge 2 ] && [ "$run_status" = "completed" ]; then
+                break
+              fi
+              sleep 20
+            done
           fi
-          cat ci-main-diagnostics.txt
-      - name: Commit diagnostic report
+
+          {
+            echo "===== FINAL RUN ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
+              --jq '[.id, .name, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
+            echo "===== FINAL JOBS ====="
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?per_page=100" \
+              --jq '.jobs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), .html_url] | @tsv'
+          } >> ci-main-rerun.txt
+          cat ci-main-rerun.txt
+      - name: Commit rerun report
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-main-diagnostics.txt
-          git commit -m 'ci: record failed main web release log'
+          git add ci-main-rerun.txt
+          git commit -m 'ci: record main web setup rerun'
           git push

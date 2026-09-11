@@ -83,6 +83,13 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Publish aggregate gate diagnostic
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          TESTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: bash tool/report_aggregate_gate.sh
       - name: Collect fast targeted diagnostics
         continue-on-error: true
         env:

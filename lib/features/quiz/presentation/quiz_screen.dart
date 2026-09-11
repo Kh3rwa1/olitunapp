@@ -15,10 +15,9 @@ import '../../../core/audio/playback_controller.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../content/presentation/providers/audio_playback_providers.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../lessons/domain/lesson_quiz_progression.dart';
 
 import '../data/quiz_repository.dart';
-import '../domain/quiz_scoring_rules.dart';
 import 'providers/quiz_session_notifier.dart';
 import 'widgets/listening_question_card.dart';
 import 'widgets/quiz_option_tile.dart';
@@ -56,26 +55,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     QuizModel quiz,
     QuizSessionState session,
   ) {
-    final lessonId = widget.lessonId?.trim();
-    if (_linkedLessonCompletionRecorded ||
-        lessonId == null ||
-        lessonId.isEmpty ||
-        !QuizScoringRules.isPassing(session.score, quiz.questions.length)) {
-      return;
-    }
-
-    final lessons =
-        ref.read(learnerLessonsProvider).valueOrNull ?? const <LessonEntity>[];
-    LessonEntity? linkedLesson;
-    for (final lesson in lessons) {
-      if (lesson.id == lessonId) {
-        linkedLesson = lesson;
-        break;
-      }
-    }
-    if (linkedLesson == null || !_quizBelongsToLesson(quiz.id, linkedLesson)) {
-      return;
-    }
+    if (_linkedLessonCompletionRecorded) return;
+    final linkedLesson = LessonQuizProgression.linkedPassingLesson(
+      lessonId: widget.lessonId,
+      quizId: quiz.id,
+      score: session.score,
+      totalQuestions: quiz.questions.length,
+      lessons: ref.read(learnerLessonsProvider).valueOrNull ?? const [],
+    );
+    if (linkedLesson == null) return;
 
     _linkedLessonCompletionRecorded = true;
     unawaited(
@@ -87,20 +75,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             estimatedMinutes: linkedLesson.estimatedMinutes,
           ),
     );
-  }
-
-  bool _quizBelongsToLesson(String quizId, LessonEntity lesson) {
-    if (quizId == 'dynamic_quiz_${lesson.id}' ||
-        quizId == 'listening_quiz_${lesson.id}') {
-      return true;
-    }
-    return lesson.blocks.any((block) {
-      if (block.type != 'quiz') return false;
-      final linkedQuizId =
-          block.data?['quizId'] as String? ??
-          block.data?['quizRefId'] as String?;
-      return linkedQuizId == quizId;
-    });
   }
 
   void _trackListeningStarted(QuizModel quiz) {

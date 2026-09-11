@@ -176,20 +176,17 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
         final backgroundGradient = isDark
             ? const LinearGradient(
-                colors: [AppColors.softBlack, AppColors.darkSurfaceElevated],
+                colors: [Color(0xFF101724), Color(0xFF0B1220)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [
-                  AppColors.lightBackground,
-                  AppColors.lightSurfaceVariant,
-                ],
+                colors: [Colors.white, Color(0xFFF0FDF4)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               );
 
-        final textColor = isDark ? Colors.white : Colors.black87;
+        final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
 
         return RepaintBoundary(
           key: _repaintKey,
@@ -197,86 +194,141 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: backgroundGradient,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black12,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.09)
+                    : const Color(0xFFE3E8F0),
+                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
-                      ? Colors.black45
-                      : Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                      ? Colors.black.withValues(alpha: 0.45)
+                      : const Color(0xFF0F172A).withValues(alpha: 0.07),
+                  blurRadius: 32,
+                  offset: const Offset(0, 16),
+                  spreadRadius: -14,
+                ),
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: isDark ? 0.08 : 0.07,
+                  ),
+                  blurRadius: 48,
+                  offset: const Offset(0, 12),
+                  spreadRadius: -20,
                 ),
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(28),
               child: Stack(
                 children: [
+                  // Emerald top hairline
                   Positioned(
-                    right: -20,
-                    bottom: -20,
+                    top: 0,
+                    left: 32,
+                    right: 32,
+                    child: Container(
+                      height: 3,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF1EE088),
+                            Color(0xFF38BDF8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: -24,
+                    bottom: -28,
                     child: Icon(
                       Icons.auto_awesome_rounded,
-                      size: 150,
+                      size: 168,
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.03)
-                          : Colors.black.withValues(alpha: 0.02),
+                          ? Colors.white.withValues(alpha: 0.035)
+                          : AppColors.primary.withValues(alpha: 0.06),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(28, 26, 28, 22),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 14,
-                              color: AppColors.primary,
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 12,
+                                color: Color(0xFF00A355),
+                              ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 8),
                             Text(
                               "TODAY'S WISDOM",
                               style: AppTypography.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 1.6,
-                                color: AppColors.primary,
+                                letterSpacing: 1.8,
+                                color: Color(0xFF00A355),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
-                            vertical: 8,
+                            vertical: 4,
                           ),
                           child: Text(
                             affirmation.olChikiText,
                             style: TextStyle(
                               fontFamily: 'OlChiki',
                               fontFamilyFallback: const ['Inter', 'sans-serif'],
-                              fontSize: 32,
+                              fontSize: 34,
                               fontWeight: FontWeight.bold,
                               color: textColor,
-                              height: 1.4,
+                              height: 1.45,
                               letterSpacing: 0.5,
                             ),
                             textAlign: TextAlign.center,
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        if (affirmation.englishMeaning.trim().isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            affirmation.englishMeaning.trim(),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.inter(
+                              fontSize: 13.5,
+                              height: 1.5,
+                              color: isDark
+                                  ? Colors.white60
+                                  : const Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 18),
                         Divider(
-                          color: isDark ? Colors.white10 : Colors.black12,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : const Color(0xFFE3E8F0),
                           height: 1,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
@@ -359,35 +411,54 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedColor = color ?? (isDark ? Colors.white70 : Colors.black54);
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: onTap == null
-                  ? resolvedColor.withValues(alpha: 0.4)
-                  : resolvedColor,
-              size: 20,
+    final resolvedColor = color ?? (isDark ? Colors.white70 : const Color(0xFF475569));
+    final disabled = onTap == null;
+    return MouseRegion(
+      cursor: disabled
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: disabled
+                ? Colors.transparent
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : const Color(0xFF0F172A).withValues(alpha: 0.04)),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : const Color(0xFFE3E8F0),
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTypography.inter(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: onTap == null
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: disabled
                     ? resolvedColor.withValues(alpha: 0.4)
                     : resolvedColor,
+                size: 17,
               ),
-            ),
-          ],
+              const SizedBox(width: 7),
+              Text(
+                label,
+                style: AppTypography.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: disabled
+                      ? resolvedColor.withValues(alpha: 0.4)
+                      : resolvedColor,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

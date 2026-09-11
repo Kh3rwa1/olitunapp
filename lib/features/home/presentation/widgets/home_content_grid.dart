@@ -38,74 +38,108 @@ class HomeContentGrid extends StatelessWidget {
         onTap: () => context.push('/translate'),
         child: BentoCell(
           gradient: const LinearGradient(
-            colors: [AppColors.accentPurple, AppColors.accentPurple],
+            colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x667C3AED),
+              blurRadius: 28,
+              offset: Offset(0, 14),
+              spreadRadius: -12,
+            ),
+          ],
           padding: const EdgeInsets.all(20),
-          child: Row(
+          child: Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.translate_rounded,
-                  color: Colors.white,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Instant Translate',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        height: 1.1,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+              Positioned(
+                right: -10,
+                bottom: -18,
+                child: IgnorePointer(
+                  child: Text(
+                    'ᱚ',
+                    style: TextStyle(
+                      fontFamily: 'OlChiki',
+                      fontSize: 92,
+                      fontWeight: FontWeight.w900,
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.10),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Any Language → Ol Chiki',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontWeight: FontWeight.w600,
-                        fontSize: 10,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Text(
-                  'AI',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 11,
                   ),
                 ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(11),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.translate_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Instant Translate',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                            letterSpacing: -0.2,
+                            height: 1.1,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Any Language → Ol Chiki',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.78),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: const Text(
+                      'AI',
+                      style: TextStyle(
+                        color: Color(0xFF4F46E5),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -262,45 +296,76 @@ class _BentoCategoryCard extends ConsumerWidget {
         }
       },
       child: BentoCell(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
+        borderRadius: 24,
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : const Color(0xFFE3E8F0),
+        ),
+        boxShadow: isDark
+            ? []
+            : [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                  blurRadius: 22,
+                  offset: const Offset(0, 10),
+                  spreadRadius: -12,
+                ),
+              ],
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    gradientColors[0].withValues(alpha: 0.15),
-                    gradientColors[1].withValues(alpha: 0.08),
-                  ],
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(11),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        gradientColors[0].withValues(alpha: 0.16),
+                        gradientColors[0].withValues(alpha: 0.07),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(
+                      color: gradientColors[0].withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Icon(_getIcon(), color: gradientColors[0], size: 21),
                 ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(_getIcon(), color: gradientColors[0], size: 22),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_outward_rounded,
+                  size: 16,
+                  color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
+                ),
+              ],
             ),
             const Spacer(),
             Text(
               primaryTitle,
               style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : Colors.black,
-                letterSpacing: 0,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.2,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
                 fontFamily: primaryLocalizedFontFamily(scriptMode),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
             if (secondaryTitle != null) ...[
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 secondaryTitle,
                 style: TextStyle(
-                  fontSize: 11,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                   fontFamily: 'OlChiki',
-                  color: isDark ? Colors.white38 : Colors.black38,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.45)
+                      : const Color(0xFF94A3B8),
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

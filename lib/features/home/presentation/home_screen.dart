@@ -334,28 +334,124 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildHeader({required String userName, required bool isDark}) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+    final now = DateTime.now();
+    final hour = now.hour;
+    final dayPart = hour < 12
+        ? 'Good morning'
+        : hour < 17
+        ? 'Good afternoon'
+        : 'Good evening';
+    final firstName = userName.trim().isEmpty ? 'Olitun' : userName.trim();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.22),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  Text(
+                    'ᱡᱚᱦᱟᱨ • $dayPart'.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.4,
+                      color: Color(0xFF00A355),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isDesktop) ...[
+              const Spacer(),
               Text(
-                l10n.joharUser(userName),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                '${now.day} ${_monthName(now.month)} • ${l10n.homeExploreHint}',
                 style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.45)
+                      : const Color(0xFF94A3B8),
                 ),
               ),
             ],
-          ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.joharUser(firstName),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: isDesktop ? 40 : 30,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -1.0,
+                      height: 1.05,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Pick up where you left off — small steps, every day.',
+                    style: TextStyle(
+                      fontSize: isDesktop ? 15 : 14,
+                      height: 1.5,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
+  }
+
+  String _monthName(int month) {
+    const names = [
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return names[month.clamp(1, 12)];
   }
 
   Widget _buildSkeletonGrid(bool isDark) {

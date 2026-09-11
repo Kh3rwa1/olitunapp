@@ -71,9 +71,39 @@ class LessonBlockTopNavBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = (totalSteps > 0) ? (currentStep + 1) / totalSteps : 0.0;
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isDesktop ? 780 : double.infinity),
+        child: Container(
+          margin: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 24 : 16,
+            vertical: 8,
+          ),
+          padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 16 : 12,
+            vertical: 10,
+          ),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.black.withValues(alpha: 0.35)
+                : Colors.white.withValues(alpha: 0.82),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.10)
+                  : const Color(0xFFE3E8F0),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.07),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: -10,
+              ),
+            ],
+          ),
       child: Row(
         children: [
           LessonBlockFloatingButton(
@@ -94,39 +124,70 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                   }
                 },
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
-            child: Stack(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'STEP ${currentStep + 1} OF $totalSteps',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: isDark
+                            ? Colors.white60
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${(progress * 100).round()}%',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: accentColor,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Stack(
               children: [
                 Container(
-                  height: 10,
+                  height: 8,
                   decoration: BoxDecoration(
                     color: isDark
                         ? Colors.white.withValues(alpha: 0.12)
-                        : Colors.black.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(5),
+                        : const Color(0xFF0F172A).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(999),
                   ),
                 ),
                 LayoutBuilder(
                   builder: (context, constraints) {
                     return AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
+                      duration: const Duration(milliseconds: 350),
                       curve: Curves.easeOutCubic,
                       width: constraints.maxWidth * progress,
-                      height: 10,
+                      height: 8,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            accentColor.withValues(alpha: 0.7),
+                            accentColor.withValues(alpha: 0.75),
                             accentColor,
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(5),
+                        borderRadius: BorderRadius.circular(999),
                         boxShadow: [
                           BoxShadow(
-                            color: accentColor.withValues(alpha: 0.4),
-                            blurRadius: 6,
-                            offset: const Offset(0, 1),
+                            color: accentColor.withValues(alpha: 0.45),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
                         ],
                       ),
@@ -134,9 +195,11 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                   },
                 ),
               ],
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           SizedBox(
             width: 44,
             height: 44,
@@ -146,13 +209,15 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                   ? LessonBlockFloatingButton(
                       key: audioKey,
                       icon: Icons.volume_up_rounded,
-                      tooltip: 'Play audio',
+                      tooltip: 'Play audio (Space)',
                       onPressed: onAudioPressed!,
                     )
                   : const SizedBox.shrink(),
             ),
           ),
         ],
+      ),
+        ),
       ),
     );
   }

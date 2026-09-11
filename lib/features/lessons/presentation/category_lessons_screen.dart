@@ -214,8 +214,16 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 final totalCount =
                     orderedLessons.length + (hasBrowseAll ? 1 : 0);
 
+                final screenWidth = MediaQuery.sizeOf(context).width;
+                final isDesktop = screenWidth >= 1100;
+                final hPad = isDesktop
+                    ? (screenWidth > 960
+                          ? (screenWidth - 880) / 2
+                          : 40.0)
+                    : 16.0;
+
                 return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 140),
+                  padding: EdgeInsets.fromLTRB(hPad, 28, hPad, 140),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       if (hasBrowseAll && index == 0) {

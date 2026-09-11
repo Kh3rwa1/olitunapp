@@ -57,6 +57,7 @@ class LessonBlockCardContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
 
     final display = OlChikiMultilingualHelper.resolveBlockDisplay(
       textOlChiki: block.textOlChiki,
@@ -86,7 +87,10 @@ class LessonBlockCardContent extends ConsumerWidget {
     final isThisPlaying = isAudioPlaying && playingId == blockAudioId;
     final isTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
-    return Container(
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: isDesktop ? 720 : double.infinity),
+        child: Container(
       width: double.infinity,
       color: Colors.transparent,
       child: Column(
@@ -99,14 +103,58 @@ class LessonBlockCardContent extends ConsumerWidget {
                 ? () => onPlayAudio(block.audioUrl!, blockAudioId)
                 : null,
             child: () {
-              Widget cardBody = Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 16,
+              Widget cardBody = Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop ? 48 : 28,
+                  vertical: isDesktop ? 40 : 28,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.045)
+                      : Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.09)
+                        : const Color(0xFFE3E8F0),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.4 : 0.07,
+                      ),
+                      blurRadius: 36,
+                      offset: const Offset(0, 20),
+                      spreadRadius: -16,
+                    ),
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.08),
+                      blurRadius: 48,
+                      offset: const Offset(0, 12),
+                      spreadRadius: -20,
+                    ),
+                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // Eyebrow: lesson context
+                    Text(
+                      lesson.titleLatin.toUpperCase(),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.6,
+                        color: accentColor,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                     // 1. Target Ol Chiki Script Text
                     Text(
                       targetScriptText,
@@ -290,6 +338,18 @@ class LessonBlockCardContent extends ConsumerWidget {
                   ),
           ),
           const SizedBox(height: 20),
+          if (isDesktop)
+            Text(
+              'Press Space to play audio • ← → to navigate',
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
+                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+              ),
+            ),
+          if (isDesktop) const SizedBox(height: 8),
 
           // Native ad
           if (index % 3 == 0)
@@ -298,6 +358,8 @@ class LessonBlockCardContent extends ConsumerWidget {
               child: NativeAdWidget(placement: 'lesson_block_card'),
             ),
         ],
+      ),
+        ),
       ),
     );
   }

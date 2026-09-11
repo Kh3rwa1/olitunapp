@@ -96,22 +96,25 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
               children: [
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: isDark
-                        ? AppColors.darkSurfaceElevated
+                        ? const Color(0xFF101724)
                         : Colors.white,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(28),
                     border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.black12,
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : const Color(0xFFE3E8F0),
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(
-                          alpha: isDark ? 0.3 : 0.05,
+                          alpha: isDark ? 0.4 : 0.06,
                         ),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        blurRadius: 28,
+                        offset: const Offset(0, 14),
+                        spreadRadius: -14,
                       ),
                     ],
                   ),
@@ -187,9 +190,9 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      // Custom Thin Progress Bar
+                      // Premium progress track
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
+                        borderRadius: BorderRadius.circular(999),
                         child: TweenAnimationBuilder<double>(
                           tween: Tween<double>(begin: 0, end: progress),
                           duration: MotionTokens.medium,
@@ -197,14 +200,14 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                           builder: (context, animatedValue, _) {
                             return LinearProgressIndicator(
                               value: animatedValue,
-                              minHeight: 6,
+                              minHeight: 9,
                               backgroundColor: isDark
-                                  ? Colors.white10
-                                  : Colors.black12,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                isDark
-                                    ? AppColors.brandTextDark
-                                    : AppColors.brandTextLight,
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.07),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
                               ),
                             );
                           },

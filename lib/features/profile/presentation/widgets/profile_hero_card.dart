@@ -89,6 +89,7 @@ class ProfileHeroCard extends ConsumerWidget {
     final avatarLabel = usesProfileInitial(avatarId)
         ? 'Name initial'
         : profileAvatarById(avatarId)?.label ?? kProfileAvatars.first.label;
+    final levelColor = _getLevelColor();
 
     return Container(
       width: double.infinity,
@@ -195,96 +196,70 @@ class ProfileHeroCard extends ConsumerWidget {
               ),
               SizedBox(width: compact ? 12 : 20),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                child: LayoutBuilder(
+                  builder: (context, detailsConstraints) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: AppTypography.inter(
-                              fontSize: compact ? 22 : 26,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Semantics(
-                          button: true,
-                          label: 'Edit display name',
-                          child: PressableScale(
-                            onTap: onEditName,
-                            haptic: HapticIntensity.selection,
-                            child: Icon(
-                              Icons.edit_rounded,
-                              size: 16,
-                              color: isDark ? Colors.white30 : Colors.black26,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Semantics(
-                          liveRegion: true,
-                          label:
-                              '$leaderboardLabel. Current learner level: $level',
-                          child: ExcludeSemantics(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                userName,
+                                style: AppTypography.inter(
+                                  fontSize: compact ? 22 : 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              decoration: BoxDecoration(
-                                color: _getLevelColor().withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: _getLevelColor().withValues(
-                                    alpha: 0.3,
-                                  ),
+                            ),
+                            const SizedBox(width: 8),
+                            Semantics(
+                              button: true,
+                              label: 'Edit display name',
+                              child: PressableScale(
+                                onTap: onEditName,
+                                haptic: HapticIntensity.selection,
+                                child: Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                  color: isDark
+                                      ? Colors.white30
+                                      : Colors.black26,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.emoji_events_rounded,
-                                    size: 14,
-                                    color: _getLevelColor(),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    leaderboardLabel,
-                                    style: AppTypography.inter(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: _getLevelColor(),
-                                    ),
-                                  ),
-                                ],
-                              ),
                             ),
-                          ),
+                          ],
                         ),
-                        if (memberSince != null)
-                          Text(
-                            'Since ${_formatDate(memberSince!)}',
-                            style: AppTypography.inter(
-                              fontSize: 12,
-                              color: isDark ? Colors.white30 : Colors.black38,
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            _ExpandableLeaderboardBadge(
+                              label: leaderboardLabel,
+                              level: level,
+                              color: levelColor,
+                              maxWidth: detailsConstraints.maxWidth,
+                              reduceMotion: reduceMotion,
                             ),
-                          ),
+                            if (memberSince != null)
+                              Text(
+                                'Since ${_formatDate(memberSince!)}',
+                                style: AppTypography.inter(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? Colors.white30
+                                      : Colors.black38,
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -342,6 +317,124 @@ class ProfileHeroCard extends ConsumerWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExpandableLeaderboardBadge extends StatefulWidget {
+  const _ExpandableLeaderboardBadge({
+    required this.label,
+    required this.level,
+    required this.color,
+    required this.maxWidth,
+    required this.reduceMotion,
+  });
+
+  final String label;
+  final String level;
+  final Color color;
+  final double maxWidth;
+  final bool reduceMotion;
+
+  @override
+  State<_ExpandableLeaderboardBadge> createState() =>
+      _ExpandableLeaderboardBadgeState();
+}
+
+class _ExpandableLeaderboardBadgeState
+    extends State<_ExpandableLeaderboardBadge> {
+  bool _expanded = false;
+
+  void _toggleExpanded() {
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = widget.reduceMotion
+        ? Duration.zero
+        : const Duration(milliseconds: 260);
+    final availableWidth = widget.maxWidth.isFinite ? widget.maxWidth : 280.0;
+    final collapsedWidth = availableWidth > 260.0 ? 260.0 : availableWidth;
+
+    return Semantics(
+      liveRegion: true,
+      child: PressableScale(
+        key: const ValueKey('profile-leaderboard-action'),
+        onTap: _toggleExpanded,
+        scale: 0.97,
+        haptic: HapticIntensity.selection,
+        semanticLabel:
+            '${widget.label}. Current learner level: ${widget.level}. '
+            '${_expanded ? 'Expanded. Tap to collapse.' : 'Tap to enlarge.'}',
+        child: AnimatedSize(
+          duration: duration,
+          reverseDuration: duration,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.centerLeft,
+          child: AnimatedContainer(
+            key: const ValueKey('profile-leaderboard-chip'),
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            width: _expanded ? availableWidth : collapsedWidth,
+            padding: EdgeInsets.symmetric(
+              horizontal: _expanded ? 14 : 12,
+              vertical: _expanded ? 10 : 6,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: widget.color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(_expanded ? 18 : 20),
+              border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                AnimatedScale(
+                  scale: _expanded ? 1.22 : 1,
+                  duration: duration,
+                  curve: Curves.easeOutBack,
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    size: 14,
+                    color: widget.color,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: AnimatedDefaultTextStyle(
+                    duration: duration,
+                    curve: Curves.easeOutCubic,
+                    style: AppTypography.inter(
+                      fontSize: _expanded ? 14 : 12,
+                      fontWeight: FontWeight.w700,
+                      color: widget.color,
+                    ),
+                    child: Text(
+                      widget.label,
+                      maxLines: _expanded ? null : 1,
+                      overflow: _expanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                      softWrap: _expanded,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                AnimatedRotation(
+                  turns: _expanded ? 0.5 : 0,
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  child: Icon(
+                    Icons.expand_more_rounded,
+                    size: 16,
+                    color: widget.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

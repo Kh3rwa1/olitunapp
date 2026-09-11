@@ -24,7 +24,21 @@ Widget _wrap({
   WeeklyLeaderboardEntity? leaderboard,
   bool leaderboardError = false,
   String avatarId = kDefaultAvatarId,
+  double? cardWidth,
 }) {
+  final hero = ProfileHeroCard(
+    userName: 'Learner',
+    avatarColors: const [Color(0xFF34C77B), Color(0xFF1B9E5A)],
+    avatarId: avatarId,
+    level: 'Beginner',
+    levelIndex: 0,
+    memberSince: memberSince,
+    overallProgress: 0,
+    isDark: false,
+    onEditName: () {},
+    onEditAvatar: () {},
+  );
+
   return ProviderScope(
     overrides: [
       weeklyLeaderboardProvider.overrideWith((ref) async {
@@ -35,18 +49,9 @@ Widget _wrap({
     child: MaterialApp(
       home: Scaffold(
         body: SingleChildScrollView(
-          child: ProfileHeroCard(
-            userName: 'Learner',
-            avatarColors: const [Color(0xFF34C77B), Color(0xFF1B9E5A)],
-            avatarId: avatarId,
-            level: 'Beginner',
-            levelIndex: 0,
-            memberSince: memberSince,
-            overallProgress: 0,
-            isDark: false,
-            onEditName: () {},
-            onEditAvatar: () {},
-          ),
+          child: cardWidth == null
+              ? hero
+              : SizedBox(width: cardWidth, child: hero),
         ),
       ),
     ),
@@ -80,6 +85,37 @@ void main() {
     expect(find.text('Leaderboard · #2 · 75 pts'), findsOneWidget);
     expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
     expect(find.text('Beginner'), findsNothing);
+  });
+
+  testWidgets('keeps long leaderboard text contained and enlarges on tap', (
+    tester,
+  ) async {
+    final leaderboard = _leaderboard(rank: 123456, points: 987654321);
+    final label = leaderboard.badgeLabel;
+
+    await tester.pumpWidget(_wrap(cardWidth: 320, leaderboard: leaderboard));
+    await tester.pumpAndSettle();
+
+    final action = find.byKey(const ValueKey('profile-leaderboard-action'));
+    final chip = find.byKey(const ValueKey('profile-leaderboard-chip'));
+    expect(action, findsOneWidget);
+    expect(chip, findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    final collapsedSize = tester.getSize(chip);
+    final collapsedLabel = tester.widget<Text>(find.text(label));
+    expect(collapsedLabel.maxLines, 1);
+    expect(collapsedLabel.overflow, TextOverflow.ellipsis);
+
+    await tester.tap(action);
+    await tester.pumpAndSettle();
+
+    final expandedSize = tester.getSize(chip);
+    final expandedLabel = tester.widget<Text>(find.text(label));
+    expect(expandedSize.height, greaterThan(collapsedSize.height));
+    expect(expandedLabel.maxLines, isNull);
+    expect(expandedLabel.overflow, TextOverflow.visible);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('shows unranked instead of inventing a rank', (tester) async {

@@ -50,8 +50,7 @@ class QuizActiveView extends ConsumerWidget {
         audioQuizzesEnabled &&
         question.type == 'listen_meaning' &&
         question.audioUrl != null;
-    final isFillBlank =
-        !isListeningQuestion && question.type == 'fill_blank';
+    final isFillBlank = !isListeningQuestion && question.type == 'fill_blank';
     final correctOptionOlChiki =
         question.correctIndex >= 0 &&
             question.correctIndex < question.optionsOlChiki.length
@@ -192,7 +191,10 @@ class QuizActiveView extends ConsumerWidget {
           ),
         ),
         actions: [
-          QuizCountPill(current: state.currentQuestion + 1, total: totalQuestions),
+          QuizCountPill(
+            current: state.currentQuestion + 1,
+            total: totalQuestions,
+          ),
         ],
       ),
       body: Stack(

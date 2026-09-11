@@ -17,9 +17,7 @@ abstract final class LessonProgression {
       final byOrder = left.$2.order.compareTo(right.$2.order);
       return byOrder != 0 ? byOrder : left.$1.compareTo(right.$1);
     });
-    return List<LessonEntity>.unmodifiable(
-      indexed.map((entry) => entry.$2),
-    );
+    return List<LessonEntity>.unmodifiable(indexed.map((entry) => entry.$2));
   }
 
   static LessonProgressStatus statusFor({

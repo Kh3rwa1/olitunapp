@@ -81,9 +81,8 @@ Future<void> _pumpPath(
       ),
       GoRoute(
         path: '/lesson/:lessonId',
-        builder: (context, state) => Scaffold(
-          body: Text('Opened ${state.pathParameters['lessonId']}'),
-        ),
+        builder: (context, state) =>
+            Scaffold(body: Text('Opened ${state.pathParameters['lessonId']}')),
       ),
     ],
   );
@@ -96,9 +95,7 @@ Future<void> _pumpPath(
         lessonsByCategoryProvider(
           'category_1',
         ).overrideWith((ref) => const AsyncValue.data(_lessons)),
-        completedLessonIdsProvider.overrideWith(
-          (ref) => completedLessonIds,
-        ),
+        completedLessonIdsProvider.overrideWith((ref) => completedLessonIds),
         purchasedCategoriesProvider.overrideWith((ref) => {'category_1'}),
         effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
       ],
@@ -137,9 +134,7 @@ void main() {
     await _pumpPath(tester, completedLessonIds: const {'lesson_1'});
 
     expect(
-      find.bySemanticsLabel(
-        'Lesson One. Completed. Available to replay.',
-      ),
+      find.bySemanticsLabel('Lesson One. Completed. Available to replay.'),
       findsOneWidget,
     );
 

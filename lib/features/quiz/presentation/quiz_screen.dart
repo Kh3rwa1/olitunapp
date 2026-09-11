@@ -41,18 +41,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     _playback = ref.read(playbackControllerProvider);
   }
 
-  void _recordLinkedLessonCompletion(
-    QuizModel quiz,
-    QuizSessionState session,
-  ) {
+  void _recordLinkedLessonCompletion(QuizModel quiz, QuizSessionState session) {
     if (_linkedLessonCompletionRecorded) return;
     final linkedLesson = LessonQuizProgression.linkedPassingLesson(
       lessonId: widget.lessonId,
       quizId: quiz.id,
       score: session.score,
       totalQuestions: quiz.questions.length,
-      lessons: () =>
-          ref.read(learnerLessonsProvider).valueOrNull ?? const [],
+      lessons: () => ref.read(learnerLessonsProvider).valueOrNull ?? const [],
     );
     if (linkedLesson == null) return;
 

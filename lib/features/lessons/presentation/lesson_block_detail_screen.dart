@@ -190,7 +190,9 @@ class _LessonBlockDetailScreenState
         }
 
         final categoryLessons = LessonProgression.orderedActiveLessons(
-          lessons.where((candidate) => candidate.categoryId == lesson.categoryId),
+          lessons.where(
+            (candidate) => candidate.categoryId == lesson.categoryId,
+          ),
         );
         final progressStatus = LessonProgression.statusFor(
           orderedLessons: categoryLessons,

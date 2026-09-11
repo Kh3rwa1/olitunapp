@@ -40,10 +40,11 @@ void main() {
   ]);
 
   test('orders active lessons and excludes inactive content', () {
-    expect(
-      orderedLessons.map((lesson) => lesson.id),
-      ['lesson_1', 'lesson_2', 'lesson_3'],
-    );
+    expect(orderedLessons.map((lesson) => lesson.id), [
+      'lesson_1',
+      'lesson_2',
+      'lesson_3',
+    ]);
   });
 
   test('unlocks only the first incomplete lesson', () {

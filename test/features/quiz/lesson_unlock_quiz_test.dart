@@ -95,7 +95,9 @@ class _Analytics extends Mock implements LearningAnalyticsService {
 }
 
 void main() {
-  testWidgets('passing a linked quiz completes its lesson once', (tester) async {
+  testWidgets('passing a linked quiz completes its lesson once', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(450, 900);
     tester.view.devicePixelRatio = 1;
     addTearDown(() {
@@ -126,19 +128,13 @@ void main() {
       titleLatin: 'Lesson One',
       estimatedMinutes: 8,
       blocks: [
-        LessonBlockEntity(
-          type: 'quiz',
-          data: {'quizId': 'lesson_quiz'},
-        ),
+        LessonBlockEntity(type: 'quiz', data: {'quizId': 'lesson_quiz'}),
       ],
     );
 
     await tester.pumpWidget(
       createTestableWidget(
-        child: const QuizScreen(
-          quizId: 'lesson_quiz',
-          lessonId: 'lesson_1',
-        ),
+        child: const QuizScreen(quizId: 'lesson_quiz', lessonId: 'lesson_1'),
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           quizzesProvider.overrideWith(

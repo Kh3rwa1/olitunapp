@@ -217,9 +217,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 final screenWidth = MediaQuery.sizeOf(context).width;
                 final isDesktop = screenWidth >= 1100;
                 final hPad = isDesktop
-                    ? (screenWidth > 960
-                          ? (screenWidth - 880) / 2
-                          : 40.0)
+                    ? (screenWidth > 960 ? (screenWidth - 880) / 2 : 40.0)
                     : 16.0;
 
                 return SliverPadding(

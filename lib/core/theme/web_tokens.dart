@@ -32,21 +32,13 @@ class WebTokens {
   static const LinearGradient lightMesh = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFF8FAFF),
-      Color(0xFFEFFDF4),
-      Color(0xFFE8F6FF),
-    ],
+    colors: [Color(0xFFF8FAFF), Color(0xFFEFFDF4), Color(0xFFE8F6FF)],
   );
 
   static const LinearGradient darkMesh = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF070B13),
-      Color(0xFF0B1A14),
-      Color(0xFF0D1B2E),
-    ],
+    colors: [Color(0xFF070B13), Color(0xFF0B1A14), Color(0xFF0D1B2E)],
   );
 
   // Emerald mist orbs used by the ambient background.
@@ -58,9 +50,8 @@ class WebTokens {
   static Color cardLight(bool isDark) =>
       isDark ? const Color(0xFF101724) : Colors.white;
 
-  static Color cardBorderLight(bool isDark) => isDark
-      ? Colors.white.withValues(alpha: 0.08)
-      : const Color(0xFFE3E8F0);
+  static Color cardBorderLight(bool isDark) =>
+      isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE3E8F0);
 
   static List<BoxShadow> cardShadow(bool isDark, {Color? tint}) {
     if (isDark) {
@@ -90,18 +81,18 @@ class WebTokens {
   }
 
   static List<BoxShadow> popShadow(Color tint) => [
-        BoxShadow(
-          color: tint.withValues(alpha: 0.35),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
-          spreadRadius: -6,
-        ),
-        BoxShadow(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.12),
-          blurRadius: 16,
-          offset: const Offset(0, 4),
-        ),
-      ];
+    BoxShadow(
+      color: tint.withValues(alpha: 0.35),
+      blurRadius: 24,
+      offset: const Offset(0, 10),
+      spreadRadius: -6,
+    ),
+    BoxShadow(
+      color: const Color(0xFF0F172A).withValues(alpha: 0.12),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
 
   // ── Glass ────────────────────────────────────────────────────
   static BoxDecoration glass(bool isDark, {double radius = radiusCard}) {
@@ -123,29 +114,19 @@ class WebTokens {
   static const LinearGradient emeraldHero = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF00C767),
-      Color(0xFF00A355),
-      Color(0xFF0B6B3A),
-    ],
+    colors: [Color(0xFF00C767), Color(0xFF00A355), Color(0xFF0B6B3A)],
   );
 
   static const LinearGradient emeraldCard = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF1EE088),
-      Color(0xFF00C767),
-    ],
+    colors: [Color(0xFF1EE088), Color(0xFF00C767)],
   );
 
   static const LinearGradient inkCard = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF111C2E),
-      Color(0xFF0B1220),
-    ],
+    colors: [Color(0xFF111C2E), Color(0xFF0B1220)],
   );
 
   // ── Type ─────────────────────────────────────────────────────
@@ -153,18 +134,19 @@ class WebTokens {
   static const double displayHero = 42;
 
   static TextStyle eyebrow(Color color) => TextStyle(
-        fontFamily: 'Inter',
-        fontSize: 11,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 1.8,
-        color: color,
-      );
+    fontFamily: 'Inter',
+    fontSize: 11,
+    fontWeight: FontWeight.w800,
+    letterSpacing: 1.8,
+    color: color,
+  );
 
   // ── Helpers ──────────────────────────────────────────────────
   static bool isWide(double width) => width >= wideBreakpoint;
 
   static EdgeInsets webPagePadding(bool isDesktop, bool isWide) {
-    if (!isDesktop) return const EdgeInsets.symmetric(horizontal: 24, vertical: 20);
+    if (!isDesktop)
+      return const EdgeInsets.symmetric(horizontal: 24, vertical: 20);
     if (isWide) return const EdgeInsets.symmetric(horizontal: 44, vertical: 36);
     return const EdgeInsets.symmetric(horizontal: 36, vertical: 32);
   }

@@ -172,7 +172,9 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                               fontFamily: primaryLocalizedFontFamily(
                                 widget.scriptMode,
                               ),
-                              color: isDark ? Colors.white : const Color(0xFF0F172A),
+                              color: isDark
+                                  ? Colors.white
+                                  : const Color(0xFF0F172A),
                             ),
                           ),
                           if (widget.secondaryTitle.isNotEmpty) ...[
@@ -218,8 +220,8 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                 size: 14,
                                 color: isLocked
                                     ? (isDark
-                                        ? Colors.white54
-                                        : const Color(0xFF94A3B8))
+                                          ? Colors.white54
+                                          : const Color(0xFF94A3B8))
                                     : const Color(0xFF00A355),
                               ),
                               const SizedBox(width: 6),

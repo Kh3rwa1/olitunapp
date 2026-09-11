@@ -68,9 +68,7 @@ class DesktopSidebar extends ConsumerWidget {
                         spreadRadius: -4,
                       ),
                       BoxShadow(
-                        color: Colors.white.withValues(
-                          alpha: isDark ? 0 : 0.6,
-                        ),
+                        color: Colors.white.withValues(alpha: isDark ? 0 : 0.6),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
@@ -105,7 +103,9 @@ class DesktopSidebar extends ConsumerWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.4,
-                          color: isDark ? Colors.white : const Color(0xFF0F172A),
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -464,10 +464,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                             ? const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF1EE088),
-                                  Color(0xFF00A355),
-                                ],
+                                colors: [Color(0xFF1EE088), Color(0xFF00A355)],
                               )
                             : null,
                         color: isActive

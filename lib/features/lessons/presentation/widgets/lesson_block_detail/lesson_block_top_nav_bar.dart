@@ -75,7 +75,9 @@ class LessonBlockTopNavBar extends ConsumerWidget {
 
     return Center(
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: isDesktop ? 780 : double.infinity),
+        constraints: BoxConstraints(
+          maxWidth: isDesktop ? 780 : double.infinity,
+        ),
         child: Container(
           margin: EdgeInsets.symmetric(
             horizontal: isDesktop ? 24 : 16,
@@ -104,119 +106,121 @@ class LessonBlockTopNavBar extends ConsumerWidget {
               ),
             ],
           ),
-      child: Row(
-        children: [
-          LessonBlockFloatingButton(
-            icon: backIcon ?? Icons.arrow_back_rounded,
-            tooltip: 'Go back',
-            onPressed:
-                onBackPressed ??
-                () async {
-                  await ref
-                      .read(interstitialAdManagerProvider)
-                      .showIfAllowed(context, 'lesson_complete');
-                  if (context.mounted) {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/');
-                    }
-                  }
-                },
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          child: Row(
+            children: [
+              LessonBlockFloatingButton(
+                icon: backIcon ?? Icons.arrow_back_rounded,
+                tooltip: 'Go back',
+                onPressed:
+                    onBackPressed ??
+                    () async {
+                      await ref
+                          .read(interstitialAdManagerProvider)
+                          .showIfAllowed(context, 'lesson_complete');
+                      if (context.mounted) {
+                        if (context.canPop()) {
+                          context.pop();
+                        } else {
+                          context.go('/');
+                        }
+                      }
+                    },
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'STEP ${currentStep + 1} OF $totalSteps',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.2,
-                        color: isDark
-                            ? Colors.white60
-                            : const Color(0xFF64748B),
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          'STEP ${currentStep + 1} OF $totalSteps',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: isDark
+                                ? Colors.white60
+                                : const Color(0xFF64748B),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${(progress * 100).round()}%',
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: accentColor,
+                          ),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    Text(
-                      '${(progress * 100).round()}%',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        color: accentColor,
-                      ),
+                    const SizedBox(height: 6),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : const Color(
+                                    0xFF0F172A,
+                                  ).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                        ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeOutCubic,
+                              width: constraints.maxWidth * progress,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    accentColor.withValues(alpha: 0.75),
+                                    accentColor,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(999),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: accentColor.withValues(alpha: 0.45),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Stack(
-              children: [
-                Container(
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.12)
-                        : const Color(0xFF0F172A).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
+              ),
+              const SizedBox(width: 14),
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: hasAudio && onAudioPressed != null
+                      ? LessonBlockFloatingButton(
+                          key: audioKey,
+                          icon: Icons.volume_up_rounded,
+                          tooltip: 'Play audio (Space)',
+                          onPressed: onAudioPressed!,
+                        )
+                      : const SizedBox.shrink(),
                 ),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 350),
-                      curve: Curves.easeOutCubic,
-                      width: constraints.maxWidth * progress,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            accentColor.withValues(alpha: 0.75),
-                            accentColor,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(999),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.45),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(width: 14),
-          SizedBox(
-            width: 44,
-            height: 44,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: hasAudio && onAudioPressed != null
-                  ? LessonBlockFloatingButton(
-                      key: audioKey,
-                      icon: Icons.volume_up_rounded,
-                      tooltip: 'Play audio (Space)',
-                      onPressed: onAudioPressed!,
-                    )
-                  : const SizedBox.shrink(),
-            ),
-          ),
-        ],
-      ),
         ),
       ),
     );

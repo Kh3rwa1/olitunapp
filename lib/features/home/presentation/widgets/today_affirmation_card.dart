@@ -233,10 +233,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                       height: 3,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFF1EE088),
-                            Color(0xFF38BDF8),
-                          ],
+                          colors: [Color(0xFF1EE088), Color(0xFF38BDF8)],
                         ),
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -264,7 +261,9 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.12),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.12,
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(
@@ -411,12 +410,11 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final resolvedColor = color ?? (isDark ? Colors.white70 : const Color(0xFF475569));
+    final resolvedColor =
+        color ?? (isDark ? Colors.white70 : const Color(0xFF475569));
     final disabled = onTap == null;
     return MouseRegion(
-      cursor: disabled
-          ? SystemMouseCursors.basic
-          : SystemMouseCursors.click,
+      cursor: disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),

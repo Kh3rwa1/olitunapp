@@ -105,7 +105,9 @@ class CategoryHeroHeader extends StatelessWidget {
                     child: IgnorePointer(
                       child: Text(
                         category.titleOlChiki.isNotEmpty
-                            ? category.titleOlChiki.characters.take(3).toString()
+                            ? category.titleOlChiki.characters
+                                  .take(3)
+                                  .toString()
                             : 'ᱚᱞ',
                         style: TextStyle(
                           fontFamily: 'OlChiki',
@@ -143,143 +145,147 @@ class CategoryHeroHeader extends StatelessWidget {
                         maxWidth: isDesktop ? 880 : double.infinity,
                       ),
                       child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      isDesktop ? 44 : 20,
-                      MediaQuery.of(context).padding.top + 56,
-                      isDesktop ? 44 : 20,
-                      24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        // Breadcrumb
-                        Row(
+                        padding: EdgeInsets.fromLTRB(
+                          isDesktop ? 44 : 20,
+                          MediaQuery.of(context).padding.top + 56,
+                          isDesktop ? 44 : 20,
+                          24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
                           children: [
-                            GestureDetector(
-                              onTap: () => context.canPop()
-                                  ? context.pop()
-                                  : context.go('/'),
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Text(
-                                  'LEARN',
-                                  style: TextStyle(
+                            // Breadcrumb
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => context.canPop()
+                                      ? context.pop()
+                                      : context.go('/'),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: Text(
+                                      'LEARN',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.6,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.75,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 14,
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                Text(
+                                  category.titleLatin.toUpperCase(),
+                                  style: const TextStyle(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.6,
-                                    color: Colors.white.withValues(alpha: 0.75),
+                                    color: Colors.white,
                                   ),
                                 ),
-                              ),
+                              ],
                             ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                            const SizedBox(height: 10),
+                            if (category.titleOlChiki.isNotEmpty) ...[
+                              Text(
+                                category.titleOlChiki,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  letterSpacing: 1.2,
+                                  fontFamily: 'OlChiki',
+                                ),
                               ),
-                              child: Icon(
-                                Icons.chevron_right_rounded,
-                                size: 14,
-                                color: Colors.white.withValues(alpha: 0.6),
-                              ),
-                            ),
+                              const SizedBox(height: 4),
+                            ],
                             Text(
-                              category.titleLatin.toUpperCase(),
-                              style: const TextStyle(
-                                fontSize: 11,
+                              category.titleLatin,
+                              style: TextStyle(
+                                fontFamily: primaryLocalizedFontFamily(
+                                  scriptMode,
+                                ),
+                                fontSize: isDesktop ? 46 : 34,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 1.6,
                                 color: Colors.white,
+                                letterSpacing: -1.2,
+                                height: 1.02,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (category.description != null &&
+                                category.description!.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: isDesktop ? 560 : 480,
+                                ),
+                                child: Text(
+                                  category.description!,
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 15 : 13.5,
+                                    color: Colors.white.withValues(alpha: 0.88),
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 16),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [
+                                  _buildHeaderBadge(
+                                    icon: Icons.menu_book_rounded,
+                                    label:
+                                        '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildHeaderBadge(
+                                    icon: Icons.stars_rounded,
+                                    label: 'Free Access',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildHeaderBadge(
+                                    icon: Icons.cloud_done_rounded,
+                                    label: 'Offline Ready',
+                                  ),
+                                  if (isDesktop) ...[
+                                    const SizedBox(width: 8),
+                                    _buildHeaderBadge(
+                                      icon: Icons.timer_outlined,
+                                      label: '~5 min each',
+                                    ),
+                                  ],
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 10),
-                        if (category.titleOlChiki.isNotEmpty) ...[
-                          Text(
-                            category.titleOlChiki,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white.withValues(alpha: 0.85),
-                              letterSpacing: 1.2,
-                              fontFamily: 'OlChiki',
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                        Text(
-                          category.titleLatin,
-                          style: TextStyle(
-                            fontFamily: primaryLocalizedFontFamily(scriptMode),
-                            fontSize: isDesktop ? 46 : 34,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            letterSpacing: -1.2,
-                            height: 1.02,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.18),
-                                offset: const Offset(0, 2),
-                                blurRadius: 8,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (category.description != null &&
-                            category.description!.isNotEmpty) ...[
-                          const SizedBox(height: 10),
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: isDesktop ? 560 : 480,
-                            ),
-                            child: Text(
-                              category.description!,
-                              style: TextStyle(
-                                fontSize: isDesktop ? 15 : 13.5,
-                                color: Colors.white.withValues(alpha: 0.88),
-                                fontWeight: FontWeight.w500,
-                                height: 1.5,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 16),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: [
-                              _buildHeaderBadge(
-                                icon: Icons.menu_book_rounded,
-                                label:
-                                    '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildHeaderBadge(
-                                icon: Icons.stars_rounded,
-                                label: 'Free Access',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildHeaderBadge(
-                                icon: Icons.cloud_done_rounded,
-                                label: 'Offline Ready',
-                              ),
-                              if (isDesktop) ...[
-                                const SizedBox(width: 8),
-                                _buildHeaderBadge(
-                                  icon: Icons.timer_outlined,
-                                  label: '~5 min each',
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
                     ),
                   ),
                 ],

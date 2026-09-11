@@ -53,9 +53,7 @@ class ShellAmbientBackground extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
                     colors: [
-                      AppColors.primary.withValues(
-                        alpha: isDark ? 0.16 : 0.14,
-                      ),
+                      AppColors.primary.withValues(alpha: isDark ? 0.16 : 0.14),
                       AppColors.primary.withValues(alpha: 0),
                     ],
                     stops: const [0.0, 1.0],
@@ -77,9 +75,9 @@ class ShellAmbientBackground extends StatelessWidget {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF38BDF8).withValues(
-                      alpha: isDark ? 0.10 : 0.10,
-                    ),
+                    const Color(
+                      0xFF38BDF8,
+                    ).withValues(alpha: isDark ? 0.10 : 0.10),
                     const Color(0xFF38BDF8).withValues(alpha: 0),
                   ],
                 ),
@@ -100,9 +98,9 @@ class ShellAmbientBackground extends StatelessWidget {
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      const Color(0xFF8B5CF6).withValues(
-                        alpha: isDark ? 0.08 : 0.06,
-                      ),
+                      const Color(
+                        0xFF8B5CF6,
+                      ).withValues(alpha: isDark ? 0.08 : 0.06),
                       const Color(0xFF8B5CF6).withValues(alpha: 0),
                     ],
                   ),
@@ -146,8 +144,9 @@ class _WebGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = (isDark ? Colors.white : const Color(0xFF0F172A))
-          .withValues(alpha: isDark ? 0.035 : 0.045)
+      ..color = (isDark ? Colors.white : const Color(0xFF0F172A)).withValues(
+        alpha: isDark ? 0.035 : 0.045,
+      )
       ..strokeWidth = 1;
     const step = 44.0;
     for (double x = 0; x < size.width; x += step) {

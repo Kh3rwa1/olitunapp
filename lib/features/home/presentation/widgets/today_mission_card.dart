@@ -98,9 +98,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF101724)
-                        : Colors.white,
+                    color: isDark ? const Color(0xFF101724) : Colors.white,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
                       color: isDark

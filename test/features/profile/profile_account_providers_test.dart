@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -36,6 +37,19 @@ void main() {
     expect(container.read(userAvatarIdProvider), 'default');
     expect(container.read(userAvatarColorIndexProvider), 0);
     expect(container.read(memberSinceProvider), 'April 2024');
+  });
+
+  testWidgets('every catalog avatar is present in the asset manifest', (
+    _,
+  ) async {
+    final container = await containerFor({});
+
+    final avatars = await container.read(availableAvatarsProvider.future);
+
+    expect(
+      avatars.map((avatar) => avatar.id),
+      orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+    );
   });
 
   test('account providers read stored preference values', () async {

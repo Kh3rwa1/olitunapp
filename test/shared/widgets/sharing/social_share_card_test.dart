@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:itun/core/accessibility/wcag_audit.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/widgets/sharing/share_card_payload.dart';
 import 'package:itun/shared/widgets/sharing/social_share_card.dart';
 import 'package:itun/shared/widgets/sharing/social_share_modal.dart';
@@ -67,6 +69,40 @@ void main() {
       expect(find.text('14 Days'), findsOneWidget);
       expect(find.text('Top Learner 🏆'), findsOneWidget);
       expect(find.text('ᱫᱤᱱᱟᱹᱢ ᱦᱤᱞᱚᱜ ᱚᱞ ᱪᱤᱠᱤ'), findsOneWidget);
+    });
+
+    testWidgets('display text on the green card renders white, never yellow', (
+      tester,
+    ) async {
+      final payload = ShareCardPayload.streakMilestone(streakDays: 14);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(child: SocialShareCard(payload: payload)),
+          ),
+        ),
+      );
+
+      final subtitle = tester.widget<Text>(
+        find.text('ᱫᱤᱱᱟᱹᱢ ᱦᱤᱞᱚᱜ ᱚᱞ ᱪᱤᱠᱤ'),
+      );
+      expect(subtitle.style?.color, Colors.white);
+
+      final metric = tester.widget<Text>(find.text('Top Learner 🏆'));
+      expect(metric.style?.color, Colors.white);
+    });
+
+    test('white display text contrasts better than the old yellow', () {
+      final whiteOnDark = WcagAudit.contrastRatio(
+        Colors.white,
+        AppColors.primaryDark,
+      );
+      final yellowOnDark = WcagAudit.contrastRatio(
+        AppColors.accentOchre,
+        AppColors.primaryDark,
+      );
+      expect(whiteOnDark, greaterThan(yellowOnDark));
     });
 
     testWidgets('renders Badge Achievement Share Card correctly', (

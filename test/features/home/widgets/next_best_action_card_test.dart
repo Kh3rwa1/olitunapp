@@ -33,6 +33,25 @@ class _NoMistakes extends MistakeNotifier {
   List<MistakeItem> build() => [];
 }
 
+/// Returning learner: vocabulary progress and a streak, but no alphabet
+/// work yet — the card must frame alphabet as the next step, never as a
+/// permanently stuck "start here".
+class _VocabOnlyStats extends UserStatsNotifier {
+  @override
+  AsyncValue<UserStatsEntity> build() => const AsyncValue.data(
+    UserStatsEntity(
+      practicedLetters: {},
+      completedLessons: {'lesson_vocab_basics'},
+      quizHistory: {},
+      categoryMastery: {},
+      totalLearningMinutes: 12,
+      lastActiveDate: '',
+      currentStreak: 2,
+      totalStars: 15,
+    ),
+  );
+}
+
 class _DoneMission extends LessonCompletedTodayNotifier {
   @override
   bool build() => true;
@@ -55,6 +74,12 @@ List<Override> _midJourneyOverrides() => [
   lessonCompletedTodayProvider.overrideWith(_DoneMission.new),
   quizTakenTodayProvider.overrideWith(_QuizDoneMission.new),
   bakhedListenedTodayProvider.overrideWith(_BakhedDoneMission.new),
+];
+
+List<Override> _vocabOnlyOverrides() => [
+  isAuthenticatedProvider.overrideWith((ref) async => true),
+  userStatsProvider.overrideWith(_VocabOnlyStats.new),
+  mistakeProvider.overrideWith(_NoMistakes.new),
 ];
 
 Widget _host({required Locale locale, required List<Override> overrides}) {
@@ -99,21 +124,18 @@ void main() {
     );
   });
 
-  testWidgets('continue branch renders Hindi copy for Hindi locale', (
+  testWidgets('returning learner sees next step, never a stuck start here', (
     tester,
   ) async {
     await tester.pumpWidget(
-      _host(locale: const Locale('hi'), overrides: _midJourneyOverrides()),
+      _host(locale: const Locale('en'), overrides: _vocabOnlyOverrides()),
     );
     await tester.pump();
     await tester.pump(const Duration(seconds: 1));
 
-    expect(find.text('यात्रा जारी रखें'), findsOneWidget);
-    expect(find.text('सीखना जारी रखें'), findsOneWidget);
-    expect(find.text('आज सीखने के लिए तैयार?'), findsOneWidget);
-    expect(find.text('जारी रखें'), findsOneWidget);
-
-    expect(find.text('CONTINUE LEARNING'), findsNothing);
-    expect(find.text('Continue Learning'), findsNothing);
+    expect(find.text('NEXT STEP'), findsOneWidget);
+    expect(find.text('Learn your first Ol Chiki letters'), findsOneWidget);
+    expect(find.text('Begin Lesson'), findsOneWidget);
+    expect(find.text('START HERE'), findsNothing);
   });
 }

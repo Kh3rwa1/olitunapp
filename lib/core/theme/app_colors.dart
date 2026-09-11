@@ -67,7 +67,10 @@ class AppColors {
   @Deprecated('Use accentGoldDark instead')
   static const Color duoYellowDark = accentGoldDark;
 
-  // Avatar Gradient Palettes
+  // Avatar Gradient Palettes. The last entry is the transparent option:
+  // a fully clear circle that shows the surface behind the animation.
+  // It must stay last: fresh installs default to it (see
+  // userAvatarColorIndexProvider), while stored indices keep working.
   static const List<List<Color>> avatarPalettes = [
     [primary, primaryDark],
     [santaliTerracotta, santaliTerracottaDark],
@@ -77,7 +80,11 @@ class AppColors {
     [accentPurple, accentPurpleDark],
     [accentCyan, Color(0xFF00B8D4)],
     [accentPink, Color(0xFFF50057)],
+    [Colors.transparent, Colors.transparent],
   ];
+
+  /// Index of the transparent avatar background in [avatarPalettes].
+  static int get transparentAvatarPaletteIndex => avatarPalettes.length - 1;
 
   // Neutrals & Surfaces
   static const Color pureBlack = Colors.black;

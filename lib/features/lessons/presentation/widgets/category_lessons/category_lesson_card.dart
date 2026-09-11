@@ -39,8 +39,8 @@ class CategoryLessonCard extends StatelessWidget {
         ? const Color(0xFF0F172A).withValues(alpha: 0.6)
         : Colors.white;
     final lockedBgColor = isDark
-        ? const Color(0xFF111827).withValues(alpha: 0.72)
-        : const Color(0xFFF8FAFC);
+        ? Colors.white.withValues(alpha: 0.04)
+        : Colors.black.withValues(alpha: 0.025);
     final activeBorderColor = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.black.withValues(alpha: 0.04);
@@ -237,7 +237,9 @@ class CategoryLessonCard extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         color: isLocked
-            ? (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+            ? (isDark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : Colors.black.withValues(alpha: 0.08))
             : null,
         gradient: isLocked ? null : gradient,
         shape: BoxShape.circle,

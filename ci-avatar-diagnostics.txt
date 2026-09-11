@@ -1,3 +1,622 @@
-COLLECTED_AT=2026-09-11T02:01:15Z
+COLLECTED_AT=2026-09-11T02:02:41Z
 ===== STATIC JOB =====
-run 34552402935 is still in progress; logs will be available when it is complete
+Code Formatting & Static Analysis	Set up job	﻿2026-09-11T01:53:34.0762545Z Current runner version: '2.337.0'
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0790658Z ##[group]Runner Image Provisioner
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0791578Z Hosted Compute Agent
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0792310Z Version: 20260828.587
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0792964Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0793749Z Build Date: 2026-08-28T16:44:25Z
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0794604Z Worker ID: {732a7266-baec-4b48-bbdb-f954679ee0b1}
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0795336Z Azure Region: westus2
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0796327Z ##[endgroup]
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0797927Z ##[group]Operating System
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0798575Z Ubuntu
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0799209Z 24.04.5
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0799732Z LTS
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0800337Z ##[endgroup]
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0800923Z ##[group]Runner Image
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0801562Z Image: ubuntu-24.04
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0802200Z Version: 20260907.300.1
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0803290Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0805171Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0806451Z ##[endgroup]
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0809634Z ##[group]GITHUB_TOKEN Permissions
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0811862Z Actions: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0812622Z ArtifactMetadata: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0813246Z Attestations: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0813877Z Checks: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0814500Z CodeQuality: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0815104Z Contents: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0815987Z CopilotRequests: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0816625Z Deployments: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0817279Z Discussions: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0817866Z Drives: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0818448Z Issues: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0819044Z Metadata: read
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0819692Z Models: read
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0820224Z Packages: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0820850Z Pages: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0821431Z PullRequests: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0822114Z RepositoryProjects: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0822778Z SecurityEvents: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0823348Z Statuses: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0823986Z VulnerabilityAlerts: read
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0824630Z ##[endgroup]
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0827371Z Secret source: Actions
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0828389Z Cache mode: write
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.0829192Z Prepare workflow directory
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.1177431Z Prepare all required actions
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.1227981Z Getting action download info
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.4723931Z Download action repository 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' (SHA:11bd71901bbe5b1630ceea73d27597364c9af683)
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.5997543Z Download action repository 'subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c' (SHA:4cab68ce0f1c7c924f688bff4792e044f1aeb30c)
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:34.8770477Z Getting action download info
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:35.0086363Z Download action repository 'actions/cache@v5' (SHA:caa296126883cff596d87d8935842f9db880ef25)
+Code Formatting & Static Analysis	Set up job	2026-09-11T01:53:35.1863135Z Complete job name: Code Formatting & Static Analysis
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-09-11T01:53:35.2879850Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2892346Z ##[group]Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2894323Z with:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2895408Z   repository: Kh3rwa1/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2906178Z   token: ***
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2907306Z   ssh-strict: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2908424Z   ssh-user: git
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2909495Z   persist-credentials: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2910539Z   clean: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2911656Z   sparse-checkout-cone-mode: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2912730Z   fetch-depth: 1
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2913605Z   fetch-tags: false
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2914511Z   show-progress: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2915945Z   lfs: false
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2916892Z   submodules: false
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2918103Z   set-safe-directory: true
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.2919582Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4076418Z Syncing repository: Kh3rwa1/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4080676Z ##[group]Getting Git version info
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4083026Z Working directory is '/home/runner/work/olitunapp/olitunapp'
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4086893Z [command]/usr/bin/git version
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4133217Z git version 2.55.0
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4157538Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4178491Z Temporarily overriding HOME='/home/runner/work/_temp/eb62f0df-8322-48eb-9f3d-567b55f7b2e8' before making global git config changes
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4182845Z Adding repository directory to the temporary git global config as a safe directory
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4186409Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/olitunapp/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4242369Z Deleting the contents of '/home/runner/work/olitunapp/olitunapp'
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4246410Z ##[group]Initializing the repository
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4250812Z [command]/usr/bin/git init /home/runner/work/olitunapp/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4351161Z hint: Using 'master' as the name for the initial branch. This default branch name
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4354678Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4358154Z hint: to use in all of your new repositories, which will suppress this warning,
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4360729Z hint: call:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4362046Z hint:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4363709Z hint: 	git config --global init.defaultBranch <name>
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4366002Z hint:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4367939Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4371092Z hint: 'development'. The just-created branch can be renamed via this command:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4373941Z hint:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4375305Z hint: 	git branch -m <name>
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4377244Z hint:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4379421Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4382981Z Initialized empty Git repository in /home/runner/work/olitunapp/olitunapp/.git/
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4388888Z [command]/usr/bin/git remote add origin https://github.com/Kh3rwa1/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4419228Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4420924Z ##[group]Disabling automatic garbage collection
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4423066Z [command]/usr/bin/git config --local gc.auto 0
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4456575Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4458104Z ##[group]Setting up auth
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4464395Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4502992Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4885624Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.4942815Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.5174012Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.5216568Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.5218231Z ##[group]Fetching the repository
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:35.5227822Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +4c9e19157fc93449f05c050fc2288baf64ec5004:refs/remotes/pull/323/merge
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2669049Z From https://github.com/Kh3rwa1/olitunapp
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2671090Z  * [new ref]         4c9e19157fc93449f05c050fc2288baf64ec5004 -> pull/323/merge
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2675942Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2677110Z ##[group]Determining the checkout info
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2678928Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2687945Z [command]/usr/bin/git sparse-checkout disable
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2740505Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2771779Z ##[group]Checking out the ref
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.2776876Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/323/merge
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4818468Z Note: switching to 'refs/remotes/pull/323/merge'.
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4819198Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4819643Z You are in 'detached HEAD' state. You can look around, make experimental
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4820724Z changes and commit them, and you can discard any commits you make in this
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4821742Z state without impacting any branches by switching back to a branch.
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4822337Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4823005Z If you want to create a new branch to retain commits you create, you may
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4823821Z do so (now or later) by using -c with the switch command. Example:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4824361Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4824557Z   git switch -c <new-branch-name>
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4824872Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4825060Z Or undo this operation with:
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4825348Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4825496Z   git switch -
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4825969Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4826377Z Turn off this advice by setting config variable advice.detachedHead to false
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4826934Z 
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4827579Z HEAD is now at 4c9e191 Merge 7eaa4b92fca00118599484a2e680605edb6aecdf into b2bf29805e43785cdba2d9baf3a0b241f5e6e0a7
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4838517Z ##[endgroup]
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4897914Z [command]/usr/bin/git log -1 --format=%H
+Code Formatting & Static Analysis	Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:53:37.4928195Z 4c9e19157fc93449f05c050fc2288baf64ec5004
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	﻿2026-09-11T01:53:37.5316147Z ##[group]Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5316628Z with:
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5316833Z   channel: stable
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5317042Z   cache: true
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5317248Z   architecture: X64
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5317499Z   pub-cache-path: default
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5317732Z   dry-run: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5318034Z   git-source: https://github.com/flutter/flutter.git
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5318356Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5376052Z ##[start-action display=Make yq tool available on Windows runners;id=__subosito_flutter-action.__run]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5399127Z ##[end-action id=__subosito_flutter-action.__run;outcome=skipped;conclusion=skipped;duration_ms=0]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5401400Z ##[start-action display=Make setup script executable;id=__subosito_flutter-action.__run_2]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5443912Z ##[group]Run chmod +x "$GITHUB_ACTION_PATH/setup.sh"
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5444362Z ^[[36;1mchmod +x "$GITHUB_ACTION_PATH/setup.sh"^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5487405Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5487812Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5596174Z ##[end-action id=__subosito_flutter-action.__run_2;outcome=success;conclusion=success;duration_ms=19]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5598911Z ##[start-action display=Set action inputs;id=__subosito_flutter-action.flutter-action]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5643995Z ##[group]Run $GITHUB_ACTION_PATH/setup.sh -p \
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5644426Z ^[[36;1m$GITHUB_ACTION_PATH/setup.sh -p \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5644741Z ^[[36;1m  -n '' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5644969Z ^[[36;1m  -f '' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5645181Z ^[[36;1m  -a 'X64' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5645403Z ^[[36;1m  -k '' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5645610Z ^[[36;1m  -c '' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5646129Z ^[[36;1m  -l '' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5646346Z ^[[36;1m  -d 'default' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5646689Z ^[[36;1m  -g 'https://github.com/flutter/flutter.git' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5647034Z ^[[36;1m  stable^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5681815Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.5682187Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8008883Z ##[end-action id=__subosito_flutter-action.flutter-action;outcome=success;conclusion=success;duration_ms=240]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8013883Z ##[start-action display=Cache Flutter;id=__subosito_flutter-action.cache-flutter]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8075995Z ##[group]Run actions/cache@v5
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8076281Z with:
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8076554Z   path: /opt/hostedtoolcache/flutter/stable-3.47.3-x64
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8077057Z   key: flutter-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8077513Z   enableCrossOsArchive: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8077776Z   fail-on-cache-miss: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8078020Z   lookup-only: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8078237Z   save-always: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:37.8078449Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:38.1744142Z Cache hit for: flutter-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:39.4702731Z Received 0 of 1719895072 (0.0%), 0.0 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:40.4718611Z Received 113246208 of 1719895072 (6.6%), 54.0 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:41.4726441Z Received 255852544 of 1719895072 (14.9%), 81.3 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:42.4742076Z Received 402653184 of 1719895072 (23.4%), 95.9 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:43.4751554Z Received 566231040 of 1719895072 (32.9%), 107.9 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:44.4752205Z Received 700448768 of 1719895072 (40.7%), 111.2 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:45.4754673Z Received 838860800 of 1719895072 (48.8%), 114.2 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:46.4779450Z Received 968884224 of 1719895072 (56.3%), 115.4 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:47.4790908Z Received 1107296256 of 1719895072 (64.4%), 117.2 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:48.4828627Z Received 1220542464 of 1719895072 (71.0%), 116.3 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:49.4812561Z Received 1342177280 of 1719895072 (78.0%), 116.3 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:50.4856773Z Received 1472200704 of 1719895072 (85.6%), 116.9 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:51.4881652Z Received 1593835520 of 1719895072 (92.7%), 116.8 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:52.4841952Z Received 1715700768 of 1719895072 (99.8%), 116.8 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:52.5397190Z Received 1719895072 of 1719895072 (100.0%), 116.6 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:52.5400186Z Cache Size: ~1640 MB (1719895072 B)
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:52.5443780Z [command]/usr/bin/tar -xf /home/runner/work/_temp/bde0752b-d9b5-4f4a-bbc8-357f748aa2f0/cache.tzst -P -C /home/runner/work/olitunapp/olitunapp --use-compress-program unzstd
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.3634229Z Cache restored successfully
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.4451957Z Cache restored from key: flutter-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.4615397Z ##[end-action id=__subosito_flutter-action.cache-flutter;outcome=success;conclusion=success;duration_ms=19660]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.4618780Z ##[start-action display=Cache pub dependencies;id=__subosito_flutter-action.cache-pub]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7669231Z ##[group]Run actions/cache@v5
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7669625Z with:
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7669892Z   path: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7670879Z   key: flutter-pub-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf-7b3c6deaf6eba4ef492371b677e37605af43da572820e0fc0fd70207fdeae131
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7671924Z   enableCrossOsArchive: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7672270Z   fail-on-cache-miss: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7672588Z   lookup-only: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7672885Z   save-always: false
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:57.7673167Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:58.1501449Z Cache hit for: flutter-pub-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf-7b3c6deaf6eba4ef492371b677e37605af43da572820e0fc0fd70207fdeae131
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:53:59.4598137Z Received 0 of 124787771 (0.0%), 0.0 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:00.4611686Z Received 100663296 of 124787771 (80.7%), 48.0 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:00.6274404Z Received 124787771 of 124787771 (100.0%), 54.9 MBs/sec
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:00.6277388Z Cache Size: ~119 MB (124787771 B)
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:00.6340989Z [command]/usr/bin/tar -xf /home/runner/work/_temp/1bf0d7c6-a6c3-4028-a79b-734cfa4882bc/cache.tzst -P -C /home/runner/work/olitunapp/olitunapp --use-compress-program unzstd
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2431589Z Cache restored successfully
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2569872Z Cache restored from key: flutter-pub-linux-stable-3.47.3-x64-e8113bf45620cbeb8aff64947ee4c93e16adb4cf-7b3c6deaf6eba4ef492371b677e37605af43da572820e0fc0fd70207fdeae131
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2673742Z ##[end-action id=__subosito_flutter-action.cache-pub;outcome=success;conclusion=success;duration_ms=4805]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2677645Z ##[start-action display=Run setup script;id=__subosito_flutter-action.__run_3]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2714067Z ##[group]Run $GITHUB_ACTION_PATH/setup.sh \
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2714454Z ^[[36;1m$GITHUB_ACTION_PATH/setup.sh \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2714757Z ^[[36;1m  -n '3.47.3' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2715008Z ^[[36;1m  -a 'x64' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2715336Z ^[[36;1m  -c '/opt/hostedtoolcache/flutter/stable-3.47.3-x64' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2716035Z ^[[36;1m  -d '/home/runner/.pub-cache' \^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2716344Z ^[[36;1m  stable^[[0m
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2753564Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.2754188Z ##[endgroup]
+Code Formatting & Static Analysis	Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:02.4852780Z ##[end-action id=__subosito_flutter-action.__run_3;outcome=success;conclusion=success;duration_ms=217]
+Code Formatting & Static Analysis	Run flutter pub get	﻿2026-09-11T01:54:02.4910563Z ##[group]Run flutter pub get
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4910888Z ^[[36;1mflutter pub get^[[0m
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4949646Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4949921Z env:
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4950248Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4950670Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:02.4950951Z ##[endgroup]
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.3044670Z Resolving dependencies...
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.6986677Z Downloading packages...
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8275541Z   appwrite 21.1.0 (26.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8276412Z   archive 4.0.9 (4.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8301725Z   audio_service 0.18.18 (0.18.19 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8302378Z   audio_session 0.2.3 (0.2.4 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8302940Z   cached_network_image 3.4.1 (4.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8303657Z   cached_network_image_platform_interface 4.1.1 (5.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8304375Z   cached_network_image_web 1.3.1 (2.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8304995Z > characters 1.4.1 (was 1.4.0)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8305436Z   clock 1.1.2 (1.1.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8306125Z   cross_file 0.3.5+2 (0.3.5+5 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8306629Z   dbus 0.7.12 (0.7.15 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8307114Z   desktop_webview_window 0.2.3 (0.3.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8307723Z   device_info_plus 12.4.0 (13.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8308375Z   device_info_plus_platform_interface 7.0.3 (8.1.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8308998Z   file_picker 10.3.10 (12.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8309515Z   file_selector_linux 0.9.4 (0.9.4+1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8310057Z   file_selector_macos 0.9.5 (0.9.5+1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8310611Z   file_selector_windows 0.9.3+5 (0.9.3+6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8311178Z   flutter_cache_manager 3.4.1 (3.4.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8311775Z   flutter_local_notifications 20.1.0 (22.3.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8312438Z   flutter_local_notifications_linux 7.0.0 (8.0.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8313230Z   flutter_local_notifications_platform_interface 10.0.0 (12.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8314071Z   flutter_local_notifications_windows 2.0.1 (3.1.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8314781Z   flutter_plugin_android_lifecycle 2.0.34 (2.0.35 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8315422Z   flutter_riverpod 2.6.1 (3.4.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8316256Z   flutter_web_auth_2 5.0.2 (5.1.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8316781Z   go_router 17.2.3 (18.0.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8317275Z   google_mobile_ads 7.0.0 (9.1.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8317801Z   html 0.15.6 (0.15.7 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8318261Z   image_picker 1.2.2 (1.2.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8318829Z   image_picker_android 0.8.13+17 (0.8.13+22 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8319726Z   image_picker_ios 0.8.13+3 (0.8.13+7 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8320251Z > intl 0.20.3 (was 0.20.2)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8320675Z   jni 0.14.2 (1.0.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8321130Z   just_audio 0.10.5 (0.10.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8321614Z   lottie 3.3.3 (3.5.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8322071Z > matcher 0.12.20 (was 0.12.17)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8322652Z > material_color_utilities 0.13.0 (was 0.11.1) (0.13.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8323275Z > meta 1.19.0 (was 1.16.0)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8323683Z   mime 2.0.0 (2.1.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8324125Z   package_config 2.2.0 (3.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8324647Z   package_info_plus 9.0.1 (10.2.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8325295Z   package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8326220Z   path_provider 2.1.5 (2.1.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8326774Z   path_provider_android 2.2.23 (2.3.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8327370Z   path_provider_foundation 2.5.1 (2.6.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8327972Z   path_provider_linux 2.2.1 (2.2.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8328592Z   path_provider_platform_interface 2.1.2 (2.1.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8329545Z   platform 3.1.6 (3.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8330027Z   posix 6.5.0 (6.5.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8330479Z   process 5.0.5 (5.0.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8330968Z   razorpay_flutter 1.4.5 (1.4.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8331482Z   riverpod 2.6.1 (3.4.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8331944Z   sentry 9.28.0 (9.29.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8332430Z   sentry_flutter 9.28.0 (9.29.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8333024Z   share_plus 12.0.2 (13.3.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8333593Z   share_plus_platform_interface 6.1.0 (7.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8334250Z   shared_preferences_android 2.4.23 (2.4.28 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8334894Z   shared_preferences_foundation 2.5.6 (2.5.7 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8335477Z   shimmer 3.0.0 (4.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8336168Z   sqflite 2.4.2 (2.4.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8336656Z   sqflite_android 2.4.2+2 (2.4.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8337195Z   sqflite_common 2.5.6 (2.5.11 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8337734Z   sqflite_darwin 2.4.2 (2.4.3+1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8338416Z   sqflite_platform_interface 2.4.0 (2.4.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8339029Z   stack_trace 1.12.1 (1.12.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8339540Z   synchronized 3.4.0 (3.4.1+2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8340073Z > test_api 0.7.12 (was 0.7.6) (0.7.14 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8340605Z   timezone 0.10.1 (0.11.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8341122Z   url_launcher_android 6.3.29 (6.3.33 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8341669Z   url_launcher_ios 6.3.6 (6.4.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8342200Z   url_launcher_linux 3.2.2 (3.2.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8342743Z   url_launcher_macos 3.2.5 (3.2.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8343266Z   url_launcher_web 2.4.1 (2.4.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8343819Z   url_launcher_windows 3.1.5 (3.1.6 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8344379Z   uuid 4.5.3 (4.6.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8344839Z   vector_graphics 1.2.0 (1.2.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8345411Z   vector_graphics_compiler 1.2.1 (1.3.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8346175Z > vector_math 2.4.2 (was 2.2.0)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8346769Z   video_player 2.10.1 (2.14.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8347306Z   video_player_android 2.9.5 (2.12.2 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8347905Z   video_player_avfoundation 2.8.9 (2.12.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8348578Z   video_player_platform_interface 6.7.0 (6.9.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8349174Z   vm_service 15.2.0 (15.3.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8349660Z   webdriver 3.1.0 (3.2.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8350159Z   webview_flutter 4.13.1 (4.14.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8350721Z   webview_flutter_android 4.12.0 (4.14.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8351349Z   webview_flutter_wkwebview 3.25.0 (3.26.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8352152Z   win32 5.15.0 (6.4.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8352621Z   win32_registry 2.1.0 (3.0.3 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8353139Z   window_to_front 0.0.3 (1.0.0 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8353640Z   xml 6.6.1 (7.0.1 available)
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8354085Z Changed 7 dependencies!
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8354729Z 87 packages have newer versions incompatible with dependency constraints.
+Code Formatting & Static Analysis	Run flutter pub get	2026-09-11T01:54:03.8355513Z Try `flutter pub outdated` for more information.
+Code Formatting & Static Analysis	Format check	﻿2026-09-11T01:54:04.6384564Z ##[group]Run dart format --output=none --set-exit-if-changed .
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6385108Z ^[[36;1mdart format --output=none --set-exit-if-changed .^[[0m
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6421406Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6421677Z env:
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6422016Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6422452Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:04.6422750Z ##[endgroup]
+Code Formatting & Static Analysis	Format check	2026-09-11T01:54:09.1236978Z Formatted 1065 files (0 changed) in 4.46 seconds.
+Code Formatting & Static Analysis	Enforce File Length Gate	﻿2026-09-11T01:54:09.1412387Z ##[group]Run node scripts/check_file_length.mjs
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1413147Z ^[[36;1mnode scripts/check_file_length.mjs^[[0m
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1450926Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1451201Z env:
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1451532Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1451957Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:09.1452244Z ##[endgroup]
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:11.5312553Z 
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:11.5314074Z 🔍 Checked 695 Dart files in lib/ against 600-line limit.
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:11.5314753Z 
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:11.5315967Z ✅ File length gate passed successfully! All non-exempted files are under 600 lines.
+Code Formatting & Static Analysis	Enforce File Length Gate	2026-09-11T01:54:11.5316927Z 
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	﻿2026-09-11T01:54:11.7026840Z ##[group]Run node scripts/check_typography.mjs
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7027301Z ^[[36;1mnode scripts/check_typography.mjs^[[0m
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7063210Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7063499Z env:
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7063860Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7064314Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:11.7064621Z ##[endgroup]
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:12.0001237Z 
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:12.0002383Z 🔍 Checked 702 Dart files in lib/ for typography compliance.
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:12.0004116Z ✅ Typography gate passed successfully! All text complies with bundled Inter & OlChiki.
+Code Formatting & Static Analysis	Enforce Bundled Typography Gate	2026-09-11T01:54:12.0004707Z 
+Code Formatting & Static Analysis	Enforce Color Token Gate	﻿2026-09-11T01:54:12.0095159Z ##[group]Run node scripts/check_color_literals.mjs
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0096124Z ^[[36;1mnode scripts/check_color_literals.mjs^[[0m
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0137460Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0137737Z env:
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0138066Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0138502Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0138780Z ##[endgroup]
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0766955Z 
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0768098Z 🔍 Checked 689 Dart files in lib/ for color token compliance.
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0769842Z 📊 Found 162 total remaining literals across 64 grandfathered files.
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0770783Z ✅ Color token gate passed successfully! Zero unapproved raw color literals.
+Code Formatting & Static Analysis	Enforce Color Token Gate	2026-09-11T01:54:12.0771226Z 
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	﻿2026-09-11T01:54:12.0870373Z ##[group]Run node scripts/check_l10n_parity.mjs
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0871261Z ^[[36;1mnode scripts/check_l10n_parity.mjs^[[0m
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0924788Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0925470Z env:
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0926523Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0927539Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.0928298Z ##[endgroup]
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1290013Z 
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1291131Z 🌐 Canonical ARB (app_en.arb): 258 keys
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1357693Z ✅ app_bn.arb: 100% parity (258/258 keys)
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1363136Z ✅ app_hi.arb: 100% parity (258/258 keys)
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1373665Z ✅ app_or.arb: 100% parity (258/258 keys)
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1379611Z ✅ app_sat.arb: 100% parity (258/258 keys)
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1380026Z 
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1380418Z 🎉 All ARB files passed 100% localization parity check!
+Code Formatting & Static Analysis	Enforce Localization Key Parity Gate	2026-09-11T01:54:12.1380846Z 
+Code Formatting & Static Analysis	Verify Version Consistency	﻿2026-09-11T01:54:12.1458377Z ##[group]Run dart run tool/verify_version_consistency.dart
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1458855Z ^[[36;1mdart run tool/verify_version_consistency.dart^[[0m
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1494426Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1494694Z env:
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1495020Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1495441Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.1495999Z ##[endgroup]
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.3920877Z 📦 Source of truth (pubspec.yaml): 1.3.1
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.3952454Z 📄 CHANGELOG.md version: 1.3.1
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.3953778Z 🏷️ Release Please Manifest version: 1.3.1
+Code Formatting & Static Analysis	Verify Version Consistency	2026-09-11T01:54:12.3975408Z ✅ Version consistency verification passed successfully!
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	﻿2026-09-11T01:54:12.4275603Z ##[group]Run node scripts/verify_pinned_actions.mjs
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4276392Z ^[[36;1mnode scripts/verify_pinned_actions.mjs^[[0m
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4312956Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4313229Z env:
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4313567Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4314011Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4314313Z ##[endgroup]
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4641336Z Audited 66 action references across 7 workflow files.
+Code Formatting & Static Analysis	Audit Immutable GitHub Action SHA Pinning	2026-09-11T01:54:12.4644359Z ✅ All GitHub Actions are immutably pinned to 40-character commit SHAs.
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	﻿2026-09-11T01:54:12.4712590Z ##[group]Run node scripts/verify_signing_configuration.mjs
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4713080Z ^[[36;1mnode scripts/verify_signing_configuration.mjs^[[0m
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4749964Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4750251Z env:
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4750594Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4751057Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.4751376Z ##[endgroup]
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.5072592Z 🔍 Auditing Release Signing Path Consistency across repository...
+Code Formatting & Static Analysis	Verify Signing Configuration Consistency	2026-09-11T01:54:12.5076837Z ✅ Signing configuration audit passed: All workflows and Gradle definitions resolve canonical android/app/upload-keystore.jks path consistently.
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	﻿2026-09-11T01:54:12.5140654Z ##[group]Run node scripts/verify_node_dependency_alignment.mjs
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5141159Z ^[[36;1mnode scripts/verify_node_dependency_alignment.mjs^[[0m
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5178191Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5178460Z env:
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5178788Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5179208Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5179493Z ##[endgroup]
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5500210Z 🔍 Auditing Node.js dependency governance...
+Code Formatting & Static Analysis	Verify Node Dependency Alignment	2026-09-11T01:54:12.5508317Z ✅ node-appwrite 25.1.0 is pinned and protected from automated upgrades.
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	﻿2026-09-11T01:54:12.5577914Z ##[group]Run node --test scripts/verify_android_signing_certificate.test.mjs
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5578544Z ^[[36;1mnode --test scripts/verify_android_signing_certificate.test.mjs^[[0m
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5614628Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5614890Z env:
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5615203Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5615841Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.5616140Z ##[endgroup]
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7126741Z TAP version 13
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7593562Z # Subtest: Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7598838Z ok 1 - Cert Normalization: Colon-delimited uppercase fingerprint is normalized correctly
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7599900Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7600399Z   duration_ms: 5.63835
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7601015Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7601516Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7602467Z # Subtest: Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7608669Z ok 2 - Cert Normalization: Lowercase dashed/spaced fingerprint is normalized to uppercase 64 chars
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7609673Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7610081Z   duration_ms: 0.179218
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7610669Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7611187Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7611929Z # Subtest: Cert Normalization: Malformed non-hex or invalid length throws error
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7614647Z ok 3 - Cert Normalization: Malformed non-hex or invalid length throws error
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7615465Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7616077Z   duration_ms: 0.495424
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7616506Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7616872Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7636529Z # Subtest: Cert Verification: Matches valid apksigner standard output
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7639081Z ok 4 - Cert Verification: Matches valid apksigner standard output
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7639800Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7640181Z   duration_ms: 0.458965
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7640667Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7641046Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7641654Z # Subtest: Cert Verification: Fails on certificate digest mismatch
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7642501Z ok 5 - Cert Verification: Fails on certificate digest mismatch
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7643226Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7643641Z   duration_ms: 0.891589
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7644100Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7644506Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7645274Z # Subtest: Cert Verification: Fails on missing certificate or multiple signers
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7646585Z ok 6 - Cert Verification: Fails on missing certificate or multiple signers
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7647175Z   ---
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7647398Z   duration_ms: 0.209274
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7647657Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7647879Z   ...
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7705227Z 1..6
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7705604Z # tests 6
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7706873Z # suites 0
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7707240Z # pass 6
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7707599Z # fail 0
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7708036Z # cancelled 0
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7708634Z # skipped 0
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7709188Z # todo 0
+Code Formatting & Static Analysis	Unit Test Android Certificate Normalizer	2026-09-11T01:54:12.7709713Z # duration_ms 103.03808
+Code Formatting & Static Analysis	Unit Test Release Gate	﻿2026-09-11T01:54:12.7786163Z ##[group]Run node --test scripts/check_release_gate.test.mjs
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7786766Z ^[[36;1mnode --test scripts/check_release_gate.test.mjs^[[0m
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7823269Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7823537Z env:
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7823857Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7824265Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.7824541Z ##[endgroup]
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.8274935Z TAP version 13
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9771326Z # Subtest: required jobs match the workflow prerequisites exactly
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9778581Z ok 1 - required jobs match the workflow prerequisites exactly
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9806609Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9836863Z   duration_ms: 2.027749
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9859268Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9863573Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9864050Z # Subtest: passes only when all mandatory jobs succeed
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9864683Z ok 2 - passes only when all mandatory jobs succeed
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9865045Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9865246Z   duration_ms: 0.453785
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9865485Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9865946Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9866240Z # Subtest: blocks "failure" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9866599Z ok 3 - blocks "failure" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9866890Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9867090Z   duration_ms: 0.640135
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9867313Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9867504Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9867736Z # Subtest: blocks "cancelled" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9868082Z ok 4 - blocks "cancelled" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9868377Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9868578Z   duration_ms: 0.504731
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9868810Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9869118Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9869511Z # Subtest: blocks "skipped" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9870051Z ok 5 - blocks "skipped" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9870898Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9871198Z   duration_ms: 0.581075
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9871561Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9871866Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9872228Z # Subtest: blocks "timed_out" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9872787Z ok 6 - blocks "timed_out" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9873255Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9873565Z   duration_ms: 0.420362
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9873930Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9874243Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9874615Z # Subtest: blocks "neutral" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9875173Z ok 7 - blocks "neutral" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9875641Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9876176Z   duration_ms: 0.537152
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9876548Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9876860Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9877232Z # Subtest: blocks "unknown" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9877778Z ok 8 - blocks "unknown" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9878271Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9878589Z   duration_ms: 1.24776
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9878950Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9879272Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9879631Z # Subtest: blocks "" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9880123Z ok 9 - blocks "" in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9880559Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9880864Z   duration_ms: 0.743891
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9881228Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9881552Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9881900Z # Subtest: blocks null in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9882445Z ok 10 - blocks null in every required job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9882868Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9883160Z   duration_ms: 0.757507
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9883513Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9883824Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9884281Z # Subtest: a cancellation cannot conceal a different failing job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9885016Z ok 11 - a cancellation cannot conceal a different failing job
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9885581Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9886067Z   duration_ms: 0.323069
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9886463Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9886788Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9887594Z # Subtest: blocks missing jobs and malformed job records
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9888256Z ok 12 - blocks missing jobs and malformed job records
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9888784Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9889137Z   duration_ms: 0.470005
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9889506Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9889852Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9890255Z # Subtest: blocks absent, invalid, and non-object input
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9890917Z ok 13 - blocks absent, invalid, and non-object input
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9891253Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9891450Z   duration_ms: 0.253047
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9891677Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9891883Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9892212Z # Subtest: CLI returns a nonzero exit status for cancellation and missing input
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9892759Z ok 14 - CLI returns a nonzero exit status for cancellation and missing input
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9893146Z   ---
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9893349Z   duration_ms: 99.795813
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9893581Z   type: 'test'
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9893783Z   ...
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9922411Z 1..14
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9922867Z # tests 14
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9923413Z # suites 0
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9923936Z # pass 14
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9924460Z # fail 0
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9924995Z # cancelled 0
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9925512Z # skipped 0
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9926299Z # todo 0
+Code Formatting & Static Analysis	Unit Test Release Gate	2026-09-11T01:54:12.9926888Z # duration_ms 176.759145
+Code Formatting & Static Analysis	Analyze	﻿2026-09-11T01:54:13.0007151Z ##[group]Run flutter analyze --fatal-infos
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0007552Z ^[[36;1mflutter analyze --fatal-infos^[[0m
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0043966Z shell: /usr/bin/bash -e {0}
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0044247Z env:
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0044573Z   FLUTTER_ROOT: /opt/hostedtoolcache/flutter/stable-3.47.3-x64/flutter
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0045006Z   PUB_CACHE: /home/runner/.pub-cache
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:13.0045292Z ##[endgroup]
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8037106Z Analyzing olitunapp...                                          
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8044353Z 
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8077072Z    info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/features/profile/profile_hero_card_test.dart:74:45 • avoid_redundant_argument_values
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8083675Z 
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8146724Z 1 issue found. (ran in 29.8s)
+Code Formatting & Static Analysis	Analyze	2026-09-11T01:54:43.8232880Z ##[error]Process completed with exit code 1.
+Code Formatting & Static Analysis	Post Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	﻿2026-09-11T01:54:43.8412548Z Post job cleanup.
+Code Formatting & Static Analysis	Post Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:43.8417206Z ##[start-action display=Cache pub dependencies;id=__b6f59135-9010-4cef-bf6e-bbf0e68595d8.cache-pub]
+Code Formatting & Static Analysis	Post Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:43.8419497Z ##[end-action id=__b6f59135-9010-4cef-bf6e-bbf0e68595d8.cache-pub;outcome=skipped;conclusion=skipped;duration_ms=0]
+Code Formatting & Static Analysis	Post Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:43.8421496Z ##[start-action display=Cache Flutter;id=__b6f59135-9010-4cef-bf6e-bbf0e68595d8.cache-flutter]
+Code Formatting & Static Analysis	Post Run subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c	2026-09-11T01:54:43.8423535Z ##[end-action id=__b6f59135-9010-4cef-bf6e-bbf0e68595d8.cache-flutter;outcome=skipped;conclusion=skipped;duration_ms=0]
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	﻿2026-09-11T01:54:43.8508251Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.8509611Z Post job cleanup.
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9416204Z [command]/usr/bin/git version
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9462489Z git version 2.55.0
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9507196Z Temporarily overriding HOME='/home/runner/work/_temp/33799e7c-5ee1-4a07-a50c-8a0cba29eb66' before making global git config changes
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9509922Z Adding repository directory to the temporary git global config as a safe directory
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9513693Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/olitunapp/olitunapp
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9553257Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9590047Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9838459Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9868246Z http.https://github.com/.extraheader
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9881863Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+Code Formatting & Static Analysis	Post Run actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683	2026-09-11T01:54:43.9921619Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Code Formatting & Static Analysis	Complete job	﻿2026-09-11T01:54:44.0340600Z Cleaning up orphan processes
+Code Formatting & Static Analysis	Complete job	2026-09-11T01:54:44.0667030Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -25,6 +25,7 @@ Widget _wrap({
   bool leaderboardError = false,
   String avatarId = kDefaultAvatarId,
   double? cardWidth,
+  bool disableAnimations = true,
 }) {
   final hero = ProfileHeroCard(
     userName: 'Learner',
@@ -47,6 +48,12 @@ Widget _wrap({
       }),
     ],
     child: MaterialApp(
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(
+          context,
+        ).copyWith(disableAnimations: disableAnimations),
+        child: child!,
+      ),
       home: Scaffold(
         body: SingleChildScrollView(
           child: cardWidth == null
@@ -62,7 +69,7 @@ void main() {
   testWidgets('shows the Lottie avatar animation, never an emoji', (
     tester,
   ) async {
-    await tester.pumpWidget(_wrap());
+    await tester.pumpWidget(_wrap(disableAnimations: false));
     await tester.pump();
     expect(find.byType(LottieBuilder), findsOneWidget);
     expect(find.text('👶'), findsNothing);

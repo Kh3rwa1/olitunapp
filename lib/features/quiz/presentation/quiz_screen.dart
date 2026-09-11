@@ -15,8 +15,10 @@ import '../../../core/audio/playback_controller.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../shared/providers/providers.dart';
 import '../../content/presentation/providers/audio_playback_providers.dart';
+import '../../lessons/domain/entities/lesson_entity.dart';
 
 import '../data/quiz_repository.dart';
+import '../domain/quiz_scoring_rules.dart';
 import 'providers/quiz_session_notifier.dart';
 import 'widgets/listening_question_card.dart';
 import 'widgets/quiz_option_tile.dart';
@@ -31,8 +33,9 @@ import 'widgets/quiz_fill_blank_options.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
+  final String? lessonId;
 
-  const QuizScreen({super.key, required this.quizId});
+  const QuizScreen({super.key, required this.quizId, this.lessonId});
 
   @override
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
@@ -40,6 +43,7 @@ class QuizScreen extends ConsumerStatefulWidget {
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
   bool _started = false;
+  bool _linkedLessonCompletionRecorded = false;
   late final PlaybackController _playback;
 
   @override
@@ -48,8 +52,57 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     _playback = ref.read(playbackControllerProvider);
   }
 
-  /// Phase 7: spec §16 listening-quiz funnel events. Emitted alongside the
-  /// generic quiz events, only while the audio-quizzes flag is on.
+  void _recordLinkedLessonCompletion(
+    QuizModel quiz,
+    QuizSessionState session,
+  ) {
+    final lessonId = widget.lessonId?.trim();
+    if (_linkedLessonCompletionRecorded ||
+        lessonId == null ||
+        lessonId.isEmpty ||
+        !QuizScoringRules.isPassing(session.score, quiz.questions.length)) {
+      return;
+    }
+
+    final lessons =
+        ref.read(learnerLessonsProvider).valueOrNull ?? const <LessonEntity>[];
+    LessonEntity? linkedLesson;
+    for (final lesson in lessons) {
+      if (lesson.id == lessonId) {
+        linkedLesson = lesson;
+        break;
+      }
+    }
+    if (linkedLesson == null || !_quizBelongsToLesson(quiz.id, linkedLesson)) {
+      return;
+    }
+
+    _linkedLessonCompletionRecorded = true;
+    unawaited(
+      ref
+          .read(userStatsProvider.notifier)
+          .completeLesson(
+            linkedLesson.id,
+            categoryId: linkedLesson.categoryId,
+            estimatedMinutes: linkedLesson.estimatedMinutes,
+          ),
+    );
+  }
+
+  bool _quizBelongsToLesson(String quizId, LessonEntity lesson) {
+    if (quizId == 'dynamic_quiz_${lesson.id}' ||
+        quizId == 'listening_quiz_${lesson.id}') {
+      return true;
+    }
+    return lesson.blocks.any((block) {
+      if (block.type != 'quiz') return false;
+      final linkedQuizId =
+          block.data?['quizId'] as String? ??
+          block.data?['quizRefId'] as String?;
+      return linkedQuizId == quizId;
+    });
+  }
+
   void _trackListeningStarted(QuizModel quiz) {
     if (!ref.read(featureFlagsProvider).audioQuizzesEnabled) return;
     if (!quiz.id.startsWith('listening_quiz_')) return;
@@ -102,7 +155,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         .read(quizSessionNotifierProvider(widget.quizId))
         .isAnswered;
     notifier.selectAnswer(index, question, quiz);
-    if (wasAnswered) return; // selectAnswer is a no-op in that case
+    if (wasAnswered) return;
     _trackListeningAnswered(
       quiz: quiz,
       question: question,
@@ -143,6 +196,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       prev,
       next,
     ) {
+      if (next.isQuizComplete && prev?.isQuizComplete != true) {
+        final quiz = ref
+            .read(quizResultProvider(widget.quizId))
+            .valueOrNull
+            ?.toNullable();
+        if (quiz != null) _recordLinkedLessonCompletion(quiz, next);
+      }
       if (next.isQuizComplete || next.isOutOfHearts) {
         unawaited(ref.read(playbackControllerProvider).stop());
         return;

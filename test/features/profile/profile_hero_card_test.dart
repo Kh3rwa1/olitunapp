@@ -23,7 +23,7 @@ Widget _wrap({
   String? memberSince,
   WeeklyLeaderboardEntity? leaderboard,
   bool leaderboardError = false,
-  String avatarId = kDefaultAvatarId,
+  String avatarId = kInitialAvatarId,
   double? cardWidth,
 }) {
   final hero = ProfileHeroCard(
@@ -62,7 +62,7 @@ void main() {
   testWidgets('shows the Lottie avatar animation, never an emoji', (
     tester,
   ) async {
-    await tester.pumpWidget(_wrap());
+    await tester.pumpWidget(_wrap(avatarId: kDefaultAvatarId));
     await tester.pump();
     expect(find.byType(LottieBuilder), findsOneWidget);
     expect(find.text('👶'), findsNothing);
@@ -71,7 +71,7 @@ void main() {
   testWidgets('shows the name initial when no avatar is selected', (
     tester,
   ) async {
-    await tester.pumpWidget(_wrap(avatarId: ''));
+    await tester.pumpWidget(_wrap());
     await tester.pumpAndSettle();
     expect(find.text('L'), findsOneWidget);
     expect(find.byType(LottieBuilder), findsNothing);

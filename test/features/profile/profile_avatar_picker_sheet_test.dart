@@ -25,6 +25,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           home: Scaffold(
             body: ProfileAvatarPickerSheet(
               initialAvatarId: kDefaultAvatarId,
@@ -70,6 +74,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(
+          builder: (context, child) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(disableAnimations: true),
+            child: child!,
+          ),
           home: Scaffold(
             body: ProfileAvatarPickerSheet(
               initialAvatarId: kDefaultAvatarId,

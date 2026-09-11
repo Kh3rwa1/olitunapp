@@ -38,17 +38,24 @@ final userAvatarIdProvider = StateProvider<String>((ref) {
   return normalizeAvatarId(stored);
 });
 
-/// Only exposes catalog entries whose files are in Flutter's real asset
-/// manifest. This prevents a placeholder catalog from becoming selectable.
+/// Validates the complete catalog against Flutter's generated asset manifest.
+/// Missing registrations fail visibly instead of silently hiding choices or
+/// rendering a generic icon in place of a promised animation.
 final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
   ref,
 ) async {
   final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
   final bundled = manifest.listAssets().toSet();
-  final available = kProfileAvatars
-      .where((avatar) => bundled.contains(avatar.assetPath))
+  final missing = kProfileAvatars
+      .where((avatar) => !bundled.contains(avatar.assetPath))
       .toList(growable: false);
-  return available.isEmpty ? [kProfileAvatars.first] : available;
+  if (missing.isNotEmpty) {
+    throw StateError(
+      'Missing bundled profile avatar assets: '
+      '${missing.map((avatar) => avatar.assetPath).join(', ')}',
+    );
+  }
+  return kProfileAvatars;
 });
 
 final userAvatarColorIndexProvider = StateProvider<int>((ref) {

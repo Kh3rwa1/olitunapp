@@ -71,7 +71,7 @@ void main() {
   testWidgets('shows the name initial when no avatar is selected', (
     tester,
   ) async {
-    await tester.pumpWidget(_wrap(avatarId: kInitialAvatarId));
+    await tester.pumpWidget(_wrap());
     await tester.pumpAndSettle();
     expect(find.text('L'), findsOneWidget);
     expect(find.byType(LottieBuilder), findsNothing);

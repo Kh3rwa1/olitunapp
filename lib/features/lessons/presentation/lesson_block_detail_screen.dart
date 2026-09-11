@@ -189,11 +189,29 @@ class _LessonBlockDetailScreenState
           );
         }
 
-        final categoryLessons = LessonProgression.orderedActiveLessons(
-          lessons.where(
-            (candidate) => candidate.categoryId == lesson.categoryId,
-          ),
-        );
+        // The category list derives lock state from the category-scoped
+        // query. This screen must use that same source: the scoped and
+        // unscoped learner queries refresh independently (separate cache
+        // entries), so mixing them shows a lesson as unlocked in the list
+        // and locked in the detail, naming a blocker the learner cannot
+        // reach. The unscoped list below is only a fallback for when the
+        // scoped query is still loading, failed, or lacks this lesson.
+        final scopedLessons = ref
+            .watch(lessonsByCategoryProvider(lesson.categoryId))
+            .valueOrNull;
+        final scopedOrdered = scopedLessons == null
+            ? null
+            : LessonProgression.orderedActiveLessons(scopedLessons);
+        final scopedHasLesson =
+            scopedOrdered != null &&
+            scopedOrdered.any((candidate) => candidate.id == lesson.id);
+        final categoryLessons = scopedHasLesson
+            ? scopedOrdered
+            : LessonProgression.orderedActiveLessons(
+                lessons.where(
+                  (candidate) => candidate.categoryId == lesson.categoryId,
+                ),
+              );
         final progressStatus = LessonProgression.statusFor(
           orderedLessons: categoryLessons,
           completedLessonIds: completedLessonIds,

@@ -37,6 +37,9 @@ void main() {
           learnerLessonsProvider.overrideWithValue(
             const AsyncValue.data(lessons),
           ),
+          lessonsByCategoryProvider(
+            'category_1',
+          ).overrideWithValue(const AsyncValue.data(lessons)),
           completedLessonIdsProvider.overrideWith((ref) => const {}),
         ],
         child: const MaterialApp(

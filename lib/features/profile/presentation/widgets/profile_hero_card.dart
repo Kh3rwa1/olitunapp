@@ -84,8 +84,11 @@ class ProfileHeroCard extends ConsumerWidget {
         );
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final compact = MediaQuery.sizeOf(context).width < 380;
-    final avatarSize = compact ? 72.0 : 84.0;
+    final avatarSize = compact ? 92.0 : 108.0;
     final safeProgress = overallProgress.clamp(0.0, 1.0).toDouble();
+    // A fully transparent palette shows the board behind the animation,
+    // so the circle needs an edge and dark initial text in light mode.
+    final isTransparentBg = avatarColors.every((color) => color.a == 0.0);
     final avatarLabel = usesProfileInitial(avatarId)
         ? 'Name initial'
         : profileAvatarById(avatarId)?.label ?? kProfileAvatars.first.label;
@@ -137,13 +140,24 @@ class ProfileHeroCard extends ConsumerWidget {
                             end: Alignment.bottomRight,
                           ),
                           shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: avatarColors[0].withValues(alpha: 0.3),
-                              blurRadius: 16,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+                          border: isTransparentBg
+                              ? Border.all(
+                                  color: isDark
+                                      ? Colors.white12
+                                      : Colors.black12,
+                                )
+                              : null,
+                          boxShadow: isTransparentBg
+                              ? const []
+                              : [
+                                  BoxShadow(
+                                    color: avatarColors[0].withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                         ),
                         child: Center(
                           child: !usesProfileInitial(avatarId)
@@ -158,12 +172,14 @@ class ProfileHeroCard extends ConsumerWidget {
                                     errorBuilder: (_, _, _) => _AvatarInitial(
                                       userName: userName,
                                       compact: compact,
+                                      darkText: isTransparentBg && !isDark,
                                     ),
                                   ),
                                 )
                               : _AvatarInitial(
                                   userName: userName,
                                   compact: compact,
+                                  darkText: isTransparentBg && !isDark,
                                 ),
                         ),
                       ),
@@ -171,8 +187,8 @@ class ProfileHeroCard extends ConsumerWidget {
                         bottom: -2,
                         right: -2,
                         child: Container(
-                          width: 26,
-                          height: 26,
+                          width: 30,
+                          height: 30,
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             shape: BoxShape.circle,
@@ -185,7 +201,7 @@ class ProfileHeroCard extends ConsumerWidget {
                           ),
                           child: const Icon(
                             Icons.camera_alt_rounded,
-                            size: 13,
+                            size: 15,
                             color: Colors.black,
                           ),
                         ),
@@ -207,7 +223,7 @@ class ProfileHeroCard extends ConsumerWidget {
                               child: Text(
                                 userName,
                                 style: AppTypography.inter(
-                                  fontSize: compact ? 22 : 26,
+                                  fontSize: compact ? 24 : 30,
                                   fontWeight: FontWeight.w800,
                                   color: isDark ? Colors.white : Colors.black,
                                 ),
@@ -441,19 +457,24 @@ class _ExpandableLeaderboardBadgeState
 }
 
 class _AvatarInitial extends StatelessWidget {
-  const _AvatarInitial({required this.userName, required this.compact});
+  const _AvatarInitial({
+    required this.userName,
+    required this.compact,
+    this.darkText = false,
+  });
 
   final String userName;
   final bool compact;
+  final bool darkText;
 
   @override
   Widget build(BuildContext context) {
     return Text(
       userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
       style: AppTypography.inter(
-        fontSize: compact ? 30 : 34,
+        fontSize: compact ? 36 : 42,
         fontWeight: FontWeight.w700,
-        color: Colors.white,
+        color: darkText ? Colors.black87 : Colors.white,
       ),
     );
   }

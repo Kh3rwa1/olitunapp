@@ -77,6 +77,37 @@ void main() {
     expect(find.byType(LottieBuilder), findsNothing);
   });
 
+  testWidgets('transparent background keeps the initial readable', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          weeklyLeaderboardProvider.overrideWith((ref) async => _leaderboard()),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: ProfileHeroCard(
+              userName: 'Learner',
+              avatarColors: const [Colors.transparent, Colors.transparent],
+              avatarId: kInitialAvatarId,
+              level: 'Beginner',
+              levelIndex: 0,
+              overallProgress: 0,
+              isDark: false,
+              onEditName: () {},
+              onEditAvatar: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('L'), findsOneWidget);
+    expect(tester.widget<Text>(find.text('L')).style?.color, Colors.black87);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('shows real weekly rank and points in the existing badge', (
     tester,
   ) async {

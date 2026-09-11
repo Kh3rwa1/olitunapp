@@ -386,9 +386,7 @@ class _ExpandableLeaderboardBadgeState
             decoration: BoxDecoration(
               color: widget.color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(_expanded ? 18 : 20),
-              border: Border.all(
-                color: widget.color.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: widget.color.withValues(alpha: 0.3)),
             ),
             child: Row(
               children: [

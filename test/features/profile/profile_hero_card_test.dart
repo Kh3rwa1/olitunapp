@@ -93,14 +93,10 @@ void main() {
     final leaderboard = _leaderboard(rank: 123456, points: 987654321);
     final label = leaderboard.badgeLabel;
 
-    await tester.pumpWidget(
-      _wrap(cardWidth: 320, leaderboard: leaderboard),
-    );
+    await tester.pumpWidget(_wrap(cardWidth: 320, leaderboard: leaderboard));
     await tester.pumpAndSettle();
 
-    final action = find.byKey(
-      const ValueKey('profile-leaderboard-action'),
-    );
+    final action = find.byKey(const ValueKey('profile-leaderboard-action'));
     final chip = find.byKey(const ValueKey('profile-leaderboard-chip'));
     expect(action, findsOneWidget);
     expect(chip, findsOneWidget);

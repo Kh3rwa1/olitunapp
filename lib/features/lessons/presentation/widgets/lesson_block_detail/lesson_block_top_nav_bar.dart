@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
+import 'package:itun/core/theme/app_colors.dart';
 
 /// Floating circular icon button with blur effect.
 class LessonBlockFloatingButton extends StatelessWidget {
@@ -95,7 +96,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.10)
-                  : const Color(0xFFE3E8F0),
+                  : AppColors.webBorder,
             ),
             boxShadow: [
               BoxShadow(
@@ -141,9 +142,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.2,
-                            color: isDark
-                                ? Colors.white60
-                                : const Color(0xFF64748B),
+                            color: isDark ? Colors.white60 : AppColors.webSlate,
                           ),
                         ),
                         const Spacer(),

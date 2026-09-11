@@ -119,7 +119,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                       border: Border.all(
                         color: isDark
                             ? Colors.white.withValues(alpha: 0.09)
-                            : const Color(0xFFE3E8F0),
+                            : AppColors.webBorder,
                         width: 1.2,
                       ),
                       boxShadow: [
@@ -353,7 +353,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                     fontSize: 11.5,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 0.2,
-                    color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                    color: isDark ? Colors.white38 : AppColors.webSlateLight,
                   ),
                 ),
               if (isDesktop) const SizedBox(height: 8),

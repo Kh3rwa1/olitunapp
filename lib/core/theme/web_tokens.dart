@@ -145,9 +145,12 @@ class WebTokens {
   static bool isWide(double width) => width >= wideBreakpoint;
 
   static EdgeInsets webPagePadding(bool isDesktop, bool isWide) {
-    if (!isDesktop)
+    if (!isDesktop) {
       return const EdgeInsets.symmetric(horizontal: 24, vertical: 20);
-    if (isWide) return const EdgeInsets.symmetric(horizontal: 44, vertical: 36);
+    }
+    if (isWide) {
+      return const EdgeInsets.symmetric(horizontal: 44, vertical: 36);
+    }
     return const EdgeInsets.symmetric(horizontal: 36, vertical: 32);
   }
 }

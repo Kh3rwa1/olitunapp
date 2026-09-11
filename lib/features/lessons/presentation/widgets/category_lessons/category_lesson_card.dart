@@ -47,19 +47,19 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
     final isCompleted = widget.isCompleted;
     final themeColor = widget.themeColor;
     final activeBgColor = isDark
-        ? const Color(0xFF101724).withValues(alpha: 0.85)
+        ? AppColors.nightCard.withValues(alpha: 0.85)
         : Colors.white;
     final lockedBgColor = isDark
         ? Colors.white.withValues(alpha: 0.04)
-        : const Color(0xFFF8FAFC);
+        : AppColors.ambientLightBlueTop;
     final activeBorderColor = _hover && !isLocked
         ? themeColor.withValues(alpha: 0.35)
         : isDark
         ? Colors.white.withValues(alpha: 0.08)
-        : const Color(0xFFE3E8F0);
+        : AppColors.webBorder;
     final lockedBorderColor = isDark
         ? Colors.white.withValues(alpha: 0.06)
-        : const Color(0xFFE3E8F0);
+        : AppColors.webBorder;
     final semanticState = isLocked
         ? 'Locked. Complete the previous lesson first.'
         : isCompleted
@@ -143,7 +143,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                       Icon(
                                         Icons.check_rounded,
                                         size: 11,
-                                        color: Color(0xFF00A355),
+                                        color: AppColors.emeraldDeep,
                                       ),
                                       SizedBox(width: 4),
                                       Text(
@@ -152,7 +152,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w800,
                                           letterSpacing: 0.8,
-                                          color: Color(0xFF00A355),
+                                          color: AppColors.emeraldDeep,
                                         ),
                                       ),
                                     ],
@@ -172,9 +172,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                               fontFamily: primaryLocalizedFontFamily(
                                 widget.scriptMode,
                               ),
-                              color: isDark
-                                  ? Colors.white
-                                  : const Color(0xFF0F172A),
+                              color: isDark ? Colors.white : AppColors.webInk,
                             ),
                           ),
                           if (widget.secondaryTitle.isNotEmpty) ...[
@@ -187,7 +185,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                 fontFamily: 'OlChiki',
                                 color: isDark
                                     ? Colors.white54
-                                    : const Color(0xFF64748B),
+                                    : AppColors.webSlate,
                               ),
                             ),
                           ],
@@ -201,7 +199,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                 height: 1.5,
                                 color: isDark
                                     ? Colors.white54
-                                    : const Color(0xFF64748B),
+                                    : AppColors.webSlate,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -221,8 +219,8 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                 color: isLocked
                                     ? (isDark
                                           ? Colors.white54
-                                          : const Color(0xFF94A3B8))
-                                    : const Color(0xFF00A355),
+                                          : AppColors.webSlateLight)
+                                    : AppColors.emeraldDeep,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -236,7 +234,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                   fontWeight: FontWeight.w600,
                                   color: isDark
                                       ? Colors.white54
-                                      : const Color(0xFF64748B),
+                                      : AppColors.webSlate,
                                 ),
                               ),
                             ],
@@ -274,7 +272,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
         break;
       case 'beginner':
       default:
-        badgeColor = const Color(0xFF00A355);
+        badgeColor = AppColors.emeraldDeep;
         label = 'Beginner';
         icon = Icons.star_rounded;
         break;
@@ -325,7 +323,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
         color: isLocked
             ? (isDark
                   ? Colors.white.withValues(alpha: 0.10)
-                  : const Color(0xFF0F172A).withValues(alpha: 0.06))
+                  : AppColors.webInk.withValues(alpha: 0.06))
             : null,
         gradient: isLocked ? null : widget.gradient,
         shape: BoxShape.circle,
@@ -351,7 +349,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
         child: Icon(
           icon,
           color: isLocked
-              ? (isDark ? Colors.white54 : const Color(0xFF94A3B8))
+              ? (isDark ? Colors.white54 : AppColors.webSlateLight)
               : Colors.white,
           size: 22,
         ),

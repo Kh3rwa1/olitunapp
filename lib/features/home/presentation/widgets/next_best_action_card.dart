@@ -147,18 +147,17 @@ class NextBestActionCard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(28),
         gradient: isDark
             ? const LinearGradient(
-                colors: [Color(0xFF0E9F6E), Color(0xFF0B3B24)],
+                colors: [AppColors.emeraldTeal, AppColors.emeraldPine],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFF1EE088), Color(0xFF00C767)],
+                colors: [AppColors.primary, AppColors.primaryDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         border: Border.all(
           color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.4),
-          width: 1,
         ),
         boxShadow: [
           BoxShadow(
@@ -254,7 +253,7 @@ class NextBestActionCard extends ConsumerWidget {
                   color: Colors.white,
                   shadows: [
                     Shadow(
-                      color: Color(0x40000000),
+                      color: AppColors.shadowSoftBlack,
                       offset: Offset(0, 1),
                       blurRadius: 3,
                     ),
@@ -282,7 +281,7 @@ class NextBestActionCard extends ConsumerWidget {
                   onPressed: onTap,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: const Color(0xFF03543F),
+                    foregroundColor: AppColors.emeraldInk,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     shape: RoundedRectangleBorder(

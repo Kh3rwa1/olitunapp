@@ -27,13 +27,13 @@ class DesktopSidebar extends ConsumerWidget {
     return Container(
       width: ResponsiveLayout.leftSidebarWidth,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        color: isDark ? AppColors.quizDarkBackground : Colors.white,
         gradient: isDark
             ? null
             : const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.white, Color(0xFFF8FAFF)],
+                colors: [Colors.white, AppColors.webCanvasWarm],
               ),
       ),
       child: Column(
@@ -53,12 +53,11 @@ class DesktopSidebar extends ConsumerWidget {
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [Color(0xFF1EE088), Color(0xFF00A355)],
+                      colors: [AppColors.primary, AppColors.emeraldDeep],
                     ),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.35),
-                      width: 1,
                     ),
                     boxShadow: [
                       BoxShadow(
@@ -83,7 +82,7 @@ class DesktopSidebar extends ConsumerWidget {
                         fontWeight: FontWeight.w900,
                         shadows: [
                           Shadow(
-                            color: Color(0x40000000),
+                            color: AppColors.shadowSoftBlack,
                             offset: Offset(0, 1),
                             blurRadius: 2,
                           ),
@@ -103,9 +102,7 @@ class DesktopSidebar extends ConsumerWidget {
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.4,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF0F172A),
+                          color: isDark ? Colors.white : AppColors.webInk,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -117,7 +114,7 @@ class DesktopSidebar extends ConsumerWidget {
                           letterSpacing: 1.6,
                           color: isDark
                               ? AppColors.primary.withValues(alpha: 0.9)
-                              : const Color(0xFF00A355),
+                              : AppColors.emeraldDeep,
                         ),
                       ),
                     ],
@@ -138,7 +135,7 @@ class DesktopSidebar extends ConsumerWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.8,
-                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                color: isDark ? Colors.white38 : AppColors.webSlateLight,
               ),
             ),
           ),
@@ -182,12 +179,12 @@ class DesktopSidebar extends ConsumerWidget {
                     ? const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF14202E), Color(0xFF0E1522)],
+                        colors: [AppColors.nightElevated, AppColors.nightPanel],
                       )
                     : const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF0F172A), Color(0xFF1B4D3E)],
+                        colors: [AppColors.webInk, AppColors.santaliSalGreen],
                       ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -208,15 +205,15 @@ class DesktopSidebar extends ConsumerWidget {
                     width: 42,
                     height: 42,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFF9F2E).withValues(alpha: 0.16),
+                      color: AppColors.amberEmber.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: const Color(0xFFFF9F2E).withValues(alpha: 0.3),
+                        color: AppColors.amberEmber.withValues(alpha: 0.3),
                       ),
                     ),
                     child: const Icon(
                       Icons.local_fire_department_rounded,
-                      color: Color(0xFFFF9F2E),
+                      color: AppColors.amberEmber,
                       size: 22,
                     ),
                   ),
@@ -297,7 +294,7 @@ class DesktopSidebar extends ConsumerWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 0.4,
-                color: isDark ? Colors.white24 : const Color(0xFF94A3B8),
+                color: isDark ? Colors.white24 : AppColors.webSlateLight,
               ),
             ),
           ),
@@ -356,7 +353,7 @@ class _ThemeSegment extends StatelessWidget {
                   icon,
                   size: 15,
                   color: selected
-                      ? const Color(0xFF0F172A)
+                      ? AppColors.webInk
                       : (isDark ? Colors.white54 : Colors.black45),
                 ),
                 const SizedBox(width: 6),
@@ -366,7 +363,7 @@ class _ThemeSegment extends StatelessWidget {
                     fontSize: 12,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                     color: selected
-                        ? const Color(0xFF0F172A)
+                        ? AppColors.webInk
                         : (isDark ? Colors.white54 : Colors.black45),
                   ),
                 ),
@@ -439,9 +436,8 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                   border: isActive
                       ? Border.all(
                           color: AppColors.primary.withValues(alpha: 0.22),
-                          width: 1,
                         )
-                      : Border.all(color: Colors.transparent, width: 1),
+                      : Border.all(color: Colors.transparent),
                   boxShadow: isActive
                       ? [
                           BoxShadow(
@@ -464,7 +460,10 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                             ? const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [Color(0xFF1EE088), Color(0xFF00A355)],
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.emeraldDeep,
+                                ],
                               )
                             : null,
                         color: isActive
@@ -494,7 +493,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                             ? Colors.white
                             : widget.isDark
                             ? Colors.white60
-                            : const Color(0xFF64748B),
+                            : AppColors.webSlate,
                       ),
                     ),
                     const SizedBox(width: 13),
@@ -513,10 +512,10 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                               color: isActive
                                   ? (widget.isDark
                                         ? Colors.white
-                                        : const Color(0xFF0B3B24))
+                                        : AppColors.emeraldPine)
                                   : widget.isDark
                                   ? Colors.white70
-                                  : const Color(0xFF475569),
+                                  : AppColors.webSlateDark,
                             ),
                           ),
                           if (widget.caption.isNotEmpty) ...[
@@ -530,7 +529,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                                     ? AppColors.primary.withValues(alpha: 0.9)
                                     : widget.isDark
                                     ? Colors.white38
-                                    : const Color(0xFF94A3B8),
+                                    : AppColors.webSlateLight,
                               ),
                             ),
                           ],

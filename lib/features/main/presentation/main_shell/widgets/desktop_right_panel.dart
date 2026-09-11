@@ -24,13 +24,13 @@ class DesktopRightPanel extends ConsumerWidget {
     return Container(
       width: ResponsiveLayout.rightSidebarWidth,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        color: isDark ? AppColors.quizDarkBackground : Colors.white,
         gradient: isDark
             ? null
             : const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.white, Color(0xFFF8FAFF)],
+                colors: [Colors.white, AppColors.webCanvasWarm],
               ),
       ),
       child: SingleChildScrollView(
@@ -47,16 +47,16 @@ class DesktopRightPanel extends ConsumerWidget {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    Color(0xFF0E9F6E),
-                    Color(0xFF057A55),
-                    Color(0xFF03543F),
+                    AppColors.emeraldTeal,
+                    AppColors.emeraldShade,
+                    AppColors.emeraldInk,
                   ],
                 ),
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF057A55).withValues(alpha: 0.35),
+                    color: AppColors.emeraldShade.withValues(alpha: 0.35),
                     blurRadius: 28,
                     offset: const Offset(0, 14),
                     spreadRadius: -10,
@@ -114,7 +114,7 @@ class DesktopRightPanel extends ConsumerWidget {
                                 style: AppTypography.inter(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w800,
-                                  color: const Color(0xFF03543F),
+                                  color: AppColors.emeraldInk,
                                 ),
                               ),
                             ),
@@ -181,7 +181,7 @@ class DesktopRightPanel extends ConsumerWidget {
                             const Icon(
                               Icons.bolt_rounded,
                               size: 15,
-                              color: Color(0xFFFFD54F),
+                              color: AppColors.goldSoft,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -213,7 +213,7 @@ class DesktopRightPanel extends ConsumerWidget {
                 fontSize: 10.5,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.6,
-                color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                color: isDark ? Colors.white38 : AppColors.webSlateLight,
               ),
             ),
             const SizedBox(height: 12),
@@ -226,7 +226,7 @@ class DesktopRightPanel extends ConsumerWidget {
                     icon: Icons.local_fire_department_rounded,
                     value: '$streak',
                     label: 'Day streak',
-                    tint: const Color(0xFFFF9F2E),
+                    tint: AppColors.amberEmber,
                     isDark: isDark,
                   ),
                 ),
@@ -236,7 +236,7 @@ class DesktopRightPanel extends ConsumerWidget {
                     icon: Icons.star_rounded,
                     value: '$stars',
                     label: 'Stars',
-                    tint: const Color(0xFFF59E0B),
+                    tint: AppColors.accentGold,
                     isDark: isDark,
                   ),
                 ),
@@ -281,7 +281,7 @@ class DesktopRightPanel extends ConsumerWidget {
                 border: Border.all(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.08)
-                      : const Color(0xFFE3E8F0),
+                      : AppColors.webBorder,
                 ),
                 boxShadow: isDark
                     ? null
@@ -310,7 +310,7 @@ class DesktopRightPanel extends ConsumerWidget {
                         child: const Icon(
                           Icons.flag_rounded,
                           size: 16,
-                          color: Color(0xFF00A355),
+                          color: AppColors.emeraldDeep,
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -320,9 +320,7 @@ class DesktopRightPanel extends ConsumerWidget {
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -0.1,
-                          color: isDark
-                              ? Colors.white
-                              : const Color(0xFF0F172A),
+                          color: isDark ? Colors.white : AppColors.webInk,
                         ),
                       ),
                       const Spacer(),
@@ -331,7 +329,7 @@ class DesktopRightPanel extends ConsumerWidget {
                         style: AppTypography.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: const Color(0xFF00A355),
+                          color: AppColors.emeraldDeep,
                         ),
                       ),
                     ],
@@ -346,7 +344,7 @@ class DesktopRightPanel extends ConsumerWidget {
                       minHeight: 9,
                       backgroundColor: isDark
                           ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFF0F172A).withValues(alpha: 0.07),
+                          : AppColors.webInk.withValues(alpha: 0.07),
                       valueColor: const AlwaysStoppedAnimation<Color>(
                         AppColors.primary,
                       ),
@@ -358,7 +356,7 @@ class DesktopRightPanel extends ConsumerWidget {
                     style: AppTypography.inter(
                       fontSize: 12,
                       height: 1.45,
-                      color: isDark ? Colors.white54 : const Color(0xFF64748B),
+                      color: isDark ? Colors.white54 : AppColors.webSlate,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -369,7 +367,7 @@ class DesktopRightPanel extends ConsumerWidget {
                       onPressed: () => context.go('/'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: const Color(0xFF00391C),
+                        foregroundColor: AppColors.elevatedButtonFg,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -437,13 +435,13 @@ class _StatTileState extends State<_StatTile> {
                 ? widget.tint.withValues(alpha: 0.3)
                 : (widget.isDark
                       ? Colors.white.withValues(alpha: 0.07)
-                      : const Color(0xFFE3E8F0)),
+                      : AppColors.webBorder),
           ),
           boxShadow: widget.isDark
               ? null
               : [
                   BoxShadow(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.04),
+                    color: AppColors.webInk.withValues(alpha: 0.04),
                     blurRadius: 18,
                     offset: const Offset(0, 8),
                     spreadRadius: -10,
@@ -468,7 +466,7 @@ class _StatTileState extends State<_StatTile> {
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.4,
-                color: widget.isDark ? Colors.white : const Color(0xFF0F172A),
+                color: widget.isDark ? Colors.white : AppColors.webInk,
               ),
             ),
             Text(
@@ -478,7 +476,7 @@ class _StatTileState extends State<_StatTile> {
                 fontWeight: FontWeight.w600,
                 color: widget.isDark
                     ? Colors.white.withValues(alpha: 0.45)
-                    : const Color(0xFF94A3B8),
+                    : AppColors.webSlateLight,
               ),
             ),
           ],

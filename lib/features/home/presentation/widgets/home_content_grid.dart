@@ -38,14 +38,14 @@ class HomeContentGrid extends StatelessWidget {
         onTap: () => context.push('/translate'),
         child: BentoCell(
           gradient: const LinearGradient(
-            colors: [Color(0xFF7C3AED), Color(0xFF4F46E5)],
+            colors: [AppColors.accentPurpleDark, AppColors.indigoVivid],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x667C3AED),
+              color: AppColors.violetGlow,
               blurRadius: 28,
               offset: Offset(0, 14),
               spreadRadius: -12,
@@ -132,7 +132,7 @@ class HomeContentGrid extends StatelessWidget {
                     child: const Text(
                       'AI',
                       style: TextStyle(
-                        color: Color(0xFF4F46E5),
+                        color: AppColors.indigoVivid,
                         fontWeight: FontWeight.w900,
                         fontSize: 11,
                         letterSpacing: 0.6,
@@ -301,13 +301,13 @@ class _BentoCategoryCard extends ConsumerWidget {
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
-              : const Color(0xFFE3E8F0),
+              : AppColors.webBorder,
         ),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.05),
+                  color: AppColors.webInk.withValues(alpha: 0.05),
                   blurRadius: 22,
                   offset: const Offset(0, 10),
                   spreadRadius: -12,
@@ -338,7 +338,7 @@ class _BentoCategoryCard extends ConsumerWidget {
                 Icon(
                   Icons.arrow_outward_rounded,
                   size: 16,
-                  color: isDark ? Colors.white24 : const Color(0xFFCBD5E1),
+                  color: isDark ? Colors.white24 : AppColors.webSlateFaint,
                 ),
               ],
             ),
@@ -349,7 +349,7 @@ class _BentoCategoryCard extends ConsumerWidget {
                 fontSize: 15,
                 fontWeight: FontWeight.w800,
                 letterSpacing: -0.2,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                color: isDark ? Colors.white : AppColors.webInk,
                 fontFamily: primaryLocalizedFontFamily(scriptMode),
               ),
               maxLines: 2,
@@ -365,7 +365,7 @@ class _BentoCategoryCard extends ConsumerWidget {
                   fontFamily: 'OlChiki',
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.45)
-                      : const Color(0xFF94A3B8),
+                      : AppColors.webSlateLight,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,

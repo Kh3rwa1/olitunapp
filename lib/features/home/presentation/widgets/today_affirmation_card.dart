@@ -176,17 +176,20 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
         final backgroundGradient = isDark
             ? const LinearGradient(
-                colors: [Color(0xFF101724), Color(0xFF0B1220)],
+                colors: [
+                  AppColors.nightCard,
+                  AppColors.onboardingMeshDarkStart,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Colors.white, Color(0xFFF0FDF4)],
+                colors: [Colors.white, AppColors.mintMist],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               );
 
-        final textColor = isDark ? Colors.white : const Color(0xFF0F172A);
+        final textColor = isDark ? Colors.white : AppColors.webInk;
 
         return RepaintBoundary(
           key: _repaintKey,
@@ -198,14 +201,13 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               border: Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.09)
-                    : const Color(0xFFE3E8F0),
-                width: 1,
+                    : AppColors.webBorder,
               ),
               boxShadow: [
                 BoxShadow(
                   color: isDark
                       ? Colors.black.withValues(alpha: 0.45)
-                      : const Color(0xFF0F172A).withValues(alpha: 0.07),
+                      : AppColors.webInk.withValues(alpha: 0.07),
                   blurRadius: 32,
                   offset: const Offset(0, 16),
                   spreadRadius: -14,
@@ -233,7 +235,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                       height: 3,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF1EE088), Color(0xFF38BDF8)],
+                          colors: [AppColors.primary, AppColors.skyBright],
                         ),
                         borderRadius: BorderRadius.circular(999),
                       ),
@@ -269,7 +271,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                               child: const Icon(
                                 Icons.auto_awesome_rounded,
                                 size: 12,
-                                color: Color(0xFF00A355),
+                                color: AppColors.emeraldDeep,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -279,7 +281,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.8,
-                                color: Color(0xFF00A355),
+                                color: AppColors.emeraldDeep,
                               ),
                             ),
                           ],
@@ -316,7 +318,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                               height: 1.5,
                               color: isDark
                                   ? Colors.white60
-                                  : const Color(0xFF64748B),
+                                  : AppColors.webSlate,
                             ),
                           ),
                         ],
@@ -324,7 +326,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                         Divider(
                           color: isDark
                               ? Colors.white.withValues(alpha: 0.08)
-                              : const Color(0xFFE3E8F0),
+                              : AppColors.webBorder,
                           height: 1,
                         ),
                         const SizedBox(height: 14),
@@ -411,7 +413,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resolvedColor =
-        color ?? (isDark ? Colors.white70 : const Color(0xFF475569));
+        color ?? (isDark ? Colors.white70 : AppColors.webSlateDark);
     final disabled = onTap == null;
     return MouseRegion(
       cursor: disabled ? SystemMouseCursors.basic : SystemMouseCursors.click,
@@ -426,12 +428,12 @@ class _ActionButton extends StatelessWidget {
                 ? Colors.transparent
                 : (isDark
                       ? Colors.white.withValues(alpha: 0.05)
-                      : const Color(0xFF0F172A).withValues(alpha: 0.04)),
+                      : AppColors.webInk.withValues(alpha: 0.04)),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.08)
-                  : const Color(0xFFE3E8F0),
+                  : AppColors.webBorder,
             ),
           ),
           child: Row(

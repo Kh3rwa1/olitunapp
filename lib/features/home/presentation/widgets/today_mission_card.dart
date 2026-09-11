@@ -98,12 +98,12 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF101724) : Colors.white,
+                    color: isDark ? AppColors.nightCard : Colors.white,
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.08)
-                          : const Color(0xFFE3E8F0),
+                          : AppColors.webBorder,
                     ),
                     boxShadow: [
                       BoxShadow(

@@ -27,14 +27,14 @@ class ShellAmbientBackground extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? const [
-                        Color(0xFF070B13),
-                        Color(0xFF0B1A14),
-                        Color(0xFF0D1B2E),
+                        AppColors.bakhedBackground,
+                        AppColors.nightGreen,
+                        AppColors.nightBlue,
                       ]
                     : const [
-                        Color(0xFFF8FAFF),
-                        Color(0xFFEFFDF4),
-                        Color(0xFFE9F3FF),
+                        AppColors.webCanvasWarm,
+                        AppColors.mintWash,
+                        AppColors.skyWash,
                       ],
               ),
             ),
@@ -78,7 +78,7 @@ class ShellAmbientBackground extends StatelessWidget {
                     const Color(
                       0xFF38BDF8,
                     ).withValues(alpha: isDark ? 0.10 : 0.10),
-                    const Color(0xFF38BDF8).withValues(alpha: 0),
+                    AppColors.skyBright.withValues(alpha: 0),
                   ],
                 ),
               ),
@@ -101,7 +101,7 @@ class ShellAmbientBackground extends StatelessWidget {
                       const Color(
                         0xFF8B5CF6,
                       ).withValues(alpha: isDark ? 0.08 : 0.06),
-                      const Color(0xFF8B5CF6).withValues(alpha: 0),
+                      AppColors.accentPurple.withValues(alpha: 0),
                     ],
                   ),
                 ),
@@ -144,7 +144,7 @@ class _WebGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = (isDark ? Colors.white : const Color(0xFF0F172A)).withValues(
+      ..color = (isDark ? Colors.white : AppColors.webInk).withValues(
         alpha: isDark ? 0.035 : 0.045,
       )
       ..strokeWidth = 1;

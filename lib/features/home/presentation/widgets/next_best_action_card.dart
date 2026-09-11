@@ -34,7 +34,6 @@ class NextBestActionCard extends ConsumerWidget {
     String ctaText = l10n.continueButton;
     VoidCallback onTap = () {};
     IconData icon = Icons.star_rounded;
-    Color color = AppColors.primary;
 
     final lessons = stats?.completedLessons;
     final hasAnyProgress =
@@ -60,7 +59,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubFirstLetters;
       ctaText = l10n.nbaCtaBeginLesson;
       icon = Icons.menu_book_rounded;
-      color = AppColors.primary;
       onTap = () {
         context.push('/letter/standalone/all');
       };
@@ -70,7 +68,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubFirstLetters;
       ctaText = l10n.nbaCtaBeginLesson;
       icon = Icons.menu_book_rounded;
-      color = AppColors.primary;
       onTap = () {
         context.push('/letter/standalone/all');
       };
@@ -80,7 +77,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubNumbers;
       ctaText = l10n.nbaCtaPracticeNumbers;
       icon = Icons.pin_rounded;
-      color = AppColors.brandBlue;
       onTap = () {
         context.push('/number/standalone/all');
       };
@@ -90,7 +86,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubMistakes(mistakes.length);
       ctaText = l10n.nbaCtaReviewMistakes;
       icon = Icons.psychology_rounded;
-      color = AppColors.accentOchre;
       onTap = () {
         context.push('/mistakes');
       };
@@ -102,7 +97,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubStreakRisk(streak);
       ctaText = l10n.nbaCtaQuickReview;
       icon = Icons.local_fire_department_rounded;
-      color = AppColors.accentOchre;
       onTap = () {
         context.push('/quizzes');
       };
@@ -112,7 +106,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubTryBakhed;
       ctaText = l10n.nbaCtaListenNow;
       icon = Icons.music_note_rounded;
-      color = AppColors.brandBlue;
       onTap = () {
         context.push('/bakhed');
       };
@@ -126,7 +119,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubAllDone;
       ctaText = l10n.nbaCtaExploreBakhed;
       icon = Icons.celebration_rounded;
-      color = AppColors.accentGold;
       onTap = () {
         context.push('/bakhed');
       };
@@ -139,7 +131,6 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.readyToLearn;
       ctaText = l10n.continueButton;
       icon = Icons.play_arrow_rounded;
-      color = AppColors.primary;
       onTap = () {
         if (nextLessonId != null && nextLessonId!.isNotEmpty) {
           context.push('/lesson/$nextLessonId');
@@ -151,133 +142,178 @@ class NextBestActionCard extends ConsumerWidget {
 
     final card = Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(28),
         gradient: isDark
-            ? LinearGradient(
-                colors: [
-                  const Color(0xFF1E293B).withValues(alpha: 0.8),
-                  const Color(0xFF0F172A).withValues(alpha: 0.8),
-                ],
+            ? const LinearGradient(
+                colors: [AppColors.emeraldTeal, AppColors.emeraldPine],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
-            : LinearGradient(
-                colors: [
-                  Colors.white.withValues(alpha: 0.9),
-                  AppColors.primary.withValues(alpha: 0.05),
-                ],
+            : const LinearGradient(
+                colors: [AppColors.primary, AppColors.primaryDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
         border: Border.all(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : AppColors.primary.withValues(alpha: 0.15),
+          color: Colors.white.withValues(alpha: isDark ? 0.14 : 0.4),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.35),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
+            spreadRadius: -12,
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+            spreadRadius: -10,
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          // Giant watermark glyph
+          Positioned(
+            right: -12,
+            bottom: -24,
+            child: IgnorePointer(
+              child: Text(
+                'ᱚᱞ',
+                style: TextStyle(
+                  fontFamily: 'OlChiki',
+                  fontSize: 120,
+                  fontWeight: FontWeight.w900,
+                  height: 1,
+                  color: Colors.white.withValues(alpha: 0.10),
+                ),
+              ),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    badgeText,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
-                      color: color,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              BreathingPulse(
-                maxScale: 1.12,
-                period: const Duration(milliseconds: 2600),
-                child: Icon(icon, color: color, size: 24),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w900,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.4,
-              color: isDark ? Colors.white70 : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 20),
-          // One tappable for one action: a lone ElevatedButton carries the
-          // button semantics itself. Wrapping it in another tappable would
-          // announce two nested buttons for the same CTA to screen readers.
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: onTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Row(
                 children: [
-                  Text(
-                    ctaText,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 11,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.22),
+                        ),
+                      ),
+                      child: Text(
+                        badgeText.toUpperCase(),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.3,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.arrow_forward_rounded, size: 18)
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .slideX(
-                        begin: -0.35,
-                        end: 0,
-                        duration: 900.ms,
-                        curve: Curves.easeInOut,
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
                       ),
+                    ),
+                    child: BreathingPulse(
+                      maxScale: 1.1,
+                      period: const Duration(milliseconds: 2600),
+                      child: Icon(icon, color: Colors.white, size: 22),
+                    ),
+                  ),
                 ],
               ),
-            ),
+              const SizedBox(height: 18),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                  height: 1.15,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      color: AppColors.shadowSoftBlack,
+                      offset: Offset(0, 1),
+                      blurRadius: 3,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withValues(alpha: 0.88),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // One tappable for one action: a lone ElevatedButton carries the
+              // button semantics itself. Wrapping it in another tappable would
+              // announce two nested buttons for the same CTA to screen readers.
+              SizedBox(
+                width: double.infinity,
+                height: 54,
+                child: ElevatedButton(
+                  onPressed: onTap,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: AppColors.emeraldInk,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    shadowColor: Colors.transparent,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        ctaText,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15.5,
+                          letterSpacing: -0.1,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.arrow_forward_rounded, size: 19)
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .slideX(
+                            begin: -0.35,
+                            end: 0,
+                            duration: 900.ms,
+                            curve: Curves.easeInOut,
+                          ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

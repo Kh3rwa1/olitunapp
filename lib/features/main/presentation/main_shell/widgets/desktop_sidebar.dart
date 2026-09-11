@@ -22,32 +22,54 @@ class DesktopSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final isCurrentlyDark = Theme.of(context).brightness == Brightness.dark;
+    final streak = ref.watch(userStatsProvider).value?.currentStreak ?? 0;
 
     return Container(
       width: ResponsiveLayout.leftSidebarWidth,
-      color: isDark ? const Color(0xFF0D1117) : Colors.white,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.quizDarkBackground : Colors.white,
+        gradient: isDark
+            ? null
+            : const LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.white, AppColors.webCanvasWarm],
+              ),
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
 
-          // Logo / Brand
+          // ── Brand ────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.primary, AppColors.emeraldDeep],
                     ),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.35),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: AppColors.primary.withValues(alpha: 0.35),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                        spreadRadius: -4,
+                      ),
+                      BoxShadow(
+                        color: Colors.white.withValues(alpha: isDark ? 0 : 0.6),
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
                       ),
                     ],
                   ),
@@ -56,31 +78,74 @@ class DesktopSidebar extends ConsumerWidget {
                       'ᱚ',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 24,
                         fontWeight: FontWeight.w900,
+                        shadows: [
+                          Shadow(
+                            color: AppColors.shadowSoftBlack,
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Text(
-                  'Olitun',
-                  style: AppTypography.inter(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black87,
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Olitun',
+                        style: AppTypography.inter(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.4,
+                          color: isDark ? Colors.white : AppColors.webInk,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'SANTALI • OL CHIKI',
+                        style: AppTypography.inter(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1.6,
+                          color: isDark
+                              ? AppColors.primary.withValues(alpha: 0.9)
+                              : AppColors.emeraldDeep,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 30),
 
-          // Nav Items
+          // ── Section label ────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'MENU',
+              style: AppTypography.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.8,
+                color: isDark ? Colors.white38 : AppColors.webSlateLight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // ── Nav items ────────────────────────────────────────
           SidebarNavItem(
             icon: Icons.school_rounded,
             label: l10n.navLearn,
+            caption: 'Lessons • Words • Quiz',
             isSelected: selectedIndex == 0,
             onTap: () => onItemTapped(0),
             isDark: isDark,
@@ -88,6 +153,7 @@ class DesktopSidebar extends ConsumerWidget {
           SidebarNavItem(
             icon: Icons.music_note_rounded,
             label: l10n.navBakhed,
+            caption: 'Rhymes • Listening',
             isSelected: selectedIndex == 1,
             onTap: () => onItemTapped(1),
             isDark: isDark,
@@ -95,6 +161,7 @@ class DesktopSidebar extends ConsumerWidget {
           SidebarNavItem(
             icon: Icons.person_rounded,
             label: l10n.navProfile,
+            caption: 'Stars • Streak • Goals',
             isSelected: selectedIndex == 2,
             onTap: () => onItemTapped(2),
             isDark: isDark,
@@ -102,52 +169,77 @@ class DesktopSidebar extends ConsumerWidget {
 
           const Spacer(),
 
-          // Dark/Light Mode Toggle
+          // ── Streak nudge ─────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: (isDark ? Colors.white : Colors.black).withValues(
-                  alpha: 0.04,
+                gradient: isDark
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.nightElevated, AppColors.nightPanel],
+                      )
+                    : const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.webInk, AppColors.santaliSalGreen],
+                      ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.22),
                 ),
-                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.14),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                    spreadRadius: -8,
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  Icon(
-                    isCurrentlyDark
-                        ? Icons.dark_mode_rounded
-                        : Icons.light_mode_rounded,
-                    size: 20,
-                    color: isDark
-                        ? Colors.amber.shade300
-                        : Colors.orange.shade600,
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: AppColors.amberEmber.withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.amberEmber.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.local_fire_department_rounded,
+                      color: AppColors.amberEmber,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      isCurrentlyDark ? l10n.dark : l10n.light,
-                      style: AppTypography.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: isDark ? Colors.white60 : Colors.black54,
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 28,
-                    child: Switch(
-                      value: isCurrentlyDark,
-                      onChanged: (val) {
-                        updateThemeMode(ref, val ? 'dark' : 'light');
-                      },
-                      activeThumbColor: AppColors.primary,
-                      activeTrackColor: AppColors.primary.withValues(
-                        alpha: 0.3,
-                      ),
-                      inactiveThumbColor: Colors.orange.shade400,
-                      inactiveTrackColor: Colors.orange.withValues(alpha: 0.2),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$streak day streak',
+                          style: AppTypography.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          streak > 0 ? 'Keep it burning' : 'Start today',
+                          style: AppTypography.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white60,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -155,8 +247,130 @@ class DesktopSidebar extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
+
+          // ── Theme segmented control ──────────────────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.05,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.06,
+                  ),
+                ),
+              ),
+              child: Row(
+                children: [
+                  _ThemeSegment(
+                    icon: Icons.light_mode_rounded,
+                    label: l10n.light,
+                    selected: !isCurrentlyDark,
+                    isDark: isDark,
+                    onTap: () => updateThemeMode(ref, 'light'),
+                  ),
+                  _ThemeSegment(
+                    icon: Icons.dark_mode_rounded,
+                    label: l10n.dark,
+                    selected: isCurrentlyDark,
+                    isDark: isDark,
+                    onTap: () => updateThemeMode(ref, 'dark'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+          Center(
+            child: Text(
+              'Olitun PWA • v2.4',
+              style: AppTypography.inter(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.4,
+                color: isDark ? Colors.white24 : AppColors.webSlateLight,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeSegment extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ThemeSegment({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            padding: const EdgeInsets.symmetric(vertical: 9),
+            decoration: BoxDecoration(
+              color: selected
+                  ? (isDark ? Colors.white : Colors.white)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: selected
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  size: 15,
+                  color: selected
+                      ? AppColors.webInk
+                      : (isDark ? Colors.white54 : Colors.black45),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  label,
+                  style: AppTypography.inter(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    color: selected
+                        ? AppColors.webInk
+                        : (isDark ? Colors.white54 : Colors.black45),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -165,6 +379,7 @@ class DesktopSidebar extends ConsumerWidget {
 class SidebarNavItem extends StatefulWidget {
   final IconData icon;
   final String label;
+  final String caption;
   final bool isSelected;
   final VoidCallback onTap;
   final bool isDark;
@@ -173,6 +388,7 @@ class SidebarNavItem extends StatefulWidget {
     super.key,
     required this.icon,
     required this.label,
+    this.caption = '',
     required this.isSelected,
     required this.onTap,
     required this.isDark,
@@ -191,7 +407,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
     final hovered = _isHovered && !isActive;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
@@ -204,62 +420,131 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
             child: GestureDetector(
               onTap: widget.onTap,
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? AppColors.primary.withValues(alpha: 0.12)
+                      ? AppColors.primary.withValues(
+                          alpha: widget.isDark ? 0.14 : 0.10,
+                        )
                       : hovered
                       ? (widget.isDark ? Colors.white : Colors.black)
-                            .withValues(alpha: 0.04)
+                            .withValues(alpha: 0.045)
                       : Colors.transparent,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(18),
                   border: isActive
                       ? Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.15),
+                          color: AppColors.primary.withValues(alpha: 0.22),
                         )
+                      : Border.all(color: Colors.transparent),
+                  boxShadow: isActive
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                            spreadRadius: -6,
+                          ),
+                        ]
                       : null,
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      widget.icon,
-                      size: 22,
-                      color: isActive
-                          ? AppColors.primary
-                          : widget.isDark
-                          ? Colors.white54
-                          : Colors.black45,
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      widget.label,
-                      style: AppTypography.inter(
-                        fontSize: 15,
-                        fontWeight: isActive
-                            ? FontWeight.w700
-                            : FontWeight.w500,
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        gradient: isActive
+                            ? const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.emeraldDeep,
+                                ],
+                              )
+                            : null,
                         color: isActive
-                            ? AppColors.primary
+                            ? null
+                            : (widget.isDark
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : const Color(
+                                      0xFF0F172A,
+                                    ).withValues(alpha: 0.05)),
+                        borderRadius: BorderRadius.circular(13),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Icon(
+                        widget.icon,
+                        size: 21,
+                        color: isActive
+                            ? Colors.white
                             : widget.isDark
-                            ? Colors.white70
-                            : Colors.black54,
+                            ? Colors.white60
+                            : AppColors.webSlate,
                       ),
                     ),
-                    if (isActive) ...[
-                      const Spacer(),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.label,
+                            style: AppTypography.inter(
+                              fontSize: 15,
+                              fontWeight: isActive
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              letterSpacing: -0.1,
+                              color: isActive
+                                  ? (widget.isDark
+                                        ? Colors.white
+                                        : AppColors.emeraldPine)
+                                  : widget.isDark
+                                  ? Colors.white70
+                                  : AppColors.webSlateDark,
+                            ),
+                          ),
+                          if (widget.caption.isNotEmpty) ...[
+                            const SizedBox(height: 1),
+                            Text(
+                              widget.caption,
+                              style: AppTypography.inter(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: isActive
+                                    ? AppColors.primary.withValues(alpha: 0.9)
+                                    : widget.isDark
+                                    ? Colors.white38
+                                    : AppColors.webSlateLight,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    if (isActive)
                       Container(
-                        width: 6,
-                        height: 6,
+                        width: 8,
+                        height: 8,
                         decoration: const BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
-                    ],
                   ],
                 ),
               ),

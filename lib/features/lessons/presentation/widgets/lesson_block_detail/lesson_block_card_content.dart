@@ -57,6 +57,7 @@ class LessonBlockCardContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
 
     final display = OlChikiMultilingualHelper.resolveBlockDisplay(
       textOlChiki: block.textOlChiki,
@@ -86,218 +87,286 @@ class LessonBlockCardContent extends ConsumerWidget {
     final isThisPlaying = isAudioPlaying && playingId == blockAudioId;
     final isTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
-    return Container(
-      width: double.infinity,
-      color: Colors.transparent,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const SizedBox(height: 24),
-          // Interactive target text card with audio playback
-          ScaleButton(
-            onPressed: block.audioUrl != null && block.audioUrl!.isNotEmpty
-                ? () => onPlayAudio(block.audioUrl!, blockAudioId)
-                : null,
-            child: () {
-              Widget cardBody = Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 16,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // 1. Target Ol Chiki Script Text
-                    Text(
-                      targetScriptText,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: _resolveFontSize(targetScriptText),
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : accentColor,
-                        fontFamily: cleanOlChiki.isNotEmpty ? 'OlChiki' : null,
-                        height: 1.3,
-                        shadows: [
-                          Shadow(
-                            color: isDark
-                                ? Colors.black.withValues(alpha: 0.3)
-                                : accentColor.withValues(alpha: 0.15),
-                            offset: const Offset(0, 2),
-                            blurRadius: 4,
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: isDesktop ? 720 : double.infinity,
+        ),
+        child: Container(
+          width: double.infinity,
+          color: Colors.transparent,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 24),
+              // Interactive target text card with audio playback
+              ScaleButton(
+                onPressed: block.audioUrl != null && block.audioUrl!.isNotEmpty
+                    ? () => onPlayAudio(block.audioUrl!, blockAudioId)
+                    : null,
+                child: () {
+                  Widget cardBody = Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isDesktop ? 48 : 28,
+                      vertical: isDesktop ? 40 : 28,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.045)
+                          : Colors.white.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(32),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.09)
+                            : AppColors.webBorder,
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(
+                            alpha: isDark ? 0.4 : 0.07,
+                          ),
+                          blurRadius: 36,
+                          offset: const Offset(0, 20),
+                          spreadRadius: -16,
+                        ),
+                        BoxShadow(
+                          color: accentColor.withValues(alpha: 0.08),
+                          blurRadius: 48,
+                          offset: const Offset(0, 12),
+                          spreadRadius: -20,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Eyebrow: lesson context
+                        Text(
+                          lesson.titleLatin.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.6,
+                            color: accentColor,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        // 1. Target Ol Chiki Script Text
+                        Text(
+                          targetScriptText,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: _resolveFontSize(targetScriptText),
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : accentColor,
+                            fontFamily: cleanOlChiki.isNotEmpty
+                                ? 'OlChiki'
+                                : null,
+                            height: 1.3,
+                            shadows: [
+                              Shadow(
+                                color: isDark
+                                    ? Colors.black.withValues(alpha: 0.3)
+                                    : accentColor.withValues(alpha: 0.15),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // 2. Subtitle Pronunciation Transliteration in user's script
+                        if (display.subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 12),
+                          Text(
+                            display.subtitle,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: isDark
+                                  ? Colors.white70
+                                  : AppColors.textSecondaryLight,
+                              height: 1.35,
+                            ),
                           ),
                         ],
-                      ),
-                    ),
 
-                    // 2. Subtitle Pronunciation Transliteration in user's script
-                    if (display.subtitle.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        display.subtitle,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: isDark
-                              ? Colors.white70
-                              : AppColors.textSecondaryLight,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-
-                    // 3. Audio indicator pill
-                    if (block.audioUrl != null &&
-                        block.audioUrl!.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: (isDark
-                              ? Colors.white.withValues(alpha: 0.06)
-                              : accentColor.withValues(alpha: 0.06)),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: (isDark
-                                ? Colors.white.withValues(alpha: 0.1)
-                                : accentColor.withValues(alpha: 0.1)),
+                        // 3. Audio indicator pill
+                        if (block.audioUrl != null &&
+                            block.audioUrl!.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: (isDark
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : accentColor.withValues(alpha: 0.06)),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: (isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : accentColor.withValues(alpha: 0.1)),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.volume_up_rounded,
+                                  color: isDark ? Colors.white70 : accentColor,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'TAP TO HEAR',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : accentColor,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                        ],
+                      ],
+                    ),
+                  );
+
+                  cardBody = cardBody
+                      .animate()
+                      .fade(duration: const Duration(milliseconds: 500))
+                      .slide(
+                        begin: const Offset(0, 0.08),
+                        end: Offset.zero,
+                        duration: const Duration(milliseconds: 500),
+                        curve: Curves.easeOutCubic,
+                      );
+
+                  if (!isTest) {
+                    cardBody = cardBody
+                        .animate(
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true),
+                        )
+                        .scale(
+                          begin: const Offset(1.0, 1.0),
+                          end: const Offset(1.03, 1.03),
+                          duration: const Duration(milliseconds: 2400),
+                          curve: Curves.easeInOut,
+                        );
+                  }
+                  return cardBody;
+                }(),
+              ),
+              const SizedBox(height: 24),
+
+              // Tactile 3D Action Button (Typing practice or Listen)
+              Container(
+                constraints: const BoxConstraints(maxWidth: 320),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: isEligibleForTyping && typingPracticeArgs != null
+                    ? Tactile3DButton(
+                        color: AppColors.primary,
+                        onPressed: () {
+                          ref
+                              .read(
+                                typingPracticeControllerProvider(
+                                  typingPracticeArgs!,
+                                ).notifier,
+                              )
+                              .startPractice();
+                        },
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.keyboard_outlined, color: Colors.black),
+                            SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                'PRACTICE TYPING',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                      )
+                    : Tactile3DButton(
+                        color: accentColor,
+                        onPressed:
+                            block.audioUrl != null && block.audioUrl!.isNotEmpty
+                            ? () => onPlayAudio(block.audioUrl!, blockAudioId)
+                            : null,
                         child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.volume_up_rounded,
-                              color: isDark ? Colors.white70 : accentColor,
-                              size: 14,
+                              isThisPlaying
+                                  ? Icons.graphic_eq_rounded
+                                  : Icons.volume_up_rounded,
+                              color: Colors.white,
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'TAP TO HEAR',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w800,
-                                color: isDark ? Colors.white70 : accentColor,
-                                letterSpacing: 1.2,
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                buttonText,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ],
-                ),
-              );
-
-              cardBody = cardBody
-                  .animate()
-                  .fade(duration: const Duration(milliseconds: 500))
-                  .slide(
-                    begin: const Offset(0, 0.08),
-                    end: Offset.zero,
-                    duration: const Duration(milliseconds: 500),
-                    curve: Curves.easeOutCubic,
-                  );
-
-              if (!isTest) {
-                cardBody = cardBody
-                    .animate(
-                      onPlay: (controller) => controller.repeat(reverse: true),
-                    )
-                    .scale(
-                      begin: const Offset(1.0, 1.0),
-                      end: const Offset(1.03, 1.03),
-                      duration: const Duration(milliseconds: 2400),
-                      curve: Curves.easeInOut,
-                    );
-              }
-              return cardBody;
-            }(),
-          ),
-          const SizedBox(height: 24),
-
-          // Tactile 3D Action Button (Typing practice or Listen)
-          Container(
-            constraints: const BoxConstraints(maxWidth: 320),
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: isEligibleForTyping && typingPracticeArgs != null
-                ? Tactile3DButton(
-                    color: AppColors.primary,
-                    onPressed: () {
-                      ref
-                          .read(
-                            typingPracticeControllerProvider(
-                              typingPracticeArgs!,
-                            ).notifier,
-                          )
-                          .startPractice();
-                    },
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.keyboard_outlined, color: Colors.black),
-                        SizedBox(width: 12),
-                        Flexible(
-                          child: Text(
-                            'PRACTICE TYPING',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.black,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Tactile3DButton(
-                    color: accentColor,
-                    onPressed:
-                        block.audioUrl != null && block.audioUrl!.isNotEmpty
-                        ? () => onPlayAudio(block.audioUrl!, blockAudioId)
-                        : null,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          isThisPlaying
-                              ? Icons.graphic_eq_rounded
-                              : Icons.volume_up_rounded,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          child: Text(
-                            buttonText,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+              ),
+              const SizedBox(height: 20),
+              if (isDesktop)
+                Text(
+                  'Press Space to play audio • ← → to navigate',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.2,
+                    color: isDark ? Colors.white38 : AppColors.webSlateLight,
                   ),
-          ),
-          const SizedBox(height: 20),
+                ),
+              if (isDesktop) const SizedBox(height: 8),
 
-          // Native ad
-          if (index % 3 == 0)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: NativeAdWidget(placement: 'lesson_block_card'),
-            ),
-        ],
+              // Native ad
+              if (index % 3 == 0)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: NativeAdWidget(placement: 'lesson_block_card'),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

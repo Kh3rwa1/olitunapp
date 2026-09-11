@@ -1,4 +1,4 @@
-name: One-time main CI repair
+name: One-time main diagnostics cleanup
 
 on:
   push:
@@ -8,70 +8,25 @@ on:
       - .github/workflows/one-time-main-ci-diagnostics.yml
 
 permissions:
-  actions: write
   contents: write
 
 jobs:
-  repair:
+  cleanup:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      GH_TOKEN: ${{ github.token }}
-      RUN_ID: '34547897302'
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
-      - name: Rerun failed main jobs and poll
-        shell: bash
-        run: |
-          set -u
-          {
-            echo "RUN_ID=$RUN_ID"
-            echo "REQUESTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          } > ci-main-rerun.txt
-
-          set +e
-          response=$(gh api --method POST \
-            "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/rerun-failed-jobs" 2>&1)
-          request_exit=$?
-          set -e
-          {
-            echo "RERUN_REQUEST_EXIT=$request_exit"
-            echo "$response"
-          } >> ci-main-rerun.txt
-
-          if [ "$request_exit" -ne 0 ]; then
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
-              --jq '[.run_attempt, .status, (.conclusion // ""), .html_url] | @tsv' \
-              >> ci-main-rerun.txt || true
-          else
-            for poll in $(seq 1 45); do
-              snapshot=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
-                --jq '[.run_attempt, .status, (.conclusion // "")] | @tsv')
-              echo "POLL_$poll=$snapshot" >> ci-main-rerun.txt
-              run_attempt=$(printf '%s' "$snapshot" | cut -f1)
-              run_status=$(printf '%s' "$snapshot" | cut -f2)
-              if [ "$run_attempt" -ge 2 ] && [ "$run_status" = "completed" ]; then
-                break
-              fi
-              sleep 20
-            done
-          fi
-
-          {
-            echo "===== FINAL RUN ====="
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" \
-              --jq '[.id, .name, .run_attempt, .status, (.conclusion // ""), .html_url] | @tsv'
-            echo "===== FINAL JOBS ====="
-            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/jobs?per_page=100" \
-              --jq '.jobs | sort_by(.id) | reverse[] | [(.id|tostring), .name, .status, (.conclusion // ""), .html_url] | @tsv'
-          } >> ci-main-rerun.txt
-          cat ci-main-rerun.txt
-      - name: Commit rerun report
+      - name: Remove completed diagnostic artifacts
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add ci-main-rerun.txt
-          git commit -m 'ci: record main web setup rerun'
+          git rm --ignore-unmatch \
+            .github/workflows/one-time-main-ci-diagnostics.yml \
+            .github/workflows/one-time-main-web-diagnostics.yml \
+            ci-main-diagnostics.txt \
+            ci-main-web-diagnostics.txt \
+            ci-main-rerun.txt
+          git commit -m 'ci: remove completed main diagnostics'
           git push

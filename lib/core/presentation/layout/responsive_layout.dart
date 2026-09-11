@@ -9,6 +9,12 @@ class ResponsiveLayout {
   static const double rightSidebarWidth = 300;
   static const double collapsedSidebarWidth = 80;
 
+  /// Bottom clearance (dp, excluding the OS gesture inset) consumed by the
+  /// floating glass navigation (80 nav + 15 margin + 8 breathing room).
+  /// Floating snackbars must add it to their bottom margin; bottom sheets
+  /// must open above it via `useRootNavigator: true`.
+  static const double floatingNavClearance = 103.0;
+
   static bool isTablet(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= tabletBreakpoint;
 

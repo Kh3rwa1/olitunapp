@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
@@ -60,6 +61,14 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         SnackBar(
           content: Text(message),
           behavior: SnackBarBehavior.floating,
+          // Clear the floating shell navigation overlaying branch content.
+          margin: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            MediaQuery.viewPaddingOf(context).bottom +
+                ResponsiveLayout.floatingNavClearance,
+          ),
           showCloseIcon: true,
         ),
       );

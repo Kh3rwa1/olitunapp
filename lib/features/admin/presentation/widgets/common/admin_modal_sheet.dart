@@ -153,6 +153,7 @@ Future<T?> showAdminBottomSheet<T>({
   bool enableDrag = true,
 }) {
   return showModalBottomSheet<T>(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

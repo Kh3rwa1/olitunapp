@@ -36,8 +36,8 @@ void main() {
               avatarsForTesting: const [
                 ProfileAvatar(
                   id: kDefaultAvatarId,
-                  assetFileName: 'avatar_default.json',
-                  label: 'Olitun',
+                  assetFileName: 'avatar_tiger.json',
+                  label: 'Tiger',
                 ),
               ],
               onChanged: (avatarId, colorIndex) async {
@@ -85,8 +85,8 @@ void main() {
               avatarsForTesting: const [
                 ProfileAvatar(
                   id: kDefaultAvatarId,
-                  assetFileName: 'avatar_default.json',
-                  label: 'Olitun',
+                  assetFileName: 'avatar_tiger.json',
+                  label: 'Tiger',
                 ),
               ],
               onChanged: (avatarId, colorIndex) async {

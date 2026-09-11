@@ -2,6 +2,10 @@ import 'package:equatable/equatable.dart';
 
 /// A selectable animated profile avatar backed by an original bundled Lottie
 /// asset. Catalog entries must always point to files committed with the app.
+///
+/// Animal artwork: free Lottie animations by Google Inc. via IconScout
+/// (free-animal-and-nature-animation packs 344421 and 344422, free license
+/// with attribution). See tool/iconscout-avatar-import.tsv for sources.
 class ProfileAvatar extends Equatable {
   const ProfileAvatar({
     required this.id,
@@ -28,38 +32,26 @@ const String kDefaultAvatarId = 'default';
 const String kInitialAvatarId = 'initial';
 
 /// Every catalog entry has a corresponding original asset in this repository.
-/// Abstract names keep the choices inclusive and culturally neutral.
+/// Animal names keep the choices playful and culturally neutral.
 const List<ProfileAvatar> kProfileAvatars = [
   ProfileAvatar(
     id: kDefaultAvatarId,
-    assetFileName: 'avatar_default.json',
-    label: 'Olitun',
+    assetFileName: 'avatar_tiger.json',
+    label: 'Tiger',
+  ),
+  ProfileAvatar(id: 'owl', assetFileName: 'avatar_owl.json', label: 'Owl'),
+  ProfileAvatar(id: 'ox', assetFileName: 'avatar_ox.json', label: 'Ox'),
+  ProfileAvatar(
+    id: 'paw_prints',
+    assetFileName: 'avatar_paw_prints.json',
+    label: 'Paw prints',
   ),
   ProfileAvatar(
-    id: 'sunrise',
-    assetFileName: 'avatar_sunrise.json',
-    label: 'Sunrise',
+    id: 'peace',
+    assetFileName: 'avatar_peace.json',
+    label: 'Peace',
   ),
-  ProfileAvatar(
-    id: 'river',
-    assetFileName: 'avatar_river.json',
-    label: 'River',
-  ),
-  ProfileAvatar(
-    id: 'forest',
-    assetFileName: 'avatar_forest.json',
-    label: 'Forest',
-  ),
-  ProfileAvatar(
-    id: 'festival',
-    assetFileName: 'avatar_festival.json',
-    label: 'Festival',
-  ),
-  ProfileAvatar(
-    id: 'night_sky',
-    assetFileName: 'avatar_night_sky.json',
-    label: 'Night sky',
-  ),
+  ProfileAvatar(id: 'ant', assetFileName: 'avatar_ant.json', label: 'Ant'),
 ];
 
 ProfileAvatar? profileAvatarById(String id) {

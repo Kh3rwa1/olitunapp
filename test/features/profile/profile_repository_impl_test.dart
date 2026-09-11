@@ -110,9 +110,9 @@ void main() {
   });
 
   test('updateAvatar writes avatar id and color index to prefs', () async {
-    final res = await repo.updateAvatar('forest', 3);
+    final res = await repo.updateAvatar('ox', 3);
     expect(res.isRight(), isTrue);
-    expect(prefs.getString('user_avatar_id'), 'forest');
+    expect(prefs.getString('user_avatar_id'), 'ox');
     expect(prefs.getInt('user_avatar_color'), 3);
   });
 

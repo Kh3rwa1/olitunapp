@@ -51,8 +51,6 @@ class LessonBlockItemView extends ConsumerWidget {
           block.data?['quizRefId'] as String? ??
           '';
       if (quizId.isEmpty) {
-        // Authored block without a quiz reference: explain instead of a
-        // blank page so the learner can keep moving through the lesson.
         return _InlineQuizUnavailable(
           isDark: isDark,
           accentColor: accentColor,
@@ -73,6 +71,7 @@ class LessonBlockItemView extends ConsumerWidget {
         }
         return LayoutBuilder(
           builder: (context, constraints) => LessonBlockQuizCTA(
+            lessonId: lesson.id,
             quizId: quizId,
             quiz: quiz,
             accentColor: accentColor,
@@ -88,6 +87,7 @@ class LessonBlockItemView extends ConsumerWidget {
         final quiz = ref.watch(dynamicLessonQuizProvider(lesson));
         return LayoutBuilder(
           builder: (context, constraints) => LessonBlockQuizCTA(
+            lessonId: lesson.id,
             quizId: quizId,
             quiz: quiz,
             accentColor: accentColor,
@@ -127,6 +127,7 @@ class LessonBlockItemView extends ConsumerWidget {
               final quiz = quizzesMap[quizId]!;
               return LayoutBuilder(
                 builder: (context, constraints) => LessonBlockQuizCTA(
+                  lessonId: lesson.id,
                   quizId: quizId,
                   quiz: quiz,
                   accentColor: accentColor,
@@ -259,11 +260,6 @@ class LessonBlockItemView extends ConsumerWidget {
   }
 }
 
-/// Inline replacement for [LessonBlockQuizCTA] shown when an embedded quiz
-/// block cannot render: a missing quiz reference, an unknown quiz id, or a
-/// failed quiz load. Never a blank page — the learner always sees an
-/// explanation and a way forward (retry the load and/or skip back into the
-/// lesson flow via [onSkip]).
 class _InlineQuizUnavailable extends StatelessWidget {
   const _InlineQuizUnavailable({
     required this.isDark,

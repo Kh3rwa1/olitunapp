@@ -11,6 +11,7 @@ import 'lesson_block_glass_card.dart';
 class LessonBlockQuizCTA extends StatelessWidget {
   const LessonBlockQuizCTA({
     super.key,
+    required this.lessonId,
     required this.quizId,
     required this.quiz,
     required this.accentColor,
@@ -20,6 +21,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
     this.isDismissed = false,
   });
 
+  final String lessonId;
   final String quizId;
   final QuizModel quiz;
   final Color accentColor;
@@ -27,6 +29,11 @@ class LessonBlockQuizCTA extends StatelessWidget {
   final double maxHeight;
   final VoidCallback onDismiss;
   final bool isDismissed;
+
+  String get _quizLocation => Uri(
+    path: '/quiz/$quizId',
+    queryParameters: {'lessonId': lessonId},
+  ).toString();
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +55,6 @@ class LessonBlockQuizCTA extends StatelessWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Celebration Icon Header
                   Container(
                     width: 72,
                     height: 72,
@@ -62,7 +68,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                     ),
                     child: Icon(
                       isDismissed
-                          ? Icons.check_circle_outline_rounded
+                          ? Icons.schedule_rounded
                           : Icons.emoji_events_rounded,
                       color: accentColor,
                       size: 38,
@@ -72,10 +78,9 @@ class LessonBlockQuizCTA extends StatelessWidget {
                     curve: Curves.easeOutBack,
                   ),
                   const SizedBox(height: 24),
-                  // Title / Prompt
                   Text(
                     isDismissed
-                        ? 'Lesson Completed!'
+                        ? 'Quiz skipped for now'
                         : 'Ready to test yourself?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -88,7 +93,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     isDismissed
-                        ? 'Great job! You can retake "${quiz.title ?? 'the quiz'}" anytime or finish the lesson.'
+                        ? 'You can take “${quiz.title ?? 'the quiz'}” anytime. Pass it to unlock the next lesson.'
                         : 'Great job! Take "${quiz.title ?? 'the quiz'}" now to test your knowledge.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -100,7 +105,6 @@ class LessonBlockQuizCTA extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  // Primary Action Button
                   if (isDismissed) ...[
                     Tactile3DButton(
                       color: accentColor,
@@ -112,7 +116,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                         }
                       },
                       child: Text(
-                        'FINISH LESSON',
+                        'FINISH REVIEWING',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
@@ -123,7 +127,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     TextButton(
-                      onPressed: () => context.push('/quiz/$quizId'),
+                      onPressed: () => context.push(_quizLocation),
                       style: TextButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
@@ -147,9 +151,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                   ] else ...[
                     Tactile3DButton(
                       color: accentColor,
-                      onPressed: () {
-                        context.push('/quiz/$quizId');
-                      },
+                      onPressed: () => context.push(_quizLocation),
                       child: Text(
                         'TAKE THE QUIZ',
                         style: TextStyle(

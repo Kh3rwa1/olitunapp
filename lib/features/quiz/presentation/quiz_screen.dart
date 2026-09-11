@@ -2,37 +2,29 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:fpdart/fpdart.dart';
-import '../../../core/error/failures.dart';
-import '../../../core/config/feature_flags.dart';
-import '../../../shared/models/content_models.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/widgets/state_widgets.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/audio/playback_controller.dart';
-import '../../../core/languages/providers/target_language_provider.dart';
+import '../../../core/config/feature_flags.dart';
+import '../../../core/error/failures.dart';
+import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../shared/widgets/state_widgets.dart';
 import '../../content/presentation/providers/audio_playback_providers.dart';
-
+import '../../lessons/domain/lesson_quiz_progression.dart';
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
-import 'widgets/listening_question_card.dart';
-import 'widgets/quiz_option_tile.dart';
-import 'widgets/quiz_progress_bar.dart';
-import 'widgets/quiz_question_card.dart';
-import 'widgets/quiz_feedback_panel.dart';
+import 'widgets/quiz_active_view.dart';
 import 'widgets/quiz_complete_screen.dart';
 import 'widgets/quiz_out_of_hearts_screen.dart';
-import 'widgets/fill_blank_question_card.dart';
-import 'widgets/quiz_session_hud.dart';
-import 'widgets/quiz_fill_blank_options.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
+  final String? lessonId;
 
-  const QuizScreen({super.key, required this.quizId});
+  const QuizScreen({super.key, required this.quizId, this.lessonId});
 
   @override
   ConsumerState<QuizScreen> createState() => _QuizScreenState();
@@ -40,6 +32,7 @@ class QuizScreen extends ConsumerStatefulWidget {
 
 class _QuizScreenState extends ConsumerState<QuizScreen> {
   bool _started = false;
+  bool _linkedLessonCompletionRecorded = false;
   late final PlaybackController _playback;
 
   @override
@@ -48,8 +41,29 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     _playback = ref.read(playbackControllerProvider);
   }
 
-  /// Phase 7: spec §16 listening-quiz funnel events. Emitted alongside the
-  /// generic quiz events, only while the audio-quizzes flag is on.
+  void _recordLinkedLessonCompletion(QuizModel quiz, QuizSessionState session) {
+    if (_linkedLessonCompletionRecorded) return;
+    final linkedLesson = LessonQuizProgression.linkedPassingLesson(
+      lessonId: widget.lessonId,
+      quizId: quiz.id,
+      score: session.score,
+      totalQuestions: quiz.questions.length,
+      lessons: () => ref.read(learnerLessonsProvider).valueOrNull ?? const [],
+    );
+    if (linkedLesson == null) return;
+
+    _linkedLessonCompletionRecorded = true;
+    unawaited(
+      ref
+          .read(userStatsProvider.notifier)
+          .completeLesson(
+            linkedLesson.id,
+            categoryId: linkedLesson.categoryId,
+            estimatedMinutes: linkedLesson.estimatedMinutes,
+          ),
+    );
+  }
+
   void _trackListeningStarted(QuizModel quiz) {
     if (!ref.read(featureFlagsProvider).audioQuizzesEnabled) return;
     if (!quiz.id.startsWith('listening_quiz_')) return;
@@ -102,7 +116,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         .read(quizSessionNotifierProvider(widget.quizId))
         .isAnswered;
     notifier.selectAnswer(index, question, quiz);
-    if (wasAnswered) return; // selectAnswer is a no-op in that case
+    if (wasAnswered) return;
     _trackListeningAnswered(
       quiz: quiz,
       question: question,
@@ -143,6 +157,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       prev,
       next,
     ) {
+      if (next.isQuizComplete && prev?.isQuizComplete != true) {
+        final quiz = ref
+            .read(quizResultProvider(widget.quizId))
+            .valueOrNull
+            ?.toNullable();
+        if (quiz != null) _recordLinkedLessonCompletion(quiz, next);
+      }
       if (next.isQuizComplete || next.isOutOfHearts) {
         unawaited(ref.read(playbackControllerProvider).stop());
         return;
@@ -206,7 +227,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         });
       });
     }
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return quizAsync.when(
       loading: () => const Scaffold(
@@ -269,216 +289,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             quizSessionNotifierProvider(widget.quizId).notifier,
           );
           final question = notifier.displayedQuestion(quiz);
-          final totalQs = quiz.questions.length;
-          final audioQuizzesEnabled = ref
-              .watch(featureFlagsProvider)
-              .audioQuizzesEnabled;
-          final isListeningQuestion =
-              audioQuizzesEnabled &&
-              question.type == 'listen_meaning' &&
-              question.audioUrl != null;
-          final isFillBlank =
-              !isListeningQuestion && question.type == 'fill_blank';
-          final correctOptionOlChiki =
-              question.correctIndex >= 0 &&
-                  question.correctIndex < question.optionsOlChiki.length
-              ? question.optionsOlChiki[question.correctIndex]
-              : '';
-          final correctOptionLatin =
-              question.correctIndex >= 0 &&
-                  question.correctIndex < question.optionsLatin.length
-              ? question.optionsLatin[question.correctIndex]
-              : correctOptionOlChiki;
-
-          Widget buildQuestionArea() {
-            if (isListeningQuestion) {
-              final playback = ref.watch(playbackStateProvider);
-              final playbackState = playback.valueOrNull;
-              final isPlayingThisAudio =
-                  playbackState?.isPlaying == true &&
-                  playbackState?.current?.id == question.audioUrl;
-              final isLoadingThisAudio =
-                  playbackState?.isLoading == true &&
-                  playbackState?.current?.id == question.audioUrl;
-              return ListeningQuestionCard(
-                question: question,
-                isPlaying: isPlayingThisAudio,
-                isLoading: isLoadingThisAudio,
-                playbackError: playbackState?.error,
-                onPlayTap: () {
-                  unawaited(
-                    ref
-                        .read(playbackControllerProvider)
-                        .playSingle(
-                          id: question.audioUrl!,
-                          contentKind: 'lesson',
-                          contentId: widget.quizId,
-                          trackType: 'targetNormal',
-                          languageCode: 'sat',
-                        ),
-                  );
-                },
-                onStopTap: () {
-                  unawaited(ref.read(playbackControllerProvider).stop());
-                },
-              );
-            }
-
-            if (!isFillBlank) {
-              final playback = ref.watch(playbackStateProvider);
-              final playbackState = playback.valueOrNull;
-              final hasAudio =
-                  question.audioUrl != null &&
-                  question.audioUrl!.trim().isNotEmpty;
-              final isPlayingThisAudio =
-                  hasAudio &&
-                  playbackState?.isPlaying == true &&
-                  playbackState?.current?.id == question.audioUrl;
-              final isLoadingThisAudio =
-                  hasAudio &&
-                  playbackState?.isLoading == true &&
-                  playbackState?.current?.id == question.audioUrl;
-
-              final manifest = ref.watch(activeLanguageManifestProvider);
-
-              return QuizQuestionCard(
-                question: question,
-                fontFamily: manifest.primaryFontFamily,
-                isPlaying: isPlayingThisAudio,
-                isLoading: isLoadingThisAudio,
-                onPlayAudio: hasAudio
-                    ? () {
-                        if (isPlayingThisAudio) {
-                          unawaited(
-                            ref.read(playbackControllerProvider).stop(),
-                          );
-                        } else {
-                          unawaited(
-                            ref
-                                .read(playbackControllerProvider)
-                                .playSingle(
-                                  id: question.audioUrl!,
-                                  contentKind: 'quiz_question',
-                                  contentId: widget.quizId,
-                                  trackType: 'targetNormal',
-                                  languageCode: 'sat',
-                                ),
-                          );
-                        }
-                      }
-                    : null,
-              );
-            }
-
-            return FillBlankQuestionCard(
-              question: question,
-              selectedAnswer: state.selectedAnswer,
-              isAnswered: state.isAnswered,
-            );
-          }
-
-          Widget buildOptionsArea() {
-            if (!isFillBlank) {
-              return Column(
-                children: List.generate(
-                  question.optionsLatin.length,
-                  (index) => QuizOptionTile(
-                    index: index,
-                    currentQuestion: state.currentQuestion,
-                    question: question,
-                    isSelected: state.selectedAnswer == index,
-                    isAnswered: state.isAnswered,
-                    onTap: () => _selectAnswer(index, question, quiz),
-                  ),
-                ),
-              );
-            }
-
-            return QuizFillBlankOptions(
-              question: question,
-              state: state,
-              isDark: isDark,
-              onSelect: (index) => notifier.selectAnswer(index, question, quiz),
-            );
-          }
-
-          return Scaffold(
-            backgroundColor: isDark
-                ? AppColors.quizDarkBackground
-                : Colors.white,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                tooltip: 'Close quiz',
-                icon: Icon(
-                  Icons.close_rounded,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () =>
-                    context.canPop() ? context.pop() : context.go('/'),
-              ),
-              title: Text(
-                quiz.title ?? AppLocalizations.of(context)!.quiz,
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              actions: [
-                QuizCountPill(
-                  current: state.currentQuestion + 1,
-                  total: totalQs,
-                ),
-              ],
-            ),
-            body: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      QuizProgressBar(
-                        current: state.currentQuestion + 1,
-                        total: totalQs,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(height: 16),
-                      QuizSessionHud(state: state, isDark: isDark),
-                      const SizedBox(height: 28),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            children: [
-                              buildQuestionArea(),
-                              const SizedBox(height: 32),
-                              buildOptionsArea(),
-                              const SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: OfflineStatusBanner(),
-                ),
-              ],
-            ),
-            bottomNavigationBar: state.isAnswered
-                ? QuizFeedbackPanel(
-                    isCorrect: state.selectedAnswer == question.correctIndex,
-                    correctOptionOlChiki: correctOptionOlChiki,
-                    correctOptionLatin: correctOptionLatin,
-                    explanation: question.explanation,
-                    onContinue: () => unawaited(notifier.nextQuestion(quiz)),
-                  )
-                : null,
+          return QuizActiveView(
+            quizId: widget.quizId,
+            quiz: quiz,
+            state: state,
+            question: question,
+            onSelectAnswer: (index) => _selectAnswer(index, question, quiz),
+            onContinue: () => unawaited(notifier.nextQuestion(quiz)),
           );
         },
       ),

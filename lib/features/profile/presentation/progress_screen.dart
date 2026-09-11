@@ -253,6 +253,13 @@ class ProgressScreen extends ConsumerWidget {
         SnackBar(
           content: const Text('Could not open share sheet'),
           behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            MediaQuery.viewPaddingOf(context).bottom +
+                ResponsiveLayout.floatingNavClearance,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -268,6 +275,7 @@ class ProgressScreen extends ConsumerWidget {
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
@@ -288,6 +296,7 @@ class ProgressScreen extends ConsumerWidget {
     final currentAvatarId = ref.read(userAvatarIdProvider);
 
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,

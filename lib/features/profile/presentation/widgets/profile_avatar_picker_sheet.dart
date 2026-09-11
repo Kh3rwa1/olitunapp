@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/profile_avatar.dart';
 import '../providers/profile_account_providers.dart';
@@ -80,9 +81,16 @@ class _ProfileAvatarPickerSheetState
         _selectedColorIndex = previousColorIndex;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save avatar. Please try again.'),
+        SnackBar(
+          content: const Text('Could not save avatar. Please try again.'),
           behavior: SnackBarBehavior.floating,
+          margin: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            MediaQuery.viewPaddingOf(context).bottom +
+                ResponsiveLayout.floatingNavClearance,
+          ),
         ),
       );
     } finally {

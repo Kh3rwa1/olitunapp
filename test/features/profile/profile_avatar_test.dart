@@ -25,7 +25,7 @@ void main() {
     expect(normalizeAvatarId('👶'), kDefaultAvatarId);
     expect(normalizeAvatarId('nope'), kDefaultAvatarId);
     expect(normalizeAvatarId(kInitialAvatarId), kInitialAvatarId);
-    expect(normalizeAvatarId('river'), 'river');
+    expect(normalizeAvatarId('owl'), 'owl');
     expect(usesProfileInitial(kInitialAvatarId), isTrue);
     expect(usesProfileInitial(''), isTrue);
     expect(usesProfileInitial(kDefaultAvatarId), isFalse);

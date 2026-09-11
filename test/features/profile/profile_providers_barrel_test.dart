@@ -54,12 +54,12 @@ void main() {
     test('re-exports account providers honouring stored preferences', () async {
       final container = await containerFor({
         'user_name': 'Somi',
-        'user_avatar_id': 'night_sky',
+        'user_avatar_id': 'peace',
         'user_avatar_color': 2,
       });
 
       expect(container.read(userNameProvider), 'Somi');
-      expect(container.read(userAvatarIdProvider), 'night_sky');
+      expect(container.read(userAvatarIdProvider), 'peace');
       expect(container.read(userAvatarColorIndexProvider), 2);
     });
 

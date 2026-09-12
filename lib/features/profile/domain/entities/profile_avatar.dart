@@ -182,6 +182,29 @@ const List<ProfileAvatar> kProfileAvatars = [
     assetFileName: 'avatar_funny_emoji.json',
     label: 'Funny Emoji',
   ),
+  ProfileAvatar(
+    id: 'baby_chick',
+    assetFileName: 'avatar_baby_chick.json',
+    label: 'Baby chick',
+  ),
+  ProfileAvatar(id: 'bat', assetFileName: 'avatar_bat.json', label: 'Bat'),
+  ProfileAvatar(id: 'bee', assetFileName: 'avatar_bee.json', label: 'Bee'),
+  ProfileAvatar(id: 'bird', assetFileName: 'avatar_bird.json', label: 'Bird'),
+  ProfileAvatar(
+    id: 'black_bird',
+    assetFileName: 'avatar_black_bird.json',
+    label: 'Black bird',
+  ),
+  ProfileAvatar(
+    id: 'blowfish',
+    assetFileName: 'avatar_blowfish.json',
+    label: 'Blowfish',
+  ),
+  ProfileAvatar(
+    id: 'comet',
+    assetFileName: 'avatar_comet.json',
+    label: 'Comet',
+  ),
 ];
 
 ProfileAvatar? profileAvatarById(String id) {

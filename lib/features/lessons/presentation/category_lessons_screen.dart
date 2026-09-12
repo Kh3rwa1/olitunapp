@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
-import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
@@ -20,6 +19,7 @@ import 'providers/lesson_progression_provider.dart';
 import 'widgets/category_lessons/category_browse_all_card.dart';
 import 'widgets/category_lessons/category_empty_state.dart';
 import 'widgets/category_lessons/category_hero_header.dart';
+import 'widgets/category_lessons/locked_lesson_overlay.dart';
 import 'widgets/category_lessons/category_lesson_card.dart';
 import 'widgets/category_lessons/category_lessons_timeline.dart';
 
@@ -50,28 +50,20 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     }
   }
 
-  void _showLockedLessonMessage(String? blockingLessonTitle) {
-    final message = blockingLessonTitle == null
-        ? 'Complete the previous lesson first to unlock this lesson.'
-        : 'Complete “$blockingLessonTitle” first to unlock this lesson.';
-    final messenger = ScaffoldMessenger.of(context);
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          // Clear the floating shell navigation overlaying branch content.
-          margin: EdgeInsets.fromLTRB(
-            16,
-            0,
-            16,
-            MediaQuery.viewPaddingOf(context).bottom +
-                ResponsiveLayout.floatingNavClearance,
-          ),
-          showCloseIcon: true,
-        ),
-      );
+  void _showLockedLessonOverlay({
+    required String? blockingLessonTitle,
+    required String? blockingLessonId,
+  }) {
+    LockedLessonOverlay.show(
+      context,
+      blockingLessonTitle: blockingLessonTitle,
+      onStartBlockingLesson: () {
+        if (blockingLessonId != null && blockingLessonId.isNotEmpty) {
+          context.push('/lesson/$blockingLessonId');
+        }
+      },
+      isDark: Theme.of(context).brightness == Brightness.dark,
+    );
   }
 
   LinearGradient _getGradient(String preset) {
@@ -317,7 +309,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         isCompleted: isCompleted,
                         onTap: () {
                           if (isLocked) {
-                            _showLockedLessonMessage(blockingLessonTitle);
+                            _showLockedLessonOverlay(
+                              blockingLessonTitle: blockingLessonTitle,
+                              blockingLessonId: blockingLesson?.id,
+                            );
                             return;
                           }
                           context.push('/lesson/${lesson.id}');

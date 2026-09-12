@@ -53,4 +53,13 @@ void main() {
     // After settling, the control is laid out and tappable.
     expect(tester.binding.hasScheduledFrame, isFalse);
   });
+
+  testWidgets('both tab labels share the same vertical center', (tester) async {
+    await tester.pumpWidget(host(currentTab: 0, onSelect: (_) {}));
+    await tester.pumpAndSettle();
+
+    final audioCenter = tester.getCenter(find.text('Bakhed Audio'));
+    final guruCenter = tester.getCenter(find.text('Binti Guru'));
+    expect(audioCenter.dy, moreOrLessEquals(guruCenter.dy, epsilon: 1.0));
+  });
 }

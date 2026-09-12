@@ -68,61 +68,21 @@ class RhymeSegmentedControl extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                    child: _SegmentButton(
+                      icon: Icons.music_note_rounded,
+                      label: 'Bakhed Audio',
+                      selected: currentTab == 0,
+                      isDark: isDark,
                       onTap: () => onTabSelect(0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.music_note_rounded,
-                            size: 16,
-                            color: currentTab == 0
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Bakhed Audio',
-                            style: AppTypography.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: currentTab == 0
-                                  ? Colors.white
-                                  : (isDark ? Colors.white70 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                   Expanded(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
+                    child: _SegmentButton(
+                      icon: Icons.school_rounded,
+                      label: 'Binti Guru',
+                      selected: currentTab == 1,
+                      isDark: isDark,
                       onTap: () => onTabSelect(1),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.school_rounded,
-                            size: 16,
-                            color: currentTab == 1
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.black54),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Binti Guru',
-                            style: AppTypography.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: currentTab == 1
-                                  ? Colors.white
-                                  : (isDark ? Colors.white70 : Colors.black54),
-                            ),
-                          ),
-                        ],
-                      ),
                     ),
                   ),
                 ],
@@ -131,6 +91,57 @@ class RhymeSegmentedControl extends StatelessWidget {
           ),
         ),
       ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
+    );
+  }
+}
+
+/// One tab of the segmented control. A single builder guarantees both
+/// labels share identical structure, padding, and optical alignment: the
+/// icon lives in a fixed box (absorbing glyph optical-center differences)
+/// and the label uses a fixed line height.
+class _SegmentButton extends StatelessWidget {
+  const _SegmentButton({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final contentColor = selected
+        ? Colors.white
+        : (isDark ? Colors.white70 : Colors.black54);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Center(child: Icon(icon, size: 16, color: contentColor)),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: AppTypography.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 1.2,
+              color: contentColor,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

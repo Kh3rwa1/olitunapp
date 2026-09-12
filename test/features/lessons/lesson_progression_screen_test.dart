@@ -106,7 +106,7 @@ Future<void> _pumpPath(
 }
 
 void main() {
-  testWidgets('locks later lessons and explains the prerequisite', (
+  testWidgets('locked lesson opens the playful takeover, not a snackbar', (
     tester,
   ) async {
     await _pumpPath(tester, completedLessonIds: const {});
@@ -119,13 +119,22 @@ void main() {
     );
 
     await tester.tap(find.byKey(const Key('lesson-card-lesson_2')));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
 
+    expect(find.text('HOLD ON • LOCKED FOR NOW'), findsOneWidget);
     expect(
-      find.text('Complete “Lesson One” first to unlock this lesson.'),
+      find.text('Complete “Lesson One” first to crack it open.'),
       findsOneWidget,
     );
+    expect(find.text('Take me there'), findsOneWidget);
     expect(find.text('Opened lesson_2'), findsNothing);
+
+    await tester.tap(find.text('Take me there'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.text('Opened lesson_1'), findsOneWidget);
   });
 
   testWidgets('completed lessons replay and unlock the next lesson', (

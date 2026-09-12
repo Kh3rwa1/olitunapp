@@ -245,6 +245,7 @@ class _AdminLessonContentScreenState
     if (index != null) setState(() => _hoveredOrFocusedIndex = index);
     final slug = (_contentItem?.title ?? '').toLowerCase().trim();
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

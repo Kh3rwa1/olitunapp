@@ -22,8 +22,9 @@ class CategoryHeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
     return SliverAppBar(
-      expandedHeight: 240.0,
+      expandedHeight: isDesktop ? 320.0 : 260.0,
       pinned: true,
       elevation: 0,
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -60,113 +61,231 @@ class CategoryHeroHeader extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Decorative ambient overlays
+                  // Emerald depth orbs
                   Positioned(
-                    right: -40,
-                    top: -40,
+                    right: -60,
+                    top: -70,
                     child: Container(
-                      width: 180,
-                      height: 180,
+                      width: 260,
+                      height: 260,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.08),
+                        color: Colors.white.withValues(alpha: 0.10),
                       ),
                     ),
                   ),
                   Positioned(
-                    left: -50,
-                    bottom: -30,
+                    right: 60,
+                    top: 20,
                     child: Container(
-                      width: 200,
-                      height: 200,
+                      width: 120,
+                      height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: Colors.black.withValues(alpha: 0.08),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: -60,
+                    bottom: -60,
+                    child: Container(
+                      width: 240,
+                      height: 240,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.06),
+                      ),
+                    ),
+                  ),
+                  // Giant Ol Chiki watermark — the $10B signature.
+                  Positioned(
+                    right: isDesktop ? 48 : 16,
+                    bottom: 8,
+                    child: IgnorePointer(
+                      child: Text(
+                        category.titleOlChiki.isNotEmpty
+                            ? category.titleOlChiki.characters
+                                  .take(3)
+                                  .toString()
+                            : 'ᱚᱞ',
+                        style: TextStyle(
+                          fontFamily: 'OlChiki',
+                          fontSize: isDesktop ? 150 : 110,
+                          fontWeight: FontWeight.w900,
+                          height: 1,
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Bottom fade into page canvas
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.14),
+                          ],
+                        ),
                       ),
                     ),
                   ),
                   // Content layout
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      20,
-                      MediaQuery.of(context).padding.top + 48,
-                      20,
-                      20,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        if (category.titleOlChiki.isNotEmpty) ...[
-                          Text(
-                            category.titleOlChiki,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.white70,
-                              letterSpacing: 1.5,
-                              fontFamily: 'OlChiki',
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isDesktop ? 880 : double.infinity,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          isDesktop ? 44 : 20,
+                          MediaQuery.of(context).padding.top + 56,
+                          isDesktop ? 44 : 20,
+                          24,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Breadcrumb
+                            Row(
+                              children: [
+                                GestureDetector(
+                                  onTap: () => context.canPop()
+                                      ? context.pop()
+                                      : context.go('/'),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: Text(
+                                      'LEARN',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.6,
+                                        color: Colors.white.withValues(
+                                          alpha: 0.75,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                  ),
+                                  child: Icon(
+                                    Icons.chevron_right_rounded,
+                                    size: 14,
+                                    color: Colors.white.withValues(alpha: 0.6),
+                                  ),
+                                ),
+                                Text(
+                                  category.titleLatin.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.6,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                        ],
-                        Text(
-                          category.titleLatin,
-                          style: TextStyle(
-                            fontFamily: primaryLocalizedFontFamily(scriptMode),
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -0.8,
-                            shadows: [
-                              Shadow(
-                                color: Colors.black.withValues(alpha: 0.12),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
+                            const SizedBox(height: 10),
+                            if (category.titleOlChiki.isNotEmpty) ...[
+                              Text(
+                                category.titleOlChiki,
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  letterSpacing: 1.2,
+                                  fontFamily: 'OlChiki',
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                            ],
+                            Text(
+                              category.titleLatin,
+                              style: TextStyle(
+                                fontFamily: primaryLocalizedFontFamily(
+                                  scriptMode,
+                                ),
+                                fontSize: isDesktop ? 46 : 34,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -1.2,
+                                height: 1.02,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.18),
+                                    offset: const Offset(0, 2),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (category.description != null &&
+                                category.description!.isNotEmpty) ...[
+                              const SizedBox(height: 10),
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: isDesktop ? 560 : 480,
+                                ),
+                                child: Text(
+                                  category.description!,
+                                  style: TextStyle(
+                                    fontSize: isDesktop ? 15 : 13.5,
+                                    color: Colors.white.withValues(alpha: 0.88),
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.5,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
-                          ),
-                        ),
-                        if (category.description != null &&
-                            category.description!.isNotEmpty) ...[
-                          const SizedBox(height: 8),
-                          Text(
-                            category.description!,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontWeight: FontWeight.w400,
-                              height: 1.35,
+                            const SizedBox(height: 16),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              child: Row(
+                                children: [
+                                  _buildHeaderBadge(
+                                    icon: Icons.menu_book_rounded,
+                                    label:
+                                        '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildHeaderBadge(
+                                    icon: Icons.stars_rounded,
+                                    label: 'Free Access',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildHeaderBadge(
+                                    icon: Icons.cloud_done_rounded,
+                                    label: 'Offline Ready',
+                                  ),
+                                  if (isDesktop) ...[
+                                    const SizedBox(width: 8),
+                                    _buildHeaderBadge(
+                                      icon: Icons.timer_outlined,
+                                      label: '~5 min each',
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        const SizedBox(height: 14),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Row(
-                            children: [
-                              _buildHeaderBadge(
-                                icon: Icons.menu_book_rounded,
-                                label:
-                                    '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildHeaderBadge(
-                                icon: Icons.stars_rounded,
-                                label: 'Free Access',
-                              ),
-                              const SizedBox(width: 8),
-                              _buildHeaderBadge(
-                                icon: Icons.cloud_done_rounded,
-                                label: 'Offline Ready',
-                              ),
-                            ],
-                          ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -214,21 +333,28 @@ class CategoryHeroHeader extends StatelessWidget {
 
   Widget _buildHeaderBadge({required IconData icon, required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: Colors.white),
-          const SizedBox(width: 5),
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 6),
           Text(
             label,
             style: const TextStyle(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w700,
               color: Colors.white,
               letterSpacing: 0.1,

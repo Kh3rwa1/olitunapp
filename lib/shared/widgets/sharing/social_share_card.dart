@@ -78,7 +78,7 @@ class SocialShareCard extends StatelessWidget {
                   ? Text(payload.emoji!, style: const TextStyle(fontSize: 40))
                   : Icon(
                       payload.icon ?? Icons.star_rounded,
-                      color: AppColors.accentOchre,
+                      color: Colors.white,
                       size: 44,
                     ),
             ),
@@ -103,7 +103,9 @@ class SocialShareCard extends StatelessWidget {
               payload.olChikiText!,
               textAlign: TextAlign.center,
               style: AppTypography.olChikiHeading.copyWith(
-                color: AppColors.accentOchre,
+                // White, never yellow: large display text must clear
+                // large-text contrast on the green gradient.
+                color: Colors.white,
                 fontSize: 20,
               ),
             ),
@@ -169,7 +171,7 @@ class SocialShareCard extends StatelessWidget {
                           payload.secondaryMetricValue!,
                           style: AppTypography.labelLarge.copyWith(
                             fontWeight: FontWeight.w900,
-                            color: AppColors.accentOchre,
+                            color: Colors.white,
                           ),
                         ),
                       ],

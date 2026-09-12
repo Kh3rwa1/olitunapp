@@ -27,6 +27,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
     NotificationFrequency current,
   ) {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       backgroundColor: isDark ? AppColors.quizDarkCard : Colors.white,
       shape: const RoundedRectangleBorder(

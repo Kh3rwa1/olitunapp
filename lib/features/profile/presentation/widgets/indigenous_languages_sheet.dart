@@ -16,6 +16,7 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
 
   static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

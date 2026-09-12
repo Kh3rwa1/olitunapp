@@ -67,7 +67,10 @@ class AppColors {
   @Deprecated('Use accentGoldDark instead')
   static const Color duoYellowDark = accentGoldDark;
 
-  // Avatar Gradient Palettes
+  // Avatar Gradient Palettes. The last entry is the transparent option:
+  // a fully clear circle that shows the surface behind the animation.
+  // It must stay last: fresh installs default to it (see
+  // userAvatarColorIndexProvider), while stored indices keep working.
   static const List<List<Color>> avatarPalettes = [
     [primary, primaryDark],
     [santaliTerracotta, santaliTerracottaDark],
@@ -77,7 +80,11 @@ class AppColors {
     [accentPurple, accentPurpleDark],
     [accentCyan, Color(0xFF00B8D4)],
     [accentPink, Color(0xFFF50057)],
+    [Colors.transparent, Colors.transparent],
   ];
+
+  /// Index of the transparent avatar background in [avatarPalettes].
+  static int get transparentAvatarPaletteIndex => avatarPalettes.length - 1;
 
   // Neutrals & Surfaces
   static const Color pureBlack = Colors.black;
@@ -326,4 +333,34 @@ class AppColors {
       offset: const Offset(0, 4),
     ),
   ];
+
+  // Web Shell Palette — desktop PWA rails, heroes and player surfaces.
+  // The single home for every web-only hex so feature code stays
+  // literal-free (see scripts/check_color_literals.mjs).
+  static const Color webInk = Color(0xFF0F172A);
+  static const Color webSlateDark = Color(0xFF475569);
+  static const Color webSlate = Color(0xFF64748B);
+  static const Color webSlateLight = Color(0xFF94A3B8);
+  static const Color webSlateFaint = Color(0xFFCBD5E1);
+  static const Color webBorder = Color(0xFFE3E8F0);
+  static const Color webCanvasWarm = Color(0xFFF8FAFF);
+  static const Color mintWash = Color(0xFFEFFDF4);
+  static const Color mintMist = Color(0xFFF0FDF4);
+  static const Color skyWash = Color(0xFFE9F3FF);
+  static const Color emeraldDeep = Color(0xFF00A355);
+  static const Color emeraldInk = Color(0xFF03543F);
+  static const Color emeraldPine = Color(0xFF0B3B24);
+  static const Color emeraldTeal = Color(0xFF0E9F6E);
+  static const Color emeraldShade = Color(0xFF057A55);
+  static const Color nightGreen = Color(0xFF0B1A14);
+  static const Color nightBlue = Color(0xFF0D1B2E);
+  static const Color nightCard = Color(0xFF101724);
+  static const Color nightElevated = Color(0xFF14202E);
+  static const Color nightPanel = Color(0xFF0E1522);
+  static const Color skyBright = Color(0xFF38BDF8);
+  static const Color indigoVivid = Color(0xFF4F46E5);
+  static const Color amberEmber = Color(0xFFFF9F2E);
+  static const Color goldSoft = Color(0xFFFFD54F);
+  static const Color shadowSoftBlack = Color(0x40000000);
+  static const Color violetGlow = Color(0x667C3AED);
 }

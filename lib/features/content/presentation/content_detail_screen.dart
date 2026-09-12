@@ -349,6 +349,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     LessonQuizRecommendation? recommendation,
   }) {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isDismissible: false,
       enableDrag: false,

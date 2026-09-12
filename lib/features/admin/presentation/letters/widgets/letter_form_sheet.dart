@@ -10,6 +10,7 @@ class LetterFormSheet extends ConsumerStatefulWidget {
 
   static void show(BuildContext context, WidgetRef ref, LetterModel? letter) {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(

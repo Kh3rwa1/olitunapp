@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/ads/ad_service.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
@@ -403,9 +404,17 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
           result.fold((err) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
+                SnackBar(
+                  content: const Text(
                     'Ad privacy settings are not required for your region.',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                  margin: EdgeInsets.fromLTRB(
+                    16,
+                    0,
+                    16,
+                    MediaQuery.viewPaddingOf(context).bottom +
+                        ResponsiveLayout.floatingNavClearance,
                   ),
                 ),
               );

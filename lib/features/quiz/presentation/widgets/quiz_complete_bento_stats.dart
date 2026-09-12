@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class QuizCompleteBentoStats extends StatelessWidget {
@@ -77,8 +78,10 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                '$score / $totalQuestions',
+              AnimatedCounter(
+                value: score,
+                from: 0,
+                suffix: ' / $totalQuestions',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -113,8 +116,10 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                '$percentage%',
+              AnimatedCounter(
+                value: percentage,
+                from: 0,
+                suffix: '%',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -147,8 +152,10 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                '+$totalStars',
+              AnimatedCounter(
+                value: totalStars,
+                from: 0,
+                prefix: '+',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,
@@ -181,8 +188,9 @@ class QuizCompleteBentoStats extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text(
-                '$bestCombo',
+              AnimatedCounter(
+                value: bestCombo,
+                from: 0,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w900,

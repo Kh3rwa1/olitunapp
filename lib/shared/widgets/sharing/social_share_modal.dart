@@ -25,6 +25,7 @@ class SocialShareModal extends StatefulWidget {
     required ShareCardPayload payload,
   }) {
     return showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

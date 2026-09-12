@@ -48,6 +48,7 @@ class TeachingLanguageTile extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
@@ -143,6 +144,7 @@ class LessonAudioModeTile extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
@@ -13,7 +14,9 @@ import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
+import '../domain/lesson_progression.dart';
 import 'providers/lesson_notifier.dart';
+import 'providers/lesson_progression_provider.dart';
 import 'widgets/category_lessons/category_browse_all_card.dart';
 import 'widgets/category_lessons/category_empty_state.dart';
 import 'widgets/category_lessons/category_hero_header.dart';
@@ -45,6 +48,30 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     } else {
       context.go('/lessons');
     }
+  }
+
+  void _showLockedLessonMessage(String? blockingLessonTitle) {
+    final message = blockingLessonTitle == null
+        ? 'Complete the previous lesson first to unlock this lesson.'
+        : 'Complete “$blockingLessonTitle” first to unlock this lesson.';
+    final messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          // Clear the floating shell navigation overlaying branch content.
+          margin: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            MediaQuery.viewPaddingOf(context).bottom +
+                ResponsiveLayout.floatingNavClearance,
+          ),
+          showCloseIcon: true,
+        ),
+      );
   }
 
   LinearGradient _getGradient(String preset) {
@@ -121,6 +148,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     }
 
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
+    final completedLessonIds = ref.watch(completedLessonIdsProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
     final brandGradient = _getGradient(category.gradientPreset);
     final themeColor = brandGradient.colors.first;
@@ -155,7 +183,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             ),
             lessons.when(
               data: (data) {
-                if (data.isEmpty) {
+                final orderedLessons = LessonProgression.orderedActiveLessons(
+                  data,
+                );
+                if (orderedLessons.isEmpty) {
                   return SliverFillRemaining(
                     hasScrollBody: false,
                     child: CategoryEmptyState(
@@ -180,10 +211,17 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 final isAlphabet = alphabetCategoryIds.contains(category.id);
                 final isNumber = numberCategoryIds.contains(category.id);
                 final hasBrowseAll = isAlphabet || isNumber;
-                final totalCount = data.length + (hasBrowseAll ? 1 : 0);
+                final totalCount =
+                    orderedLessons.length + (hasBrowseAll ? 1 : 0);
+
+                final screenWidth = MediaQuery.sizeOf(context).width;
+                final isDesktop = screenWidth >= 1100;
+                final hPad = isDesktop
+                    ? (screenWidth > 960 ? (screenWidth - 880) / 2 : 40.0)
+                    : 16.0;
 
                 return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 140),
+                  padding: EdgeInsets.fromLTRB(hPad, 28, hPad, 140),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       if (hasBrowseAll && index == 0) {
@@ -231,7 +269,21 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       }
 
                       final lessonIndex = hasBrowseAll ? index - 1 : index;
-                      final lesson = data[lessonIndex];
+                      final lesson = orderedLessons[lessonIndex];
+                      final progressStatus = LessonProgression.statusFor(
+                        orderedLessons: orderedLessons,
+                        completedLessonIds: completedLessonIds,
+                        lessonId: lesson.id,
+                      );
+                      final isLocked =
+                          progressStatus == LessonProgressStatus.locked;
+                      final isCompleted =
+                          progressStatus == LessonProgressStatus.completed;
+                      final blockingLesson = LessonProgression.blockingLesson(
+                        orderedLessons: orderedLessons,
+                        completedLessonIds: completedLessonIds,
+                        lessonId: lesson.id,
+                      );
 
                       final primaryTitle = primaryLocalizedText(
                         olChiki: lesson.titleOlChiki,
@@ -243,8 +295,16 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         latin: lesson.titleLatin,
                         scriptMode: scriptMode,
                       );
+                      final blockingLessonTitle = blockingLesson == null
+                          ? null
+                          : primaryLocalizedText(
+                              olChiki: blockingLesson.titleOlChiki,
+                              latin: blockingLesson.titleLatin,
+                              scriptMode: scriptMode,
+                            );
 
                       final cardWidget = CategoryLessonCard(
+                        key: Key('lesson-card-${lesson.id}'),
                         lesson: lesson,
                         primaryTitle: primaryTitle,
                         secondaryTitle: secondaryTitle ?? '',
@@ -253,7 +313,13 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         index: lessonIndex,
                         gradient: brandGradient,
                         themeColor: themeColor,
+                        isLocked: isLocked,
+                        isCompleted: isCompleted,
                         onTap: () {
+                          if (isLocked) {
+                            _showLockedLessonMessage(blockingLessonTitle);
+                            return;
+                          }
                           context.push('/lesson/${lesson.id}');
                         },
                       );
@@ -265,17 +331,23 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 isFirst: index == 0,
                                 isLast: index == totalCount - 1,
                                 isDark: isDark,
-                                isLocked: false,
+                                isLocked: isLocked,
                                 themeColor: themeColor,
                                 gradient: brandGradient,
-                                stepNodeChild: Text(
-                                  '${lessonIndex + 1}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                  ),
-                                ),
+                                stepNodeChild: isCompleted
+                                    ? const Icon(
+                                        Icons.check_rounded,
+                                        size: 17,
+                                        color: Colors.white,
+                                      )
+                                    : Text(
+                                        '${lessonIndex + 1}',
+                                        style: const TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w900,
+                                          color: Colors.white,
+                                        ),
+                                      ),
                               )
                               .animate()
                               .fadeIn(delay: (index * 80).ms, duration: 400.ms)
@@ -286,7 +358,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 duration: 450.ms,
                               );
 
-                      if (lessonIndex < data.length - 1) {
+                      if (lessonIndex < orderedLessons.length - 1) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -372,9 +444,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
   CategoryEntity? _findCategory(List<CategoryEntity> categories, String id) {
     for (final category in categories) {
-      if (category.id == id) {
-        return category;
-      }
+      if (category.id == id) return category;
     }
     return null;
   }

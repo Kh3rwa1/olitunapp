@@ -32,6 +32,7 @@ class EditBlockSheet extends ConsumerStatefulWidget {
     required ValueChanged<LessonBlockEntity> onUpdate,
   }) {
     showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

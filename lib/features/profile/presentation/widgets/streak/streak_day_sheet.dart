@@ -28,6 +28,7 @@ class StreakDaySheet extends StatelessWidget {
     required bool isDark,
   }) {
     return showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(

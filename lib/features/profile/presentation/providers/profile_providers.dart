@@ -7,7 +7,10 @@
 /// these re-exports.
 library;
 
+export 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 export 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
+export 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.dart';
 
 export 'profile_account_providers.dart';
 export 'user_stats_provider.dart';
+export 'weekly_leaderboard_provider.dart';

@@ -66,7 +66,7 @@ class LockedLessonOverlay extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF1E1B4B), Color(0xFF0F0D2A)],
+              colors: [AppColors.nightElevated, AppColors.nightPanel],
             ),
             borderRadius: BorderRadius.circular(32),
             border: Border.all(color: Colors.white.withValues(alpha: 0.12)),

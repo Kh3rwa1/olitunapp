@@ -5,7 +5,9 @@ import 'package:equatable/equatable.dart';
 ///
 /// Animal artwork: free Lottie animations by Google Inc. via IconScout
 /// (free-animal-and-nature-animation packs 344421 and 344422, free license
-/// with attribution). See tool/iconscout-avatar-import.tsv for sources.
+/// with attribution) plus free LottieFiles community animations (see the
+/// source links in tool/iconscout-avatar-import.tsv). See that manifest
+/// for per-file sources.
 class ProfileAvatar extends Equatable {
   const ProfileAvatar({
     required this.id,
@@ -52,6 +54,53 @@ const List<ProfileAvatar> kProfileAvatars = [
     label: 'Peace',
   ),
   ProfileAvatar(id: 'ant', assetFileName: 'avatar_ant.json', label: 'Ant'),
+  ProfileAvatar(
+    id: 'cat_noha',
+    assetFileName: 'avatar_cat_noha.json',
+    label: 'Cat Noha',
+  ),
+  ProfileAvatar(
+    id: 'smart_puppy',
+    assetFileName: 'avatar_smart_puppy.json',
+    label: 'Smart Puppy',
+  ),
+  ProfileAvatar(
+    id: 'running_chicken',
+    assetFileName: 'avatar_running_chicken.json',
+    label: 'Running Chicken',
+  ),
+  ProfileAvatar(
+    id: 'razmi',
+    assetFileName: 'avatar_razmi.json',
+    label: 'Razmi',
+  ),
+  ProfileAvatar(id: 'bear', assetFileName: 'avatar_bear.json', label: 'Bear'),
+  ProfileAvatar(id: 'coco', assetFileName: 'avatar_coco.json', label: 'Coco'),
+  ProfileAvatar(
+    id: 'chicken',
+    assetFileName: 'avatar_chicken.json',
+    label: 'Chicken',
+  ),
+  ProfileAvatar(
+    id: 'cat_3d',
+    assetFileName: 'avatar_cat_3d.json',
+    label: 'Cat 3D',
+  ),
+  ProfileAvatar(
+    id: 'bad_cat',
+    assetFileName: 'avatar_bad_cat.json',
+    label: 'Bad Cat',
+  ),
+  ProfileAvatar(
+    id: 'monkey',
+    assetFileName: 'avatar_monkey.json',
+    label: 'Monkey',
+  ),
+  ProfileAvatar(
+    id: 'camaleon',
+    assetFileName: 'avatar_camaleon.json',
+    label: 'Camaleon',
+  ),
 ];
 
 ProfileAvatar? profileAvatarById(String id) {

@@ -294,8 +294,9 @@ Ensure the following repository settings are configured in the GitHub repository
 
 Profile avatar animations are free Lottie files by Google Inc. via
 [IconScout](https://iconscout.com) (free-animal-and-nature-animation packs
-`344421` and `344422`, free license with attribution). Sources are pinned in
-[`tool/iconscout-avatar-import.tsv`](tool/iconscout-avatar-import.tsv).
+`344421` and `344422`, free license with attribution) and free community
+animations via [LottieFiles](https://lottiefiles.com) (see source links in
+[`tool/iconscout-avatar-import.tsv`](tool/iconscout-avatar-import.tsv)).
 
 ---
 

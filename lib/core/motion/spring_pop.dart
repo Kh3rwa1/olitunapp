@@ -55,11 +55,15 @@ class _SpringPopState extends State<SpringPop>
     _reduced = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     _controller.duration = RespectMotion.duration(context, widget.duration);
     if (!widget.enabled || _reduced) {
-      _controller.value = 1; // settled, static
-    } else if (_controller.value == 1 && !_everPlayed) {
-      _controller.value = 0;
+      // Jump straight to the settled state — no motion.
+      _controller.value = 1;
+    } else if (!_everPlayed) {
+      // Play on mount; later replays are driven by trigger changes in
+      // didUpdateWidget. (A controller starts at 0, so gating on
+      // `value == 1` here would never play and leave the child at
+      // opacity 0 forever.)
       _everPlayed = true;
-      _controller.forward();
+      _controller.forward(from: 0);
     }
   }
 

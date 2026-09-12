@@ -7,10 +7,12 @@ void main() {
   Widget host({String? title, required VoidCallback onStart}) {
     return MaterialApp(
       home: Scaffold(
-        body: LockedLessonOverlay(
-          blockingLessonTitle: title,
-          onStartBlockingLesson: onStart,
-          isDark: false,
+        body: SingleChildScrollView(
+          child: LockedLessonOverlay(
+            blockingLessonTitle: title,
+            onStartBlockingLesson: onStart,
+            isDark: false,
+          ),
         ),
       ),
     );
@@ -23,7 +25,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('HOLD ON • LOCKED FOR NOW'), findsOneWidget);
-    expect(find.text('This one’s still winking at you'), findsOneWidget);
+    expect(find.text('Take me there'), findsOneWidget);
     expect(
       find.text('Complete “Time & Weather” first to crack it open.'),
       findsOneWidget,

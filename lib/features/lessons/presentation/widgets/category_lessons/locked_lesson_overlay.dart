@@ -33,9 +33,10 @@ class LockedLessonOverlay extends StatelessWidget {
     // showDialog already opens on the root navigator, above the shell.
     return showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.6),
+      barrierColor: Colors.black.withValues(alpha: 0.85),
       builder: (dialogContext) => Dialog(
         backgroundColor: Colors.transparent,
+        elevation: 0,
         insetPadding: const EdgeInsets.symmetric(horizontal: 24),
         child: LockedLessonOverlay(
           blockingLessonTitle: blockingLessonTitle,
@@ -51,11 +52,41 @@ class LockedLessonOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LockedLessonCard(
+      blockingLessonTitle: blockingLessonTitle,
+      onPrimary: onStartBlockingLesson,
+      onSecondary: () => Navigator.of(context).pop(),
+    );
+  }
+}
+
+/// Shared takeover card: giant Eyes, kicker, instruction naming the
+/// blocking lesson, and primary/secondary actions. Used both as a dialog
+/// (category list taps) and as a full page (deep links landing directly
+/// on a locked lesson) so every screen shows the same beautiful error.
+class LockedLessonCard extends StatelessWidget {
+  const LockedLessonCard({
+    super.key,
+    required this.blockingLessonTitle,
+    required this.onPrimary,
+    required this.onSecondary,
+    this.primaryLabel = 'Take me there',
+    this.secondaryLabel = 'Back to learning path',
+  });
+
+  /// Null-safe display name of the lesson blocking progress.
+  final String? blockingLessonTitle;
+  final VoidCallback onPrimary;
+  final VoidCallback onSecondary;
+  final String primaryLabel;
+  final String secondaryLabel;
+
+  @override
+  Widget build(BuildContext context) {
     final reduceMotion = RespectMotion.of(context);
     final blocker = (blockingLessonTitle?.isNotEmpty ?? false)
         ? blockingLessonTitle!
         : 'the previous lesson';
-    final screenWidth = MediaQuery.sizeOf(context).width;
 
     return Semantics(
       label: 'Lesson locked. Complete $blocker first to unlock this lesson.',
@@ -81,19 +112,22 @@ class LockedLessonOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Oversized peeking eyes spill past the card edges.
-              SizedBox(
-                height: 190,
-                child: OverflowBox(
-                  maxWidth: screenWidth,
-                  maxHeight: 260,
-                  child: Lottie.asset(
-                    'assets/animations/eyes_overlay.json',
-                    width: screenWidth,
-                    fit: BoxFit.cover,
-                    animate: !reduceMotion,
-                    repeat: !reduceMotion,
-                    errorBuilder: (_, _, _) => const Icon(
+              // Giant eyes bleed edge to edge, clipped by the card.
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
+                child: Lottie.asset(
+                  'assets/animations/eyes_overlay.json',
+                  // Square canvas: contain the whole composition so the
+                  // eyes render fully instead of a cropped band.
+                  height: 240,
+                  fit: BoxFit.contain,
+                  animate: !reduceMotion,
+                  repeat: !reduceMotion,
+                  errorBuilder: (_, _, _) => const Padding(
+                    padding: EdgeInsets.only(top: 32),
+                    child: Icon(
                       Icons.lock_rounded,
                       size: 72,
                       color: Colors.white70,
@@ -102,7 +136,7 @@ class LockedLessonOverlay extends StatelessWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 4, 28, 28),
+                padding: const EdgeInsets.fromLTRB(28, 16, 28, 28),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -117,23 +151,13 @@ class LockedLessonOverlay extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      'This one’s still winking at you',
-                      textAlign: TextAlign.center,
-                      style: AppTypography.inter(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.5,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
                       'Complete “$blocker” first to crack it open.',
                       textAlign: TextAlign.center,
                       style: AppTypography.inter(
-                        fontSize: 15,
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
                         height: 1.45,
-                        color: Colors.white70,
+                        color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -141,10 +165,9 @@ class LockedLessonOverlay extends StatelessWidget {
                       width: double.infinity,
                       child: FilledButton.icon(
                         key: const ValueKey('locked-overlay-start'),
-                        // Wrapper in [show] dismisses before navigating.
-                        onPressed: onStartBlockingLesson,
+                        onPressed: onPrimary,
                         icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Take me there'),
+                        label: Text(primaryLabel),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.emeraldDeep,
@@ -161,10 +184,10 @@ class LockedLessonOverlay extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Back to learning path',
-                        style: TextStyle(
+                      onPressed: onSecondary,
+                      child: Text(
+                        secondaryLabel,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                         ),

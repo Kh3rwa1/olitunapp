@@ -99,6 +99,7 @@ flutter:
     - assets/animations/
     - assets/animations/avatars/
     - assets/seed/
+    - assets/audio/
 
 
 

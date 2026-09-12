@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:lottie/lottie.dart';
 
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../../../shared/providers/local_settings_provider.dart';
 
 /// Playful full-screen takeover for locked lessons: an oversized peeking
 /// Eyes animation, big friendly typography, and a direct CTA into the
@@ -64,7 +67,11 @@ class LockedLessonOverlay extends StatelessWidget {
 /// blocking lesson, and primary/secondary actions. Used both as a dialog
 /// (category list taps) and as a full page (deep links landing directly
 /// on a locked lesson) so every screen shows the same beautiful error.
-class LockedLessonCard extends StatelessWidget {
+///
+/// Plays the Eyes SFX once on appearance (when sound is enabled); all
+/// player errors are swallowed so tests, offline, and silent devices stay
+/// quiet instead of crashing.
+class LockedLessonCard extends ConsumerStatefulWidget {
   const LockedLessonCard({
     super.key,
     required this.blockingLessonTitle,
@@ -82,10 +89,46 @@ class LockedLessonCard extends StatelessWidget {
   final String secondaryLabel;
 
   @override
+  ConsumerState<LockedLessonCard> createState() => _LockedLessonCardState();
+}
+
+class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
+  AudioPlayer? _sfxPlayer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _playSfx());
+  }
+
+  Future<void> _playSfx() async {
+    try {
+      if (!ref.read(soundEnabledProvider)) return;
+      final player = AudioPlayer();
+      _sfxPlayer = player;
+      await player.setAsset('assets/audio/eyes.wav');
+      await player.play();
+    } catch (_) {
+      // Silent by design: tests, offline, muted, or unsupported targets.
+    }
+  }
+
+  @override
+  void dispose() {
+    final player = _sfxPlayer;
+    _sfxPlayer = null;
+    if (player != null) {
+      player.stop().catchError((_) {});
+      player.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final reduceMotion = RespectMotion.of(context);
-    final blocker = (blockingLessonTitle?.isNotEmpty ?? false)
-        ? blockingLessonTitle!
+    final blocker = (widget.blockingLessonTitle?.isNotEmpty ?? false)
+        ? widget.blockingLessonTitle!
         : 'the previous lesson';
 
     return Semantics(
@@ -165,9 +208,9 @@ class LockedLessonCard extends StatelessWidget {
                       width: double.infinity,
                       child: FilledButton.icon(
                         key: const ValueKey('locked-overlay-start'),
-                        onPressed: onPrimary,
+                        onPressed: widget.onPrimary,
                         icon: const Icon(Icons.play_arrow_rounded),
-                        label: Text(primaryLabel),
+                        label: Text(widget.primaryLabel),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.emeraldDeep,
@@ -184,9 +227,9 @@ class LockedLessonCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: onSecondary,
+                      onPressed: widget.onSecondary,
                       child: Text(
-                        secondaryLabel,
+                        widget.secondaryLabel,
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,

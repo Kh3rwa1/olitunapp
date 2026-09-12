@@ -4,19 +4,19 @@ import 'package:itun/features/lessons/presentation/widgets/category_lessons/lock
 import 'package:lottie/lottie.dart';
 
 void main() {
-Widget host({String? title, required VoidCallback onStart}) {
-  return MaterialApp(
-    home: Scaffold(
-      body: SingleChildScrollView(
-        child: LockedLessonOverlay(
-          blockingLessonTitle: title,
-          onStartBlockingLesson: onStart,
-          isDark: false,
+  Widget host({String? title, required VoidCallback onStart}) {
+    return MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: LockedLessonOverlay(
+            blockingLessonTitle: title,
+            onStartBlockingLesson: onStart,
+            isDark: false,
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   testWidgets('overlay shows playful copy with the blocking lesson', (
     tester,
@@ -25,6 +25,7 @@ Widget host({String? title, required VoidCallback onStart}) {
     await tester.pump();
 
     expect(find.text('HOLD ON • LOCKED FOR NOW'), findsOneWidget);
+    expect(find.text('Take me there'), findsOneWidget);
     expect(
       find.text('Complete “Time & Weather” first to crack it open.'),
       findsOneWidget,

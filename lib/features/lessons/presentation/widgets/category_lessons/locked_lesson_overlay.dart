@@ -57,91 +57,118 @@ class LockedLessonOverlay extends StatelessWidget {
         ? blockingLessonTitle!
         : 'the previous lesson';
 
-    // No card: the blackout overlay is the canvas. The eyes span 70% of
-    // the screen width on phone, tablet, and desktop alike.
-    final screenSize = MediaQuery.sizeOf(context);
-    final eyesWidth = screenSize.width * 0.7;
-
     return Semantics(
       label: 'Lesson locked. Complete $blocker first to unlock this lesson.',
       child: SpringPop(
         trigger: blocker,
-        child: SingleChildScrollView(
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [AppColors.primary, AppColors.primaryDark],
+            ),
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.4),
+                blurRadius: 32,
+                offset: const Offset(0, 16),
+              ),
+            ],
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-            // Giant eyes dominate the screen.
-            Lottie.asset(
-              'assets/animations/eyes_overlay.json',
-              width: eyesWidth,
-              fit: BoxFit.contain,
-              animate: !reduceMotion,
-              repeat: !reduceMotion,
-              errorBuilder: (_, _, _) => const Icon(
-                Icons.lock_rounded,
-                size: 72,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'HOLD ON • LOCKED FOR NOW',
-              style: AppTypography.inter(
-                fontSize: 11,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2.0,
-                color: AppColors.accentGold,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Complete “$blocker” first to crack it open.',
-              textAlign: TextAlign.center,
-              style: AppTypography.inter(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                height: 1.45,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 28),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                key: const ValueKey('locked-overlay-start'),
-                // Wrapper in [show] dismisses before navigating.
-                onPressed: onStartBlockingLesson,
-                icon: const Icon(Icons.play_arrow_rounded),
-                label: const Text('Take me there'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w900,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              // Giant eyes bleed edge to edge, clipped by the card.
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(32),
+                ),
+                child: Lottie.asset(
+                  'assets/animations/eyes_overlay.json',
+                  width: double.infinity,
+                  height: 210,
+                  fit: BoxFit.cover,
+                  animate: !reduceMotion,
+                  repeat: !reduceMotion,
+                  errorBuilder: (_, _, _) => const Padding(
+                    padding: EdgeInsets.only(top: 32),
+                    child: Icon(
+                      Icons.lock_rounded,
+                      size: 72,
+                      color: Colors.white70,
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                'Back to learning path',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 16, 28, 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'HOLD ON • LOCKED FOR NOW',
+                      style: AppTypography.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                        color: AppColors.emeraldDeep,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Complete “$blocker” first to crack it open.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.inter(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        height: 1.45,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton.icon(
+                        key: const ValueKey('locked-overlay-start'),
+                        // Wrapper in [show] dismisses before navigating.
+                        onPressed: onStartBlockingLesson,
+                        icon: const Icon(Icons.play_arrow_rounded),
+                        label: const Text('Take me there'),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.emeraldDeep,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          textStyle: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text(
+                        'Back to learning path',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
     );
   }
 }

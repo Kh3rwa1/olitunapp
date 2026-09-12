@@ -66,10 +66,10 @@ class LockedLessonOverlay extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.nightElevated, AppColors.nightPanel],
+              colors: [AppColors.primary, AppColors.primaryDark],
             ),
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.35)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.4),
@@ -112,7 +112,7 @@ class LockedLessonOverlay extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
                         letterSpacing: 2.0,
-                        color: AppColors.accentGold,
+                        color: AppColors.emeraldDeep,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -146,8 +146,8 @@ class LockedLessonOverlay extends StatelessWidget {
                         icon: const Icon(Icons.play_arrow_rounded),
                         label: const Text('Take me there'),
                         style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.black,
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.emeraldDeep,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           textStyle: const TextStyle(
                             fontSize: 15,
@@ -164,7 +164,10 @@ class LockedLessonOverlay extends StatelessWidget {
                       onPressed: () => Navigator.of(context).pop(),
                       child: const Text(
                         'Back to learning path',
-                        style: TextStyle(color: Colors.white70),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],

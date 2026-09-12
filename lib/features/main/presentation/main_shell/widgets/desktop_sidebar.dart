@@ -5,6 +5,8 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/providers/providers.dart';
+import 'sidebar_avatar_icon.dart';
+import 'theme_toggle_switch.dart';
 
 class DesktopSidebar extends ConsumerWidget {
   final int selectedIndex;
@@ -160,6 +162,7 @@ class DesktopSidebar extends ConsumerWidget {
           ),
           SidebarNavItem(
             icon: Icons.person_rounded,
+            leading: const SidebarAvatarIcon(),
             label: l10n.navProfile,
             caption: 'Stars • Streak • Goals',
             isSelected: selectedIndex == 2,
@@ -249,39 +252,15 @@ class DesktopSidebar extends ConsumerWidget {
 
           const SizedBox(height: 12),
 
-          // ── Theme segmented control ──────────────────────────
+          // ── Animated theme switch ────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: (isDark ? Colors.white : Colors.black).withValues(
-                  alpha: 0.05,
-                ),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: (isDark ? Colors.white : Colors.black).withValues(
-                    alpha: 0.06,
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  _ThemeSegment(
-                    icon: Icons.light_mode_rounded,
-                    label: l10n.light,
-                    selected: !isCurrentlyDark,
-                    isDark: isDark,
-                    onTap: () => updateThemeMode(ref, 'light'),
-                  ),
-                  _ThemeSegment(
-                    icon: Icons.dark_mode_rounded,
-                    label: l10n.dark,
-                    selected: isCurrentlyDark,
-                    isDark: isDark,
-                    onTap: () => updateThemeMode(ref, 'dark'),
-                  ),
-                ],
+            child: Center(
+              child: AnimatedThemeToggle(
+                isDark: isCurrentlyDark,
+                targetLabel: isCurrentlyDark ? l10n.light : l10n.dark,
+                onToggle: (toDark) =>
+                    updateThemeMode(ref, toDark ? 'dark' : 'light'),
               ),
             ),
           ),
@@ -305,79 +284,12 @@ class DesktopSidebar extends ConsumerWidget {
   }
 }
 
-class _ThemeSegment extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _ThemeSegment({
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: MouseRegion(
-          cursor: SystemMouseCursors.click,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(vertical: 9),
-            decoration: BoxDecoration(
-              color: selected
-                  ? (isDark ? Colors.white : Colors.white)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: selected
-                  ? [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ]
-                  : null,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  icon,
-                  size: 15,
-                  color: selected
-                      ? AppColors.webInk
-                      : (isDark ? Colors.white54 : Colors.black45),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: AppTypography.inter(
-                    fontSize: 12,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected
-                        ? AppColors.webInk
-                        : (isDark ? Colors.white54 : Colors.black45),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class SidebarNavItem extends StatefulWidget {
   final IconData icon;
+
+  /// Custom leading widget (e.g. the animated profile avatar) replacing
+  /// the default icon box.
+  final Widget? leading;
   final String label;
   final String caption;
   final bool isSelected;
@@ -387,6 +299,7 @@ class SidebarNavItem extends StatefulWidget {
   const SidebarNavItem({
     super.key,
     required this.icon,
+    this.leading,
     required this.label,
     this.caption = '',
     required this.isSelected,
@@ -486,15 +399,17 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                               ]
                             : null,
                       ),
-                      child: Icon(
-                        widget.icon,
-                        size: 21,
-                        color: isActive
-                            ? Colors.white
-                            : widget.isDark
-                            ? Colors.white60
-                            : AppColors.webSlate,
-                      ),
+                      child:
+                          widget.leading ??
+                          Icon(
+                            widget.icon,
+                            size: 21,
+                            color: isActive
+                                ? Colors.white
+                                : widget.isDark
+                                ? Colors.white60
+                                : AppColors.webSlate,
+                          ),
                     ),
                     const SizedBox(width: 13),
                     Expanded(

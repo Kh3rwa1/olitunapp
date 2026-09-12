@@ -315,43 +315,50 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
         ? Icons.replay_rounded
         : Icons.play_arrow_rounded;
     final hovered = _hover && !isLocked;
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      width: hovered ? 52 : 48,
-      height: hovered ? 52 : 48,
-      decoration: BoxDecoration(
-        color: isLocked
-            ? (isDark
-                  ? Colors.white.withValues(alpha: 0.10)
-                  : AppColors.webInk.withValues(alpha: 0.06))
-            : null,
-        gradient: isLocked ? null : widget.gradient,
-        shape: BoxShape.circle,
-        border: Border.all(
+    // Explicit tap target: the CTA must fire onTap even if an ancestor
+    // gesture ever stops claiming the hit (hit-test blockers above would
+    // otherwise make the lock icon a dead zone).
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        width: hovered ? 52 : 48,
+        height: hovered ? 52 : 48,
+        decoration: BoxDecoration(
           color: isLocked
-              ? Colors.transparent
-              : Colors.white.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
-        boxShadow: isLocked
-            ? null
-            : [
-                BoxShadow(
-                  color: widget.themeColor.withValues(
-                    alpha: hovered ? 0.5 : 0.35,
+              ? (isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : AppColors.webInk.withValues(alpha: 0.06))
+              : null,
+          gradient: isLocked ? null : widget.gradient,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isLocked
+                ? Colors.transparent
+                : Colors.white.withValues(alpha: 0.35),
+            width: 1.5,
+          ),
+          boxShadow: isLocked
+              ? null
+              : [
+                  BoxShadow(
+                    color: widget.themeColor.withValues(
+                      alpha: hovered ? 0.5 : 0.35,
+                    ),
+                    blurRadius: hovered ? 18 : 12,
+                    offset: const Offset(0, 5),
                   ),
-                  blurRadius: hovered ? 18 : 12,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-      ),
-      child: Center(
-        child: Icon(
-          icon,
-          color: isLocked
-              ? (isDark ? Colors.white54 : AppColors.webSlateLight)
-              : Colors.white,
-          size: 22,
+                ],
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            color: isLocked
+                ? (isDark ? Colors.white54 : AppColors.webSlateLight)
+                : Colors.white,
+            size: 22,
+          ),
         ),
       ),
     );

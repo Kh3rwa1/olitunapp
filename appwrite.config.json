@@ -118,7 +118,7 @@
       "execute": [],
       "events": [],
       "schedule": "0 2 * * *",
-      "timeout": 60,
+      "timeout": 120,
       "path": "functions/reconcileOrphanedDeletions",
       "entrypoint": "src/main.js",
       "commands": "npm install",
@@ -133,8 +133,7 @@
         "databases.write",
         "documents.read",
         "documents.write",
-        "users.read",
-        "users.write"
+        "users.read"
       ]
     },
     {
@@ -146,7 +145,7 @@
       ],
       "events": [],
       "schedule": "",
-      "timeout": 30,
+      "timeout": 300,
       "path": "functions/admin-maintenance",
       "entrypoint": "src/main.js",
       "commands": "npm install",
@@ -190,7 +189,8 @@
         "users.write",
         "teams.read",
         "teams.write",
-        "databases.write"
+        "databases.write",
+        "documents.write"
       ]
     },
     {
@@ -239,7 +239,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "databases.read"
+        "databases.read",
+        "documents.read"
       ]
     },
     {
@@ -263,7 +264,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -287,7 +290,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -311,7 +316,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -334,7 +341,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "databases.read"
+        "databases.read",
+        "documents.read"
       ]
     },
     {
@@ -368,7 +376,7 @@
       "execute": [],
       "events": [],
       "schedule": "0 3 * * *",
-      "timeout": 60,
+      "timeout": 120,
       "path": "functions/cleanupAnalyticsEvents",
       "entrypoint": "src/main.js",
       "commands": "npm install",
@@ -393,7 +401,7 @@
       "execute": [],
       "events": [],
       "schedule": "0 4 * * 0",
-      "timeout": 60,
+      "timeout": 300,
       "path": "functions/backupCollections",
       "entrypoint": "src/main.js",
       "commands": "npm install",
@@ -406,7 +414,8 @@
       "scopes": [
         "databases.read",
         "files.read",
-        "files.write"
+        "files.write",
+        "documents.read"
       ]
     },
     {
@@ -429,7 +438,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -454,7 +465,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -479,7 +492,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -504,7 +519,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -555,7 +572,9 @@
       "logging": true,
       "scopes": [
         "databases.read",
-        "databases.write"
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {
@@ -596,7 +615,7 @@
       "buildRuntime": "flutter-3.35",
       "adapter": "static",
       "installCommand": "flutter pub get",
-      "buildCommand": "flutter build web --release --no-wasm-dry-run --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions",
+      "buildCommand": "flutter build web --release --no-wasm-dry-run --dart-define=APP_ENV=production --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions",
       "outputDirectory": "build/web",
       "fallbackFile": "index.html"
     }

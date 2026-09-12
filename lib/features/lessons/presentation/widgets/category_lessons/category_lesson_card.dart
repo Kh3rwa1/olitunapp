@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/utils/localized_content.dart';
+import '../../../domain/entities/lesson_entity.dart';
 
-class CategoryLessonCard extends StatelessWidget {
-  final dynamic lesson;
+class CategoryLessonCard extends StatefulWidget {
+  final LessonEntity lesson;
   final String primaryTitle;
   final String secondaryTitle;
   final String scriptMode;
@@ -14,6 +15,8 @@ class CategoryLessonCard extends StatelessWidget {
   final VoidCallback onTap;
   final LinearGradient gradient;
   final Color themeColor;
+  final bool isLocked;
+  final bool isCompleted;
 
   const CategoryLessonCard({
     super.key,
@@ -26,113 +29,225 @@ class CategoryLessonCard extends StatelessWidget {
     required this.onTap,
     required this.gradient,
     required this.themeColor,
+    this.isLocked = false,
+    this.isCompleted = false,
   });
 
   @override
+  State<CategoryLessonCard> createState() => _CategoryLessonCardState();
+}
+
+class _CategoryLessonCardState extends State<CategoryLessonCard> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = widget.isDark;
+    final isLocked = widget.isLocked;
+    final isCompleted = widget.isCompleted;
+    final themeColor = widget.themeColor;
     final activeBgColor = isDark
-        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+        ? AppColors.nightCard.withValues(alpha: 0.85)
         : Colors.white;
-
-    final activeBorderColor = isDark
+    final lockedBgColor = isDark
+        ? Colors.white.withValues(alpha: 0.04)
+        : AppColors.ambientLightBlueTop;
+    final activeBorderColor = _hover && !isLocked
+        ? themeColor.withValues(alpha: 0.35)
+        : isDark
         ? Colors.white.withValues(alpha: 0.08)
-        : Colors.black.withValues(alpha: 0.04);
+        : AppColors.webBorder;
+    final lockedBorderColor = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : AppColors.webBorder;
+    final semanticState = isLocked
+        ? 'Locked. Complete the previous lesson first.'
+        : isCompleted
+        ? 'Completed. Available to replay.'
+        : 'Unlocked.';
 
-    return PressableScale(
-      onTap: onTap,
-      child: Hero(
-        tag: MotionTokens.heroTag('lesson', lesson.id),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: activeBgColor,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: activeBorderColor),
-            boxShadow: isDark
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.02),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                    BoxShadow(
-                      color: themeColor.withValues(alpha: 0.03),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return Semantics(
+      button: true,
+      label: '${widget.primaryTitle}. $semanticState',
+      excludeSemantics: true,
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _hover = true),
+        onExit: (_) => setState(() => _hover = false),
+        cursor: SystemMouseCursors.click,
+        child: PressableScale(
+          onTap: widget.onTap,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            transform: _hover && !isLocked
+                ? Matrix4.translationValues(0, -2, 0)
+                : Matrix4.identity(),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: isLocked ? lockedBgColor : activeBgColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isLocked ? lockedBorderColor : activeBorderColor,
+                width: 1.2,
+              ),
+              boxShadow: isDark || isLocked
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: const Color(
+                          0xFF0F172A,
+                        ).withValues(alpha: _hover ? 0.08 : 0.05),
+                        blurRadius: _hover ? 28 : 20,
+                        offset: Offset(0, _hover ? 14 : 8),
+                        spreadRadius: -12,
+                      ),
+                      BoxShadow(
+                        color: themeColor.withValues(
+                          alpha: _hover ? 0.10 : 0.05,
+                        ),
+                        blurRadius: 32,
+                        offset: const Offset(0, 10),
+                        spreadRadius: -18,
+                      ),
+                    ],
+            ),
+            child: Opacity(
+              opacity: isLocked ? 0.72 : 1,
+              child: Hero(
+                tag: MotionTokens.heroTag('lesson', widget.lesson.id),
+                child: Row(
                   children: [
-                    Row(children: [_buildLevelBadge(lesson.level, isDark)]),
-                    const SizedBox(height: 10),
-                    Text(
-                      primaryTitle,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        fontFamily: primaryLocalizedFontFamily(scriptMode),
-                        color: isDark ? Colors.white : Colors.black87,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    if (secondaryTitle.isNotEmpty) ...[
-                      const SizedBox(height: 3),
-                      Text(
-                        secondaryTitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          fontFamily: 'OlChiki',
-                          color: isDark ? Colors.white54 : Colors.black45,
-                        ),
-                      ),
-                    ],
-                    if (lesson.description != null &&
-                        lesson.description!.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        lesson.description!,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDark ? Colors.white38 : Colors.black54,
-                          height: 1.25,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.cloud_done_rounded,
-                          size: 13,
-                          color: themeColor.withValues(alpha: 0.8),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Available Offline',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              _buildLevelBadge(widget.lesson.level, isDark),
+                              if (isCompleted) ...[
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 9,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.12,
+                                    ),
+                                    borderRadius: BorderRadius.circular(999),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.check_rounded,
+                                        size: 11,
+                                        color: AppColors.emeraldDeep,
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'DONE',
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.w800,
+                                          letterSpacing: 0.8,
+                                          color: AppColors.emeraldDeep,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 12),
+                          Text(
+                            widget.primaryTitle,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.25,
+                              height: 1.25,
+                              fontFamily: primaryLocalizedFontFamily(
+                                widget.scriptMode,
+                              ),
+                              color: isDark ? Colors.white : AppColors.webInk,
+                            ),
+                          ),
+                          if (widget.secondaryTitle.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.secondaryTitle,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'OlChiki',
+                                color: isDark
+                                    ? Colors.white54
+                                    : AppColors.webSlate,
+                              ),
+                            ),
+                          ],
+                          if (widget.lesson.description != null &&
+                              widget.lesson.description!.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              widget.lesson.description!,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                height: 1.5,
+                                color: isDark
+                                    ? Colors.white54
+                                    : AppColors.webSlate,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                          const SizedBox(height: 14),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isLocked
+                                    ? Icons.lock_outline_rounded
+                                    : isCompleted
+                                    ? Icons.check_circle_rounded
+                                    : Icons.cloud_done_rounded,
+                                size: 14,
+                                color: isLocked
+                                    ? (isDark
+                                          ? Colors.white54
+                                          : AppColors.webSlateLight)
+                                    : AppColors.emeraldDeep,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isLocked
+                                    ? 'Complete previous lesson'
+                                    : isCompleted
+                                    ? 'Completed · Replay anytime'
+                                    : 'Available offline',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white54
+                                      : AppColors.webSlate,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 16),
+                    _buildCTA(isDark),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              _buildCTA(isDark),
-            ],
+            ),
           ),
         ),
       ),
@@ -157,33 +272,33 @@ class CategoryLessonCard extends StatelessWidget {
         break;
       case 'beginner':
       default:
-        badgeColor = AppColors.accentForest;
+        badgeColor = AppColors.emeraldDeep;
         label = 'Beginner';
         icon = Icons.star_rounded;
         break;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: isDark ? 0.15 : 0.08),
-        borderRadius: BorderRadius.circular(12),
+        color: badgeColor.withValues(alpha: isDark ? 0.16 : 0.09),
+        borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: badgeColor.withValues(alpha: isDark ? 0.3 : 0.15),
+          color: badgeColor.withValues(alpha: isDark ? 0.32 : 0.18),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, size: 11, color: badgeColor),
-          const SizedBox(width: 4),
+          const SizedBox(width: 5),
           Text(
-            label,
+            label.toUpperCase(),
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 9.5,
               fontWeight: FontWeight.w800,
               color: badgeColor,
-              letterSpacing: 0.3,
+              letterSpacing: 0.7,
             ),
           ),
         ],
@@ -192,22 +307,52 @@ class CategoryLessonCard extends StatelessWidget {
   }
 
   Widget _buildCTA(bool isDark) {
-    return Container(
-      width: 40,
-      height: 40,
+    final isLocked = widget.isLocked;
+    final isCompleted = widget.isCompleted;
+    final icon = isLocked
+        ? Icons.lock_rounded
+        : isCompleted
+        ? Icons.replay_rounded
+        : Icons.play_arrow_rounded;
+    final hovered = _hover && !isLocked;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      width: hovered ? 52 : 48,
+      height: hovered ? 52 : 48,
       decoration: BoxDecoration(
-        gradient: gradient,
+        color: isLocked
+            ? (isDark
+                  ? Colors.white.withValues(alpha: 0.10)
+                  : AppColors.webInk.withValues(alpha: 0.06))
+            : null,
+        gradient: isLocked ? null : widget.gradient,
         shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: themeColor.withValues(alpha: 0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        border: Border.all(
+          color: isLocked
+              ? Colors.transparent
+              : Colors.white.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+        boxShadow: isLocked
+            ? null
+            : [
+                BoxShadow(
+                  color: widget.themeColor.withValues(
+                    alpha: hovered ? 0.5 : 0.35,
+                  ),
+                  blurRadius: hovered ? 18 : 12,
+                  offset: const Offset(0, 5),
+                ),
+              ],
       ),
-      child: const Center(
-        child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+      child: Center(
+        child: Icon(
+          icon,
+          color: isLocked
+              ? (isDark ? Colors.white54 : AppColors.webSlateLight)
+              : Colors.white,
+          size: 22,
+        ),
       ),
     );
   }

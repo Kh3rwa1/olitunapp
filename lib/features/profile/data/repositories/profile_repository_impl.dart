@@ -5,6 +5,7 @@ import '../../../../core/auth/account_scope.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/observability/crash_reporting.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../domain/entities/profile_avatar.dart';
 import '../../domain/entities/user_stats_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../models/user_stats_model.dart';
@@ -255,10 +256,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, void>> updateAvatar(
-    String emoji,
+    String avatarId,
     int colorIndex,
   ) async {
-    await _prefs.setString('user_avatar_emoji', emoji);
+    await _prefs.setString('user_avatar_id', normalizeAvatarId(avatarId));
     await _prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);
   }

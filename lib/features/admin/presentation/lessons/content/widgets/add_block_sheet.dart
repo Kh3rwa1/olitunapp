@@ -12,6 +12,7 @@ class AddBlockSheet extends StatelessWidget {
     ValueChanged<String> onSelectType,
   ) {
     return showModalBottomSheet<void>(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

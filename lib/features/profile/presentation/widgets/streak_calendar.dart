@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/providers/quizzes_provider.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
@@ -72,17 +73,27 @@ class StreakCalendar extends ConsumerWidget {
                       shape: BoxShape.circle,
                     ),
                     child: isActive
-                        ? const Icon(
-                                Icons.local_fire_department_rounded,
-                                color: AppColors.accentOchre,
-                                size: 20,
-                              )
-                              .animate(
-                                onPlay: reduceEffects
-                                    ? null
-                                    : (c) => c.repeat(),
-                              )
-                              .shimmer(duration: 2000.ms, color: Colors.white)
+                        ? SpringPop(
+                            // Replays the spring pop whenever the streak
+                            // ignites, turning a new milestone into a moment.
+                            trigger: isActive,
+                            enabled: !reduceEffects,
+                            child:
+                                const Icon(
+                                      Icons.local_fire_department_rounded,
+                                      color: AppColors.accentOchre,
+                                      size: 20,
+                                    )
+                                    .animate(
+                                      onPlay: reduceEffects
+                                          ? null
+                                          : (c) => c.repeat(),
+                                    )
+                                    .shimmer(
+                                      duration: 2000.ms,
+                                      color: Colors.white,
+                                    ),
+                          )
                         : Icon(
                                 Icons.local_fire_department_outlined,
                                 color: isDark ? Colors.white54 : Colors.black45,

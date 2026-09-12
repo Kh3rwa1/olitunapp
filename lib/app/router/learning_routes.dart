@@ -55,7 +55,6 @@ List<RouteBase> buildLearningRoutes({
         );
       },
     ),
-    // Standalone routes declared before the catch-all routes
     drillRoute(
       path: '/letter/standalone/:subcategoryId',
       child: (_, state) {
@@ -127,8 +126,10 @@ List<RouteBase> buildLearningRoutes({
     drillRoute(
       path: '/quiz/:quizId',
       name: RouteNames.quiz,
-      child: (_, state) =>
-          QuizScreen(quizId: state.pathParameters['quizId'] ?? ''),
+      child: (_, state) => QuizScreen(
+        quizId: state.pathParameters['quizId'] ?? '',
+        lessonId: state.uri.queryParameters['lessonId'],
+      ),
     ),
   ];
 }

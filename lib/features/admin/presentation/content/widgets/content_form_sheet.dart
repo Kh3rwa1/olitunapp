@@ -14,6 +14,7 @@ void showContentFormSheet({
   required VoidCallback onSaved,
 }) {
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     isScrollControlled: true,
     shape: const RoundedRectangleBorder(

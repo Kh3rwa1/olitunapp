@@ -262,6 +262,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessons),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessons)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
@@ -276,10 +279,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify first page renders details
+      // Verify first page renders details (LISTEN CTA is the single
+      // audio affordance; the redundant TAP TO HEAR pill was removed).
       expect(find.text('At'), findsNWidgets(2));
       expect(find.text('LISTEN'), findsOneWidget);
-      expect(find.text('TAP TO HEAR'), findsOneWidget);
+      expect(find.text('TAP TO HEAR'), findsNothing);
 
       // Slide/Swipe to the second page
       final pageViewFinder = find.byType(PageView);
@@ -331,6 +335,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mediaLessons),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mediaLessons)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
@@ -359,6 +366,85 @@ void main() {
       expect(find.byType(FullBleedHeroMedia), findsOneWidget);
       expect(find.text('SVG Block'), findsNWidgets(3));
       expect(find.text('LISTEN'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Detail trusts the category-scoped ordering over stale unscoped data',
+    (tester) async {
+      // Reproduces the field bug where the category list showed
+      // "Greetings & Basics" unlocked while the detail insisted on
+      // completing "Months, Days & Seasons" first: the unscoped learner
+      // query can hold a stale ordering while the scoped query (the one
+      // the list screen uses) is already fresh.
+      final mockAudioService = MockAudioService();
+      const staleUnscoped = [
+        LessonEntity(
+          id: 'lesson_vocab_time',
+          categoryId: 'cat_1',
+          titleOlChiki: 'ᱛᱤ',
+          titleLatin: 'Months, Days & Seasons',
+          blocks: [
+            LessonBlockEntity(type: 'text', textLatin: 'Months content'),
+          ],
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_basics',
+          categoryId: 'cat_1',
+          titleOlChiki: 'ᱚ',
+          titleLatin: 'Greetings & Basics',
+          order: 1,
+          blocks: [
+            LessonBlockEntity(type: 'text', textLatin: 'Greetings basics'),
+          ],
+        ),
+      ];
+      const freshScoped = [
+        LessonEntity(
+          id: 'lesson_vocab_basics',
+          categoryId: 'cat_1',
+          titleOlChiki: 'ᱚ',
+          titleLatin: 'Greetings & Basics',
+          blocks: [
+            LessonBlockEntity(type: 'text', textLatin: 'Greetings basics'),
+          ],
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_time',
+          categoryId: 'cat_1',
+          titleOlChiki: 'ᱛᱤ',
+          titleLatin: 'Months, Days & Seasons',
+          order: 1,
+        ),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learnerLessonsProvider.overrideWithValue(
+              const AsyncValue.data(staleUnscoped),
+            ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(const AsyncValue.data(freshScoped)),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_vocab_basics',
+              initialBlockIndex: 0,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lesson locked'), findsNothing);
+      expect(find.byType(PageView), findsOneWidget);
+      expect(find.text('Greetings basics'), findsWidgets);
     },
   );
 }

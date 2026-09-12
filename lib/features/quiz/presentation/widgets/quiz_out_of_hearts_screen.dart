@@ -38,6 +38,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
 
     void showMistakesSheet() {
       showModalBottomSheet(
+        useRootNavigator: true,
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,

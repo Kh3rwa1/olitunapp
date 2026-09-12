@@ -37,9 +37,9 @@ void main() {
           learnerLessonsProvider.overrideWithValue(
             const AsyncValue.data(lessons),
           ),
-          lessonsByCategoryProvider(
-            'category_1',
-          ).overrideWithValue(const AsyncValue.data(lessons)),
+          lessonsByCategoryProvider('category_1').overrideWithValue(
+            const AsyncValue.data(lessons),
+          ),
           completedLessonIdsProvider.overrideWith((ref) => const {}),
         ],
         child: const MaterialApp(
@@ -50,13 +50,15 @@ void main() {
         ),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump();
 
-    expect(find.text('Lesson locked'), findsOneWidget);
+    // Deep links land on the same beautiful takeover, not a plain screen.
+    expect(find.text('HOLD ON • LOCKED FOR NOW'), findsOneWidget);
     expect(
-      find.text('Complete “Lesson One” first to unlock this lesson.'),
+      find.text('Complete “Lesson One” first to crack it open.'),
       findsOneWidget,
     );
+    expect(find.text('Take me there'), findsOneWidget);
     expect(find.text('Hidden content'), findsNothing);
     expect(find.byType(PageView), findsNothing);
   });

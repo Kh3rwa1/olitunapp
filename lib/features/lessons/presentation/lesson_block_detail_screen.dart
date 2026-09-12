@@ -18,6 +18,7 @@ import '../domain/lesson_progression.dart';
 import 'providers/lesson_progression_provider.dart';
 import 'widgets/lesson_block_detail/lesson_block_item_view.dart';
 import 'widgets/lesson_block_detail/lesson_block_top_nav_bar.dart';
+import 'widgets/category_lessons/locked_lesson_overlay.dart';
 import 'widgets/lesson_block_widgets.dart';
 
 /// Orchestrator screen for presenting lesson blocks in a fluid, swipeable flow.
@@ -226,6 +227,7 @@ class _LessonBlockDetailScreenState
           return _LockedLessonView(
             isDark: isDark,
             blockingLessonTitle: blocker?.titleLatin,
+            blockingLessonId: blocker?.id,
             onBack: () {
               if (context.canPop()) {
                 context.pop();
@@ -475,70 +477,36 @@ class _LockedLessonView extends StatelessWidget {
   const _LockedLessonView({
     required this.isDark,
     required this.blockingLessonTitle,
+    required this.blockingLessonId,
     required this.onBack,
   });
 
   final bool isDark;
   final String? blockingLessonTitle;
+  final String? blockingLessonId;
   final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
-    final instruction = blockingLessonTitle == null
-        ? 'Complete the previous lesson first to unlock this lesson.'
-        : 'Complete “$blockingLessonTitle” first to unlock this lesson.';
+    // Same beautiful takeover as the category list: deep links landing
+    // directly on a locked lesson get the Eyes card, not a plain screen.
     return Scaffold(
       backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(32),
-            child: Semantics(
-              label: 'Lesson locked. $instruction',
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 88,
-                    height: 88,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.lock_rounded,
-                      size: 42,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Lesson locked',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    instruction,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.45,
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                  const SizedBox(height: 28),
-                  FilledButton.icon(
-                    onPressed: onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: const Text('Back to learning path'),
-                  ),
-                ],
-              ),
+            padding: const EdgeInsets.all(24),
+            child: LockedLessonCard(
+              blockingLessonTitle: blockingLessonTitle,
+              onPrimary: () {
+                final targetId = blockingLessonId;
+                if (targetId != null && targetId.isNotEmpty) {
+                  context.push('/lesson/$targetId/block/0');
+                } else {
+                  onBack();
+                }
+              },
+              onSecondary: onBack,
             ),
           ),
         ),

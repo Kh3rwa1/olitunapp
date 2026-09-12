@@ -52,6 +52,37 @@ class LockedLessonOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LockedLessonCard(
+      blockingLessonTitle: blockingLessonTitle,
+      onPrimary: onStartBlockingLesson,
+      onSecondary: () => Navigator.of(context).pop(),
+    );
+  }
+}
+
+/// Shared takeover card: giant Eyes, kicker, instruction naming the
+/// blocking lesson, and primary/secondary actions. Used both as a dialog
+/// (category list taps) and as a full page (deep links landing directly
+/// on a locked lesson) so every screen shows the same beautiful error.
+class LockedLessonCard extends StatelessWidget {
+  const LockedLessonCard({
+    super.key,
+    required this.blockingLessonTitle,
+    required this.onPrimary,
+    required this.onSecondary,
+    this.primaryLabel = 'Take me there',
+    this.secondaryLabel = 'Back to learning path',
+  });
+
+  /// Null-safe display name of the lesson blocking progress.
+  final String? blockingLessonTitle;
+  final VoidCallback onPrimary;
+  final VoidCallback onSecondary;
+  final String primaryLabel;
+  final String secondaryLabel;
+
+  @override
+  Widget build(BuildContext context) {
     final reduceMotion = RespectMotion.of(context);
     final blocker = (blockingLessonTitle?.isNotEmpty ?? false)
         ? blockingLessonTitle!
@@ -134,10 +165,9 @@ class LockedLessonOverlay extends StatelessWidget {
                       width: double.infinity,
                       child: FilledButton.icon(
                         key: const ValueKey('locked-overlay-start'),
-                        // Wrapper in [show] dismisses before navigating.
-                        onPressed: onStartBlockingLesson,
+                        onPressed: onPrimary,
                         icon: const Icon(Icons.play_arrow_rounded),
-                        label: const Text('Take me there'),
+                        label: Text(primaryLabel),
                         style: FilledButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: AppColors.emeraldDeep,
@@ -154,10 +184,10 @@ class LockedLessonOverlay extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Back to learning path',
-                        style: TextStyle(
+                      onPressed: onSecondary,
+                      child: Text(
+                        secondaryLabel,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                         ),

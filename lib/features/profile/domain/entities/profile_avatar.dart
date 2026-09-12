@@ -5,7 +5,9 @@ import 'package:equatable/equatable.dart';
 ///
 /// Animal artwork: free Lottie animations by Google Inc. via IconScout
 /// (free-animal-and-nature-animation packs 344421 and 344422, free license
-/// with attribution). See tool/iconscout-avatar-import.tsv for sources.
+/// with attribution) plus free LottieFiles community animations (see the
+/// source links in tool/iconscout-avatar-import.tsv). See that manifest
+/// for per-file sources.
 class ProfileAvatar extends Equatable {
   const ProfileAvatar({
     required this.id,
@@ -52,6 +54,134 @@ const List<ProfileAvatar> kProfileAvatars = [
     label: 'Peace',
   ),
   ProfileAvatar(id: 'ant', assetFileName: 'avatar_ant.json', label: 'Ant'),
+  ProfileAvatar(
+    id: 'cat_noha',
+    assetFileName: 'avatar_cat_noha.json',
+    label: 'Cat Noha',
+  ),
+  ProfileAvatar(
+    id: 'smart_puppy',
+    assetFileName: 'avatar_smart_puppy.json',
+    label: 'Smart Puppy',
+  ),
+  ProfileAvatar(
+    id: 'running_chicken',
+    assetFileName: 'avatar_running_chicken.json',
+    label: 'Running Chicken',
+  ),
+  ProfileAvatar(
+    id: 'razmi',
+    assetFileName: 'avatar_razmi.json',
+    label: 'Razmi',
+  ),
+  ProfileAvatar(id: 'bear', assetFileName: 'avatar_bear.json', label: 'Bear'),
+  ProfileAvatar(id: 'coco', assetFileName: 'avatar_coco.json', label: 'Coco'),
+  ProfileAvatar(
+    id: 'chicken',
+    assetFileName: 'avatar_chicken.json',
+    label: 'Chicken',
+  ),
+  ProfileAvatar(
+    id: 'cat_3d',
+    assetFileName: 'avatar_cat_3d.json',
+    label: 'Cat 3D',
+  ),
+  ProfileAvatar(
+    id: 'bad_cat',
+    assetFileName: 'avatar_bad_cat.json',
+    label: 'Bad Cat',
+  ),
+  ProfileAvatar(
+    id: 'monkey',
+    assetFileName: 'avatar_monkey.json',
+    label: 'Monkey',
+  ),
+  ProfileAvatar(
+    id: 'camaleon',
+    assetFileName: 'avatar_camaleon.json',
+    label: 'Camaleon',
+  ),
+  ProfileAvatar(
+    id: 'quadrin_funny',
+    assetFileName: 'avatar_quadrin_funny.json',
+    label: 'Quadrin Funny',
+  ),
+  ProfileAvatar(id: 'flow', assetFileName: 'avatar_flow.json', label: 'Flow'),
+  ProfileAvatar(
+    id: 'one_eye_alien',
+    assetFileName: 'avatar_one_eye_alien.json',
+    label: 'One Eye Alien',
+  ),
+  ProfileAvatar(
+    id: 'unicorn_stretching',
+    assetFileName: 'avatar_unicorn_stretching.json',
+    label: 'Unicorn Stretching',
+  ),
+  ProfileAvatar(
+    id: 'girls_face',
+    assetFileName: 'avatar_girls_face.json',
+    label: "Girl's Face",
+  ),
+  ProfileAvatar(
+    id: 'rate_us',
+    assetFileName: 'avatar_rate_us.json',
+    label: 'Rate Us',
+  ),
+  ProfileAvatar(
+    id: 'girl_thumbs_up',
+    assetFileName: 'avatar_girl_thumbs_up.json',
+    label: 'Girl Thumbs Up',
+  ),
+  ProfileAvatar(
+    id: 'laugh_oink',
+    assetFileName: 'avatar_laugh_oink.json',
+    label: 'Laugh Oink',
+  ),
+  ProfileAvatar(
+    id: 'man_wink',
+    assetFileName: 'avatar_man_wink.json',
+    label: 'Man Wink',
+  ),
+  ProfileAvatar(
+    id: 'blob_boy',
+    assetFileName: 'avatar_blob_boy.json',
+    label: 'Blob Boy',
+  ),
+  ProfileAvatar(
+    id: 'love_cat',
+    assetFileName: 'avatar_love_cat.json',
+    label: 'Love Cat',
+  ),
+  ProfileAvatar(
+    id: 'flirting_dog',
+    assetFileName: 'avatar_flirting_dog.json',
+    label: 'Flirting Dog',
+  ),
+  ProfileAvatar(
+    id: 'lurking_cat',
+    assetFileName: 'avatar_lurking_cat.json',
+    label: 'Lurking Cat',
+  ),
+  ProfileAvatar(
+    id: 'ghost',
+    assetFileName: 'avatar_ghost.json',
+    label: 'Ghost',
+  ),
+  ProfileAvatar(
+    id: 'cha_chan',
+    assetFileName: 'avatar_cha_chan.json',
+    label: 'Cha Chan',
+  ),
+  ProfileAvatar(
+    id: 'lottie_admin',
+    assetFileName: 'avatar_lottie_admin.json',
+    label: 'Lottie Admin',
+  ),
+  ProfileAvatar(
+    id: 'funny_emoji',
+    assetFileName: 'avatar_funny_emoji.json',
+    label: 'Funny Emoji',
+  ),
   ProfileAvatar(
     id: 'baby_chick',
     assetFileName: 'avatar_baby_chick.json',

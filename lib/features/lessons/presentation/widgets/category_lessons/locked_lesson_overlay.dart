@@ -88,9 +88,10 @@ class LockedLessonOverlay extends StatelessWidget {
                 ),
                 child: Lottie.asset(
                   'assets/animations/eyes_overlay.json',
-                  width: double.infinity,
-                  height: 210,
-                  fit: BoxFit.cover,
+                  // Square canvas: contain the whole composition so the
+                  // eyes render fully instead of a cropped band.
+                  height: 240,
+                  fit: BoxFit.contain,
                   animate: !reduceMotion,
                   repeat: !reduceMotion,
                   errorBuilder: (_, _, _) => const Padding(

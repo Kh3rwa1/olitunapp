@@ -16,12 +16,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final opacity = tester.widget<Opacity>(
-      find
-          .ancestor(
-            of: find.text('pop'),
-            matching: find.byType(Opacity),
-          )
-          .first,
+      find.ancestor(of: find.text('pop'), matching: find.byType(Opacity)).first,
     );
     expect(opacity.opacity, 1.0);
     expect(find.text('pop'), findsOneWidget);

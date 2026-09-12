@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/motion/motion.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
 import '../../../shared/providers/content_providers.dart';
@@ -54,16 +55,40 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     required String? blockingLessonTitle,
     required String? blockingLessonId,
   }) {
-    LockedLessonOverlay.show(
-      context,
-      blockingLessonTitle: blockingLessonTitle,
-      onStartBlockingLesson: () {
-        if (blockingLessonId != null && blockingLessonId.isNotEmpty) {
-          context.push('/lesson/$blockingLessonId');
-        }
-      },
-      isDark: Theme.of(context).brightness == Brightness.dark,
-    );
+    try {
+      LockedLessonOverlay.show(
+        context,
+        blockingLessonTitle: blockingLessonTitle,
+        onStartBlockingLesson: () {
+          if (blockingLessonId != null && blockingLessonId.isNotEmpty) {
+            context.push('/lesson/$blockingLessonId');
+          }
+        },
+        isDark: Theme.of(context).brightness == Brightness.dark,
+      );
+    } catch (_) {
+      // The takeover must never fail silently: fall back to a snackbar
+      // that clears the floating shell navigation.
+      final message = blockingLessonTitle == null
+          ? 'Complete the previous lesson first to unlock this lesson.'
+          : 'Complete “$blockingLessonTitle” first to unlock this lesson.';
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(message),
+            behavior: SnackBarBehavior.floating,
+            margin: EdgeInsets.fromLTRB(
+              16,
+              0,
+              16,
+              MediaQuery.viewPaddingOf(context).bottom +
+                  ResponsiveLayout.floatingNavClearance,
+            ),
+            showCloseIcon: true,
+          ),
+        );
+    }
   }
 
   LinearGradient _getGradient(String preset) {

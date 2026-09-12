@@ -95,23 +95,13 @@ class LockedLessonOverlay extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'This one’s still winking at you',
-              textAlign: TextAlign.center,
-              style: AppTypography.inter(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.5,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
               'Complete “$blocker” first to crack it open.',
               textAlign: TextAlign.center,
               style: AppTypography.inter(
-                fontSize: 15,
+                fontSize: 17,
+                fontWeight: FontWeight.w800,
                 height: 1.45,
-                color: Colors.white70,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 28),

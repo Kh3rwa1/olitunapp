@@ -132,6 +132,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessons),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessons)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
             quizzesByIdProvider.overrideWithValue(
@@ -176,6 +179,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessonsEmptyQuizId),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessonsEmptyQuizId)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
             quizzesByIdProvider.overrideWithValue(
@@ -215,6 +221,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessonsMissingQuiz),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessonsMissingQuiz)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
             quizzesByIdProvider.overrideWithValue(
@@ -275,6 +284,9 @@ void main() {
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessons),
             ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessons)),
             audioServiceProvider.overrideWithValue(mockAudioService),
             reduceVisualEffectsProvider.overrideWithValue(false),
             quizzesByIdProvider.overrideWithValue(

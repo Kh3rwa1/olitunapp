@@ -12,6 +12,7 @@ import 'settings_widgets.dart';
 void showThemeDialog(BuildContext context, WidgetRef ref, String current) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     backgroundColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
     shape: const RoundedRectangleBorder(
@@ -71,6 +72,7 @@ void showThemeDialog(BuildContext context, WidgetRef ref, String current) {
 void showScriptDialog(BuildContext context, WidgetRef ref, String current) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     backgroundColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
     shape: const RoundedRectangleBorder(
@@ -130,6 +132,7 @@ void showScriptDialog(BuildContext context, WidgetRef ref, String current) {
 void showLanguageDialog(BuildContext context, WidgetRef ref, String current) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     backgroundColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
     shape: const RoundedRectangleBorder(
@@ -297,7 +300,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 ref.invalidate(isAuthenticatedProvider);
                 ref.invalidate(userStatsProvider);
                 ref.invalidate(userNameProvider);
-                ref.invalidate(userAvatarEmojiProvider);
+                ref.invalidate(userAvatarIdProvider);
                 ref.invalidate(userAvatarColorIndexProvider);
                 ref.invalidate(memberSinceProvider);
 

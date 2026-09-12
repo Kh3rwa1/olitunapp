@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../providers/profile_providers.dart';
 import '../../domain/entities/user_stats_entity.dart';
 
@@ -402,6 +403,13 @@ class NextMilestoneCard extends ConsumerWidget {
                                       ),
                                     ),
                                     behavior: SnackBarBehavior.floating,
+                                    margin: EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      MediaQuery.viewPaddingOf(context).bottom +
+                                          ResponsiveLayout.floatingNavClearance,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),

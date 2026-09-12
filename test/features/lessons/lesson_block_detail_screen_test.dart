@@ -279,10 +279,11 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Verify first page renders details
+      // Verify first page renders details (LISTEN CTA is the single
+      // audio affordance; the redundant TAP TO HEAR pill was removed).
       expect(find.text('At'), findsNWidgets(2));
       expect(find.text('LISTEN'), findsOneWidget);
-      expect(find.text('TAP TO HEAR'), findsOneWidget);
+      expect(find.text('TAP TO HEAR'), findsNothing);
 
       // Slide/Swipe to the second page
       final pageViewFinder = find.byType(PageView);

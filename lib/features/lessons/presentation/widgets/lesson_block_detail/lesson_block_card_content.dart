@@ -197,51 +197,6 @@ class LessonBlockCardContent extends ConsumerWidget {
                             ),
                           ),
                         ],
-
-                        // 3. Audio indicator pill
-                        if (block.audioUrl != null &&
-                            block.audioUrl!.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 14,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: (isDark
-                                  ? Colors.white.withValues(alpha: 0.06)
-                                  : accentColor.withValues(alpha: 0.06)),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: (isDark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : accentColor.withValues(alpha: 0.1)),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.volume_up_rounded,
-                                  color: isDark ? Colors.white70 : accentColor,
-                                  size: 14,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'TAP TO HEAR',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w800,
-                                    color: isDark
-                                        ? Colors.white70
-                                        : accentColor,
-                                    letterSpacing: 1.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   );

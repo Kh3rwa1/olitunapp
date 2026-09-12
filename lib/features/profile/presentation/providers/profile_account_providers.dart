@@ -3,11 +3,16 @@
 // account age. Split out of profile_providers.dart by feature area.
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 
+import '../../../../core/api/appwrite_db_service.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/content_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../data/datasources/remote_avatar_datasource.dart';
 import '../../domain/entities/profile_avatar.dart';
 
 /// Real account creation date from Appwrite (null for guests/offline).
@@ -38,12 +43,48 @@ final userAvatarIdProvider = StateProvider<String>((ref) {
   return normalizeAvatarId(stored);
 });
 
+/// Syncs the live avatar set from the `profile_avatars` bucket.
+final remoteAvatarDatasourceProvider = Provider<RemoteAvatarDatasource>((ref) {
+  return RemoteAvatarDatasource(ref.watch(appwriteDbServiceProvider).storage);
+});
+
+/// Live avatar entries from Appwrite. Empty (never an error) when offline,
+/// misconfigured, or unsupported so the bundled set below stays available.
+final remoteAvatarListProvider = FutureProvider<List<ProfileAvatar>>((
+  ref,
+) async {
+  final datasource = ref.watch(remoteAvatarDatasourceProvider);
+  final result = await datasource.syncAvatars().timeout(
+    const Duration(seconds: 8),
+    onTimeout: () =>
+        const Left(NetworkFailure(message: 'Avatar sync timed out')),
+  );
+  return result.fold((_) => const <ProfileAvatar>[], (avatars) => avatars);
+});
+
+/// Remote entries, or empty when the sync fails, times out, or is
+/// unsupported — so the bundled set below stays available. Never throws.
+Future<List<ProfileAvatar>> _remoteAvatarsOrEmpty(Ref ref) async {
+  try {
+    return await ref.watch(remoteAvatarListProvider.future);
+  } catch (_) {
+    return const <ProfileAvatar>[];
+  }
+}
+
 /// Validates the complete catalog against Flutter's generated asset manifest.
 /// Missing registrations fail visibly instead of silently hiding choices or
 /// rendering a generic icon in place of a promised animation.
+///
+/// Remote entries from the avatar bucket take precedence whenever the sync
+/// succeeds, so new uploads appear without an app release; the bundled set
+/// below is the offline fallback.
 final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
   ref,
 ) async {
+  final remote = await _remoteAvatarsOrEmpty(ref);
+  if (remote.isNotEmpty) return remote;
+
   final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
   final bundled = manifest.listAssets().toSet();
   final missing = kProfileAvatars
@@ -57,6 +98,23 @@ final availableAvatarsProvider = FutureProvider<List<ProfileAvatar>>((
   }
   return kProfileAvatars;
 });
+
+/// Artwork bytes for one remote avatar, served from the disk cache on
+/// native platforms and streamed on demand on web. Bundled avatars never
+/// reach this provider; they resolve from the asset bundle directly.
+final avatarArtworkBytesProvider =
+    FutureProvider.family<Uint8List, ProfileAvatar>((ref, avatar) async {
+      final fileId = avatar.remoteFileId;
+      if (fileId == null) {
+        throw StateError('Bundled avatars resolve from the asset bundle');
+      }
+      final datasource = ref.watch(remoteAvatarDatasourceProvider);
+      final result = await datasource.readArtworkBytes(fileId);
+      return result.fold(
+        (failure) => throw FailureException(failure),
+        Uint8List.fromList,
+      );
+    });
 
 /// Fresh installs start on the transparent background so the animation sits
 /// on the profile board itself. Explicitly stored indices are untouched.

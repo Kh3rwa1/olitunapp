@@ -29,6 +29,7 @@ class ContentBlockListSection extends StatelessWidget {
 
   void _showAddBlockBottomSheet(BuildContext context) {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(

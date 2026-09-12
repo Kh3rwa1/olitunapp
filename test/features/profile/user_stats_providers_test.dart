@@ -140,14 +140,26 @@ void main() {
     },
   );
 
-  test('updateAvatar updates emoji and color providers on success', () async {
+  test(
+    'updateAvatar updates avatar id and color providers on success',
+    () async {
+      final container = containerFor();
+      final notifier = await readyNotifier(container);
+
+      await notifier.updateAvatar('ant', 2);
+
+      expect(container.read(userAvatarIdProvider), 'ant');
+      expect(container.read(userAvatarColorIndexProvider), 2);
+    },
+  );
+
+  test('updateAvatar normalizes unknown ids to default', () async {
     final container = containerFor();
     final notifier = await readyNotifier(container);
 
     await notifier.updateAvatar('🦊', 2);
 
-    expect(container.read(userAvatarEmojiProvider), '🦊');
-    expect(container.read(userAvatarColorIndexProvider), 2);
+    expect(container.read(userAvatarIdProvider), 'default');
   });
 
   test('practiceLetter on a digit updates numbers category mastery', () async {

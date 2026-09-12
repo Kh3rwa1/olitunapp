@@ -6,6 +6,9 @@ part of 'main_shell_screen.dart';
 
 extension _MainShellDrawerLayout on _MainShellScreenState {
   Widget _buildDesktopLayout(bool isDark, int selectedIndex) {
+    final divider = (isDark ? Colors.white : Colors.black).withValues(
+      alpha: 0.07,
+    );
     return Row(
       children: [
         // Left Sidebar Navigation
@@ -15,11 +18,8 @@ extension _MainShellDrawerLayout on _MainShellScreenState {
           isDark: isDark,
         ),
 
-        // Subtle vertical divider
-        Container(
-          width: 1,
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-        ),
+        // Hairline divider
+        Container(width: 1, color: divider),
 
         // Center Content — clipped so child screens don't bleed behind sidebars
         Expanded(
@@ -36,11 +36,8 @@ extension _MainShellDrawerLayout on _MainShellScreenState {
           ),
         ),
 
-        // Subtle vertical divider
-        Container(
-          width: 1,
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.06),
-        ),
+        // Hairline divider
+        Container(width: 1, color: divider),
 
         // Right Sidebar (Stats Panel)
         DesktopRightPanel(isDark: isDark),

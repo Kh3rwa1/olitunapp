@@ -1,0 +1,56 @@
+name: Import IconScout avatar packs
+
+on:
+  push:
+    branches:
+      - feat/iconscout-animal-avatar-packs
+    paths:
+      - tool/iconscout-avatar-import.tsv
+      - .github/workflows/iconscout-avatar-import.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: iconscout-avatar-import-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  import:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: true
+      - name: Download and validate selected animations
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          rm -f assets/animations/avatars/*.json
+          while IFS=$'\t' read -r path url; do
+            [ -n "$path" ] || continue
+            case "$path" in
+              assets/animations/avatars/*.json) ;;
+              *) echo "Invalid destination: $path" >&2; exit 1 ;;
+            esac
+            tmp="$(mktemp)"
+            curl --fail --location --retry 3 --retry-all-errors \
+              --proto '=https' --tlsv1.2 "$url" -o "$tmp"
+            jq -e '.v and .fr and .w and .h' "$tmp" >/dev/null
+            mv "$tmp" "$path"
+          done < tool/iconscout-avatar-import.tsv
+          test "$(find assets/animations/avatars -maxdepth 1 -name '*.json' | wc -l)" -gt 0
+      - name: Commit imported animations
+        run: |
+          git add assets/animations/avatars
+          if git diff --cached --quiet; then
+            echo "No asset changes to commit."
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git commit -m "assets(profile): import selected IconScout avatars"
+          git push

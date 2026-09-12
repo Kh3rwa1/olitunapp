@@ -49,6 +49,28 @@ void main() {
       expect(find.byType(AnimatedCounter), findsOneWidget);
     });
 
+    testWidgets('AnimatedCounter counts up from the from value', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const AnimatedCounter(
+            value: 5,
+            from: 0,
+            duration: Duration(milliseconds: 1000),
+          ),
+        ),
+      );
+      await tester.pump();
+      expect(find.text('0'), findsOneWidget);
+      // Halfway through the ease-out tween the counter is mid-flight.
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.text('0'), findsNothing);
+      expect(find.text('5'), findsNothing);
+      await tester.pumpAndSettle();
+      expect(find.text('5'), findsOneWidget);
+    });
+
     testWidgets('BrandedRefreshIndicator is a Scrollable wrapper', (
       tester,
     ) async {

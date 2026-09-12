@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 // Exercised through the presentation compatibility barrel on purpose: the
 // barrel must keep re-exporting account, stats and quiz result symbols.
@@ -45,8 +46,11 @@ void main() {
         final container = await containerFor({});
 
         expect(container.read(userNameProvider), 'Learner');
-        expect(container.read(userAvatarEmojiProvider), '👶');
-        expect(container.read(userAvatarColorIndexProvider), 0);
+        expect(container.read(userAvatarIdProvider), 'default');
+        expect(
+          container.read(userAvatarColorIndexProvider),
+          AppColors.transparentAvatarPaletteIndex,
+        );
         expect(container.read(memberSinceProvider), 'April 2024');
       },
     );
@@ -54,12 +58,12 @@ void main() {
     test('re-exports account providers honouring stored preferences', () async {
       final container = await containerFor({
         'user_name': 'Somi',
-        'user_avatar_emoji': '🦊',
+        'user_avatar_id': 'peace',
         'user_avatar_color': 2,
       });
 
       expect(container.read(userNameProvider), 'Somi');
-      expect(container.read(userAvatarEmojiProvider), '🦊');
+      expect(container.read(userAvatarIdProvider), 'peace');
       expect(container.read(userAvatarColorIndexProvider), 2);
     });
 

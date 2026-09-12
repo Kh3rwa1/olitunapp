@@ -55,7 +55,6 @@ class LockedLessonOverlay extends StatelessWidget {
     final blocker = (blockingLessonTitle?.isNotEmpty ?? false)
         ? blockingLessonTitle!
         : 'the previous lesson';
-    final screenWidth = MediaQuery.sizeOf(context).width;
 
     return Semantics(
       label: 'Lesson locked. Complete $blocker first to unlock this lesson.',
@@ -81,16 +80,15 @@ class LockedLessonOverlay extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Oversized peeking eyes spill past the card edges.
+              // Peeking eyes, sized to sit above the copy, never over it.
               SizedBox(
-                height: 190,
-                child: OverflowBox(
-                  maxWidth: screenWidth,
-                  maxHeight: 260,
+                height: 150,
+                child: Center(
                   child: Lottie.asset(
                     'assets/animations/eyes_overlay.json',
-                    width: screenWidth,
-                    fit: BoxFit.cover,
+                    width: 300,
+                    height: 150,
+                    fit: BoxFit.contain,
                     animate: !reduceMotion,
                     repeat: !reduceMotion,
                     errorBuilder: (_, _, _) => const Icon(

@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lottie/lottie.dart';
 import 'package:itun/core/theme/app_typography.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
+import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
+
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class ProfileHeroCard extends StatelessWidget {
+class ProfileHeroCard extends ConsumerWidget {
   final String userName;
   final List<Color> avatarColors;
-  final String avatarEmoji;
+
+  /// Catalog avatar id or [kInitialAvatarId]. Unknown values show the default
+  /// animation while the explicit name-initial choice remains persistent.
+  final String avatarId;
   final String level;
   final int levelIndex;
 
@@ -21,7 +29,7 @@ class ProfileHeroCard extends StatelessWidget {
     super.key,
     required this.userName,
     required this.avatarColors,
-    required this.avatarEmoji,
+    required this.avatarId,
     required this.level,
     required this.levelIndex,
     this.memberSince,
@@ -33,10 +41,10 @@ class ProfileHeroCard extends StatelessWidget {
 
   Color _getLevelColor() {
     const colors = [
-      AppColors.xpNeutral, // Beginner — grey
-      AppColors.brandBlue, // Intermediate — blue
-      AppColors.accentOchre, // Advanced — orange
-      AppColors.accentGold, // Master — gold
+      AppColors.xpNeutral,
+      AppColors.brandBlue,
+      AppColors.accentOchre,
+      AppColors.accentGold,
     ];
     return colors[levelIndex.clamp(0, 3)];
   }
@@ -61,16 +69,34 @@ class ProfileHeroCard extends StatelessWidget {
       ];
       return '${months[int.parse(parts[1])]} ${parts[2]}, ${parts[0]}';
     } catch (_) {
-      // Not a yyyy-MM-dd string — show the raw value rather than guessing.
       return iso;
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final leaderboardLabel = ref
+        .watch(weeklyLeaderboardProvider)
+        .when(
+          data: (leaderboard) => leaderboard.badgeLabel,
+          error: (_, _) => 'Leaderboard unavailable',
+          loading: () => 'Leaderboard · Loading…',
+        );
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final compact = MediaQuery.sizeOf(context).width < 380;
+    final avatarSize = compact ? 92.0 : 108.0;
+    final safeProgress = overallProgress.clamp(0.0, 1.0).toDouble();
+    // A fully transparent palette shows the board behind the animation,
+    // so the circle needs an edge and dark initial text in light mode.
+    final isTransparentBg = avatarColors.every((color) => color.a == 0.0);
+    final avatarLabel = usesProfileInitial(avatarId)
+        ? 'Name initial'
+        : profileAvatarById(avatarId)?.label ?? kProfileAvatars.first.label;
+    final levelColor = _getLevelColor();
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(compact ? 20 : 28),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -94,171 +120,167 @@ class ProfileHeroCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              // Avatar
-              PressableScale(
-                onTap: onEditAvatar,
-                haptic: HapticIntensity.selection,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: avatarColors,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: avatarColors[0].withValues(alpha: 0.3),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: avatarEmoji.isNotEmpty
-                            ? Text(
-                                avatarEmoji,
-                                style: const TextStyle(fontSize: 32),
-                              )
-                            : Text(
-                                userName.isNotEmpty
-                                    ? userName[0].toUpperCase()
-                                    : 'L',
-                                style: AppTypography.inter(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: -2,
-                      right: -2,
-                      child: Container(
-                        width: 22,
-                        height: 22,
+              Semantics(
+                button: true,
+                label: 'Change profile avatar',
+                value: avatarLabel,
+                child: PressableScale(
+                  onTap: onEditAvatar,
+                  haptic: HapticIntensity.selection,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        width: avatarSize,
+                        height: avatarSize,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark
-                                ? AppColors.darkSurfaceElevated
-                                : Colors.white,
-                            width: 2,
+                          gradient: LinearGradient(
+                            colors: avatarColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                           ),
+                          shape: BoxShape.circle,
+                          border: isTransparentBg
+                              ? Border.all(
+                                  color: isDark
+                                      ? Colors.white12
+                                      : Colors.black12,
+                                )
+                              : null,
+                          boxShadow: isTransparentBg
+                              ? const []
+                              : [
+                                  BoxShadow(
+                                    color: avatarColors[0].withValues(
+                                      alpha: 0.3,
+                                    ),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
                         ),
-                        child: const Icon(
-                          Icons.camera_alt_rounded,
-                          size: 11,
-                          color: Colors.black,
+                        child: Center(
+                          child: !usesProfileInitial(avatarId)
+                              ? ClipOval(
+                                  child: Lottie.asset(
+                                    avatarAssetPath(avatarId),
+                                    width: avatarSize,
+                                    height: avatarSize,
+                                    fit: BoxFit.cover,
+                                    animate: !reduceMotion,
+                                    repeat: !reduceMotion,
+                                    errorBuilder: (_, _, _) => _AvatarInitial(
+                                      userName: userName,
+                                      compact: compact,
+                                      darkText: isTransparentBg && !isDark,
+                                    ),
+                                  ),
+                                )
+                              : _AvatarInitial(
+                                  userName: userName,
+                                  compact: compact,
+                                  darkText: isTransparentBg && !isDark,
+                                ),
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: -2,
+                        right: -2,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isDark
+                                  ? AppColors.darkSurfaceElevated
+                                  : Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 15,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(width: 16),
-
-              // Name + Level + Member Since
+              SizedBox(width: compact ? 12 : 20),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                child: LayoutBuilder(
+                  builder: (context, detailsConstraints) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            userName,
-                            style: AppTypography.inter(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        PressableScale(
-                          onTap: onEditName,
-                          haptic: HapticIntensity.selection,
-                          child: Icon(
-                            Icons.edit_rounded,
-                            size: 16,
-                            color: isDark ? Colors.white30 : Colors.black26,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        // Level badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _getLevelColor().withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _getLevelColor().withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                levelIndex >= 3
-                                    ? Icons.workspace_premium_rounded
-                                    : levelIndex >= 2
-                                    ? Icons.diamond_rounded
-                                    : Icons.school_rounded,
-                                size: 12,
-                                color: _getLevelColor(),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                level,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                userName,
                                 style: AppTypography.inter(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w700,
-                                  color: _getLevelColor(),
+                                  fontSize: compact ? 24 : 30,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : Colors.black,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Semantics(
+                              button: true,
+                              label: 'Edit display name',
+                              child: PressableScale(
+                                onTap: onEditName,
+                                haptic: HapticIntensity.selection,
+                                child: Icon(
+                                  Icons.edit_rounded,
+                                  size: 16,
+                                  color: isDark
+                                      ? Colors.white30
+                                      : Colors.black26,
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        // Hidden entirely when creation date is unknown —
-                        // never guess a member-since date.
-                        if (memberSince != null)
-                          Text(
-                            'Since ${_formatDate(memberSince!)}',
-                            style: AppTypography.inter(
-                              fontSize: 11,
-                              color: isDark ? Colors.white30 : Colors.black38,
                             ),
-                          ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 4,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            _ExpandableLeaderboardBadge(
+                              label: leaderboardLabel,
+                              level: level,
+                              color: levelColor,
+                              maxWidth: detailsConstraints.maxWidth,
+                              reduceMotion: reduceMotion,
+                            ),
+                            if (memberSince != null)
+                              Text(
+                                'Since ${_formatDate(memberSince!)}',
+                                style: AppTypography.inter(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? Colors.white30
+                                      : Colors.black38,
+                                ),
+                              ),
+                          ],
+                        ),
                       ],
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 20),
-
-          // Overall progress bar
+          const SizedBox(height: 24),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -271,16 +293,16 @@ class ProfileHeroCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: AppTypography.inter(
-                        fontSize: 12,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
                         color: isDark ? Colors.white54 : Colors.black45,
                       ),
                     ),
                   ),
                   Text(
-                    '${(overallProgress * 100).toInt()}%',
+                    '${(safeProgress * 100).toInt()}%',
                     style: AppTypography.inter(
-                      fontSize: 12,
+                      fontSize: 13,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,
                     ),
@@ -289,14 +311,16 @@ class ProfileHeroCard extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               ClipRRect(
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(7),
                 child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: overallProgress),
-                  duration: const Duration(milliseconds: 1200),
+                  tween: Tween(begin: 0, end: safeProgress),
+                  duration: reduceMotion
+                      ? Duration.zero
+                      : const Duration(milliseconds: 1200),
                   curve: Curves.easeOutCubic,
                   builder: (context, value, _) => LinearProgressIndicator(
                     value: value,
-                    minHeight: 8,
+                    minHeight: 10,
                     backgroundColor: isDark
                         ? Colors.white.withValues(alpha: 0.06)
                         : Colors.black.withValues(alpha: 0.06),
@@ -309,6 +333,148 @@ class ProfileHeroCard extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExpandableLeaderboardBadge extends StatefulWidget {
+  const _ExpandableLeaderboardBadge({
+    required this.label,
+    required this.level,
+    required this.color,
+    required this.maxWidth,
+    required this.reduceMotion,
+  });
+
+  final String label;
+  final String level;
+  final Color color;
+  final double maxWidth;
+  final bool reduceMotion;
+
+  @override
+  State<_ExpandableLeaderboardBadge> createState() =>
+      _ExpandableLeaderboardBadgeState();
+}
+
+class _ExpandableLeaderboardBadgeState
+    extends State<_ExpandableLeaderboardBadge> {
+  bool _expanded = false;
+
+  void _toggleExpanded() {
+    setState(() => _expanded = !_expanded);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final duration = widget.reduceMotion
+        ? Duration.zero
+        : const Duration(milliseconds: 260);
+    final availableWidth = widget.maxWidth.isFinite ? widget.maxWidth : 280.0;
+    final collapsedWidth = availableWidth > 260.0 ? 260.0 : availableWidth;
+
+    return Semantics(
+      liveRegion: true,
+      child: PressableScale(
+        key: const ValueKey('profile-leaderboard-action'),
+        onTap: _toggleExpanded,
+        scale: 0.97,
+        haptic: HapticIntensity.selection,
+        semanticLabel:
+            '${widget.label}. Current learner level: ${widget.level}. '
+            '${_expanded ? 'Expanded. Tap to collapse.' : 'Tap to enlarge.'}',
+        child: AnimatedSize(
+          duration: duration,
+          reverseDuration: duration,
+          curve: Curves.easeOutCubic,
+          alignment: Alignment.centerLeft,
+          child: AnimatedContainer(
+            key: const ValueKey('profile-leaderboard-chip'),
+            duration: duration,
+            curve: Curves.easeOutCubic,
+            width: _expanded ? availableWidth : collapsedWidth,
+            padding: EdgeInsets.symmetric(
+              horizontal: _expanded ? 14 : 12,
+              vertical: _expanded ? 10 : 6,
+            ),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              color: widget.color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(_expanded ? 18 : 20),
+              border: Border.all(color: widget.color.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                AnimatedScale(
+                  scale: _expanded ? 1.22 : 1,
+                  duration: duration,
+                  curve: Curves.easeOutBack,
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    size: 14,
+                    color: widget.color,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: AnimatedDefaultTextStyle(
+                    duration: duration,
+                    curve: Curves.easeOutCubic,
+                    style: AppTypography.inter(
+                      fontSize: _expanded ? 14 : 12,
+                      fontWeight: FontWeight.w700,
+                      color: widget.color,
+                    ),
+                    child: Text(
+                      widget.label,
+                      maxLines: _expanded ? null : 1,
+                      overflow: _expanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                      softWrap: _expanded,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                AnimatedRotation(
+                  turns: _expanded ? 0.5 : 0,
+                  duration: duration,
+                  curve: Curves.easeOutCubic,
+                  child: Icon(
+                    Icons.expand_more_rounded,
+                    size: 16,
+                    color: widget.color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AvatarInitial extends StatelessWidget {
+  const _AvatarInitial({
+    required this.userName,
+    required this.compact,
+    this.darkText = false,
+  });
+
+  final String userName;
+  final bool compact;
+  final bool darkText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
+      style: AppTypography.inter(
+        fontSize: compact ? 36 : 42,
+        fontWeight: FontWeight.w700,
+        color: darkText ? Colors.black87 : Colors.white,
       ),
     );
   }

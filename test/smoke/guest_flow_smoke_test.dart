@@ -29,7 +29,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({
       'user_name': 'Explorer',
-      'user_avatar_emoji': '👶',
+      'user_avatar_id': 'default',
       'user_avatar_color': 0,
       'show_onboarding': false, // Bypass onboarding screen
     });

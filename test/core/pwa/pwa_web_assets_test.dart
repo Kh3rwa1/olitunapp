@@ -15,8 +15,8 @@ void main() {
       expect(manifest['scope'], '/');
       expect(manifest['id'], '/');
       expect(manifest['display'], 'standalone');
-      expect(manifest['theme_color'], '#10B981');
-      expect(manifest['background_color'], '#0A0E14');
+      expect(manifest['theme_color'], '#00C767');
+      expect(manifest['background_color'], '#070B13');
       expect(manifest['prefer_related_applications'], isFalse);
 
       final icons = (manifest['icons'] as List).cast<Map<String, dynamic>>();

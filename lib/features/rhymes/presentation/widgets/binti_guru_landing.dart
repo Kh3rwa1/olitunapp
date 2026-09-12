@@ -86,6 +86,7 @@ class BintiGuruLanding extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     showModalBottomSheet(
+                      useRootNavigator: true,
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,

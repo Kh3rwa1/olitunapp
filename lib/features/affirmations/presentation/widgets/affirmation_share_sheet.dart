@@ -25,6 +25,7 @@ class AffirmationShareSheet extends ConsumerStatefulWidget {
     required String shareText,
   }) {
     return showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,

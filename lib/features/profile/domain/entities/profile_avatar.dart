@@ -13,16 +13,25 @@ class ProfileAvatar extends Equatable {
     required this.id,
     required this.assetFileName,
     required this.label,
+    this.remoteFileId,
   });
 
   final String id;
   final String assetFileName;
   final String label;
 
+  /// Appwrite Storage file id when this entry came from the remote avatar
+  /// bucket. Null for bundled assets; artwork then resolves from cached or
+  /// freshly downloaded bytes instead of the asset bundle.
+  final String? remoteFileId;
+
+  /// True when artwork must be resolved from cache/network bytes.
+  bool get isRemote => remoteFileId != null;
+
   String get assetPath => '$avatarsAssetDir/$assetFileName';
 
   @override
-  List<Object?> get props => [id, assetFileName, label];
+  List<Object?> get props => [id, assetFileName, label, remoteFileId];
 }
 
 const String avatarsAssetDir = 'assets/animations/avatars';

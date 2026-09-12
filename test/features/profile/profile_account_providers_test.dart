@@ -46,7 +46,18 @@ void main() {
   testWidgets('every catalog avatar is present in the asset manifest', (
     _,
   ) async {
-    final container = await containerFor({});
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        // A failing sync must fall back to bundled, never hang on network.
+        remoteAvatarListProvider.overrideWith(
+          (ref) async => throw StateError('offline'),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
 
     final avatars = await container.read(availableAvatarsProvider.future);
 

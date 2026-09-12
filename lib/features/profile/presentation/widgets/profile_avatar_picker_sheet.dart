@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/profile_avatar.dart';
 import '../providers/profile_account_providers.dart';
+import 'avatar_lottie.dart';
 
 /// Stateful bottom-sheet body for choosing a real bundled animation or a name
 /// initial. Selection state lives for the sheet's whole lifetime and every
@@ -251,14 +251,14 @@ class _ProfileAvatarPickerSheetState
                           isDark: isDark,
                           onTap: () => _persist(avatarId: avatar.id),
                           child: RepaintBoundary(
-                            child: Lottie.asset(
-                              avatar.assetPath,
+                            child: AvatarLottie(
+                              avatar: avatar,
                               width: 68,
                               height: 68,
                               fit: BoxFit.contain,
                               animate: !reduceMotion && selected,
                               repeat: !reduceMotion && selected,
-                              errorBuilder: (_, _, _) => Icon(
+                              fallback: Icon(
                                 Icons.person_rounded,
                                 size: 42,
                                 color: isDark ? Colors.white70 : Colors.black54,

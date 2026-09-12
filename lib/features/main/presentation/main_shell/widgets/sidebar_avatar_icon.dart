@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../../../profile/domain/entities/profile_avatar.dart';
 import '../../../../profile/presentation/providers/profile_account_providers.dart';
+import '../../../../profile/presentation/widgets/avatar_lottie.dart';
 
 /// The learner's animated avatar for the desktop sidebar Profile row.
 /// Mirrors the hero card at 42dp: user palette circle, Lottie animation,
@@ -41,12 +41,11 @@ class SidebarAvatarIcon extends ConsumerWidget {
                 ),
               )
             : ClipOval(
-                child: Lottie.asset(
-                  avatarAssetPath(avatarId),
+                child: AvatarLottie(
+                  avatar: profileAvatarById(avatarId) ?? kProfileAvatars.first,
                   width: 38,
                   height: 38,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => Text(
+                  fallback: Text(
                     userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
                     style: const TextStyle(
                       fontSize: 18,

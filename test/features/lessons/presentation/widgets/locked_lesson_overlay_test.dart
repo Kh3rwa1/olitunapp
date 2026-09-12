@@ -4,17 +4,19 @@ import 'package:itun/features/lessons/presentation/widgets/category_lessons/lock
 import 'package:lottie/lottie.dart';
 
 void main() {
-  Widget host({String? title, required VoidCallback onStart}) {
-    return MaterialApp(
-      home: Scaffold(
-        body: LockedLessonOverlay(
+Widget host({String? title, required VoidCallback onStart}) {
+  return MaterialApp(
+    home: Scaffold(
+      body: SingleChildScrollView(
+        child: LockedLessonOverlay(
           blockingLessonTitle: title,
           onStartBlockingLesson: onStart,
           isDark: false,
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   testWidgets('overlay shows playful copy with the blocking lesson', (
     tester,

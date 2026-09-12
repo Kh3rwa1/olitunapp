@@ -9,6 +9,7 @@ void showQuizMistakesSheet({
   required List<QuizQuestion> questions,
 }) {
   showModalBottomSheet(
+    useRootNavigator: true,
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,

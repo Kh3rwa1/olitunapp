@@ -10,6 +10,7 @@ class NumberFormSheet extends ConsumerStatefulWidget {
 
   static void show(BuildContext context, WidgetRef ref, NumberModel? number) {
     showModalBottomSheet(
+      useRootNavigator: true,
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(

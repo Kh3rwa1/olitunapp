@@ -173,11 +173,6 @@ const List<ProfileAvatar> kProfileAvatars = [
     label: 'Cha Chan',
   ),
   ProfileAvatar(
-    id: 'spiderman',
-    assetFileName: 'avatar_spiderman.json',
-    label: 'Spiderman',
-  ),
-  ProfileAvatar(
     id: 'lottie_admin',
     assetFileName: 'avatar_lottie_admin.json',
     label: 'Lottie Admin',

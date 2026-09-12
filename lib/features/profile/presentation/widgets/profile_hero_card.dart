@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
+import 'avatar_lottie.dart';
 
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -162,14 +162,15 @@ class ProfileHeroCard extends ConsumerWidget {
                         child: Center(
                           child: !usesProfileInitial(avatarId)
                               ? ClipOval(
-                                  child: Lottie.asset(
-                                    avatarAssetPath(avatarId),
+                                  child: AvatarLottie(
+                                    avatar:
+                                        profileAvatarById(avatarId) ??
+                                        kProfileAvatars.first,
                                     width: avatarSize,
                                     height: avatarSize,
-                                    fit: BoxFit.cover,
                                     animate: !reduceMotion,
                                     repeat: !reduceMotion,
-                                    errorBuilder: (_, _, _) => _AvatarInitial(
+                                    fallback: _AvatarInitial(
                                       userName: userName,
                                       compact: compact,
                                       darkText: isTransparentBg && !isDark,

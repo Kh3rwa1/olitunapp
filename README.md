@@ -298,6 +298,15 @@ Profile avatar animations are free Lottie files by Google Inc. via
 animations via [LottieFiles](https://lottiefiles.com) (see source links in
 [`tool/iconscout-avatar-import.tsv`](tool/iconscout-avatar-import.tsv)).
 
+### Managing avatars without a release
+
+The picker reads the **`profile_avatars`** Appwrite Storage bucket first:
+upload a valid `.json` Lottie as `avatar_<id>.json` (lowercase,
+underscores) and it appears as the `<id>` choice on next launch — no app
+update needed. Deleting a file removes that choice (stored picks migrate
+to the default). The bundled `assets/animations/avatars/` set is the
+offline fallback and is never deleted.
+
 ---
 
 ## 📄 License

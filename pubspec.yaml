@@ -50,7 +50,7 @@ dependencies:
   # NOTE: image_picker >=1.2.3 needs Dart ^3.10 / Flutter >=3.38, but the
   # Appwrite Sites builder is pinned to flutter-3.35 (Dart 3.9.2).
   # Keep 1.2.x capped below 1.2.3 until the builder runtime is upgraded.
-  image_picker: '>=1.2.2 <1.2.3'
+  image_picker: ^1.2.3
   file_picker: ^10.3.10
   http: ^1.2.0
 

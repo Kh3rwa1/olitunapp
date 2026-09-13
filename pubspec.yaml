@@ -32,7 +32,10 @@ dependencies:
   fl_chart: ^1.2.0
 
   # Audio & Video
-  lottie: ^3.3.1
+  # NOTE: Appwrite Sites builder is pinned to flutter-3.35 (Dart 3.9.2).
+  # lottie >=3.4.0 needs Dart ^3.12 / Flutter >=3.44, so cap below 3.4.0
+  # until Appwrite offers a newer Flutter build runtime.
+  lottie: '>=3.3.1 <3.4.0'
   video_player: ^2.8.6
 
 
@@ -44,7 +47,10 @@ dependencies:
   # Utils
   uuid: ^4.5.1
   intl: ^0.20.2
-  image_picker: ^1.2.2
+  # NOTE: image_picker >=1.2.3 needs Dart ^3.10 / Flutter >=3.38, but the
+  # Appwrite Sites builder is pinned to flutter-3.35 (Dart 3.9.2).
+  # Keep 1.2.x capped below 1.2.3 until the builder runtime is upgraded.
+  image_picker: '>=1.2.2 <1.2.3'
   file_picker: ^10.3.10
   http: ^1.2.0
 

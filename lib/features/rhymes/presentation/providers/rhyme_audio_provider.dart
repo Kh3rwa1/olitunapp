@@ -86,8 +86,7 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
   /// True when the shared player still carries the clip this notifier
   /// started (i.e. no lesson/SFX surface has hijacked it since).
   bool get _ownsPlayer =>
-      _currentUrl != null &&
-      (_loading || _audio.currentUrl == _currentUrl);
+      _currentUrl != null && (_loading || _audio.currentUrl == _currentUrl);
 
   void _wirePlayerListeners() {
     _playerStateSub = _audio.playerStateStream.listen(

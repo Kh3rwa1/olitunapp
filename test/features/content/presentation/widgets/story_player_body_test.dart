@@ -39,7 +39,12 @@ class _MockAudioService extends AudioService {
   final List<String> playedUrls = [];
 
   @override
-  Future<bool> tryPlayUrl(String url) async {
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async {
     playedUrls.add(url);
     return true;
   }

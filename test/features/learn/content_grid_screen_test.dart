@@ -24,7 +24,12 @@ class MockAudioService extends AudioService {
   bool didStopAudio = false;
 
   @override
-  Future<bool> tryPlayUrl(String url) async {
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async {
     lastPlayedUrl = url;
     return true;
   }

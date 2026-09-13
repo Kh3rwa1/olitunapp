@@ -326,6 +326,28 @@ class WelcomeScreen extends ConsumerWidget {
             try {
               await ref.read(authControllerProvider).signInAnonymously();
             } catch (_) {}
+            if (!context.mounted) return;
+            // Refresh the cached auth state before navigating: the router
+            // guard reads isAuthenticatedProvider, which still holds the
+            // pre-sign-in `false` otherwise and bounces /onboarding back
+            // to /welcome (onboarding never appears).
+            bool authed = false;
+            try {
+              authed = await ref.refresh(isAuthenticatedProvider.future);
+              ref.invalidate(currentUserProvider);
+            } catch (_) {}
+            if (!context.mounted) return;
+            if (!authed) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Could not start a guest session. Please try again.',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              return;
+            }
             if (context.mounted) {
               final showOnboarding = ref.read(onboardingProvider);
               if (showOnboarding) {

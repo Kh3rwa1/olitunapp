@@ -418,6 +418,21 @@ class PlaybackController {
       _update(_state.copyWith(isPlaying: false, position: Duration.zero));
       return;
     }
+    // The shared player may carry a foreign clip (Bakhed, SFX) that this
+    // controller never started: never advance our chain for it, just drop
+    // the stale state instead of auto-playing the wrong audio.
+    if (_audio.currentUrl != null && _audio.currentUrl != current.id) {
+      _update(
+        _state.copyWith(
+          current: null,
+          rootRequest: null,
+          isPlaying: false,
+          isLoading: false,
+          position: Duration.zero,
+        ),
+      );
+      return;
+    }
     final root = _state.rootRequest ?? current;
     _advanceOrFinish(current, _requestSerial, root: root);
   }

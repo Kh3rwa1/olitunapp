@@ -20,7 +20,12 @@ class MockAudioService extends Mock implements AudioService {
   Future<void> playUrl(String url) async {}
 
   @override
-  Future<bool> tryPlayUrl(String url) async => true;
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async => true;
 
   @override
   Future<void> stop() async {}

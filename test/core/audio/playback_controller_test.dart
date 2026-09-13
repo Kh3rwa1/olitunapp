@@ -321,6 +321,26 @@ void main() {
       expect(controller.state.current?.id, 'https://a.mp3');
       expect(controller.playPauseSemanticsLabel, 'Resume audio');
     });
+
+    test('completion of a foreign clip (Bakhed/SFX hijack) drops stale '
+        'state instead of advancing the chain', () async {
+      final controller = build(pause: Duration.zero);
+      final head = request('https://a.mp3', next: request('https://b.mp3'));
+
+      await controller.play(head);
+      verify(() => audio.tryPlayUrl('https://a.mp3')).called(1);
+
+      // The shared player now carries a Bakhed clip this controller
+      // never started; its completion must not advance our chain.
+      when(() => audio.currentUrl).thenReturn('https://bakhed.mp3');
+      processingStates.add(ProcessingState.completed);
+      await flush();
+
+      verifyNever(() => audio.tryPlayUrl('https://b.mp3'));
+      expect(controller.state.current, isNull);
+      expect(controller.state.isPlaying, isFalse);
+      expect(controller.state.isLoading, isFalse);
+    });
   });
 
   group('pause, resume and toggle', () {

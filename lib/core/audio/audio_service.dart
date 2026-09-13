@@ -24,6 +24,17 @@ class AudioService {
   final AudioPlayer _player = AudioPlayer();
   late final PrivateAudioPlayback? _privatePlayback;
 
+  /// URL most recently loaded into the shared player via [tryPlayUrl] or
+  /// [playAsset], or null after [stop]/[dispose].
+  ///
+  /// Co-tenants of the single global player (Bakhed audio, lock SFX) use
+  /// this to tell whether the player still carries *their* clip or has
+  /// been hijacked by another surface, instead of each owning a private
+  /// just_audio player (which wedges the shared audio_service session —
+  /// a paused Bakhed session blocks sentence audio entirely).
+  String? _currentUrl;
+  String? get currentUrl => _currentUrl;
+
   /// Grace period after a clip finishes before the media session is
   /// released. Must comfortably exceed the playback controller's
   /// interClipPause (700ms) so bilingual chains are untouched.
@@ -100,16 +111,32 @@ class AudioService {
   Stream<ProcessingState> get processingStateStream =>
       _player.processingStateStream;
 
+  /// Full player state (playing flag + processing state) for co-tenants
+  /// of the shared player (Bakhed) that mirror playback UI.
+  Stream<PlayerState> get playerStateStream => _player.playerStateStream;
+
   /// Attempts to play [url] and reports whether playback actually started.
   ///
   /// Unlike [playUrl], this surfaces success/failure so the central
   /// playback controller can show an error state (spec §11) instead of
   /// silently swallowing failures.
-  Future<bool> tryPlayUrl(String url) async {
+  ///
+  /// [title]/[album]/[artUri] customize the background media notification;
+  /// they default to the pronunciation values so existing call sites are
+  /// unaffected. Co-tenants (Bakhed) pass their own metadata instead of
+  /// spinning up a second player.
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async {
     if (url.isEmpty) return false;
     if (PrivateMediaReference.parse(url) != null) {
       _initWebCrossOrigin();
-      return await _privatePlayback?.play(url) ?? false;
+      final started = await _privatePlayback?.play(url) ?? false;
+      if (started) _currentUrl = url;
+      return started;
     }
     _privatePlayback?.cancel();
     try {
@@ -120,11 +147,12 @@ class AudioService {
       await _player.setAudioSource(
         AudioSource.uri(
           Uri.parse(url),
-          tag: MediaItem(id: url, album: 'Olitun', title: 'Pronunciation'),
+          tag: MediaItem(id: url, album: album, title: title, artUri: artUri),
         ),
       );
       await _player.setVolume(1.0);
       await _player.play();
+      _currentUrl = url;
       return true;
     } catch (e) {
       AppLogger.warning('AudioService playUrl failed: $e');
@@ -141,12 +169,47 @@ class AudioService {
           await _player.setUrl(url);
           await _player.setVolume(1.0);
           await _player.play();
+          _currentUrl = url;
           return true;
         } catch (retryErr) {
           AppLogger.warning('AudioService native retry failed: $retryErr');
           return false;
         }
       }
+    }
+  }
+
+  /// Plays a bundled asset (error SFX, onboarding chimes) through the
+  /// SHARED player so lightweight sounds can never wedge the global
+  /// audio session the way a per-tap `AudioPlayer()` does (its dispose
+  /// tears down the audio_service session out from under lesson audio).
+  ///
+  /// Fire-and-forget by design: returns false instead of throwing, so
+  /// tests, offline, and silent devices stay quiet instead of crashing.
+  Future<bool> playAsset(
+    String assetPath, {
+    String title = 'Olitun sound',
+    String album = 'Olitun',
+  }) async {
+    if (assetPath.isEmpty) return false;
+    _privatePlayback?.cancel();
+    try {
+      if (_player.playing) {
+        await _player.pause();
+      }
+      await _player.setAudioSource(
+        AudioSource.asset(
+          assetPath,
+          tag: MediaItem(id: assetPath, album: album, title: title),
+        ),
+      );
+      await _player.setVolume(1.0);
+      await _player.play();
+      _currentUrl = assetPath;
+      return true;
+    } catch (e) {
+      AppLogger.warning('AudioService playAsset failed: $e');
+      return false;
     }
   }
 
@@ -202,6 +265,7 @@ class AudioService {
   }
 
   Future<void> stop() async {
+    _currentUrl = null;
     _privatePlayback?.cancel();
     try {
       await _player.stop();

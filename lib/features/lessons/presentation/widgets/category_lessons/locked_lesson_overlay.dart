@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../../core/audio/audio_service.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
@@ -93,42 +93,33 @@ class LockedLessonCard extends ConsumerStatefulWidget {
 }
 
 class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
-  AudioPlayer? _sfxPlayer;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _playSfx());
   }
 
+  /// Plays the Eyes SFX through the SHARED [AudioService] player.
+  ///
+  /// A per-tap `AudioPlayer()` here wedges the global audio session: its
+  /// dispose tears down the audio_service session out from under lesson
+  /// audio, and a second player holding any item blocks the shared
+  /// player afterwards. All player errors are swallowed so tests,
+  /// offline, and silent devices stay quiet instead of crashing.
   Future<void> _playSfx() async {
     try {
       if (!ref.read(soundEnabledProvider)) {
         debugPrint('eyes-sfx: skipped (sound off)');
         return;
       }
-      final player = AudioPlayer();
-      _sfxPlayer = player;
-      debugPrint('eyes-sfx: loading asset');
-      await player.setAsset('assets/audio/eyes.wav');
-      await player.setVolume(1.0);
-      debugPrint('eyes-sfx: playing');
-      await player.play();
-      debugPrint('eyes-sfx: play returned');
+      debugPrint('eyes-sfx: playing via shared player');
+      final started = await ref
+          .read(audioServiceProvider)
+          .playAsset('assets/audio/eyes.wav', title: 'Locked lesson');
+      debugPrint(started ? 'eyes-sfx: play returned' : 'eyes-sfx: failed');
     } catch (e) {
       debugPrint('eyes-sfx: failed $e');
     }
-  }
-
-  @override
-  void dispose() {
-    final player = _sfxPlayer;
-    _sfxPlayer = null;
-    if (player != null) {
-      player.stop().catchError((_) {});
-      player.dispose();
-    }
-    super.dispose();
   }
 
   @override

@@ -24,7 +24,12 @@ class MockAudioService extends AudioService {
   bool failNextPlay = false;
 
   @override
-  Future<bool> tryPlayUrl(String url) async {
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async {
     if (failNextPlay) {
       failNextPlay = false;
       return false;

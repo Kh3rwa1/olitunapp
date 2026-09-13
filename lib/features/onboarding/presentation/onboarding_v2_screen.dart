@@ -155,177 +155,191 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       body: OnboardingAmbient(
         isDark: isDark,
         child: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                child: Row(
-                  children: [
-                    if (_step > 0)
-                      IconButton(
-                        tooltip: l10n.backButton,
-                        icon: Icon(
-                          Icons.arrow_back_rounded,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
-                        onPressed: () => _goToStep(_step - 1),
-                      )
-                    else
-                      const SizedBox(width: 48),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          for (int i = 0; i < _stepCount; i++)
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.only(
-                                  right: i < _stepCount - 1 ? 6 : 0,
+          // Narrow centered column on desktop PWA / wide screens: without
+          // this the header, option cards, and CTA stretch full-bleed and
+          // read terribly. Matches the legacy onboarding max width; phones
+          // (<560dp) are unaffected.
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Row(
+                      children: [
+                        if (_step > 0)
+                          IconButton(
+                            tooltip: l10n.backButton,
+                            icon: Icon(
+                              Icons.arrow_back_rounded,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                            onPressed: () => _goToStep(_step - 1),
+                          )
+                        else
+                          const SizedBox(width: 48),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              for (int i = 0; i < _stepCount; i++)
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(
+                                      right: i < _stepCount - 1 ? 6 : 0,
+                                    ),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                      height: 6,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(4),
+                                        gradient: i <= _step
+                                            ? const LinearGradient(
+                                                colors: [
+                                                  AppColors.primary,
+                                                  AppColors.primaryDark,
+                                                ],
+                                              )
+                                            : null,
+                                        color: i <= _step
+                                            ? null
+                                            : (isDark
+                                                  ? Colors.white.withValues(
+                                                      alpha: 0.08,
+                                                    )
+                                                  : Colors.black.withValues(
+                                                      alpha: 0.06,
+                                                    )),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeOutCubic,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(4),
-                                    gradient: i <= _step
-                                        ? const LinearGradient(
+                            ],
+                          ),
+                        ),
+                        // Quiet skip: the impatient 10-20% can bail with safe
+                        // defaults instead of force-quitting mid-flow. Hidden on
+                        // the last step where the CTA already finishes.
+                        if (_step < _stepCount - 1)
+                          TextButton(
+                            onPressed: _completing
+                                ? null
+                                : () => _finish(via: 'skip'),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(48, 48),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              l10n.skip,
+                              style: TextStyle(
+                                color: isDark ? Colors.white54 : Colors.black45,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          )
+                        else
+                          const SizedBox(width: 48),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: (index) => setState(() => _step = index),
+                      children: [
+                        _buildLanguageStep(l10n, isDark),
+                        _buildProficiencyStep(l10n, isDark),
+                        _buildGoalsStep(l10n, isDark),
+                        _buildAudioModeStep(l10n, isDark),
+                        _buildReadyStep(l10n, isDark),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _completing
+                                ? null
+                                : () {
+                                    // Product decision: Continue never blocks on
+                                    // selection. Every axis has a safe migrated
+                                    // default, so hurried learners flow through with
+                                    // defaults instead of bouncing off a forced
+                                    // choice; the funnel data will show if any step
+                                    // is routinely skipped empty.
+                                    if (_step < _stepCount - 1) {
+                                      _goToStep(_step + 1);
+                                    } else {
+                                      _finish();
+                                    }
+                                  },
+                            style:
+                                ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  elevation: 0,
+                                  minimumSize: const Size.fromHeight(52),
+                                  padding: EdgeInsets.zero,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ).copyWith(
+                                  backgroundBuilder: (context, states, child) =>
+                                      Ink(
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
                                             colors: [
+                                              AppColors.primaryLight,
                                               AppColors.primary,
                                               AppColors.primaryDark,
                                             ],
-                                          )
-                                        : null,
-                                    color: i <= _step
-                                        ? null
-                                        : (isDark
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.08,
-                                                )
-                                              : Colors.black.withValues(
-                                                  alpha: 0.06,
-                                                )),
-                                  ),
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: AppColors.primary
+                                                  .withValues(
+                                                    alpha: isDark ? 0.4 : 0.3,
+                                                  ),
+                                              blurRadius: 20,
+                                              offset: const Offset(0, 8),
+                                            ),
+                                          ],
+                                        ),
+                                        child: child,
+                                      ),
                                 ),
+                            child: Text(
+                              _step < _stepCount - 1
+                                  ? l10n.continueButton
+                                  : l10n.streakStartLearning,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
-                        ],
-                      ),
-                    ),
-                    // Quiet skip: the impatient 10-20% can bail with safe
-                    // defaults instead of force-quitting mid-flow. Hidden on
-                    // the last step where the CTA already finishes.
-                    if (_step < _stepCount - 1)
-                      TextButton(
-                        onPressed: _completing
-                            ? null
-                            : () => _finish(via: 'skip'),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(48, 48),
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          l10n.skip,
-                          style: TextStyle(
-                            color: isDark ? Colors.white54 : Colors.black45,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       )
-                    else
-                      const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: (index) => setState(() => _step = index),
-                  children: [
-                    _buildLanguageStep(l10n, isDark),
-                    _buildProficiencyStep(l10n, isDark),
-                    _buildGoalsStep(l10n, isDark),
-                    _buildAudioModeStep(l10n, isDark),
-                    _buildReadyStep(l10n, isDark),
-                  ],
-                ),
-              ),
-              Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _completing
-                            ? null
-                            : () {
-                                // Product decision: Continue never blocks on
-                                // selection. Every axis has a safe migrated
-                                // default, so hurried learners flow through with
-                                // defaults instead of bouncing off a forced
-                                // choice; the funnel data will show if any step
-                                // is routinely skipped empty.
-                                if (_step < _stepCount - 1) {
-                                  _goToStep(_step + 1);
-                                } else {
-                                  _finish();
-                                }
-                              },
-                        style:
-                            ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              elevation: 0,
-                              minimumSize: const Size.fromHeight(52),
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                            ).copyWith(
-                              backgroundBuilder: (context, states, child) =>
-                                  Ink(
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [
-                                          AppColors.primaryLight,
-                                          AppColors.primary,
-                                          AppColors.primaryDark,
-                                        ],
-                                      ),
-                                      borderRadius: BorderRadius.circular(14),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: AppColors.primary.withValues(
-                                            alpha: isDark ? 0.4 : 0.3,
-                                          ),
-                                          blurRadius: 20,
-                                          offset: const Offset(0, 8),
-                                        ),
-                                      ],
-                                    ),
-                                    child: child,
-                                  ),
-                            ),
-                        child: Text(
-                          _step < _stepCount - 1
-                              ? l10n.continueButton
-                              : l10n.streakStartLearning,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      .animate()
+                      .fadeIn(duration: 450.ms)
+                      .slideY(
+                        begin: 0.15,
+                        end: 0,
+                        duration: 450.ms,
+                        curve: Curves.easeOutCubic,
                       ),
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(duration: 450.ms)
-                  .slideY(
-                    begin: 0.15,
-                    end: 0,
-                    duration: 450.ms,
-                    curve: Curves.easeOutCubic,
-                  ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

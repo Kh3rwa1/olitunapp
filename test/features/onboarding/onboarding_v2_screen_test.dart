@@ -195,4 +195,40 @@ void main() {
     expect(find.text('Which language do you understand best?'), findsNothing);
     expect(finished, isFalse);
   });
+
+  testWidgets('wide desktop surface keeps content in a narrow column', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    tester.view.physicalSize = const Size(1440, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          reduceVisualEffectsProvider.overrideWithValue(true),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            LearningAnalyticsService(
+              prefs: prefs,
+              remoteWriter: (_, _) async {},
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: OnboardingV2Screen(onFinished: () {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The full-bleed CTA fills its column: on a 1440px surface it must
+    // stay narrow instead of stretching edge to edge.
+    final ctaWidth = tester.getSize(find.byType(ElevatedButton)).width;
+    expect(ctaWidth, lessThanOrEqualTo(560));
+  });
 }

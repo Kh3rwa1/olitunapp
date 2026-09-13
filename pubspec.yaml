@@ -42,7 +42,7 @@ dependencies:
 
   # Auth
   # Constrained to 21.x to match backend server API (TablesDB) and prevent breaking 22+ SDK changes
-  appwrite: ^21.1.0
+  appwrite: ^26.2.0
 
   # Utils
   uuid: ^4.5.1

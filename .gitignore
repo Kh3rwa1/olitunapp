@@ -87,3 +87,4 @@ scripts/backups/
 **/failures/*.png
 mapping.txt
 mapping.txt
+.keys/

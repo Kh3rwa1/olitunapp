@@ -57,15 +57,18 @@ class SplashController {
           final success = await authService.exchangeOAuthToken(userId, secret);
 
           if (success) {
-            AppLogger.debug(
-              'Splash: OAuth token exchange succeeded, navigating to /',
-            );
-            ref.read(onboardingProvider.notifier).completeOnboarding();
+            AppLogger.debug('Splash: OAuth token exchange succeeded');
             try {
               final _ = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);
             } catch (_) {}
-            targetLocation = '/';
+            // Respect first-run onboarding instead of silently completing it:
+            // new web users must see /onboarding like every other flow.
+            final showOnboarding = ref.read(onboardingProvider);
+            AppLogger.debug(
+              'Splash: OAuth done, showOnboarding=$showOnboarding',
+            );
+            targetLocation = showOnboarding ? '/onboarding' : '/';
           } else {
             AppLogger.debug('Splash: OAuth token exchange failed');
           }

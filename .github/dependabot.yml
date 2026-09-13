@@ -22,6 +22,17 @@ updates:
         patterns:
           - "hive*"
           - "shared_preferences"
+    # NOTE: Appwrite Sites only offers the flutter-3.35 build runtime
+    # (Dart 3.9.2). These versions require a newer SDK and fail every
+    # Appwrite preview deployment, so ignore them until Appwrite ships a
+    # newer Flutter build runtime. Mirrors the caps in pubspec.yaml.
+    ignore:
+      - dependency-name: "lottie"
+        versions: [">=3.4.0"]
+      - dependency-name: "image_picker"
+        versions: [">=1.2.3"]
+      - dependency-name: "google_mobile_ads"
+        versions: [">=8"]
 
   - package-ecosystem: "github-actions"
     directory: "/"

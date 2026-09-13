@@ -6,6 +6,8 @@
 /// for the remote-first resolution order.
 library;
 
+import 'avatar_ol_chiki_names.dart';
+
 /// Appwrite Storage bucket holding the live avatar set (public read,
 ///
 /// admin write).
@@ -29,8 +31,11 @@ String remoteAvatarIdFromFilename(String filename) {
   return sanitized;
 }
 
-/// Human label for the picker grid: `paw_prints` becomes `Paw prints`.
+/// Human label for the picker grid: Ol Chiki funny nickname when curated,
+/// otherwise `paw_prints` becomes `Paw prints`.
 String remoteAvatarLabelFromId(String id) {
+  final curated = kAvatarOlChikiFunnyNames[id];
+  if (curated != null) return curated;
   final words = id.split('_').where((word) => word.isNotEmpty).toList();
   if (words.isEmpty) return id;
   final [first, ...rest] = words;

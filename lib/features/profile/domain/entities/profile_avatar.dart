@@ -42,177 +42,213 @@ const String kDefaultAvatarId = 'default';
 /// Explicit, persistable choice that renders the learner's name initial.
 const String kInitialAvatarId = 'initial';
 
-/// Every catalog entry has a corresponding original asset in this repository.
-/// Animal names keep the choices playful and culturally neutral.
+/// Ol Chiki funny nicknames keep the choices playful and Santali-first.
+/// See `avatar_ol_chiki_names.dart` for the curated map (remote uses it too).
 const List<ProfileAvatar> kProfileAvatars = [
   ProfileAvatar(
     id: kDefaultAvatarId,
     assetFileName: 'avatar_tiger.json',
-    label: 'Tiger',
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱛᱟ.ᱨᱩᱵ',
   ),
-  ProfileAvatar(id: 'owl', assetFileName: 'avatar_owl.json', label: 'Owl'),
-  ProfileAvatar(id: 'ox', assetFileName: 'avatar_ox.json', label: 'Ox'),
+  ProfileAvatar(
+    id: 'owl',
+    assetFileName: 'avatar_owl.json',
+    label: 'ᱢᱟᱨᱟᱝ ᱢᱮᱫ ᱪᱮᱬᱮ',
+  ),
+  ProfileAvatar(
+    id: 'ox',
+    assetFileName: 'avatar_ox.json',
+    label: 'ᱢᱟᱨᱟᱝ ᱰᱟᱝᱨᱟ',
+  ),
   ProfileAvatar(
     id: 'paw_prints',
     assetFileName: 'avatar_paw_prints.json',
-    label: 'Paw prints',
+    label: 'ᱡᱟᱝᱜᱟ ᱪᱤᱱᱦᱟᱹ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'peace',
     assetFileName: 'avatar_peace.json',
-    label: 'Peace',
+    label: 'ᱥᱩᱞᱩᱠ ᱨᱟᱹᱥᱠᱟᱹ',
   ),
-  ProfileAvatar(id: 'ant', assetFileName: 'avatar_ant.json', label: 'Ant'),
+  ProfileAvatar(
+    id: 'ant',
+    assetFileName: 'avatar_ant.json',
+    label: 'ᱦᱩᱰᱤᱧ ᱮᱱᱴ',
+  ),
   ProfileAvatar(
     id: 'cat_noha',
     assetFileName: 'avatar_cat_noha.json',
-    label: 'Cat Noha',
+    label: 'ᱮᱱᱮᱡ ᱯᱩᱥᱤ',
   ),
   ProfileAvatar(
     id: 'smart_puppy',
     assetFileName: 'avatar_smart_puppy.json',
-    label: 'Smart Puppy',
+    label: 'ᱥᱤᱭᱟᱹᱱᱟ ᱥᱮᱛᱟ ᱜᱤᱫᱽᱨᱟᱹ',
   ),
   ProfileAvatar(
     id: 'running_chicken',
     assetFileName: 'avatar_running_chicken.json',
-    label: 'Running Chicken',
+    label: 'ᱧᱤᱨ ᱥᱤᱢ',
   ),
   ProfileAvatar(
     id: 'razmi',
     assetFileName: 'avatar_razmi.json',
-    label: 'Razmi',
+    label: 'ᱨᱟᱡᱽᱢᱤ ᱨᱟᱹᱥᱠᱟᱹ',
   ),
-  ProfileAvatar(id: 'bear', assetFileName: 'avatar_bear.json', label: 'Bear'),
-  ProfileAvatar(id: 'coco', assetFileName: 'avatar_coco.json', label: 'Coco'),
+  ProfileAvatar(
+    id: 'bear',
+    assetFileName: 'avatar_bear.json',
+    label: 'ᱮᱱᱮᱡ ᱵᱟᱱᱟ',
+  ),
+  ProfileAvatar(
+    id: 'coco',
+    assetFileName: 'avatar_coco.json',
+    label: 'ᱠᱳᱠᱳ ᱢᱟᱥᱛᱤ',
+  ),
   ProfileAvatar(
     id: 'chicken',
     assetFileName: 'avatar_chicken.json',
-    label: 'Chicken',
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱥᱤᱢ',
   ),
   ProfileAvatar(
     id: 'cat_3d',
     assetFileName: 'avatar_cat_3d.json',
-    label: 'Cat 3D',
+    label: 'ᱱᱟᱣᱟ ᱯᱩᱥᱤ',
   ),
   ProfileAvatar(
     id: 'bad_cat',
     assetFileName: 'avatar_bad_cat.json',
-    label: 'Bad Cat',
+    label: 'ᱵᱚᱫᱽᱢᱟᱥ ᱯᱩᱥᱤ',
   ),
   ProfileAvatar(
     id: 'monkey',
     assetFileName: 'avatar_monkey.json',
-    label: 'Monkey',
+    label: 'ᱢᱟᱥᱛᱤ ᱦᱟ.ᱬᱩ',
   ),
   ProfileAvatar(
     id: 'camaleon',
     assetFileName: 'avatar_camaleon.json',
-    label: 'Camaleon',
+    label: 'ᱨᱚᱝ ᱵᱚᱫᱚᱞ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'quadrin_funny',
     assetFileName: 'avatar_quadrin_funny.json',
-    label: 'Quadrin Funny',
+    label: 'ᱟᱹᱰᱤ ᱨᱟᱹᱥᱠᱟᱹ',
   ),
-  ProfileAvatar(id: 'flow', assetFileName: 'avatar_flow.json', label: 'Flow'),
+  ProfileAvatar(
+    id: 'flow',
+    assetFileName: 'avatar_flow.json',
+    label: 'ᱟᱛᱩ ᱨᱟᱹᱥᱠᱟᱹ',
+  ),
   ProfileAvatar(
     id: 'one_eye_alien',
     assetFileName: 'avatar_one_eye_alien.json',
-    label: 'One Eye Alien',
+    label: 'ᱢᱤᱫ ᱢᱮᱫ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'unicorn_stretching',
     assetFileName: 'avatar_unicorn_stretching.json',
-    label: 'Unicorn Stretching',
+    label: 'ᱢᱟᱨᱟᱝ ᱥᱤᱸᱜ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'girls_face',
     assetFileName: 'avatar_girls_face.json',
-    label: "Girl's Face",
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱵᱤᱴᱤ',
   ),
   ProfileAvatar(
     id: 'rate_us',
     assetFileName: 'avatar_rate_us.json',
-    label: 'Rate Us',
+    label: 'ᱥᱟᱨᱦᱟᱣ ᱨᱟᱹᱥᱠᱟᱹ',
   ),
   ProfileAvatar(
     id: 'girl_thumbs_up',
     assetFileName: 'avatar_girl_thumbs_up.json',
-    label: 'Girl Thumbs Up',
+    label: 'ᱥᱟᱵᱟᱥ ᱵᱤᱴᱤ',
   ),
   ProfileAvatar(
     id: 'laugh_oink',
     assetFileName: 'avatar_laugh_oink.json',
-    label: 'Laugh Oink',
+    label: 'ᱞᱟᱸᱫᱟ ᱥᱩᱠᱨᱤ',
   ),
   ProfileAvatar(
     id: 'man_wink',
     assetFileName: 'avatar_man_wink.json',
-    label: 'Man Wink',
+    label: 'ᱢᱮᱫ ᱵᱤᱞᱤᱪ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'blob_boy',
     assetFileName: 'avatar_blob_boy.json',
-    label: 'Blob Boy',
+    label: 'ᱯᱷᱩᱞᱟᱹᱣ ᱜᱤᱫᱽᱨᱟᱹ',
   ),
   ProfileAvatar(
     id: 'love_cat',
     assetFileName: 'avatar_love_cat.json',
-    label: 'Love Cat',
+    label: 'ᱫᱩᱞᱟᱹᱲ ᱯᱩᱥᱤ',
   ),
   ProfileAvatar(
     id: 'flirting_dog',
     assetFileName: 'avatar_flirting_dog.json',
-    label: 'Flirting Dog',
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱥᱮᱛᱟ',
   ),
   ProfileAvatar(
     id: 'lurking_cat',
     assetFileName: 'avatar_lurking_cat.json',
-    label: 'Lurking Cat',
+    label: 'ᱩᱠᱩ ᱯᱩᱥᱤ',
   ),
   ProfileAvatar(
     id: 'ghost',
     assetFileName: 'avatar_ghost.json',
-    label: 'Ghost',
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱵᱷᱩᱛ',
   ),
   ProfileAvatar(
     id: 'cha_chan',
     assetFileName: 'avatar_cha_chan.json',
-    label: 'Cha Chan',
+    label: 'ᱪᱷᱟ ᱪᱷᱟᱱ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'lottie_admin',
     assetFileName: 'avatar_lottie_admin.json',
-    label: 'Lottie Admin',
+    label: 'ᱢᱟᱪᱮᱛ ᱢᱟᱥᱛᱤ',
   ),
   ProfileAvatar(
     id: 'funny_emoji',
     assetFileName: 'avatar_funny_emoji.json',
-    label: 'Funny Emoji',
+    label: 'ᱞᱟᱸᱫᱟ ᱢᱩᱸᱦᱟᱸ',
   ),
   ProfileAvatar(
     id: 'baby_chick',
     assetFileName: 'avatar_baby_chick.json',
-    label: 'Baby chick',
+    label: 'ᱦᱩᱰᱤᱧ ᱥᱤᱢ ᱜᱤᱫᱽᱨᱟᱹ',
   ),
-  ProfileAvatar(id: 'bat', assetFileName: 'avatar_bat.json', label: 'Bat'),
-  ProfileAvatar(id: 'bee', assetFileName: 'avatar_bee.json', label: 'Bee'),
-  ProfileAvatar(id: 'bird', assetFileName: 'avatar_bird.json', label: 'Bird'),
+  ProfileAvatar(
+    id: 'bat',
+    assetFileName: 'avatar_bat.json',
+    label: 'ᱧᱤᱫᱟᱹ ᱵᱟᱫᱩᱲ',
+  ),
+  ProfileAvatar(
+    id: 'bee',
+    assetFileName: 'avatar_bee.json',
+    label: 'ᱨᱟᱹᱥᱠᱟᱹ ᱧᱮᱞᱮ',
+  ),
+  ProfileAvatar(
+    id: 'bird',
+    assetFileName: 'avatar_bird.json',
+    label: 'ᱮᱱᱮᱡ ᱪᱮᱬᱮ',
+  ),
   ProfileAvatar(
     id: 'black_bird',
     assetFileName: 'avatar_black_bird.json',
-    label: 'Black bird',
+    label: 'ᱦᱮᱸᱫᱮ ᱪᱮᱬᱮ',
   ),
   ProfileAvatar(
     id: 'blowfish',
     assetFileName: 'avatar_blowfish.json',
-    label: 'Blowfish',
+    label: 'ᱯᱷᱩᱞᱟᱹᱣ ᱦᱟᱹᱠᱩ',
   ),
   ProfileAvatar(
     id: 'comet',
     assetFileName: 'avatar_comet.json',
-    label: 'Comet',
+    label: 'ᱥᱤᱨᱡᱚᱱ ᱤᱯᱤᱞ',
   ),
 ];
 

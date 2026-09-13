@@ -18,9 +18,14 @@ void main() {
     expect(remoteAvatarIdFromFilename('.json'), isEmpty);
   });
 
-  test('labels prettify ids', () {
-    expect(remoteAvatarLabelFromId('tiger'), 'Tiger');
-    expect(remoteAvatarLabelFromId('paw_prints'), 'Paw prints');
-    expect(remoteAvatarLabelFromId('default'), 'Default');
+  test('labels use curated Ol Chiki funny nicknames', () {
+    expect(remoteAvatarLabelFromId('tiger'), 'ᱨᱟᱹᱥᱠᱟᱹ ᱛᱟ.ᱨᱩᱵ');
+    expect(remoteAvatarLabelFromId('paw_prints'), 'ᱡᱟᱝᱜᱟ ᱪᱤᱱᱦᱟᱹ ᱢᱟᱥᱛᱤ');
+    expect(remoteAvatarLabelFromId('default'), 'ᱨᱟᱹᱥᱠᱟᱹ ᱛᱟ.ᱨᱩᱵ');
+  });
+
+  test('labels fall back to English prettified ids when uncurated', () {
+    expect(remoteAvatarLabelFromId('some_new_thing'), 'Some new thing');
+    expect(remoteAvatarLabelFromId('dragon'), 'Dragon');
   });
 }

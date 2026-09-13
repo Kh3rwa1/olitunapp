@@ -57,7 +57,7 @@ dependencies:
   # Icons
   cupertino_icons: ^1.0.8
 
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   web: ^1.1.1
   fpdart: ^1.1.0
   connectivity_plus: ^7.3.1

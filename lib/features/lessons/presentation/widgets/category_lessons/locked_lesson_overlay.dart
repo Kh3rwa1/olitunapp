@@ -103,13 +103,20 @@ class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
 
   Future<void> _playSfx() async {
     try {
-      if (!ref.read(soundEnabledProvider)) return;
+      if (!ref.read(soundEnabledProvider)) {
+        debugPrint('eyes-sfx: skipped (sound off)');
+        return;
+      }
       final player = AudioPlayer();
       _sfxPlayer = player;
+      debugPrint('eyes-sfx: loading asset');
       await player.setAsset('assets/audio/eyes.wav');
+      await player.setVolume(1.0);
+      debugPrint('eyes-sfx: playing');
       await player.play();
-    } catch (_) {
-      // Silent by design: tests, offline, muted, or unsupported targets.
+      debugPrint('eyes-sfx: play returned');
+    } catch (e) {
+      debugPrint('eyes-sfx: failed $e');
     }
   }
 

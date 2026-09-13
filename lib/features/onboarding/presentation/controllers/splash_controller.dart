@@ -57,9 +57,7 @@ class SplashController {
           final success = await authService.exchangeOAuthToken(userId, secret);
 
           if (success) {
-            AppLogger.debug(
-              'Splash: OAuth token exchange succeeded',
-            );
+            AppLogger.debug('Splash: OAuth token exchange succeeded');
             try {
               final _ = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);

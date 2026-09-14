@@ -1,12 +1,1012 @@
 [
-  {"id": "n_0", "numeral": "᱐", "value": 0, "nameOlChiki": "ᱥᱩᱱᱭᱟ", "nameLatin": "Sunya", "order": 0, "isActive": true},
-  {"id": "n_1", "numeral": "᱑", "value": 1, "nameOlChiki": "ᱢᱤᱫ", "nameLatin": "Mit", "order": 1, "isActive": true},
-  {"id": "n_2", "numeral": "᱒", "value": 2, "nameOlChiki": "ᱵᱟᱨ", "nameLatin": "Bar", "order": 2, "isActive": true},
-  {"id": "n_3", "numeral": "᱓", "value": 3, "nameOlChiki": "ᱯᱮ", "nameLatin": "Pe", "order": 3, "isActive": true},
-  {"id": "n_4", "numeral": "᱔", "value": 4, "nameOlChiki": "ᱯᱩᱱ", "nameLatin": "Pun", "order": 4, "isActive": true},
-  {"id": "n_5", "numeral": "᱕", "value": 5, "nameOlChiki": "ᱢᱚᱬᱮ", "nameLatin": "Mone", "order": 5, "isActive": true},
-  {"id": "n_6", "numeral": "᱖", "value": 6, "nameOlChiki": "ᱛᱩᱨᱩᱭ", "nameLatin": "Turui", "order": 6, "isActive": true},
-  {"id": "n_7", "numeral": "᱗", "value": 7, "nameOlChiki": "ᱮᱭᱟᱭ", "nameLatin": "Eae", "order": 7, "isActive": true},
-  {"id": "n_8", "numeral": "᱘", "value": 8, "nameOlChiki": "ᱤᱨᱟᱹᱞ", "nameLatin": "Iral", "order": 8, "isActive": true},
-  {"id": "n_9", "numeral": "᱙", "value": 9, "nameOlChiki": "ᱟᱨᱮ", "nameLatin": "Are", "order": 9, "isActive": true}
+  {
+    "id": "n_0",
+    "numeral": "᱐",
+    "value": 0,
+    "nameOlChiki": "ᱥᱩᱱᱭᱟ",
+    "nameLatin": "Sunya",
+    "order": 0,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_0/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_1",
+    "numeral": "᱑",
+    "value": 1,
+    "nameOlChiki": "ᱢᱤᱫ",
+    "nameLatin": "Mit",
+    "order": 1,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_1/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_2",
+    "numeral": "᱒",
+    "value": 2,
+    "nameOlChiki": "ᱵᱟᱨ",
+    "nameLatin": "Bar",
+    "order": 2,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_2/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_3",
+    "numeral": "᱓",
+    "value": 3,
+    "nameOlChiki": "ᱯᱮ",
+    "nameLatin": "Pe",
+    "order": 3,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_3/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_4",
+    "numeral": "᱔",
+    "value": 4,
+    "nameOlChiki": "ᱯᱩᱱ",
+    "nameLatin": "Pun",
+    "order": 4,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_4/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_5",
+    "numeral": "᱕",
+    "value": 5,
+    "nameOlChiki": "ᱢᱚᱬᱮ",
+    "nameLatin": "Mone",
+    "order": 5,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_5/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_6",
+    "numeral": "᱖",
+    "value": 6,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Turui",
+    "order": 6,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_6/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_7",
+    "numeral": "᱗",
+    "value": 7,
+    "nameOlChiki": "ᱮᱭᱟᱭ",
+    "nameLatin": "Eae",
+    "order": 7,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_7/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_8",
+    "numeral": "᱘",
+    "value": 8,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Iral",
+    "order": 8,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_8/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_9",
+    "numeral": "᱙",
+    "value": 9,
+    "nameOlChiki": "ᱟᱨᱮ",
+    "nameLatin": "Are",
+    "order": 9,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_9/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_10",
+    "numeral": "᱑᱐",
+    "value": 10,
+    "nameOlChiki": "ᱜᱮᱞ",
+    "nameLatin": "Gel",
+    "order": 10,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_10/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_11",
+    "numeral": "᱑᱑",
+    "value": 11,
+    "nameOlChiki": "ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Gel Mit",
+    "order": 11,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_11/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_12",
+    "numeral": "᱑᱒",
+    "value": 12,
+    "nameOlChiki": "ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Gel Bar",
+    "order": 12,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_12/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_13",
+    "numeral": "᱑᱓",
+    "value": 13,
+    "nameOlChiki": "ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Gel Pe",
+    "order": 13,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_13/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_14",
+    "numeral": "᱑᱔",
+    "value": 14,
+    "nameOlChiki": "ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Gel Pun",
+    "order": 14,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_14/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_15",
+    "numeral": "᱑᱕",
+    "value": 15,
+    "nameOlChiki": "ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Gel Mone",
+    "order": 15,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_15/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_16",
+    "numeral": "᱑᱖",
+    "value": 16,
+    "nameOlChiki": "ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Gel Turui",
+    "order": 16,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_16/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_17",
+    "numeral": "᱑᱗",
+    "value": 17,
+    "nameOlChiki": "ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Gel Eae",
+    "order": 17,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_17/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_18",
+    "numeral": "᱑᱘",
+    "value": 18,
+    "nameOlChiki": "ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Gel Iral",
+    "order": 18,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_18/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_19",
+    "numeral": "᱑᱙",
+    "value": 19,
+    "nameOlChiki": "ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Gel Are",
+    "order": 19,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_19/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_20",
+    "numeral": "᱒᱐",
+    "value": 20,
+    "nameOlChiki": "ᱤᱥᱤ",
+    "nameLatin": "Isi",
+    "order": 20,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_20/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_21",
+    "numeral": "᱒᱑",
+    "value": 21,
+    "nameOlChiki": "ᱤᱥᱤ ᱢᱤᱫ",
+    "nameLatin": "Isi Mit",
+    "order": 21,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_21/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_22",
+    "numeral": "᱒᱒",
+    "value": 22,
+    "nameOlChiki": "ᱤᱥᱤ ᱵᱟᱨ",
+    "nameLatin": "Isi Bar",
+    "order": 22,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_22/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_23",
+    "numeral": "᱒᱓",
+    "value": 23,
+    "nameOlChiki": "ᱤᱥᱤ ᱯᱮ",
+    "nameLatin": "Isi Pe",
+    "order": 23,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_23/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_24",
+    "numeral": "᱒᱔",
+    "value": 24,
+    "nameOlChiki": "ᱤᱥᱤ ᱯᱩᱱ",
+    "nameLatin": "Isi Pun",
+    "order": 24,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_24/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_25",
+    "numeral": "᱒᱕",
+    "value": 25,
+    "nameOlChiki": "ᱤᱥᱤ ᱢᱚᱬᱮ",
+    "nameLatin": "Isi Mone",
+    "order": 25,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_25/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_26",
+    "numeral": "᱒᱖",
+    "value": 26,
+    "nameOlChiki": "ᱤᱥᱤ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Isi Turui",
+    "order": 26,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_26/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_27",
+    "numeral": "᱒᱗",
+    "value": 27,
+    "nameOlChiki": "ᱤᱥᱤ ᱮᱭᱟᱭ",
+    "nameLatin": "Isi Eae",
+    "order": 27,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_27/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_28",
+    "numeral": "᱒᱘",
+    "value": 28,
+    "nameOlChiki": "ᱤᱥᱤ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Isi Iral",
+    "order": 28,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_28/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_29",
+    "numeral": "᱒᱙",
+    "value": 29,
+    "nameOlChiki": "ᱤᱥᱤ ᱟᱨᱮ",
+    "nameLatin": "Isi Are",
+    "order": 29,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_29/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_30",
+    "numeral": "᱓᱐",
+    "value": 30,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ",
+    "nameLatin": "Pe Gel",
+    "order": 30,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_30/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_31",
+    "numeral": "᱓᱑",
+    "value": 31,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Pe Gel Mit",
+    "order": 31,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_31/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_32",
+    "numeral": "᱓᱒",
+    "value": 32,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Pe Gel Bar",
+    "order": 32,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_32/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_33",
+    "numeral": "᱓᱓",
+    "value": 33,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Pe Gel Pe",
+    "order": 33,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_33/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_34",
+    "numeral": "᱓᱔",
+    "value": 34,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Pe Gel Pun",
+    "order": 34,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_34/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_35",
+    "numeral": "᱓᱕",
+    "value": 35,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Pe Gel Mone",
+    "order": 35,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_35/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_36",
+    "numeral": "᱓᱖",
+    "value": 36,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Pe Gel Turui",
+    "order": 36,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_36/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_37",
+    "numeral": "᱓᱗",
+    "value": 37,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Pe Gel Eae",
+    "order": 37,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_37/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_38",
+    "numeral": "᱓᱘",
+    "value": 38,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Pe Gel Iral",
+    "order": 38,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_38/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_39",
+    "numeral": "᱓᱙",
+    "value": 39,
+    "nameOlChiki": "ᱯᱮ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Pe Gel Are",
+    "order": 39,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_39/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_40",
+    "numeral": "᱔᱐",
+    "value": 40,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ",
+    "nameLatin": "Pun Gel",
+    "order": 40,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_40/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_41",
+    "numeral": "᱔᱑",
+    "value": 41,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Pun Gel Mit",
+    "order": 41,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_41/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_42",
+    "numeral": "᱔᱒",
+    "value": 42,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Pun Gel Bar",
+    "order": 42,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_42/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_43",
+    "numeral": "᱔᱓",
+    "value": 43,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Pun Gel Pe",
+    "order": 43,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_43/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_44",
+    "numeral": "᱔᱔",
+    "value": 44,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Pun Gel Pun",
+    "order": 44,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_44/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_45",
+    "numeral": "᱔᱕",
+    "value": 45,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Pun Gel Mone",
+    "order": 45,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_45/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_46",
+    "numeral": "᱔᱖",
+    "value": 46,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Pun Gel Turui",
+    "order": 46,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_46/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_47",
+    "numeral": "᱔᱗",
+    "value": 47,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Pun Gel Eae",
+    "order": 47,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_47/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_48",
+    "numeral": "᱔᱘",
+    "value": 48,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Pun Gel Iral",
+    "order": 48,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_48/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_49",
+    "numeral": "᱔᱙",
+    "value": 49,
+    "nameOlChiki": "ᱯᱩᱱ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Pun Gel Are",
+    "order": 49,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_49/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_50",
+    "numeral": "᱕᱐",
+    "value": 50,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ",
+    "nameLatin": "Mone Gel",
+    "order": 50,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_50/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_51",
+    "numeral": "᱕᱑",
+    "value": 51,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Mone Gel Mit",
+    "order": 51,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_51/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_52",
+    "numeral": "᱕᱒",
+    "value": 52,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Mone Gel Bar",
+    "order": 52,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_52/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_53",
+    "numeral": "᱕᱓",
+    "value": 53,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Mone Gel Pe",
+    "order": 53,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_53/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_54",
+    "numeral": "᱕᱔",
+    "value": 54,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Mone Gel Pun",
+    "order": 54,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_54/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_55",
+    "numeral": "᱕᱕",
+    "value": 55,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Mone Gel Mone",
+    "order": 55,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_55/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_56",
+    "numeral": "᱕᱖",
+    "value": 56,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Mone Gel Turui",
+    "order": 56,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_56/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_57",
+    "numeral": "᱕᱗",
+    "value": 57,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Mone Gel Eae",
+    "order": 57,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_57/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_58",
+    "numeral": "᱕᱘",
+    "value": 58,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Mone Gel Iral",
+    "order": 58,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_58/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_59",
+    "numeral": "᱕᱙",
+    "value": 59,
+    "nameOlChiki": "ᱢᱚᱬᱮ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Mone Gel Are",
+    "order": 59,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_59/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_60",
+    "numeral": "᱖᱐",
+    "value": 60,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ",
+    "nameLatin": "Turui Gel",
+    "order": 60,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_60/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_61",
+    "numeral": "᱖᱑",
+    "value": 61,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Turui Gel Mit",
+    "order": 61,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_61/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_62",
+    "numeral": "᱖᱒",
+    "value": 62,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Turui Gel Bar",
+    "order": 62,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_62/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_63",
+    "numeral": "᱖᱓",
+    "value": 63,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Turui Gel Pe",
+    "order": 63,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_63/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_64",
+    "numeral": "᱖᱔",
+    "value": 64,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Turui Gel Pun",
+    "order": 64,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_64/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_65",
+    "numeral": "᱖᱕",
+    "value": 65,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Turui Gel Mone",
+    "order": 65,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_65/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_66",
+    "numeral": "᱖᱖",
+    "value": 66,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Turui Gel Turui",
+    "order": 66,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_66/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_67",
+    "numeral": "᱖᱗",
+    "value": 67,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Turui Gel Eae",
+    "order": 67,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_67/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_68",
+    "numeral": "᱖᱘",
+    "value": 68,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Turui Gel Iral",
+    "order": 68,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_68/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_69",
+    "numeral": "᱖᱙",
+    "value": 69,
+    "nameOlChiki": "ᱛᱩᱨᱩᱭ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Turui Gel Are",
+    "order": 69,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_69/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_70",
+    "numeral": "᱗᱐",
+    "value": 70,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ",
+    "nameLatin": "Eae Gel",
+    "order": 70,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_70/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_71",
+    "numeral": "᱗᱑",
+    "value": 71,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Eae Gel Mit",
+    "order": 71,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_71/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_72",
+    "numeral": "᱗᱒",
+    "value": 72,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Eae Gel Bar",
+    "order": 72,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_72/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_73",
+    "numeral": "᱗᱓",
+    "value": 73,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Eae Gel Pe",
+    "order": 73,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_73/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_74",
+    "numeral": "᱗᱔",
+    "value": 74,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Eae Gel Pun",
+    "order": 74,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_74/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_75",
+    "numeral": "᱗᱕",
+    "value": 75,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Eae Gel Mone",
+    "order": 75,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_75/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_76",
+    "numeral": "᱗᱖",
+    "value": 76,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Eae Gel Turui",
+    "order": 76,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_76/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_77",
+    "numeral": "᱗᱗",
+    "value": 77,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Eae Gel Eae",
+    "order": 77,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_77/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_78",
+    "numeral": "᱗᱘",
+    "value": 78,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Eae Gel Iral",
+    "order": 78,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_78/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_79",
+    "numeral": "᱗᱙",
+    "value": 79,
+    "nameOlChiki": "ᱮᱭᱟᱭ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Eae Gel Are",
+    "order": 79,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_79/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_80",
+    "numeral": "᱘᱐",
+    "value": 80,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ",
+    "nameLatin": "Iral Gel",
+    "order": 80,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_80/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_81",
+    "numeral": "᱘᱑",
+    "value": 81,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Iral Gel Mit",
+    "order": 81,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_81/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_82",
+    "numeral": "᱘᱒",
+    "value": 82,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Iral Gel Bar",
+    "order": 82,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_82/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_83",
+    "numeral": "᱘᱓",
+    "value": 83,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Iral Gel Pe",
+    "order": 83,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_83/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_84",
+    "numeral": "᱘᱔",
+    "value": 84,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Iral Gel Pun",
+    "order": 84,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_84/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_85",
+    "numeral": "᱘᱕",
+    "value": 85,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Iral Gel Mone",
+    "order": 85,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_85/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_86",
+    "numeral": "᱘᱖",
+    "value": 86,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Iral Gel Turui",
+    "order": 86,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_86/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_87",
+    "numeral": "᱘᱗",
+    "value": 87,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Iral Gel Eae",
+    "order": 87,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_87/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_88",
+    "numeral": "᱘᱘",
+    "value": 88,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Iral Gel Iral",
+    "order": 88,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_88/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_89",
+    "numeral": "᱘᱙",
+    "value": 89,
+    "nameOlChiki": "ᱤᱨᱟᱹᱞ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Iral Gel Are",
+    "order": 89,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_89/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_90",
+    "numeral": "᱙᱐",
+    "value": 90,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ",
+    "nameLatin": "Are Gel",
+    "order": 90,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_90/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_91",
+    "numeral": "᱙᱑",
+    "value": 91,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱢᱤᱫ",
+    "nameLatin": "Are Gel Mit",
+    "order": 91,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_91/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_92",
+    "numeral": "᱙᱒",
+    "value": 92,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱵᱟᱨ",
+    "nameLatin": "Are Gel Bar",
+    "order": 92,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_92/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_93",
+    "numeral": "᱙᱓",
+    "value": 93,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱯᱮ",
+    "nameLatin": "Are Gel Pe",
+    "order": 93,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_93/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_94",
+    "numeral": "᱙᱔",
+    "value": 94,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱯᱩᱱ",
+    "nameLatin": "Are Gel Pun",
+    "order": 94,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_94/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_95",
+    "numeral": "᱙᱕",
+    "value": 95,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱢᱚᱬᱮ",
+    "nameLatin": "Are Gel Mone",
+    "order": 95,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_95/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_96",
+    "numeral": "᱙᱖",
+    "value": 96,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱛᱩᱨᱩᱭ",
+    "nameLatin": "Are Gel Turui",
+    "order": 96,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_96/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_97",
+    "numeral": "᱙᱗",
+    "value": 97,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱮᱭᱟᱭ",
+    "nameLatin": "Are Gel Eae",
+    "order": 97,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_97/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_98",
+    "numeral": "᱙᱘",
+    "value": 98,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱤᱨᱟᱹᱞ",
+    "nameLatin": "Are Gel Iral",
+    "order": 98,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_98/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_99",
+    "numeral": "᱙᱙",
+    "value": 99,
+    "nameOlChiki": "ᱟᱨᱮ ᱜᱮᱞ ᱟᱨᱮ",
+    "nameLatin": "Are Gel Are",
+    "order": 99,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_99/view?project=699495910038e39622c5"
+  },
+  {
+    "id": "n_100",
+    "numeral": "᱑᱐᱐",
+    "value": 100,
+    "nameOlChiki": "ᱥᱟᱭ",
+    "nameLatin": "Say",
+    "order": 100,
+    "isActive": true,
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_100/view?project=699495910038e39622c5"
+  }
 ]

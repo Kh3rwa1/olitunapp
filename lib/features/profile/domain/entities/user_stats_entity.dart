@@ -205,38 +205,26 @@ class UserStatsEntity extends Equatable {
     return (practicedLetters.length / alphabetLetterCount).clamp(0.0, 1.0);
   }
 
-  /// Numbers mastery: from categoryMastery map or completed lessons
-  double get numbersProgress {
-    final trackedMastery = _masteryProgress(['numbers', 'number']);
-    if (trackedMastery > 0) return trackedMastery;
-    // Fallback: estimate from total completed lessons
-    final total = completedLessons.length;
-    return (total / 15).clamp(0.0, 1.0) * 0.5;
-  }
+  // The four category getters below intentionally have NO lesson-count
+  // fallbacks. Previously they derived percentages from
+  // completedLessons.length (e.g. total/15 * 0.5) — mastery implied by mere
+  // screen completion. Now they report only explicitly-tracked per-category
+  // coverage (set by completeLesson), or 0 when untracked. Item-level truth
+  // (retained/mastered words & sentences) lives in the review store and is
+  // surfaced separately — see retainedItemsCountProvider. These two models
+  // must never contradict each other: coverage here, retention there.
 
-  /// Vocabulary mastery: from categoryMastery map or completed lessons
-  double get vocabularyProgress {
-    final trackedMastery = _masteryProgress(['words', 'vocabulary']);
-    if (trackedMastery > 0) return trackedMastery;
-    final total = completedLessons.length;
-    return (total / 20).clamp(0.0, 1.0) * 0.4;
-  }
+  /// Numbers coverage: from categoryMastery map only.
+  double get numbersProgress => _masteryProgress(['numbers', 'number']);
 
-  /// Sentences mastery
-  double get sentencesProgress {
-    final trackedMastery = _masteryProgress(['sentences', 'sentence']);
-    if (trackedMastery > 0) return trackedMastery;
-    final total = completedLessons.length;
-    return (total / 25).clamp(0.0, 1.0) * 0.3;
-  }
+  /// Vocabulary coverage: from categoryMastery map only.
+  double get vocabularyProgress => _masteryProgress(['words', 'vocabulary']);
 
-  /// Rhymes mastery
-  double get rhymesProgress {
-    final trackedMastery = _masteryProgress(['rhymes', 'rhyme', 'bakhed']);
-    if (trackedMastery > 0) return trackedMastery;
-    final total = completedLessons.length;
-    return (total / 20).clamp(0.0, 1.0) * 0.3;
-  }
+  /// Sentences coverage: from categoryMastery map only.
+  double get sentencesProgress => _masteryProgress(['sentences', 'sentence']);
+
+  /// Rhymes coverage: from categoryMastery map only.
+  double get rhymesProgress => _masteryProgress(['rhymes', 'rhyme', 'bakhed']);
 
   int get lessonsCompletedCount => completedLessons.length;
   int get quizzesCompletedCount => quizHistory.length;

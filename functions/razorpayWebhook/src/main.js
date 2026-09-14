@@ -391,7 +391,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             if (razorpaySecret && razorpayKeyId) {
               try {
                 const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
-                const paymentRes = await fetchImpl(`{{https://api.razorpay.com/v1/payments/${paymentId}}}`, {
+                const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
                   headers: { 'Authorization': authHeader }
                 });
                 if (paymentRes.ok) {

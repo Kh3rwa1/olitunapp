@@ -34,7 +34,6 @@
             }
         }
     },
-
     "settings": "Settings",
     "customizeExperience": "Customize your learning experience",
     "appearance": "Appearance",
@@ -78,7 +77,6 @@
             }
         }
     },
-
     "signInWithEmail": "Sign In with Email",
     "magicCodeDescription": "We'll send you a magic code to verify your identity. No password needed!",
     "emailAddress": "Email Address",
@@ -111,7 +109,6 @@
     "sessionExpired": "Session expired. Please resend the code.",
     "errorCopiedToClipboard": "Error copied to clipboard",
     "skip": "Skip",
-
     "quiz": "Quiz",
     "noQuestionsYet": "No questions yet",
     "goBack": "Go Back",
@@ -137,7 +134,6 @@
             }
         }
     },
-
     "aboutThisLesson": "About this lesson",
     "completeLesson": "Complete Lesson",
     "lettersToLearn": "Letters to Learn",
@@ -152,7 +148,6 @@
     "noWordsAvailable": "No words available yet",
     "noSentencesAvailable": "No sentences available yet",
     "noLessonsAvailable": "No lessons available",
-
     "joharUser": "Johar, {userName}!",
     "@joharUser": {
         "placeholders": {
@@ -185,7 +180,6 @@
     "start": "START",
     "discover": "DISCOVER",
     "couldNotLoadPaths": "Could not load learning paths",
-
     "yourStats": "YOUR STATS",
     "skillsMastery": "SKILLS MASTERY",
     "quizAnalysis": "QUIZ ANALYSIS",
@@ -196,7 +190,6 @@
     "chooseYourAvatar": "Choose Your Avatar",
     "backgroundColor": "Background Color",
     "avatarEmoji": "Avatar Emoji",
-
     "rhymes": "Bakhed",
     "santali": "Santali",
     "unlockMagic": "Unlock the magic of stories & songs",
@@ -208,7 +201,6 @@
     "featured": "FEATURED",
     "listenNow": "LISTEN NOW",
     "pause": "PAUSE",
-
     "getStarted": "Get Started",
     "loading": "Loading...",
     "error": "Error",
@@ -219,67 +211,107 @@
     "replayAnimation": "Replay Animation",
     "sentences": "Sentences",
     "noSentencesFound": "No sentences found",
-    "noQuestionsFound": "No questions found."
-,
-  "streakActiveTitle": "Weekly Streak Active",
-  "streakIdleTitle": "Start Your Streak",
-  "streakActiveSubtitle": "Keep learning to grow your flame!",
-  "streakIdleSubtitle": "Complete any activity to light your flame!",
-  "streakStartLearning": "Start learning",
-  "streakDaysBadge": "{count} DAYS",
-  "@streakDaysBadge": { "placeholders": { "count": {"type": "int"} } },
-  "streakFooterActive": "You practiced {count} of {total} days this week. Keep it up!",
-  "@streakFooterActive": { "placeholders": { "count": {"type": "int"}, "total": {"type": "int"} } },
-  "streakFooterIdle": "No practice yet this week — pick any activity to begin!",
-  "streakWeekSemantics": "This week: practiced {count} of {total} days",
-  "@streakWeekSemantics": { "placeholders": { "count": {"type": "int"}, "total": {"type": "int"} } },
-  "dayDetailNoActivity": "No activity recorded",
-  "dayDetailPracticeSession": "Practice session",
-  "dayDetailStreakDay": "Streak day",
-  "dayDetailQuiz": "Quiz",
-  "dayUpcoming": "upcoming",
-  "dayPracticed": "practiced",
-  "dayNotPracticed": "not practiced",
-  "milestoneLevelProgressCaption": "Level progress · {from} → {to}",
-  "@milestoneLevelProgressCaption": { "placeholders": { "from": {"type": "String"}, "to": {"type": "String"} } }
-,
-  "homeDiscover": "DISCOVER",
-  "homeSwipeHint": "SWIPE",
-  "homeExploreHint": "EXPLORE",
-  "guestSignInCta": "Sign in to save your progress",
-  "nbaBadgeStartHere": "START HERE",
-  "nbaTitleFirstLetters": "Learn your first Ol Chiki letters",
-  "nbaSubFirstLetters": "Begin with the basic alphabet and unlock Santali writing.",
-  "nbaCtaBeginLesson": "Begin Lesson",
-  "nbaBadgeNextStep": "NEXT STEP",
-  "nbaTitleNumbers": "Practice Santali numbers",
-  "nbaSubNumbers": "Build confidence with everyday counting and number words.",
-  "nbaCtaPracticeNumbers": "Practice Numbers",
-  "nbaBadgeMistakes": "PRACTICE NEEDED",
-  "nbaTitleMistakes": "Transform mistakes into wisdom",
-  "nbaSubMistakes": "You have {count} question(s) to review and master.",
-  "@nbaSubMistakes": { "placeholders": { "count": {"type": "int"} } },
-  "nbaCtaReviewMistakes": "Review Mistakes",
-  "nbaBadgeStreakRisk": "STREAK RISK",
-  "nbaTitleStreakRisk": "Keep your daily momentum",
-  "nbaSubStreakRisk": "One quick quiz or lesson will secure your {count} day streak today.",
-  "@nbaSubStreakRisk": { "placeholders": { "count": {"type": "int"} } },
-  "nbaCtaQuickReview": "Quick Review",
-  "nbaBadgeTryBakhed": "TRY BAKHED",
-  "nbaTitleTryBakhed": "Listen to a cultural rhyme",
-  "nbaSubTryBakhed": "Immerse yourself in beautiful Santali oral poetry for 30s.",
-  "nbaCtaListenNow": "Listen Now",
-  "nbaBadgeAllDone": "ALL COMPLETE",
-  "nbaTitleAllDone": "You finished everything — brilliant!",
-  "nbaSubAllDone": "New lessons are on the way. Revisit Bakhed or review anytime.",
-  "nbaCtaExploreBakhed": "Explore Bakhed",
-  "affirmationListen": "Listen",
-  "affirmationStop": "Stop",
-  "affirmationMarkRead": "Mark Read",
-  "affirmationRead": "Read",
-  "todaysMissionTitle": "Today's Mission",
-  "missionsDoneCount": "{done}/4 Done",
-  "@missionsDoneCount": { "placeholders": { "done": {"type": "int"} } },
+    "noQuestionsFound": "No questions found.",
+    "streakActiveTitle": "Weekly Streak Active",
+    "streakIdleTitle": "Start Your Streak",
+    "streakActiveSubtitle": "Keep learning to grow your flame!",
+    "streakIdleSubtitle": "Complete any activity to light your flame!",
+    "streakStartLearning": "Start learning",
+    "streakDaysBadge": "{count} DAYS",
+    "@streakDaysBadge": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakFooterActive": "You practiced {count} of {total} days this week. Keep it up!",
+    "@streakFooterActive": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "streakFooterIdle": "No practice yet this week — pick any activity to begin!",
+    "streakWeekSemantics": "This week: practiced {count} of {total} days",
+    "@streakWeekSemantics": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dayDetailNoActivity": "No activity recorded",
+    "dayDetailPracticeSession": "Practice session",
+    "dayDetailStreakDay": "Streak day",
+    "dayDetailQuiz": "Quiz",
+    "dayUpcoming": "upcoming",
+    "dayPracticed": "practiced",
+    "dayNotPracticed": "not practiced",
+    "milestoneLevelProgressCaption": "Level progress · {from} → {to}",
+    "@milestoneLevelProgressCaption": {
+        "placeholders": {
+            "from": {
+                "type": "String"
+            },
+            "to": {
+                "type": "String"
+            }
+        }
+    },
+    "homeDiscover": "DISCOVER",
+    "homeSwipeHint": "SWIPE",
+    "homeExploreHint": "EXPLORE",
+    "guestSignInCta": "Sign in to save your progress",
+    "nbaBadgeStartHere": "START HERE",
+    "nbaTitleFirstLetters": "Learn your first Ol Chiki letters",
+    "nbaSubFirstLetters": "Begin with the basic alphabet and unlock Santali writing.",
+    "nbaCtaBeginLesson": "Begin Lesson",
+    "nbaBadgeNextStep": "NEXT STEP",
+    "nbaTitleNumbers": "Practice Santali numbers",
+    "nbaSubNumbers": "Build confidence with everyday counting and number words.",
+    "nbaCtaPracticeNumbers": "Practice Numbers",
+    "nbaBadgeMistakes": "PRACTICE NEEDED",
+    "nbaTitleMistakes": "Transform mistakes into wisdom",
+    "nbaSubMistakes": "You have {count} question(s) to review and master.",
+    "@nbaSubMistakes": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "nbaCtaReviewMistakes": "Review Mistakes",
+    "nbaBadgeStreakRisk": "STREAK RISK",
+    "nbaTitleStreakRisk": "Keep your daily momentum",
+    "nbaSubStreakRisk": "One quick quiz or lesson will secure your {count} day streak today.",
+    "@nbaSubStreakRisk": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "nbaCtaQuickReview": "Quick Review",
+    "nbaBadgeTryBakhed": "TRY BAKHED",
+    "nbaTitleTryBakhed": "Listen to a cultural rhyme",
+    "nbaSubTryBakhed": "Immerse yourself in beautiful Santali oral poetry for 30s.",
+    "nbaCtaListenNow": "Listen Now",
+    "nbaBadgeAllDone": "ALL COMPLETE",
+    "nbaTitleAllDone": "You finished everything — brilliant!",
+    "nbaSubAllDone": "New lessons are on the way. Revisit Bakhed or review anytime.",
+    "nbaCtaExploreBakhed": "Explore Bakhed",
+    "affirmationListen": "Listen",
+    "affirmationStop": "Stop",
+    "affirmationMarkRead": "Mark Read",
+    "affirmationRead": "Read",
     "hindi": "Hindi",
     "bengali": "Bengali",
     "odia": "Odia",
@@ -310,11 +342,16 @@
     "audioModeTranslationOnDemand": "Play translation only when I tap it",
     "dailyGoalLabel": "Daily goal",
     "minutesPerDay": "{minutes} min/day",
-    "@minutesPerDay": {"placeholders": {"minutes": {"type": "int"}}},
+    "@minutesPerDay": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
     "downloadStarterAudio": "Download starter audio",
     "downloadStarterAudioSubtitle": "Learn offline from day one",
     "backButton": "Back",
-
     "joharLoading": "Johar... Loading",
     "somethingWentWrong": "Something went wrong!",
     "offlineMode": "Offline mode. Showing cached content.",
@@ -322,7 +359,6 @@
     "syncingProgress": "Syncing progress...",
     "progressSynced": "Progress synced!",
     "failedToSyncProgress": "Failed to sync progress.",
-
     "processing": "Processing...",
     "pleaseLogInToPurchase": "Please log in to purchase courses.",
     "creatingSecureOrder": "Creating secure server order...",
@@ -363,7 +399,6 @@
     "paywallValueAdFreeSubtitle": "Experience 100% distraction-free language practice across all modules.",
     "paywallValueLifetimeTitle": "Lifetime Access Guarantee",
     "paywallValueLifetimeSubtitle": "Pay once with no recurring fees, subscriptions, or hidden charges.",
-
     "navLearn": "Learn",
     "navBakhed": "Bakhed",
     "navProfile": "Profile",
@@ -383,9 +418,160 @@
             }
         }
     },
-
     "kudosMistake1": "Mistakes reviewed. That's how mastery is built.",
     "kudosMistake2": "Mastery in progress! You transformed mistakes into wisdom.",
     "kudosMistake3": "Fantastic! Correcting mistakes is the secret to fluency.",
-    "kudosMistake4": "Brilliant review! You are learning faster by refining errors."
+    "kudosMistake4": "Brilliant review! You are learning faster by refining errors.",
+    "reviewToday": "TODAY'S REVIEW",
+    "reviewLoading": "Loading your review…",
+    "reviewDueOne": "1 review due",
+    "reviewDueOther": "{count} reviews due",
+    "@reviewDueOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewDueSubtitle": "~{minutes} min · from lessons you already started",
+    "@reviewDueSubtitle": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewStart": "Start review",
+    "reviewCaughtUp": "You're caught up.",
+    "reviewCaughtUpRetained": "{count} items retained so far. Keep remembering.",
+    "@reviewCaughtUpRetained": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewCaughtUpEmpty": "Start a lesson below — what you learn will show up here for review.",
+    "reviewContinueLearning": "Continue learning",
+    "reviewLearnNew": "Learn something new",
+    "reviewRetained": "{count} retained",
+    "@reviewRetained": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewExit": "Exit review",
+    "reviewSessionTitle": "Today's Review {current} of {total}",
+    "@reviewSessionTitle": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSessionTitleBare": "Today's Review",
+    "reviewComplete": "Review complete",
+    "reviewCorrectFeedback": "Correct — nice recall.",
+    "reviewWrongFeedback": "Not quite — this one comes back sooner.",
+    "reviewCorrectAnswer": "Correct answer: {answer}",
+    "@reviewCorrectAnswer": {
+        "placeholders": {
+            "answer": {
+                "type": "String"
+            }
+        }
+    },
+    "reviewHintTyping": "Type each sound, slowly.",
+    "reviewHintListening": "Listen again — match the sound to the meaning.",
+    "reviewHintRecognition": "Sound it out from the Ol Chiki letters.",
+    "reviewRepromptListen": "LISTEN",
+    "reviewRepromptWrite": "WRITE IN OL CHIKI",
+    "reviewRepromptMeaning": "WHAT DOES THIS MEAN?",
+    "reviewPlayAudio": "Play audio",
+    "reviewReplayAudio": "Replay audio",
+    "reviewCheck": "Check",
+    "reviewFinish": "Finish review",
+    "reviewBackHome": "Back to Home",
+    "reviewDone": "Done",
+    "reviewCaughtUpShort": "Nothing due. Learn something new below to keep the loop going.",
+    "reviewSummaryScore": "{correct} of {total} correct ({accuracy}%)",
+    "@reviewSummaryScore": {
+        "placeholders": {
+            "correct": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            },
+            "accuracy": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSummaryMastered": "{mastered} mastered · +{stars} stars",
+    "@reviewSummaryMastered": {
+        "placeholders": {
+            "mastered": {
+                "type": "int"
+            },
+            "stars": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSummaryRecovery": "Missed items come back sooner — that is the system working, not failing.",
+    "reviewLoadError": "Couldn't load your review",
+    "reviewLoadErrorBody": "Your {count} due reviews are safe — the lesson content just didn't load. Check your connection and retry.",
+    "@reviewLoadErrorBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewTitleOne": "1 review ready",
+    "notifReviewTitleOther": "{count} reviews ready",
+    "@notifReviewTitleOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewBodyOne": "1 item is ready for review (~{minutes} min). Open Today's Review when you have a moment.",
+    "@notifReviewBodyOne": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewBodyOther": "{count} items are ready for review (~{minutes} min). Open Today's Review when you have a moment.",
+    "@notifReviewBodyOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "notifStruggleTitle": "Tricky ones are back",
+    "notifStruggleBodyOne": "A word you found tricky is due again — a quick retry locks it in.",
+    "notifStruggleBodyOther": "{count} words you found tricky are due again — a quick retry locks them in.",
+    "@notifStruggleBodyOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifGentleTitle": "Your Santali is waiting",
+    "notifGentleBody": "A short review keeps what you learned fresh. No rush."
 }

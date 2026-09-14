@@ -92,7 +92,7 @@ void main() {
     });
 
     test(
-      'notificationFrequencyProvider defaults to high and updates properly',
+      'notificationFrequencyProvider defaults to balanced and updates properly',
       () async {
         SharedPreferences.setMockInitialValues({});
         final prefs = await SharedPreferences.getInstance();
@@ -101,9 +101,11 @@ void main() {
         );
         addTearDown(container.dispose);
 
+        // Production default: balanced (morning + evening). High (4x/day
+        // incl. night) is opt-in.
         expect(
           container.read(notificationFrequencyProvider),
-          equals(NotificationFrequency.high),
+          equals(NotificationFrequency.balanced),
         );
 
         await container

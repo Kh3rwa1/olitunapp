@@ -94,10 +94,14 @@ final effectiveScriptModeProvider = Provider<String>((ref) {
 });
 
 final lastOpenedLessonIdProvider = StateProvider<String?>((ref) {
-  final value = ref
-      .read(sharedPreferencesProvider)
-      .getString('last_opened_lesson_id');
-  return value == null || value.isEmpty ? null : value;
+  try {
+    final value = ref
+        .read(sharedPreferencesProvider)
+        .getString('last_opened_lesson_id');
+    return value == null || value.isEmpty ? null : value;
+  } catch (_) {
+    return null;
+  }
 });
 
 final soundEnabledProvider = StateProvider<bool>((ref) {

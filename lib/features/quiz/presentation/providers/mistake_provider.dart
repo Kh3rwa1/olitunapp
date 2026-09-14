@@ -7,6 +7,8 @@ import '../../../../shared/models/content_models.dart';
 import '../../../../core/logging/app_logger.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../review/data/review_store.dart';
+import '../../domain/quiz_memory_resolver.dart';
 
 class MistakeItem {
   final String quizId;
@@ -71,6 +73,13 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     ref.onDispose(() {
       // Provider disposed — pending backend sync result will be dropped by Riverpod.
     });
+    // Listen to canonical ReviewStore updates to ensure convergence
+    ref.listen<AsyncValue<ReviewStore>>(reviewStoreProvider, (previous, next) {
+      final store = next.valueOrNull;
+      if (store != null) {
+        unawaited(reconcileWithReviewStore(store));
+      }
+    });
     // Deferred: `state` may not be read or written inside build().
     Future.microtask(_loadMistakes);
     unawaited(Future.microtask(syncFromBackend));
@@ -83,10 +92,23 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
       final raw = prefs.getString(_prefKey);
       if (raw != null && raw.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(raw);
+        final store = ref.read(reviewStoreProvider).valueOrNull;
         state = decoded
             .map(
               (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
             )
+            .where((item) {
+              if (store != null) {
+                final resolved = resolveQuizMemoryItem(item.question);
+                if (resolved != null) {
+                  final memItem = store.get(resolved.itemId);
+                  if (memItem != null && memItem.isMastered) {
+                    return false;
+                  }
+                }
+              }
+              return true;
+            })
             .toList();
       }
     } catch (e) {
@@ -215,14 +237,71 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
       final remote = (data['mistakes'] as List)
           .map((item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)))
           .toList();
+
+      // UNIFIED CANONICAL LEARNING MEMORY STATE:
+      // Reinstall/backend sync must never resurrect mistakes for items already
+      // mastered in the canonical ReviewStore.
+      final store = ref.read(reviewStoreProvider).valueOrNull;
+      final filteredRemote = remote.where((item) {
+        if (store != null) {
+          final resolved = resolveQuizMemoryItem(item.question);
+          if (resolved != null) {
+            final memItem = store.get(resolved.itemId);
+            if (memItem != null && memItem.isMastered) {
+              return false;
+            }
+          }
+        }
+        return true;
+      });
+
       final merged = <String, MistakeItem>{
         for (final item in state) '${item.quizId}:${item.questionId}': item,
-        for (final item in remote) '${item.quizId}:${item.questionId}': item,
+        for (final item in filteredRemote)
+          '${item.quizId}:${item.questionId}': item,
       };
       state = merged.values.toList(growable: false);
       await _saveMistakes();
     } catch (e) {
       AppLogger.debug('MistakeNotifier: backend sync skipped: $e');
+    }
+  }
+
+  /// Reconciles legacy mistake state when an item is successfully recalled
+  /// or mastered in Today's Review or other retrieval sessions.
+  Future<void> reconcileRecoveredItem(String itemId) async {
+    final toMaster = state.where((item) {
+      final resolved = resolveQuizMemoryItem(item.question);
+      if (resolved != null && resolved.itemId == itemId) return true;
+      if (item.question.sourceWordId == itemId ||
+          item.question.sourceSentenceId == itemId ||
+          item.questionId == itemId ||
+          item.quizId == itemId) {
+        return true;
+      }
+      return false;
+    }).toList();
+
+    for (final m in toMaster) {
+      await masterMistake(quizId: m.quizId, questionIndex: m.questionIndex);
+    }
+  }
+
+  /// Reconciles all active mistakes against a snapshot of canonical ReviewStore states.
+  Future<void> reconcileWithReviewStore(ReviewStore store) async {
+    final toMaster = state.where((item) {
+      final resolved = resolveQuizMemoryItem(item.question);
+      if (resolved != null) {
+        final memItem = store.get(resolved.itemId);
+        if (memItem != null && memItem.isMastered) {
+          return true;
+        }
+      }
+      return false;
+    }).toList();
+
+    for (final m in toMaster) {
+      await masterMistake(quizId: m.quizId, questionIndex: m.questionIndex);
     }
   }
 

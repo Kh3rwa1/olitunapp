@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/content_models.dart';
+import '../utils/santali_numbers.dart';
 import 'seeded_content_list_notifier.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
@@ -8,87 +9,21 @@ final numbersProvider =
       NumbersNotifier.new,
     );
 
-final List<NumberModel> _seedNumbers = [
-  NumberModel(
-    id: 'n_0',
-    numeral: '᱐',
-    value: 0,
-    nameOlChiki: 'ᱥᱩᱱᱭᱟ',
-    nameLatin: 'Sunya',
+/// Canonical 0-100 catalog. Single units keep their historic ids/names;
+/// 10+ follow Santali counting (Gel, Isi, Pe Gel, ..., Say) with Ol Chiki
+/// numerals derived from [SantaliNumbers].
+final List<NumberModel> _seedNumbers = List<NumberModel>.generate(
+  SantaliNumbers.maxValue + 1,
+  (value) => NumberModel(
+    id: 'n_$value',
+    numeral: SantaliNumbers.toOlChikiNumeral(value),
+    value: value,
+    nameOlChiki: SantaliNumbers.nameOlChiki(value),
+    nameLatin: SantaliNumbers.nameLatin(value),
+    order: value,
   ),
-  NumberModel(
-    id: 'n_1',
-    numeral: '᱑',
-    value: 1,
-    nameOlChiki: 'ᱢᱤᱫ',
-    nameLatin: 'Mit',
-    order: 1,
-  ),
-  NumberModel(
-    id: 'n_2',
-    numeral: '᱒',
-    value: 2,
-    nameOlChiki: 'ᱵᱟᱨ',
-    nameLatin: 'Bar',
-    order: 2,
-  ),
-  NumberModel(
-    id: 'n_3',
-    numeral: '᱓',
-    value: 3,
-    nameOlChiki: 'ᱯᱮ',
-    nameLatin: 'Pe',
-    order: 3,
-  ),
-  NumberModel(
-    id: 'n_4',
-    numeral: '᱔',
-    value: 4,
-    nameOlChiki: 'ᱯᱩᱱ',
-    nameLatin: 'Pun',
-    order: 4,
-  ),
-  NumberModel(
-    id: 'n_5',
-    numeral: '᱕',
-    value: 5,
-    nameOlChiki: 'ᱢᱚᱬᱮ',
-    nameLatin: 'Mone',
-    order: 5,
-  ),
-  NumberModel(
-    id: 'n_6',
-    numeral: '᱖',
-    value: 6,
-    nameOlChiki: 'ᱛᱩᱨᱩᱭ',
-    nameLatin: 'Turui',
-    order: 6,
-  ),
-  NumberModel(
-    id: 'n_7',
-    numeral: '᱗',
-    value: 7,
-    nameOlChiki: 'ᱮᱭᱟᱭ',
-    nameLatin: 'Eae',
-    order: 7,
-  ),
-  NumberModel(
-    id: 'n_8',
-    numeral: '᱘',
-    value: 8,
-    nameOlChiki: 'ᱤᱨᱟᱹᱞ',
-    nameLatin: 'Iral',
-    order: 8,
-  ),
-  NumberModel(
-    id: 'n_9',
-    numeral: '᱙',
-    value: 9,
-    nameOlChiki: 'ᱟᱨᱮ',
-    nameLatin: 'Are',
-    order: 9,
-  ),
-];
+  growable: false,
+);
 
 class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
   @override

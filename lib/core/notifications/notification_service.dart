@@ -5,59 +5,22 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import '../logging/app_logger.dart';
-
-/// Frequency of habit and streak study reminders throughout the day.
-enum NotificationFrequency {
-  /// Single reminder per day at user's preferred time.
-  once,
-
-  /// 2 reminders per day: Morning kickstart (9:00 AM) and Evening study.
-  balanced,
-
-  /// 4 reminders per day: Morning (9:00 AM), Midday (2:30 PM), Evening, and Night streak saver (9:45 PM).
-  high,
-}
-
-extension NotificationFrequencyX on NotificationFrequency {
-  String get label {
-    switch (this) {
-      case NotificationFrequency.high:
-        return 'High (4x daily)';
-      case NotificationFrequency.balanced:
-        return 'Balanced (2x daily)';
-      case NotificationFrequency.once:
-        return 'Relaxed (1x daily)';
-    }
-  }
-
-  String get description {
-    switch (this) {
-      case NotificationFrequency.high:
-        return 'Morning, Midday, Evening & Night streak saver';
-      case NotificationFrequency.balanced:
-        return 'Morning boost & Evening study reminder';
-      case NotificationFrequency.once:
-        return 'Single daily reminder at your preferred time';
-    }
-  }
-
-  int get remindersPerDay {
-    switch (this) {
-      case NotificationFrequency.high:
-        return 4;
-      case NotificationFrequency.balanced:
-        return 2;
-      case NotificationFrequency.once:
-        return 1;
-    }
-  }
-}
+import 'notification_types.dart';
+export 'notification_types.dart';
 
 /// Service responsible for managing local habit and streak reminders.
 /// Operates 100% offline and respects user privacy without transmitting tokens.
 class NotificationService {
   NotificationService._();
   static final NotificationService instance = NotificationService._();
+
+  /// Payload that deep-links to Today's Review ('/review').
+  static const String reviewNotificationPayload = 'review';
+
+  /// Tap handler installed by the app root (deep link to Today's Review).
+  /// Null in tests / when the router isn't mounted.
+  // ignore: avoid_setters_without_getters
+  static void Function(String? payload)? onNotificationTap;
 
   static const int streakReminderNotificationId = 101;
   static const int morningReminderNotificationId = 102;
@@ -155,6 +118,11 @@ class NotificationService {
           AppLogger.debug(
             'NotificationService: notification tapped (payload: ${details.payload})',
           );
+          try {
+            onNotificationTap?.call(details.payload);
+          } catch (e) {
+            AppLogger.debug('NotificationService: tap handler error: $e');
+          }
         },
       );
 
@@ -330,6 +298,7 @@ class NotificationService {
     required int minute,
     required String title,
     required String body,
+    String? payload,
     tz.TZDateTime? startFrom,
   }) async {
     final scheduledDate = startFrom != null
@@ -347,6 +316,7 @@ class NotificationService {
       id: id,
       title: title,
       body: body,
+      payload: payload,
       scheduledDate: scheduledDate,
       notificationDetails: _notificationDetails,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
@@ -453,6 +423,49 @@ class NotificationService {
       hour: hour,
       minute: minute,
     );
+  }
+
+  /// Replaces ONLY the evening slot with learner-state copy ("N reviews
+  /// ready · ~M min"). Same volume — no extra notifications, no spam.
+  /// [title]/[body] override the English fallback with already-localized
+  /// copy (resolved by the caller with the active locale). Tapping the
+  /// notification deep-links to Today's Review via [reviewNotificationPayload].
+  /// Call at most once/day (caller guards with a date-keyed pref) and only
+  /// when [dueCount] > 0 and reminders are enabled.
+  Future<void> syncEveningReminderWithReview({
+    required int dueCount,
+    required int minutes,
+    int struggleCount = 0,
+    int hour = 20,
+    int minute = 0,
+    String? title,
+    String? body,
+  }) async {
+    if (kIsWeb || dueCount <= 0) return;
+    if (!_isInitialized) {
+      await initialize();
+    }
+    try {
+      final copy = struggleCount > 0 && struggleCount >= dueCount ~/ 2
+          ? NotificationCopy.reviewStruggle(struggleCount: struggleCount)
+          : NotificationCopy.reviewDue(dueCount: dueCount, minutes: minutes);
+      await _plugin.cancel(id: streakReminderNotificationId);
+      await _scheduleSlot(
+        id: streakReminderNotificationId,
+        hour: hour,
+        minute: minute,
+        title: title ?? copy.title,
+        body: body ?? copy.body,
+        payload: reviewNotificationPayload,
+      );
+      AppLogger.debug(
+        'NotificationService: evening reminder synced with review ($dueCount due).',
+      );
+    } catch (e) {
+      AppLogger.debug(
+        'NotificationService: syncEveningReminderWithReview error: $e',
+      );
+    }
   }
 
   /// Suppresses reminders for today if the user has already practiced today.

@@ -82,6 +82,36 @@ List<Override> _vocabOnlyOverrides() => [
   mistakeProvider.overrideWith(_NoMistakes.new),
 ];
 
+class _NewcomerStats extends UserStatsNotifier {
+  @override
+  AsyncValue<UserStatsEntity> build() => const AsyncValue.data(
+    UserStatsEntity(
+      practicedLetters: {},
+      completedLessons: {},
+      quizHistory: {},
+      categoryMastery: {},
+      totalLearningMinutes: 0,
+      lastActiveDate: '',
+      currentStreak: 0,
+      totalStars: 0,
+    ),
+  );
+}
+
+List<Override> _newcomerOverrides() => [
+  isAuthenticatedProvider.overrideWith((ref) async => true),
+  userStatsProvider.overrideWith(_NewcomerStats.new),
+  mistakeProvider.overrideWith(_NoMistakes.new),
+  lastOpenedLessonIdProvider.overrideWith((ref) => null),
+];
+
+List<Override> _incompleteLessonOverrides() => [
+  isAuthenticatedProvider.overrideWith((ref) async => true),
+  userStatsProvider.overrideWith(_NewcomerStats.new),
+  mistakeProvider.overrideWith(_NoMistakes.new),
+  lastOpenedLessonIdProvider.overrideWith((ref) => 'lesson_x'),
+];
+
 Widget _host({required Locale locale, required List<Override> overrides}) {
   return ProviderScope(
     overrides: overrides,
@@ -136,6 +166,46 @@ void main() {
     expect(find.text('NEXT STEP'), findsOneWidget);
     expect(find.text('Learn your first Ol Chiki letters'), findsOneWidget);
     expect(find.text('Begin Lesson'), findsOneWidget);
+    expect(find.text('START HERE'), findsNothing);
+  });
+
+  testWidgets('first-time newcomer sees START HERE', (tester) async {
+    await tester.pumpWidget(
+      _host(locale: const Locale('en'), overrides: _newcomerOverrides()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('START HERE'), findsOneWidget);
+    expect(find.text('Learn your first Ol Chiki letters'), findsOneWidget);
+    expect(find.text('Begin Lesson'), findsOneWidget);
+  });
+
+  testWidgets('learner after completing alphabet never sees START HERE', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(locale: const Locale('en'), overrides: _midJourneyOverrides()),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('START HERE'), findsNothing);
+  });
+
+  testWidgets('learner resuming incomplete lesson sees RESUME', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        locale: const Locale('en'),
+        overrides: _incompleteLessonOverrides(),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('RESUME JOURNEY'), findsOneWidget);
+    expect(find.text('Continue Learning'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
     expect(find.text('START HERE'), findsNothing);
   });
 }

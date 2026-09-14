@@ -37,7 +37,7 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  const counts = {ContentKind.letter: 30, ContentKind.number: 10};
+  const counts = {ContentKind.letter: 30, ContentKind.number: 101};
   for (final entry in counts.entries) {
     test(
       'fresh ${entry.key.name} catalog needs neither cache nor network',
@@ -94,18 +94,29 @@ void main() {
     },
   );
 
-  test('all ten numbers preserve their numeral, value and name', () async {
+  test('all 101 numbers preserve their numeral, value and name', () async {
     final items = await ContentSeedLoader.loadBundledSeedItems(
       ContentKind.number,
       null,
     );
-    for (var i = 0; i < 10; i++) {
+    expect(items.length, 101);
+    String olNumeral(int v) => v
+        .toString()
+        .split('')
+        .map((d) => String.fromCharCode(0x1c50 + int.parse(d)))
+        .join();
+    for (var i = 0; i <= 100; i++) {
       final number = items[i].toNumberModel();
       expect(number.value, i);
-      expect(number.numeral, String.fromCharCode(0x1c50 + i));
+      expect(number.numeral, olNumeral(i));
       expect(number.nameLatin, isNotEmpty);
       expect(number.nameOlChiki, isNotEmpty);
     }
+    // Spot-check Santali counting names.
+    expect(items[10].toNumberModel().nameLatin, 'Gel');
+    expect(items[20].toNumberModel().nameLatin, 'Isi');
+    expect(items[100].toNumberModel().nameLatin, 'Say');
+    expect(items[100].toNumberModel().numeral, '᱑᱐᱐');
   });
 
   test(
@@ -122,7 +133,7 @@ void main() {
       );
       final result = await repository.cachedList(ContentKind.number);
       result.fold((failure) => fail('$failure'), (merged) {
-        expect(merged.length, 10);
+        expect(merged.length, 101);
         expect(
           merged.singleWhere((item) => item.id == 'n_3').title,
           updated.title,

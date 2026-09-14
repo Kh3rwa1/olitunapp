@@ -110,9 +110,11 @@ class NotificationFrequencyNotifier extends Notifier<NotificationFrequency> {
   NotificationFrequency build() {
     final prefs = ref.watch(sharedPreferencesProvider);
     final val = prefs.getString(_notificationFrequencyKey);
+    // Production default is balanced (morning + evening): high's 4x/day
+    // cadence (incl. a 21:45 night slot) is opt-in only.
     return NotificationFrequency.values.firstWhere(
       (f) => f.name == val,
-      orElse: () => NotificationFrequency.high,
+      orElse: () => NotificationFrequency.balanced,
     );
   }
 

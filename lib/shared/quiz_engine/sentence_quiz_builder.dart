@@ -39,6 +39,9 @@ class SentenceQuizBuilder {
       optionsOlChiki: options,
       optionsLatin: options,
       promptLatin: 'Complete the sentence with the correct word.',
+      // No matched corpus word here: the target is a raw sentence token.
+      // Only the sentence is attributed — never invent a word ID.
+      sourceWordId: null, // ignore: avoid_redundant_argument_values
     );
   }
 
@@ -59,6 +62,7 @@ class SentenceQuizBuilder {
       optionsLatin: options.map(QuizEngine.meaningDisplay).toList(),
       promptLatin:
           'Choose the word that means "${matchedWord.meaning}" to complete the sentence.',
+      sourceWordId: matchedWord.id,
     );
   }
 
@@ -68,6 +72,7 @@ class SentenceQuizBuilder {
     required List<String> optionsOlChiki,
     required List<String> optionsLatin,
     required String promptLatin,
+    String? sourceWordId,
   }) {
     final indices = List<int>.generate(optionsOlChiki.length, (index) => index)
       ..shuffle();
@@ -91,6 +96,8 @@ class SentenceQuizBuilder {
       ),
       blankSentenceLatin: sentence.meaning,
       correctAnswer: targetWord,
+      sourceSentenceId: sentence.id,
+      sourceWordId: sourceWordId,
     );
   }
 

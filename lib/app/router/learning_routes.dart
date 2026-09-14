@@ -8,6 +8,7 @@ import '../../features/learn/presentation/screens/content_grid_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/presentation/mistake_review_screen.dart';
+import '../../features/review/presentation/review_session_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
 import '../../shared/models/content_item.dart';
 import 'route_names.dart';
@@ -29,6 +30,7 @@ List<RouteBase> buildLearningRoutes({
   return [
     drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
     drillRoute(path: '/mistakes', child: (_, _) => const MistakeReviewScreen()),
+    drillRoute(path: '/review', child: (_, _) => const ReviewSessionScreen()),
     drillRoute(
       path: '/lessons/:categoryId',
       name: RouteNames.lessons,

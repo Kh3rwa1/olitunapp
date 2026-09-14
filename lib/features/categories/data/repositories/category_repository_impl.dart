@@ -67,7 +67,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           iconName: 'numbers',
           gradientPreset: 'peach',
           order: 1,
-          totalLessons: 2,
+          totalLessons: 4,
         ),
         CategoryEntity(
           id: 'cat_vocab',

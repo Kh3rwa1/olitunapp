@@ -95,6 +95,14 @@ class QuizQuestion {
   final String? correctAnswer;
   final List<String> distractors;
 
+  /// Stable source identifiers linking this question to the exact verified
+  /// corpus item being tested. Set by generators that build from a
+  /// WordModel/SentenceModel; null for hand-written, lesson-block, admin and
+  /// legacy questions (which must fail safe, never mistrack).
+  /// The memory scheduler consumes these — never text matching.
+  final String? sourceWordId;
+  final String? sourceSentenceId;
+
   QuizQuestion({
     this.type = 'mcq',
     required this.promptOlChiki,
@@ -109,6 +117,8 @@ class QuizQuestion {
     this.blankSentenceLatin,
     this.correctAnswer,
     this.distractors = const [],
+    this.sourceWordId,
+    this.sourceSentenceId,
   });
 
   factory QuizQuestion.fromMap(Map<String, dynamic> data) {
@@ -126,6 +136,8 @@ class QuizQuestion {
       blankSentenceLatin: data['blankSentenceLatin'] as String?,
       correctAnswer: data['correctAnswer'] as String?,
       distractors: List<String>.from(data['distractors'] as List? ?? []),
+      sourceWordId: data['sourceWordId'] as String?,
+      sourceSentenceId: data['sourceSentenceId'] as String?,
     );
   }
 
@@ -144,6 +156,8 @@ class QuizQuestion {
       'blankSentenceLatin': blankSentenceLatin,
       'correctAnswer': correctAnswer,
       'distractors': distractors,
+      'sourceWordId': sourceWordId,
+      'sourceSentenceId': sourceSentenceId,
     };
   }
 
@@ -161,6 +175,8 @@ class QuizQuestion {
     String? blankSentenceLatin,
     String? correctAnswer,
     List<String>? distractors,
+    String? sourceWordId,
+    String? sourceSentenceId,
   }) {
     return QuizQuestion(
       type: type ?? this.type,
@@ -176,6 +192,8 @@ class QuizQuestion {
       blankSentenceLatin: blankSentenceLatin ?? this.blankSentenceLatin,
       correctAnswer: correctAnswer ?? this.correctAnswer,
       distractors: distractors ?? this.distractors,
+      sourceWordId: sourceWordId ?? this.sourceWordId,
+      sourceSentenceId: sourceSentenceId ?? this.sourceSentenceId,
     );
   }
 }

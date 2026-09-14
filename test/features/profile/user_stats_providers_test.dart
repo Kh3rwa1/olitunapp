@@ -173,19 +173,6 @@ void main() {
     expect(stats.categoryMastery['numbers'], 10);
   });
 
-  test('recordDailyMissionsCompletedToday records the day only once', () async {
-    final container = containerFor();
-    final notifier = await readyNotifier(container);
-
-    await notifier.recordDailyMissionsCompletedToday();
-    final afterFirst = notifier.state.value!.completedMissionsDates.length;
-    await notifier.recordDailyMissionsCompletedToday();
-
-    expect(afterFirst, 1);
-    expect(notifier.state.value!.completedMissionsDates.length, 1);
-    verify(() => repo.updateUserStats(any())).called(1);
-  });
-
   test(
     'derived providers expose stars, lessons and quizzes counters',
     () async {

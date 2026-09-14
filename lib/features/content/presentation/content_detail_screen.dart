@@ -21,6 +21,8 @@ import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
+import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
@@ -301,8 +303,28 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
 
     final recommendation = _recommendedQuizFor(item);
 
-    // 1. Award stars
-    await ref.read(userStatsProvider.notifier).addStars(25);
+    // 1. Small completion acknowledgment. The real reward moved to retention:
+    // mastering an item through repeated retrieval earns +10 stars in
+    // Today's Review (review_session_screen). Paying 25 stars for opening a
+    // screen implied mastery without evidence ("fake learning").
+    await ref.read(userStatsProvider.notifier).addStars(5);
+
+    // 1b. LEARN → memory engine: a completed word/sentence becomes a tracked
+    // item (NEW → due immediately) so Today's Review picks it up.
+    if (item.kind == ContentKind.word || item.kind == ContentKind.sentence) {
+      try {
+        await ref
+            .read(reviewStoreProvider.notifier)
+            .ensureIntroduced(
+              itemId: item.id,
+              itemType: item.kind == ContentKind.word
+                  ? ReviewItemType.word
+                  : ReviewItemType.sentence,
+            );
+      } catch (_) {
+        // Scheduler must never break content completion.
+      }
+    }
 
     // 2. Set completed today
     ref.read(lessonCompletedTodayProvider.notifier).setCompleted(true);

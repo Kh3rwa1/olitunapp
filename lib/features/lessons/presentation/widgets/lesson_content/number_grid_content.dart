@@ -166,7 +166,22 @@ class NumberGridContent extends ConsumerWidget {
     }
 
     // Fallback: If no blocks or no matching numbers were found, fallback to category/range mapping
+    // Supports explicit ranges in the title ("Numbers 21-50", "Numbers 51-100")
+    // so new 0-100 lessons resolve without hardcoding each range.
     final title = lesson.titleLatin.toLowerCase();
+    final rangeMatch = RegExp(r'(\d+)\s*[–—-]\s*(\d+)').firstMatch(title);
+    if (rangeMatch != null) {
+      final start = int.tryParse(rangeMatch.group(1)!);
+      final end = int.tryParse(rangeMatch.group(2)!);
+      if (start != null && end != null) {
+        final lo = start < end ? start : end;
+        final hi = start < end ? end : start;
+        return allNumbers
+            .where((n) => n.value >= lo && n.value <= hi && n.isActive)
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+      }
+    }
     List<NumberModel> fallbackList = [];
     if (title.contains('0-9') ||
         title.contains('single') ||

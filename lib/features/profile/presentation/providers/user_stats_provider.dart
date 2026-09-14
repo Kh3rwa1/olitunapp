@@ -18,6 +18,7 @@ import 'package:itun/features/profile/domain/repositories/profile_repository.dar
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/widgets/state_widgets.dart';
 
 import 'profile_account_providers.dart';
@@ -284,67 +285,6 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     });
   }
 
-  Future<void> recordDailyMissionsCompletedToday() {
-    return _runSerialized(() async {
-      final current = state.valueOrNull;
-      if (current == null) return;
-
-      final now = _now();
-      final todayDate = DateTime(now.year, now.month, now.day);
-      final today = todayDate.toIso8601String().substring(0, 10);
-
-      if (current.completedMissionsDates.contains(today)) return;
-
-      final updatedDates = Set<String>.from(current.completedMissionsDates)
-        ..add(today);
-
-      // Calculate weekId of today using ISO-like week number
-      final year = todayDate.year;
-      final firstDayOfYear = DateTime(year);
-      final daysOffset = firstDayOfYear.weekday - 1;
-      final firstMonday = firstDayOfYear.subtract(Duration(days: daysOffset));
-      final daysSinceFirstMonday = todayDate.difference(firstMonday).inDays;
-      final week = (daysSinceFirstMonday / 7).floor() + 1;
-      final weekId = '$year-W$week';
-
-      // Count how many days in this week have completed daily missions
-      int completedDaysThisWeek = 0;
-      for (final dateStr in updatedDates) {
-        final date = DateTime.tryParse(dateStr);
-        if (date != null) {
-          final dYear = date.year;
-          final dFirstDay = DateTime(dYear);
-          final dOffset = dFirstDay.weekday - 1;
-          final dFirstMonday = dFirstDay.subtract(Duration(days: dOffset));
-          final dDaysSince = date.difference(dFirstMonday).inDays;
-          final dWeek = (dDaysSince / 7).floor() + 1;
-          final dWeekId = '$dYear-W$dWeek';
-          if (dWeekId == weekId) {
-            completedDaysThisWeek++;
-          }
-        }
-      }
-
-      final updated = current.copyWith(completedMissionsDates: updatedDates);
-
-      unawaited(
-        ref
-            .read(learningAnalyticsServiceProvider)
-            .track(
-              LearningAnalyticsEvents.dailyMissionCompleted,
-              source: 'daily_missions',
-              sourceId: today,
-              metadata: {
-                'weekId': weekId,
-                'completedDaysThisWeek': completedDaysThisWeek,
-              },
-            ),
-      );
-
-      await updateStats(updated);
-    });
-  }
-
   Future<void> practiceLetter(String letter, {double? score}) {
     return _runSerialized(() async {
       final current = state.valueOrNull;
@@ -452,6 +392,10 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       var updated = current.copyWith(completedLessons: updatedLessons);
       if (!alreadyCompleted) {
         final prefs = ref.read(sharedPreferencesProvider);
+        if (prefs.getString('last_opened_lesson_id') == lessonId) {
+          await prefs.remove('last_opened_lesson_id');
+          ref.read(lastOpenedLessonIdProvider.notifier).state = null;
+        }
         final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
         final seq = ProgressOriginIdentity.nextMinuteSeq(
           prefs,

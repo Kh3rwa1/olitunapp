@@ -11,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../domain/entities/user_stats_entity.dart';
 
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/review/data/review_store.dart';
 
 // Extracted widgets
 import 'widgets/profile_hero_card.dart';
@@ -144,9 +145,10 @@ class ProgressScreen extends ConsumerWidget {
                           learningTime: learningTime,
                           isDark: isDark,
                           isTablet: isTablet,
+                          retainedItems: ref.watch(retainedItemsCountProvider),
                         ),
                         const SizedBox(height: 32),
-                        _buildSectionHeader('SKILLS MASTERY', isDark),
+                        _buildSectionHeader('SKILLS PROGRESS', isDark),
                         const SizedBox(height: 16),
                         SkillsGrid(
                           isDark: isDark,

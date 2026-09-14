@@ -595,14 +595,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get affirmationRead => 'Read';
 
   @override
-  String get todaysMissionTitle => 'Today\'s Mission';
-
-  @override
-  String missionsDoneCount(int done) {
-    return '$done/4 Done';
-  }
-
-  @override
   String get hindi => 'Hindi';
 
   @override
@@ -850,4 +842,174 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get kudosMistake4 =>
       'Brilliant review! You are learning faster by refining errors.';
+
+  @override
+  String get reviewToday => 'TODAY\'S REVIEW';
+
+  @override
+  String get reviewLoading => 'Loading your review…';
+
+  @override
+  String get reviewDueOne => '1 review due';
+
+  @override
+  String reviewDueOther(int count) {
+    return '$count reviews due';
+  }
+
+  @override
+  String reviewDueSubtitle(int minutes) {
+    return '~$minutes min · from lessons you already started';
+  }
+
+  @override
+  String get reviewStart => 'Start review';
+
+  @override
+  String get reviewCaughtUp => 'You\'re caught up.';
+
+  @override
+  String reviewCaughtUpRetained(int count) {
+    return '$count items retained so far. Keep remembering.';
+  }
+
+  @override
+  String get reviewCaughtUpEmpty =>
+      'Start a lesson below — what you learn will show up here for review.';
+
+  @override
+  String get reviewContinueLearning => 'Continue learning';
+
+  @override
+  String get reviewLearnNew => 'Learn something new';
+
+  @override
+  String reviewRetained(int count) {
+    return '$count retained';
+  }
+
+  @override
+  String get reviewExit => 'Exit review';
+
+  @override
+  String reviewSessionTitle(int current, int total) {
+    return 'Today\'s Review $current of $total';
+  }
+
+  @override
+  String get reviewSessionTitleBare => 'Today\'s Review';
+
+  @override
+  String get reviewComplete => 'Review complete';
+
+  @override
+  String get reviewCorrectFeedback => 'Correct — nice recall.';
+
+  @override
+  String get reviewWrongFeedback => 'Not quite — this one comes back sooner.';
+
+  @override
+  String reviewCorrectAnswer(String answer) {
+    return 'Correct answer: $answer';
+  }
+
+  @override
+  String get reviewHintTyping => 'Type each sound, slowly.';
+
+  @override
+  String get reviewHintListening =>
+      'Listen again — match the sound to the meaning.';
+
+  @override
+  String get reviewHintRecognition => 'Sound it out from the Ol Chiki letters.';
+
+  @override
+  String get reviewRepromptListen => 'LISTEN';
+
+  @override
+  String get reviewRepromptWrite => 'WRITE IN OL CHIKI';
+
+  @override
+  String get reviewRepromptMeaning => 'WHAT DOES THIS MEAN?';
+
+  @override
+  String get reviewPlayAudio => 'Play audio';
+
+  @override
+  String get reviewReplayAudio => 'Replay audio';
+
+  @override
+  String get reviewCheck => 'Check';
+
+  @override
+  String get reviewFinish => 'Finish review';
+
+  @override
+  String get reviewBackHome => 'Back to Home';
+
+  @override
+  String get reviewDone => 'Done';
+
+  @override
+  String get reviewCaughtUpShort =>
+      'Nothing due. Learn something new below to keep the loop going.';
+
+  @override
+  String reviewSummaryScore(int correct, int total, int accuracy) {
+    return '$correct of $total correct ($accuracy%)';
+  }
+
+  @override
+  String reviewSummaryMastered(int mastered, int stars) {
+    return '$mastered mastered · +$stars stars';
+  }
+
+  @override
+  String get reviewSummaryRecovery =>
+      'Missed items come back sooner — that is the system working, not failing.';
+
+  @override
+  String get reviewLoadError => 'Couldn\'t load your review';
+
+  @override
+  String reviewLoadErrorBody(int count) {
+    return 'Your $count due reviews are safe — the lesson content just didn\'t load. Check your connection and retry.';
+  }
+
+  @override
+  String get notifReviewTitleOne => '1 review ready';
+
+  @override
+  String notifReviewTitleOther(int count) {
+    return '$count reviews ready';
+  }
+
+  @override
+  String notifReviewBodyOne(int minutes) {
+    return '1 item is ready for review (~$minutes min). Open Today\'s Review when you have a moment.';
+  }
+
+  @override
+  String notifReviewBodyOther(int count, int minutes) {
+    return '$count items are ready for review (~$minutes min). Open Today\'s Review when you have a moment.';
+  }
+
+  @override
+  String get notifStruggleTitle => 'Tricky ones are back';
+
+  @override
+  String get notifStruggleBodyOne =>
+      'A word you found tricky is due again — a quick retry locks it in.';
+
+  @override
+  String notifStruggleBodyOther(int count) {
+    return '$count words you found tricky are due again — a quick retry locks them in.';
+  }
+
+  @override
+  String get notifGentleTitle => 'Your Santali is waiting';
+
+  @override
+  String get notifGentleBody =>
+      'A short review keeps what you learned fresh. No rush.';
 }

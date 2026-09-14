@@ -126,18 +126,41 @@ const letters = [
   { id: 'l_oh', charOlChiki: 'ᱷ', transliterationLatin: 'Oh (h)', order: 29, isActive: true, exampleWord: 'Ha' },
 ];
 
-const numbers = [
-  { id: 'n_0', numeral: '᱐', value: 0, nameOlChiki: 'ᱥᱩᱱᱭᱟ', nameLatin: 'Sunya', order: 0 },
-  { id: 'n_1', numeral: '᱑', value: 1, nameOlChiki: 'ᱢᱤᱫ', nameLatin: 'Mit', order: 1 },
-  { id: 'n_2', numeral: '᱒', value: 2, nameOlChiki: 'ᱵᱟᱨ', nameLatin: 'Bar', order: 2 },
-  { id: 'n_3', numeral: '', value: 3, nameOlChiki: 'ᱯᱮ', nameLatin: 'Pe', order: 3 },
-  { id: 'n_4', numeral: '᱔', value: 4, nameOlChiki: 'ᱯᱩᱱ', nameLatin: 'Pun', order: 4 },
-  { id: 'n_5', numeral: '᱕', value: 5, nameOlChiki: 'ᱢᱚᱬᱮ', nameLatin: 'Mone', order: 5 },
-  { id: 'n_6', numeral: '᱖', value: 6, nameOlChiki: 'ᱛᱩᱨᱩᱭ', nameLatin: 'Turui', order: 6 },
-  { id: 'n_7', numeral: '᱗', value: 7, nameOlChiki: 'ᱮᱭᱟᱭ', nameLatin: 'Eae', order: 7 },
-  { id: 'n_8', numeral: '᱘', value: 8, nameOlChiki: 'ᱤᱨᱟᱹᱞ', nameLatin: 'Iral', order: 8 },
-  { id: 'n_9', numeral: '᱙', value: 9, nameOlChiki: 'ᱟᱨᱮ', nameLatin: 'Are', order: 9 },
-];
+const _olDigits = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
+const _unitLat = { 0: 'Sunya', 1: 'Mit', 2: 'Bar', 3: 'Pe', 4: 'Pun', 5: 'Mone', 6: 'Turui', 7: 'Eae', 8: 'Iral', 9: 'Are' };
+const _unitOl = { 0: 'ᱥᱩᱱᱭᱟ', 1: 'ᱢᱤᱫ', 2: 'ᱵᱟᱨ', 3: 'ᱯᱮ', 4: 'ᱯᱩᱱ', 5: 'ᱢᱚᱬᱮ', 6: 'ᱛᱩᱨᱩᱭ', 7: 'ᱮᱭᱟᱭ', 8: 'ᱤᱨᱟᱹᱞ', 9: 'ᱟᱨᱮ' };
+const _olNumeral = (v) => String(v).split('').map((d) => _olDigits[Number(d)]).join('');
+function _santaliLatin(v) {
+  if (v <= 9) return _unitLat[v];
+  if (v === 10) return 'Gel';
+  if (v < 20) return `Gel ${_unitLat[v - 10]}`;
+  if (v === 20) return 'Isi';
+  if (v < 30) return `Isi ${_unitLat[v - 20]}`;
+  if (v === 100) return 'Say';
+  const t = Math.floor(v / 10), o = v % 10;
+  const base = `${_unitLat[t]} Gel`;
+  return o === 0 ? base : `${base} ${_unitLat[o]}`;
+}
+function _santaliOl(v) {
+  if (v <= 9) return _unitOl[v];
+  if (v === 10) return 'ᱜᱮᱞ';
+  if (v < 20) return `ᱜᱮᱞ ${_unitOl[v - 10]}`;
+  if (v === 20) return 'ᱤᱥᱤ';
+  if (v < 30) return `ᱤᱥᱤ ${_unitOl[v - 20]}`;
+  if (v === 100) return 'ᱥᱟᱭ';
+  const t = Math.floor(v / 10), o = v % 10;
+  const base = `${_unitOl[t]} ᱜᱮᱞ`;
+  return o === 0 ? base : `${base} ${_unitOl[o]}`;
+}
+// Canonical 0-100 catalog (mirrors assets/seed/numbers.json + SantaliNumbers).
+const numbers = Array.from({ length: 101 }, (_, v) => ({
+  id: `n_${v}`,
+  numeral: _olNumeral(v),
+  value: v,
+  nameOlChiki: _santaliOl(v),
+  nameLatin: _santaliLatin(v),
+  order: v,
+}));
 
 const quizzes = [
   {
@@ -205,7 +228,7 @@ const quizzes = [
         promptOlChiki: '᱘ ÷ ᱒ = ?',
         promptLatin: 'What is the result of ᱘ (8) divided by ᱒ (2)?',
         optionsOlChiki: ['᱒', '᱓', '᱔', '᱕'],
-        optionsLatin: ['᱒ (2)', ' (3)', '᱔ (4)', '᱕ (5)'],
+        optionsLatin: ['᱒ (2)', '᱓ (3)', '᱔ (4)', '᱕ (5)'],
         correctIndex: 2
       }
     ])

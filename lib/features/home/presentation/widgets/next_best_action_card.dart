@@ -22,8 +22,6 @@ class NextBestActionCard extends ConsumerWidget {
     final statsAsync = ref.watch(userStatsProvider);
     final mistakes = ref.watch(mistakeProvider);
 
-    final isAuthAsync = ref.watch(isAuthenticatedProvider);
-    final isGuest = isAuthAsync.value == false;
     final stats = statsAsync.value;
     final streak = stats?.currentStreak ?? 0;
 
@@ -45,42 +43,41 @@ class NextBestActionCard extends ConsumerWidget {
     final hasCompletedAlphabet =
         (stats?.alphabetProgress ?? 0) >= 1 || completedAlphabet;
 
-    final completedNumbers =
-        lessons != null && lessons.any((id) => id.contains('number'));
-    final hasCompletedNumbers =
-        (stats?.numbersProgress ?? 0) >= 1 || completedNumbers;
+    final lastOpenedId = ref.watch(lastOpenedLessonIdProvider)?.trim();
+    final isResumingIncompleteLesson =
+        lastOpenedId != null &&
+        lastOpenedId.isNotEmpty &&
+        (lessons == null || !lessons.contains(lastOpenedId)) &&
+        nextLessonId == lastOpenedId;
 
-    // "Start here" is only for true newcomers. Returning learners with
-    // progress elsewhere (streak, stars, other lessons) get the honest
-    // "next step" framing instead of a permanently stuck start card.
-    if (!hasAnyProgress && (isGuest || !hasCompletedAlphabet)) {
+    // 1. User left a lesson mid-way or couldn't complete it: resume directly.
+    if (isResumingIncompleteLesson) {
+      badgeText = l10n.resumeJourney;
+      title = l10n.continueLearning;
+      subtitle = l10n.readyToLearn;
+      ctaText = l10n.continueButton;
+      icon = Icons.play_arrow_rounded;
+      onTap = () {
+        context.push('/lesson/$lastOpenedId');
+      };
+    } else if (!hasAnyProgress && !hasCompletedAlphabet) {
+      // 2. "Start here" is exclusively for true newcomers on their first visit.
+      // Once the learner completes the alphabet (or has any progress), "Start here"
+      // is permanently retired and will never appear again.
       badgeText = l10n.nbaBadgeStartHere;
       title = l10n.nbaTitleFirstLetters;
       subtitle = l10n.nbaSubFirstLetters;
       ctaText = l10n.nbaCtaBeginLesson;
       icon = Icons.menu_book_rounded;
       onTap = () {
-        context.push('/letter/standalone/all');
-      };
-    } else if (!hasCompletedAlphabet) {
-      badgeText = l10n.nbaBadgeNextStep;
-      title = l10n.nbaTitleFirstLetters;
-      subtitle = l10n.nbaSubFirstLetters;
-      ctaText = l10n.nbaCtaBeginLesson;
-      icon = Icons.menu_book_rounded;
-      onTap = () {
-        context.push('/letter/standalone/all');
-      };
-    } else if (!hasCompletedNumbers) {
-      badgeText = l10n.nbaBadgeNextStep;
-      title = l10n.nbaTitleNumbers;
-      subtitle = l10n.nbaSubNumbers;
-      ctaText = l10n.nbaCtaPracticeNumbers;
-      icon = Icons.pin_rounded;
-      onTap = () {
-        context.push('/number/standalone/all');
+        if (nextLessonId != null && nextLessonId!.isNotEmpty) {
+          context.push('/lesson/$nextLessonId');
+        } else {
+          context.push('/letter/standalone/all');
+        }
       };
     } else if (mistakes.isNotEmpty) {
+      // 3. User has quiz mistakes to review.
       badgeText = l10n.nbaBadgeMistakes;
       title = l10n.nbaTitleMistakes;
       subtitle = l10n.nbaSubMistakes(mistakes.length);
@@ -89,9 +86,24 @@ class NextBestActionCard extends ConsumerWidget {
       onTap = () {
         context.push('/mistakes');
       };
+    } else if (!hasCompletedAlphabet) {
+      // 4. Returning learner mid-alphabet: frame as next step, never a stuck "start here".
+      badgeText = l10n.nbaBadgeNextStep;
+      title = l10n.nbaTitleFirstLetters;
+      subtitle = l10n.nbaSubFirstLetters;
+      ctaText = l10n.nbaCtaBeginLesson;
+      icon = Icons.menu_book_rounded;
+      onTap = () {
+        if (nextLessonId != null && nextLessonId!.isNotEmpty) {
+          context.push('/lesson/$nextLessonId');
+        } else {
+          context.push('/letter/standalone/all');
+        }
+      };
     } else if (streak > 0 &&
         !(ref.watch(lessonCompletedTodayProvider) ||
             ref.watch(quizTakenTodayProvider))) {
+      // 5. Streak risk: nudge to keep the habit alive.
       badgeText = l10n.nbaBadgeStreakRisk;
       title = l10n.nbaTitleStreakRisk;
       subtitle = l10n.nbaSubStreakRisk(streak);
@@ -100,7 +112,18 @@ class NextBestActionCard extends ConsumerWidget {
       onTap = () {
         context.push('/quizzes');
       };
+    } else if (nextLessonId != null && nextLessonId!.isNotEmpty) {
+      // 6. Active learning progression: continue directly to next curriculum lesson.
+      badgeText = l10n.resumeJourney;
+      title = l10n.continueLearning;
+      subtitle = l10n.readyToLearn;
+      ctaText = l10n.continueButton;
+      icon = Icons.play_arrow_rounded;
+      onTap = () {
+        context.push('/lesson/$nextLessonId');
+      };
     } else if (!ref.watch(bakhedListenedTodayProvider)) {
+      // 7. Try cultural recitation.
       badgeText = l10n.nbaBadgeTryBakhed;
       title = l10n.nbaTitleTryBakhed;
       subtitle = l10n.nbaSubTryBakhed;
@@ -109,11 +132,8 @@ class NextBestActionCard extends ConsumerWidget {
       onTap = () {
         context.push('/bakhed');
       };
-    } else if (nextLessonId == null &&
-        hasCompletedAlphabet &&
-        hasCompletedNumbers) {
-      // Learner has exhausted the current catalogue — celebrate instead of
-      // telling them to start over.
+    } else {
+      // 8. Completed current catalogue.
       badgeText = l10n.nbaBadgeAllDone;
       title = l10n.nbaTitleAllDone;
       subtitle = l10n.nbaSubAllDone;
@@ -121,22 +141,6 @@ class NextBestActionCard extends ConsumerWidget {
       icon = Icons.celebration_rounded;
       onTap = () {
         context.push('/bakhed');
-      };
-    } else {
-      // Default: Active learning — the learner is mid-journey. Reuse
-      // localized "resume" copy (present in every shipped locale) instead of
-      // hardcoded English so non-English learners get the same next action.
-      badgeText = l10n.resumeJourney;
-      title = l10n.continueLearning;
-      subtitle = l10n.readyToLearn;
-      ctaText = l10n.continueButton;
-      icon = Icons.play_arrow_rounded;
-      onTap = () {
-        if (nextLessonId != null && nextLessonId!.isNotEmpty) {
-          context.push('/lesson/$nextLessonId');
-        } else {
-          context.push('/letter/standalone/all');
-        }
       };
     }
 

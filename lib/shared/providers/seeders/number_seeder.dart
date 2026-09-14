@@ -1,10 +1,41 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
+import '../../utils/santali_numbers.dart';
 import '../providers.dart';
 import '../../../core/api/appwrite_db_service.dart';
 
 class NumberSeeder {
+  static LessonBlockModel _numberBlock(int value) {
+    return LessonBlockModel(
+      type: 'text',
+      textOlChiki: SantaliNumbers.toOlChikiNumeral(value),
+      textLatin: '$value – ${SantaliNumbers.englishName(value)}',
+    );
+  }
+
+  static LessonModel _rangeLesson({
+    required String id,
+    required String categoryId,
+    required int start,
+    required int end,
+    required int order,
+  }) {
+    final startNumeral = SantaliNumbers.toOlChikiNumeral(start);
+    final endNumeral = SantaliNumbers.toOlChikiNumeral(end);
+    return LessonModel(
+      id: id,
+      categoryId: categoryId,
+      titleOlChiki: '$startNumeral-$endNumeral ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers $start-$end',
+      order: order,
+      blocks: List.generate(
+        end - start + 1,
+        (i) => _numberBlock(start + i),
+      ).toList(),
+    );
+  }
+
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
@@ -20,7 +51,7 @@ class NumberSeeder {
         iconName: 'numbers',
         gradientPreset: 'peach',
         order: 1,
-        totalLessons: 2,
+        totalLessons: 4,
       ),
     );
 
@@ -28,84 +59,49 @@ class NumberSeeder {
         .read(appwriteDbServiceProvider)
         .listDocuments('numbers');
     if (numbersRows.isEmpty) {
-      // Seed numbers (0-9)
+      // Seed numbers (0-100)
       await numbersNotifier.seed();
     }
 
-    const olChikiNumerals = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
-    const latinLabels = [
-      '0 – Zero',
-      '1 – One',
-      '2 – Two',
-      '3 – Three',
-      '4 – Four',
-      '5 – Five',
-      '6 – Six',
-      '7 – Seven',
-      '8 – Eight',
-      '9 – Nine',
-    ];
-
     await addLessonIfNew(
-      LessonModel(
+      _rangeLesson(
         id: 'lesson_numbers_0_9',
         categoryId: actualNumbersId,
-        titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
-        titleLatin: 'Numbers 0-9',
-        blocks: List.generate(
-          10,
-          (i) => LessonBlockModel(
-            type: 'text',
-            textOlChiki: olChikiNumerals[i],
-            textLatin: latinLabels[i],
-          ),
-        ).toList(),
+        start: 0,
+        end: 9,
+        order: 0,
       ),
     );
 
-    // Numbers 10-20 lesson
-    const olChikiTens = [
-      '᱑᱐',
-      '᱑᱑',
-      '᱑᱒',
-      '᱑᱓',
-      '᱑૪',
-      '᱑૫',
-      '᱑૬',
-      '᱑૭',
-      '᱑૮',
-      '᱑૯',
-      '᱒᱐',
-    ];
-    const latinTens = [
-      '10 – Ten',
-      '11 – Eleven',
-      '12 – Twelve',
-      '13 – Thirteen',
-      '14 – Fourteen',
-      '15 – Fifteen',
-      '16 – Sixteen',
-      '17 – Seventeen',
-      '18 – Eighteen',
-      '19 – Nineteen',
-      '20 – Twenty',
-    ];
-
+    // Numbers 10-20 lesson (Ol Chiki numerals generated to avoid
+    // mixed-script typos).
     await addLessonIfNew(
-      LessonModel(
+      _rangeLesson(
         id: 'lesson_numbers_10_20',
         categoryId: actualNumbersId,
-        titleOlChiki: '᱑᱐-᱒᱐ ᱮᱞᱠᱷᱟ',
-        titleLatin: 'Numbers 10-20',
+        start: 10,
+        end: 20,
         order: 1,
-        blocks: List.generate(
-          11,
-          (i) => LessonBlockModel(
-            type: 'text',
-            textOlChiki: olChikiTens[i],
-            textLatin: latinTens[i],
-          ),
-        ).toList(),
+      ),
+    );
+
+    await addLessonIfNew(
+      _rangeLesson(
+        id: 'lesson_numbers_21_50',
+        categoryId: actualNumbersId,
+        start: 21,
+        end: 50,
+        order: 2,
+      ),
+    );
+
+    await addLessonIfNew(
+      _rangeLesson(
+        id: 'lesson_numbers_51_100',
+        categoryId: actualNumbersId,
+        start: 51,
+        end: 100,
+        order: 3,
       ),
     );
 

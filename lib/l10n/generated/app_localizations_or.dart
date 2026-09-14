@@ -597,14 +597,6 @@ class AppLocalizationsOr extends AppLocalizations {
   String get affirmationRead => 'ପଢ଼ନ୍ତୁ';
 
   @override
-  String get todaysMissionTitle => 'ଆଜିର ମିଶନ୍';
-
-  @override
-  String missionsDoneCount(int done) {
-    return '$done/4 ସମ୍ପନ୍ନ';
-  }
-
-  @override
   String get hindi => 'ହିନ୍ଦୀ';
 
   @override
@@ -849,4 +841,172 @@ class AppLocalizationsOr extends AppLocalizations {
   @override
   String get kudosMistake4 =>
       'ଅସାଧାରଣ ସମୀକ୍ଷା! ଭୁଲ ସଂଶୋଧନ କରି ଆପଣ ଅଧିକ ଶୀଘ୍ର ଶିଖୁଛନ୍ତି।';
+
+  @override
+  String get reviewToday => 'ଆଜିର ରିଭ୍ୟୁ';
+
+  @override
+  String get reviewLoading => 'ଆପଣଙ୍କ ରିଭ୍ୟୁ ଲୋଡ୍ ହେଉଛି…';
+
+  @override
+  String get reviewDueOne => '1ଟି ରିଭ୍ୟୁ ବାକି';
+
+  @override
+  String reviewDueOther(int count) {
+    return '$countଟି ରିଭ୍ୟୁ ବାକି';
+  }
+
+  @override
+  String reviewDueSubtitle(int minutes) {
+    return '~$minutes ମିନିଟ୍ · ଆରମ୍ଭ କରିଥିବା ପାଠରୁ';
+  }
+
+  @override
+  String get reviewStart => 'ରିଭ୍ୟୁ ଆରମ୍ଭ କରନ୍ତୁ';
+
+  @override
+  String get reviewCaughtUp => 'ସବୁ ସରିଲା।';
+
+  @override
+  String reviewCaughtUpRetained(int count) {
+    return 'ଏଯାଏଁ $countଟି ବିଷୟ ମନେ ଅଛି। ମନେ ରଖିବା ଜାରି ରଖନ୍ତୁ।';
+  }
+
+  @override
+  String get reviewCaughtUpEmpty =>
+      'ତଳେ ଗୋଟିଏ ପାଠ ଆରମ୍ଭ କରନ୍ତୁ — ଯାହା ଶିଖିବେ ତାହା ଏଠାରେ ରିଭ୍ୟୁରେ ଆସିବ।';
+
+  @override
+  String get reviewContinueLearning => 'ଶିଖିବା ଜାରି ରଖନ୍ତୁ';
+
+  @override
+  String get reviewLearnNew => 'ନୂଆ କିଛି ଶିଖନ୍ତୁ';
+
+  @override
+  String reviewRetained(int count) {
+    return '$countଟି ମନେ ଅଛି';
+  }
+
+  @override
+  String get reviewExit => 'ରିଭ୍ୟୁରୁ ବାହାରନ୍ତୁ';
+
+  @override
+  String reviewSessionTitle(int current, int total) {
+    return 'ଆଜିର ରିଭ୍ୟୁ $current / $total';
+  }
+
+  @override
+  String get reviewSessionTitleBare => 'ଆଜିର ରିଭ୍ୟୁ';
+
+  @override
+  String get reviewComplete => 'ରିଭ୍ୟୁ ସମ୍ପୂର୍ଣ୍ଣ';
+
+  @override
+  String get reviewCorrectFeedback => 'ଠିକ୍ — ଭଲ ମନେ ଅଛି।';
+
+  @override
+  String get reviewWrongFeedback => 'ଟିକେ ଆଉ — ଏହା ଶୀଘ୍ର ଫେରି ଆସିବ।';
+
+  @override
+  String reviewCorrectAnswer(String answer) {
+    return 'ଠିକ୍ ଉତ୍ତର: $answer';
+  }
+
+  @override
+  String get reviewHintTyping => 'ଧୀରେ ଧୀରେ ପ୍ରତି ଧ୍ୱନି ଲେଖନ୍ତୁ।';
+
+  @override
+  String get reviewHintListening => 'ପୁଣି ଶୁଣନ୍ତୁ — ଧ୍ୱନିକୁ ଅର୍ଥ ସହ ମିଶାନ୍ତୁ।';
+
+  @override
+  String get reviewHintRecognition => 'ଓଲ୍ ଚିକି ଅକ୍ଷରରୁ ଉଚ୍ଚାରଣ କରନ୍ତୁ।';
+
+  @override
+  String get reviewRepromptListen => 'ଶୁଣନ୍ତୁ';
+
+  @override
+  String get reviewRepromptWrite => 'ଓଲ୍ ଚିକିରେ ଲେଖନ୍ତୁ';
+
+  @override
+  String get reviewRepromptMeaning => 'ଏହାର ଅର୍ଥ କ\'ଣ?';
+
+  @override
+  String get reviewPlayAudio => 'ଅଡିଓ ଚଲାନ୍ତୁ';
+
+  @override
+  String get reviewReplayAudio => 'ପୁଣି ଶୁଣନ୍ତୁ';
+
+  @override
+  String get reviewCheck => 'ଯାଞ୍ଚ କରନ୍ତୁ';
+
+  @override
+  String get reviewFinish => 'ରିଭ୍ୟୁ ଶେଷ କରନ୍ତୁ';
+
+  @override
+  String get reviewBackHome => 'ହୋମକୁ ଫେରନ୍ତୁ';
+
+  @override
+  String get reviewDone => 'ହୋଇଗଲା';
+
+  @override
+  String get reviewCaughtUpShort =>
+      'କିଛି ବାକି ନାହିଁ। ଲୁପ୍ ଜାରି ରଖିବାକୁ ତଳେ ନୂଆ କିଛି ଶିଖନ୍ତୁ।';
+
+  @override
+  String reviewSummaryScore(int correct, int total, int accuracy) {
+    return '$totalଟିରୁ $correctଟି ଠିକ୍ ($accuracy%)';
+  }
+
+  @override
+  String reviewSummaryMastered(int mastered, int stars) {
+    return '$masteredଟି ଆୟତ୍ତ · +$stars ଷ୍ଟାର୍';
+  }
+
+  @override
+  String get reviewSummaryRecovery =>
+      'ଛାଡ଼ିଯାଇଥିବା ଶୀଘ୍ର ଫେରିବ — ଏହା ସିଷ୍ଟମର କାମ, ବିଫଳତା ନୁହେଁ।';
+
+  @override
+  String get reviewLoadError => 'ଆପଣଙ୍କ ରିଭ୍ୟୁ ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ';
+
+  @override
+  String reviewLoadErrorBody(int count) {
+    return 'ଆପଣଙ୍କ $countଟି ବାକି ରିଭ୍ୟୁ ସୁରକ୍ଷିତ — ପାଠ ବିଷୟବସ୍ତୁ ଲୋଡ୍ ହୋଇନାହିଁ। ସଂଯୋଗ ଦେଖି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+  }
+
+  @override
+  String get notifReviewTitleOne => '1ଟି ରିଭ୍ୟୁ ପ୍ରସ୍ତୁତ';
+
+  @override
+  String notifReviewTitleOther(int count) {
+    return '$countଟି ରିଭ୍ୟୁ ପ୍ରସ୍ତୁତ';
+  }
+
+  @override
+  String notifReviewBodyOne(int minutes) {
+    return '1ଟି ବିଷୟ ରିଭ୍ୟୁ ପାଇଁ ପ୍ରସ୍ତୁତ (~$minutes ମିନିଟ୍)। ସମୟ ମିଳିଲେ ଆଜିର ରିଭ୍ୟୁ ଖୋଲନ୍ତୁ।';
+  }
+
+  @override
+  String notifReviewBodyOther(int count, int minutes) {
+    return '$countଟି ବିଷୟ ରିଭ୍ୟୁ ପାଇଁ ପ୍ରସ୍ତୁତ (~$minutes ମିନିଟ୍)। ସମୟ ମିଳିଲେ ଆଜିର ରିଭ୍ୟୁ ଖୋଲନ୍ତୁ।';
+  }
+
+  @override
+  String get notifStruggleTitle => 'କଷ୍ଟକରଗୁଡ଼ିକ ଫେରି ଆସିଛନ୍ତି';
+
+  @override
+  String get notifStruggleBodyOne =>
+      'ଯେଉଁ ଶବ୍ଦ କଷ୍ଟ ଲାଗିଥିଲା ତାହା ପୁଣି ବାକି — ଥରେ ଅଭ୍ୟାସ କଲେ ପକ୍କା ହେବ।';
+
+  @override
+  String notifStruggleBodyOther(int count) {
+    return '$countଟି କଷ୍ଟ ଶବ୍ଦ ପୁଣି ବାକି — ଥରେ ଅଭ୍ୟାସ କଲେ ପକ୍କା ହେବ।';
+  }
+
+  @override
+  String get notifGentleTitle => 'ଆପଣଙ୍କ ସାନ୍ତାଳୀ ଅପେକ୍ଷା କରିଛି';
+
+  @override
+  String get notifGentleBody => 'ଛୋଟ ରିଭ୍ୟୁ ଶିଖିଥିବାକୁ ସତେଜ ରଖେ। ତରବର ନାହିଁ।';
 }

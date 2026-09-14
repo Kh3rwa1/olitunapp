@@ -34,7 +34,6 @@
             }
         }
     },
-
     "settings": "ᱥᱮᱴᱤᱝᱥ",
     "customizeExperience": "ᱮᱢ ᱪᱮᱫ ᱟᱱᱩᱵᱷᱟᱵ ᱵᱟᱫᱟᱞ ᱢᱮ",
     "appearance": "ᱫᱮᱠᱷᱟᱣ",
@@ -78,7 +77,6 @@
             }
         }
     },
-
     "signInWithEmail": "ᱤᱢᱮᱞ ᱨᱮᱱ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ",
     "magicCodeDescription": "ᱟᱢ ᱤᱧᱟᱜ ᱢᱤᱫ ᱡᱟᱫᱩ ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣᱼᱟ ᱮᱢ ᱪᱤᱱᱦᱟᱹ ᱞᱟᱹᱜᱤᱫ᱾ ᱯᱟᱥᱣᱟᱨᱰ ᱞᱟᱠᱟᱛ ᱵᱟ᱾",
     "emailAddress": "ᱤᱢᱮᱞ ᱮᱰᱨᱮᱥ",
@@ -111,7 +109,6 @@
     "sessionExpired": "ᱥᱮᱥᱚᱱ ᱠᱷᱟᱛᱟᱢ᱾ ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ᱾",
     "errorCopiedToClipboard": "ᱵᱷᱩᱞ ᱠᱞᱤᱯᱵᱳᱨᱰ ᱨᱮ ᱠᱚᱯᱤ ᱦᱚᱭᱮᱱᱟ",
     "skip": "ᱵᱟᱜᱤᱪ",
-
     "quiz": "ᱠᱩᱭᱤᱡᱽ",
     "noQuestionsYet": "ᱟᱵᱚ ᱛᱟᱠ ᱠᱩᱫᱪᱷᱤ ᱵᱟ",
     "goBack": "ᱯᱤᱪᱷᱮ ᱢᱮ",
@@ -137,7 +134,6 @@
             }
         }
     },
-
     "aboutThisLesson": "ᱱᱚᱣᱟ ᱯᱟᱴ ᱵᱟᱵᱚᱛ",
     "completeLesson": "ᱯᱟᱴ ᱪᱟᱵᱟ ᱢᱮ",
     "lettersToLearn": "ᱚᱞ ᱪᱮᱫᱞᱟᱹᱜᱤᱫ",
@@ -152,7 +148,6 @@
     "noWordsAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱨᱚᱲ ᱵᱟ",
     "noSentencesAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱵᱟᱛ ᱵᱟ",
     "noLessonsAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱯᱟᱴ ᱵᱟ",
-
     "joharUser": "ᱡᱚᱦᱟᱨ, {userName}!",
     "@joharUser": {
         "placeholders": {
@@ -185,7 +180,6 @@
     "start": "ᱥᱩᱨᱩ",
     "discover": "ᱥᱮᱸᱫᱽᱨᱟᱭ",
     "couldNotLoadPaths": "ᱪᱮᱫ ᱯᱟᱴ ᱞᱳᱰ ᱵᱟᱸᱜᱚ",
-
     "yourStats": "ᱮᱢ ᱥᱴᱟᱴᱥ",
     "skillsMastery": "ᱠᱟᱣᱥᱟᱞ ᱢᱟᱥᱴᱟᱨ",
     "quizAnalysis": "ᱠᱩᱭᱤᱡᱽ ᱵᱤᱥᱞᱮᱥᱟᱱ",
@@ -196,7 +190,6 @@
     "chooseYourAvatar": "ᱮᱢ ᱟᱵᱟᱛᱟᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
     "backgroundColor": "ᱨᱟᱝ",
     "avatarEmoji": "ᱟᱵᱟᱛᱟᱨ ᱤᱢᱳᱡᱤ",
-
     "rhymes": "ᱵᱟᱠᱷᱮᱬ",
     "santali": "ᱥᱟᱱᱛᱟᱲᱤ",
     "unlockMagic": "ᱠᱟᱛᱷᱟ ᱟᱨ ᱮᱱᱜᱮᱨ ᱡᱟᱫᱩ ᱠᱷᱩᱞ ᱢᱮ",
@@ -208,7 +201,6 @@
     "featured": "ᱵᱤᱥᱮᱥ",
     "listenNow": "ᱟᱵᱚ ᱟᱭᱩᱢ",
     "pause": "ᱛᱷᱟᱢ",
-
     "getStarted": "ᱥᱩᱨᱩ ᱢᱮ",
     "loading": "ᱞᱳᱰ ᱦᱚᱭᱚᱜ...",
     "error": "ᱵᱷᱩᱞ",
@@ -226,12 +218,36 @@
     "streakIdleSubtitle": "ᱥᱮᱸᱜᱮᱞ ᱡᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱡᱟᱦᱟᱸᱱ ᱠᱟᱹᱢᱤ ᱯᱩᱨᱟᱹᱣ ᱢᱮ!",
     "streakStartLearning": "ᱪᱮᱫ ᱥᱩᱨᱩ ᱢᱮ",
     "streakDaysBadge": "{count} ᱢᱟᱦᱟᱸ",
-    "@streakDaysBadge": { "placeholders": { "count": {"type": "int"} } },
+    "@streakDaysBadge": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "streakFooterActive": "ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ ᱨᱮ {total} ᱢᱟᱦᱟᱸ ᱠᱷᱚᱱ {count} ᱢᱟᱦᱟᱸ ᱮᱢ ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱫᱟ᱾ ᱪᱟᱞᱟᱣ ᱤᱫᱤ ᱢᱮ!",
-    "@streakFooterActive": { "placeholders": { "count": {"type": "int"}, "total": {"type": "int"} } },
+    "@streakFooterActive": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
     "streakFooterIdle": "ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ ᱨᱮ ᱟᱹᱣᱨᱤᱢ ᱟᱵᱷᱭᱟᱥᱟ — ᱮᱦᱚᱵ ᱞᱟᱹᱜᱤᱫ ᱡᱟᱦᱟᱸᱱ ᱠᱟᱹᱢᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ!",
     "streakWeekSemantics": "ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ: {total} ᱢᱟᱦᱟᱸ ᱠᱷᱚᱱ {count} ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱦᱩᱭ ᱟᱠᱟᱱᱟ",
-    "@streakWeekSemantics": { "placeholders": { "count": {"type": "int"}, "total": {"type": "int"} } },
+    "@streakWeekSemantics": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
     "dayDetailNoActivity": "ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱠᱟᱹᱢᱤ ᱟᱠᱟᱱᱟ",
     "dayDetailPracticeSession": "ᱟᱵᱷᱭᱟᱥ ᱥᱮᱥᱚᱱ",
     "dayDetailStreakDay": "ᱥᱴᱨᱤᱠ ᱢᱟᱦᱟᱸ",
@@ -240,7 +256,16 @@
     "dayPracticed": "ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱱ",
     "dayNotPracticed": "ᱵᱟᱝ ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱱ",
     "milestoneLevelProgressCaption": "ᱛᱷᱚᱠ ᱞᱟᱦᱟᱱᱛᱤ · {from} → {to}",
-    "@milestoneLevelProgressCaption": { "placeholders": { "from": {"type": "String"}, "to": {"type": "String"} } },
+    "@milestoneLevelProgressCaption": {
+        "placeholders": {
+            "from": {
+                "type": "String"
+            },
+            "to": {
+                "type": "String"
+            }
+        }
+    },
     "homeDiscover": "ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ",
     "homeSwipeHint": "ᱜᱷᱟᱹᱥᱤᱲ ᱢᱮ",
     "homeExploreHint": "ᱯᱟᱱᱛᱷᱟᱭ ᱢᱮ",
@@ -256,12 +281,24 @@
     "nbaBadgeMistakes": "ᱟᱵᱷᱭᱟᱥ ᱞᱟᱹᱠᱛᱤ",
     "nbaTitleMistakes": "ᱵᱷᱩᱞ ᱠᱷᱚᱱ ᱜᱮᱭᱟᱱ ᱵᱮᱱᱟᱣ ᱢᱮ",
     "nbaSubMistakes": "ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱟᱨ ᱥᱮᱬᱟ ᱞᱟᱹᱜᱤᱫ {count} ᱴᱤ ᱠᱩᱠᱞᱤ ᱢᱮᱱᱟᱜᱼᱟ᱾",
-    "@nbaSubMistakes": { "placeholders": { "count": {"type": "int"} } },
+    "@nbaSubMistakes": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "nbaCtaReviewMistakes": "ᱵᱷᱩᱞ ᱠᱚ ᱧᱮᱞ ᱨᱩᱣᱟᱹᱲ ᱢᱮ",
     "nbaBadgeStreakRisk": "ᱥᱴᱨᱤᱠ ᱟᱫᱚᱜ ᱠᱷᱟᱛᱨᱟ",
     "nbaTitleStreakRisk": "ᱫᱤᱱᱟᱹᱢ ᱞᱟᱦᱟᱱᱛᱤ ᱫᱚᱦᱚᱭ ᱢᱮ",
     "nbaSubStreakRisk": "ᱢᱤᱫᱴᱟᱝ ᱦᱩᱰᱤᱧ ᱠᱩᱭᱤᱡᱽ ᱥᱮ ᱯᱟᱴ ᱛᱮ ᱛᱮᱦᱮᱧ ᱟᱢᱟᱜ {count} ᱢᱟᱦᱟᱸ ᱨᱮᱱᱟᱜ ᱥᱴᱨᱤᱠ ᱵᱟᱧᱪᱟᱣ ᱢᱮ᱾",
-    "@nbaSubStreakRisk": { "placeholders": { "count": {"type": "int"} } },
+    "@nbaSubStreakRisk": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
     "nbaCtaQuickReview": "ᱞᱚᱜᱚᱱ ᱧᱮᱞ ᱨᱩᱣᱟᱹᱲ",
     "nbaBadgeTryBakhed": "ᱵᱟᱠᱷᱮᱬ ᱟᱸᱡᱚᱢ ᱢᱮ",
     "nbaTitleTryBakhed": "ᱞᱟᱠᱪᱟᱨ ᱚᱱᱚᱬᱦᱮ ᱟᱸᱡᱚᱢ ᱢᱮ",
@@ -275,9 +312,6 @@
     "affirmationStop": "ᱛᱷᱟᱢᱵᱷᱟᱣ ᱢᱮ",
     "affirmationMarkRead": "ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ ᱪᱤᱱᱦᱟᱹᱭ ᱢᱮ",
     "affirmationRead": "ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ",
-    "todaysMissionTitle": "ᱛᱮᱦᱮᱧᱟᱜ ᱠᱟᱹᱢᱤ",
-    "missionsDoneCount": "{done}/4 ᱯᱩᱨᱟᱹᱣ",
-    "@missionsDoneCount": { "placeholders": { "done": {"type": "int"} } },
     "hindi": "ᱦᱤᱱᱫᱤ",
     "bengali": "ᱵᱟᱝᱞᱟ",
     "odia": "ᱳᱰᱤᱭᱟ",
@@ -308,11 +342,16 @@
     "audioModeTranslationOnDemand": "ᱤᱧ ᱴᱮᱯ ᱞᱮᱠᱷᱟᱱ ᱜᱮ ᱟᱱᱩᱵᱟᱫ ᱡᱟᱭᱱᱟᱢ",
     "dailyGoalLabel": "ᱫᱤᱱᱟᱹᱢ ᱩᱫᱩᱜ",
     "minutesPerDay": "{minutes} ᱢᱤᱱᱤᱴ/ᱫᱤᱱ",
-    "@minutesPerDay": {"placeholders": {"minutes": {"type": "int"}}},
+    "@minutesPerDay": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
     "downloadStarterAudio": "ᱥᱩᱨᱩᱭᱟᱜ ᱥᱟᱲᱮ ᱰᱟᱣᱩᱱᱞᱳᱰ ᱢᱮ",
     "downloadStarterAudioSubtitle": "ᱯᱩᱭᱞᱩ ᱫᱤᱱ ᱠᱷᱚᱱ ᱜᱮ ᱚᱯᱷᱞᱟᱭᱱ ᱨᱮ ᱪᱮᱫ ᱢᱮ",
     "backButton": "ᱛᱟᱭᱚᱢ",
-
     "joharLoading": "ᱡᱚᱦᱟᱨ... ᱞᱳᱰ ᱦᱚᱭᱚᱜ...",
     "somethingWentWrong": "ᱵᱷᱩᱞ ᱦᱚᱭᱮᱱᱟ!",
     "offlineMode": "ᱚᱯᱷᱞᱟᱭᱱ ᱢᱳᱰ᱾ ᱫᱚᱦᱚ ᱟᱠᱟᱱ ᱵᱤᱪᱟᱨ ᱫᱮᱠᱷᱟᱣ ᱦᱚᱭᱮᱱᱟ᱾",
@@ -320,7 +359,6 @@
     "syncingProgress": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱦᱚᱭᱚᱜ...",
     "progressSynced": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱮᱱᱟ!",
     "failedToSyncProgress": "ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱠᱟᱛ ᱵᱟᱸᱜᱚ᱾",
-
     "processing": "ᱠᱟᱹᱢᱤ ᱪᱟᱹᱞᱩ ᱦᱚᱭᱚᱜ...",
     "pleaseLogInToPurchase": "ᱯᱟᱴ ᱠᱷᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ᱾",
     "creatingSecureOrder": "ᱥᱟᱨᱵᱷᱟᱨ ᱚᱨᱰᱟᱨ ᱵᱮᱱᱟᱣ ᱦᱚᱭᱚᱜ...",
@@ -361,7 +399,6 @@
     "paywallValueAdFreeSubtitle": "ᱡᱚᱛᱚ ᱵᱤᱪᱟᱨ ᱨᱮ ᱥᱟᱯᱷᱟ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱵᱷᱭᱟᱥ᱾",
     "paywallValueLifetimeTitle": "ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱵᱮᱵᱷᱟᱨ",
     "paywallValueLifetimeSubtitle": "ᱢᱤᱫ ᱫᱷᱟᱣ ᱜᱮ ᱴᱟᱠᱟ — ᱟᱨ ᱴᱟᱠᱟ ᱞᱟᱹᱠᱛᱤ ᱵᱟ᱾",
-
     "navLearn": "ᱪᱮᱫᱚᱜ",
     "navBakhed": "ᱵᱟᱠᱷᱮᱬ",
     "navProfile": "ᱯᱨᱳᱯᱷᱟᱭᱤᱞ",
@@ -381,9 +418,160 @@
             }
         }
     },
-
     "kudosMistake1": "ᱵᱷᱩᱞ ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱮᱱᱟ᱾ ᱱᱚᱝᱠᱟ ᱜᱮ ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾",
     "kudosMistake2": "ᱠᱟᱣᱥᱟᱞ ᱵᱮᱱᱟᱣ ᱦᱩᱭ ᱟᱠᱟᱱᱟ! ᱟᱢ ᱵᱷᱩᱞ ᱠᱷᱚᱱ ᱜᱮᱭᱟᱱ ᱵᱮᱱᱟᱣ ᱟᱠᱟᱫᱟ᱾",
     "kudosMistake3": "ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮᱜᱮ ᱵᱟᱲᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ᱾",
-    "kudosMistake4": "ᱵᱷᱟᱞᱚ ᱫᱚᱦᱲᱟ ᱧᱮᱞ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮ ᱟᱢ ᱞᱚᱜᱚᱱ ᱪᱮᱫᱚᱜ ᱠᱟᱱᱟ᱾"
+    "kudosMistake4": "ᱵᱷᱟᱞᱚ ᱫᱚᱦᱲᱟ ᱧᱮᱞ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮ ᱟᱢ ᱞᱚᱜᱚᱱ ᱪᱮᱫᱚᱜ ᱠᱟᱱᱟ᱾",
+    "reviewToday": "ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ",
+    "reviewLoading": "ᱟᱢᱟᱜ ᱫᱚᱦᱲᱟ ᱞᱚᱫᱽ ᱦᱩᱭ ᱟᱠᱟᱱᱟ…",
+    "reviewDueOne": "ᱢᱤᱫ ᱫᱚᱦᱲᱟ ᱢᱮᱱᱟᱜᱼᱟ",
+    "reviewDueOther": "{count} ᱫᱚᱦᱲᱟ ᱢᱮᱱᱟᱜᱼᱟ",
+    "@reviewDueOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewDueSubtitle": "~{minutes} ᱢᱤᱱᱤᱴ · ᱮᱦᱚᱵ ᱟᱠᱟᱫ ᱥᱮᱪᱮᱫ ᱠᱷᱚᱱ",
+    "@reviewDueSubtitle": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewStart": "ᱫᱚᱦᱲᱟ ᱮᱦᱚᱵ ᱢᱮ",
+    "reviewCaughtUp": "ᱥᱟᱱᱟᱢ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ।",
+    "reviewCaughtUpRetained": "ᱱᱤᱛ ᱦᱟᱹᱵᱤᱡ {count} ᱡᱤᱱᱤᱥ ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ। ᱩᱭᱦᱟᱹᱨ ᱫᱚᱦᱚᱭ ᱢᱮ।",
+    "@reviewCaughtUpRetained": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewCaughtUpEmpty": "ᱞᱟᱛᱟᱨ ᱨᱮ ᱢᱤᱫ ᱥᱮᱪᱮᱫ ᱮᱦᱚᱵ ᱢᱮ — ᱪᱮᱫ ᱟᱢ ᱚᱱᱟ ᱱᱚᱸᱰᱮ ᱫᱚᱦᱲᱟ ᱨᱮ ᱦᱤᱡᱩᱜᱼᱟ।",
+    "reviewContinueLearning": "ᱟᱨᱦᱚᱸ ᱪᱮᱫᱚᱜ ᱢᱮ",
+    "reviewLearnNew": "ᱱᱟᱶᱟ ᱪᱮᱫᱚᱜ ᱢᱮ",
+    "reviewRetained": "{count} ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ",
+    "@reviewRetained": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewExit": "ᱫᱚᱦᱲᱟ ᱠᱷᱚᱱ ᱚᱰᱚᱠᱚᱜ ᱢᱮ",
+    "reviewSessionTitle": "ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ {current} / {total}",
+    "@reviewSessionTitle": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSessionTitleBare": "ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ",
+    "reviewComplete": "ᱫᱚᱦᱲᱟ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ",
+    "reviewCorrectFeedback": "ᱴᱷᱤᱠ — ᱱᱟᱯᱟᱭ ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ।",
+    "reviewWrongFeedback": "ᱟᱨ ᱢᱤᱫ ᱫᱷᱟᱣ — ᱱᱚᱶᱟ ᱩᱥᱟᱹᱨᱟ ᱨᱩᱣᱟᱹᱲ ᱦᱤᱡᱩᱜᱼᱟ।",
+    "reviewCorrectAnswer": "ᱴᱷᱤᱠ ᱛᱮᱞᱟ: {answer}",
+    "@reviewCorrectAnswer": {
+        "placeholders": {
+            "answer": {
+                "type": "String"
+            }
+        }
+    },
+    "reviewHintTyping": "ᱦᱚᱲᱢᱚ ᱦᱚᱲᱢᱚ ᱛᱮ ᱡᱚᱛᱚ ᱥᱟᱲᱮ ᱚᱞ ᱢᱮ।",
+    "reviewHintListening": "ᱟᱨᱦᱚᱸ ᱟᱸᱡᱚᱢ ᱢᱮ — ᱥᱟᱲᱮ ᱥᱟᱶ ᱢᱮᱱᱮᱛ ᱡᱚᱲᱟᱣ ᱢᱮ।",
+    "reviewHintRecognition": "ᱚᱞ ᱪᱤᱠᱤ ᱪᱤᱠᱤ ᱠᱷᱚᱱ ᱨᱟᱲᱟᱝ ᱢᱮ।",
+    "reviewRepromptListen": "ᱟᱸᱡᱚᱢ ᱢᱮ",
+    "reviewRepromptWrite": "ᱚᱞ ᱪᱤᱠᱤ ᱛᱮ ᱚᱞ ᱢᱮ",
+    "reviewRepromptMeaning": "ᱱᱚᱶᱟ ᱨᱮᱭᱟᱜ ᱢᱮᱱᱮᱛ ᱪᱮᱫ?",
+    "reviewPlayAudio": "ᱥᱟᱲᱮ ᱟᱸᱡᱚᱢ ᱢᱮ",
+    "reviewReplayAudio": "ᱟᱨᱦᱚᱸ ᱟᱸᱡᱚᱢ ᱢᱮ",
+    "reviewCheck": "ᱧᱮᱞ ᱢᱮ",
+    "reviewFinish": "ᱫᱚᱦᱲᱟ ᱢᱩᱪᱟᱹᱫ ᱢᱮ",
+    "reviewBackHome": "ᱨᱩᱣᱟᱹᱲ ᱪᱟᱞᱟᱜ ᱢᱮ",
+    "reviewDone": "ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ",
+    "reviewCaughtUpShort": "ᱪᱮᱫ ᱵᱟᱹᱜᱤ ᱵᱟᱹᱱᱩᱜᱼᱟ। ᱱᱟᱶᱟ ᱪᱮᱫ ᱠᱟᱛᱮ ᱟᱨᱦᱚᱸ ᱞᱟᱦᱟᱜ ᱢᱮ।",
+    "reviewSummaryScore": "{total} ᱠᱷᱚᱱ {correct} ᱴᱷᱤᱠ ({accuracy}%)",
+    "@reviewSummaryScore": {
+        "placeholders": {
+            "correct": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            },
+            "accuracy": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSummaryMastered": "{mastered} ᱯᱩᱨᱟᱹ ᱥᱮᱫ · +{stars} ᱤᱯᱤᱞ",
+    "@reviewSummaryMastered": {
+        "placeholders": {
+            "mastered": {
+                "type": "int"
+            },
+            "stars": {
+                "type": "int"
+            }
+        }
+    },
+    "reviewSummaryRecovery": "ᱵᱟᱹᱜᱤ ᱟᱠᱟᱱ ᱩᱥᱟᱹᱨᱟ ᱨᱩᱣᱟᱹᱲ ᱦᱤᱡᱩᱜᱼᱟ — ᱱᱚᱶᱟ ᱜᱮ ᱵᱮᱵᱚᱥᱛᱟ ᱨᱮᱭᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱟᱱᱟ।",
+    "reviewLoadError": "ᱟᱢᱟᱜ ᱫᱚᱦᱲᱟ ᱞᱚᱫᱽ ᱵᱟᱭ ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱫᱼᱟ",
+    "reviewLoadErrorBody": "ᱟᱢᱟᱜ {count} ᱵᱟᱹᱜᱤ ᱫᱚᱦᱲᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱢᱮᱱᱟᱜᱼᱟ — ᱥᱮᱪᱮᱫ ᱡᱤᱱᱤᱥ ᱞᱚᱫᱽ ᱵᱟᱭ ᱦᱩᱭ ᱟᱠᱟᱱᱟ᱾ ᱡᱚᱲᱟᱣ ᱧᱮᱞ ᱠᱟᱛᱮ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩ ᱢᱮ᱾",
+    "@reviewLoadErrorBody": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewTitleOne": "ᱢᱤᱫ ᱫᱚᱦᱲᱟ ᱛᱮᱭᱟᱨ",
+    "notifReviewTitleOther": "{count} ᱫᱚᱦᱲᱟ ᱛᱮᱭᱟᱨ",
+    "@notifReviewTitleOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewBodyOne": "ᱢᱤᱫ ᱡᱤᱱᱤᱥ ᱫᱚᱦᱲᱟ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜᱼᱟ (~{minutes} ᱢᱤᱱᱤᱴ)। ᱚᱠᱛᱚ ᱧᱟᱢ ᱞᱮᱠᱷᱟᱱ ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ ᱡᱷᱤᱡ ᱢᱮ।",
+    "@notifReviewBodyOne": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "notifReviewBodyOther": "{count} ᱡᱤᱱᱤᱥ ᱫᱚᱦᱲᱟ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜᱼᱟ (~{minutes} ᱢᱤᱱᱤᱴ)। ᱚᱠᱛᱚ ᱧᱟᱢ ᱞᱮᱠᱷᱟᱱ ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ ᱡᱷᱤᱡ ᱢᱮ।",
+    "@notifReviewBodyOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "notifStruggleTitle": "ᱦᱟᱹᱴᱤᱧ ᱠᱚ ᱨᱩᱣᱟᱹᱲ ᱦᱮᱡ ᱟᱠᱟᱱᱟ",
+    "notifStruggleBodyOne": "ᱚᱠᱟ ᱟᱹᱲᱟᱹ ᱦᱟᱹᱴᱤᱧ ᱧᱮᱞ ᱞᱮᱱᱟ ᱚᱱᱟ ᱟᱨᱦᱚᱸ ᱢᱮᱱᱟᱜᱼᱟ — ᱢᱤᱫ ᱫᱷᱟᱣ ᱫᱚᱦᱲᱟ ᱞᱮᱠᱷᱟᱱ ᱯᱟᱠᱟ ᱦᱩᱭᱩᱜᱼᱟ।",
+    "notifStruggleBodyOther": "{count} ᱦᱟᱹᱴᱤᱧ ᱟᱹᱲᱟᱹ ᱟᱨᱦᱚᱸ ᱢᱮᱱᱟᱜᱼᱟ — ᱢᱤᱫ ᱫᱷᱟᱣ ᱫᱚᱦᱲᱟ ᱞᱮᱠᱷᱟᱱ ᱯᱟᱠᱟ ᱦᱩᱭᱩᱜᱼᱟ।",
+    "@notifStruggleBodyOther": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "notifGentleTitle": "ᱟᱢᱟᱜ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱟᱸᱜᱤ ᱦᱟᱠᱟᱱᱟ",
+    "notifGentleBody": "ᱦᱩᱰᱤᱧ ᱫᱚᱦᱲᱟ ᱪᱮᱫ ᱟᱠᱟᱫ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭᱟ। ᱦᱟᱹᱯᱩᱨᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ।"
 }

@@ -57,7 +57,6 @@ class LearningAnalyticsEvents {
   static const quizQuestionAnswered = 'quiz_question_answered';
   static const streakMaintained = 'streak_maintained';
   static const streakMilestone = 'streak_milestone';
-  static const dailyMissionCompleted = 'daily_mission_completed';
   static const letterPracticed = 'letter_practiced';
   static const practiceCompleted = 'practice_completed';
 
@@ -91,6 +90,24 @@ class LearningAnalyticsEvents {
   static const listeningQuizAnswered = 'listening_quiz_answered';
   static const recordingStarted = 'recording_started';
   static const recordingPlayedBack = 'recording_played_back';
+
+  // Memory engine / Today's Review (retention loop)
+  static const reviewStarted = 'review_started';
+  static const reviewItemPresented = 'review_item_presented';
+  static const reviewCorrect = 'review_correct';
+  static const reviewWrong = 'review_wrong';
+  static const reviewCompleted = 'review_completed';
+  static const itemRescheduled = 'item_rescheduled';
+  static const itemMastered = 'item_mastered';
+  static const itemPromoted = 'item_promoted';
+  static const typingStarted = 'typing_started';
+  static const typingCorrect = 'typing_correct';
+  static const typingWrong = 'typing_wrong';
+
+  /// Home Today's Review CTA tap. Denominator for "returned because they
+  /// had due reviews" (numerator: review_started) — no fabrication, just
+  /// the funnel pair.
+  static const todayReviewTapped = 'today_review_tapped';
 
   // Ad events
   static const adImpression = 'ad_impression';

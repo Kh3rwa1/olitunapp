@@ -22,12 +22,29 @@ bool isWebSessionValidTimestamp(
 bool isTransientSessionValidationFailure(Object error) {
   if (error is TimeoutException) return true;
   if (error is AppwriteException) {
-    return error.code == 0 ||
+    if (error.code == 401 || error.code == 403) return false;
+    if (error.code == 0 ||
+        error.code == null ||
+        (error.code != null && error.code! >= 500) ||
         error.type == 'network_failure' ||
-        error.type == 'general_unknown';
+        error.type == 'general_unknown') {
+      return true;
+    }
   }
 
-  final message = error.toString();
-  return message.contains('SocketException') ||
-      message.contains('TimeoutException');
+  final message = error.toString().toLowerCase();
+  return message.contains('socketexception') ||
+      message.contains('timeoutexception') ||
+      message.contains('clientexception') ||
+      message.contains('failed host lookup') ||
+      message.contains('network is unreachable') ||
+      message.contains('connection refused') ||
+      message.contains('connection reset') ||
+      message.contains('connection closed') ||
+      message.contains('handshakeexception') ||
+      message.contains('timed out') ||
+      message.contains('software caused connection abort') ||
+      message.contains('no address associated with hostname') ||
+      message.contains('network error') ||
+      message.contains('offline');
 }

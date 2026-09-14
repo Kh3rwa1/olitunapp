@@ -136,11 +136,23 @@ void main() {
       ).thenAnswer((_) async => session);
       expect(await service.isLoggedIn(), isTrue);
       expect(AccountScope.capture(prefs).userId, 'a');
+
+      // Test code: 0
       when(
         () => account.getSession(sessionId: 'current'),
       ).thenThrow(AppwriteException('offline', 0));
       expect(await service.isLoggedIn(), isTrue);
       expect(AccountScope.capture(prefs).userId, 'a');
+
+      // Test real-world Android offline: null code, ClientException/Failed host lookup
+      when(() => account.getSession(sessionId: 'current')).thenThrow(
+        AppwriteException(
+          "ClientException: Failed host lookup: 'sgp.cloud.appwrite.io' (OS Error: No address associated with hostname, errno = 7)",
+        ),
+      );
+      expect(await service.isLoggedIn(), isTrue);
+      expect(AccountScope.capture(prefs).userId, 'a');
+
       when(
         () => account.getSession(sessionId: 'current'),
       ).thenThrow(AppwriteException('expired', 401));

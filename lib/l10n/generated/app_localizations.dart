@@ -1190,18 +1190,6 @@ abstract class AppLocalizations {
   /// **'Read'**
   String get affirmationRead;
 
-  /// No description provided for @todaysMissionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Today\'s Mission'**
-  String get todaysMissionTitle;
-
-  /// No description provided for @missionsDoneCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{done}/4 Done'**
-  String missionsDoneCount(int done);
-
   /// No description provided for @hindi.
   ///
   /// In en, this message translates to:
@@ -1651,6 +1639,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Brilliant review! You are learning faster by refining errors.'**
   String get kudosMistake4;
+
+  /// No description provided for @reviewToday.
+  ///
+  /// In en, this message translates to:
+  /// **'TODAY\'S REVIEW'**
+  String get reviewToday;
+
+  /// No description provided for @reviewLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading your review…'**
+  String get reviewLoading;
+
+  /// No description provided for @reviewDueOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 review due'**
+  String get reviewDueOne;
+
+  /// No description provided for @reviewDueOther.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews due'**
+  String reviewDueOther(int count);
+
+  /// No description provided for @reviewDueSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'~{minutes} min · from lessons you already started'**
+  String reviewDueSubtitle(int minutes);
+
+  /// No description provided for @reviewStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start review'**
+  String get reviewStart;
+
+  /// No description provided for @reviewCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re caught up.'**
+  String get reviewCaughtUp;
+
+  /// No description provided for @reviewCaughtUpRetained.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items retained so far. Keep remembering.'**
+  String reviewCaughtUpRetained(int count);
+
+  /// No description provided for @reviewCaughtUpEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a lesson below — what you learn will show up here for review.'**
+  String get reviewCaughtUpEmpty;
+
+  /// No description provided for @reviewContinueLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning'**
+  String get reviewContinueLearning;
+
+  /// No description provided for @reviewLearnNew.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn something new'**
+  String get reviewLearnNew;
+
+  /// No description provided for @reviewRetained.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} retained'**
+  String reviewRetained(int count);
+
+  /// No description provided for @reviewExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit review'**
+  String get reviewExit;
+
+  /// No description provided for @reviewSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Review {current} of {total}'**
+  String reviewSessionTitle(int current, int total);
+
+  /// No description provided for @reviewSessionTitleBare.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Review'**
+  String get reviewSessionTitleBare;
+
+  /// No description provided for @reviewComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Review complete'**
+  String get reviewComplete;
+
+  /// No description provided for @reviewCorrectFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct — nice recall.'**
+  String get reviewCorrectFeedback;
+
+  /// No description provided for @reviewWrongFeedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Not quite — this one comes back sooner.'**
+  String get reviewWrongFeedback;
+
+  /// No description provided for @reviewCorrectAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct answer: {answer}'**
+  String reviewCorrectAnswer(String answer);
+
+  /// No description provided for @reviewHintTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'Type each sound, slowly.'**
+  String get reviewHintTyping;
+
+  /// No description provided for @reviewHintListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen again — match the sound to the meaning.'**
+  String get reviewHintListening;
+
+  /// No description provided for @reviewHintRecognition.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound it out from the Ol Chiki letters.'**
+  String get reviewHintRecognition;
+
+  /// No description provided for @reviewRepromptListen.
+  ///
+  /// In en, this message translates to:
+  /// **'LISTEN'**
+  String get reviewRepromptListen;
+
+  /// No description provided for @reviewRepromptWrite.
+  ///
+  /// In en, this message translates to:
+  /// **'WRITE IN OL CHIKI'**
+  String get reviewRepromptWrite;
+
+  /// No description provided for @reviewRepromptMeaning.
+  ///
+  /// In en, this message translates to:
+  /// **'WHAT DOES THIS MEAN?'**
+  String get reviewRepromptMeaning;
+
+  /// No description provided for @reviewPlayAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Play audio'**
+  String get reviewPlayAudio;
+
+  /// No description provided for @reviewReplayAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Replay audio'**
+  String get reviewReplayAudio;
+
+  /// No description provided for @reviewCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get reviewCheck;
+
+  /// No description provided for @reviewFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish review'**
+  String get reviewFinish;
+
+  /// No description provided for @reviewBackHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Home'**
+  String get reviewBackHome;
+
+  /// No description provided for @reviewDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get reviewDone;
+
+  /// No description provided for @reviewCaughtUpShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing due. Learn something new below to keep the loop going.'**
+  String get reviewCaughtUpShort;
+
+  /// No description provided for @reviewSummaryScore.
+  ///
+  /// In en, this message translates to:
+  /// **'{correct} of {total} correct ({accuracy}%)'**
+  String reviewSummaryScore(int correct, int total, int accuracy);
+
+  /// No description provided for @reviewSummaryMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'{mastered} mastered · +{stars} stars'**
+  String reviewSummaryMastered(int mastered, int stars);
+
+  /// No description provided for @reviewSummaryRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Missed items come back sooner — that is the system working, not failing.'**
+  String get reviewSummaryRecovery;
+
+  /// No description provided for @reviewLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your review'**
+  String get reviewLoadError;
+
+  /// No description provided for @reviewLoadErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count} due reviews are safe — the lesson content just didn\'t load. Check your connection and retry.'**
+  String reviewLoadErrorBody(int count);
+
+  /// No description provided for @notifReviewTitleOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 review ready'**
+  String get notifReviewTitleOne;
+
+  /// No description provided for @notifReviewTitleOther.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} reviews ready'**
+  String notifReviewTitleOther(int count);
+
+  /// No description provided for @notifReviewBodyOne.
+  ///
+  /// In en, this message translates to:
+  /// **'1 item is ready for review (~{minutes} min). Open Today\'s Review when you have a moment.'**
+  String notifReviewBodyOne(int minutes);
+
+  /// No description provided for @notifReviewBodyOther.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} items are ready for review (~{minutes} min). Open Today\'s Review when you have a moment.'**
+  String notifReviewBodyOther(int count, int minutes);
+
+  /// No description provided for @notifStruggleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tricky ones are back'**
+  String get notifStruggleTitle;
+
+  /// No description provided for @notifStruggleBodyOne.
+  ///
+  /// In en, this message translates to:
+  /// **'A word you found tricky is due again — a quick retry locks it in.'**
+  String get notifStruggleBodyOne;
+
+  /// No description provided for @notifStruggleBodyOther.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} words you found tricky are due again — a quick retry locks them in.'**
+  String notifStruggleBodyOther(int count);
+
+  /// No description provided for @notifGentleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Santali is waiting'**
+  String get notifGentleTitle;
+
+  /// No description provided for @notifGentleBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A short review keeps what you learned fresh. No rush.'**
+  String get notifGentleBody;
 }
 
 class _AppLocalizationsDelegate

@@ -143,18 +143,37 @@ class LessonBlockCardContent extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Eyebrow: lesson context
-                        Text(
-                          lesson.titleLatin.toUpperCase(),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.6,
-                            color: accentColor,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                lesson.titleLatin.toUpperCase(),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.6,
+                                  color: accentColor,
+                                ),
+                              ),
+                            ),
+                            if (block.audioUrl != null &&
+                                block.audioUrl!.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Icon(
+                                isThisPlaying
+                                    ? Icons.graphic_eq_rounded
+                                    : Icons.volume_up_rounded,
+                                size: 13,
+                                color: accentColor,
+                              ),
+                            ],
+                          ],
                         ),
                         const SizedBox(height: 14),
                         // 1. Target Ol Chiki Script Text
@@ -229,49 +248,18 @@ class LessonBlockCardContent extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
 
-              // Tactile 3D Action Button (Typing practice or Listen)
+              // Tactile 3D Action Button (Typing practice and/or Listen)
               Container(
                 constraints: const BoxConstraints(maxWidth: 320),
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: isEligibleForTyping && typingPracticeArgs != null
-                    ? Tactile3DButton(
-                        color: AppColors.primary,
-                        onPressed: () {
-                          ref
-                              .read(
-                                typingPracticeControllerProvider(
-                                  typingPracticeArgs!,
-                                ).notifier,
-                              )
-                              .startPractice();
-                        },
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.keyboard_outlined, color: Colors.black),
-                            SizedBox(width: 12),
-                            Flexible(
-                              child: Text(
-                                'PRACTICE TYPING',
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.black,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : Tactile3DButton(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (block.audioUrl != null && block.audioUrl!.isNotEmpty)
+                      Tactile3DButton(
                         color: accentColor,
-                        onPressed:
-                            block.audioUrl != null && block.audioUrl!.isNotEmpty
-                            ? () => onPlayAudio(block.audioUrl!, blockAudioId)
-                            : null,
+                        onPressed: () =>
+                            onPlayAudio(block.audioUrl!, blockAudioId),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -298,6 +286,94 @@ class LessonBlockCardContent extends ConsumerWidget {
                           ],
                         ),
                       ),
+                    if (isEligibleForTyping && typingPracticeArgs != null) ...[
+                      if (block.audioUrl != null && block.audioUrl!.isNotEmpty)
+                        const SizedBox(height: 12),
+                      Tactile3DButton(
+                        color:
+                            (block.audioUrl != null &&
+                                block.audioUrl!.isNotEmpty)
+                            ? (isDark
+                                  ? AppColors.darkSurfaceElevated
+                                  : AppColors.lightSurfaceVariant)
+                            : AppColors.primary,
+                        onPressed: () {
+                          ref
+                              .read(
+                                typingPracticeControllerProvider(
+                                  typingPracticeArgs!,
+                                ).notifier,
+                              )
+                              .startPractice();
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.keyboard_outlined,
+                              color:
+                                  (block.audioUrl != null &&
+                                      block.audioUrl!.isNotEmpty)
+                                  ? (isDark
+                                        ? Colors.white
+                                        : AppColors.textPrimaryLight)
+                                  : Colors.black,
+                            ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                'PRACTICE TYPING',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color:
+                                      (block.audioUrl != null &&
+                                          block.audioUrl!.isNotEmpty)
+                                      ? (isDark
+                                            ? Colors.white
+                                            : AppColors.textPrimaryLight)
+                                      : Colors.black,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if ((block.audioUrl == null || block.audioUrl!.isEmpty) &&
+                        (!isEligibleForTyping || typingPracticeArgs == null))
+                      Tactile3DButton(
+                        color: accentColor,
+                        onPressed: null,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.volume_off_rounded,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 12),
+                            Flexible(
+                              child: Text(
+                                buttonText,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               if (isDesktop)

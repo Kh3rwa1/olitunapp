@@ -44,6 +44,10 @@ class StatsGrid extends StatelessWidget {
   final bool isDark;
   final bool isTablet;
 
+  /// Items retained through repeated retrieval (review store). Null hides
+  /// the pill — the canonical retention number, never estimated.
+  final int? retainedItems;
+
   const StatsGrid({
     super.key,
     required this.stars,
@@ -51,6 +55,7 @@ class StatsGrid extends StatelessWidget {
     required this.learningTime,
     required this.isDark,
     required this.isTablet,
+    this.retainedItems,
   });
 
   @override
@@ -110,6 +115,22 @@ class StatsGrid extends StatelessWidget {
             ),
           ],
         ),
+        if (retainedItems != null) ...[
+          const SizedBox(height: 10),
+          AnimatedBentoChild(
+            index: 4,
+            child: StatPill(
+              data: StatData.counter(
+                Icons.psychology_rounded,
+                retainedItems!,
+                'Retained',
+                AppColors.emeraldDeep,
+              ),
+              isDark: isDark,
+              delay: 320,
+            ),
+          ),
+        ],
       ],
     );
   }

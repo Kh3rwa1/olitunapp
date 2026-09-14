@@ -469,6 +469,7 @@ class QuizEngine {
           .map((w) => meaningDisplay(w, teachingLanguage: teachingLanguage))
           .toList(),
       correctIndex: options.indexWhere((option) => option.id == word.id),
+      sourceWordId: word.id,
     );
   }
 

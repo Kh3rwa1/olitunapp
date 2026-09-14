@@ -278,8 +278,11 @@ void main() {
       expect(beginner.learnerLevel, 'Beginner');
 
       // Need >= 20% overallProgress AND >= 3 lessons.
-      // overallProgress = avg(alphabetProgress, numbersProgress, vocabularyProgress, rhymesProgress)
-      // Each needs to contribute: 10 letters (33%), 2 numbers_ (20%), 4 words_ (20%), 2 rhymes_ (20%) → avg ~23%
+      // overallProgress = avg(alphabetProgress, numbersProgress,
+      //   vocabularyProgress, sentencesProgress, rhymesProgress).
+      // Category getters report ONLY explicitly-tracked coverage (the old
+      // lesson-count fallbacks were fake mastery). 10 letters = 33%
+      // alphabet + 20% tracked coverage in each other skill -> ~23% avg.
       const intermediate = UserStatsEntity(
         practicedLetters: {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'},
         completedLessons: {
@@ -296,7 +299,12 @@ void main() {
           'rhymes_2',
         },
         quizHistory: {},
-        categoryMastery: {},
+        categoryMastery: {
+          'numbers': 20,
+          'words': 20,
+          'sentences': 20,
+          'rhymes': 20,
+        },
         totalLearningMinutes: 60,
         lastActiveDate: '',
         currentStreak: 5,

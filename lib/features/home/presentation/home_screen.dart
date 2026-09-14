@@ -8,7 +8,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/ads/ad_service.dart';
 import '../../../core/notifications/notification_service.dart';
+import '../../review/data/review_store.dart';
+import '../../review/domain/memory_scheduler.dart';
 import '../../../core/config/feature_flags.dart';
+import '../../../core/storage/hive_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
@@ -18,7 +21,8 @@ import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 import 'widgets/today_affirmation_card.dart';
 import 'widgets/next_best_action_card.dart';
-import 'widgets/today_mission_card.dart';
+import '../../quiz/presentation/providers/mistake_provider.dart';
+import '../../review/presentation/today_review_card.dart';
 import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
@@ -68,7 +72,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ref.read(homePrefetchProvider.notifier).prefetch();
       unawaited(ref.read(adServiceProvider).showConsentFormIfNeeded(context));
       _requestNotificationPermissionIfNeeded();
+      _syncReviewReminderIfNeeded();
     });
+  }
+
+  /// Once/day: point the existing evening reminder at the real learner state
+  /// ("N reviews ready · ~M min"). Same volume, no extra notifications.
+  /// Copy is resolved in the active locale before scheduling.
+  void _syncReviewReminderIfNeeded() {
+    unawaited(() async {
+      try {
+        if (!ref.read(notificationsEnabledProvider)) return;
+        final store = ref.read(reviewStoreProvider).valueOrNull;
+        if (store == null) return;
+        if (!mounted) return;
+        final prefs = ref.read(sharedPreferencesProvider);
+        final today = DateTime.now().toIso8601String().substring(0, 10);
+        if (prefs.getString('review_reminder_synced_date') == today) return;
+        final now = DateTime.now().toUtc();
+        final dueCount = store.dueCount(now);
+        if (dueCount <= 0) return;
+        final minutes = MemoryScheduler.estimateMinutes(dueCount);
+        final struggle = store
+            .due(now, limit: 200)
+            .where((i) => i.failedRecalls > i.successfulRecalls)
+            .length;
+        final l10n = AppLocalizations.of(context);
+        final useStruggle = struggle > 0 && struggle >= dueCount ~/ 2;
+        await NotificationService.instance.syncEveningReminderWithReview(
+          dueCount: dueCount,
+          minutes: minutes,
+          struggleCount: struggle,
+          hour: ref.read(reminderHourProvider),
+          minute: ref.read(reminderMinuteProvider),
+          title: l10n == null
+              ? null
+              : useStruggle
+              ? l10n.notifStruggleTitle
+              : dueCount == 1
+              ? l10n.notifReviewTitleOne
+              : l10n.notifReviewTitleOther(dueCount),
+          body: l10n == null
+              ? null
+              : useStruggle
+              ? (struggle == 1
+                    ? l10n.notifStruggleBodyOne
+                    : l10n.notifStruggleBodyOther(struggle))
+              : dueCount == 1
+              ? l10n.notifReviewBodyOne(minutes)
+              : l10n.notifReviewBodyOther(dueCount, minutes),
+        );
+        await prefs.setString('review_reminder_synced_date', today);
+      } catch (_) {
+        // Reminders must never break home.
+      }
+    }());
   }
 
   void _requestNotificationPermissionIfNeeded() {
@@ -97,16 +155,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final categoriesAsync = ref.watch(categoryNotifierProvider);
     // Watch prefetch provider to trigger rebuilds or updates
     ref.watch(homePrefetchProvider);
+    final dueReviews = ref.watch(dueReviewCountProvider);
 
     final statsAsync = ref.watch(userStatsProvider);
     final completedIds = statsAsync.value?.completedLessons ?? {};
     final lessonsAsync = ref.watch(learnerLessonsProvider);
     final allLessons = lessonsAsync.valueOrNull ?? [];
+    final lastOpenedLessonId = ref.watch(lastOpenedLessonIdProvider)?.trim();
     final nextLesson = continueLessonFor(
       lessons: allLessons,
       completedLessonIds: completedIds,
-      lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
+      lastOpenedLessonId: lastOpenedLessonId,
     );
+    final hasIncompleteLesson =
+        lastOpenedLessonId != null &&
+        lastOpenedLessonId.isNotEmpty &&
+        !completedIds.contains(lastOpenedLessonId);
+    final hasMistakes = ref.watch(mistakeProvider).isNotEmpty;
+    final showTodayReview =
+        (hasIncompleteLesson || hasMistakes) && dueReviews > 0;
 
     // Seamless automatic background data sync when recovering connection
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
@@ -142,18 +209,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
         const SizedBox(height: 20),
 
-        // (2b) Featured banners carousel — hidden when empty
-        HomeBannersCarousel(isDark: isDark),
-        const SizedBox(height: 20),
+        // (3) TODAY'S REVIEW — appears only after user left a lesson or couldn't complete
+        if (showTodayReview) ...[
+          RepaintBoundary(child: TodayReviewCard(nextLessonId: nextLesson?.id)),
+          const SizedBox(height: 16),
+        ],
 
-        // (3) TodayAffirmationCard - the hero with more vertical breathing room
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: RepaintBoundary(child: TodayAffirmationCard()),
-        ),
-        const SizedBox(height: 20),
-
-        // (4) NextBestActionCard & TodayMissionCard or Loading Skeleton
+        // (4) CONTINUE LEARNING — NextBestActionCard
         statsAsync.isLoading
             ? _buildStatsSkeleton(isDark)
             : Column(
@@ -174,10 +236,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(height: 16),
                     const RepaintBoundary(child: LearningPathCard()),
                   ],
-                  const SizedBox(height: 16),
-                  const RepaintBoundary(child: TodayMissionCard()),
                 ],
               ),
+        const SizedBox(height: 20),
+
+        // (5) Secondary content lives BELOW the learning actions:
+        // affirmation + banners carousel (explore/discover context).
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: RepaintBoundary(child: TodayAffirmationCard()),
+        ),
+        const SizedBox(height: 20),
+        HomeBannersCarousel(isDark: isDark),
         const SizedBox(height: 24),
 
         // (6) Guest CTA banner (thin, only if isGuest) - 48dp banner

@@ -3,6 +3,12 @@ import '../../../../core/notifications/notification_service.dart';
 import '../../../../shared/providers/providers.dart';
 import 'mission_providers.dart';
 
+/// Suppresses today's habit reminders once the learner has practiced —
+/// a reminder to practice is pointless (and naggy) after real practice.
+///
+/// The former "4/4 daily missions" gamification was retired with the
+/// TodayMissionCard; the practice flags themselves remain because
+/// NextBestActionCard and quiz/lesson/rhyme flows still set and read them.
 class DailyMissionsObserver extends ProviderObserver {
   const DailyMissionsObserver();
 
@@ -15,14 +21,13 @@ class DailyMissionsObserver extends ProviderObserver {
   ) {
     if (provider == lessonCompletedTodayProvider ||
         provider == quizTakenTodayProvider ||
-        provider == bakhedListenedTodayProvider ||
-        provider == quickWinCompletedTodayProvider) {
-      final lesson = container.read(lessonCompletedTodayProvider);
-      final quiz = container.read(quizTakenTodayProvider);
-      final bakhed = container.read(bakhedListenedTodayProvider);
-      final quick = container.read(quickWinCompletedTodayProvider);
+        provider == bakhedListenedTodayProvider) {
+      final practiced =
+          container.read(lessonCompletedTodayProvider) ||
+          container.read(quizTakenTodayProvider) ||
+          container.read(bakhedListenedTodayProvider);
 
-      if (lesson || quiz || bakhed || quick) {
+      if (practiced) {
         final notificationsEnabled = container.read(
           notificationsEnabledProvider,
         );
@@ -36,18 +41,6 @@ class DailyMissionsObserver extends ProviderObserver {
             frequency: frequency,
           );
         }
-      }
-
-      final completedCount =
-          (lesson ? 1 : 0) +
-          (quiz ? 1 : 0) +
-          (bakhed ? 1 : 0) +
-          (quick ? 1 : 0);
-
-      if (completedCount == 4) {
-        container
-            .read(userStatsProvider.notifier)
-            .recordDailyMissionsCompletedToday();
       }
     }
   }

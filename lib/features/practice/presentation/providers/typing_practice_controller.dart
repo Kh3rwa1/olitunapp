@@ -1,5 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../review/data/review_store.dart';
+import '../../../review/domain/review_item.dart';
 import '../../data/typing_practice_settings.dart';
 import '../../domain/practice_scoring_rules.dart';
 import '../../domain/typing_comparison.dart';
@@ -100,6 +103,7 @@ class TypingPracticeController
 
   void startPractice() {
     state = state.copyWith(phase: TypingPhase.typing);
+    _trackTypingEvent(LearningAnalyticsEvents.typingStarted);
   }
 
   void appendChar(String char) {
@@ -147,6 +151,9 @@ class TypingPracticeController
   void revealAndContinue() {
     if (state.phase != TypingPhase.typing) return;
     state = state.copyWith(typedSoFar: arg.target, withHint: true);
+    // Revealing the answer is not a recall — schedule it as a miss so the
+    // item comes back sooner instead of pretending it was learned.
+    _feedScheduler(correct: false);
     _onComplete();
   }
 
@@ -166,8 +173,63 @@ class TypingPracticeController
     }
   }
 
+  /// Feeds the memory scheduler. Fire-and-forget on purpose: scheduling
+  /// must never delay the typing celebration or break practice.
+  /// Synchronous reads are guarded so bare test containers (no overrides)
+  /// and partially-initialized trees keep working exactly as before.
+  void _feedScheduler({required bool correct}) {
+    try {
+      final itemType = switch (arg.contentType) {
+        'sentence' => ReviewItemType.sentence,
+        'word' => ReviewItemType.word,
+        _ => null,
+      };
+      if (itemType == null || arg.itemKey.isEmpty) return;
+      // ignore: discarded_futures
+      ref
+          .read(reviewStoreProvider.notifier)
+          .recordRecall(
+            itemId: arg.itemKey,
+            itemType: itemType,
+            correct: correct,
+            exerciseType: ReviewExerciseType.typing,
+          );
+    } catch (_) {
+      // Scheduler must never break typing practice.
+    }
+  }
+
+  void _trackTypingEvent(String event) {
+    try {
+      // ignore: discarded_futures
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            event,
+            source: 'typing_practice',
+            sourceId: arg.itemKey,
+            metadata: {
+              'attempts': state.attemptsTotal,
+              'withHint': state.withHint,
+            },
+          );
+    } catch (_) {
+      // Analytics must never break typing practice.
+    }
+  }
+
   void _onComplete() {
     state = state.copyWith(phase: TypingPhase.complete);
+
+    // Typing is production: a clean completion is stronger evidence than an
+    // MCQ tap, so it counts (double) in the memory scheduler.
+    if (!state.withHint) _feedScheduler(correct: true);
+
+    _trackTypingEvent(
+      state.withHint
+          ? LearningAnalyticsEvents.typingWrong
+          : LearningAnalyticsEvents.typingCorrect,
+    );
 
     if (!state.hasAwardedStars) {
       state = state.copyWith(hasAwardedStars: true);

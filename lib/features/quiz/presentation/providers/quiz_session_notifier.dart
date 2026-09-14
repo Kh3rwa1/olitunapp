@@ -8,8 +8,13 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
+import '../../../review/data/review_store.dart';
+import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_scoring_rules.dart';
+import '../../domain/quiz_memory_resolver.dart';
 import 'mistake_provider.dart';
+
+export '../../domain/quiz_memory_resolver.dart';
 
 class QuizSessionState {
   final int currentQuestion;
@@ -251,9 +256,21 @@ class QuizSessionNotifier
               'correctIndex': question.correctIndex,
               'comboBefore': state.comboStreak,
               'heartsAfter': scoredState.hearts,
+              // Source IDs let retention analysis join quiz attempts to
+              // memory items (introduced → recalled → mastered per item).
+              if ((question.sourceWordId?.trim().isNotEmpty ?? false))
+                'sourceWordId': question.sourceWordId!.trim(),
+              if ((question.sourceSentenceId?.trim().isNotEmpty ?? false))
+                'sourceSentenceId': question.sourceSentenceId!.trim(),
             },
           ),
     );
+
+    // RETRIEVE → the single review state (same store as Today's Review,
+    // typing and review sessions). Resolution uses ONLY the generator-set
+    // source IDs — no content-provider lookups here, so bare unit-test
+    // containers and offline quiz sessions behave identically.
+    _feedMemory(question: question, isCorrect: isCorrect);
 
     state = scoredState.copyWith(selectedAnswer: index, isAnswered: true);
 
@@ -356,6 +373,31 @@ class QuizSessionNotifier
 
   void reset() {
     state = const QuizSessionState();
+  }
+
+  /// A quiz tap is recognition evidence (a tap can never prove production).
+  /// Listening questions (audio-carrying) record listening evidence instead.
+  /// Fire-and-forget + guarded: mounts only ReviewStore (SharedPreferences),
+  /// never content providers — scheduler must never break quizzes.
+  void _feedMemory({required QuizQuestion question, required bool isCorrect}) {
+    try {
+      final resolved = resolveQuizMemoryItem(question);
+      if (resolved == null) return;
+      final isListening = (question.audioUrl?.trim().isNotEmpty ?? false);
+      // ignore: discarded_futures
+      ref
+          .read(reviewStoreProvider.notifier)
+          .recordRecall(
+            itemId: resolved.itemId,
+            itemType: resolved.itemType,
+            correct: isCorrect,
+            exerciseType: isListening
+                ? ReviewExerciseType.listening
+                : ReviewExerciseType.recognition,
+          );
+    } catch (_) {
+      // Scheduler must never break quizzes.
+    }
   }
 
   int _questionOptionCount(QuizQuestion question) {

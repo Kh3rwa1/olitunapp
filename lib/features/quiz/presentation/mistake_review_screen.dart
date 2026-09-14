@@ -14,6 +14,9 @@ import '../presentation/widgets/quiz_feedback_panel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../features/profile/presentation/providers/user_stats_provider.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../review/data/review_store.dart';
+import '../../review/domain/review_item.dart';
+import '../domain/quiz_memory_resolver.dart';
 
 class MistakeReviewScreen extends ConsumerStatefulWidget {
   const MistakeReviewScreen({super.key});
@@ -380,6 +383,20 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                               _selectedAnswer = index;
                               _isAnswered = true;
                               final isCorrect = index == question.correctIndex;
+                              final memItem = resolveQuizMemoryItem(question);
+                              if (memItem != null) {
+                                unawaited(
+                                  ref
+                                      .read(reviewStoreProvider.notifier)
+                                      .recordRecall(
+                                        itemId: memItem.itemId,
+                                        itemType: memItem.itemType,
+                                        correct: isCorrect,
+                                        exerciseType:
+                                            ReviewExerciseType.recognition,
+                                      ),
+                                );
+                              }
                               if (isCorrect) {
                                 _masteredThisSession++;
                                 if (!_masteredMistakes.any(

@@ -452,4 +452,61 @@ void main() {
       expect(find.text('Greetings basics'), findsWidgets);
     },
   );
+
+  testWidgets(
+    'Vocabulary word blocks show both LISTEN and PRACTICE TYPING buttons',
+    (tester) async {
+      final mockAudioService = MockAudioService();
+      const vocabLessons = [
+        LessonEntity(
+          id: 'lesson_vocab_test',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱥᱟᱵᱟᱫᱽ',
+          titleLatin: 'Vocabulary',
+          blocks: [
+            LessonBlockEntity(
+              type: 'word',
+              textOlChiki: 'ᱫᱟᱜ',
+              textLatin: 'Daag',
+              audioUrl: 'https://example.com/audio/daag.wav',
+              data: {'pronunciation': 'Water', 'themeColor': '#10B981'},
+            ),
+          ],
+        ),
+      ];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learnerLessonsProvider.overrideWithValue(
+              const AsyncValue.data(vocabLessons),
+            ),
+            lessonsByCategoryProvider(
+              'cat_vocab',
+            ).overrideWithValue(const AsyncValue.data(vocabLessons)),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_vocab_test',
+              initialBlockIndex: 0,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify BOTH LISTEN and PRACTICE TYPING buttons are present
+      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('PRACTICE TYPING'), findsOneWidget);
+
+      // Verify audio playback can be triggered
+      await tester.tap(find.text('LISTEN'));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+    },
+  );
 }

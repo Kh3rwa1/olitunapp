@@ -3,8 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
+import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:mocktail/mocktail.dart';
+
+class _MockLearningAnalyticsService extends Mock
+    implements LearningAnalyticsService {}
 
 class _MockUserStatsNotifier extends UserStatsNotifier {
   final List<Map<String, Object?>> recordCalls = [];
@@ -46,6 +51,7 @@ class _MockUserStatsNotifier extends UserStatsNotifier {
 void main() {
   group('TypingPracticeController', () {
     late _MockUserStatsNotifier mockUserStatsNotifier;
+    late _MockLearningAnalyticsService mockAnalytics;
     late SharedPreferences prefs;
     const targetWord = '\u1C5A\u1C5B\u1C5C'; // ᱚᱟᱤ
     const args = TypingPracticeArgs(
@@ -57,6 +63,17 @@ void main() {
 
     setUp(() async {
       mockUserStatsNotifier = _MockUserStatsNotifier();
+      mockAnalytics = _MockLearningAnalyticsService();
+      when(
+        () => mockAnalytics.track(
+          any(),
+          source: any(named: 'source'),
+          sourceId: any(named: 'sourceId'),
+          metadata: any(named: 'metadata'),
+          learnerLevel: any(named: 'learnerLevel'),
+          scriptMode: any(named: 'scriptMode'),
+        ),
+      ).thenAnswer((_) async {});
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
     });
@@ -66,6 +83,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           userStatsProvider.overrideWith(() => mockUserStatsNotifier),
+          learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
         ],
       );
       addTearDown(container.dispose);

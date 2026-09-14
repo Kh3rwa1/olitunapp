@@ -595,14 +595,6 @@ class AppLocalizationsSat extends AppLocalizations {
   String get affirmationRead => 'ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ';
 
   @override
-  String get todaysMissionTitle => 'ᱛᱮᱦᱮᱧᱟᱜ ᱠᱟᱹᱢᱤ';
-
-  @override
-  String missionsDoneCount(int done) {
-    return '$done/4 ᱯᱩᱨᱟᱹᱣ';
-  }
-
-  @override
   String get hindi => 'ᱦᱤᱱᱫᱤ';
 
   @override
@@ -849,4 +841,173 @@ class AppLocalizationsSat extends AppLocalizations {
   @override
   String get kudosMistake4 =>
       'ᱵᱷᱟᱞᱚ ᱫᱚᱦᱲᱟ ᱧᱮᱞ! ᱵᱷᱩᱞ ᱥᱟᱯᱷᱟ ᱛᱮ ᱟᱢ ᱞᱚᱜᱚᱱ ᱪᱮᱫᱚᱜ ᱠᱟᱱᱟ᱾';
+
+  @override
+  String get reviewToday => 'ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ';
+
+  @override
+  String get reviewLoading => 'ᱟᱢᱟᱜ ᱫᱚᱦᱲᱟ ᱞᱚᱫᱽ ᱦᱩᱭ ᱟᱠᱟᱱᱟ…';
+
+  @override
+  String get reviewDueOne => 'ᱢᱤᱫ ᱫᱚᱦᱲᱟ ᱢᱮᱱᱟᱜᱼᱟ';
+
+  @override
+  String reviewDueOther(int count) {
+    return '$count ᱫᱚᱦᱲᱟ ᱢᱮᱱᱟᱜᱼᱟ';
+  }
+
+  @override
+  String reviewDueSubtitle(int minutes) {
+    return '~$minutes ᱢᱤᱱᱤᱴ · ᱮᱦᱚᱵ ᱟᱠᱟᱫ ᱥᱮᱪᱮᱫ ᱠᱷᱚᱱ';
+  }
+
+  @override
+  String get reviewStart => 'ᱫᱚᱦᱲᱟ ᱮᱦᱚᱵ ᱢᱮ';
+
+  @override
+  String get reviewCaughtUp => 'ᱥᱟᱱᱟᱢ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ।';
+
+  @override
+  String reviewCaughtUpRetained(int count) {
+    return 'ᱱᱤᱛ ᱦᱟᱹᱵᱤᱡ $count ᱡᱤᱱᱤᱥ ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ। ᱩᱭᱦᱟᱹᱨ ᱫᱚᱦᱚᱭ ᱢᱮ।';
+  }
+
+  @override
+  String get reviewCaughtUpEmpty =>
+      'ᱞᱟᱛᱟᱨ ᱨᱮ ᱢᱤᱫ ᱥᱮᱪᱮᱫ ᱮᱦᱚᱵ ᱢᱮ — ᱪᱮᱫ ᱟᱢ ᱚᱱᱟ ᱱᱚᱸᱰᱮ ᱫᱚᱦᱲᱟ ᱨᱮ ᱦᱤᱡᱩᱜᱼᱟ।';
+
+  @override
+  String get reviewContinueLearning => 'ᱟᱨᱦᱚᱸ ᱪᱮᱫᱚᱜ ᱢᱮ';
+
+  @override
+  String get reviewLearnNew => 'ᱱᱟᱶᱟ ᱪᱮᱫᱚᱜ ᱢᱮ';
+
+  @override
+  String reviewRetained(int count) {
+    return '$count ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ';
+  }
+
+  @override
+  String get reviewExit => 'ᱫᱚᱦᱲᱟ ᱠᱷᱚᱱ ᱚᱰᱚᱠᱚᱜ ᱢᱮ';
+
+  @override
+  String reviewSessionTitle(int current, int total) {
+    return 'ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ $current / $total';
+  }
+
+  @override
+  String get reviewSessionTitleBare => 'ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ';
+
+  @override
+  String get reviewComplete => 'ᱫᱚᱦᱲᱟ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ';
+
+  @override
+  String get reviewCorrectFeedback => 'ᱴᱷᱤᱠ — ᱱᱟᱯᱟᱭ ᱩᱭᱦᱟᱹᱨ ᱢᱮᱱᱟᱜᱼᱟ।';
+
+  @override
+  String get reviewWrongFeedback => 'ᱟᱨ ᱢᱤᱫ ᱫᱷᱟᱣ — ᱱᱚᱶᱟ ᱩᱥᱟᱹᱨᱟ ᱨᱩᱣᱟᱹᱲ ᱦᱤᱡᱩᱜᱼᱟ।';
+
+  @override
+  String reviewCorrectAnswer(String answer) {
+    return 'ᱴᱷᱤᱠ ᱛᱮᱞᱟ: $answer';
+  }
+
+  @override
+  String get reviewHintTyping => 'ᱦᱚᱲᱢᱚ ᱦᱚᱲᱢᱚ ᱛᱮ ᱡᱚᱛᱚ ᱥᱟᱲᱮ ᱚᱞ ᱢᱮ।';
+
+  @override
+  String get reviewHintListening => 'ᱟᱨᱦᱚᱸ ᱟᱸᱡᱚᱢ ᱢᱮ — ᱥᱟᱲᱮ ᱥᱟᱶ ᱢᱮᱱᱮᱛ ᱡᱚᱲᱟᱣ ᱢᱮ।';
+
+  @override
+  String get reviewHintRecognition => 'ᱚᱞ ᱪᱤᱠᱤ ᱪᱤᱠᱤ ᱠᱷᱚᱱ ᱨᱟᱲᱟᱝ ᱢᱮ।';
+
+  @override
+  String get reviewRepromptListen => 'ᱟᱸᱡᱚᱢ ᱢᱮ';
+
+  @override
+  String get reviewRepromptWrite => 'ᱚᱞ ᱪᱤᱠᱤ ᱛᱮ ᱚᱞ ᱢᱮ';
+
+  @override
+  String get reviewRepromptMeaning => 'ᱱᱚᱶᱟ ᱨᱮᱭᱟᱜ ᱢᱮᱱᱮᱛ ᱪᱮᱫ?';
+
+  @override
+  String get reviewPlayAudio => 'ᱥᱟᱲᱮ ᱟᱸᱡᱚᱢ ᱢᱮ';
+
+  @override
+  String get reviewReplayAudio => 'ᱟᱨᱦᱚᱸ ᱟᱸᱡᱚᱢ ᱢᱮ';
+
+  @override
+  String get reviewCheck => 'ᱧᱮᱞ ᱢᱮ';
+
+  @override
+  String get reviewFinish => 'ᱫᱚᱦᱲᱟ ᱢᱩᱪᱟᱹᱫ ᱢᱮ';
+
+  @override
+  String get reviewBackHome => 'ᱨᱩᱣᱟᱹᱲ ᱪᱟᱞᱟᱜ ᱢᱮ';
+
+  @override
+  String get reviewDone => 'ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ';
+
+  @override
+  String get reviewCaughtUpShort =>
+      'ᱪᱮᱫ ᱵᱟᱹᱜᱤ ᱵᱟᱹᱱᱩᱜᱼᱟ। ᱱᱟᱶᱟ ᱪᱮᱫ ᱠᱟᱛᱮ ᱟᱨᱦᱚᱸ ᱞᱟᱦᱟᱜ ᱢᱮ।';
+
+  @override
+  String reviewSummaryScore(int correct, int total, int accuracy) {
+    return '$total ᱠᱷᱚᱱ $correct ᱴᱷᱤᱠ ($accuracy%)';
+  }
+
+  @override
+  String reviewSummaryMastered(int mastered, int stars) {
+    return '$mastered ᱯᱩᱨᱟᱹ ᱥᱮᱫ · +$stars ᱤᱯᱤᱞ';
+  }
+
+  @override
+  String get reviewSummaryRecovery =>
+      'ᱵᱟᱹᱜᱤ ᱟᱠᱟᱱ ᱩᱥᱟᱹᱨᱟ ᱨᱩᱣᱟᱹᱲ ᱦᱤᱡᱩᱜᱼᱟ — ᱱᱚᱶᱟ ᱜᱮ ᱵᱮᱵᱚᱥᱛᱟ ᱨᱮᱭᱟᱜ ᱠᱟᱹᱢᱤ ᱠᱟᱱᱟ।';
+
+  @override
+  String get reviewLoadError => 'ᱟᱢᱟᱜ ᱫᱚᱦᱲᱟ ᱞᱚᱫᱽ ᱵᱟᱭ ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱫᱼᱟ';
+
+  @override
+  String reviewLoadErrorBody(int count) {
+    return 'ᱟᱢᱟᱜ $count ᱵᱟᱹᱜᱤ ᱫᱚᱦᱲᱟ ᱨᱩᱠᱷᱤᱭᱟᱹ ᱢᱮᱱᱟᱜᱼᱟ — ᱥᱮᱪᱮᱫ ᱡᱤᱱᱤᱥ ᱞᱚᱫᱽ ᱵᱟᱭ ᱦᱩᱭ ᱟᱠᱟᱱᱟ᱾ ᱡᱚᱲᱟᱣ ᱧᱮᱞ ᱠᱟᱛᱮ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩ ᱢᱮ᱾';
+  }
+
+  @override
+  String get notifReviewTitleOne => 'ᱢᱤᱫ ᱫᱚᱦᱲᱟ ᱛᱮᱭᱟᱨ';
+
+  @override
+  String notifReviewTitleOther(int count) {
+    return '$count ᱫᱚᱦᱲᱟ ᱛᱮᱭᱟᱨ';
+  }
+
+  @override
+  String notifReviewBodyOne(int minutes) {
+    return 'ᱢᱤᱫ ᱡᱤᱱᱤᱥ ᱫᱚᱦᱲᱟ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜᱼᱟ (~$minutes ᱢᱤᱱᱤᱴ)। ᱚᱠᱛᱚ ᱧᱟᱢ ᱞᱮᱠᱷᱟᱱ ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ ᱡᱷᱤᱡ ᱢᱮ।';
+  }
+
+  @override
+  String notifReviewBodyOther(int count, int minutes) {
+    return '$count ᱡᱤᱱᱤᱥ ᱫᱚᱦᱲᱟ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜᱼᱟ (~$minutes ᱢᱤᱱᱤᱴ)। ᱚᱠᱛᱚ ᱧᱟᱢ ᱞᱮᱠᱷᱟᱱ ᱛᱮᱦᱮᱧᱟᱜ ᱫᱚᱦᱲᱟ ᱡᱷᱤᱡ ᱢᱮ।';
+  }
+
+  @override
+  String get notifStruggleTitle => 'ᱦᱟᱹᱴᱤᱧ ᱠᱚ ᱨᱩᱣᱟᱹᱲ ᱦᱮᱡ ᱟᱠᱟᱱᱟ';
+
+  @override
+  String get notifStruggleBodyOne =>
+      'ᱚᱠᱟ ᱟᱹᱲᱟᱹ ᱦᱟᱹᱴᱤᱧ ᱧᱮᱞ ᱞᱮᱱᱟ ᱚᱱᱟ ᱟᱨᱦᱚᱸ ᱢᱮᱱᱟᱜᱼᱟ — ᱢᱤᱫ ᱫᱷᱟᱣ ᱫᱚᱦᱲᱟ ᱞᱮᱠᱷᱟᱱ ᱯᱟᱠᱟ ᱦᱩᱭᱩᱜᱼᱟ।';
+
+  @override
+  String notifStruggleBodyOther(int count) {
+    return '$count ᱦᱟᱹᱴᱤᱧ ᱟᱹᱲᱟᱹ ᱟᱨᱦᱚᱸ ᱢᱮᱱᱟᱜᱼᱟ — ᱢᱤᱫ ᱫᱷᱟᱣ ᱫᱚᱦᱲᱟ ᱞᱮᱠᱷᱟᱱ ᱯᱟᱠᱟ ᱦᱩᱭᱩᱜᱼᱟ।';
+  }
+
+  @override
+  String get notifGentleTitle => 'ᱟᱢᱟᱜ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱟᱸᱜᱤ ᱦᱟᱠᱟᱱᱟ';
+
+  @override
+  String get notifGentleBody =>
+      'ᱦᱩᱰᱤᱧ ᱫᱚᱦᱲᱟ ᱪᱮᱫ ᱟᱠᱟᱫ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭᱟ। ᱦᱟᱹᱯᱩᱨᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ।';
 }

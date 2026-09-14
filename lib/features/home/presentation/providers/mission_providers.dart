@@ -59,7 +59,9 @@ class CurrentDateNotifier extends Notifier<String> {
   }
 }
 
-/// Base for the four daily-mission flags. Each concrete notifier supplies
+/// Base for the daily-practice flags (lesson / quiz / bakhed completed
+/// today). These drive NextBestActionCard decisions and the
+/// "practiced today" reminder suppression. Each concrete notifier supplies
 /// its own [prefKey]; separate provider instances keep per-provider test
 /// overrides possible.
 abstract class DailyMissionNotifier extends Notifier<bool> {
@@ -116,11 +118,6 @@ class BakhedListenedTodayNotifier extends DailyMissionNotifier {
   String get prefKey => 'mission_bakhed_listened_date';
 }
 
-class QuickWinCompletedTodayNotifier extends DailyMissionNotifier {
-  @override
-  String get prefKey => 'mission_quick_win_completed_date';
-}
-
 final lessonCompletedTodayProvider =
     NotifierProvider<LessonCompletedTodayNotifier, bool>(
       LessonCompletedTodayNotifier.new,
@@ -133,9 +130,4 @@ final quizTakenTodayProvider = NotifierProvider<QuizTakenTodayNotifier, bool>(
 final bakhedListenedTodayProvider =
     NotifierProvider<BakhedListenedTodayNotifier, bool>(
       BakhedListenedTodayNotifier.new,
-    );
-
-final quickWinCompletedTodayProvider =
-    NotifierProvider<QuickWinCompletedTodayNotifier, bool>(
-      QuickWinCompletedTodayNotifier.new,
     );

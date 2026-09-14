@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -44,6 +46,7 @@ class _LessonBlockDetailScreenState
   bool _isAudioPlaying = false;
   String? _playingId;
   final Set<int> _dismissedQuizBlockIndices = {};
+  bool _hasAutoPlayedInitial = false;
 
   @override
   void initState() {
@@ -58,6 +61,12 @@ class _LessonBlockDetailScreenState
         statusBarBrightness: Brightness.dark,
       ),
     );
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        updateLastOpenedLesson(ref, widget.lessonId);
+      }
+    });
   }
 
   @override
@@ -66,14 +75,7 @@ class _LessonBlockDetailScreenState
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _currentIndex = index;
-      _isAudioPlaying = false;
-      _playingId = null;
-    });
-
+  void _playBlockAudioAtIndex(int index) {
     final lessons = ref.read(learnerLessonsProvider).valueOrNull ?? [];
     final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
@@ -86,6 +88,17 @@ class _LessonBlockDetailScreenState
         );
       }
     }
+  }
+
+  void _onPageChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _currentIndex = index;
+      _isAudioPlaying = false;
+      _playingId = null;
+    });
+
+    _playBlockAudioAtIndex(index);
   }
 
   void _playAudio(String url, String id) async {
@@ -278,6 +291,17 @@ class _LessonBlockDetailScreenState
 
         final safeIndex = _currentIndex.clamp(0, contentBlocks.length - 1);
         final currentBlock = contentBlocks[safeIndex];
+
+        final isTest =
+            !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+        if (!isTest && !_hasAutoPlayedInitial && contentBlocks.isNotEmpty) {
+          _hasAutoPlayedInitial = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _playBlockAudioAtIndex(safeIndex);
+            }
+          });
+        }
         final rawThemeColor = currentBlock.data?['themeColor'] as String?;
         final blockThemeColor = _parseThemeColor(
           rawThemeColor,

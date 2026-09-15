@@ -19,4 +19,20 @@ const translator = canonical.find(f => f.name === 'translator');
 for (const scope of ['documents.read', 'documents.write']) {
   assert.ok(translator.scopes.includes(scope), `translator missing ${scope}`);
 }
+
+const mutateReviewState = canonical.find(f => f.$id === 'mutateReviewState' || f.name === 'mutateReviewState');
+assert.ok(mutateReviewState && mutateReviewState.enabled, 'mutateReviewState must be enabled');
+assert.deepEqual(mutateReviewState.execute, ['users'], 'mutateReviewState must allow execution strictly by authenticated users ["users"]');
+assert.equal(mutateReviewState.runtime, 'node-22.0', 'mutateReviewState runtime must be node-22.0');
+assert.equal(mutateReviewState.entrypoint, 'src/main.js', 'mutateReviewState entrypoint must be src/main.js');
+assert.ok(fs.existsSync(`${mutateReviewState.path}/${mutateReviewState.entrypoint}`), 'mutateReviewState entrypoint file must exist');
+assert.deepEqual(
+  [...mutateReviewState.scopes].sort(),
+  ['rows.read', 'rows.write'],
+  'mutateReviewState scopes must strictly be ["rows.read", "rows.write"]'
+);
+for (const forbiddenScope of ['databases.read', 'databases.write', 'documents.read', 'documents.write']) {
+  assert.ok(!mutateReviewState.scopes.includes(forbiddenScope), `mutateReviewState must not contain legacy scope ${forbiddenScope}`);
+}
+
 console.log('Function manifests, schedules, execution roles and required scopes verified.');

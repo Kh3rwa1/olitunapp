@@ -10,7 +10,14 @@ import '../logging/app_logger.dart';
 import '../logging/redaction_helper.dart';
 import '../storage/cache_service.dart';
 
-enum MutationStatus { pending, syncing, completed, failed, deadLetter }
+enum MutationStatus {
+  pending,
+  syncing,
+  completed,
+  failed,
+  deadLetter,
+  cancelled,
+}
 
 class PendingMutation {
   final String operationId;
@@ -75,6 +82,16 @@ class MutationOutboxService {
   static const int _maxStoredErrorLength = 512;
   static final Random _random = Random();
 
+  /// Default retention period for completed or cancelled outbox records.
+  /// Records older than this threshold are eligible for garbage collection,
+  /// provided they are not retained as prerequisites for active dependents.
+  static const Duration defaultRetentionPeriod = Duration(days: 7);
+
+  /// Maximum number of terminal (completed or cancelled) records retained
+  /// per user in the outbox. Excess records beyond this cap are pruned
+  /// oldest-first, without ever evicting a prerequisite required by an active dependent.
+  static const int defaultMaxTerminalRecords = 100;
+
   static Box<String>? _box;
   static Future<Box<String>>? _openFuture;
 
@@ -136,7 +153,8 @@ class MutationOutboxService {
         final json = jsonDecode(raw) as Map<String, dynamic>;
         final mutation = PendingMutation.fromJson(json);
         if (mutation.userId == userId &&
-            mutation.status != MutationStatus.completed) {
+            mutation.status != MutationStatus.completed &&
+            mutation.status != MutationStatus.cancelled) {
           result.add(mutation);
         }
       } catch (error) {
@@ -199,9 +217,99 @@ class MutationOutboxService {
     }
   }
 
+  /// Durably records completed status for an operation.
+  /// Completion outcomes remain stored in Hive while dependent operations may query them.
   Future<void> markCompleted(String userId, String operationId) async {
     final box = await _getBox();
-    await box.delete(_storageKey(userId, operationId));
+    final key = _storageKey(userId, operationId);
+    final raw = box.get(key);
+    if (raw != null) {
+      try {
+        final json = jsonDecode(raw) as Map<String, dynamic>;
+        final mutation = PendingMutation.fromJson(json);
+        mutation.status = MutationStatus.completed;
+        await box.put(key, jsonEncode(mutation.toJson()));
+        return;
+      } catch (_) {}
+    }
+    // Record durable completed stub if original record was not found
+    final stub = PendingMutation(
+      operationId: operationId,
+      userId: userId,
+      operationType: 'completed_outcome',
+      entityId: '',
+      payload: const {},
+      createdAt: DateTime.now(),
+      status: MutationStatus.completed,
+    );
+    await box.put(key, jsonEncode(stub.toJson()));
+  }
+
+  /// Durably marks an operation as cancelled.
+  Future<void> markCancelled(String userId, String operationId) async {
+    final box = await _getBox();
+    final key = _storageKey(userId, operationId);
+    final raw = box.get(key);
+    if (raw != null) {
+      try {
+        final json = jsonDecode(raw) as Map<String, dynamic>;
+        final mutation = PendingMutation.fromJson(json);
+        mutation.status = MutationStatus.cancelled;
+        await box.put(key, jsonEncode(mutation.toJson()));
+        return;
+      } catch (_) {}
+    }
+    final stub = PendingMutation(
+      operationId: operationId,
+      userId: userId,
+      operationType: 'cancelled_outcome',
+      entityId: '',
+      payload: const {},
+      createdAt: DateTime.now(),
+      status: MutationStatus.cancelled,
+    );
+    await box.put(key, jsonEncode(stub.toJson()));
+  }
+
+  /// Queries the durable status of a specific operation.
+  Future<MutationStatus?> getMutationStatus(
+    String userId,
+    String operationId,
+  ) async {
+    if (userId.isEmpty || operationId.isEmpty) return null;
+    final box = await _getBox();
+    final key = _storageKey(userId, operationId);
+    final raw = box.get(key);
+    if (raw == null) return null;
+    try {
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final statusStr = json['status'] as String?;
+      if (statusStr == null) return null;
+      return MutationStatus.values.firstWhere(
+        (v) => v.name == statusStr,
+        orElse: () => MutationStatus.pending,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Retrieves a specific mutation by its operation ID.
+  Future<PendingMutation?> getMutation(
+    String userId,
+    String operationId,
+  ) async {
+    if (userId.isEmpty || operationId.isEmpty) return null;
+    final box = await _getBox();
+    final key = _storageKey(userId, operationId);
+    final raw = box.get(key);
+    if (raw == null) return null;
+    try {
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      return PendingMutation.fromJson(json);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> clearQueueForUser(String userId) async {
@@ -221,6 +329,128 @@ class MutationOutboxService {
       }
     }
     await box.deleteAll(keysToDelete);
+  }
+
+  /// Bounded garbage collection of terminal (completed and cancelled) outbox records.
+  ///
+  /// Guarantees:
+  /// 1. Dependency-aware retention: Retains any completed or cancelled prerequisite
+  ///    as long as at least one active ([MutationStatus.pending], [MutationStatus.syncing],
+  ///    or [MutationStatus.failed]) dependent references its `dependsOnOperationId`.
+  ///    A prerequisite can be removed only after all dependents reach a terminal state
+  ///    ([MutationStatus.completed] or [MutationStatus.cancelled]).
+  /// 2. Retention window: Unreferenced terminal records older than [retentionPeriod]
+  ///    (default: 7 days) are evicted.
+  /// 3. Bounded capacity: If the number of unreferenced terminal records exceeds
+  ///    [maxTerminalRecords] (default: 100), the oldest are evicted to respect the cap.
+  ///    Active dependents' prerequisites are strictly protected and NEVER evicted by the cap.
+  ///
+  /// Returns the count of deleted outbox records.
+  Future<int> cleanUpTerminalMutations(
+    String userId, {
+    Duration retentionPeriod = defaultRetentionPeriod,
+    int maxTerminalRecords = defaultMaxTerminalRecords,
+    DateTime? now,
+  }) async {
+    if (userId.isEmpty) return 0;
+    await _migrateLegacyOutboxIfNeeded(userId);
+
+    final box = await _getBox();
+    final prefix = '${userId}_';
+    final currentTime = now ?? DateTime.now();
+    final expirationCutoff = currentTime.subtract(retentionPeriod);
+
+    final activePrerequisiteOpIds = <String>{};
+    final terminalRecords = <({dynamic key, PendingMutation mutation})>[];
+
+    // Single pass over the user's outbox records
+    for (final key in box.keys) {
+      if (!key.toString().startsWith(prefix)) continue;
+      final raw = box.get(key);
+      if (raw == null) continue;
+
+      try {
+        final json = jsonDecode(raw) as Map<String, dynamic>;
+        final mutation = PendingMutation.fromJson(json);
+        if (mutation.userId != userId) continue;
+
+        final isTerminal =
+            mutation.status == MutationStatus.completed ||
+            mutation.status == MutationStatus.cancelled;
+
+        if (!isTerminal) {
+          // Active dependent: inspect payload for dependsOnOperationId
+          final depOpId = mutation.payload['dependsOnOperationId'] as String?;
+          if (depOpId != null && depOpId.isNotEmpty) {
+            activePrerequisiteOpIds.add(depOpId);
+          }
+        } else {
+          terminalRecords.add((key: key, mutation: mutation));
+        }
+      } catch (error) {
+        // Leave unparseable records untouched during GC
+      }
+    }
+
+    if (terminalRecords.isEmpty) return 0;
+
+    // Partition terminal records into protected (referenced by an active dependent)
+    // and candidate (eligible for expiration or capacity eviction).
+    final candidateRecords = <({dynamic key, PendingMutation mutation})>[];
+
+    for (final record in terminalRecords) {
+      if (activePrerequisiteOpIds.contains(record.mutation.operationId)) {
+        // Protected prerequisite: MUST NOT be evicted
+        continue;
+      }
+      candidateRecords.add(record);
+    }
+
+    // Sort candidate records oldest-first by createdAt for deterministic eviction
+    candidateRecords.sort(
+      (a, b) => a.mutation.createdAt.compareTo(b.mutation.createdAt),
+    );
+
+    final keysToDelete = <dynamic>[];
+    final remainingCandidates = <({dynamic key, PendingMutation mutation})>[];
+
+    // 1. Time-based eviction for candidates older than the retention period
+    for (final record in candidateRecords) {
+      if (record.mutation.createdAt.isBefore(expirationCutoff)) {
+        keysToDelete.add(record.key);
+      } else {
+        remainingCandidates.add(record);
+      }
+    }
+
+    // 2. Capacity cap enforcement:
+    // If remaining candidates + protected records exceed maxTerminalRecords,
+    // evict the oldest remaining candidates until bounded or exhausted.
+    final totalRetainedTerminal =
+        remainingCandidates.length +
+        (terminalRecords.length - candidateRecords.length);
+    if (totalRetainedTerminal > maxTerminalRecords &&
+        remainingCandidates.isNotEmpty) {
+      final excessCount = totalRetainedTerminal - maxTerminalRecords;
+      final toEvictCount = min(excessCount, remainingCandidates.length);
+      for (var i = 0; i < toEvictCount; i++) {
+        keysToDelete.add(remainingCandidates[i].key);
+      }
+    }
+
+    if (keysToDelete.isNotEmpty) {
+      await box.deleteAll(keysToDelete);
+      AppLogger.debug(
+        'Outbox: Cleaned up ${keysToDelete.length} terminal records for user $userId',
+        name: 'MutationOutbox',
+        fields: {
+          'deletedCount': keysToDelete.length,
+          'activePrerequisitesProtected': activePrerequisiteOpIds.length,
+        },
+      );
+    }
+
+    return keysToDelete.length;
   }
 
   Future<void> _migrateLegacyOutboxIfNeeded(String userId) async {

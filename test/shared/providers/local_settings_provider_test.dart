@@ -103,6 +103,11 @@ void main() {
 
       expect(capturedRef.read(lastOpenedLessonIdProvider), 'lesson_letters');
       expect(prefs.getString('last_opened_lesson_id'), 'lesson_letters');
+
+      clearLastOpenedLesson(capturedRef);
+
+      expect(capturedRef.read(lastOpenedLessonIdProvider), isNull);
+      expect(prefs.containsKey('last_opened_lesson_id'), isFalse);
     });
   });
 

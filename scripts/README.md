@@ -7,6 +7,8 @@ Developer scripts for database setup, data migration, and seeding.
 | Script | Language | Purpose |
 |--------|----------|---------|
 | `appwrite_setup.mjs` | Node.js | Creates Appwrite database, collections, attributes, indexes, and storage buckets |
+| `create_review_collection.mjs` | Node.js | Provisions and verifies Appwrite `review_states` table, columns, indexes, and row security |
+| `check_review_corpus_ids.mjs` | Node.js | Validates bundled corpus items and review ID migrations (`assets/seed/review_item_id_migrations.json`) |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
 | `appwrite_import.mjs` | Node.js | Imports a MySQL JSON snapshot into Appwrite collections with field mapping |
 | `post-merge.sh` | Bash | Post-merge setup hook |
@@ -65,7 +67,31 @@ APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_import.mjs
 
 Generate fresh data from a database backup before running this command.
 
-### 4. Legacy Firebase Seed (Removed)
+### 4. Review States Table Provisioning and Verification
+
+Provisions or verifies the `review_states` Appwrite table (with row-level security, 7 columns, and 2 indexes):
+
+```bash
+# Verify schema against remote without mutating
+APPWRITE_API_KEY=your_server_api_key node scripts/create_review_collection.mjs --verify-only
+
+# Apply schema idempotently to staging/development
+APPWRITE_API_KEY=your_server_api_key node scripts/create_review_collection.mjs --apply
+
+# Apply schema to production (requires explicit --confirm-prod)
+APPWRITE_API_KEY=your_server_api_key node scripts/create_review_collection.mjs --apply --confirm-prod
+```
+
+### 5. Review Corpus ID Integrity Check
+
+Validates bundled corpus files (`words.json`, `sentences.json`) and review item ID migrations (`assets/seed/review_item_id_migrations.json`):
+
+```bash
+node scripts/check_review_corpus_ids.mjs
+node --test scripts/check_review_corpus_ids.test.mjs
+```
+
+### 6. Legacy Firebase Seed (Removed)
 
 The pre-Appwrite Firebase seeding script (`seed_data.py`) was removed from
 the repository — the project no longer uses Firebase. History remains

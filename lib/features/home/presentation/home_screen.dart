@@ -18,10 +18,9 @@ import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/motion/motion.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../domain/continue_lesson_logic.dart';
 import 'widgets/today_affirmation_card.dart';
 import 'widgets/next_best_action_card.dart';
-import '../../quiz/presentation/providers/mistake_provider.dart';
 import '../../review/presentation/today_review_card.dart';
 import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
@@ -29,30 +28,7 @@ import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 
-@visibleForTesting
-LessonEntity? continueLessonFor({
-  required List<LessonEntity> lessons,
-  required Set<String> completedLessonIds,
-  String? lastOpenedLessonId,
-}) {
-  final normalizedLastOpened = lastOpenedLessonId?.trim();
-  if (normalizedLastOpened != null && normalizedLastOpened.isNotEmpty) {
-    for (final lesson in lessons) {
-      if (lesson.id == normalizedLastOpened &&
-          !completedLessonIds.contains(lesson.id)) {
-        return lesson;
-      }
-    }
-  }
-
-  for (final lesson in lessons) {
-    if (!completedLessonIds.contains(lesson.id)) {
-      return lesson;
-    }
-  }
-
-  return null;
-}
+export '../domain/continue_lesson_logic.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -166,14 +142,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       lessons: allLessons,
       completedLessonIds: completedIds,
       lastOpenedLessonId: lastOpenedLessonId,
+      categories: categoriesAsync.valueOrNull,
     );
-    final hasIncompleteLesson =
-        lastOpenedLessonId != null &&
-        lastOpenedLessonId.isNotEmpty &&
-        !completedIds.contains(lastOpenedLessonId);
-    final hasMistakes = ref.watch(mistakeProvider).isNotEmpty;
-    final showTodayReview =
-        (hasIncompleteLesson || hasMistakes) && dueReviews > 0;
+    final showTodayReview = dueReviews > 0;
 
     // Seamless automatic background data sync when recovering connection
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (

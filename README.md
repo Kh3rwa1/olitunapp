@@ -183,9 +183,19 @@ This script is idempotent (existing resources return `409` and are skipped) and
 creates:
 - the `olitun_db` database, every content collection, and the
   `translation_cache` / `rate_limits` collections used by the translator function,
+- the `review_states` table (row-level security, per-user memory scheduler state),
 - the storage buckets, and
 - the admin team whose **team ID** matches `ADMIN_TEAM_ID` (default `admins`).
   Override via `ADMIN_TEAM_ID=<id> node scripts/appwrite_setup.mjs`.
+
+To verify or update the `review_states` table independently:
+```bash
+# Verify schema without mutating
+APPWRITE_API_KEY=... node scripts/create_review_collection.mjs --verify-only
+
+# Apply schema idempotently
+APPWRITE_API_KEY=... node scripts/create_review_collection.mjs --apply [--confirm-prod]
+```
 
 Then deploy the translator function (see
 [`functions/translator/README.md`](functions/translator/README.md)) and pass its execution URL to

@@ -356,3 +356,67 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
     ),
   );
 }
+
+void showSignOutDialog(BuildContext context, WidgetRef ref) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      backgroundColor: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      title: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.brandBlue.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.logout_rounded, color: AppColors.brandBlue),
+          ),
+          const SizedBox(width: 14),
+          const Text('Sign Out'),
+        ],
+      ),
+      content: const Text(
+        'Are you sure you want to sign out of your account on this device?',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            HapticFeedback.mediumImpact();
+            Navigator.pop(context);
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) =>
+                  const Center(child: CircularProgressIndicator()),
+            );
+            try {
+              final authRepo = ref.read(authRepositoryProvider);
+              await authRepo.signOut();
+            } finally {
+              ref.invalidate(isAuthenticatedProvider);
+              ref.invalidate(userStatsProvider);
+              ref.invalidate(userNameProvider);
+              if (context.mounted) {
+                Navigator.pop(context); // Close loading indicator
+                context.go('/welcome');
+              }
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.brandBlue,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Sign Out'),
+        ),
+      ],
+    ),
+  );
+}

@@ -53,4 +53,17 @@ abstract final class LessonProgression {
     }
     return null;
   }
+
+  static bool isLessonLocked({
+    required List<LessonEntity> orderedLessons,
+    required Set<String> completedLessonIds,
+    required String lessonId,
+  }) {
+    return statusFor(
+          orderedLessons: orderedLessons,
+          completedLessonIds: completedLessonIds,
+          lessonId: lessonId,
+        ) ==
+        LessonProgressStatus.locked;
+  }
 }

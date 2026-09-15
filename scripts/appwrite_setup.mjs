@@ -4,9 +4,7 @@
  * Run: node scripts/appwrite_setup.mjs
  */
 
-import { readFileSync, existsSync } from 'fs';
-import path from 'path';
-import os from 'os';
+import { readFileSync } from 'fs';
 import { applyTable, createApiClient } from './create_review_collection.mjs';
 
 function readProjectIdFromConfig() {
@@ -20,14 +18,7 @@ function readProjectIdFromConfig() {
 
 const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT_ID = process.env.APPWRITE_PROJECT_ID || readProjectIdFromConfig();
-const API_KEY =
-  process.env.APPWRITE_API_KEY !== undefined
-    ? process.env.APPWRITE_API_KEY
-    : (process.env.APPWRITE_API_KEY_FILE && existsSync(process.env.APPWRITE_API_KEY_FILE)
-        ? readFileSync(process.env.APPWRITE_API_KEY_FILE, 'utf8').trim()
-        : (existsSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'))
-            ? readFileSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'), 'utf8').trim()
-            : ''));
+const API_KEY = process.env.APPWRITE_API_KEY || '';
 
 const DATABASE_ID = 'olitun_db';
 const DATABASE_NAME = 'Olitun Database';

@@ -13,9 +13,6 @@
  */
 
 import { Client, TablesDB, Functions, Users, ID } from 'node-appwrite';
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import os from 'node:os';
 import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import {
@@ -27,15 +24,8 @@ import {
 import { rowIdFor } from '../functions/mutateReviewState/src/main.js';
 
 function getApiKey() {
-  if (process.env.APPWRITE_API_KEY) return process.env.APPWRITE_API_KEY;
-  if (process.env.APPWRITE_API_KEY_FILE && existsSync(process.env.APPWRITE_API_KEY_FILE)) {
-    return readFileSync(process.env.APPWRITE_API_KEY_FILE, 'utf8').trim();
-  }
-  const deployKey = path.join(os.homedir(), '.appwrite', 'olitun_deploy_key');
-  if (existsSync(deployKey)) {
-    return readFileSync(deployKey, 'utf8').trim();
-  }
-  throw new Error('No Appwrite API key found in environment or ~/.appwrite/olitun_deploy_key');
+  if (process.env.APPWRITE_API_KEY) return process.env.APPWRITE_API_KEY.trim();
+  throw new Error('No Appwrite API key found in APPWRITE_API_KEY environment variable');
 }
 
 const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';

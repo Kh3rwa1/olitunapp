@@ -379,7 +379,9 @@ void showSignOutDialog(BuildContext context, WidgetRef ref) {
           const Text('Sign Out'),
         ],
       ),
-      content: const Text('Are you sure you want to sign out of your account on this device?'),
+      content: const Text(
+        'Are you sure you want to sign out of your account on this device?',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),

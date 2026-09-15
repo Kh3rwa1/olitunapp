@@ -33,8 +33,9 @@ LessonEntity? continueLessonFor({
   // 1. Try to resume the last opened lesson, or start its blocking prerequisite
   final normalizedLastOpened = lastOpenedLessonId?.trim();
   if (normalizedLastOpened != null && normalizedLastOpened.isNotEmpty) {
-    final target =
-        lessons.where((l) => l.id == normalizedLastOpened).firstOrNull;
+    final target = lessons
+        .where((l) => l.id == normalizedLastOpened)
+        .firstOrNull;
     if (target != null &&
         target.isActive &&
         !completedLessonIds.contains(target.id)) {

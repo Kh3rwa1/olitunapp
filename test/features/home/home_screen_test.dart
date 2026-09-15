@@ -221,7 +221,6 @@ void main() {
             categoryId: 'cat_vocab',
             titleOlChiki: 'ᱡᱚᱦᱟᱨ',
             titleLatin: 'Greetings & Basics',
-            order: 0,
           ),
           LessonEntity(
             id: 'lesson_vocab_family',
@@ -262,50 +261,51 @@ void main() {
       },
     );
 
-    test('starts the next unlocked lesson when earlier lessons are completed', () {
-      const vocabLessons = [
-        LessonEntity(
-          id: 'lesson_vocab_basics',
-          categoryId: 'cat_vocab',
-          titleOlChiki: 'ᱡᱚᱦᱟᱨ',
-          titleLatin: 'Greetings & Basics',
-          order: 0,
-        ),
-        LessonEntity(
-          id: 'lesson_vocab_family',
-          categoryId: 'cat_vocab',
-          titleOlChiki: 'ᱜᱷᱟᱨᱚᱸᱡᱽ',
-          titleLatin: 'Family',
-          order: 1,
-        ),
-        LessonEntity(
-          id: 'lesson_vocab_daily',
-          categoryId: 'cat_vocab',
-          titleOlChiki: 'ᱫᱤᱱᱟᱹᱢ ᱵᱮᱵᱷᱟᱨ ᱨᱚᱲ',
-          titleLatin: 'Daily Use Words',
-          order: 2,
-        ),
-        LessonEntity(
-          id: 'lesson_vocab_colors',
-          categoryId: 'cat_vocab',
-          titleOlChiki: 'ᱨᱚᱝ',
-          titleLatin: 'Colors',
-          order: 3,
-        ),
-      ];
+    test(
+      'starts the next unlocked lesson when earlier lessons are completed',
+      () {
+        const vocabLessons = [
+          LessonEntity(
+            id: 'lesson_vocab_basics',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱡᱚᱦᱟᱨ',
+            titleLatin: 'Greetings & Basics',
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_family',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱜᱷᱟᱨᱚᱸᱡᱽ',
+            titleLatin: 'Family',
+            order: 1,
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_daily',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱫᱤᱱᱟᱹᱢ ᱵᱮᱵᱷᱟᱨ ᱨᱚᱲ',
+            titleLatin: 'Daily Use Words',
+            order: 2,
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_colors',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱨᱚᱝ',
+            titleLatin: 'Colors',
+            order: 3,
+          ),
+        ];
 
-      final result = continueLessonFor(
-        lessons: vocabLessons,
-        completedLessonIds: const {
-          'lesson_vocab_basics',
-          'lesson_vocab_family',
-          'lesson_vocab_daily',
-        },
-        lastOpenedLessonId: null,
-      );
+        final result = continueLessonFor(
+          lessons: vocabLessons,
+          completedLessonIds: const {
+            'lesson_vocab_basics',
+            'lesson_vocab_family',
+            'lesson_vocab_daily',
+          },
+        );
 
-      expect(result?.id, 'lesson_vocab_colors');
-    });
+        expect(result?.id, 'lesson_vocab_colors');
+      },
+    );
 
     test('respects category order and never returns a locked lesson', () {
       const allLessons = [
@@ -314,7 +314,6 @@ void main() {
           categoryId: 'cat_alphabets',
           titleOlChiki: 'ᱚ',
           titleLatin: 'Letter 1',
-          order: 0,
         ),
         LessonEntity(
           id: 'lesson_letters_2',
@@ -328,7 +327,6 @@ void main() {
           categoryId: 'cat_vocab',
           titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
           titleLatin: 'Vocab 1',
-          order: 0,
         ),
       ];
 
@@ -337,7 +335,6 @@ void main() {
           id: 'cat_alphabets',
           titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
           titleLatin: 'Alphabets',
-          order: 0,
         ),
         CategoryEntity(
           id: 'cat_vocab',

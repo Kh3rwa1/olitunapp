@@ -13,9 +13,7 @@
  *   APPWRITE_API_KEY=... node scripts/create_review_collection.mjs --verify-only
  */
 
-import { readFileSync, existsSync } from 'node:fs';
-import path from 'node:path';
-import os from 'node:os';
+import { readFileSync } from 'node:fs';
 import {
   REVIEW_TABLE_SPEC,
   REVIEW_COLUMNS_SPEC,
@@ -415,14 +413,7 @@ export async function run(argv = process.argv.slice(2), env = process.env) {
     env.APPWRITE_PROJECT_ID !== undefined
       ? env.APPWRITE_PROJECT_ID
       : readProjectIdFromConfig();
-  const apiKey =
-    env.APPWRITE_API_KEY !== undefined
-      ? env.APPWRITE_API_KEY
-      : (env.APPWRITE_API_KEY_FILE && existsSync(env.APPWRITE_API_KEY_FILE)
-          ? readFileSync(env.APPWRITE_API_KEY_FILE, 'utf8').trim()
-          : (existsSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'))
-              ? readFileSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'), 'utf8').trim()
-              : ''));
+  const apiKey = env.APPWRITE_API_KEY || '';
   const db = env.APPWRITE_DB || 'olitun_db';
   const tableId = env.APPWRITE_COLLECTION || 'review_states';
 
@@ -436,7 +427,16 @@ export async function run(argv = process.argv.slice(2), env = process.env) {
     process.exit(1);
   }
 
-  const isCloudProd = endpoint.includes('cloud.appwrite.io');
+  let isCloudProd = false;
+  try {
+    const parsedEndpoint = new URL(endpoint);
+    isCloudProd =
+      parsedEndpoint.hostname === 'cloud.appwrite.io' ||
+      parsedEndpoint.hostname.endsWith('.cloud.appwrite.io');
+  } catch {
+    isCloudProd = false;
+  }
+
   if (isApply && isCloudProd && !isConfirmProd) {
     console.error('Error: Targeting production endpoint requires --confirm-prod flag.');
     process.exit(1);
@@ -448,7 +448,7 @@ export async function run(argv = process.argv.slice(2), env = process.env) {
   console.log(`Database:   ${db}`);
   console.log(`Table:      ${tableId}`);
   console.log(`Mode:       ${isVerifyOnly ? 'VERIFY-ONLY (Read-Only)' : 'APPLY'}`);
-  console.log(`API Key:    ${maskSecret(apiKey)}`);
+  console.log(`API Key:    ${apiKey ? '[CONFIGURED]' : '[MISSING]'}`);
   console.log('--------------------------------------------\n');
 
   const pollTimeoutMs = parseInt(env.POLL_TIMEOUT_MS || '300000', 10);

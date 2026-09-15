@@ -60,9 +60,10 @@ abstract final class LessonProgression {
     required String lessonId,
   }) {
     return statusFor(
-      orderedLessons: orderedLessons,
-      completedLessonIds: completedLessonIds,
-      lessonId: lessonId,
-    ) == LessonProgressStatus.locked;
+          orderedLessons: orderedLessons,
+          completedLessonIds: completedLessonIds,
+          lessonId: lessonId,
+        ) ==
+        LessonProgressStatus.locked;
   }
 }

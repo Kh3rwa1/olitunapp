@@ -1,7 +1,4 @@
 #!/usr/bin/env node
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { Client, TablesDB, Query } from 'node-appwrite';
 
 const DEFAULT_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
@@ -12,10 +9,6 @@ const DEFAULT_TABLE_ID = 'review_states';
 function loadApiKey() {
   if (process.env.APPWRITE_API_KEY && process.env.APPWRITE_API_KEY.trim()) {
     return process.env.APPWRITE_API_KEY.trim();
-  }
-  const keyPath = path.join(os.homedir(), '.appwrite', 'olitun_deploy_key');
-  if (fs.existsSync(keyPath)) {
-    return fs.readFileSync(keyPath, 'utf8').trim();
   }
   return null;
 }
@@ -45,7 +38,16 @@ async function main() {
   const databaseId = process.env.APPWRITE_DATABASE_ID || DEFAULT_DATABASE_ID;
   const tableId = process.env.APPWRITE_TABLE_ID || DEFAULT_TABLE_ID;
 
-  const isProd = endpoint.includes('cloud.appwrite.io') || projectId === DEFAULT_PROJECT_ID;
+  let isCloudEndpoint = false;
+  try {
+    const parsedEndpoint = new URL(endpoint);
+    isCloudEndpoint =
+      parsedEndpoint.hostname === 'cloud.appwrite.io' ||
+      parsedEndpoint.hostname.endsWith('.cloud.appwrite.io');
+  } catch {
+    isCloudEndpoint = false;
+  }
+  const isProd = isCloudEndpoint || projectId === DEFAULT_PROJECT_ID;
 
   if (isApply && isProd && !confirmProd) {
     console.error('ERROR: Modifying production permissions requires --confirm-prod flag.');
@@ -54,7 +56,7 @@ async function main() {
 
   const apiKey = loadApiKey();
   if (!apiKey) {
-    console.error('ERROR: APPWRITE_API_KEY not found in environment or ~/.appwrite/olitun_deploy_key.');
+    console.error('ERROR: APPWRITE_API_KEY environment variable is required.');
     process.exit(1);
   }
 

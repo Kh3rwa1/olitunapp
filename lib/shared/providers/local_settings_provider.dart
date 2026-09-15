@@ -154,6 +154,11 @@ void updateLastOpenedLesson(WidgetRef ref, String lessonId) {
   ref.read(lastOpenedLessonIdProvider.notifier).state = normalized;
 }
 
+void clearLastOpenedLesson(WidgetRef ref) {
+  ref.read(sharedPreferencesProvider).remove('last_opened_lesson_id');
+  ref.read(lastOpenedLessonIdProvider.notifier).state = null;
+}
+
 void toggleSound(WidgetRef ref) {
   final current = ref.read(soundEnabledProvider);
   ref.read(sharedPreferencesProvider).setBool('sound_enabled', !current);

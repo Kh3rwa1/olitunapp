@@ -106,4 +106,245 @@ void main() {
     expect(storedError, isNot(contains('very.secret.token')));
     expect(storedError.length, lessThanOrEqualTo(512));
   });
+
+  test('completed and cancelled statuses survive storage restart', () async {
+    await outbox.enqueueMutation(mutation('learner', 'op-complete'));
+    await outbox.enqueueMutation(mutation('learner', 'op-cancel'));
+    await outbox.markCompleted('learner', 'op-complete');
+    await outbox.markCancelled('learner', 'op-cancel');
+
+    // Simulate app restart
+    await Hive.close();
+    Hive.init(directory.path);
+    final restarted = MutationOutboxService();
+
+    final statusComplete = await restarted.getMutationStatus(
+      'learner',
+      'op-complete',
+    );
+    final statusCancel = await restarted.getMutationStatus(
+      'learner',
+      'op-cancel',
+    );
+
+    expect(statusComplete, MutationStatus.completed);
+    expect(statusCancel, MutationStatus.cancelled);
+
+    // Both are excluded from getPendingMutations
+    final pending = await restarted.getPendingMutations('learner');
+    expect(pending.map((m) => m.operationId), isNot(contains('op-complete')));
+    expect(pending.map((m) => m.operationId), isNot(contains('op-cancel')));
+  });
+
+  test('completion and cancelled status survive serialization round-trip', () {
+    for (final status in MutationStatus.values) {
+      final original = PendingMutation(
+        operationId: 'op-${status.name}',
+        userId: 'user-1',
+        operationType: 'review_state.upsert',
+        entityId: 'item-1',
+        payload: const {'key': 'val'},
+        createdAt: DateTime.utc(2026, 9, 14),
+        status: status,
+      );
+      final json = original.toJson();
+      final restored = PendingMutation.fromJson(json);
+      expect(restored.status, equals(status));
+      expect(restored.operationId, equals('op-${status.name}'));
+    }
+  });
+
+  group('cleanUpTerminalMutations Garbage Collection', () {
+    test(
+      'retains completed prerequisite while active dependent references it',
+      () async {
+        final now = DateTime.utc(2026, 9, 15, 12);
+        final tenDaysAgo = now.subtract(const Duration(days: 10));
+
+        // Enqueue prerequisite and mark it completed (10 days old, past 7-day retention)
+        final prereq = PendingMutation(
+          operationId: 'op_prereq',
+          userId: 'learner',
+          operationType: 'review_state.upsert',
+          entityId: 'word_1',
+          payload: const {'score': 10},
+          createdAt: tenDaysAgo,
+          status: MutationStatus.completed,
+        );
+        await outbox.enqueueMutation(prereq);
+
+        // Enqueue an independent expired completed mutation
+        final expiredIndependent = PendingMutation(
+          operationId: 'op_expired_independent',
+          userId: 'learner',
+          operationType: 'review_state.upsert',
+          entityId: 'word_2',
+          payload: const {},
+          createdAt: tenDaysAgo,
+          status: MutationStatus.completed,
+        );
+        await outbox.enqueueMutation(expiredIndependent);
+
+        // Enqueue active (pending) dependent referencing op_prereq
+        final dependent = PendingMutation(
+          operationId: 'op_dependent',
+          userId: 'learner',
+          operationType: 'review_state.delete',
+          entityId: 'legacy_word_1',
+          payload: const {'dependsOnOperationId': 'op_prereq'},
+          createdAt: now.subtract(const Duration(hours: 1)),
+        );
+        await outbox.enqueueMutation(dependent);
+
+        // Run GC with default 7-day retention
+        final deletedCount = await outbox.cleanUpTerminalMutations(
+          'learner',
+          now: now,
+        );
+
+        // Only the unreferenced expired record should be deleted
+        expect(deletedCount, 1);
+        expect(
+          await outbox.getMutationStatus('learner', 'op_expired_independent'),
+          isNull,
+        );
+
+        // Protected prerequisite must still exist and have completed status
+        expect(
+          await outbox.getMutationStatus('learner', 'op_prereq'),
+          MutationStatus.completed,
+        );
+
+        // Active dependent still exists
+        final pending = await outbox.getPendingMutations('learner');
+        expect(pending.map((m) => m.operationId), contains('op_dependent'));
+      },
+    );
+
+    test('removes prerequisite once all dependents become terminal', () async {
+      final now = DateTime.utc(2026, 9, 15, 12);
+      final tenDaysAgo = now.subtract(const Duration(days: 10));
+
+      final prereq = PendingMutation(
+        operationId: 'op_prereq_2',
+        userId: 'learner',
+        operationType: 'review_state.upsert',
+        entityId: 'word_1',
+        payload: const {'score': 10},
+        createdAt: tenDaysAgo,
+        status: MutationStatus.completed,
+      );
+      await outbox.enqueueMutation(prereq);
+
+      final dependent = PendingMutation(
+        operationId: 'op_dependent_2',
+        userId: 'learner',
+        operationType: 'review_state.delete',
+        entityId: 'legacy_word_1',
+        payload: const {'dependsOnOperationId': 'op_prereq_2'},
+        createdAt: tenDaysAgo, // Also past retention period
+      );
+      await outbox.enqueueMutation(dependent);
+
+      // While dependent is pending: prereq protected
+      var deleted = await outbox.cleanUpTerminalMutations('learner', now: now);
+      expect(deleted, 0);
+      expect(
+        await outbox.getMutationStatus('learner', 'op_prereq_2'),
+        MutationStatus.completed,
+      );
+
+      // Mark dependent as completed (now terminal)
+      await outbox.markCompleted('learner', 'op_dependent_2');
+
+      // Now both are terminal and past retention period -> both are cleaned up
+      deleted = await outbox.cleanUpTerminalMutations('learner', now: now);
+      expect(deleted, 2);
+      expect(await outbox.getMutationStatus('learner', 'op_prereq_2'), isNull);
+      expect(
+        await outbox.getMutationStatus('learner', 'op_dependent_2'),
+        isNull,
+      );
+    });
+
+    test(
+      'capacity cap (maxTerminalRecords) prunes oldest unreferenced records without evicting active prerequisite',
+      () async {
+        final now = DateTime.utc(2026, 9, 15, 12);
+
+        // 1. Create a protected prerequisite (even though it is the oldest)
+        final protectedPrereq = PendingMutation(
+          operationId: 'op_protected_old',
+          userId: 'learner',
+          operationType: 'review_state.upsert',
+          entityId: 'word_root',
+          payload: const {},
+          createdAt: now.subtract(const Duration(days: 5)),
+          status: MutationStatus.completed,
+        );
+        await outbox.enqueueMutation(protectedPrereq);
+
+        // Active dependent
+        final activeDep = PendingMutation(
+          operationId: 'op_active_child',
+          userId: 'learner',
+          operationType: 'review_state.delete',
+          entityId: 'legacy_word_root',
+          payload: const {'dependsOnOperationId': 'op_protected_old'},
+          createdAt: now.subtract(const Duration(hours: 2)),
+        );
+        await outbox.enqueueMutation(activeDep);
+
+        // 2. Enqueue 10 unreferenced fresh completed mutations
+        for (var i = 1; i <= 10; i++) {
+          await outbox.enqueueMutation(
+            PendingMutation(
+              operationId: 'op_fresh_$i',
+              userId: 'learner',
+              operationType: 'review_state.upsert',
+              entityId: 'word_$i',
+              payload: const {},
+              createdAt: now.subtract(
+                Duration(hours: 20 - i),
+              ), // older to newer
+              status: MutationStatus.completed,
+            ),
+          );
+        }
+
+        // Max capacity is set to 5 terminal records.
+        // Total terminal records = 1 protected + 10 unreferenced = 11.
+        // 6 unreferenced records should be pruned to bring total down to 5 (1 protected + 4 fresh).
+        final deletedCount = await outbox.cleanUpTerminalMutations(
+          'learner',
+          maxTerminalRecords: 5,
+          now: now,
+        );
+
+        expect(deletedCount, 6);
+
+        // Protected prerequisite must still be present!
+        expect(
+          await outbox.getMutationStatus('learner', 'op_protected_old'),
+          MutationStatus.completed,
+        );
+
+        // Oldest fresh records (1 through 6) should be deleted
+        for (var i = 1; i <= 6; i++) {
+          expect(
+            await outbox.getMutationStatus('learner', 'op_fresh_$i'),
+            isNull,
+          );
+        }
+
+        // Newest fresh records (7 through 10) must remain
+        for (var i = 7; i <= 10; i++) {
+          expect(
+            await outbox.getMutationStatus('learner', 'op_fresh_$i'),
+            MutationStatus.completed,
+          );
+        }
+      },
+    );
+  });
 }

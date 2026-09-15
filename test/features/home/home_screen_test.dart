@@ -211,5 +211,169 @@ void main() {
 
       expect(result?.id, 'lesson_numbers');
     });
+
+    test(
+      'resolves a locked lastOpenedLesson to its blocking prerequisite so user starts what is not finished',
+      () {
+        const vocabLessons = [
+          LessonEntity(
+            id: 'lesson_vocab_basics',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱡᱚᱦᱟᱨ',
+            titleLatin: 'Greetings & Basics',
+            order: 0,
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_family',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱜᱷᱟᱨᱚᱸᱡᱽ',
+            titleLatin: 'Family',
+            order: 1,
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_daily',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱫᱤᱱᱟᱹᱢ ᱵᱮᱵᱷᱟᱨ ᱨᱚᱲ',
+            titleLatin: 'Daily Use Words',
+            order: 2,
+          ),
+          LessonEntity(
+            id: 'lesson_vocab_colors',
+            categoryId: 'cat_vocab',
+            titleOlChiki: 'ᱨᱚᱝ',
+            titleLatin: 'Colors',
+            order: 3,
+          ),
+        ];
+
+        // User completed basics and family, but not daily.
+        // If lastOpenedLessonId points to colors (locked), continueLessonFor
+        // must NOT return colors — it must return the blocking lesson 'lesson_vocab_daily'!
+        final result = continueLessonFor(
+          lessons: vocabLessons,
+          completedLessonIds: const {
+            'lesson_vocab_basics',
+            'lesson_vocab_family',
+          },
+          lastOpenedLessonId: 'lesson_vocab_colors',
+        );
+
+        expect(result?.id, 'lesson_vocab_daily');
+      },
+    );
+
+    test('starts the next unlocked lesson when earlier lessons are completed', () {
+      const vocabLessons = [
+        LessonEntity(
+          id: 'lesson_vocab_basics',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱡᱚᱦᱟᱨ',
+          titleLatin: 'Greetings & Basics',
+          order: 0,
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_family',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱜᱷᱟᱨᱚᱸᱡᱽ',
+          titleLatin: 'Family',
+          order: 1,
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_daily',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱫᱤᱱᱟᱹᱢ ᱵᱮᱵᱷᱟᱨ ᱨᱚᱲ',
+          titleLatin: 'Daily Use Words',
+          order: 2,
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_colors',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱨᱚᱝ',
+          titleLatin: 'Colors',
+          order: 3,
+        ),
+      ];
+
+      final result = continueLessonFor(
+        lessons: vocabLessons,
+        completedLessonIds: const {
+          'lesson_vocab_basics',
+          'lesson_vocab_family',
+          'lesson_vocab_daily',
+        },
+        lastOpenedLessonId: null,
+      );
+
+      expect(result?.id, 'lesson_vocab_colors');
+    });
+
+    test('respects category order and never returns a locked lesson', () {
+      const allLessons = [
+        LessonEntity(
+          id: 'lesson_letters_1',
+          categoryId: 'cat_alphabets',
+          titleOlChiki: 'ᱚ',
+          titleLatin: 'Letter 1',
+          order: 0,
+        ),
+        LessonEntity(
+          id: 'lesson_letters_2',
+          categoryId: 'cat_alphabets',
+          titleOlChiki: 'ᱛ',
+          titleLatin: 'Letter 2',
+          order: 1,
+        ),
+        LessonEntity(
+          id: 'lesson_vocab_1',
+          categoryId: 'cat_vocab',
+          titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
+          titleLatin: 'Vocab 1',
+          order: 0,
+        ),
+      ];
+
+      const categories = [
+        CategoryEntity(
+          id: 'cat_alphabets',
+          titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+          titleLatin: 'Alphabets',
+          order: 0,
+        ),
+        CategoryEntity(
+          id: 'cat_vocab',
+          titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
+          titleLatin: 'Vocabulary',
+          order: 1,
+        ),
+      ];
+
+      // Alphabet 1 complete -> Alphabet 2 is next
+      final result1 = continueLessonFor(
+        lessons: allLessons,
+        completedLessonIds: const {'lesson_letters_1'},
+        categories: categories,
+      );
+      expect(result1?.id, 'lesson_letters_2');
+
+      // Alphabet 1 & 2 complete -> Vocab 1 is next
+      final result2 = continueLessonFor(
+        lessons: allLessons,
+        completedLessonIds: const {'lesson_letters_1', 'lesson_letters_2'},
+        categories: categories,
+      );
+      expect(result2?.id, 'lesson_vocab_1');
+
+      // All complete -> returns null
+      final result3 = continueLessonFor(
+        lessons: allLessons,
+        completedLessonIds: const {
+          'lesson_letters_1',
+          'lesson_letters_2',
+          'lesson_vocab_1',
+        },
+        categories: categories,
+      );
+      expect(result3, isNull);
+    });
   });
 }

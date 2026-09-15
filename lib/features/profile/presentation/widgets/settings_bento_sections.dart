@@ -163,6 +163,14 @@ class SettingsBentoDesktop extends ConsumerWidget {
                   index: 3,
                   children: [
                     SettingTile(
+                      icon: Icons.logout_rounded,
+                      title: 'Sign Out',
+                      subtitle: 'Sign out of your account on this device',
+                      isDark: isDark,
+                      onTap: () => showSignOutDialog(context, ref),
+                    ),
+                    const SizedBox(height: 10),
+                    SettingTile(
                       icon: Icons.restart_alt_rounded,
                       title: AppLocalizations.of(context)!.resetProgress,
                       subtitle: AppLocalizations.of(
@@ -338,6 +346,14 @@ class SettingsBentoMobile extends ConsumerWidget {
           color: AppColors.accentTerracotta,
           index: 3,
           children: [
+            SettingTile(
+              icon: Icons.logout_rounded,
+              title: 'Sign Out',
+              subtitle: 'Sign out of your account on this device',
+              isDark: isDark,
+              onTap: () => showSignOutDialog(context, ref),
+            ),
+            const SizedBox(height: 10),
             SettingTile(
               icon: Icons.restart_alt_rounded,
               title: AppLocalizations.of(context)!.resetProgress,

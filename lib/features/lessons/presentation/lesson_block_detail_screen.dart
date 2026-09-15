@@ -61,12 +61,6 @@ class _LessonBlockDetailScreenState
         statusBarBrightness: Brightness.dark,
       ),
     );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        updateLastOpenedLesson(ref, widget.lessonId);
-      }
-    });
   }
 
   @override
@@ -237,6 +231,17 @@ class _LessonBlockDetailScreenState
             completedLessonIds: completedLessonIds,
             lessonId: lesson.id,
           );
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted &&
+                ref.read(lastOpenedLessonIdProvider)?.trim() ==
+                    widget.lessonId) {
+              if (blocker != null) {
+                updateLastOpenedLesson(ref, blocker.id);
+              } else {
+                clearLastOpenedLesson(ref);
+              }
+            }
+          });
           return _LockedLessonView(
             isDark: isDark,
             blockingLessonTitle: blocker?.titleLatin,
@@ -250,6 +255,12 @@ class _LessonBlockDetailScreenState
             },
           );
         }
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            updateLastOpenedLesson(ref, lesson.id);
+          }
+        });
 
         final rawBlocks = lesson.blocks;
         final hasAuthoredQuiz = rawBlocks.any((b) => b.type == 'quiz');

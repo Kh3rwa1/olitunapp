@@ -127,6 +127,8 @@ class MemoryItemState {
       successfulRecalls > failedRecalls;
 
   MemoryItemState copyWith({
+    String? itemId,
+    ReviewItemType? itemType,
     DateTime? introducedAt,
     DateTime? lastPresentedAt,
     DateTime? lastReviewedAt,
@@ -143,8 +145,8 @@ class MemoryItemState {
     DateTime? firstRecallAt,
   }) {
     return MemoryItemState(
-      itemId: itemId,
-      itemType: itemType,
+      itemId: itemId ?? this.itemId,
+      itemType: itemType ?? this.itemType,
       introducedAt: introducedAt ?? this.introducedAt,
       lastPresentedAt: lastPresentedAt ?? this.lastPresentedAt,
       lastReviewedAt: lastReviewedAt ?? this.lastReviewedAt,

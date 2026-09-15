@@ -9,13 +9,18 @@ Use this checklist before every production release.
 - Run `flutter test --coverage`
 - Run `flutter test test/smoke`
 - Run `flutter test integration_test -d <device-id>` on a real device for release smoke coverage.
-- Run `node --check scripts/appwrite_setup.mjs scripts/appwrite_seed.mjs scripts/appwrite_import.mjs functions/translator/src/main.js`
+- Run `node --check scripts/appwrite_setup.mjs scripts/create_review_collection.mjs scripts/check_review_corpus_ids.mjs scripts/appwrite_seed.mjs scripts/appwrite_import.mjs functions/translator/src/main.js`
+- Run `node scripts/check_review_corpus_ids.mjs && node --test scripts/check_review_corpus_ids.test.mjs`
+- Run `node --test scripts/create_review_collection.test.mjs`
 - Run `npm --prefix functions/translator test`
 
 ## Appwrite
 
 - Confirm `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `ADMIN_TEAM_ID`, and `TRANSLATE_URL` are set for the target environment.
 - Run `scripts/appwrite_setup.mjs` with a server API key after schema or permission changes.
+- Verify `review_states` table schema and zero-drift: `node scripts/create_review_collection.mjs --verify-only`.
+- If provisioning or updating review schema: `node scripts/create_review_collection.mjs --apply [--confirm-prod]`.
+- Confirm `review_states` table has `create("users")` table permission and `rowSecurity: true`, with zero anonymous or guest access.
 - Confirm `translation_cache` and `rate_limits` have function-only permissions.
 - Confirm public collections are read-only for clients and admin writes require the admin team.
 - Confirm the `quizzes` collection exists and its `questions` field is a JSON-string attribute.

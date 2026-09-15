@@ -46,4 +46,8 @@ abstract class ReviewRepository {
   /// Upsert one state. Deterministic per-user identity; implementations
   /// must tolerate duplicate pushes (idempotent).
   Future<void> pushState(String userId, MemoryItemState item);
+
+  /// Delete one state. Deterministic per-user identity; implementations
+  /// must tolerate missing remote rows (idempotent).
+  Future<void> deleteState(String userId, String itemId);
 }

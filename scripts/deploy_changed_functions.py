@@ -7,6 +7,7 @@ directory as a new deployment, activates it, and waits for the build.
 import io
 import json
 import os
+import ssl
 import subprocess
 import sys
 import tarfile
@@ -14,10 +15,17 @@ import time
 import urllib.request
 import urllib.error
 
+try:
+    import certifi
+    SSL_CTX = ssl.create_default_context(cafile=certifi.where())
+except Exception:
+    SSL_CTX = ssl.create_default_context()
+
 REPO = '/Users/dulorai/olitun/olitunapp'
-ENDPOINT = 'https://sgp.cloud.appwrite.io/v1'
-PROJECT = '699495910038e39622c5'
-KEY = open(os.path.expanduser('~/.appwrite/olitun_deploy_key')).read().strip()
+ENDPOINT = os.environ.get('APPWRITE_ENDPOINT', 'https://sgp.cloud.appwrite.io/v1')
+PROJECT = os.environ.get('APPWRITE_PROJECT_ID', '699495910038e39622c5')
+key_path = os.path.expanduser('~/.appwrite/olitun_deploy_key')
+KEY = os.environ.get('APPWRITE_API_KEY') or (open(key_path).read().strip() if os.path.exists(key_path) else '')
 
 FUNCTIONS = [
     '6a007db60024418c0997',  # translator
@@ -46,7 +54,7 @@ def api(method, path, body=None):
         data=json.dumps(body).encode() if body is not None else None,
     )
     try:
-        with urllib.request.urlopen(req, timeout=60) as r:
+        with urllib.request.urlopen(req, timeout=60, context=SSL_CTX) as r:
             return r.status, json.loads(r.read().decode() or '{}')
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read().decode() or '{}')
@@ -91,7 +99,7 @@ def multipart_upload(url, fields, filename, file_bytes):
         data=body.getvalue(),
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=120, context=SSL_CTX) as r:
             return r.status, json.loads(r.read().decode() or '{}')
     except urllib.error.HTTPError as e:
         return e.code, json.loads(e.read().decode() or '{}')

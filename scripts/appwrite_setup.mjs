@@ -4,7 +4,10 @@
  * Run: node scripts/appwrite_setup.mjs
  */
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
+import path from 'path';
+import os from 'os';
+import { applyTable, createApiClient } from './create_review_collection.mjs';
 
 function readProjectIdFromConfig() {
   try {
@@ -17,7 +20,14 @@ function readProjectIdFromConfig() {
 
 const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT_ID = process.env.APPWRITE_PROJECT_ID || readProjectIdFromConfig();
-const API_KEY = process.env.APPWRITE_API_KEY;
+const API_KEY =
+  process.env.APPWRITE_API_KEY !== undefined
+    ? process.env.APPWRITE_API_KEY
+    : (process.env.APPWRITE_API_KEY_FILE && existsSync(process.env.APPWRITE_API_KEY_FILE)
+        ? readFileSync(process.env.APPWRITE_API_KEY_FILE, 'utf8').trim()
+        : (existsSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'))
+            ? readFileSync(path.join(os.homedir(), '.appwrite', 'olitun_deploy_key'), 'utf8').trim()
+            : ''));
 
 const DATABASE_ID = 'olitun_db';
 const DATABASE_NAME = 'Olitun Database';
@@ -925,7 +935,7 @@ const collections = [
         type: 'string',
         key: 'reviewStatus',
         size: 30,
-        required: true,
+        required: false,
         default: 'needsReview',
       },
       { type: 'string', key: 'reviewedBy', size: 100, required: false },
@@ -975,14 +985,14 @@ const collections = [
         type: 'string',
         key: 'generationStatus',
         size: 30,
-        required: true,
+        required: false,
         default: 'notRequested',
       },
       {
         type: 'string',
         key: 'reviewStatus',
         size: 30,
-        required: true,
+        required: false,
         default: 'needsReview',
       },
       // Audit stamps written by the reviewContent function (Phase 5)
@@ -1173,6 +1183,16 @@ async function main() {
     console.log(`  ✅ Done: ${col.name}\n`);
   }
 
+  // 2b. Provision and verify review_states table
+  console.log('📋 Provisioning review_states table...');
+  const reviewApiClient = createApiClient({
+    endpoint: ENDPOINT,
+    projectId: PROJECT_ID,
+    apiKey: API_KEY,
+  });
+  await applyTable(reviewApiClient, { db: DATABASE_ID, tableId: 'review_states' });
+  console.log('  ✅ Done: review_states\n');
+
   // 3. Create the admin Team (idempotent — 409 = already exists)
   console.log('👥 Creating admin team...');
   await api('POST', '/teams', {
@@ -1217,7 +1237,7 @@ async function main() {
   console.log('\n🎉 Setup complete! All collections and buckets created.');
   console.log(`\n📊 Summary:`);
   console.log(`   Database: ${DATABASE_NAME} (${DATABASE_ID})`);
-  console.log(`   Collections: ${collections.length}`);
+  console.log(`   Collections: ${collections.length} collections + review_states table`);
   console.log(`   Admin Team: ${ADMIN_TEAM_NAME} (${ADMIN_TEAM_ID})`);
   console.log(`   Storage Buckets: ${buckets.length}`);
   console.log(`\n💡 Next: Run the data migration script to import your existing data.`);

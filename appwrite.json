@@ -59,6 +59,30 @@
       ]
     },
     {
+      "$id": "mutateReviewState",
+      "name": "mutateReviewState",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/mutateReviewState",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "rows.read",
+        "rows.write"
+      ]
+    },
+    {
       "$id": "6a007db60024418c0997",
       "name": "translator",
       "runtime": "node-22.0",

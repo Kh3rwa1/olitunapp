@@ -1,0 +1,73 @@
+name: Verify Inactive Lesson Boundary (Temporary)
+
+on:
+  push:
+    branches: ['hardening/secure-premium-listing-20260916']
+    paths: ['.github/workflows/verify-inactive-lesson-boundary.yml']
+
+concurrency:
+  group: inactive-lesson-boundary-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Apply inactive-content guard
+        run: python3 scripts/patch_inactive_lesson_boundary.py
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify backend and migration safeguards
+        run: |
+          set +e
+          : > /tmp/inactive-boundary.log
+          node --check functions/getAuthorizedLesson/src/main.js >> /tmp/inactive-boundary.log 2>&1
+          main_status=$?
+          node --check functions/getAuthorizedLesson/src/list-lessons.js >> /tmp/inactive-boundary.log 2>&1
+          list_status=$?
+          node --check scripts/check_premium_content_permissions.mjs >> /tmp/inactive-boundary.log 2>&1
+          permission_status=$?
+          npm run test:backend >> /tmp/inactive-boundary.log 2>&1
+          test_status=$?
+          printf 'main=%s list=%s permission=%s backend=%s\n' \
+            "$main_status" "$list_status" "$permission_status" "$test_status" \
+            >> /tmp/inactive-boundary.log
+          if [ "$main_status" -eq 0 ] && [ "$list_status" -eq 0 ] && \
+             [ "$permission_status" -eq 0 ] && [ "$test_status" -eq 0 ]; then
+            echo 0 > /tmp/inactive-boundary.status
+          else
+            echo 1 > /tmp/inactive-boundary.status
+          fi
+          exit 0
+      - name: Commit result and remove temporary automation
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          status=$(cat /tmp/inactive-boundary.status)
+          if [ "$status" -ne 0 ]; then
+            cp /tmp/inactive-boundary.log .ci-inactive-boundary-diagnostics.txt
+          else
+            rm -f .ci-inactive-boundary-diagnostics.txt
+          fi
+          rm -f \
+            .github/workflows/verify-inactive-lesson-boundary.yml \
+            scripts/patch_inactive_lesson_boundary.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'fix(security): exclude inactive lessons from learner access'
+          git push origin "HEAD:$BRANCH"
+          exit "$status"

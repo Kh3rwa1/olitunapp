@@ -54,10 +54,7 @@ void main() {
       expect(lightShadows, hasLength(2));
       expect(darkShadows, hasLength(1));
       expect(darkShadows.single.color, const Color(0x66000000));
-      expect(
-        tintedShadows.last.color,
-        customTint.withValues(alpha: 0.06),
-      );
+      expect(tintedShadows.last.color, customTint.withValues(alpha: 0.06));
       expect(WebTokens.popShadow(customTint), hasLength(2));
     });
 
@@ -65,18 +62,12 @@ void main() {
       final lightGlass = WebTokens.glass(false, radius: 30);
       final darkGlass = WebTokens.glass(true);
 
-      expect(
-        lightGlass.color,
-        Colors.white.withValues(alpha: 0.72),
-      );
+      expect(lightGlass.color, Colors.white.withValues(alpha: 0.72));
       expect(lightGlass.borderRadius, BorderRadius.circular(30));
       expect(lightGlass.border, isA<Border>());
       expect(lightGlass.boxShadow, hasLength(2));
 
-      expect(
-        darkGlass.color,
-        Colors.white.withValues(alpha: 0.04),
-      );
+      expect(darkGlass.color, Colors.white.withValues(alpha: 0.04));
       expect(
         darkGlass.borderRadius,
         BorderRadius.circular(WebTokens.radiusCard),

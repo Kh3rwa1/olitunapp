@@ -25,10 +25,7 @@ void main() {
         () => cache.writeBytes('avatar.json', const [1, 2, 3]),
         throwsUnsupportedError,
       );
-      expect(
-        () => cache.readBytes('avatar.json'),
-        throwsUnsupportedError,
-      );
+      expect(() => cache.readBytes('avatar.json'), throwsUnsupportedError);
     });
   });
 }

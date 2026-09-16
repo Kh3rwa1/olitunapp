@@ -12,6 +12,8 @@ const {
 } = REVIEW_SCHEMA_LIMITS;
 
 const VALID_ITEM_TYPES = new Set(ITEM_TYPES);
+const DEFAULT_LIST_PAGE_SIZE = 100;
+const MAX_LIST_PAGE_SIZE = 100;
 
 export function rowIdFor(userId, itemId) {
   const input = `usr:${userId.length}:${userId}:item:${itemId.length}:${itemId}`;
@@ -37,6 +39,24 @@ export function isValidAppwriteRowId(id) {
   return /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(id);
 }
 
+export function parseReviewStateListRequest(body = {}) {
+  const limit = Number(body.limit ?? DEFAULT_LIST_PAGE_SIZE);
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIST_PAGE_SIZE) {
+    return {
+      ok: false,
+      error: `limit must be an integer from 1 to ${MAX_LIST_PAGE_SIZE}`,
+    };
+  }
+
+  const rawCursor = body.cursor;
+  if (rawCursor === undefined || rawCursor === null || rawCursor === '') {
+    return { ok: true, limit, cursor: null };
+  }
+  if (!isValidAppwriteRowId(rawCursor)) {
+    return { ok: false, error: 'cursor must be a valid Appwrite row ID' };
+  }
+  return { ok: true, limit, cursor: rawCursor };
+}
 
 function parseBody(req) {
   if (!req.body) return {};
@@ -53,6 +73,11 @@ function getEffectiveTimestamp(row) {
   const raw = row.lastReviewedAt || row.introducedAt || row.nextReviewAt || 0;
   const parsed = Date.parse(raw);
   return isNaN(parsed) ? 0 : parsed;
+}
+
+function getRowId(row) {
+  const id = row && (row.$id || row.id);
+  return typeof id === 'string' ? id : '';
 }
 
 export async function handleMutateReviewState({ req, res, error, log, dbOverride, tablesDBOverride }) {
@@ -81,13 +106,24 @@ export async function handleMutateReviewState({ req, res, error, log, dbOverride
     return res.json({ ok: false, error: 'FORBIDDEN', message: 'Caller cannot impersonate another user' }, 403);
   }
 
-  // Common validation for itemId (upsert & delete)
-  const itemId = String(body.itemId || '').trim();
-  if (!itemId || itemId.length > ITEM_ID_MAX_LENGTH) {
-    return res.json({ ok: false, error: 'INVALID_ARGUMENT', message: `Invalid or missing itemId (must be non-empty and <= ${ITEM_ID_MAX_LENGTH} characters)` }, 400);
+  const action = body.action || 'upsert';
+  if (action !== 'upsert' && action !== 'delete' && action !== 'list') {
+    return res.json({ ok: false, error: 'INVALID_ARGUMENT', message: `Unknown action: ${action}` }, 400);
   }
 
-  const action = body.action || 'upsert';
+  let listRequest = null;
+  if (action === 'list') {
+    listRequest = parseReviewStateListRequest(body);
+    if (!listRequest.ok) {
+      return res.json({ ok: false, error: 'INVALID_ARGUMENT', message: listRequest.error }, 400);
+    }
+  }
+
+  // Common validation for itemId (upsert & delete)
+  const itemId = action === 'list' ? '' : String(body.itemId || '').trim();
+  if (action !== 'list' && (!itemId || itemId.length > ITEM_ID_MAX_LENGTH)) {
+    return res.json({ ok: false, error: 'INVALID_ARGUMENT', message: `Invalid or missing itemId (must be non-empty and <= ${ITEM_ID_MAX_LENGTH} characters)` }, 400);
+  }
 
   // Validate upsert payload before database connection setup
   let upsertCandidate = null;
@@ -218,15 +254,31 @@ export async function handleMutateReviewState({ req, res, error, log, dbOverride
     tablesDB = new TablesDB(client);
   }
 
-  // Action: list
+  // Action: list (cursor-paginated and bounded to 100 rows per request)
   if (action === 'list') {
     try {
-      const resData = await tablesDB.listRows(databaseId, tableId, [
+      const queries = [
         Query.equal('userId', cleanUserId),
-        Query.limit(100),
-      ]);
-      const rows = resData.rows || resData.documents || [];
-      return res.json({ ok: true, rows, documents: rows });
+        Query.orderAsc('$id'),
+        Query.limit(listRequest.limit),
+      ];
+      if (listRequest.cursor) {
+        queries.push(Query.cursorAfter(listRequest.cursor));
+      }
+      const resData = await tablesDB.listRows(databaseId, tableId, queries);
+      const pageRows = resData.rows || resData.documents || [];
+      const rows = Array.isArray(pageRows) ? pageRows : [];
+      const lastRowId = rows.length === listRequest.limit
+        ? getRowId(rows.at(-1))
+        : '';
+      const nextCursor = lastRowId || null;
+      return res.json({
+        ok: true,
+        rows,
+        documents: rows,
+        hasMore: Boolean(nextCursor),
+        nextCursor,
+      });
     } catch (err) {
       if (error) error(`mutateReviewState: list failed: ${err.message}`);
       return res.json({ ok: false, error: 'SERVER_ERROR', message: 'Failed to list states' }, 500);

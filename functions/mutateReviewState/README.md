@@ -1,6 +1,6 @@
 # mutateReviewState — Trusted Review State Mutation Function
 
-Serverless Appwrite Function for cloud-backed spaced repetition review state (`review_states` collection in `olitun_db`).
+Serverless Appwrite Function for cloud-backed spaced repetition review state (`review_states` table in `olitun_db`).
 
 ## Security & Architectural Requirements
 
@@ -37,9 +37,15 @@ Serverless Appwrite Function for cloud-backed spaced repetition review state (`r
    - If both rows exist, the whole-state winner is selected using `lastReviewedAt ?? introducedAt` (preferring the hashed row on equal timestamps), written to the hashed row, and the legacy row is deleted upon success.
    - If new-row writing fails, the legacy row is retained and never deleted.
 
+5. **Bounded Compatibility Reads**:
+   - The Flutter client reads directly from the row-secured table; the Function's `list` action remains only for compatibility and diagnostics.
+   - Every list request is capped at 100 rows and uses an Appwrite row cursor for continuation.
+   - The authenticated user filter is always applied server-side; callers cannot select another user's rows.
+
 ## Actions
 
 ### `upsert`
+
 ```json
 {
   "action": "upsert",
@@ -53,6 +59,7 @@ Serverless Appwrite Function for cloud-backed spaced repetition review state (`r
 ```
 
 ### `delete`
+
 ```json
 {
   "action": "delete",
@@ -61,9 +68,26 @@ Serverless Appwrite Function for cloud-backed spaced repetition review state (`r
 ```
 
 ### `list`
+
+`itemId` is not required. `limit` defaults to 100 and must be an integer from 1 to 100. Pass the previous response's `nextCursor` to continue.
+
 ```json
 {
-  "action": "list"
+  "action": "list",
+  "limit": 100,
+  "cursor": "r_0123456789abcdef0123456789abcde"
+}
+```
+
+Successful responses preserve the legacy `rows` and `documents` fields and add pagination metadata:
+
+```json
+{
+  "ok": true,
+  "rows": [],
+  "documents": [],
+  "hasMore": false,
+  "nextCursor": null
 }
 ```
 
@@ -73,7 +97,7 @@ Serverless Appwrite Function for cloud-backed spaced repetition review state (`r
 |---|---|---|
 | 401 | `UNAUTHENTICATED` | Missing or invalid `x-appwrite-user-id` header |
 | 403 | `FORBIDDEN` | Request body `userId` does not match session user |
-| 400 | `INVALID_ARGUMENT` | Missing or malformed parameters (`itemId`, `itemType`, timestamps, etc.) |
+| 400 | `INVALID_ARGUMENT` | Missing or malformed parameters, unsupported action, invalid list limit, or invalid cursor |
 | 413 | `PAYLOAD_TOO_LARGE` | `stateJson` exceeds 8,192 bytes |
 | 500 | `SERVER_MISCONFIGURED` | Missing server environment variables |
 | 500 | `SERVER_ERROR` | Internal error |

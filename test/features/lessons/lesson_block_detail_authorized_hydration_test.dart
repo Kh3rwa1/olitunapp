@@ -47,67 +47,62 @@ void main() {
     prefs = await SharedPreferences.getInstance();
   });
 
-  testWidgets(
-    'metadata-only catalog hydrates authorized authored blocks',
-    (tester) async {
-      const metadataLesson = LessonEntity(
-        id: 'lesson_vocab_metadata',
-        categoryId: 'cat_vocab',
-        titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
-        titleLatin: 'Vocabulary',
-      );
-      const hydratedLesson = LessonEntity(
-        id: 'lesson_vocab_metadata',
-        categoryId: 'cat_vocab',
-        titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
-        titleLatin: 'Vocabulary',
-        blocks: [
-          LessonBlockEntity(
-            type: 'text',
-            textOlChiki: 'ᱡᱚᱦᱟᱨ',
-            textLatin: 'Johar',
-          ),
-          LessonBlockEntity(
-            type: 'text',
-            textOlChiki: 'ᱫᱟᱜ',
-            textLatin: 'Water',
-          ),
-        ],
-      );
-      final mockAudioService = MockAudioService();
+  testWidgets('metadata-only catalog hydrates authorized authored blocks', (
+    tester,
+  ) async {
+    const metadataLesson = LessonEntity(
+      id: 'lesson_vocab_metadata',
+      categoryId: 'cat_vocab',
+      titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
+      titleLatin: 'Vocabulary',
+    );
+    const hydratedLesson = LessonEntity(
+      id: 'lesson_vocab_metadata',
+      categoryId: 'cat_vocab',
+      titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
+      titleLatin: 'Vocabulary',
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱡᱚᱦᱟᱨ',
+          textLatin: 'Johar',
+        ),
+        LessonBlockEntity(type: 'text', textOlChiki: 'ᱫᱟᱜ', textLatin: 'Water'),
+      ],
+    );
+    final mockAudioService = MockAudioService();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            learnerLessonsProvider.overrideWithValue(
-              const AsyncValue.data([metadataLesson]),
-            ),
-            lessonsByCategoryProvider('cat_vocab').overrideWithValue(
-              const AsyncValue.data([metadataLesson]),
-            ),
-            learnerLessonDetailProvider(
-              metadataLesson.id,
-            ).overrideWith((ref) => hydratedLesson),
-            audioServiceProvider.overrideWithValue(mockAudioService),
-            reduceVisualEffectsProvider.overrideWithValue(false),
-          ],
-          child: const MaterialApp(
-            home: LessonBlockDetailScreen(
-              lessonId: 'lesson_vocab_metadata',
-              initialBlockIndex: 0,
-            ),
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          learnerLessonsProvider.overrideWithValue(
+            const AsyncValue.data([metadataLesson]),
+          ),
+          lessonsByCategoryProvider(
+            'cat_vocab',
+          ).overrideWithValue(const AsyncValue.data([metadataLesson])),
+          learnerLessonDetailProvider(
+            metadataLesson.id,
+          ).overrideWith((ref) => hydratedLesson),
+          audioServiceProvider.overrideWithValue(mockAudioService),
+          reduceVisualEffectsProvider.overrideWithValue(false),
+        ],
+        child: const MaterialApp(
+          home: LessonBlockDetailScreen(
+            lessonId: 'lesson_vocab_metadata',
+            initialBlockIndex: 0,
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(find.text('Johar'), findsWidgets);
-      final pageView = tester.widget<PageView>(find.byType(PageView));
-      final delegate = pageView.childrenDelegate as SliverChildBuilderDelegate;
-      expect(delegate.childCount, 3);
-    },
-  );
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.text('Johar'), findsWidgets);
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    final delegate = pageView.childrenDelegate as SliverChildBuilderDelegate;
+    expect(delegate.childCount, 3);
+  });
 }

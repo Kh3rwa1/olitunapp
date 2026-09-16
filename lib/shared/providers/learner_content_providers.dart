@@ -19,26 +19,20 @@ final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
 
 /// Loads the selected lesson body through the authorized detail boundary.
 /// Catalog providers intentionally keep lesson blocks empty.
-final learnerLessonDetailProvider =
-    FutureProvider.autoDispose.family<LessonEntity, String>((
-      ref,
-      lessonId,
-    ) async {
+final learnerLessonDetailProvider = FutureProvider.autoDispose
+    .family<LessonEntity, String>((ref, lessonId) async {
       await ref.watch(currentUserProvider.future);
       final result = await ref
           .watch(lessonRepositoryProvider)
           .getLessonById(lessonId);
-      return result.fold(
-        (failure) => throw StateError(failure.message),
-        (lesson) {
-          if (lesson.id != lessonId) {
-            throw StateError(
-              'Authorized lesson response did not match request',
-            );
-          }
-          return scopeLessonMedia(lesson);
-        },
-      );
+      return result.fold((failure) => throw StateError(failure.message), (
+        lesson,
+      ) {
+        if (lesson.id != lessonId) {
+          throw StateError('Authorized lesson response did not match request');
+        }
+        return scopeLessonMedia(lesson);
+      });
     });
 
 final learnerWordsProvider = Provider<AsyncValue<List<WordModel>>>((ref) {

@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  assertActiveDeployment,
   assertCollectionBoundary,
+  assertRequiredVariables,
   auditLessonOrders,
   classifyLesson,
+  createRollbackRecord,
+  cursorQueries,
   desiredPermissions,
+  desiredTablePermissions,
   parseArgs,
 } from './check_premium_content_permissions.mjs';
 
@@ -22,82 +27,173 @@ test('known paid mode may use the legacy positive-order window', () => {
   );
 });
 
-test('explicit isPreview grants public access even outside order window', () => {
+test('explicit preview grants public access outside the order window', () => {
   assert.deepEqual(
-    classifyLesson({ unlockMode: 'paid_only', previewLessonCount: 2 }, { order: 10, isPreview: true }),
+    classifyLesson(
+      { unlockMode: 'paid_only', previewLessonCount: 2 },
+      { order: 10, isPreview: true },
+    ),
     { public: true, reason: 'explicit-preview' },
   );
 });
 
-test('unknown mode denies even a positive order-window preview', () => {
+test('explicit premium flag wins over preview', () => {
   assert.deepEqual(
-    classifyLesson({ unlockMode: 'future_mode', previewLessonCount: 5 }, { order: 1 }),
-    { public: false, reason: 'unknown-unlock-mode-future_mode' },
+    classifyLesson(
+      { unlockMode: 'free', previewLessonCount: 5 },
+      { order: 1, isPreview: true, isPremium: true },
+    ),
+    { public: false, reason: 'item-marked-premium' },
   );
 });
 
-test('missing category fails closed', () => {
+test('unknown mode and missing category fail closed', () => {
+  assert.equal(
+    classifyLesson({ unlockMode: 'future_mode', previewLessonCount: 5 }, { order: 1 }).public,
+    false,
+  );
   assert.equal(classifyLesson(undefined, { order: 1 }).public, false);
 });
 
-test('protected permissions remove every read role and retain writes', () => {
+test('protected row permissions remove every read role and retain writes', () => {
   assert.deepEqual(
-    desiredPermissions([
-      'read("any")',
-      'read("guests")',
-      'read("users")',
-      'read("users/verified")',
-      'read("label:premium")',
-      'read("team:admins")',
-      'update("team:admins")',
-      'delete("team:admins")',
-    ], false),
+    desiredPermissions(
+      [
+        'read("any")',
+        'read("guests")',
+        'read("users")',
+        'read("users/verified")',
+        'read("label:premium")',
+        'read("team:admins")',
+        'update("team:admins")',
+        'delete("team:admins")',
+      ],
+      false,
+    ),
     ['update("team:admins")', 'delete("team:admins")'],
   );
 });
 
-test('public permissions canonicalize reads to anonymous and preserve writes', () => {
+test('public row permissions canonicalize reads to anonymous', () => {
   assert.deepEqual(
     desiredPermissions(['read("guests")', 'update("team:admins")'], true),
     ['update("team:admins")', 'read("any")'],
   );
 });
 
-test('collection read grants are rejected even with document security', () => {
-  assert.throws(
-    () => assertCollectionBoundary({
-      documentSecurity: true,
-      $permissions: ['read("any")', 'create("team:admins")'],
-    }),
-    /collection-level read grants/,
+test('table boundary permits only admin-team read access', () => {
+  assert.deepEqual(
+    desiredTablePermissions(
+      ['read("users")', 'create("team:admins")', 'update("team:admins")'],
+      'admins',
+    ),
+    ['create("team:admins")', 'update("team:admins")', 'read("team:admins")'],
   );
-  assert.doesNotThrow(() => assertCollectionBoundary({
-    documentSecurity: true,
-    $permissions: ['create("team:admins")'],
-  }));
+  assert.throws(
+    () =>
+      assertCollectionBoundary({
+        rowSecurity: true,
+        $permissions: ['read("users")', 'read("team:admins")'],
+      }),
+    /non-admin table-level read grant/,
+  );
+  assert.doesNotThrow(() =>
+    assertCollectionBoundary({
+      rowSecurity: true,
+      $permissions: ['read("team:admins")', 'create("team:admins")'],
+    }),
+  );
 });
 
-test('apply confirmation is bound to the explicit project', () => {
+test('apply confirmation is bound to the explicit project and phase', () => {
   assert.throws(
-    () => parseArgs(['--apply', '--confirm-project=wrong'], 'target-project'),
+    () => parseArgs(['--phase=rows', '--apply', '--confirm-project=wrong'], 'target-project'),
     /--confirm-project=target-project/,
   );
   assert.deepEqual(
-    parseArgs(['--apply', '--confirm-project=target-project'], 'target-project'),
-    { apply: true },
+    parseArgs(['--phase=rows', '--apply', '--confirm-project=target-project'], 'target-project'),
+    {
+      phase: 'rows',
+      apply: true,
+      expectedReleaseCommit: null,
+      rollbackOutput: null,
+    },
   );
 });
 
-test('auditLessonOrders passes for sequential positive orders', () => {
-  const lessons = [
-    { $id: 'l1', categoryId: 'cat1', order: 1 },
-    { $id: 'l2', categoryId: 'cat1', order: 2 },
-    { $id: 'l3', categoryId: 'cat1', order: 3 },
-  ];
-  assert.deepEqual(auditLessonOrders(lessons), []);
+test('boundary requires exact protected-main commit confirmation', () => {
+  const sha = 'a'.repeat(40);
+  assert.throws(
+    () => parseArgs(['--phase=boundary', `--expected-release-commit=${sha}`, '--apply', '--confirm-project=p'], 'p'),
+    /--confirm-release-commit=/,
+  );
+  assert.deepEqual(
+    parseArgs(
+      [
+        '--phase=boundary',
+        `--expected-release-commit=${sha}`,
+        '--apply',
+        '--confirm-project=p',
+        `--confirm-release-commit=${sha}`,
+      ],
+      'p',
+    ),
+    {
+      phase: 'boundary',
+      apply: true,
+      expectedReleaseCommit: sha,
+      rollbackOutput: null,
+    },
+  );
 });
 
-test('auditLessonOrders detects zeroes, negatives, duplicates, and gaps', () => {
+test('cursor pagination never uses offset', () => {
+  assert.deepEqual(cursorQueries(null, 100), ['{"method":"limit","values":[100]}']);
+  assert.deepEqual(cursorQueries('row-100', 100), [
+    '{"method":"limit","values":[100]}',
+    '{"method":"cursorAfter","values":["row-100"]}',
+  ]);
+  assert.equal(cursorQueries('row-100').some((query) => query.includes('offset')), false);
+});
+
+test('active deployment verification never substitutes latest deployment', () => {
+  const expected = 'b'.repeat(40);
+  assert.doesNotThrow(() =>
+    assertActiveDeployment(
+      { deploymentId: 'active', latestDeploymentId: 'preview' },
+      { $id: 'active', status: 'ready', providerCommitHash: expected, providerBranch: 'main' },
+      expected,
+      'site',
+    ),
+  );
+  assert.throws(
+    () =>
+      assertActiveDeployment(
+        { deploymentId: 'active', latestDeploymentId: 'preview' },
+        { $id: 'preview', status: 'ready', providerCommitHash: expected },
+        expected,
+        'site',
+      ),
+    /did not load deploymentId/,
+  );
+});
+
+test('authorization variables reject stale entitlement configuration', () => {
+  const valid = [
+    { key: 'APPWRITE_DATABASE_ID', value: 'olitun_db' },
+    { key: 'LESSONS_COLLECTION_ID', value: 'lessons' },
+    { key: 'COURSE_PURCHASES_COLLECTION_ID', value: 'course_purchases' },
+    { key: 'PAID_MEDIA_BUCKET_ID', value: 'paid_media' },
+    { key: 'MEDIA_PUBLIC_ENDPOINT', value: 'https://sgp.cloud.appwrite.io/v1' },
+  ];
+  assert.doesNotThrow(() => assertRequiredVariables(valid));
+  assert.throws(
+    () => assertRequiredVariables([...valid, { key: 'PAYMENT_COLLECTION_ID', value: 'payments' }]),
+    /stale PAYMENT_COLLECTION_ID/,
+  );
+});
+
+test('auditLessonOrders detects zeroes, duplicates, and gaps', () => {
   const lessons = [
     { $id: 'l0', categoryId: 'cat1', order: 0 },
     { $id: 'l1a', categoryId: 'cat1', order: 2 },
@@ -106,9 +202,33 @@ test('auditLessonOrders detects zeroes, negatives, duplicates, and gaps', () => 
   ];
   const anomalies = auditLessonOrders(lessons);
   assert.equal(anomalies.length, 4);
-  assert.equal(anomalies.some((a) => a.type === 'invalid_or_zero' && a.lessonId === 'l0'), true);
-  assert.equal(anomalies.some((a) => a.type === 'duplicate' && a.order === 2), true);
-  assert.equal(anomalies.some((a) => a.type === 'gap' && a.expected === 1), true);
-  assert.equal(anomalies.some((a) => a.type === 'gap' && a.expected === 3 && a.actual === 5), true);
+  assert.equal(anomalies.some((item) => item.type === 'invalid_or_zero'), true);
+  assert.equal(anomalies.some((item) => item.type === 'duplicate'), true);
+  assert.equal(anomalies.some((item) => item.type === 'gap' && item.expected === 1), true);
+  assert.equal(anomalies.some((item) => item.type === 'gap' && item.expected === 3), true);
 });
 
+test('rollback record contains permissions but no variables or secrets', () => {
+  const record = createRollbackRecord({
+    projectId: 'p',
+    databaseId: 'd',
+    table: {
+      $id: 'lessons',
+      name: 'Lessons',
+      rowSecurity: false,
+      enabled: true,
+      $permissions: ['read("users")'],
+    },
+    plans: [
+      {
+        lesson: { $id: 'lesson-1' },
+        current: ['read("any")'],
+      },
+    ],
+    expectedCommit: 'c'.repeat(40),
+    generatedAt: '2026-09-16T00:00:00.000Z',
+  });
+  assert.equal(record.rows[0].id, 'lesson-1');
+  assert.equal(JSON.stringify(record).includes('APPWRITE_API_KEY'), false);
+  assert.equal(JSON.stringify(record).includes('variables'), false);
+});

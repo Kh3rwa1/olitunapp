@@ -14,8 +14,9 @@ void main() {
         routes: [
           GoRoute(
             path: '/',
-            builder: (_, _) =>
-                const Scaffold(body: SingleChildScrollView(child: SantaliVoicePromoCard())),
+            builder: (_, _) => const Scaffold(
+              body: SingleChildScrollView(child: SantaliVoicePromoCard()),
+            ),
           ),
           GoRoute(
             path: '/voice',

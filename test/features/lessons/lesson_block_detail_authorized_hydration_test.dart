@@ -55,7 +55,6 @@ void main() {
         categoryId: 'cat_vocab',
         titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
         titleLatin: 'Vocabulary',
-        blocks: [],
       );
       const hydratedLesson = LessonEntity(
         id: 'lesson_vocab_metadata',

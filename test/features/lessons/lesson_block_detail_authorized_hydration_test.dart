@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:olitun/core/audio/audio_service.dart';
-import 'package:olitun/features/content/presentation/providers/audio_playback_providers.dart';
-import 'package:olitun/features/lessons/domain/entities/lesson_entity.dart';
-import 'package:olitun/features/lessons/presentation/lesson_block_detail_screen.dart';
-import 'package:olitun/features/lessons/presentation/providers/lesson_progression_provider.dart';
-import 'package:olitun/features/settings/presentation/providers/settings_notifier.dart';
-import 'package:olitun/shared/providers/providers.dart';
+
+import '../../../lib/core/audio/audio_service.dart';
+import '../../../lib/features/content/presentation/providers/audio_playback_providers.dart';
+import '../../../lib/features/lessons/domain/entities/lesson_entity.dart';
+import '../../../lib/features/lessons/presentation/lesson_block_detail_screen.dart';
+import '../../../lib/features/lessons/presentation/providers/lesson_progression_provider.dart';
+import '../../../lib/features/settings/presentation/providers/settings_notifier.dart';
+import '../../../lib/shared/providers/providers.dart';
 
 void main() {
   const metadataLesson = LessonEntity(

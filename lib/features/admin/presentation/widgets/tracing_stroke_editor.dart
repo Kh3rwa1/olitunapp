@@ -320,6 +320,12 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
             ),
             child: ReorderableListView(
               shrinkWrap: true,
+              // `onReorder` is deprecated in favour of `onReorderItem` on
+              // Flutter >= 3.41 (stable in 3.44), where the framework applies
+              // the newIndex correction internally. `onReorderItem` does not
+              // exist on the pinned flutter-3.35 build runtime, so this stays
+              // until that runtime is upgraded; see docs/tech_debt.md §8.
+              // ignore: deprecated_member_use
               onReorder: (oldIndex, newIndex) {
                 setState(() {
                   if (oldIndex < newIndex) {

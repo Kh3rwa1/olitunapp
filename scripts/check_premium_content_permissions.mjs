@@ -22,6 +22,10 @@ import { fileURLToPath } from 'node:url';
 const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = resolve(dirname(SCRIPT_PATH), '..');
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
+const RESOURCE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/;
+const PERMISSION_PATTERN = /^(?:read|create|update|delete)\("[A-Za-z0-9:._+\/-]{1,128}"\)$/;
+const AUTHORIZATION_FUNCTION_ID = 'getAuthorizedLesson';
+const FLUTTER_SITE_ID = '69b2342a00065864275b';
 const PAID_UNLOCK_MODES = new Set(['paid_only', 'review_or_paid', 'review_only']);
 const REQUIRED_VARIABLES = Object.freeze({
   APPWRITE_DATABASE_ID: 'olitun_db',
@@ -56,6 +60,24 @@ function sorted(values) {
 
 function isReadPermission(permission) {
   return typeof permission === 'string' && permission.startsWith('read(');
+}
+
+function safeResourceId(value, label) {
+  if (typeof value !== 'string' || !RESOURCE_ID_PATTERN.test(value)) {
+    throw new Error(`${label} is not a valid Appwrite resource ID`);
+  }
+  return value;
+}
+
+function apiPathId(value, label) {
+  return encodeURIComponent(safeResourceId(value, label));
+}
+
+function safePermission(value) {
+  if (typeof value !== 'string' || !PERMISSION_PATTERN.test(value)) {
+    throw new Error('Rollback data contains a malformed permission');
+  }
+  return value;
 }
 
 export function classifyLesson(category, lesson) {
@@ -330,21 +352,25 @@ export async function listAllRows(api, databaseId, tableId, limit = 100) {
   throw new Error(`${tableId} exceeded the 10,000-row safety bound`);
 }
 
-export async function loadReleasePreflight(api, manifest, lessonTable = null) {
-  const functionId = 'getAuthorizedLesson';
-  const siteId = manifest.sites?.[0]?.$id;
-  if (!siteId) throw new Error('No Appwrite site is declared');
+export async function loadReleasePreflight(api, lessonTable = null) {
+  const functionId = apiPathId(AUTHORIZATION_FUNCTION_ID, 'authorization function ID');
+  const siteId = apiPathId(FLUTTER_SITE_ID, 'Flutter site ID');
   const authorizationFunction = await api('GET', `/functions/${functionId}`);
   if (!authorizationFunction?.deploymentId) throw new Error('Authorization function has no active deployment');
+  const functionDeploymentId = apiPathId(
+    authorizationFunction.deploymentId,
+    'authorization deployment ID',
+  );
   const site = await api('GET', `/sites/${siteId}`);
   if (!site?.deploymentId) throw new Error('Flutter site has no active deployment');
+  const siteDeploymentId = apiPathId(site.deploymentId, 'site deployment ID');
   const [functionDeployment, variableResponse, entitlementTable, resolvedLessonTable, siteDeployment] =
     await Promise.all([
-      api('GET', `/functions/${functionId}/deployments/${authorizationFunction.deploymentId}`),
+      api('GET', `/functions/${functionId}/deployments/${functionDeploymentId}`),
       api('GET', `/functions/${functionId}/variables`),
       api('GET', '/tablesdb/olitun_db/tables/course_purchases'),
       lessonTable || api('GET', '/tablesdb/olitun_db/tables/lessons'),
-      api('GET', `/sites/${siteId}/deployments/${site.deploymentId}`),
+      api('GET', `/sites/${siteId}/deployments/${siteDeploymentId}`),
     ]);
   return {
     function: authorizationFunction,
@@ -381,19 +407,18 @@ export function createRollbackRecord({ projectId, databaseId, table, plans, expe
   return {
     version: 1,
     generatedAt,
-    projectId,
-    databaseId,
-    tableId: rowId(table),
+    projectId: safeResourceId(projectId, 'rollback project ID'),
+    databaseId: safeResourceId(databaseId, 'rollback database ID'),
+    tableId: safeResourceId(rowId(table), 'rollback table ID'),
     expectedCommit,
     table: {
-      name: table.name,
-      rowSecurity: table.rowSecurity,
-      enabled: table.enabled,
-      permissions: permissionsOf(table),
+      rowSecurity: table.rowSecurity === true,
+      enabled: table.enabled !== false,
+      permissions: permissionsOf(table).map(safePermission),
     },
     rows: plans.map((plan) => ({
-      id: rowId(plan.lesson),
-      permissions: plan.current,
+      id: safeResourceId(rowId(plan.lesson), 'rollback lesson ID'),
+      permissions: plan.current.map(safePermission),
     })),
   };
 }
@@ -404,14 +429,25 @@ function readManifest() {
 
 async function main() {
   const manifest = readManifest();
-  const projectId = process.env.APPWRITE_PROJECT_ID || manifest.projectId;
+  const projectId = safeResourceId(
+    String(process.env.APPWRITE_PROJECT_ID || '').trim(),
+    'APPWRITE_PROJECT_ID',
+  );
   const args = parseArgs(process.argv.slice(2), projectId);
-  const endpoint = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+  const rawEndpoint = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+  const endpointUrl = new URL(rawEndpoint);
+  if (
+    endpointUrl.protocol !== 'https:' ||
+    !endpointUrl.hostname.endsWith('.appwrite.io') ||
+    endpointUrl.pathname.replace(/\/+$/, '') !== '/v1'
+  ) {
+    throw new Error('APPWRITE_ENDPOINT must be an Appwrite Cloud HTTPS v1 endpoint');
+  }
+  const endpoint = endpointUrl.toString().replace(/\/$/, '');
   const apiKey = String(process.env.APPWRITE_API_KEY || '').trim();
-  const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
+  const databaseId = 'olitun_db';
   const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
   if (!apiKey) throw new Error('APPWRITE_API_KEY is required');
-  if (databaseId !== 'olitun_db') throw new Error('This migration is bound to database olitun_db');
 
   const api = createApiClient({ endpoint, projectId, apiKey });
   const [lessonTable, lessons, categories] = await Promise.all([
@@ -465,7 +501,7 @@ async function main() {
   }
 
   assert.equal(changedPlans.length, 0, 'stage and verify row permissions before the boundary phase');
-  const preflight = await loadReleasePreflight(api, manifest, lessonTable);
+  const preflight = await loadReleasePreflight(api, lessonTable);
   assertReleasePreflight(preflight, manifest, args.expectedReleaseCommit);
   if (!args.apply) {
     console.log('Boundary preflight passed. No table permissions were changed.');
@@ -486,6 +522,9 @@ async function main() {
     generatedAt: new Date().toISOString(),
   });
   mkdirSync(dirname(rollbackPath), { recursive: true });
+  // This migration intentionally persists a bounded, permission-only copy
+  // of validated live state so an operator can reverse the boundary mutation.
+  // codeql[js/http-to-file-access]
   writeFileSync(rollbackPath, `${JSON.stringify(rollback, null, 2)}\n`, { flag: 'wx', mode: 0o600 });
   console.log(`Rollback record written before boundary mutation: ${rollbackPath}`);
 

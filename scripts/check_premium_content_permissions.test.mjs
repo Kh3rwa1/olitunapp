@@ -215,6 +215,31 @@ test('auditLessonOrders detects zeroes, duplicates, and gaps', () => {
   assert.equal(anomalies.some((item) => item.type === 'gap' && item.expected === 3), true);
 });
 
+test('rollback records reject malformed resource IDs and permissions', () => {
+  assert.throws(
+    () => createRollbackRecord({
+      projectId: 'p',
+      databaseId: 'd',
+      table: { $id: '../lessons', $permissions: [] },
+      plans: [],
+      expectedCommit: 'c'.repeat(40),
+      generatedAt: '2026-09-16T00:00:00.000Z',
+    }),
+    /valid Appwrite resource ID/,
+  );
+  assert.throws(
+    () => createRollbackRecord({
+      projectId: 'p',
+      databaseId: 'd',
+      table: { $id: 'lessons', $permissions: ['read(\"any\")\nsecret'] },
+      plans: [],
+      expectedCommit: 'c'.repeat(40),
+      generatedAt: '2026-09-16T00:00:00.000Z',
+    }),
+    /malformed permission/,
+  );
+});
+
 test('rollback record contains permissions but no variables or secrets', () => {
   const record = createRollbackRecord({
     projectId: 'p',

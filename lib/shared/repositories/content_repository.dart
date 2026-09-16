@@ -101,8 +101,6 @@ class ContentRepository {
       item.toJson(),
     );
     if (item.kind == ContentKind.lesson) {
-      // Remove the pre-cutover body cache. Learner reads never consult either
-      // item cache, but deleting the legacy key prevents accidental reuse.
       await CacheService.delete(_cacheItemKey(item.kind, item.id));
     }
   }
@@ -286,8 +284,6 @@ class ContentRepository {
               .toList();
         }
 
-        // Authorized lesson metadata intentionally overrides bundled lesson
-        // bodies with body-free, server-authoritative lock state.
         final mergedItems = _mergeContentItems(bundledItems, remoteItems);
         if (kind != ContentKind.lesson) {
           final cachedData = mergedItems.map((item) => item.toJson()).toList();

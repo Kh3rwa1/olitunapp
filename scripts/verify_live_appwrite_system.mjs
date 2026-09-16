@@ -109,7 +109,7 @@ async function main() {
         projectId: PROJECT_ID,
         apiKey,
       });
-      const preflight = await loadReleasePreflight(preflightApi, manifest);
+      const preflight = await loadReleasePreflight(preflightApi);
       assertReleasePreflight(preflight, manifest, expectedReleaseCommit);
       console.log('  ✓ Active authorization function and Flutter site match the release commit');
     } else {

@@ -179,7 +179,7 @@ void main() {
     );
 
     expect(
-      () => dataSource.getLessons(),
+      dataSource.getLessons,
       throwsA(
         isA<ServerException>().having((error) => error.code, 'code', 502),
       ),
@@ -190,7 +190,7 @@ void main() {
     final unavailable = LessonRemoteDataSourceImpl(mockDatabases);
 
     expect(
-      () => unavailable.getLessons(),
+      unavailable.getLessons,
       throwsA(
         isA<ServerException>().having((error) => error.code, 'code', 503),
       ),

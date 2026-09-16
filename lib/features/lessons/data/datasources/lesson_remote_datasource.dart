@@ -48,8 +48,8 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
         final body = <String, dynamic>{
           'action': 'list_lessons',
           'limit': _authorizedListPageSize,
-          if (categoryId != null) 'categoryId': categoryId,
-          if (cursor != null) 'cursor': cursor,
+          'categoryId': ?categoryId,
+          'cursor': ?cursor,
         };
         final result = await functionsService!.execute(
           'getAuthorizedLesson',

@@ -1,10 +1,9 @@
-# Miscellaneous
+# --- Miscellaneous -----------------------------------------------------------
 *.class
 *.log
 *.pyc
 *.swp
 .DS_Store
-.atom/
 .atom/
 .build/
 .buildlog/
@@ -13,7 +12,7 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# --- IntelliJ / editors ------------------------------------------------------
 *.iml
 *.ipr
 *.iws
@@ -24,7 +23,7 @@ migrate_working_dir/
 # is commented out by default.
 #.vscode/
 
-# Flutter/Dart/Pub related
+# --- Flutter / Dart / Pub ----------------------------------------------------
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
@@ -33,11 +32,7 @@ migrate_working_dir/
 .pub/
 build/
 /coverage/
-
-# Symbolication related
 app.*.symbols
-
-# Obfuscation related
 app.*.map.json
 
 # Android Studio will place build artifacts here
@@ -45,47 +40,48 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Security
+# --- Security ----------------------------------------------------------------
 .env
 cookies.txt
 *.cookies
 *cookie*.txt
-node_modules/
-scripts/node_modules/
-functions/*/node_modules/
 run.sh
-build_web_v*.zip
 *.jks
 *.keystore
 android/key.properties
 android/upload-keystore.jks
 android/app/upload_certificate.pem
+.keys/
+.premium-content-rollback/
 
+# `node_modules/` matches at any depth, so the nested overrides are redundant.
+node_modules/
 
-# Agent / AI
+# --- Agent / AI --------------------------------------------------------------
 .agent/
 .gemini/scratch/
 
-# Test artifacts
+# --- Test artifacts ----------------------------------------------------------
 coverage/
 test_hive_cache/
 test_hive_*/
 project_sdk_dump.json
 output/
+**/failures/*.png
 
-# Release artifacts (build locally, don't commit)
+# --- Migration backups -------------------------------------------------------
+scripts/backups/
+
+# --- Release artifacts (built locally, never committed) ----------------------
+# Globally ignored so a stray export cannot re-enter the repo root.
 *.apk
 *.aab
 *.ipa
-test_hive_cache_v2/
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+mapping.txt
 sites/
+build_web_v*.zip
 
-# Migration backups
-scripts/backups/
-
-# Golden test failure diff artifacts
-**/failures/*.png
-mapping.txt
-mapping.txt
-.keys/
-.premium-content-rollback/

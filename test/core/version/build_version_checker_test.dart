@@ -1,4 +1,10 @@
 // ignore_for_file: deprecated_member_use, unnecessary_lambdas
+//
+// `deprecated_member_use` is required, not blanket suppression: this suite
+// deliberately reads `FutureProvider.stream` to await the first non-loading
+// AsyncValue (see the `skip(1).first` awaits below). Riverpod removes
+// `.stream` in 3.0.0, so migrating these three awaits to
+// `container.listen(...)` is tracked in docs/tech_debt.md §7.
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

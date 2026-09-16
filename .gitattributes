@@ -1,0 +1,65 @@
+# Normalize line endings for source files. The repo is developed on macOS and
+# built on Linux CI, so LF is canonical; only Windows-only tooling uses CRLF.
+#
+# NOTE: attributes here do not rewrite history. Adding `text=auto` can cause a
+# one-time renormalization pass (`git add --renormalize .`) — see
+# docs/REPO_HYGIENE.md.
+
+# --- Text / source -----------------------------------------------------------
+*.dart    text eol=lf
+*.yaml    text eol=lf
+*.yml     text eol=lf
+*.json    text eol=lf
+*.jsonc   text eol=lf
+*.md      text eol=lf
+*.sh      text eol=lf
+*.js      text eol=lf
+*.mjs     text eol=lf
+*.ts      text eol=lf
+*.kts     text eol=lf
+*.gradle  text eol=lf
+*.html    text eol=lf
+*.css     text eol=lf
+*.arb     text eol=lf
+*.svg     text eol=lf
+
+# Windows-only tooling expects CRLF.
+*.bat     text eol=crlf
+*.cmd     text eol=crlf
+
+# --- Binary assets: never normalize, never merge -----------------------------
+*.png     binary
+*.jpg     binary
+*.jpeg    binary
+*.gif     binary
+*.webp    binary
+*.ico     binary
+*.ttf     binary
+*.otf     binary
+*.woff    binary
+*.woff2   binary
+*.mp3     binary
+*.wav     binary
+*.m4a     binary
+*.ogg     binary
+*.mp4     binary
+*.mov     binary
+*.webm    binary
+*.wasm    binary
+*.jks     binary
+*.keystore binary
+*.zip     binary
+*.gz      binary
+*.apk     -diff -merge
+*.aab     -diff -merge
+*.ipa     -diff -merge
+mapping.txt -diff -merge
+
+# --- Generated / vendored: keep out of diffs and language stats --------------
+lib/l10n/generated/**  linguist-generated=true -diff
+*.g.dart               linguist-generated=true
+*.freezed.dart         linguist-generated=true
+assets/seed/**         linguist-vendored=true
+assets/audio/**        linguist-vendored=true
+assets/animations/**   linguist-vendored=true
+assets/fonts/**        linguist-vendored=true

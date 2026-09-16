@@ -46,6 +46,17 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 
 ---
 
+### 7. Riverpod `.stream` on `FutureProvider` (deprecated; removed in 3.0.0)
+*   **Location:** `test/core/version/build_version_checker_test.dart` (3 call sites using `skip(1).first` awaits).
+*   **Context:** The suite awaits the first *non-loading* `AsyncValue` by reading `buildVersionStatusProvider.stream`. Riverpod 3.0.0 removes `.stream` in favour of listening to the provider itself or using `.future`.
+*   **Why a suppression remains:** A file-level `deprecated_member_use` ignore is kept, scoped to this one test file and annotated inline with its rationale. It is the only `deprecated_member_use` suppression left in the repository.
+*   **Transition Path:** Replace the three `container.read(provider.stream).skip(1).first` awaits with `container.listen(provider, ...)` filtered on `hasValue`, or assert through `.future` where the initial loading state is not part of the contract.
+*   **Status:** Active debt (blocked on the `flutter_riverpod` 3.x upgrade).
+*   **Target Cleanup Sprint:** Same sprint as the `flutter_riverpod` 3.x migration.
+
+---
+
+
 ## 🛡️ Guidelines for Deprecating Code
 
 1.  **Mark Clearly:** Always annotate the deprecated method in code using `@Deprecated('Use [newMethod] instead')`.

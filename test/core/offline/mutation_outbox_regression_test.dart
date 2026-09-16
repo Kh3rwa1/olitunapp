@@ -84,7 +84,7 @@ void main() {
     'transient failures remain retryable beyond the former threshold',
     () async {
       await outbox.enqueueMutation(mutation('learner', 'retry-me'));
-      final attempts = MutationOutboxService.maxRetryAttempts + 3;
+      const attempts = MutationOutboxService.maxRetryAttempts + 3;
       for (var i = 0; i < attempts; i++) {
         await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
       }

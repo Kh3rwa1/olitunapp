@@ -1,11 +1,13 @@
-// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
-import 'dart:html' as html;
+import 'dart:js_interop';
+import 'dart:typed_data';
+
+import 'package:web/web.dart' as web;
 
 String createObjectUrl(List<int> bytes) {
-  final blob = html.Blob([bytes]);
-  return html.Url.createObjectUrlFromBlob(blob);
+  final blob = web.Blob(<JSAny>[Uint8List.fromList(bytes).toJS].toJS);
+  return web.URL.createObjectURL(blob);
 }
 
 void revokeObjectUrl(String url) {
-  html.Url.revokeObjectUrl(url);
+  web.URL.revokeObjectURL(url);
 }

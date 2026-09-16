@@ -27,8 +27,18 @@ const String defaultVoiceLang = 'sat';
 
 /// The two native Santali voices — the only voices the app offers.
 const List<BodhanVoice> bodhanVoices = [
-  BodhanVoice(name: 'Phulmani', languageCode: 'sat', languageName: 'Santali', isFemale: true),
-  BodhanVoice(name: 'Sibu', languageCode: 'sat', languageName: 'Santali', isFemale: false),
+  BodhanVoice(
+    name: 'Phulmani',
+    languageCode: 'sat',
+    languageName: 'Santali',
+    isFemale: true,
+  ),
+  BodhanVoice(
+    name: 'Sibu',
+    languageCode: 'sat',
+    languageName: 'Santali',
+    isFemale: false,
+  ),
 ];
 
 /// The two native Santali voices, shown as hero picks.

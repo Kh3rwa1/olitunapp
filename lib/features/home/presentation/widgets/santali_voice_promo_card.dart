@@ -18,11 +18,16 @@ class SantaliVoicePromoCard extends StatelessWidget {
     final reduce = RespectMotion.of(context);
 
     final card = PressableScale(
-      semanticLabel: 'Santali AI Voice. Type text, hear it in Santali, share the audio.',
+      semanticLabel:
+          'Santali AI Voice. Type text, hear it in Santali, share the audio.',
       onTap: () => context.push('/voice'),
       child: BentoCell(
         gradient: const LinearGradient(
-          colors: [Color(0xFF6D28D9), Color(0xFF4F46E5), Color(0xFF0E7490)],
+          colors: [
+            AppColors.voicePurple,
+            AppColors.indigoVivid,
+            AppColors.voiceTeal,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -61,16 +66,25 @@ class SantaliVoicePromoCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.18),
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 12),
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            color: Colors.white,
+                            size: 12,
+                          ),
                           SizedBox(width: 5),
                           Text(
                             'NEW • SANTALI AI',
@@ -119,7 +133,10 @@ class SantaliVoicePromoCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18,
+                        vertical: 11,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(999),
@@ -143,7 +160,11 @@ class SantaliVoicePromoCard extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 6),
-                          Icon(Icons.arrow_forward_rounded, color: AppColors.indigoVivid, size: 17),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            color: AppColors.indigoVivid,
+                            size: 17,
+                          ),
                         ],
                       ),
                     ),
@@ -151,7 +172,9 @@ class SantaliVoicePromoCard extends StatelessWidget {
                     Text(
                       'ᱟᱲᱟᱝ • 15 styles',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: isDark ? 0.75 : 0.9),
+                        color: Colors.white.withValues(
+                          alpha: isDark ? 0.75 : 0.9,
+                        ),
                         fontFamily: 'OlChiki',
                         fontSize: 14,
                         fontWeight: FontWeight.w700,

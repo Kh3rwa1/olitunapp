@@ -28,9 +28,7 @@ void main() {
       () => audio.webPlaybackEndedStream,
     ).thenAnswer((_) => const Stream<void>.empty());
     when(() => audio.currentUrl).thenReturn(null);
-    when(
-      () => audio.currentProcessingState,
-    ).thenReturn(ProcessingState.idle);
+    when(() => audio.currentProcessingState).thenReturn(ProcessingState.idle);
     tester.view.physicalSize = const Size(2000, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());

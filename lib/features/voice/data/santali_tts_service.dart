@@ -36,7 +36,10 @@ class SantaliVoiceConfig {
   static String get executionUrl {
     if (_envUrl.isNotEmpty) return _envUrl;
     if (_envFunctionId.isNotEmpty) {
-      final endpoint = AppwriteConfig.endpoint.replaceAll(RegExp(r'/v1/?$'), '');
+      final endpoint = AppwriteConfig.endpoint.replaceAll(
+        RegExp(r'/v1/?$'),
+        '',
+      );
       if (endpoint.isNotEmpty && !endpoint.contains('example.invalid')) {
         return '$endpoint/v1/functions/$_envFunctionId/executions';
       }
@@ -109,7 +112,12 @@ class SantaliTtsService {
       return (clip: null, failure: const VoiceFailure('Unknown style.'));
     }
 
-    final body = {'text': trimmed, 'voice': voice, 'lang': lang, 'style': style};
+    final body = {
+      'text': trimmed,
+      'voice': voice,
+      'lang': lang,
+      'style': style,
+    };
     final url = SantaliVoiceConfig.executionUrl;
     if (SantaliVoiceConfig.functionId.isEmpty && url.isEmpty) {
       return (
@@ -122,7 +130,9 @@ class SantaliTtsService {
 
     try {
       // Preferred: SDK execution with the user's session.
-      final execMatch = RegExp(r'/functions/([^/]+)/executions').firstMatch(url);
+      final execMatch = RegExp(
+        r'/functions/([^/]+)/executions',
+      ).firstMatch(url);
       final functionId = SantaliVoiceConfig.functionId.isNotEmpty
           ? SantaliVoiceConfig.functionId
           : (execMatch != null ? execMatch.group(1)! : '');
@@ -154,7 +164,9 @@ class SantaliTtsService {
       AppLogger.debug('SantaliTtsService error: $e');
       return (
         clip: null,
-        failure: const VoiceFailure('Connection error. Check your network and try again.'),
+        failure: const VoiceFailure(
+          'Connection error. Check your network and try again.',
+        ),
       );
     }
   }
@@ -200,7 +212,9 @@ class SantaliTtsService {
       }
       return (
         clip: null,
-        failure: VoiceFailure('Voice service error (${e.code ?? 'unknown'}). Try again.'),
+        failure: VoiceFailure(
+          'Voice service error (${e.code ?? 'unknown'}). Try again.',
+        ),
       );
     }
   }
@@ -216,7 +230,9 @@ class SantaliTtsService {
       return const VoiceFailure('Voice is busy. Try again in a moment.');
     }
     if (status == 503) {
-      return const VoiceFailure('Voice service is busy. Try again in a moment.');
+      return const VoiceFailure(
+        'Voice service is busy. Try again in a moment.',
+      );
     }
     return VoiceFailure('Voice service error ($status). Try again.');
   }
@@ -231,11 +247,19 @@ class SantaliTtsService {
     }
     if (parsed['success'] != true || parsed['data'] is! Map) {
       final code = parsed['error'] as String?;
-      final message = parsed['message'] as String? ?? 'Voice generation failed.';
+      final message =
+          parsed['message'] as String? ?? 'Voice generation failed.';
       if (code == 'LOGIN_REQUIRED') {
-        return (clip: null, failure: VoiceFailure(message, loginRequired: true));
+        return (
+          clip: null,
+          failure: VoiceFailure(message, loginRequired: true),
+        );
       }
-      if (code == 'INPUT_TOO_LONG' || code == 'INVALID_INPUT' || code == 'UNSUPPORTED_VOICE' || code == 'UNSUPPORTED_STYLE' || code == 'UPSTREAM_REJECTED') {
+      if (code == 'INPUT_TOO_LONG' ||
+          code == 'INVALID_INPUT' ||
+          code == 'UNSUPPORTED_VOICE' ||
+          code == 'UNSUPPORTED_STYLE' ||
+          code == 'UPSTREAM_REJECTED') {
         return (clip: null, failure: VoiceFailure(message));
       }
       return (clip: null, failure: VoiceFailure(message));

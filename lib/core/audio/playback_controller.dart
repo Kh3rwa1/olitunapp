@@ -313,8 +313,7 @@ class PlaybackController {
     final request = _state.current;
     final atEnd =
         _state.completed ||
-        (_state.duration > Duration.zero &&
-            _state.position >= _state.duration);
+        (_state.duration > Duration.zero && _state.position >= _state.duration);
     if (atEnd) {
       await _audio.seek(Duration.zero);
       _update(_state.copyWith(position: Duration.zero, completed: false));

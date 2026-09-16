@@ -38,17 +38,17 @@ void main() {
       });
       final parsed = SantaliTtsService.unwrapExecutionForTest(envelope);
       expect(parsed?['success'], isTrue);
-      expect(SantaliTtsService.unwrapExecutionForTest(inner)?['success'], isTrue);
+      expect(
+        SantaliTtsService.unwrapExecutionForTest(inner)?['success'],
+        isTrue,
+      );
       expect(SantaliTtsService.unwrapExecutionForTest('not-json'), isNull);
     });
   });
 
   group('voice file names', () {
     test('are deterministic and filesystem-safe', () {
-      expect(
-        voiceFileNameForTest('Phulmani', 123),
-        'olitun-phulmani-123.wav',
-      );
+      expect(voiceFileNameForTest('Phulmani', 123), 'olitun-phulmani-123.wav');
       expect(voiceFileNameForTest('', 1), 'olitun-santali-1.wav');
     });
   });

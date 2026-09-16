@@ -61,9 +61,7 @@ void main() {
     when(
       () => audio.webPlaybackEndedStream,
     ).thenAnswer((_) => const Stream<void>.empty());
-    when(
-      () => audio.currentProcessingState,
-    ).thenReturn(ProcessingState.ready);
+    when(() => audio.currentProcessingState).thenReturn(ProcessingState.ready);
     when(() => audio.currentUrl).thenReturn(null);
   });
 
@@ -475,23 +473,26 @@ void main() {
       expect(controller.state.isPlaying, isTrue);
     });
 
-    test('short clip finishing during startup settles finished, not playing', () async {
-      // A 1-second clip can complete while tryPlayUrl is still awaiting;
-      // just_audio will not emit that completion again, so without the
-      // check the UI would stick on pause+waves with no sound.
-      when(() => audio.currentUrl).thenReturn('https://a.mp3');
-      when(
-        () => audio.currentProcessingState,
-      ).thenReturn(ProcessingState.completed);
-      final controller = build();
+    test(
+      'short clip finishing during startup settles finished, not playing',
+      () async {
+        // A 1-second clip can complete while tryPlayUrl is still awaiting;
+        // just_audio will not emit that completion again, so without the
+        // check the UI would stick on pause+waves with no sound.
+        when(() => audio.currentUrl).thenReturn('https://a.mp3');
+        when(
+          () => audio.currentProcessingState,
+        ).thenReturn(ProcessingState.completed);
+        final controller = build();
 
-      await controller.play(request('https://a.mp3'));
-      await flush();
+        await controller.play(request('https://a.mp3'));
+        await flush();
 
-      expect(controller.state.current?.id, 'https://a.mp3');
-      expect(controller.state.isPlaying, isFalse);
-      expect(controller.state.completed, isTrue);
-    });
+        expect(controller.state.current?.id, 'https://a.mp3');
+        expect(controller.state.isPlaying, isFalse);
+        expect(controller.state.completed, isTrue);
+      },
+    );
 
     test('short clip finishing during resume is not marked playing', () async {
       final controller = build();

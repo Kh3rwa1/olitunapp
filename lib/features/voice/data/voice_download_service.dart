@@ -4,7 +4,8 @@ import 'package:share_plus/share_plus.dart';
 
 import 'package:itun/core/logging/app_logger.dart';
 import 'download_io.dart'
-    if (dart.library.js_interop) 'download_web.dart' as platform;
+    if (dart.library.js_interop) 'download_web.dart'
+    as platform;
 
 /// Saves a generated voice clip onto the user's device.
 ///
@@ -14,7 +15,8 @@ import 'download_io.dart'
 ///   directory under `olitun_voice/`.
 /// - Web: triggers a browser download (`olitun-voice-<ts>.wav`).
 class VoiceDownloadService {
-  VoiceDownloadService({http.Client? client}) : _client = client ?? http.Client();
+  VoiceDownloadService({http.Client? client})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -31,7 +33,8 @@ class VoiceDownloadService {
     try {
       final response = await _client.get(Uri.parse(audioUrl));
       if (response.statusCode != 200 || response.bodyBytes.isEmpty) {
-        errorMessage = 'Download failed (HTTP ${response.statusCode}). Try again.';
+        errorMessage =
+            'Download failed (HTTP ${response.statusCode}). Try again.';
         return null;
       }
       final bytes = response.bodyBytes;
@@ -57,7 +60,9 @@ class VoiceDownloadService {
 
   String _fileName(String voice) {
     final ts = DateTime.now().millisecondsSinceEpoch;
-    final safeVoice = voice.isEmpty ? 'santali' : voice.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+    final safeVoice = voice.isEmpty
+        ? 'santali'
+        : voice.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
     return 'olitun-${safeVoice.isEmpty ? 'voice' : safeVoice}-$ts.wav';
   }
 }
@@ -65,6 +70,8 @@ class VoiceDownloadService {
 /// Visible for tests: deterministic file names without timestamps.
 @visibleForTesting
 String voiceFileNameForTest(String voice, int timestampMs) {
-  final safeVoice = voice.isEmpty ? 'santali' : voice.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+  final safeVoice = voice.isEmpty
+      ? 'santali'
+      : voice.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
   return 'olitun-${safeVoice.isEmpty ? 'voice' : safeVoice}-$timestampMs.wav';
 }

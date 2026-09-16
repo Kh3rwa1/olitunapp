@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 part of 'premium_bakhed_body.dart';
 
 /// Lyrics / vocabulary / cultural-notes panel builders for
@@ -89,9 +88,9 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
           margin: const EdgeInsets.only(bottom: 20.0),
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -123,7 +122,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                   p: TextStyle(
                     fontSize: 14,
                     height: 1.5,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -170,9 +169,9 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
           margin: const EdgeInsets.only(bottom: 16.0),
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Row(
             children: [
@@ -216,9 +215,11 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                   cursor: SystemMouseCursors.click,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.1),
+                      color: accentColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
-                      border: Border.all(color: accentColor.withOpacity(0.2)),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.2),
+                      ),
                     ),
                     child: IconButton(
                       icon: Icon(Icons.volume_up_rounded, color: accentColor),
@@ -371,19 +372,19 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                 ),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? AppColors.primary.withOpacity(0.08)
-                      : Colors.white.withOpacity(0.02),
+                      ? AppColors.primary.withValues(alpha: 0.08)
+                      : Colors.white.withValues(alpha: 0.02),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: isActive
-                        ? AppColors.primary.withOpacity(0.35)
-                        : Colors.white.withOpacity(0.04),
+                        ? AppColors.primary.withValues(alpha: 0.35)
+                        : Colors.white.withValues(alpha: 0.04),
                     width: isActive ? 1.2 : 1.0,
                   ),
                   boxShadow: isActive
                       ? [
                           BoxShadow(
-                            color: AppColors.primary.withOpacity(0.14),
+                            color: AppColors.primary.withValues(alpha: 0.14),
                             blurRadius: 18,
                             spreadRadius: -2,
                           ),

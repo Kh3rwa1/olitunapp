@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
@@ -143,7 +142,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
         ),
 
         // Vertical divider line
-        Container(width: 1, color: Colors.white.withOpacity(0.06)),
+        Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
 
         // Right Column: Learning Surface
         Expanded(
@@ -157,9 +156,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
+                      color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: Colors.white.withOpacity(0.06)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.06),
+                      ),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: _buildContentSurface(
@@ -264,13 +265,13 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
         Expanded(
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+              color: Colors.white.withValues(alpha: 0.02),
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(28),
                 topRight: Radius.circular(28),
               ),
               border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.06)),
+                top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
               ),
             ),
             clipBehavior: Clip.antiAlias,
@@ -341,7 +342,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               height: 380,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: accentColor.withOpacity(0.14),
+                color: accentColor.withValues(alpha: 0.14),
               ),
             ),
           ),
@@ -353,7 +354,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               height: 350,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.bakhedGlowBlue.withOpacity(0.10),
+                color: AppColors.bakhedGlowBlue.withValues(alpha: 0.10),
               ),
             ),
           ),

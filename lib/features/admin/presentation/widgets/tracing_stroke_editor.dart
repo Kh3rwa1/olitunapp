@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:itun/core/theme/app_colors.dart';
@@ -280,7 +279,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
 
                 // Guide style
                 DropdownButtonFormField<TracingGuide>(
-                  value: _guide,
+                  initialValue: _guide,
                   items: TracingGuide.values.map((g) {
                     return DropdownMenuItem(
                       value: g,

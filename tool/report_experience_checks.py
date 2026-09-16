@@ -48,6 +48,21 @@ for folder in (
     DART_FILES.extend(str(path) for path in sorted(Path(folder).rglob("*.dart")))
 DART_FILES = list(dict.fromkeys(DART_FILES))
 TEST_FILES = [path for path in DART_FILES if path.startswith("test/") and path.endswith("_test.dart")]
+POLICY_COMMANDS = [
+    ["node", "scripts/check_file_length.mjs"],
+    ["node", "scripts/check_typography.mjs"],
+    ["node", "scripts/check_color_literals.mjs"],
+    ["node", "scripts/check_sheets_above_nav.mjs"],
+    ["node", "scripts/check_l10n_parity.mjs"],
+    ["node", "scripts/check_review_corpus_ids.mjs"],
+    ["node", "--test", "scripts/check_review_corpus_ids.test.mjs"],
+    ["dart", "run", "tool/verify_version_consistency.dart"],
+    ["node", "scripts/verify_pinned_actions.mjs"],
+    ["node", "scripts/verify_signing_configuration.mjs"],
+    ["node", "scripts/verify_node_dependency_alignment.mjs"],
+    ["node", "--test", "scripts/verify_android_signing_certificate.test.mjs"],
+    ["node", "--test", "scripts/check_release_gate.test.mjs"],
+]
 
 
 def run(command, timeout=180):
@@ -59,6 +74,17 @@ def run(command, timeout=180):
         if isinstance(partial, bytes):
             partial = partial.decode("utf-8", errors="replace")
         return 124, partial + "\nCommand timed out; this check did not pass."
+
+
+def run_policy_gates():
+    status = 0
+    logs = []
+    for command in POLICY_COMMANDS:
+        code, log = run(command)
+        logs.append(f"$ {shlex.join(command)}\n{log}")
+        if code != 0:
+            status = code
+    return status, "\n".join(logs)
 
 
 def clip(text, limit):
@@ -93,6 +119,7 @@ def main(full=False):
     _, patch = run(["git", "diff", "--", *DART_FILES])
     format_ok = format_code == 0 and not patch
     analyze_code, analyze_log = run(["flutter", "analyze", "--no-pub", "--fatal-infos"])
+    policy_code, policy_log = run_policy_gates()
     test_command = ["flutter", "test", "--no-pub", "--machine"]
     test_command += ["--coverage", "--concurrency=4"] if full else TEST_FILES
     test_code, test_log = run(test_command, timeout=660 if full else 240)
@@ -139,6 +166,8 @@ def main(full=False):
         f"```diff\n{clip(patch or format_log, 30000)}\n```\n\n"
         f"### Analyzer: {outcome(analyze_code)}\n"
         f"```text\n{clip(analyze_log, 5000)}\n```\n\n"
+        f"### Static policy gates: {outcome(policy_code)}\n"
+        f"```text\n{clip(policy_log, 12000)}\n```\n\n"
         f"### {suite}: {outcome(test_code)}\n"
         f"```text\n{clip(test_detail, 18000)}\n```\n"
     )
@@ -152,6 +181,7 @@ def main(full=False):
     (output / "comment.json").write_text(json.dumps({"body": body}), encoding="utf-8")
     (output / "format.patch").write_text(patch, encoding="utf-8")
     (output / "analyze.log").write_text(analyze_log, encoding="utf-8")
+    (output / "policy-gates.log").write_text(policy_log, encoding="utf-8")
     (output / "tests.jsonl").write_text(test_log, encoding="utf-8")
     (output / "coverage.log").write_text(coverage_log, encoding="utf-8")
     (output / "smoke.log").write_text(smoke_log, encoding="utf-8")
@@ -159,7 +189,7 @@ def main(full=False):
     if summary:
         with open(summary, "a", encoding="utf-8") as handle:
             handle.write(body)
-    passed = format_ok and analyze_code == 0 and test_code == 0
+    passed = format_ok and analyze_code == 0 and policy_code == 0 and test_code == 0
     if full:
         passed = passed and coverage_code == 0 and smoke_code == 0
     return 0 if passed else 1

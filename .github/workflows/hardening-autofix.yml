@@ -11,168 +11,174 @@ permissions:
 jobs:
   repair-format-and-diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
-      - name: Restore current implementations and apply targeted changes
-        run: |
-          set -euo pipefail
-          git checkout origin/main -- \
-            lib/core/offline/mutation_outbox_service.dart \
-            lib/shared/offline/content_mutation_replay.dart \
-            test/core/offline/mutation_outbox_regression_test.dart
-          python3 - <<'PY'
-          from pathlib import Path
-
-          def replace_once(path, old, new):
-              file = Path(path)
-              content = file.read_text()
-              count = content.count(old)
-              if count != 1:
-                  raise SystemExit(f'{path}: expected one replacement target, found {count}')
-              file.write_text(content.replace(old, new, 1))
-
-          replace_once(
-              'lib/core/offline/mutation_outbox_service.dart',
-              """  static const int maxRetryAttempts = 5;
-  static const int _maxStoredErrorLength = 512;
-""",
-              """  /// Retained for source compatibility with existing monitoring and tests.
-  /// Transient failures no longer become dead letters at this threshold.
-  static const int maxRetryAttempts = 5;
-  static const Duration maxRetryDelay = Duration(minutes: 15);
-  static const int _maxBackoffExponent = 12;
-  static const int _maxStoredErrorLength = 512;
-""",
-          )
-
-          replace_once(
-              'lib/core/offline/mutation_outbox_service.dart',
-              """      if (isPermanent || mutation.attemptCount >= maxRetryAttempts) {
-        mutation.status = MutationStatus.deadLetter;
-        AppLogger.warning(
-          'Mutation moved to dead-letter state.',
-          name: 'MutationOutbox',
-          fields: {
-            'operationId': operationId,
-            'attemptCount': mutation.attemptCount,
-          },
-        );
-      } else {
-        mutation.status = MutationStatus.failed;
-        final baseSeconds = 1 << mutation.attemptCount;
-        final jitter = 0.8 + (_random.nextDouble() * 0.4);
-        mutation.nextRetryAt = DateTime.now().add(
-          Duration(seconds: (baseSeconds * jitter).round()),
-        );
-      }
-""",
-              """      if (isPermanent) {
-        mutation.status = MutationStatus.deadLetter;
-        AppLogger.warning(
-          'Mutation moved to dead-letter state.',
-          name: 'MutationOutbox',
-          fields: {
-            'operationId': operationId,
-            'attemptCount': mutation.attemptCount,
-          },
-        );
-      } else {
-        mutation.status = MutationStatus.failed;
-        final exponent = min(
-          mutation.attemptCount,
-          _maxBackoffExponent,
-        );
-        final baseSeconds = min(
-          1 << exponent,
-          maxRetryDelay.inSeconds,
-        );
-        final jitter = 0.8 + (_random.nextDouble() * 0.4);
-        mutation.nextRetryAt = DateTime.now().add(
-          Duration(seconds: (baseSeconds * jitter).round()),
-        );
-      }
-""",
-          )
-
-          replace_once(
-              'lib/shared/offline/content_mutation_replay.dart',
-              "'[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped dead-lettered.'",
-              "'[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped skipped or deferred.'",
-          )
-
-          replace_once(
-              'test/core/offline/mutation_outbox_regression_test.dart',
-              """  test('dead-letter state survives restart', () async {
-    await outbox.enqueueMutation(mutation('learner', 'retry-me'));
-    for (var i = 0; i < MutationOutboxService.maxRetryAttempts; i++) {
-      await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
-    }
-    await Hive.close();
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.single.status, MutationStatus.deadLetter);
-    expect(pending.single.attemptCount, MutationOutboxService.maxRetryAttempts);
-    expect(pending.single.lastError, 'offline');
-  });
-""",
-              """  test('transient failures stay retryable beyond the former threshold', () async {
-    await outbox.enqueueMutation(mutation('learner', 'retry-me'));
-    final attempts = MutationOutboxService.maxRetryAttempts + 3;
-    for (var i = 0; i < attempts; i++) {
-      await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
-    }
-    await Hive.close();
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.single.status, MutationStatus.failed);
-    expect(pending.single.attemptCount, attempts);
-    expect(pending.single.lastError, 'offline');
-  });
-
-  test('explicit permanent failures enter dead-letter state', () async {
-    await outbox.enqueueMutation(mutation('learner', 'invalid-payload'));
-    await outbox.recordAttemptFailed(
-      'learner',
-      'invalid-payload',
-      'invalid payload',
-      isPermanent: true,
-    );
-    await Hive.close();
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.single.status, MutationStatus.deadLetter);
-    expect(pending.single.attemptCount, 1);
-    expect(pending.single.lastError, 'invalid payload');
-  });
-""",
-          )
-          PY
       - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
+      - name: Restore exact protected-main files and apply targeted retry patch
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          git show origin/main:lib/core/offline/mutation_outbox_service.dart > lib/core/offline/mutation_outbox_service.dart
+          git show origin/main:lib/shared/offline/content_mutation_replay.dart > lib/shared/offline/content_mutation_replay.dart
+          git show origin/main:test/core/offline/mutation_outbox_regression_test.dart > test/core/offline/mutation_outbox_regression_test.dart
+          python3 - <<'PY'
+          from pathlib import Path
+
+          outbox_path = Path('lib/core/offline/mutation_outbox_service.dart')
+          outbox = outbox_path.read_text()
+          old_constants = """  static const String _outboxBoxName = 'durable_mutation_outbox';
+            static const int maxRetryAttempts = 5;
+            static const int _maxStoredErrorLength = 512;
+          """
+          new_constants = """  static const String _outboxBoxName = 'durable_mutation_outbox';
+
+            /// Retained for compatibility with existing monitoring and tests. Transient
+            /// failures no longer become dead letters at this historical threshold.
+            static const int maxRetryAttempts = 5;
+            static const Duration maxRetryDelay = Duration(minutes: 15);
+            static const int _maxBackoffExponent = 12;
+            static const int _maxStoredErrorLength = 512;
+          """
+          old_retry = """      if (isPermanent || mutation.attemptCount >= maxRetryAttempts) {
+                  mutation.status = MutationStatus.deadLetter;
+                  AppLogger.warning(
+                    'Mutation moved to dead-letter state.',
+                    name: 'MutationOutbox',
+                    fields: {
+                      'operationId': operationId,
+                      'attemptCount': mutation.attemptCount,
+                    },
+                  );
+                } else {
+                  mutation.status = MutationStatus.failed;
+                  final baseSeconds = 1 << mutation.attemptCount;
+                  final jitter = 0.8 + (_random.nextDouble() * 0.4);
+                  mutation.nextRetryAt = DateTime.now().add(
+                    Duration(seconds: (baseSeconds * jitter).round()),
+                  );
+                }
+          """
+          new_retry = """      if (isPermanent) {
+                  mutation.status = MutationStatus.deadLetter;
+                  AppLogger.warning(
+                    'Mutation moved to dead-letter state.',
+                    name: 'MutationOutbox',
+                    fields: {
+                      'operationId': operationId,
+                      'attemptCount': mutation.attemptCount,
+                    },
+                  );
+                } else {
+                  mutation.status = MutationStatus.failed;
+                  final exponent = min(
+                    mutation.attemptCount,
+                    _maxBackoffExponent,
+                  );
+                  final baseSeconds = min(
+                    1 << exponent,
+                    maxRetryDelay.inSeconds,
+                  );
+                  final jitter = 0.8 + (_random.nextDouble() * 0.4);
+                  mutation.nextRetryAt = DateTime.now().add(
+                    Duration(seconds: (baseSeconds * jitter).round()),
+                  );
+                }
+          """
+          if old_constants not in outbox or old_retry not in outbox:
+              raise SystemExit('Protected-main outbox source did not match expected patch anchors')
+          outbox = outbox.replace(old_constants, new_constants, 1).replace(old_retry, new_retry, 1)
+          outbox_path.write_text(outbox)
+
+          replay_path = Path('lib/shared/offline/content_mutation_replay.dart')
+          replay = replay_path.read_text()
+          old_log = "'[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped dead-lettered.'"
+          new_log = "'[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped skipped or deferred.'"
+          if old_log not in replay:
+              raise SystemExit('Protected-main replay source did not match expected log anchor')
+          replay_path.write_text(replay.replace(old_log, new_log, 1))
+
+          test_path = Path('test/core/offline/mutation_outbox_regression_test.dart')
+          tests = test_path.read_text()
+          old_test = """  test('dead-letter state survives restart', () async {
+              await outbox.enqueueMutation(mutation('learner', 'retry-me'));
+              for (var i = 0; i < MutationOutboxService.maxRetryAttempts; i++) {
+                await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
+              }
+              await Hive.close();
+              final pending = await outbox.getPendingMutations('learner');
+              expect(pending.single.status, MutationStatus.deadLetter);
+              expect(pending.single.attemptCount, MutationOutboxService.maxRetryAttempts);
+              expect(pending.single.lastError, 'offline');
+            });
+          """
+          new_test = """  test('transient failures remain retryable beyond the former threshold', () async {
+              await outbox.enqueueMutation(mutation('learner', 'retry-me'));
+              final attempts = MutationOutboxService.maxRetryAttempts + 3;
+              for (var i = 0; i < attempts; i++) {
+                await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
+              }
+              await Hive.close();
+              final pending = await outbox.getPendingMutations('learner');
+              expect(pending.single.status, MutationStatus.failed);
+              expect(pending.single.attemptCount, attempts);
+              expect(pending.single.lastError, 'offline');
+            });
+
+            test('explicitly permanent failures are dead-lettered immediately', () async {
+              await outbox.enqueueMutation(mutation('learner', 'invalid-payload'));
+              await outbox.recordAttemptFailed(
+                'learner',
+                'invalid-payload',
+                'invalid payload',
+                isPermanent: true,
+              );
+
+              final pending = await outbox.getPendingMutations('learner');
+              expect(pending.single.status, MutationStatus.deadLetter);
+              expect(pending.single.attemptCount, 1);
+              expect(pending.single.lastError, 'invalid payload');
+            });
+          """
+          if old_test not in tests:
+              raise SystemExit('Protected-main regression test did not match expected patch anchor')
+          test_path.write_text(tests.replace(old_test, new_test, 1))
+          PY
       - run: flutter pub get
-      - name: Format changed Dart files
+      - name: Format repaired Dart files
         run: |
           dart format \
             lib/core/offline/mutation_outbox_service.dart \
             lib/shared/offline/content_mutation_replay.dart \
             test/core/offline/mutation_outbox_regression_test.dart
-      - name: Capture analyzer result
+      - name: Capture analyzer and focused test results
         run: |
           set +e
-          flutter analyze --fatal-infos > /tmp/hardening-analyze.log 2>&1
-          echo "$?" > /tmp/hardening-analyze.status
+          {
+            flutter analyze --fatal-infos
+            analyze_status=$?
+            flutter test \
+              test/core/offline/mutation_outbox_regression_test.dart \
+              test/shared/offline/content_mutation_replay_test.dart
+            test_status=$?
+            exit $((analyze_status || test_status))
+          } > /tmp/hardening-diagnostics.log 2>&1
+          echo "$?" > /tmp/hardening-diagnostics.status
           exit 0
       - name: Commit repaired patch and diagnostics
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          status=$(cat /tmp/hardening-analyze.status)
+          status=$(cat /tmp/hardening-diagnostics.status)
           if [ "$status" -ne 0 ]; then
-            cp /tmp/hardening-analyze.log .ci-hardening-diagnostics.txt
+            cp /tmp/hardening-diagnostics.log .ci-hardening-diagnostics.txt
           else
             rm -f .ci-hardening-diagnostics.txt
           fi
@@ -183,5 +189,9 @@ jobs:
             lib/shared/offline/content_mutation_replay.dart \
             test/core/offline/mutation_outbox_regression_test.dart
           git add -A .ci-hardening-diagnostics.txt
-          git commit -m 'fix: apply retry hardening to current outbox implementation'
+          if git diff --cached --quiet; then
+            echo 'No repaired patch or diagnostics changes to commit.'
+            exit 0
+          fi
+          git commit -m 'fix: preserve outbox API while retaining transient retries'
           git push origin "HEAD:$BRANCH"

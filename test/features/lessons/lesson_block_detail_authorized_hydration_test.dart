@@ -1,75 +1,97 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:just_audio/just_audio.dart' show ProcessingState;
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/audio/audio_service.dart';
+import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
+import 'package:itun/shared/providers/providers.dart';
 
-import '../../../lib/core/audio/audio_service.dart';
-import '../../../lib/features/content/presentation/providers/audio_playback_providers.dart';
-import '../../../lib/features/lessons/domain/entities/lesson_entity.dart';
-import '../../../lib/features/lessons/presentation/lesson_block_detail_screen.dart';
-import '../../../lib/features/lessons/presentation/providers/lesson_progression_provider.dart';
-import '../../../lib/features/settings/presentation/providers/settings_notifier.dart';
-import '../../../lib/shared/providers/providers.dart';
+class MockAudioService extends Mock implements AudioService {
+  @override
+  Future<void> playUrl(String url) async {}
+
+  @override
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async => true;
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Stream<ProcessingState> get processingStateStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<bool> get isPlayingStream => const Stream.empty();
+}
 
 void main() {
-  const metadataLesson = LessonEntity(
-    id: 'lesson_vocab_metadata',
-    categoryId: 'cat_vocab',
-    titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
-    titleLatin: 'Vocabulary',
-    level: 'beginner',
-    description: 'Vocabulary basics',
-    order: 0,
-    estimatedMinutes: 10,
-    isActive: true,
-    isPreview: true,
-    isLocked: false,
-    blocks: [],
-  );
+  late SharedPreferences prefs;
 
-  const hydratedLesson = LessonEntity(
-    id: 'lesson_vocab_metadata',
-    categoryId: 'cat_vocab',
-    titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
-    titleLatin: 'Vocabulary',
-    level: 'beginner',
-    description: 'Vocabulary basics',
-    order: 0,
-    estimatedMinutes: 10,
-    isActive: true,
-    isPreview: true,
-    isLocked: false,
-    blocks: [
-      LessonBlockEntity(
-        type: 'text',
-        textOlChiki: 'ᱡᱚᱦᱟᱨ',
-        textLatin: 'Johar',
-      ),
-      LessonBlockEntity(
-        type: 'text',
-        textOlChiki: 'ᱫᱟᱜ',
-        textLatin: 'Water',
-      ),
-    ],
-  );
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
+  });
 
   testWidgets(
     'metadata-only catalog hydrates authorized authored blocks',
     (tester) async {
+      const metadataLesson = LessonEntity(
+        id: 'lesson_vocab_metadata',
+        categoryId: 'cat_vocab',
+        titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
+        titleLatin: 'Vocabulary',
+        blocks: [],
+      );
+      const hydratedLesson = LessonEntity(
+        id: 'lesson_vocab_metadata',
+        categoryId: 'cat_vocab',
+        titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
+        titleLatin: 'Vocabulary',
+        blocks: [
+          LessonBlockEntity(
+            type: 'text',
+            textOlChiki: 'ᱡᱚᱦᱟᱨ',
+            textLatin: 'Johar',
+          ),
+          LessonBlockEntity(
+            type: 'text',
+            textOlChiki: 'ᱫᱟᱜ',
+            textLatin: 'Water',
+          ),
+        ],
+      );
+      final mockAudioService = MockAudioService();
+
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            learnerLessonsProvider.overrideWith((ref) => [metadataLesson]),
-            lessonsByCategoryProvider(
-              metadataLesson.categoryId,
-            ).overrideWith((ref) => [metadataLesson]),
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learnerLessonsProvider.overrideWithValue(
+              const AsyncValue.data([metadataLesson]),
+            ),
+            lessonsByCategoryProvider('cat_vocab').overrideWithValue(
+              const AsyncValue.data([metadataLesson]),
+            ),
             learnerLessonDetailProvider(
               metadataLesson.id,
             ).overrideWith((ref) => hydratedLesson),
-            settingsProvider.overrideWith((ref) => _TestSettingsNotifier()),
-            lessonProgressProvider.overrideWith(
-              (ref) => const AsyncValue.data(<String, double>{}),
-            ),
-            audioServiceProvider.overrideWithValue(_NoopAudioService()),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
             home: LessonBlockDetailScreen(
@@ -80,71 +102,13 @@ void main() {
         ),
       );
 
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pumpAndSettle();
 
       expect(find.byType(CircularProgressIndicator), findsNothing);
-      expect(find.text('Johar'), findsOneWidget);
+      expect(find.text('Johar'), findsWidgets);
       final pageView = tester.widget<PageView>(find.byType(PageView));
       final delegate = pageView.childrenDelegate as SliverChildBuilderDelegate;
       expect(delegate.childCount, 3);
     },
   );
-}
-
-class _TestSettingsNotifier extends SettingsNotifier {
-  _TestSettingsNotifier() {
-    state = state.copyWith(
-      preferredLanguages: const ['en'],
-      userScript: 'olChiki',
-      preferredScripts: const ['ol_chiki'],
-    );
-  }
-}
-
-class _NoopAudioService implements AudioService {
-  @override
-  Stream<AudioPlaybackState> get playbackStateStream =>
-      const Stream<AudioPlaybackState>.empty();
-
-  @override
-  Future<void> dispose() async {}
-
-  @override
-  Future<Uri> getTrackUri({
-    required String contentKind,
-    required String contentId,
-    required AudioTrackVariant track,
-    String? languageCode,
-  }) async => Uri.parse('https://example.com/$contentId.mp3');
-
-  @override
-  Future<void> pause() async {}
-
-  @override
-  Future<void> playSingle({
-    required String contentKind,
-    required String contentId,
-    required AudioTrackVariant track,
-    String? languageCode,
-  }) async {}
-
-  @override
-  Future<void> playSequence({
-    required String contentKind,
-    required String contentId,
-    required List<AudioTrackVariant> tracks,
-    String? languageCode,
-    Duration gap = const Duration(milliseconds: 250),
-    AudioPlayMode mode = AudioPlayMode.sequence,
-  }) async {}
-
-  @override
-  Future<void> setRate(double rate) async {}
-
-  @override
-  Future<void> setVolume(double volume) async {}
-
-  @override
-  Future<void> stop() async {}
 }

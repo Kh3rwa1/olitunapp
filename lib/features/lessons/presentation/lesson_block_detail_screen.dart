@@ -20,7 +20,7 @@ import '../domain/lesson_progression.dart';
 import 'providers/lesson_progression_provider.dart';
 import 'widgets/lesson_block_detail/lesson_block_item_view.dart';
 import 'widgets/lesson_block_detail/lesson_block_top_nav_bar.dart';
-import 'widgets/category_lessons/locked_lesson_overlay.dart';
+import 'widgets/category_lessons/locked_lesson_view.dart';
 import 'widgets/lesson_block_widgets.dart';
 
 /// Orchestrator screen for presenting lesson blocks in a fluid, swipeable flow.
@@ -71,7 +71,12 @@ class _LessonBlockDetailScreenState
 
   void _playBlockAudioAtIndex(int index) {
     final lessons = ref.read(learnerLessonsProvider).valueOrNull ?? [];
-    final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+    var lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+    if (lesson != null && lesson.blocks.isEmpty) {
+      lesson = ref
+          .read(learnerLessonDetailProvider(widget.lessonId))
+          .valueOrNull;
+    }
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
       final block = lesson.blocks[index];
       final audioUrl = block.audioUrl;
@@ -181,10 +186,10 @@ class _LessonBlockDetailScreenState
         ),
       ),
       data: (lessons) {
-        final lesson = lessons
+        final listedLesson = lessons
             .where((l) => l.id == widget.lessonId)
             .firstOrNull;
-        if (lesson == null) {
+        if (listedLesson == null) {
           return Scaffold(
             backgroundColor: isDark
                 ? AppColors.quizDarkBackground
@@ -196,6 +201,30 @@ class _LessonBlockDetailScreenState
             ),
           );
         }
+
+        // Authorized catalog responses intentionally contain metadata only.
+        // Hydrate the selected lesson before rendering, while keeping bundled
+        // full-body lessons usable for secure offline fallback.
+        final lessonDetailAsync = listedLesson.blocks.isEmpty
+            ? ref.watch(learnerLessonDetailProvider(widget.lessonId))
+            : null;
+        final hydratedLesson = lessonDetailAsync?.valueOrNull;
+        if (listedLesson.blocks.isEmpty && hydratedLesson == null) {
+          return Scaffold(
+            backgroundColor: isDark
+                ? AppColors.quizDarkBackground
+                : Colors.white,
+            body: lessonDetailAsync?.hasError == true
+                ? DetailLoadErrorBlock(
+                    title: 'Could not load lesson details',
+                    isDark: isDark,
+                    onBack: () =>
+                        context.canPop() ? context.pop() : context.go('/'),
+                  )
+                : const Center(child: CircularProgressIndicator()),
+          );
+        }
+        final lesson = hydratedLesson ?? listedLesson;
 
         // The category list derives lock state from the category-scoped
         // query. This screen must use that same source: the scoped and
@@ -242,7 +271,7 @@ class _LessonBlockDetailScreenState
               }
             }
           });
-          return _LockedLessonView(
+          return LockedLessonView(
             isDark: isDark,
             blockingLessonTitle: blocker?.titleLatin,
             blockingLessonId: blocker?.id,
@@ -504,48 +533,6 @@ class _LessonBlockDetailScreenState
                   .tryAgain();
             }
           : null,
-    );
-  }
-}
-
-class _LockedLessonView extends StatelessWidget {
-  const _LockedLessonView({
-    required this.isDark,
-    required this.blockingLessonTitle,
-    required this.blockingLessonId,
-    required this.onBack,
-  });
-
-  final bool isDark;
-  final String? blockingLessonTitle;
-  final String? blockingLessonId;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    // Same beautiful takeover as the category list: deep links landing
-    // directly on a locked lesson get the Eyes card, not a plain screen.
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: LockedLessonCard(
-              blockingLessonTitle: blockingLessonTitle,
-              onPrimary: () {
-                final targetId = blockingLessonId;
-                if (targetId != null && targetId.isNotEmpty) {
-                  context.push('/lesson/$targetId/block/0');
-                } else {
-                  onBack();
-                }
-              },
-              onSecondary: onBack,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

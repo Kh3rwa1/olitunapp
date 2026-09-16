@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 part of '../content_detail_screen.dart';
 
 // Renders a single ContentBlock (text/image/video/audio/lottie/quiz/
@@ -118,7 +117,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: accentColor.withOpacity(0.3),
+                  color: accentColor.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -129,7 +128,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.quiz_rounded, color: Colors.white),
@@ -224,9 +223,12 @@ class _ContentBlockRenderer extends ConsumerWidget {
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: infoColor.withOpacity(0.08),
+            color: infoColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: infoColor.withOpacity(0.25), width: 1.5),
+            border: Border.all(
+              color: infoColor.withValues(alpha: 0.25),
+              width: 1.5,
+            ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,10 +357,12 @@ class _ContentDetailFooter extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           decoration: BoxDecoration(
             color: (isDark ? AppColors.quizDarkCardAlt : Colors.white)
-                .withOpacity(0.85),
+                .withValues(alpha: 0.85),
             border: Border(
               top: BorderSide(
-                color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.08,
+                ),
                 width: 1.5,
               ),
             ),
@@ -427,12 +431,14 @@ class _ContentDetailFooter extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(
-        color: (isDark ? AppColors.quizDarkCardAlt : Colors.white).withOpacity(
-          0.85,
+        color: (isDark ? AppColors.quizDarkCardAlt : Colors.white).withValues(
+          alpha: 0.85,
         ),
         border: Border(
           top: BorderSide(
-            color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.08,
+            ),
             width: 1.5,
           ),
         ),

@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 part of 'tracing_canvas.dart';
 
 // Custom painter that renders tracing guides, strokes and the example animation.
@@ -61,7 +59,7 @@ class _TracingPainter extends CustomPainter {
 
     final dashPaint = Paint()
       ..color = (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-          .withOpacity(0.5)
+          .withValues(alpha: 0.5)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -79,9 +77,9 @@ class _TracingPainter extends CustomPainter {
 
       final paint = Paint()
         ..color = isCurrent
-            ? accentColor.withOpacity(0.18)
+            ? accentColor.withValues(alpha: 0.18)
             : (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-                  .withOpacity(0.5)
+                  .withValues(alpha: 0.5)
         ..strokeWidth = config.strokeWidth
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
@@ -102,7 +100,7 @@ class _TracingPainter extends CustomPainter {
         canvas.drawCircle(
           start,
           config.strokeWidth / 1.6,
-          Paint()..color = accentColor.withOpacity(0.35),
+          Paint()..color = accentColor.withValues(alpha: 0.35),
         );
         canvas.drawCircle(start, 6.0, Paint()..color = accentColor);
       }
@@ -132,7 +130,7 @@ class _TracingPainter extends CustomPainter {
     if (currentRawPoints.length < 2) return;
 
     final paint = Paint()
-      ..color = accentColor.withOpacity(0.7)
+      ..color = accentColor.withValues(alpha: 0.7)
       ..strokeWidth = config.strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -156,7 +154,7 @@ class _TracingPainter extends CustomPainter {
     }
 
     final paint = Paint()
-      ..color = accentColor.withOpacity(0.75)
+      ..color = accentColor.withValues(alpha: 0.75)
       ..strokeWidth = config.strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

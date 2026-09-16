@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 part of 'premium_bakhed_body.dart';
 
 extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
@@ -14,9 +13,9 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
           cursor: SystemMouseCursors.click,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.06),
+              color: Colors.white.withValues(alpha: 0.06),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
             ),
             child: IconButton(
               icon: const Icon(
@@ -46,10 +45,10 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: accentColor.withOpacity(0.16),
+                      color: accentColor.withValues(alpha: 0.16),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: accentColor.withOpacity(0.3),
+                        color: accentColor.withValues(alpha: 0.3),
                         width: 0.8,
                       ),
                     ),
@@ -113,12 +112,12 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.08),
+              color: Colors.white.withValues(alpha: 0.08),
               width: 1.5,
             ),
             boxShadow: [
               BoxShadow(
-                color: accentColor.withOpacity(0.22),
+                color: accentColor.withValues(alpha: 0.22),
                 blurRadius: 28,
                 spreadRadius: -2,
               ),
@@ -149,7 +148,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
                     enabled: isPlaying,
                     child: EnchantedVisualizer(
                       isPlaying: isPlaying,
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       height: 56,
                     ),
                   ),
@@ -177,10 +176,10 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
         SliderTheme(
           data: SliderThemeData(
             activeTrackColor: accentColor,
-            inactiveTrackColor: Colors.white.withOpacity(0.12),
+            inactiveTrackColor: Colors.white.withValues(alpha: 0.12),
             thumbColor: Colors.white,
             trackHeight: 3.5,
-            overlayColor: accentColor.withOpacity(0.18),
+            overlayColor: accentColor.withValues(alpha: 0.18),
             thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5.5),
             overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
           ),
@@ -259,9 +258,11 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
+                  color: Colors.white.withValues(alpha: 0.06),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white.withOpacity(0.08)),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
                 ),
                 child: Text(
                   '${speed}x',
@@ -283,7 +284,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
           child: IconButton(
             icon: Icon(
               Icons.replay_10_rounded,
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               size: isCompact ? 26 : 28,
             ),
             tooltip: 'Rewind 10 seconds',
@@ -325,7 +326,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: accentColor.withOpacity(0.38),
+                      color: accentColor.withValues(alpha: 0.38),
                       blurRadius: 22,
                       spreadRadius: 1,
                     ),
@@ -348,7 +349,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
           child: IconButton(
             icon: Icon(
               Icons.forward_10_rounded,
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               size: isCompact ? 26 : 28,
             ),
             tooltip: 'Forward 10 seconds',
@@ -389,11 +390,11 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
           duration: const Duration(milliseconds: 180),
           decoration: BoxDecoration(
             color: isSelected
-                ? Colors.white.withOpacity(0.09)
+                ? Colors.white.withValues(alpha: 0.09)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(10),
             border: isSelected
-                ? Border.all(color: Colors.white.withOpacity(0.12))
+                ? Border.all(color: Colors.white.withValues(alpha: 0.12))
                 : null,
           ),
           child: Row(
@@ -425,7 +426,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
       height: isCompact ? 46 : 50,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.04),
+        color: Colors.white.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white12),
       ),

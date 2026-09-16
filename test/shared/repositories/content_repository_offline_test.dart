@@ -12,7 +12,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDatabases extends Mock implements Databases {}
+class _MockDatabases extends Mock implements TablesDB {}
 
 class _FakeNetworkInfo implements NetworkInfo {
   _FakeNetworkInfo({required bool connected}) : _connected = connected;
@@ -64,7 +64,7 @@ void main() {
     test('caches locally and queues a durable mutation when offline', () async {
       final outbox = MutationOutboxService();
       final repo = ContentRepository(
-        databases: _MockDatabases(),
+        tablesDB: _MockDatabases(),
         networkInfo: _FakeNetworkInfo(connected: false),
         mutationOutbox: outbox,
       );
@@ -90,9 +90,9 @@ void main() {
     });
 
     test('fails without an outbox and does not cache a phantom save', () async {
-      final databases = _MockDatabases();
+      final tablesDB = _MockDatabases();
       final repo = ContentRepository(
-        databases: databases,
+        tablesDB: tablesDB,
         networkInfo: _FakeNetworkInfo(connected: false),
       );
       final item = _buildItem();
@@ -120,7 +120,7 @@ void main() {
         ),
         isNull,
       );
-      verifyZeroInteractions(databases);
+      verifyZeroInteractions(tablesDB);
     });
   });
 }

@@ -20,7 +20,7 @@ import '../../domain/repositories/story_segment_repository.dart';
 final audioTrackRemoteDataSourceProvider = Provider<AudioTrackRemoteDataSource>(
   (ref) {
     final client = ref.watch(appwriteAuthServiceProvider).client;
-    return AudioTrackRemoteDataSourceImpl(Databases(client));
+    return AudioTrackRemoteDataSourceImpl(TablesDB(client));
   },
 );
 
@@ -36,7 +36,7 @@ final audioTrackRepositoryProvider = Provider<AudioTrackRepository>((ref) {
 final localizedContentRemoteDataSourceProvider =
     Provider<LocalizedContentRemoteDataSource>((ref) {
       final client = ref.watch(appwriteAuthServiceProvider).client;
-      return LocalizedContentRemoteDataSourceImpl(Databases(client));
+      return LocalizedContentRemoteDataSourceImpl(TablesDB(client));
     });
 
 final localizedContentRepositoryProvider = Provider<LocalizedContentRepository>(
@@ -53,7 +53,7 @@ final localizedContentRepositoryProvider = Provider<LocalizedContentRepository>(
 final storySegmentRemoteDataSourceProvider =
     Provider<StorySegmentRemoteDataSource>((ref) {
       final client = ref.watch(appwriteAuthServiceProvider).client;
-      return StorySegmentRemoteDataSourceImpl(Databases(client));
+      return StorySegmentRemoteDataSourceImpl(TablesDB(client));
     });
 
 final storySegmentRepositoryProvider = Provider<StorySegmentRepository>((ref) {

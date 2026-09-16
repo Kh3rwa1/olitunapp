@@ -46,6 +46,28 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 
 ---
 
+### 8. ReorderableListView `onReorder` (deprecated; replacement `onReorderItem` lands in Flutter 3.44)
+*   **Location:** `lib/features/admin/presentation/widgets/tracing_stroke_editor.dart` (completed-strokes `ReorderableListView`, one call site).
+*   **Context:** Flutter deprecated `onReorder` after v3.41.0-1.0.pre (stable in 3.44) in favour of `onReorderItem`, which applies the `newIndex` correction internally so the manual `if (oldIndex < newIndex) newIndex -= 1;` adjustment goes away. The pinned Appwrite Sites build runtime (**flutter-3.35**) predates it, so migrating now would break that runtime.
+*   **Why a suppression remains:** A single line-scoped `// ignore: deprecated_member_use` with an inline rationale comment. The current callback keeps the manual index adjustment and is behaviour-preserving.
+*   **Transition Path (blocked on the flutter-3.35 runtime upgrade):** switch `onReorder: (oldIndex, newIndex)` to `onReorderItem: (oldIndex, newIndex)` **and delete the manual `newIndex -= 1` correction**, exactly per https://docs.flutter.dev/release/breaking-changes/deprecate-onreorder-callback (Case 1; not covered by `dart fix`).
+*   **Status:** Active debt (blocked on the builder runtime upgrade).
+*   **Target Cleanup Sprint:** Same sprint as the builder runtime unpin.
+
+---
+
+
+### 7. Riverpod `.stream` on `FutureProvider` (deprecated; removed in 3.0.0)
+*   **Location:** `test/core/version/build_version_checker_test.dart` (3 call sites using `skip(1).first` awaits).
+*   **Context:** The suite awaits the first *non-loading* `AsyncValue` by reading `buildVersionStatusProvider.stream`. Riverpod 3.0.0 removes `.stream` in favour of listening to the provider itself or using `.future`.
+*   **Why a suppression remains:** A file-level `deprecated_member_use` ignore is kept, scoped to this one test file and annotated inline with its rationale. It is the only `deprecated_member_use` suppression left in the repository.
+*   **Transition Path:** Replace the three `container.read(provider.stream).skip(1).first` awaits with `container.listen(provider, ...)` filtered on `hasValue`, or assert through `.future` where the initial loading state is not part of the contract.
+*   **Status:** Active debt (blocked on the `flutter_riverpod` 3.x upgrade).
+*   **Target Cleanup Sprint:** Same sprint as the `flutter_riverpod` 3.x migration.
+
+---
+
+
 ## 🛡️ Guidelines for Deprecating Code
 
 1.  **Mark Clearly:** Always annotate the deprecated method in code using `@Deprecated('Use [newMethod] instead')`.

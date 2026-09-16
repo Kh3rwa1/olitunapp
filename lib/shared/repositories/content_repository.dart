@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
@@ -27,17 +26,17 @@ class ContentRepository {
   static const int _authorizedLessonListPageSize = 100;
   static const int _maxAuthorizedLessonListPages = 100;
 
-  final Databases _databases;
+  final TablesDB _tablesDB;
   final NetworkInfo _networkInfo;
   final MutationOutboxService? _mutationOutbox;
   final AppwriteFunctionsService? _functionsService;
 
   ContentRepository({
-    required Databases databases,
+    required TablesDB tablesDB,
     required NetworkInfo networkInfo,
     MutationOutboxService? mutationOutbox,
     AppwriteFunctionsService? functionsService,
-  }) : _databases = databases,
+  }) : _tablesDB = tablesDB,
        _networkInfo = networkInfo,
        _mutationOutbox = mutationOutbox,
        _functionsService = functionsService;
@@ -251,7 +250,7 @@ class ContentRepository {
     ContentKind kind, {
     String? categoryId,
   }) async {
-    final collectionId = _getCollectionId(kind);
+    final tableId = _getCollectionId(kind);
     final cacheKey = _cacheListKey(kind, categoryId);
 
     // 1. Always retrieve full bundled seed dataset
@@ -273,14 +272,14 @@ class ContentRepository {
             Query.limit(500),
           ];
 
-          final response = await AppwriteDatabasesPagination.listDocuments(
-            _databases,
+          final response = await AppwriteDatabasesPagination.listRows(
+            _tablesDB,
             databaseId: AppwriteConfig.databaseId,
-            collectionId: collectionId,
+            tableId: tableId,
             queries: queries,
           );
           remoteItems = response
-              .map((doc) => ContentItem.fromJson(doc.data, doc.$id, kind))
+              .map((row) => ContentItem.fromJson(row.data, row.$id, kind))
               .toList();
         }
 
@@ -359,17 +358,17 @@ class ContentRepository {
     ContentKind kind,
     String id,
   ) async {
-    final collectionId = _getCollectionId(kind);
+    final tableId = _getCollectionId(kind);
 
     if (await _networkInfo.isConnected) {
       try {
-        final doc = await _databases.getDocument(
+        final row = await _tablesDB.getRow(
           databaseId: AppwriteConfig.databaseId,
-          collectionId: collectionId,
-          documentId: id,
+          tableId: tableId,
+          rowId: id,
         );
 
-        final item = ContentItem.fromJson(doc.data, doc.$id, kind);
+        final item = ContentItem.fromJson(row.data, row.$id, kind);
         await _cacheAdministrationItem(item);
 
         return right(item);
@@ -435,11 +434,11 @@ class ContentRepository {
     }
 
     try {
-      final category = await _databases
-          .getDocument(
+      final category = await _tablesDB
+          .getRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: item.categoryId,
+            tableId: 'categories',
+            rowId: item.categoryId,
           )
           .timeout(const Duration(seconds: 6));
       return PremiumContentPolicy.forContentItem(
@@ -471,7 +470,7 @@ class ContentRepository {
       return left(TracingRequiredFailure(message: e.message));
     }
 
-    final collectionId = _getCollectionId(item.kind);
+    final tableId = _getCollectionId(item.kind);
 
     if (await _networkInfo.isConnected) {
       try {
@@ -482,25 +481,25 @@ class ContentRepository {
         ContentItem? resultItem;
         try {
           // Attempt to create document first
-          final doc = await _databases.createDocument(
+          final row = await _tablesDB.createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: collectionId,
-            documentId: item.id,
+            tableId: tableId,
+            rowId: item.id,
             data: appwritePayload,
             permissions: permissions,
           );
-          resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
+          resultItem = ContentItem.fromJson(row.data, row.$id, item.kind);
         } on AppwriteException catch (ae) {
           if (ae.code == 409) {
             // Document already exists, perform update
-            final doc = await _databases.updateDocument(
+            final row = await _tablesDB.updateRow(
               databaseId: AppwriteConfig.databaseId,
-              collectionId: collectionId,
-              documentId: item.id,
+              tableId: tableId,
+              rowId: item.id,
               data: appwritePayload,
               permissions: permissions,
             );
-            resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
+            resultItem = ContentItem.fromJson(row.data, row.$id, item.kind);
           } else {
             rethrow;
           }
@@ -559,7 +558,7 @@ class ContentRepository {
 
   /// Deletes a content item.
   Future<Either<Failure, Unit>> delete(ContentKind kind, String id) async {
-    final collectionId = _getCollectionId(kind);
+    final tableId = _getCollectionId(kind);
     final itemCacheKey = _administrationCacheItemKey(kind, id);
 
     if (await _networkInfo.isConnected) {
@@ -569,10 +568,10 @@ class ContentRepository {
         String? categoryId;
         itemRes.fold((_) {}, (item) => categoryId = item.categoryId);
 
-        await _databases.deleteDocument(
+        await _tablesDB.deleteRow(
           databaseId: AppwriteConfig.databaseId,
-          collectionId: collectionId,
-          documentId: id,
+          tableId: tableId,
+          rowId: id,
         );
 
         await CacheService.delete(itemCacheKey);

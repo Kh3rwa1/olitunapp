@@ -38,9 +38,9 @@ class LocalizedContentRemoteDataSourceImpl
     implements LocalizedContentRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 8);
 
-  final Databases databases;
+  final TablesDB tablesDB;
 
-  LocalizedContentRemoteDataSourceImpl(this.databases);
+  LocalizedContentRemoteDataSourceImpl(this.tablesDB);
 
   @override
   Future<List<LocalizedContentModel>> getLocalizations({
@@ -101,14 +101,14 @@ class LocalizedContentRemoteDataSourceImpl
     List<String> Function() queries,
   ) async {
     try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
+      final rows = await AppwriteDatabasesPagination.listRows(
+        tablesDB,
         databaseId: AppwriteConfig.databaseId,
-        collectionId: 'localized_contents',
+        tableId: 'localized_contents',
         queries: queries(),
       ).timeout(_readTimeout);
-      return documents
-          .map((doc) => LocalizedContentModel.fromJson(doc.data, doc.$id))
+      return rows
+          .map((row) => LocalizedContentModel.fromJson(row.data, row.$id))
           .toList();
     } on AppwriteException catch (e) {
       throw ServerException(

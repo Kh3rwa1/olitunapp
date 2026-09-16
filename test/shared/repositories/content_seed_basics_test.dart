@@ -11,14 +11,14 @@ import 'package:itun/shared/models/content_item_extensions.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/shared/repositories/content_seed_loader.dart';
 
-class _Databases extends Mock implements Databases {}
+class _Databases extends Mock implements TablesDB {}
 
 class _Network extends Mock implements NetworkInfo {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory directory;
-  late _Databases databases;
+  late _Databases tablesDB;
   late _Network network;
   late ContentRepository repository;
 
@@ -26,9 +26,9 @@ void main() {
     directory = await Directory.systemTemp.createTemp('olitun_basic_seeds_');
     Hive.init(directory.path);
     CacheService.resetForTesting();
-    databases = _Databases();
+    tablesDB = _Databases();
     network = _Network();
-    repository = ContentRepository(databases: databases, networkInfo: network);
+    repository = ContentRepository(tablesDB: tablesDB, networkInfo: network);
   });
 
   tearDown(() async {
@@ -59,7 +59,7 @@ void main() {
             expect(ContentItem.fromJson(item.toJson(), null, entry.key), item);
           }
         });
-        verifyZeroInteractions(databases);
+        verifyZeroInteractions(tablesDB);
         verifyZeroInteractions(network);
       },
     );
@@ -90,7 +90,7 @@ void main() {
         expect(item.toNumberModel().numeral, '᱓');
         expect(item.toNumberModel().nameLatin, 'Pe');
       });
-      verifyZeroInteractions(databases);
+      verifyZeroInteractions(tablesDB);
     },
   );
 
@@ -139,7 +139,7 @@ void main() {
           updated.title,
         );
       });
-      verifyZeroInteractions(databases);
+      verifyZeroInteractions(tablesDB);
       verifyZeroInteractions(network);
     },
   );
@@ -154,7 +154,7 @@ void main() {
       (await repository.get(ContentKind.letter, 'missing-letter')).isLeft(),
       isTrue,
     );
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
   });
 
   test(

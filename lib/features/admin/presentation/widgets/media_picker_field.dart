@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/theme/app_colors.dart';
@@ -350,7 +349,9 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                               style: TextStyle(color: Colors.red),
                             ),
                             style: TextButton.styleFrom(
-                              foregroundColor: Colors.red.withOpacity(0.08),
+                              foregroundColor: Colors.red.withValues(
+                                alpha: 0.08,
+                              ),
                             ),
                           ),
                         ],
@@ -502,7 +503,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.black.withOpacity(0.8),
+                          Colors.black.withValues(alpha: 0.8),
                           Colors.transparent,
                         ],
                         begin: Alignment.bottomCenter,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-// ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/config/appwrite_config.dart';
@@ -23,10 +22,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   static const int _authorizedListPageSize = 100;
   static const int _maxAuthorizedListPages = 100;
 
-  final Databases databases;
+  final TablesDB tablesDB;
   final AppwriteFunctionsService? functionsService;
 
-  LessonRemoteDataSourceImpl(this.databases, {this.functionsService});
+  LessonRemoteDataSourceImpl(this.tablesDB, {this.functionsService});
 
   Future<List<LessonModel>> _getAuthorizedLessonList({
     String? categoryId,
@@ -183,11 +182,11 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     }
 
     try {
-      final category = await databases
-          .getDocument(
+      final category = await tablesDB
+          .getRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: lesson.categoryId,
+            tableId: 'categories',
+            rowId: lesson.categoryId,
           )
           .timeout(_readTimeout);
       return PremiumContentPolicy.forContentItem(
@@ -216,11 +215,11 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       data.removeWhere((key, value) => value == null);
       final decision = await _publicationDecisionFor(lesson);
 
-      await databases
-          .createDocument(
+      await tablesDB
+          .createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: lesson.id,
+            tableId: 'lessons',
+            rowId: lesson.id,
             data: data,
             permissions: _readPermissions(decision),
           )
@@ -246,11 +245,11 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       data.removeWhere((key, value) => value == null);
       final decision = await _publicationDecisionFor(lesson);
 
-      await databases
-          .updateDocument(
+      await tablesDB
+          .updateRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: lesson.id,
+            tableId: 'lessons',
+            rowId: lesson.id,
             data: data,
             permissions: _readPermissions(decision),
           )
@@ -268,11 +267,11 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<void> deleteLesson(String id) async {
     try {
-      await databases
-          .deleteDocument(
+      await tablesDB
+          .deleteRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: id,
+            tableId: 'lessons',
+            rowId: id,
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

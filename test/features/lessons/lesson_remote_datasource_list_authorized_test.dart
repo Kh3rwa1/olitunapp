@@ -7,7 +7,7 @@ import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDatabases extends Mock implements Databases {}
+class _MockDatabases extends Mock implements TablesDB {}
 
 class _MockFunctionsService extends Mock implements AppwriteFunctionsService {}
 

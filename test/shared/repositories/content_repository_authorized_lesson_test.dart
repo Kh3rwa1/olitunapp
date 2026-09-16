@@ -13,7 +13,7 @@ import 'package:itun/shared/models/content_item_extensions.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDatabases extends Mock implements Databases {}
+class _MockDatabases extends Mock implements TablesDB {}
 
 class _MockFunctionsService extends Mock implements AppwriteFunctionsService {}
 
@@ -51,7 +51,7 @@ Map<String, dynamic> _lessonMetadata({bool locked = true}) => {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory tempDirectory;
-  late _MockDatabases databases;
+  late _MockDatabases tablesDB;
   late _MockFunctionsService functions;
 
   setUpAll(() async {
@@ -63,7 +63,7 @@ void main() {
 
   setUp(() {
     CacheService.resetForTesting();
-    databases = _MockDatabases();
+    tablesDB = _MockDatabases();
     functions = _MockFunctionsService();
   });
 
@@ -93,7 +93,7 @@ void main() {
       }),
     );
     final repository = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: _OnlineNetworkInfo(),
       functionsService: functions,
     );
@@ -117,7 +117,7 @@ void main() {
         expect(lesson.toLessonEntity().estimatedMinutes, 9);
       },
     );
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
   });
 
   test('learner lesson detail uses only the authorization function', () async {
@@ -136,7 +136,7 @@ void main() {
       }),
     );
     final repository = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: _OnlineNetworkInfo(),
       functionsService: functions,
     );
@@ -154,14 +154,14 @@ void main() {
         expect(lesson.blocks, isEmpty);
       },
     );
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
   });
 
   test(
     'missing authorization service never falls back to lesson reads',
     () async {
       final repository = ContentRepository(
-        databases: databases,
+        tablesDB: tablesDB,
         networkInfo: _OnlineNetworkInfo(),
       );
 
@@ -171,7 +171,7 @@ void main() {
       );
 
       expect(result.isLeft(), isTrue);
-      verifyZeroInteractions(databases);
+      verifyZeroInteractions(tablesDB);
     },
   );
 
@@ -197,7 +197,7 @@ void main() {
         }),
       );
       final repository = ContentRepository(
-        databases: databases,
+        tablesDB: tablesDB,
         networkInfo: _OnlineNetworkInfo(),
         functionsService: functions,
       );
@@ -246,7 +246,7 @@ void main() {
       ),
     ).thenThrow(StateError('authorization unavailable'));
     final repository = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: _OnlineNetworkInfo(),
       functionsService: functions,
     );
@@ -256,7 +256,7 @@ void main() {
       categoryId: 'cat_secure_remote_only',
     );
     expect(result.isLeft(), isTrue);
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
   });
 
   test('legacy cached lesson detail cannot bypass authorization', () async {
@@ -270,7 +270,7 @@ void main() {
       ],
     });
     final repository = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: _OnlineNetworkInfo(),
     );
 
@@ -279,7 +279,7 @@ void main() {
       'secure_shared_lesson',
     );
     expect(result.isLeft(), isTrue);
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
   });
 
   test('lesson level and preview survive Appwrite round trips', () {

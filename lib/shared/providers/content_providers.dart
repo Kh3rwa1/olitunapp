@@ -18,7 +18,7 @@ final contentRepositoryProvider = Provider<ContentRepository>((ref) {
   final authService = ref.watch(appwriteAuthServiceProvider);
   final networkInfo = ref.watch(networkInfoProvider);
   return ContentRepository(
-    databases: Databases(authService.client),
+    tablesDB: TablesDB(authService.client),
     networkInfo: networkInfo,
     mutationOutbox: ref.watch(mutationOutboxProvider),
     functionsService: ref.watch(appwriteFunctionsServiceProvider),

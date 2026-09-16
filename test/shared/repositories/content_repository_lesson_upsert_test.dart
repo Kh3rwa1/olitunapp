@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:io';
 
 import 'package:appwrite/appwrite.dart';
@@ -13,7 +12,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDatabases extends Mock implements Databases {}
+class _MockDatabases extends Mock implements TablesDB {}
 
 class _FakeNetworkInfo implements NetworkInfo {
   @override
@@ -55,13 +54,13 @@ ContentItem _buildLessonItem({
   updatedAt: DateTime(2026, 9, 6),
 );
 
-models.Document _buildCategoryDoc({
+models.Row _buildCategoryDoc({
   required String categoryId,
   required String unlockMode,
   int previewLessonCount = 0,
-}) => models.Document(
+}) => models.Row(
   $id: categoryId,
-  $collectionId: 'categories',
+  $tableId: 'categories',
   $databaseId: AppwriteConfig.databaseId,
   $createdAt: '2026-09-01T00:00:00.000Z',
   $updatedAt: '2026-09-01T00:00:00.000Z',
@@ -70,9 +69,9 @@ models.Document _buildCategoryDoc({
   data: {'unlockMode': unlockMode, 'previewLessonCount': previewLessonCount},
 );
 
-models.Document _buildLessonDoc(Map<String, dynamic> data) => models.Document(
+models.Row _buildLessonDoc(Map<String, dynamic> data) => models.Row(
   $id: 'lesson_basics_1',
-  $collectionId: 'lessons',
+  $tableId: 'lessons',
   $databaseId: AppwriteConfig.databaseId,
   $createdAt: '2026-09-01T00:00:00.000Z',
   $updatedAt: '2026-09-06T00:00:00.000Z',
@@ -83,7 +82,7 @@ models.Document _buildLessonDoc(Map<String, dynamic> data) => models.Document(
 
 void main() {
   late Directory tempDir;
-  late _MockDatabases databases;
+  late _MockDatabases tablesDB;
   late ContentRepository repo;
 
   setUpAll(() async {
@@ -100,9 +99,9 @@ void main() {
 
   setUp(() {
     CacheService.resetForTesting();
-    databases = _MockDatabases();
+    tablesDB = _MockDatabases();
     repo = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: _FakeNetworkInfo(),
     );
   });
@@ -112,10 +111,10 @@ void main() {
       'successfully upserts a lesson in a free category with public permissions',
       () async {
         when(
-          () => databases.getDocument(
+          () => tablesDB.getRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: 'cat_sentences',
+            tableId: 'categories',
+            rowId: 'cat_sentences',
           ),
         ).thenAnswer(
           (_) async => _buildCategoryDoc(
@@ -125,10 +124,10 @@ void main() {
         );
 
         when(
-          () => databases.createDocument(
+          () => tablesDB.createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: 'lesson_basics_1',
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
             data: any(named: 'data'),
             permissions: any(named: 'permissions'),
           ),
@@ -152,10 +151,10 @@ void main() {
         );
 
         final captured = verify(
-          () => databases.createDocument(
+          () => tablesDB.createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: 'lesson_basics_1',
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
             data: any(named: 'data'),
             permissions: captureAny(named: 'permissions'),
           ),
@@ -170,10 +169,10 @@ void main() {
       'updates existing lesson (409 Conflict) without throwing Bad State',
       () async {
         when(
-          () => databases.getDocument(
+          () => tablesDB.getRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: 'cat_sentences',
+            tableId: 'categories',
+            rowId: 'cat_sentences',
           ),
         ).thenAnswer(
           (_) async => _buildCategoryDoc(
@@ -183,20 +182,20 @@ void main() {
         );
 
         when(
-          () => databases.createDocument(
+          () => tablesDB.createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: 'lesson_basics_1',
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
             data: any(named: 'data'),
             permissions: any(named: 'permissions'),
           ),
         ).thenThrow(AppwriteException('Document already exists', 409));
 
         when(
-          () => databases.updateDocument(
+          () => tablesDB.updateRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: 'lesson_basics_1',
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
             data: any(named: 'data'),
             permissions: any(named: 'permissions'),
           ),
@@ -211,10 +210,10 @@ void main() {
 
         expect(result.isRight(), isTrue);
         verify(
-          () => databases.updateDocument(
+          () => tablesDB.updateRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            documentId: 'lesson_basics_1',
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
             data: any(named: 'data'),
             permissions: any(named: 'permissions'),
           ),
@@ -224,10 +223,10 @@ void main() {
 
     test('protects paid lessons outside preview window', () async {
       when(
-        () => databases.getDocument(
+        () => tablesDB.getRow(
           databaseId: AppwriteConfig.databaseId,
-          collectionId: 'categories',
-          documentId: 'cat_paid',
+          tableId: 'categories',
+          rowId: 'cat_paid',
         ),
       ).thenAnswer(
         (_) async => _buildCategoryDoc(
@@ -238,10 +237,10 @@ void main() {
       );
 
       when(
-        () => databases.createDocument(
+        () => tablesDB.createRow(
           databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
+          tableId: 'lessons',
+          rowId: 'lesson_basics_1',
           data: any(named: 'data'),
           permissions: any(named: 'permissions'),
         ),
@@ -257,10 +256,10 @@ void main() {
       expect(result.isRight(), isTrue);
 
       final captured = verify(
-        () => databases.createDocument(
+        () => tablesDB.createRow(
           databaseId: AppwriteConfig.databaseId,
-          collectionId: 'lessons',
-          documentId: 'lesson_basics_1',
+          tableId: 'lessons',
+          rowId: 'lesson_basics_1',
           data: any(named: 'data'),
           permissions: captureAny(named: 'permissions'),
         ),

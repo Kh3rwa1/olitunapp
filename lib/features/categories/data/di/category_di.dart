@@ -16,7 +16,7 @@ final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((
   ref,
 ) {
   final client = ref.watch(appwriteAuthServiceProvider).client;
-  return CategoryRemoteDataSourceImpl(Databases(client));
+  return CategoryRemoteDataSourceImpl(TablesDB(client));
 });
 
 final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((

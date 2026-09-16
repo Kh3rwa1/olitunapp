@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -112,7 +111,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -167,7 +166,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: widget.accentColor.withOpacity(0.12),
+                          color: widget.accentColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(

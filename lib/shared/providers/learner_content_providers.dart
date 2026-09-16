@@ -4,25 +4,17 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/lessons/data/di/lesson_di.dart';
 import '../../features/lessons/domain/entities/lesson_entity.dart';
 import '../../features/lessons/domain/entities/scoped_lesson_media.dart';
-import '../models/content_item_extensions.dart';
+import '../models/content_models.dart';
 import '../repositories/content_repository.dart';
 
-final learnerCategoriesProvider = FutureProvider<List<CategoryEntity>>((
-  ref,
-) async {
-  final items = await ref.watch(
-    contentListProvider(const ContentQuery(kind: ContentKind.category)).future,
-  );
-  return items.map((item) => item.toCategoryEntity()).toList(growable: false);
-});
-
-final learnerLessonsProvider = FutureProvider<List<LessonEntity>>((ref) async {
-  final items = await ref.watch(
-    contentListProvider(const ContentQuery(kind: ContentKind.lesson)).future,
-  );
-  return items
-      .map((item) => scopeLessonMedia(item.toLessonEntity()))
-      .toList(growable: false);
+final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
+  return ref
+      .watch(contentListProvider((ContentKind.lesson, null)))
+      .whenData(
+        (list) => list
+            .map((item) => scopeLessonMedia(item.toLessonEntity()))
+            .toList(),
+      );
 });
 
 /// Loads the selected lesson body through the authorized detail boundary.
@@ -49,34 +41,28 @@ final learnerLessonDetailProvider =
       );
     });
 
-final learnerCategoriesForLanguageProvider =
-    FutureProvider.family<List<CategoryEntity>, String>((ref, language) async {
-      final normalized = language.trim();
-      final items = await ref.watch(
-        contentListProvider(
-          ContentQuery(
-            kind: ContentKind.category,
-            language: normalized.isEmpty ? null : normalized,
-          ),
-        ).future,
-      );
-      return items
-          .map((item) => item.toCategoryEntity())
-          .toList(growable: false);
-    });
+final learnerWordsProvider = Provider<AsyncValue<List<WordModel>>>((ref) {
+  return ref
+      .watch(contentListProvider((ContentKind.word, null)))
+      .whenData((list) => list.map((item) => item.toWordModel()).toList());
+});
 
-final learnerLessonsForLanguageProvider =
-    FutureProvider.family<List<LessonEntity>, String>((ref, language) async {
-      final normalized = language.trim();
-      final items = await ref.watch(
-        contentListProvider(
-          ContentQuery(
-            kind: ContentKind.lesson,
-            language: normalized.isEmpty ? null : normalized,
-          ),
-        ).future,
-      );
-      return items
-          .map((item) => scopeLessonMedia(item.toLessonEntity()))
-          .toList(growable: false);
-    });
+final learnerLettersProvider = Provider<AsyncValue<List<LetterModel>>>((ref) {
+  return ref
+      .watch(contentListProvider((ContentKind.letter, null)))
+      .whenData((list) => list.map((item) => item.toLetterModel()).toList());
+});
+
+final learnerNumbersProvider = Provider<AsyncValue<List<NumberModel>>>((ref) {
+  return ref
+      .watch(contentListProvider((ContentKind.number, null)))
+      .whenData((list) => list.map((item) => item.toNumberModel()).toList());
+});
+
+final learnerSentencesProvider = Provider<AsyncValue<List<SentenceModel>>>((
+  ref,
+) {
+  return ref
+      .watch(contentListProvider((ContentKind.sentence, null)))
+      .whenData((list) => list.map((item) => item.toSentenceModel()).toList());
+});

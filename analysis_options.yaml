@@ -22,6 +22,42 @@ linter:
     use_key_in_widget_constructors: true
     avoid_redundant_argument_values: true
 
+# custom_lint powers the riverpod_lint rules below. Keep its version in sync
+# with the `custom_lint` dev dependency and always pin `riverpod_lint` to the
+# same major as `flutter_riverpod` (both are currently 2.x). riverpod_lint
+# does not run as part of `flutter analyze`; it runs via `dart run custom_lint`,
+# which is also wired into CI (see .github/workflows/flutter-ci.yml).
+custom_lint:
+  rules:
+    - avoid_build_context_in_providers
+    - avoid_manual_providers_as_class_instance_members
+    - avoid_public_notifier_properties
+    - avoid_ref_inside_state_dispose
+    - avoid_ref_inside_state_init
+    - avoid_returning_widgets_from_functions
+    - avoid_unnecessary_setstate
+    - avoid_widgets_in_static_members
+    - missing_provider_scope
+    - notifier_extends
+    - notifier_last_state_in_constructor
+    - notifier_no_constructor_with_required_void_state
+    - notifier_build_logic_in_constructor
+    - notifier_provider_outside
+    - provider_dependencies
+    - provider_outside_visible_scope
+    - provider_parameters
+    - ref_in_state_lifecycle_needs_dispose
+    - ref_inside_build
+    - ref_inside_state_init
+    - ref_inside_state_lifecycle
+    - riverpod_in_flutter_test
+    - scoped_providers_should_specify_dependencies
+    - specify_unknown_provider_scope_dependencies
+    - UnexpectedAsyncValueContent
+    - UnnecessaryAsyncValue
+    - unneeded_overrides
+    - unresolved_provider_scope_dependencies
+
 analyzer:
   exclude:
     - "flutter/**"

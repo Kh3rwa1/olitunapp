@@ -37,6 +37,9 @@ class MockAudioService extends Mock implements AudioService {
 
   @override
   Stream<bool> get isPlayingStream => const Stream.empty();
+
+  @override
+  Stream<void> get webPlaybackEndedStream => const Stream.empty();
 }
 
 void main() {

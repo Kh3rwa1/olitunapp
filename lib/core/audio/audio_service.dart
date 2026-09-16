@@ -43,6 +43,20 @@ class AudioService {
 
   StreamSubscription<ProcessingState>? _sessionReleaseSub;
 
+  /// Latest processing state observed from the shared player. The central
+  /// controller reads this synchronously to detect a clip that finished
+  /// while it was still awaiting startup (very short clips) — just_audio
+  /// will not emit that completion a second time.
+  ProcessingState _latestProcessingState = ProcessingState.idle;
+  ProcessingState get currentProcessingState => _latestProcessingState;
+
+  /// Fires when the web fallback element finishes a clip. just_audio
+  /// never sees that element, so the central controller listens here
+  /// to learn about completions on the fallback path.
+  final StreamController<void> _webEndedController =
+      StreamController<void>.broadcast();
+  Stream<void> get webPlaybackEndedStream => _webEndedController.stream;
+
   AudioService({AuthorizedMediaService? mediaService}) {
     _privatePlayback = mediaService == null
         ? null
@@ -73,6 +87,7 @@ class AudioService {
   /// ~700ms after completion) and fresh play requests untouched.
   void _initMediaSessionRelease() {
     _sessionReleaseSub = _player.processingStateStream.listen((state) {
+      _latestProcessingState = state;
       if (state != ProcessingState.completed) return;
       unawaited(_releaseMediaSession());
     });
@@ -158,7 +173,15 @@ class AudioService {
       AppLogger.warning('AudioService playUrl failed: $e');
       if (kIsWeb) {
         try {
-          playNativeWebAudio(url);
+          _currentUrl = url;
+          playNativeWebAudio(
+            url,
+            onEnded: () {
+              if (!_webEndedController.isClosed) {
+                _webEndedController.add(null);
+              }
+            },
+          );
           return true;
         } catch (webErr) {
           AppLogger.warning('AudioService web fallback failed: $webErr');
@@ -284,6 +307,7 @@ class AudioService {
   void dispose() {
     _privatePlayback?.cancel();
     unawaited(_sessionReleaseSub?.cancel());
+    unawaited(_webEndedController.close());
     if (kIsWeb) {
       try {
         stopNativeWebAudio();

@@ -90,6 +90,7 @@ function lesson(id, categoryId, order, extra = {}) {
     $id: id,
     categoryId,
     order,
+    isActive: true,
     titleLatin: `Lesson ${order}`,
     titleOlChiki: `ᱯᱟᱹᱴ ${order}`,
     blocks: JSON.stringify([{ type: 'text', textLatin: 'SECRET BODY' }]),

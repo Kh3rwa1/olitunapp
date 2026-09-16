@@ -284,7 +284,7 @@ Future<void> _saveTranslationEntry({
   if (blockMatch != null) {
     final lessonId = blockMatch.group(1)!;
     final blockIdx = int.tryParse(blockMatch.group(2)!) ?? 0;
-    final res = await repo.get(ContentKind.lesson, lessonId);
+    final res = await repo.getForAdministration(ContentKind.lesson, lessonId);
     await res.fold((_) async {}, (item) async {
       final lesson = item.toLessonEntity();
       if (blockIdx < lesson.blocks.length) {
@@ -327,7 +327,7 @@ Future<void> _saveTranslationEntry({
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
     ref.invalidate(lessonNotifierProvider);
   } else if (entry.kind == TranslationKind.lesson) {
-    final res = await repo.get(ContentKind.lesson, entry.id);
+    final res = await repo.getForAdministration(ContentKind.lesson, entry.id);
     await res.fold((_) async {}, (item) async {
       final updatedItem = item.copyWith(
         subtitle: enMeaning.isNotEmpty ? enMeaning : item.subtitle,

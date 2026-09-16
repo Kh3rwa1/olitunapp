@@ -124,10 +124,7 @@ void main() {
     when(
       () => functions.execute(
         'getAuthorizedLesson',
-        body: {
-          'action': 'get_lesson',
-          'lessonId': 'secure_shared_lesson',
-        },
+        body: {'action': 'get_lesson', 'lessonId': 'secure_shared_lesson'},
         usePost: true,
       ),
     ).thenAnswer(
@@ -158,18 +155,21 @@ void main() {
     verifyZeroInteractions(databases);
   });
 
-  test('missing authorization service never falls back to lesson reads', () async {
-    final repository = ContentRepository(
-      databases: databases,
-      networkInfo: _OnlineNetworkInfo(),
-    );
+  test(
+    'missing authorization service never falls back to lesson reads',
+    () async {
+      final repository = ContentRepository(
+        databases: databases,
+        networkInfo: _OnlineNetworkInfo(),
+      );
 
-    final result = await repository.get(
-      ContentKind.lesson,
-      'secure_shared_lesson',
-    );
+      final result = await repository.get(
+        ContentKind.lesson,
+        'secure_shared_lesson',
+      );
 
-    expect(result.isLeft(), isTrue);
-    verifyZeroInteractions(databases);
-  });
+      expect(result.isLeft(), isTrue);
+      verifyZeroInteractions(databases);
+    },
+  );
 }

@@ -161,6 +161,52 @@ test('Authorized Lesson List: batches buyer entitlements instead of querying per
   );
 });
 
+test('Authorized Lesson List: refunded, revoked, and disputed grants stay locked', async () => {
+  const categories = [
+    'cat_refunded',
+    'cat_revoked',
+    'cat_disputed',
+    'cat_full_refund',
+    'cat_verified',
+  ].map((id) => paidCategory(id));
+  const lessons = categories.map((category, index) =>
+    lesson(`lesson_${index}`, category.$id, index + 1));
+  const purchases = [
+    { userId: 'buyer', categoryId: 'cat_refunded', status: 'refunded' },
+    { userId: 'buyer', categoryId: 'cat_revoked', status: 'revoked' },
+    { userId: 'buyer', categoryId: 'cat_disputed', status: 'disputed' },
+    {
+      userId: 'buyer',
+      categoryId: 'cat_full_refund',
+      status: 'verified',
+      expectedAmount: 499,
+      refundedAmountPaise: 49900,
+    },
+    {
+      userId: 'buyer',
+      categoryId: 'cat_verified',
+      status: 'verified',
+      expectedAmount: 499,
+      refundedAmountPaise: 0,
+    },
+  ];
+  const handler = createGetAuthorizedLessonHandler({
+    databases: makeFakeDatabases({ lessons, categories, purchases }),
+  });
+  const res = mockRes();
+
+  await handler({
+    req: request({ action: 'list_lessons' }, { 'x-appwrite-user-id': 'buyer' }),
+    res,
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.deepEqual(
+    res.body.lessons.map((item) => item.isLocked),
+    [true, true, true, true, false],
+  );
+});
+
 test('Authorized Lesson List: supports bounded cursor pagination', async () => {
   const databases = makeFakeDatabases({
     lessons: [

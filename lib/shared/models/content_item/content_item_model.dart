@@ -20,6 +20,9 @@ class ContentItem extends Equatable {
   final int order;
   final bool isPublished;
   final bool isPremium;
+  final bool isPreview;
+  final bool isLocked;
+  final String? accessReason;
   final List<String> tags;
   final String? difficulty;
   final int? durationSeconds;
@@ -45,6 +48,9 @@ class ContentItem extends Equatable {
     this.order = 0,
     this.isPublished = false,
     this.isPremium = false,
+    this.isPreview = false,
+    this.isLocked = false,
+    this.accessReason,
     this.tags = const [],
     this.difficulty,
     this.durationSeconds,
@@ -124,6 +130,9 @@ class ContentItem extends Equatable {
       'order': order,
       'isPublished': isPublished,
       'isPremium': isPremium,
+      'isPreview': isPreview,
+      'isLocked': isLocked,
+      if (accessReason != null) 'accessReason': accessReason,
       'tags': tags,
       if (difficulty != null) 'difficulty': difficulty,
       if (durationSeconds != null) 'durationSeconds': durationSeconds,
@@ -174,6 +183,9 @@ class ContentItem extends Equatable {
     int? order,
     bool? isPublished,
     bool? isPremium,
+    bool? isPreview,
+    bool? isLocked,
+    String? accessReason,
     List<String>? tags,
     String? difficulty,
     int? durationSeconds,
@@ -202,6 +214,9 @@ class ContentItem extends Equatable {
       order: order ?? this.order,
       isPublished: isPublished ?? this.isPublished,
       isPremium: isPremium ?? this.isPremium,
+      isPreview: isPreview ?? this.isPreview,
+      isLocked: isLocked ?? this.isLocked,
+      accessReason: accessReason ?? this.accessReason,
       tags: tags ?? this.tags,
       difficulty: difficulty ?? this.difficulty,
       durationSeconds: durationSeconds ?? this.durationSeconds,
@@ -231,6 +246,9 @@ class ContentItem extends Equatable {
     order,
     isPublished,
     isPremium,
+    isPreview,
+    isLocked,
+    accessReason,
     tags,
     difficulty,
     durationSeconds,

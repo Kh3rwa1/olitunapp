@@ -2,6 +2,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
+import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
@@ -23,17 +24,23 @@ export '../providers/content_providers.dart';
 const String contentMutationQueueUserId = 'content_admin';
 
 class ContentRepository {
+  static const int _authorizedLessonListPageSize = 100;
+  static const int _maxAuthorizedLessonListPages = 100;
+
   final Databases _databases;
   final NetworkInfo _networkInfo;
   final MutationOutboxService? _mutationOutbox;
+  final AppwriteFunctionsService? _functionsService;
 
   ContentRepository({
     required Databases databases,
     required NetworkInfo networkInfo,
     MutationOutboxService? mutationOutbox,
+    AppwriteFunctionsService? functionsService,
   }) : _databases = databases,
        _networkInfo = networkInfo,
-       _mutationOutbox = mutationOutbox;
+       _mutationOutbox = mutationOutbox,
+       _functionsService = functionsService;
 
   static Future<List<ContentItem>> _loadBundledSeedItems(
     ContentKind kind,
@@ -81,6 +88,138 @@ class ContentRepository {
     return 'content_item_${kind.name}_$id';
   }
 
+  ContentItem _parseAuthorizedLesson(
+    Map<String, dynamic> rawLesson,
+    String lessonId,
+  ) {
+    final normalized = Map<String, dynamic>.from(rawLesson);
+    normalized['difficulty'] = normalized['level'];
+    final estimatedMinutes = normalized['estimatedMinutes'];
+    if (estimatedMinutes is num) {
+      normalized['durationSeconds'] = (estimatedMinutes * 60).round();
+    }
+    normalized['isPublished'] = normalized['isActive'] != false;
+    normalized['isPremium'] = normalized['isLocked'] == true;
+    return ContentItem.fromJson(normalized, lessonId, ContentKind.lesson);
+  }
+
+  Future<List<ContentItem>> _listAuthorizedLessons(String? categoryId) async {
+    final functionsService = _functionsService;
+    if (functionsService == null) {
+      throw StateError('Lesson authorization service unavailable');
+    }
+
+    final lessons = <ContentItem>[];
+    final seenLessonIds = <String>{};
+    final seenCursors = <String>{};
+    String? cursor;
+
+    for (var page = 0; page < _maxAuthorizedLessonListPages; page++) {
+      final result = await functionsService.execute(
+        'getAuthorizedLesson',
+        body: {
+          'action': 'list_lessons',
+          'limit': _authorizedLessonListPageSize,
+          'categoryId': ?categoryId,
+          'cursor': ?cursor,
+        },
+        usePost: true,
+      );
+      final data = result.bodyJson;
+      if (!result.isCompleted ||
+          result.statusCode != 200 ||
+          data == null ||
+          data['ok'] != true ||
+          data['lessons'] is! List) {
+        throw StateError(
+          data?['message'] as String? ??
+              'Failed to load authorized lesson metadata',
+        );
+      }
+
+      for (final rawLesson in data['lessons'] as List) {
+        if (rawLesson is! Map) {
+          throw const FormatException('Malformed authorized lesson metadata');
+        }
+        final lessonMap = Map<String, dynamic>.from(rawLesson);
+        final lessonId = lessonMap['id'];
+        if (lessonId is! String ||
+            lessonId.isEmpty ||
+            !seenLessonIds.add(lessonId)) {
+          throw const FormatException(
+            'Malformed or duplicate authorized lesson metadata',
+          );
+        }
+        lessons.add(_parseAuthorizedLesson(lessonMap, lessonId));
+      }
+
+      if (data['hasMore'] != true) return lessons;
+      final nextCursor = data['nextCursor'];
+      if (nextCursor is! String ||
+          nextCursor.isEmpty ||
+          !seenCursors.add(nextCursor)) {
+        throw const FormatException(
+          'Malformed authorized lesson pagination cursor',
+        );
+      }
+      cursor = nextCursor;
+    }
+
+    throw const FormatException(
+      'Authorized lesson list exceeded the safe pagination bound',
+    );
+  }
+
+  Future<Either<Failure, ContentItem>> _getAuthorizedLesson(String id) async {
+    final functionsService = _functionsService;
+    if (functionsService == null) {
+      return left(
+        const ServerFailure(
+          message: 'Lesson authorization service unavailable',
+        ),
+      );
+    }
+
+    try {
+      final result = await functionsService.execute(
+        'getAuthorizedLesson',
+        body: {'action': 'get_lesson', 'lessonId': id},
+        usePost: true,
+      );
+      final data = result.bodyJson;
+      if (result.isCompleted &&
+          result.statusCode == 200 &&
+          data != null &&
+          data['ok'] == true &&
+          data['lesson'] is Map) {
+        final lessonMap = Map<String, dynamic>.from(data['lesson'] as Map);
+        final lessonId = lessonMap['id'];
+        if (lessonId is! String || lessonId.isEmpty || lessonId != id) {
+          return left(
+            const ServerFailure(
+              message: 'Malformed authorized lesson response',
+            ),
+          );
+        }
+        return right(_parseAuthorizedLesson(lessonMap, lessonId));
+      }
+      if (result.statusCode == 404) {
+        return left(ServerFailure(message: 'Lesson "$id" was not found.'));
+      }
+      return left(
+        ServerFailure(
+          message:
+              data?['message'] as String? ??
+              'Failed to retrieve authorized lesson',
+        ),
+      );
+    } catch (error) {
+      return left(
+        ServerFailure(message: 'Failed to retrieve authorized lesson: $error'),
+      );
+    }
+  }
+
   /// Reads bundled/cached content without checking connectivity or contacting
   /// Appwrite. Missing content remains a failure, not a fabricated empty list.
   Future<Either<Failure, List<ContentItem>>> cachedList(
@@ -101,42 +240,45 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
-        final categoryAttribute = _categoryAttribute(kind);
-        final List<String> queries = [
-          if (categoryAttribute != null &&
-              categoryId != null &&
-              categoryId.isNotEmpty)
-            Query.equal(categoryAttribute, categoryId),
-          if (_hasOrderAttribute(kind)) Query.orderAsc('order'),
-          Query.limit(500),
-        ];
+        final List<ContentItem> remoteItems;
+        if (kind == ContentKind.lesson) {
+          remoteItems = await _listAuthorizedLessons(categoryId);
+        } else {
+          final categoryAttribute = _categoryAttribute(kind);
+          final List<String> queries = [
+            if (categoryAttribute != null &&
+                categoryId != null &&
+                categoryId.isNotEmpty)
+              Query.equal(categoryAttribute, categoryId),
+            if (_hasOrderAttribute(kind)) Query.orderAsc('order'),
+            Query.limit(500),
+          ];
 
-        final response = await AppwriteDatabasesPagination.listDocuments(
-          _databases,
-          databaseId: AppwriteConfig.databaseId,
-          collectionId: collectionId,
-          queries: queries,
-        );
+          final response = await AppwriteDatabasesPagination.listDocuments(
+            _databases,
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: collectionId,
+            queries: queries,
+          );
+          remoteItems = response
+              .map((doc) => ContentItem.fromJson(doc.data, doc.$id, kind))
+              .toList();
+        }
 
-        final remoteItems = response.map((doc) {
-          return ContentItem.fromJson(doc.data, doc.$id, kind);
-        }).toList();
-
-        // Merge remote items with full bundled catalog (bundled seed content always available)
+        // Authorized lesson metadata intentionally overrides bundled lesson
+        // bodies with body-free, server-authoritative lock state.
         final mergedItems = _mergeContentItems(bundledItems, remoteItems);
-
-        // Update local cache
-        final cachedData = mergedItems.map((e) => e.toJson()).toList();
+        final cachedData = mergedItems.map((item) => item.toJson()).toList();
         await CacheService.set(cacheKey, cachedData);
 
-        // Also cache individual items
         for (final item in mergedItems) {
           await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
         }
 
         return right(mergedItems);
-      } catch (e) {
-        // Fallback to cache or bundled seeds on error
+      } catch (_) {
+        // Never fall back to a direct lesson collection read. A safe local
+        // catalog remains usable while the authorization service is offline.
         return _getCachedList(kind, categoryId, fallback: bundledItems);
       }
     } else {
@@ -187,6 +329,16 @@ class ContentRepository {
 
   /// Gets a single content item by ID.
   Future<Either<Failure, ContentItem>> get(ContentKind kind, String id) async {
+    if (kind == ContentKind.lesson) return _getAuthorizedLesson(id);
+    return getForAdministration(kind, id);
+  }
+
+  /// Full-body CMS read. Appwrite team/row permissions are authoritative;
+  /// learner-facing code must use [get] instead.
+  Future<Either<Failure, ContentItem>> getForAdministration(
+    ContentKind kind,
+    String id,
+  ) async {
     final collectionId = _getCollectionId(kind);
     final cacheKey = _cacheItemKey(kind, id);
 
@@ -395,7 +547,7 @@ class ContentRepository {
     if (await _networkInfo.isConnected) {
       try {
         // Read item to know categoryId before deletion for cache clear
-        final itemRes = await get(kind, id);
+        final itemRes = await getForAdministration(kind, id);
         String? categoryId;
         itemRes.fold((_) {}, (item) => categoryId = item.categoryId);
 

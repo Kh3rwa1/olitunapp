@@ -338,6 +338,9 @@ class ContentItemSerialization {
           true,
       isPremium:
           json['is_premium'] as bool? ?? json['isPremium'] as bool? ?? false,
+      isPreview: json['isPreview'] as bool? ?? false,
+      isLocked: json['isLocked'] as bool? ?? false,
+      accessReason: json['accessReason'] as String?,
       tags: parsedTags,
       difficulty: json['difficulty'] as String?,
       durationSeconds:
@@ -420,6 +423,7 @@ class ContentItemSerialization {
               : 5,
           'isActive': item.isPublished,
           'isPremium': item.isPremium,
+          'isPreview': item.isPreview,
           'thumbnailUrl': item.heroMedia?.url,
           'heroMediaUrl': item.heroMedia?.url,
           'heroMediaType': item.heroMedia?.kind.name,

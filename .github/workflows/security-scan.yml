@@ -57,20 +57,38 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run OSV Scanner
+      - name: Run OSV Scanner for Dart
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.3.8
         with:
           scan-args: |-
             --lockfile=pubspec.lock
             --format=table
 
-      - name: Scan npm dependencies
+      - name: Discover every npm lockfile
+        id: npm-lockfiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t lockfiles < <(find . -type f -name package-lock.json -not -path '*/node_modules/*' | sort)
+          if [ "${#lockfiles[@]}" -eq 0 ]; then
+            echo "No npm lockfiles found."
+            exit 1
+          fi
+          {
+            echo 'args<<EOF'
+            for lockfile in "${lockfiles[@]}"; do
+              echo "--lockfile=${lockfile#./}"
+            done
+            echo '--format=table'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+          printf 'Scanning %s npm lockfiles:\n' "${#lockfiles[@]}"
+          printf '  %s\n' "${lockfiles[@]}"
+
+      - name: Scan every npm dependency graph
         uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.3.8
         with:
-          scan-args: |-
-            --lockfile=scripts/package-lock.json
-            --lockfile=functions/translator/package-lock.json
-            --format=table
+          scan-args: ${{ steps.npm-lockfiles.outputs.args }}
 
   codeql:
     name: CodeQL Analysis
@@ -99,28 +117,17 @@ jobs:
     name: Security Gate
     runs-on: ubuntu-latest
     needs: [action-pinning-audit, gitleaks, osv-scanner, codeql]
-    if: always() && !cancelled()
+    if: always()
     permissions:
       contents: read
     steps:
       - name: Check All Security Scans Succeeded
         run: |
-          for res in \
-            "${{ needs.action-pinning-audit.result }}" \
-            "${{ needs.gitleaks.result }}" \
-            "${{ needs.osv-scanner.result }}" \
-            "${{ needs.codeql.result }}"; do
-            if [ "$res" = "cancelled" ]; then
-              echo "⚠️ Security Gate: Upstream scan was cancelled. Skipping gate failure."
-              exit 0
-            fi
-          done
-
           if [ "${{ needs.action-pinning-audit.result }}" != "success" ] || \
              [ "${{ needs.gitleaks.result }}" != "success" ] || \
              [ "${{ needs.osv-scanner.result }}" != "success" ] || \
              [ "${{ needs.codeql.result }}" != "success" ]; then
-            echo "❌ Security Gate: One or more required security scans failed or were skipped!"
+            echo "❌ Security Gate: One or more required security scans failed, were skipped, or were cancelled."
             exit 1
           fi
           echo "✅ Security Gate: All security scans and action pinning passed successfully!"

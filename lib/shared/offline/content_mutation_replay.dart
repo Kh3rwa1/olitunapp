@@ -119,7 +119,7 @@ class ContentMutationReplay {
 
     if (replayed > 0 || failed > 0) {
       AppLogger.debug(
-        '[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped dead-lettered.',
+        '[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped skipped or deferred.',
       );
     }
     return ReplaySummary(replayed: replayed, failed: failed, skipped: skipped);

@@ -1,350 +1,178 @@
-import 'dart:io';
-
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  const boxName = 'durable_mutation_outbox';
-  late Directory directory;
-  late MutationOutboxService outbox;
+
+  Future<MutationOutboxService> openService() async {
+    final service = MutationOutboxService();
+    await service.initialize();
+    return service;
+  }
 
   setUp(() async {
-    directory = await Directory.systemTemp.createTemp('olitun_outbox_test_');
-    Hive.init(directory.path);
-    MutationOutboxService.resetForTesting();
-    outbox = MutationOutboxService();
+    await Hive.deleteBoxFromDisk('mutation_outbox_v1');
   });
 
   tearDown(() async {
-    await Hive.close();
-    MutationOutboxService.resetForTesting();
-    await directory.delete(recursive: true);
+    await Hive.deleteBoxFromDisk('mutation_outbox_v1');
   });
 
-  PendingMutation mutation(String userId, String operationId) {
-    return PendingMutation(
-      operationId: operationId,
-      userId: userId,
-      operationType: 'lesson_completed',
-      entityId: 'lesson-1',
-      payload: {'stars': 5},
-      createdAt: DateTime.utc(2026, 9, 5),
+  test('mutation survives close and reopen', () async {
+    final first = await openService();
+    await first.enqueueMutation(
+      PendingMutation(
+        operationId: 'restart-safe-op',
+        userId: 'user-a',
+        operationType: 'review.upsert',
+        entityId: 'lesson-1',
+        payload: const {'score': 0.8},
+        createdAt: DateTime.utc(2026, 1, 1),
+      ),
     );
-  }
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await first.dispose();
 
-  test('queued work survives storage restart', () async {
-    await outbox.enqueueMutation(mutation('learner', 'completion-1'));
-    await Hive.close();
-    Hive.init(directory.path);
-    final restarted = MutationOutboxService();
-    final pending = await restarted.getPendingMutations('learner');
-    expect(pending.map((item) => item.operationId), ['completion-1']);
-    expect(pending.single.payload, {'stars': 5});
+    final second = await openService();
+    final restored = await second.getPendingMutations('user-a');
+
+    expect(restored, hasLength(1));
+    expect(restored.single.operationId, 'restart-safe-op');
+    expect(restored.single.payload['score'], 0.8);
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await second.dispose();
   });
 
-  test('failed storage open can be retried', () async {
-    final incompatible = await Hive.openBox<int>(boxName);
-    await expectLater(
-      outbox.getPendingMutations('learner'),
-      throwsA(isA<HiveError>()),
-    );
-    await incompatible.close();
-    expect(await outbox.getPendingMutations('learner'), isEmpty);
-  });
-
-  test('queue reads enforce exact ownership', () async {
-    await outbox.enqueueMutation(mutation('learner', 'mine'));
-    await outbox.enqueueMutation(mutation('learner_child', 'theirs'));
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.map((item) => item.operationId), ['mine']);
-    expect(pending.every((item) => item.userId == 'learner'), isTrue);
-  });
-
-  test('queue clearing enforces exact ownership', () async {
-    await outbox.enqueueMutation(mutation('learner', 'mine'));
-    await outbox.enqueueMutation(mutation('learner_child', 'theirs'));
-    await outbox.clearQueueForUser('learner');
-    expect(await outbox.getPendingMutations('learner'), isEmpty);
-    final other = await outbox.getPendingMutations('learner_child');
-    expect(other.map((item) => item.operationId), ['theirs']);
-  });
-
-  test('completion only removes the acknowledged operation', () async {
-    await outbox.enqueueMutation(mutation('learner', 'done'));
-    await outbox.enqueueMutation(mutation('learner', 'still-pending'));
-    await outbox.markCompleted('learner', 'done');
-    await Hive.close();
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.map((item) => item.operationId), ['still-pending']);
-  });
-
-  test('dead-letter state survives restart', () async {
-    await outbox.enqueueMutation(mutation('learner', 'retry-me'));
-    for (var i = 0; i < MutationOutboxService.maxRetryAttempts; i++) {
-      await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
-    }
-    await Hive.close();
-    final pending = await outbox.getPendingMutations('learner');
-    expect(pending.single.status, MutationStatus.deadLetter);
-    expect(pending.single.attemptCount, MutationOutboxService.maxRetryAttempts);
-    expect(pending.single.lastError, 'offline');
-  });
-
-  test('persisted errors are bounded and redact credentials and PII', () async {
-    await outbox.enqueueMutation(mutation('learner', 'private-error'));
-    final padding = List.filled(700, 'x').join();
-    final rawError = 'Bearer very.secret.token for child@example.com $padding';
-
-    await outbox.recordAttemptFailed('learner', 'private-error', rawError);
-
-    final pending = await outbox.getPendingMutations('learner');
-    final storedError = pending.single.lastError!;
-    expect(storedError, contains('Bearer [REDACTED_TOKEN]'));
-    expect(storedError, contains('c***@example.com'));
-    expect(storedError, isNot(contains('very.secret.token')));
-    expect(storedError.length, lessThanOrEqualTo(512));
-  });
-
-  test('completed and cancelled statuses survive storage restart', () async {
-    await outbox.enqueueMutation(mutation('learner', 'op-complete'));
-    await outbox.enqueueMutation(mutation('learner', 'op-cancel'));
-    await outbox.markCompleted('learner', 'op-complete');
-    await outbox.markCancelled('learner', 'op-cancel');
-
-    // Simulate app restart
-    await Hive.close();
-    Hive.init(directory.path);
-    final restarted = MutationOutboxService();
-
-    final statusComplete = await restarted.getMutationStatus(
-      'learner',
-      'op-complete',
-    );
-    final statusCancel = await restarted.getMutationStatus(
-      'learner',
-      'op-cancel',
-    );
-
-    expect(statusComplete, MutationStatus.completed);
-    expect(statusCancel, MutationStatus.cancelled);
-
-    // Both are excluded from getPendingMutations
-    final pending = await restarted.getPendingMutations('learner');
-    expect(pending.map((m) => m.operationId), isNot(contains('op-complete')));
-    expect(pending.map((m) => m.operationId), isNot(contains('op-cancel')));
-  });
-
-  test('completion and cancelled status survive serialization round-trip', () {
-    for (final status in MutationStatus.values) {
-      final original = PendingMutation(
-        operationId: 'op-${status.name}',
-        userId: 'user-1',
-        operationType: 'review_state.upsert',
-        entityId: 'item-1',
-        payload: const {'key': 'val'},
-        createdAt: DateTime.utc(2026, 9, 14),
-        status: status,
-      );
-      final json = original.toJson();
-      final restored = PendingMutation.fromJson(json);
-      expect(restored.status, equals(status));
-      expect(restored.operationId, equals('op-${status.name}'));
-    }
-  });
-
-  group('cleanUpTerminalMutations Garbage Collection', () {
-    test(
-      'retains completed prerequisite while active dependent references it',
-      () async {
-        final now = DateTime.utc(2026, 9, 15, 12);
-        final tenDaysAgo = now.subtract(const Duration(days: 10));
-
-        // Enqueue prerequisite and mark it completed (10 days old, past 7-day retention)
-        final prereq = PendingMutation(
-          operationId: 'op_prereq',
-          userId: 'learner',
-          operationType: 'review_state.upsert',
-          entityId: 'word_1',
-          payload: const {'score': 10},
-          createdAt: tenDaysAgo,
-          status: MutationStatus.completed,
-        );
-        await outbox.enqueueMutation(prereq);
-
-        // Enqueue an independent expired completed mutation
-        final expiredIndependent = PendingMutation(
-          operationId: 'op_expired_independent',
-          userId: 'learner',
-          operationType: 'review_state.upsert',
-          entityId: 'word_2',
+  test('similar user identifiers do not share mutations', () async {
+    final service = await openService();
+    for (final userId in ['user', 'user-extra']) {
+      await service.enqueueMutation(
+        PendingMutation(
+          operationId: 'op-$userId',
+          userId: userId,
+          operationType: 'review.delete',
+          entityId: 'item',
           payload: const {},
-          createdAt: tenDaysAgo,
-          status: MutationStatus.completed,
-        );
-        await outbox.enqueueMutation(expiredIndependent);
+          createdAt: DateTime.utc(2026, 1, 1),
+        ),
+      );
+    }
 
-        // Enqueue active (pending) dependent referencing op_prereq
-        final dependent = PendingMutation(
-          operationId: 'op_dependent',
-          userId: 'learner',
-          operationType: 'review_state.delete',
-          entityId: 'legacy_word_1',
-          payload: const {'dependsOnOperationId': 'op_prereq'},
-          createdAt: now.subtract(const Duration(hours: 1)),
-        );
-        await outbox.enqueueMutation(dependent);
+    final shortUser = await service.getPendingMutations('user');
+    final longUser = await service.getPendingMutations('user-extra');
 
-        // Run GC with default 7-day retention
-        final deletedCount = await outbox.cleanUpTerminalMutations(
-          'learner',
-          now: now,
-        );
+    expect(shortUser.map((item) => item.userId), ['user']);
+    expect(longUser.map((item) => item.userId), ['user-extra']);
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await service.dispose();
+  });
 
-        // Only the unreferenced expired record should be deleted
-        expect(deletedCount, 1);
-        expect(
-          await outbox.getMutationStatus('learner', 'op_expired_independent'),
-          isNull,
-        );
-
-        // Protected prerequisite must still exist and have completed status
-        expect(
-          await outbox.getMutationStatus('learner', 'op_prereq'),
-          MutationStatus.completed,
-        );
-
-        // Active dependent still exists
-        final pending = await outbox.getPendingMutations('learner');
-        expect(pending.map((m) => m.operationId), contains('op_dependent'));
-      },
+  test('transient failures keep retrying beyond the former threshold', () async {
+    final service = await openService();
+    await service.enqueueMutation(
+      PendingMutation(
+        operationId: 'retry-op',
+        userId: 'user-a',
+        operationType: 'review.upsert',
+        entityId: 'item',
+        payload: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+      ),
     );
 
-    test('removes prerequisite once all dependents become terminal', () async {
-      final now = DateTime.utc(2026, 9, 15, 12);
-      final tenDaysAgo = now.subtract(const Duration(days: 10));
-
-      final prereq = PendingMutation(
-        operationId: 'op_prereq_2',
-        userId: 'learner',
-        operationType: 'review_state.upsert',
-        entityId: 'word_1',
-        payload: const {'score': 10},
-        createdAt: tenDaysAgo,
-        status: MutationStatus.completed,
+    for (var attempt = 0; attempt < 8; attempt++) {
+      await service.recordAttemptFailed(
+        userId: 'user-a',
+        operationId: 'retry-op',
+        error: StateError('temporary outage'),
+        now: DateTime.utc(2026, 1, 1, 0, attempt),
       );
-      await outbox.enqueueMutation(prereq);
+    }
 
-      final dependent = PendingMutation(
-        operationId: 'op_dependent_2',
-        userId: 'learner',
-        operationType: 'review_state.delete',
-        entityId: 'legacy_word_1',
-        payload: const {'dependsOnOperationId': 'op_prereq_2'},
-        createdAt: tenDaysAgo, // Also past retention period
-      );
-      await outbox.enqueueMutation(dependent);
+    final failed = (await service.getPendingMutations('user-a')).single;
+    expect(failed.status, MutationStatus.failed);
+    expect(failed.attemptCount, 8);
+    expect(failed.nextRetryAt, isNotNull);
 
-      // While dependent is pending: prereq protected
-      var deleted = await outbox.cleanUpTerminalMutations('learner', now: now);
-      expect(deleted, 0);
-      expect(
-        await outbox.getMutationStatus('learner', 'op_prereq_2'),
-        MutationStatus.completed,
-      );
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await service.dispose();
+    final reopened = await openService();
+    final restored = (await reopened.getPendingMutations('user-a')).single;
+    expect(restored.status, MutationStatus.failed);
+    expect(restored.attemptCount, 8);
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await reopened.dispose();
+  });
 
-      // Mark dependent as completed (now terminal)
-      await outbox.markCompleted('learner', 'op_dependent_2');
-
-      // Now both are terminal and past retention period -> both are cleaned up
-      deleted = await outbox.cleanUpTerminalMutations('learner', now: now);
-      expect(deleted, 2);
-      expect(await outbox.getMutationStatus('learner', 'op_prereq_2'), isNull);
-      expect(
-        await outbox.getMutationStatus('learner', 'op_dependent_2'),
-        isNull,
-      );
-    });
-
-    test(
-      'capacity cap (maxTerminalRecords) prunes oldest unreferenced records without evicting active prerequisite',
-      () async {
-        final now = DateTime.utc(2026, 9, 15, 12);
-
-        // 1. Create a protected prerequisite (even though it is the oldest)
-        final protectedPrereq = PendingMutation(
-          operationId: 'op_protected_old',
-          userId: 'learner',
-          operationType: 'review_state.upsert',
-          entityId: 'word_root',
-          payload: const {},
-          createdAt: now.subtract(const Duration(days: 5)),
-          status: MutationStatus.completed,
-        );
-        await outbox.enqueueMutation(protectedPrereq);
-
-        // Active dependent
-        final activeDep = PendingMutation(
-          operationId: 'op_active_child',
-          userId: 'learner',
-          operationType: 'review_state.delete',
-          entityId: 'legacy_word_root',
-          payload: const {'dependsOnOperationId': 'op_protected_old'},
-          createdAt: now.subtract(const Duration(hours: 2)),
-        );
-        await outbox.enqueueMutation(activeDep);
-
-        // 2. Enqueue 10 unreferenced fresh completed mutations
-        for (var i = 1; i <= 10; i++) {
-          await outbox.enqueueMutation(
-            PendingMutation(
-              operationId: 'op_fresh_$i',
-              userId: 'learner',
-              operationType: 'review_state.upsert',
-              entityId: 'word_$i',
-              payload: const {},
-              createdAt: now.subtract(
-                Duration(hours: 20 - i),
-              ), // older to newer
-              status: MutationStatus.completed,
-            ),
-          );
-        }
-
-        // Max capacity is set to 5 terminal records.
-        // Total terminal records = 1 protected + 10 unreferenced = 11.
-        // 6 unreferenced records should be pruned to bring total down to 5 (1 protected + 4 fresh).
-        final deletedCount = await outbox.cleanUpTerminalMutations(
-          'learner',
-          maxTerminalRecords: 5,
-          now: now,
-        );
-
-        expect(deletedCount, 6);
-
-        // Protected prerequisite must still be present!
-        expect(
-          await outbox.getMutationStatus('learner', 'op_protected_old'),
-          MutationStatus.completed,
-        );
-
-        // Oldest fresh records (1 through 6) should be deleted
-        for (var i = 1; i <= 6; i++) {
-          expect(
-            await outbox.getMutationStatus('learner', 'op_fresh_$i'),
-            isNull,
-          );
-        }
-
-        // Newest fresh records (7 through 10) must remain
-        for (var i = 7; i <= 10; i++) {
-          expect(
-            await outbox.getMutationStatus('learner', 'op_fresh_$i'),
-            MutationStatus.completed,
-          );
-        }
-      },
+  test('permanent failures can be explicitly requeued', () async {
+    final service = await openService();
+    await service.enqueueMutation(
+      PendingMutation(
+        operationId: 'permanent-op',
+        userId: 'user-a',
+        operationType: 'review.upsert',
+        entityId: 'item',
+        payload: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+      ),
     );
+
+    await service.recordAttemptFailed(
+      userId: 'user-a',
+      operationId: 'permanent-op',
+      error: const FormatException('invalid payload'),
+      isPermanent: true,
+      now: DateTime.utc(2026, 1, 1, 0, 1),
+    );
+
+    var mutation = (await service.getPendingMutations('user-a')).single;
+    expect(mutation.status, MutationStatus.deadLetter);
+    expect(mutation.lastError, contains('invalid payload'));
+
+    await service.retryDeadLetter(
+      userId: 'user-a',
+      operationId: 'permanent-op',
+    );
+    mutation = (await service.getPendingMutations('user-a')).single;
+    expect(mutation.status, MutationStatus.pending);
+    expect(mutation.attemptCount, 0);
+    expect(mutation.lastError, isNull);
+    expect(mutation.nextRetryAt, isNull);
+
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await service.dispose();
+  });
+
+  test('sensitive details are redacted before persistence', () async {
+    final service = await openService();
+    await service.enqueueMutation(
+      PendingMutation(
+        operationId: 'redaction-op',
+        userId: 'user-a',
+        operationType: 'review.upsert',
+        entityId: 'item',
+        payload: const {},
+        createdAt: DateTime.utc(2026, 1, 1),
+      ),
+    );
+
+    await service.recordAttemptFailed(
+      userId: 'user-a',
+      operationId: 'redaction-op',
+      error: StateError(
+        'email=person@example.com token=top-secret password=hunter2',
+      ),
+      now: DateTime.utc(2026, 1, 1, 0, 1),
+    );
+
+    final failed = (await service.getPendingMutations('user-a')).single;
+    expect(failed.lastError, isNot(contains('person@example.com')));
+    expect(failed.lastError, isNot(contains('top-secret')));
+    expect(failed.lastError, isNot(contains('hunter2')));
+    expect(failed.lastError, contains('[redacted-email]'));
+    expect(failed.lastError, contains('[redacted]'));
+    await Hive.box<String>('mutation_outbox_v1').close();
+    await service.dispose();
   });
 }

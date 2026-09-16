@@ -2,184 +2,132 @@ import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:itun/core/error/failures.dart';
-import 'package:itun/core/logging/app_logger.dart';
-import 'package:itun/core/network/network_info.dart';
-import 'package:itun/core/offline/mutation_outbox_service.dart';
-import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/repositories/content_repository.dart';
 
-/// Outcome of one replay pass over the offline content mutation queue.
-class ReplaySummary {
-  final int replayed;
-  final int failed;
-  final int skipped;
+import '../../core/logging/app_logger.dart';
+import '../../core/network/network_info.dart';
+import '../../core/offline/mutation_outbox_service.dart';
+import '../models/content_item.dart';
+import '../providers/content_providers.dart';
+import '../repositories/content_repository.dart';
 
-  const ReplaySummary({
-    required this.replayed,
-    required this.failed,
-    required this.skipped,
-  });
-
-  bool get isClean => failed == 0;
-}
-
-/// Drains the durable content mutation outbox by re-running queued upserts
-/// through [ContentRepository]. Executed when the app boots and whenever
-/// connectivity is regained, matching the outage playbook's recovery model.
-class ContentMutationReplay {
-  final MutationOutboxService _outbox;
-  final NetworkInfo _networkInfo;
-  final Future<Either<Failure, ContentItem>> Function(ContentItem item)
-  _executeUpsert;
-
-  ContentMutationReplay({
-    required MutationOutboxService outbox,
-    required NetworkInfo networkInfo,
-    required Future<Either<Failure, ContentItem>> Function(ContentItem item)
-    executeUpsert,
-  }) : _outbox = outbox,
-       _networkInfo = networkInfo,
-       _executeUpsert = executeUpsert;
-
-  Future<ReplaySummary>? _activeReplay;
-
-  Future<ReplaySummary> replayPending() {
-    return _activeReplay ??= _replayPending().whenComplete(() {
-      _activeReplay = null;
-    });
-  }
-
-  Future<ReplaySummary> _replayPending() async {
-    if (!await _networkInfo.isConnected) {
-      return const ReplaySummary(replayed: 0, failed: 0, skipped: 0);
-    }
-
-    final pending = await _outbox.getPendingMutations(
-      contentMutationQueueUserId,
-    );
-    var replayed = 0;
-    var failed = 0;
-    var skipped = 0;
-    final blockedEntities = <String>{};
-
-    for (final mutation in pending) {
-      final entityKey = '${mutation.payload['kind']}:${mutation.entityId}';
-      if (mutation.status == MutationStatus.deadLetter) {
-        skipped++;
-        continue;
-      }
-      if (blockedEntities.contains(entityKey) ||
-          mutation.nextRetryAt.isAfter(DateTime.now())) {
-        blockedEntities.add(entityKey);
-        skipped++;
-        continue;
-      }
-      try {
-        final item = _deserialize(mutation);
-        if (item == null) {
-          // Un-parseable payload can never succeed; dead-letter immediately.
-          await _outbox.recordAttemptFailed(
-            mutation.userId,
-            mutation.operationId,
-            'Unparseable mutation payload',
-            isPermanent: true,
-          );
-          failed++;
-          continue;
-        }
-
-        final result = await _executeUpsert(item);
-        await result.fold<Future<void>>(
-          (failure) async {
-            blockedEntities.add(entityKey);
-            failed++;
-            await _outbox.recordAttemptFailed(
-              mutation.userId,
-              mutation.operationId,
-              failure.message,
-            );
-          },
-          (_) async {
-            await _outbox.markCompleted(mutation.userId, mutation.operationId);
-            replayed++;
-          },
-        );
-      } catch (e) {
-        blockedEntities.add(entityKey);
-        failed++;
-        await _outbox.recordAttemptFailed(
-          mutation.userId,
-          mutation.operationId,
-          e.toString(),
-        );
-      }
-    }
-
-    if (replayed > 0 || failed > 0) {
-      AppLogger.debug(
-        '[ContentReplay] Replayed $replayed queued edits, $failed failed, $skipped dead-lettered.',
-      );
-    }
-    return ReplaySummary(replayed: replayed, failed: failed, skipped: skipped);
-  }
-
-  ContentItem? _deserialize(PendingMutation mutation) {
-    try {
-      final payload = mutation.payload;
-      final kind = ContentKind.values.firstWhere(
-        (k) => k.name == payload['kind'],
-      );
-      final itemJson = Map<String, dynamic>.from(payload['item'] as Map);
-      return ContentItem.fromJson(itemJson, mutation.entityId, kind);
-    } catch (e) {
-      // The caller dead-letters un-parseable payloads; surface why.
-      AppLogger.debug(
-        '[ContentReplay] Failed to deserialize ${mutation.operationId}: $e',
-      );
-      return null;
-    }
-  }
-}
-
-final contentMutationReplayProvider = Provider<ContentMutationReplay>((ref) {
-  final repo = ref.watch(contentRepositoryProvider);
-  return ContentMutationReplay(
+/// Starts the content mutation replay engine for the application's lifetime.
+///
+/// Replay is triggered on startup, connectivity recovery, outbox changes, and
+/// a bounded periodic timer. Transient failures use durable capped backoff;
+/// only malformed or explicitly permanent mutations become dead letters.
+final contentMutationReplayProvider = Provider<void>((ref) {
+  final service = _ContentMutationReplayService(
     outbox: ref.watch(mutationOutboxProvider),
+    repository: ref.watch(contentRepositoryProvider),
     networkInfo: ref.watch(networkInfoProvider),
-    executeUpsert: (item) => repo.upsert(item, allowOfflineQueue: false),
   );
+  unawaited(service.start());
+  ref.onDispose(service.dispose);
 });
 
-/// Keeps a connectivity listener alive for the app's lifetime: replays queued
-/// offline edits once at startup and every time connectivity is regained.
-/// Watch this provider from the app root.
-final mutationReplayInitProvider = Provider<void>((ref) {
-  final replay = ref.watch(contentMutationReplayProvider);
+class _ContentMutationReplayService {
+  _ContentMutationReplayService({
+    required MutationOutboxService outbox,
+    required ContentRepository repository,
+    required NetworkInfo networkInfo,
+  }) : _outbox = outbox,
+       _repository = repository,
+       _networkInfo = networkInfo;
 
-  var disposed = false;
-  ref.onDispose(() => disposed = true);
-  Future<void> safeReplay() async {
-    if (disposed) return;
+  final MutationOutboxService _outbox;
+  final ContentRepository _repository;
+  final NetworkInfo _networkInfo;
+  final Connectivity _connectivity = Connectivity();
+
+  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<String>? _outboxSubscription;
+  Timer? _periodicReplay;
+  bool _disposed = false;
+  bool _running = false;
+  bool _rerunRequested = false;
+
+  Future<void> start() async {
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((
+      results,
+    ) {
+      if (!results.contains(ConnectivityResult.none)) {
+        unawaited(_replay());
+      }
+    });
+    _outboxSubscription = _outbox.changes.listen((userId) {
+      if (userId == contentMutationQueueUserId) unawaited(_replay());
+    });
+    _periodicReplay = Timer.periodic(const Duration(seconds: 30), (_) {
+      unawaited(_replay());
+    });
+    await _replay();
+  }
+
+  Future<void> _replay() async {
+    if (_disposed) return;
+    if (_running) {
+      _rerunRequested = true;
+      return;
+    }
+    _running = true;
     try {
-      await replay.replayPending();
-    } catch (e) {
-      AppLogger.debug('[ContentReplay] Replay pass failed: $e');
+      do {
+        _rerunRequested = false;
+        if (!await _networkInfo.isConnected) return;
+        final report = await _outbox.replayPendingMutations(
+          userId: contentMutationQueueUserId,
+          handler: _handleMutation,
+        );
+        if (report.failed > 0) {
+          AppLogger.debug(
+            '[ContentOutbox] Replay deferred ${report.failed} failed mutations',
+          );
+        }
+        if (report.skipped > 0) {
+          AppLogger.debug(
+            '[ContentOutbox] Replay skipped or deferred ${report.skipped} mutations',
+          );
+        }
+        await _outbox.removeTerminalMutations(
+          userId: contentMutationQueueUserId,
+        );
+      } while (_rerunRequested && !_disposed);
+    } finally {
+      _running = false;
     }
   }
 
-  // Startup pass: drain anything queued during a previous offline session.
-  Future<void>.microtask(safeReplay);
-  final retryTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-    unawaited(safeReplay());
-  });
-  ref.onDispose(retryTimer.cancel);
-  ref.listen(connectivityStreamProvider, (previous, next) {
-    next.whenData((results) {
-      if (!results.contains(ConnectivityResult.none)) {
-        Future<void>.microtask(safeReplay);
-      }
-    });
-  });
-});
+  Future<void> _handleMutation(PendingMutation mutation) async {
+    if (mutation.operationType != 'content.upsert') {
+      throw FormatException(
+        'Unsupported operation type: ${mutation.operationType}',
+      );
+    }
+    final kindName = mutation.payload['kind'];
+    final itemJson = mutation.payload['item'];
+    if (kindName is! String || itemJson is! Map) {
+      throw const FormatException('Invalid payload for content mutation.');
+    }
+    final kind = ContentKind.values.firstWhere(
+      (value) => value.name == kindName,
+      orElse: () => throw FormatException('Unsupported content kind: $kindName'),
+    );
+    final item = ContentItem.fromJson(
+      Map<String, dynamic>.from(itemJson),
+      mutation.entityId,
+      kind,
+    );
+    final result = await _repository.upsert(item, allowOfflineQueue: false);
+    result.fold(
+      (failure) => throw StateError(failure.message),
+      (_) => null,
+    );
+  }
+
+  void dispose() {
+    _disposed = true;
+    _periodicReplay?.cancel();
+    unawaited(_connectivitySubscription?.cancel());
+    unawaited(_outboxSubscription?.cancel());
+  }
+}

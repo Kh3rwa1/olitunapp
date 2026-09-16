@@ -55,36 +55,39 @@ void main() {
     );
   });
 
-  test('getLessons uses metadata-only authorization function response', () async {
-    when(
-      () => mockFunctions.execute(
-        'getAuthorizedLesson',
-        body: {'action': 'list_lessons', 'limit': 100},
-        usePost: true,
-      ),
-    ).thenAnswer(
-      (_) async => _execution({
-        'ok': true,
-        'lessons': [
-          _metadata('lesson_free'),
-          _metadata('lesson_paid', isLocked: true, order: 2),
-        ],
-        'hasMore': false,
-        'nextCursor': null,
-      }),
-    );
+  test(
+    'getLessons uses metadata-only authorization function response',
+    () async {
+      when(
+        () => mockFunctions.execute(
+          'getAuthorizedLesson',
+          body: {'action': 'list_lessons', 'limit': 100},
+          usePost: true,
+        ),
+      ).thenAnswer(
+        (_) async => _execution({
+          'ok': true,
+          'lessons': [
+            _metadata('lesson_free'),
+            _metadata('lesson_paid', isLocked: true, order: 2),
+          ],
+          'hasMore': false,
+          'nextCursor': null,
+        }),
+      );
 
-    final lessons = await dataSource.getLessons();
+      final lessons = await dataSource.getLessons();
 
-    expect(lessons.map((lesson) => lesson.id), [
-      'lesson_free',
-      'lesson_paid',
-    ]);
-    expect(lessons.first.isLocked, isFalse);
-    expect(lessons.last.isLocked, isTrue);
-    expect(lessons.every((lesson) => lesson.blocks.isEmpty), isTrue);
-    verifyNoMoreInteractions(mockDatabases);
-  });
+      expect(lessons.map((lesson) => lesson.id), [
+        'lesson_free',
+        'lesson_paid',
+      ]);
+      expect(lessons.first.isLocked, isFalse);
+      expect(lessons.last.isLocked, isTrue);
+      expect(lessons.every((lesson) => lesson.blocks.isEmpty), isTrue);
+      verifyNoMoreInteractions(mockDatabases);
+    },
+  );
 
   test('getLessons follows bounded server cursors', () async {
     when(
@@ -104,11 +107,7 @@ void main() {
     when(
       () => mockFunctions.execute(
         'getAuthorizedLesson',
-        body: {
-          'action': 'list_lessons',
-          'limit': 100,
-          'cursor': 'lesson_1',
-        },
+        body: {'action': 'list_lessons', 'limit': 100, 'cursor': 'lesson_1'},
         usePost: true,
       ),
     ).thenAnswer(
@@ -131,11 +130,7 @@ void main() {
       ),
       () => mockFunctions.execute(
         'getAuthorizedLesson',
-        body: {
-          'action': 'list_lessons',
-          'limit': 100,
-          'cursor': 'lesson_1',
-        },
+        body: {'action': 'list_lessons', 'limit': 100, 'cursor': 'lesson_1'},
         usePost: true,
       ),
     ]);
@@ -185,7 +180,9 @@ void main() {
 
     expect(
       () => dataSource.getLessons(),
-      throwsA(isA<ServerException>().having((error) => error.code, 'code', 502)),
+      throwsA(
+        isA<ServerException>().having((error) => error.code, 'code', 502),
+      ),
     );
   });
 
@@ -194,11 +191,15 @@ void main() {
 
     expect(
       () => unavailable.getLessons(),
-      throwsA(isA<ServerException>().having((error) => error.code, 'code', 503)),
+      throwsA(
+        isA<ServerException>().having((error) => error.code, 'code', 503),
+      ),
     );
     expect(
       () => unavailable.getLessonsByCategory('cat_secure'),
-      throwsA(isA<ServerException>().having((error) => error.code, 'code', 503)),
+      throwsA(
+        isA<ServerException>().having((error) => error.code, 'code', 503),
+      ),
     );
     verifyNoMoreInteractions(mockDatabases);
   });

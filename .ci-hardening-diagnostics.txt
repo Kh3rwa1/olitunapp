@@ -1,59 +1,107 @@
 Analyzing olitunapp...                                          
 
-  error • Target of URI doesn't exist: '../storage/hive_compat.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • lib/core/offline/mutation_outbox_service.dart:9:8 • uri_does_not_exist
-  error • Undefined name 'HiveCompat'. Try correcting the name to one that is defined, or defining the name • lib/core/offline/mutation_outbox_service.dart:149:13 • undefined_identifier
-  error • The named parameter 'error' is required, but there's no corresponding argument. Try adding the required argument • lib/features/review/data/review_state_sync.dart:69:18 • missing_required_argument
-  error • The named parameter 'operationId' is required, but there's no corresponding argument. Try adding the required argument • lib/features/review/data/review_state_sync.dart:69:18 • missing_required_argument
-  error • The named parameter 'userId' is required, but there's no corresponding argument. Try adding the required argument • lib/features/review/data/review_state_sync.dart:69:18 • missing_required_argument
-  error • Too many positional arguments: 0 expected, but 3 found. Try removing the extra positional arguments, or specifying the name for named arguments • lib/features/review/data/review_state_sync.dart:70:5 • extra_positional_arguments_could_be_named
-  error • The method 'markCompleted' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'markCompleted' • lib/features/review/data/review_state_sync.dart:78:16 • undefined_method
-  error • The method 'getMutationStatus' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'getMutationStatus' • lib/features/review/data/review_state_sync.dart:84:17 • undefined_method
-  error • The method 'getMutation' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'getMutation' • lib/features/review/data/review_state_sync.dart:88:16 • undefined_method
-  error • The method 'isAfter' can't be unconditionally invoked because the receiver can be 'null'. Try making the call conditional (using '?.') or adding a null check to the target ('!') • lib/features/review/data/review_state_sync.dart:395:34 • unchecked_use_of_nullable_value
-  error • There's no constant named 'completed' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'completed' • lib/features/review/data/review_state_sync.dart:422:44 • undefined_enum_constant
-  error • There's no constant named 'syncing' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'syncing' • lib/features/review/data/review_state_sync.dart:425:44 • undefined_enum_constant
-  error • Undefined name 'mutationReplayInitProvider'. Try correcting the name to one that is defined, or defining the name • lib/main.dart:216:15 • undefined_identifier
-   info • The import of '../providers/content_providers.dart' is unnecessary because all of the used elements are also provided by the import of '../repositories/content_repository.dart'. Try removing the import directive • lib/shared/offline/content_mutation_replay.dart:10:8 • unnecessary_import
-  error • The method 'clearQueueForUser' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'clearQueueForUser' • test/core/auth/account_isolation_test.dart:45:20 • undefined_method
-  error • The method 'clearQueueForUser' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'clearQueueForUser' • test/core/auth/account_isolation_test.dart:76:22 • undefined_method
-  error • The method 'clearQueueForUser' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'clearQueueForUser' • test/core/auth/account_isolation_test.dart:85:22 • undefined_method
-   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/core/offline/mutation_outbox_regression_test.dart:31:42 • avoid_redundant_argument_values
-   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/core/offline/mutation_outbox_regression_test.dart:57:44 • avoid_redundant_argument_values
-   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/core/offline/mutation_outbox_regression_test.dart:82:44 • avoid_redundant_argument_values
-   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/core/offline/mutation_outbox_regression_test.dart:120:42 • avoid_redundant_argument_values
-   info • The value of the argument is redundant because it matches the default value. Try removing the argument • test/core/offline/mutation_outbox_regression_test.dart:159:42 • avoid_redundant_argument_values
-  error • The method 'toJson' isn't defined for the type 'PendingMutation'. Try correcting the name to the name of an existing method, or defining a method named 'toJson' • test/core/offline/mutation_outbox_test.dart:16:29 • undefined_method
-  error • The method 'fromJson' isn't defined for the type 'PendingMutation'. Try correcting the name to the name of an existing method, or defining a method named 'fromJson' • test/core/offline/mutation_outbox_test.dart:21:45 • undefined_method
-  error • The method 'toJson' isn't defined for the type 'PendingMutation'. Try correcting the name to the name of an existing method, or defining a method named 'toJson' • test/core/offline/mutation_outbox_test.dart:45:31 • undefined_method
-  error • The method 'fromJson' isn't defined for the type 'PendingMutation'. Try correcting the name to the name of an existing method, or defining a method named 'fromJson' • test/core/offline/mutation_outbox_test.dart:49:47 • undefined_method
-  error • The method 'isAfter' can't be unconditionally invoked because the receiver can be 'null'. Try making the call conditional (using '?.') or adding a null check to the target ('!') • test/core/offline/mutation_outbox_test.dart:73:35 • unchecked_use_of_nullable_value
-  error • There's no constant named 'completed' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'completed' • test/features/review/review_state_sync_test.dart:64:44 • undefined_enum_constant
-  error • There's no constant named 'cancelled' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'cancelled' • test/features/review/review_state_sync_test.dart:65:44 • undefined_enum_constant
-  error • 'status' can't be used as a setter because it's final. Try finding a different setter, or making 'status' non-final • test/features/review/review_state_sync_test.dart:83:21 • assignment_to_final
-  error • 'lastError' can't be used as a setter because it's final. Try finding a different setter, or making 'lastError' non-final • test/features/review/review_state_sync_test.dart:84:21 • assignment_to_final
-  error • 'attemptCount' can't be used as a setter because it's final. Try finding a different setter, or making 'attemptCount' non-final • test/features/review/review_state_sync_test.dart:85:21 • assignment_to_final
-  error • There's no constant named 'completed' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'completed' • test/features/review/review_state_sync_test.dart:92:44 • undefined_enum_constant
-  error • 'status' can't be used as a setter because it's final. Try finding a different setter, or making 'status' non-final • test/features/review/review_state_sync_test.dart:95:21 • assignment_to_final
-  error • There's no constant named 'completed' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'completed' • test/features/review/review_state_sync_test.dart:95:45 • undefined_enum_constant
-  error • There's no constant named 'cancelled' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'cancelled' • test/features/review/review_state_sync_test.dart:100:44 • undefined_enum_constant
-  error • 'status' can't be used as a setter because it's final. Try finding a different setter, or making 'status' non-final • test/features/review/review_state_sync_test.dart:103:21 • assignment_to_final
-  error • There's no constant named 'cancelled' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'cancelled' • test/features/review/review_state_sync_test.dart:103:45 • undefined_enum_constant
-  error • There's no constant named 'completed' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'completed' • test/features/review/review_state_sync_test.dart:758:26 • undefined_enum_constant
-  error • There's no constant named 'cancelled' in 'MutationStatus'. Try correcting the name to the name of an existing constant, or defining a constant named 'cancelled' • test/features/review/review_state_sync_test.dart:838:26 • undefined_enum_constant
-  error • The method 'resetForTesting' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'resetForTesting' • test/shared/offline/content_mutation_replay_test.dart:49:27 • undefined_method
-  error • The method 'clearQueueForUser' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'clearQueueForUser' • test/shared/offline/content_mutation_replay_test.dart:58:35 • undefined_method
-  error • The method 'resetForTesting' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'resetForTesting' • test/shared/offline/content_mutation_replay_test.dart:118:27 • undefined_method
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:126:20 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:160:22 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:202:20 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:219:22 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:246:22 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:282:24 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:317:22 • undefined_function
-  error • The function 'ContentMutationReplay' isn't defined. Try importing the library that defines 'ContentMutationReplay', correcting the name to the name of an existing function, or defining a function named 'ContentMutationReplay' • test/shared/offline/content_mutation_replay_test.dart:352:22 • undefined_function
-  error • The method 'resetForTesting' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'resetForTesting' • test/shared/repositories/content_repository_offline_test.dart:51:27 • undefined_method
-  error • The method 'resetForTesting' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'resetForTesting' • test/shared/repositories/content_repository_offline_test.dart:59:27 • undefined_method
-  error • The method 'clearQueueForUser' isn't defined for the type 'MutationOutboxService'. Try correcting the name to the name of an existing method, or defining a method named 'clearQueueForUser' • test/shared/repositories/content_repository_offline_test.dart:60:35 • undefined_method
-  error • The method 'toJson' isn't defined for the type 'PendingMutation'. Try correcting the name to the name of an existing method, or defining a method named 'toJson' • test/smoke/production_readiness_smoke_test.dart:47:23 • undefined_method
+   info • Use 'const' for final variables initialized to a constant value. Try replacing 'final' with 'const' • test/core/offline/mutation_outbox_regression_test.dart:87:7 • prefer_const_declarations
 
-55 issues found. (ran in 23.6s)
+1 issue found. (ran in 29.0s)
+
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queued work survives storage restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"completion-1"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: failed storage open can be retried
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue reads enforce exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: queue clearing enforces exact ownership
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"mine"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"theirs"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: completion only removes the acknowledged operation
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"done"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"still-pending"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: transient failures remain retryable beyond the former threshold
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"retry-me"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: explicitly permanent failures are dead-lettered immediately
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"invalid-payload"}}
+{"level":"debug","message":"[MutationOutbox] [WARNING] Mutation moved to dead-letter state.","fields":{"operationId":"invalid-payload","attemptCount":1}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: persisted errors are bounded and redact credentials and PII
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"private-error"}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: completed and cancelled statuses survive storage restart
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"op-complete"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued lesson_completed","fields":{"operationId":"op-cancel"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: completion and cancelled status survive serialization round-trip
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: cleanUpTerminalMutations Garbage Collection retains completed prerequisite while active dependent references it
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_prereq"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_expired_independent"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.delete","fields":{"operationId":"op_dependent"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Cleaned up 1 terminal records for user learner","fields":{"deletedCount":1,"activePrerequisitesProtected":1}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: cleanUpTerminalMutations Garbage Collection removes prerequisite once all dependents become terminal
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_prereq_2"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.delete","fields":{"operationId":"op_dependent_2"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Cleaned up 2 terminal records for user learner","fields":{"deletedCount":2,"activePrerequisitesProtected":0}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/core/offline/mutation_outbox_regression_test.dart: cleanUpTerminalMutations Garbage Collection capacity cap (maxTerminalRecords) prunes oldest unreferenced records without evicting active prerequisite
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_protected_old"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.delete","fields":{"operationId":"op_active_child"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_1"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_2"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_3"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_4"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_5"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_6"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_7"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_8"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_9"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued review_state.upsert","fields":{"operationId":"op_fresh_10"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Cleaned up 6 terminal records for user learner","fields":{"deletedCount":6,"activePrerequisitesProtected":1}}
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: offline save fails when its durable queue is absent or unwritable
+[Content] Failed to queue offline mutation: Bad state: disk full
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: replay cannot acknowledge an offline re-enqueue as a server success
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: durable edit survives Hive close and reopen before replay
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"upsert_word_word_johar_6aa9ed6b4510cc79decf"}}
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 skipped or deferred.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: simultaneous replay triggers share one execution and await persistence
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"single_flight"}}
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 skipped or deferred.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: a deferred older edit blocks newer edits of the same entity
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"ordered_0"}}
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"ordered_1"}}
+::endgroup::
+::group::✅ Passing tests
+✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips replay when the device is offline
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay replays queued upserts and clears them from the outbox
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"op_replay_success"}}
+[ContentReplay] Replayed 1 queued edits, 0 failed, 0 skipped or deferred.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay records failures with retry budget instead of losing the edit
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"op_replay_failure"}}
+[ContentReplay] Replayed 0 queued edits, 1 failed, 0 skipped or deferred.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay dead-letters permanently unparseable mutations
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"op_replay_corrupt"}}
+[ContentReplay] Failed to deserialize op_replay_corrupt: Bad state: No element
+{"level":"debug","message":"[MutationOutbox] [WARNING] Mutation moved to dead-letter state.","fields":{"operationId":"op_replay_corrupt","attemptCount":1}}
+[ContentReplay] Replayed 0 queued edits, 1 failed, 0 skipped or deferred.
+::endgroup::
+::group::✅ /home/runner/work/olitunapp/olitunapp/test/shared/offline/content_mutation_replay_test.dart: ContentMutationReplay skips already dead-lettered mutations
+{"level":"debug","message":"[MutationOutbox] Outbox: Enqueued content.upsert","fields":{"operationId":"op_replay_dead"}}
+::endgroup::
+
+🎉 23 tests passed.

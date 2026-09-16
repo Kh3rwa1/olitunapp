@@ -68,42 +68,45 @@ void main() {
     await service.dispose();
   });
 
-  test('transient failures keep retrying beyond the former threshold', () async {
-    final service = await openService();
-    await service.enqueueMutation(
-      PendingMutation(
-        operationId: 'retry-op',
-        userId: 'user-a',
-        operationType: 'review.upsert',
-        entityId: 'item',
-        payload: const {},
-        createdAt: DateTime.utc(2026, 1, 1),
-      ),
-    );
-
-    for (var attempt = 0; attempt < 8; attempt++) {
-      await service.recordAttemptFailed(
-        userId: 'user-a',
-        operationId: 'retry-op',
-        error: StateError('temporary outage'),
-        now: DateTime.utc(2026, 1, 1, 0, attempt),
+  test(
+    'transient failures keep retrying beyond the former threshold',
+    () async {
+      final service = await openService();
+      await service.enqueueMutation(
+        PendingMutation(
+          operationId: 'retry-op',
+          userId: 'user-a',
+          operationType: 'review.upsert',
+          entityId: 'item',
+          payload: const {},
+          createdAt: DateTime.utc(2026, 1, 1),
+        ),
       );
-    }
 
-    final failed = (await service.getPendingMutations('user-a')).single;
-    expect(failed.status, MutationStatus.failed);
-    expect(failed.attemptCount, 8);
-    expect(failed.nextRetryAt, isNotNull);
+      for (var attempt = 0; attempt < 8; attempt++) {
+        await service.recordAttemptFailed(
+          userId: 'user-a',
+          operationId: 'retry-op',
+          error: StateError('temporary outage'),
+          now: DateTime.utc(2026, 1, 1, 0, attempt),
+        );
+      }
 
-    await Hive.box<String>('mutation_outbox_v1').close();
-    await service.dispose();
-    final reopened = await openService();
-    final restored = (await reopened.getPendingMutations('user-a')).single;
-    expect(restored.status, MutationStatus.failed);
-    expect(restored.attemptCount, 8);
-    await Hive.box<String>('mutation_outbox_v1').close();
-    await reopened.dispose();
-  });
+      final failed = (await service.getPendingMutations('user-a')).single;
+      expect(failed.status, MutationStatus.failed);
+      expect(failed.attemptCount, 8);
+      expect(failed.nextRetryAt, isNotNull);
+
+      await Hive.box<String>('mutation_outbox_v1').close();
+      await service.dispose();
+      final reopened = await openService();
+      final restored = (await reopened.getPendingMutations('user-a')).single;
+      expect(restored.status, MutationStatus.failed);
+      expect(restored.attemptCount, 8);
+      await Hive.box<String>('mutation_outbox_v1').close();
+      await reopened.dispose();
+    },
+  );
 
   test('permanent failures can be explicitly requeued', () async {
     final service = await openService();

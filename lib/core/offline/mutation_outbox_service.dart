@@ -55,9 +55,7 @@ class PendingMutation {
       createdAt: createdAt,
       attemptCount: attemptCount ?? this.attemptCount,
       lastAttemptAt: lastAttemptAt ?? this.lastAttemptAt,
-      nextRetryAt: clearNextRetryAt
-          ? null
-          : (nextRetryAt ?? this.nextRetryAt),
+      nextRetryAt: clearNextRetryAt ? null : (nextRetryAt ?? this.nextRetryAt),
       lastError: clearLastError ? null : (lastError ?? this.lastError),
       status: status ?? this.status,
     );
@@ -339,14 +337,15 @@ class MutationOutboxService {
           .map((item) => '${item.operationType}:${item.entityId}')
           .toSet();
 
-      final terminal = items
-          .where(
-            (item) =>
-                item.status == MutationStatus.succeeded ||
-                item.status == MutationStatus.deadLetter,
-          )
-          .toList()
-        ..sort((left, right) => right.createdAt.compareTo(left.createdAt));
+      final terminal =
+          items
+              .where(
+                (item) =>
+                    item.status == MutationStatus.succeeded ||
+                    item.status == MutationStatus.deadLetter,
+              )
+              .toList()
+            ..sort((left, right) => right.createdAt.compareTo(left.createdAt));
 
       final keysToDelete = <String>[];
       for (var index = 0; index < terminal.length; index++) {
@@ -386,17 +385,10 @@ class MutationOutboxService {
     DateTime? nextRetryAt;
     if (status == MutationStatus.failed) {
       final exponent = math.min(attemptCount, _maxBackoffExponent);
-      final delaySeconds = math.min(
-        1 << exponent,
-        maxRetryDelay.inSeconds,
-      );
-      final jitterMilliseconds =
-          mutation.operationId.hashCode.abs() % 1000;
+      final delaySeconds = math.min(1 << exponent, maxRetryDelay.inSeconds);
+      final jitterMilliseconds = mutation.operationId.hashCode.abs() % 1000;
       nextRetryAt = now.add(
-        Duration(
-          seconds: delaySeconds,
-          milliseconds: jitterMilliseconds,
-        ),
+        Duration(seconds: delaySeconds, milliseconds: jitterMilliseconds),
       );
     }
 

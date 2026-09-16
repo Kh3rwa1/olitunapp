@@ -110,7 +110,8 @@ class _ContentMutationReplayService {
     }
     final kind = ContentKind.values.firstWhere(
       (value) => value.name == kindName,
-      orElse: () => throw FormatException('Unsupported content kind: $kindName'),
+      orElse: () =>
+          throw FormatException('Unsupported content kind: $kindName'),
     );
     final item = ContentItem.fromJson(
       Map<String, dynamic>.from(itemJson),
@@ -118,10 +119,7 @@ class _ContentMutationReplayService {
       kind,
     );
     final result = await _repository.upsert(item, allowOfflineQueue: false);
-    result.fold(
-      (failure) => throw StateError(failure.message),
-      (_) => null,
-    );
+    result.fold((failure) => throw StateError(failure.message), (_) => null);
   }
 
   void dispose() {

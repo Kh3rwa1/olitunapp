@@ -1,4 +1,4 @@
-name: Secure Lesson Boundary Audit (Temporary)
+name: Secure Lesson Read Cutover (Temporary)
 
 on:
   push:
@@ -9,22 +9,95 @@ permissions:
   contents: write
 
 jobs:
-  audit:
+  patch-and-verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.ref_name }}
-      - name: Audit lesson and entitlement boundaries
-        run: python3 scripts/audit_lesson_boundary.py
-      - name: Commit audit report
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            functions/translator/package-lock.json
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
+        with:
+          channel: stable
+          cache: true
+      - name: Apply complete secure lesson-read cutover
+        run: python3 scripts/patch_secure_listing.py
+      - name: Install root Node dependencies
+        run: npm ci
+      - name: Install translator Node dependencies
+        run: npm ci --prefix functions/translator
+      - name: Install Flutter dependencies
+        run: flutter pub get
+      - name: Format and capture verification
+        run: |
+          set +e
+          dart format \
+            lib/shared/models/content_item/content_item_model.dart \
+            lib/shared/models/content_item/content_item_serialization.dart \
+            lib/shared/models/content_item_extensions.dart \
+            lib/shared/repositories/content_repository.dart \
+            lib/shared/providers/content_providers.dart \
+            lib/features/admin/presentation/lessons/content/admin_lesson_content_screen.dart \
+            lib/features/admin/presentation/lessons/widgets/lesson_form_sheet.dart \
+            lib/features/admin/presentation/translations/widgets/translation_edit_dialog_inputs.dart \
+            test/shared/repositories/content_repository_authorized_lesson_test.dart \
+            > /tmp/secure-listing-diagnostics.log 2>&1
+          format_status=$?
+          node --check functions/getAuthorizedLesson/src/main.js >> /tmp/secure-listing-diagnostics.log 2>&1
+          node_status=$?
+          npm run test:backend >> /tmp/secure-listing-diagnostics.log 2>&1
+          backend_status=$?
+          flutter analyze --fatal-infos >> /tmp/secure-listing-diagnostics.log 2>&1
+          analyze_status=$?
+          flutter test \
+            test/features/lessons/lesson_remote_datasource_authorized_test.dart \
+            test/features/lessons/lesson_remote_datasource_list_authorized_test.dart \
+            test/shared/repositories/content_repository_authorized_lesson_test.dart \
+            test/shared/repositories/content_repository_cached_list_test.dart \
+            test/shared/repositories/content_repository_lesson_upsert_test.dart \
+            >> /tmp/secure-listing-diagnostics.log 2>&1
+          test_status=$?
+          if [ "$format_status" -eq 0 ] && [ "$node_status" -eq 0 ] && \
+             [ "$backend_status" -eq 0 ] && [ "$analyze_status" -eq 0 ] && \
+             [ "$test_status" -eq 0 ]; then
+            echo 0 > /tmp/secure-listing-diagnostics.status
+          else
+            echo 1 > /tmp/secure-listing-diagnostics.status
+          fi
+          exit 0
+      - name: Commit cutover and diagnostics
         env:
           BRANCH: ${{ github.ref_name }}
         run: |
           set -euo pipefail
+          status=$(cat /tmp/secure-listing-diagnostics.status)
+          if [ "$status" -ne 0 ]; then
+            cp /tmp/secure-listing-diagnostics.log .ci-secure-listing-diagnostics.txt
+          else
+            rm -f .ci-secure-listing-diagnostics.txt
+          fi
+          rm -f .ci-lesson-boundary-audit.txt
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .ci-lesson-boundary-audit.txt
-          git commit -m 'chore(security): capture lesson boundary audit'
+          git add \
+            functions/test/authorized_lesson_listing.test.js \
+            lib/shared/models/content_item/content_item_model.dart \
+            lib/shared/models/content_item/content_item_serialization.dart \
+            lib/shared/models/content_item_extensions.dart \
+            lib/shared/repositories/content_repository.dart \
+            lib/shared/providers/content_providers.dart \
+            lib/features/admin/presentation/lessons/content/admin_lesson_content_screen.dart \
+            lib/features/admin/presentation/lessons/widgets/lesson_form_sheet.dart \
+            lib/features/admin/presentation/translations/widgets/translation_edit_dialog_inputs.dart \
+            test/shared/repositories/content_repository_authorized_lesson_test.dart
+          git add -A .ci-secure-listing-diagnostics.txt .ci-lesson-boundary-audit.txt
+          git commit -m 'fix(security): close shared learner lesson read bypasses'
           git push origin "HEAD:$BRANCH"
+          exit "$status"

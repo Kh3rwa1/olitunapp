@@ -218,9 +218,8 @@ class _LessonBlockDetailScreenState
                 ? DetailLoadErrorBlock(
                     title: 'Could not load lesson details',
                     isDark: isDark,
-                    onBack: () => context.canPop()
-                        ? context.pop()
-                        : context.go('/'),
+                    onBack: () =>
+                        context.canPop() ? context.pop() : context.go('/'),
                   )
                 : const Center(child: CircularProgressIndicator()),
           );

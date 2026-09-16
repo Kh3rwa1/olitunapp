@@ -159,7 +159,11 @@ export async function listAuthorizedLessons({
   }
 
   const { categoryId, cursor, limit } = parseListLessonsRequest(body);
-  const queries = [Query.orderAsc('order'), Query.limit(limit)];
+  const queries = [
+    Query.equal('isActive', true),
+    Query.orderAsc('order'),
+    Query.limit(limit),
+  ];
   if (categoryId) queries.unshift(Query.equal('categoryId', categoryId));
   if (cursor) queries.push(Query.cursorAfter(cursor));
 

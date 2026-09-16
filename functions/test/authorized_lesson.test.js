@@ -438,6 +438,34 @@ test('Authorized Lesson: Unknown unlock mode fails closed', async () => {
   assert.deepEqual(res.body.lesson.blocks, []);
 });
 
+test('Authorized Lesson: Inactive lesson returns 404 without exposing its body', async () => {
+  const databases = makeFakeDatabases({
+    lessons: {
+      lesson_inactive: {
+        categoryId: 'cat_free_basics',
+        isActive: false,
+        blocks: JSON.stringify(samplePaidBlocks),
+      },
+    },
+    categories: { cat_free_basics: { unlockMode: 'free' } },
+  });
+  const handler = createGetAuthorizedLessonHandler({ databases });
+  const res = mockRes();
+
+  await handler({
+    req: {
+      method: 'POST',
+      headers: {},
+      body: JSON.stringify({ lessonId: 'lesson_inactive' }),
+    },
+    res,
+  });
+
+  assert.equal(res.statusCode, 404);
+  assert.equal(res.body.error, 'lesson_not_found');
+  assert.equal(Object.hasOwn(res.body, 'lesson'), false);
+});
+
 test('Authorized Lesson: Missing or non-existent lesson returns 404', async () => {
   const databases = makeFakeDatabases();
   const handler = createGetAuthorizedLessonHandler({ databases });

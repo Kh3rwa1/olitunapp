@@ -128,6 +128,31 @@ test('Authorized Lesson List: returns server-authoritative metadata without less
   }
 });
 
+test('Authorized Lesson List: excludes inactive lessons at the query boundary', async () => {
+  const databases = makeFakeDatabases({
+    lessons: [
+      lesson('active', 'cat_free', 1, { isActive: true }),
+      lesson('inactive', 'cat_free', 2, { isActive: false }),
+    ],
+    categories: [freeCategory()],
+  });
+  const handler = createGetAuthorizedLessonHandler({ databases });
+  const res = mockRes();
+
+  await handler({ req: request({ action: 'list_lessons' }), res });
+
+  assert.deepEqual(res.body.lessons.map((item) => item.id), ['active']);
+  const lessonCall = databases.calls.find((call) =>
+    call.operation === 'listDocuments' && call.collectionId === 'lessons');
+  assert.equal(
+    parseQueries(lessonCall.queries).some((query) =>
+      query.method === 'equal' &&
+      query.attribute === 'isActive' &&
+      query.values?.includes(true)),
+    true,
+  );
+});
+
 test('Authorized Lesson List: batches buyer entitlements instead of querying per lesson', async () => {
   const databases = makeFakeDatabases({
     lessons: [

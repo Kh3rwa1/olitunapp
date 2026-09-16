@@ -13,6 +13,13 @@ import {
   parseArgs,
 } from './check_premium_content_permissions.mjs';
 
+test('inactive lessons are protected even in free categories', () => {
+  assert.deepEqual(
+    classifyLesson({ unlockMode: 'free' }, { isActive: false, isPremium: false }),
+    { public: false, reason: 'inactive-lesson' },
+  );
+});
+
 test('premium category body is protected', () => {
   assert.deepEqual(
     classifyLesson({ unlockMode: 'paid_only', previewLessonCount: 1 }, { order: 2 }),

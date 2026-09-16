@@ -376,6 +376,13 @@ export function createGetAuthorizedLessonHandler({
       return res.json({ ok: false, error: 'lesson_retrieval_failed', message: 'Failed to retrieve lesson' }, 500);
     }
 
+    if (lessonDoc.isActive === false) {
+      return res.json(
+        { ok: false, error: 'lesson_not_found', message: 'Lesson not found' },
+        404,
+      );
+    }
+
     if (!lessonDoc.categoryId) {
       return res.json({
         ok: false,

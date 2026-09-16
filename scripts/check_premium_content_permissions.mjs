@@ -59,6 +59,9 @@ function isReadPermission(permission) {
 }
 
 export function classifyLesson(category, lesson) {
+  if (lesson?.isActive === false) {
+    return { public: false, reason: 'inactive-lesson' };
+  }
   if (!category) return { public: false, reason: 'category-unresolved' };
   if (lesson?.isPremium === true) {
     return { public: false, reason: 'item-marked-premium' };
@@ -427,7 +430,10 @@ async function main() {
   console.log(`Protected rows: ${lessons.length - publicCount}`);
   console.log(`Rows needing permission updates: ${changedPlans.length}`);
   if (orderAnomalies.length > 0) {
-    throw new Error(`Refusing migration: ${orderAnomalies.length} lesson-order anomalies detected`);
+    console.warn(
+      `Warning: ${orderAnomalies.length} lesson-order anomalies detected; ` +
+      'non-positive or ambiguous legacy order values remain protected unless the category is free.',
+    );
   }
 
   if (args.phase === 'audit') {

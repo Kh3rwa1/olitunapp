@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import 'locked_lesson_overlay.dart';
 
+/// Full-screen progression guard for direct lesson deep links.
 class LockedLessonView extends StatelessWidget {
   const LockedLessonView({
     super.key,

@@ -78,7 +78,12 @@ class PendingMutation {
 /// Durable, non-expiring mutation outbox powered by a dedicated Hive box.
 class MutationOutboxService {
   static const String _outboxBoxName = 'durable_mutation_outbox';
+
+  /// Retained for compatibility with existing monitoring and tests. Transient
+  /// failures no longer become dead letters at this historical threshold.
   static const int maxRetryAttempts = 5;
+  static const Duration maxRetryDelay = Duration(minutes: 15);
+  static const int _maxBackoffExponent = 12;
   static const int _maxStoredErrorLength = 512;
   static final Random _random = Random();
 
@@ -187,7 +192,7 @@ class MutationOutboxService {
       mutation.attemptCount += 1;
       mutation.lastError = _safeStoredError(error);
 
-      if (isPermanent || mutation.attemptCount >= maxRetryAttempts) {
+      if (isPermanent) {
         mutation.status = MutationStatus.deadLetter;
         AppLogger.warning(
           'Mutation moved to dead-letter state.',
@@ -199,7 +204,8 @@ class MutationOutboxService {
         );
       } else {
         mutation.status = MutationStatus.failed;
-        final baseSeconds = 1 << mutation.attemptCount;
+        final exponent = min(mutation.attemptCount, _maxBackoffExponent);
+        final baseSeconds = min(1 << exponent, maxRetryDelay.inSeconds);
         final jitter = 0.8 + (_random.nextDouble() * 0.4);
         mutation.nextRetryAt = DateTime.now().add(
           Duration(seconds: (baseSeconds * jitter).round()),

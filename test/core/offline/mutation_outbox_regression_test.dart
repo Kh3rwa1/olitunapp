@@ -80,16 +80,35 @@ void main() {
     expect(pending.map((item) => item.operationId), ['still-pending']);
   });
 
-  test('dead-letter state survives restart', () async {
-    await outbox.enqueueMutation(mutation('learner', 'retry-me'));
-    for (var i = 0; i < MutationOutboxService.maxRetryAttempts; i++) {
-      await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
-    }
-    await Hive.close();
+  test(
+    'transient failures remain retryable beyond the former threshold',
+    () async {
+      await outbox.enqueueMutation(mutation('learner', 'retry-me'));
+      const attempts = MutationOutboxService.maxRetryAttempts + 3;
+      for (var i = 0; i < attempts; i++) {
+        await outbox.recordAttemptFailed('learner', 'retry-me', 'offline');
+      }
+      await Hive.close();
+      final pending = await outbox.getPendingMutations('learner');
+      expect(pending.single.status, MutationStatus.failed);
+      expect(pending.single.attemptCount, attempts);
+      expect(pending.single.lastError, 'offline');
+    },
+  );
+
+  test('explicitly permanent failures are dead-lettered immediately', () async {
+    await outbox.enqueueMutation(mutation('learner', 'invalid-payload'));
+    await outbox.recordAttemptFailed(
+      'learner',
+      'invalid-payload',
+      'invalid payload',
+      isPermanent: true,
+    );
+
     final pending = await outbox.getPendingMutations('learner');
     expect(pending.single.status, MutationStatus.deadLetter);
-    expect(pending.single.attemptCount, MutationOutboxService.maxRetryAttempts);
-    expect(pending.single.lastError, 'offline');
+    expect(pending.single.attemptCount, 1);
+    expect(pending.single.lastError, 'invalid payload');
   });
 
   test('persisted errors are bounded and redact credentials and PII', () async {

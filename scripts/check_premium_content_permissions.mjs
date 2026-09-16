@@ -23,9 +23,11 @@ const SCRIPT_PATH = fileURLToPath(import.meta.url);
 const ROOT = resolve(dirname(SCRIPT_PATH), '..');
 const SHA_PATTERN = /^[0-9a-f]{40}$/i;
 const RESOURCE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/;
-const PERMISSION_PATTERN = /^(?:read|create|update|delete)\("[A-Za-z0-9:._+\/-]{1,128}"\)$/;
+const PERMISSION_PATTERN = /^(?:read|create|update|delete|write)\("[A-Za-z0-9:._+\/-]{1,128}"\)$/;
 const AUTHORIZATION_FUNCTION_ID = 'getAuthorizedLesson';
 const FLUTTER_SITE_ID = '69b2342a00065864275b';
+const EXPECTED_PROJECT_ID = '699495910038e39622c5';
+const EXPECTED_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
 const PAID_UNLOCK_MODES = new Set(['paid_only', 'review_or_paid', 'review_only']);
 const REQUIRED_VARIABLES = Object.freeze({
   APPWRITE_DATABASE_ID: 'olitun_db',
@@ -430,23 +432,23 @@ function readManifest() {
 async function main() {
   const manifest = readManifest();
   const projectId = safeResourceId(
-    String(process.env.APPWRITE_PROJECT_ID || '').trim(),
+    String(process.env.APPWRITE_PROJECT_ID || EXPECTED_PROJECT_ID).trim(),
     'APPWRITE_PROJECT_ID',
   );
-  const args = parseArgs(process.argv.slice(2), projectId);
-  const rawEndpoint = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
-  const endpointUrl = new URL(rawEndpoint);
-  if (
-    endpointUrl.protocol !== 'https:' ||
-    !endpointUrl.hostname.endsWith('.appwrite.io') ||
-    endpointUrl.pathname.replace(/\/+$/, '') !== '/v1'
-  ) {
-    throw new Error('APPWRITE_ENDPOINT must be an Appwrite Cloud HTTPS v1 endpoint');
+  if (projectId !== EXPECTED_PROJECT_ID) {
+    throw new Error(`This migration is bound to Appwrite project ${EXPECTED_PROJECT_ID}`);
   }
-  const endpoint = endpointUrl.toString().replace(/\/$/, '');
+  const args = parseArgs(process.argv.slice(2), projectId);
+  const endpoint = String(process.env.APPWRITE_ENDPOINT || EXPECTED_ENDPOINT).replace(/\/$/, '');
+  if (endpoint !== EXPECTED_ENDPOINT) {
+    throw new Error(`This migration is bound to ${EXPECTED_ENDPOINT}`);
+  }
   const apiKey = String(process.env.APPWRITE_API_KEY || '').trim();
   const databaseId = 'olitun_db';
-  const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
+  const adminTeamId = safeResourceId(
+    String(process.env.ADMIN_TEAM_ID || 'admins').trim(),
+    'ADMIN_TEAM_ID',
+  );
   if (!apiKey) throw new Error('APPWRITE_API_KEY is required');
 
   const api = createApiClient({ endpoint, projectId, apiKey });

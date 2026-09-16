@@ -99,8 +99,9 @@ available in git if ever needed.
 
 ## Premium lesson permission cutover
 
-`check_premium_content_permissions.mjs` is dry-run only unless `--apply` is
-provided with an exact project confirmation. Run the phases in order:
+`check_premium_content_permissions.mjs` is hard-bound to the production
+Appwrite project and endpoint. It is dry-run only unless `--apply` is provided
+with an exact project confirmation. Run the phases in order:
 
 1. `node scripts/check_premium_content_permissions.mjs`
 2. `node scripts/check_premium_content_permissions.mjs --phase=rows`

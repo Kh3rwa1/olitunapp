@@ -249,7 +249,7 @@ test('rollback record contains permissions but no variables or secrets', () => {
       name: 'Lessons',
       rowSecurity: false,
       enabled: true,
-      $permissions: ['read("users")'],
+      $permissions: ['read("users")', 'write("team:admins")'],
     },
     plans: [
       {
@@ -261,6 +261,10 @@ test('rollback record contains permissions but no variables or secrets', () => {
     generatedAt: '2026-09-16T00:00:00.000Z',
   });
   assert.equal(record.rows[0].id, 'lesson-1');
+  assert.deepEqual(record.table.permissions, [
+    'read("users")',
+    'write("team:admins")',
+  ]);
   assert.equal(JSON.stringify(record).includes('APPWRITE_API_KEY'), false);
   assert.equal(JSON.stringify(record).includes('variables'), false);
 });

@@ -9,6 +9,7 @@ Developer scripts for database setup, data migration, and seeding.
 | `appwrite_setup.mjs` | Node.js | Creates Appwrite database, collections, attributes, indexes, and storage buckets |
 | `create_review_collection.mjs` | Node.js | Provisions and verifies Appwrite `review_states` table, columns, indexes, and row security |
 | `check_review_corpus_ids.mjs` | Node.js | Validates bundled corpus items and review ID migrations (`assets/seed/review_item_id_migrations.json`) |
+| `check_premium_content_permissions.mjs` | Node.js | Audits and stages the protected premium-lesson permission cutover |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
 | `appwrite_import.mjs` | Node.js | Imports a MySQL JSON snapshot into Appwrite collections with field mapping |
 | `post-merge.sh` | Bash | Post-merge setup hook |
@@ -96,3 +97,24 @@ node --test scripts/check_review_corpus_ids.test.mjs
 The pre-Appwrite Firebase seeding script (`seed_data.py`) was removed from
 the repository — the project no longer uses Firebase. History remains
 available in git if ever needed.
+
+## Premium lesson permission cutover
+
+`check_premium_content_permissions.mjs` is hard-bound to the production
+Appwrite project and endpoint. It is dry-run only unless `--apply` is provided
+with an exact project confirmation. Run the phases in order:
+
+1. `node scripts/check_premium_content_permissions.mjs`
+2. `node scripts/check_premium_content_permissions.mjs --phase=rows`
+3. Re-run phase 2 with `--apply --confirm-project=<project-id>`.
+4. After the authorization function and Flutter site are active from the same
+   protected-main commit, run `--phase=boundary --expected-release-commit=<sha>`.
+5. Apply the boundary only with both exact project and release confirmations.
+
+The boundary phase uses the active `deploymentId` (never a newer inactive
+preview), validates function variables and `appwrite.json`, verifies the
+private entitlement table and `lessons.isPreview`, then writes a local rollback
+record before enabling row security and removing broad table reads.
+
+Razorpay credentials are intentionally outside this migration's scope and are
+never read, created, changed, or written to its rollback record.

@@ -348,10 +348,15 @@ extension ContentItemToLegacy on ContentItem {
       categoryId: categoryId,
       titleOlChiki: titleOlChiki ?? '',
       titleLatin: title,
+      level: difficulty ?? 'beginner',
+      description: subtitle,
       order: order,
       estimatedMinutes: durationSeconds != null
           ? (durationSeconds! / 60).round()
           : 5,
+      isActive: isPublished,
+      isPreview: isPreview,
+      isLocked: isLocked,
       blocks: blocks.map((b) => b.toLessonBlockEntity()).toList(),
     );
   }

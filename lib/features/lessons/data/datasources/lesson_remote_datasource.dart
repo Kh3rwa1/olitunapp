@@ -1,7 +1,6 @@
 import 'dart:convert';
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
-import '../../../../core/api/appwrite_databases_pagination.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';
@@ -21,59 +20,108 @@ abstract class LessonRemoteDataSource {
 class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 6);
   static const Duration _writeTimeout = Duration(seconds: 15);
+  static const int _authorizedListPageSize = 100;
+  static const int _maxAuthorizedListPages = 100;
 
   final Databases databases;
   final AppwriteFunctionsService? functionsService;
 
   LessonRemoteDataSourceImpl(this.databases, {this.functionsService});
 
-  @override
-  Future<List<LessonModel>> getLessons() async {
-    try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
-      return documents
-          .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
-          .toList();
-    } on AppwriteException catch (e) {
+  Future<List<LessonModel>> _getAuthorizedLessonList({
+    String? categoryId,
+  }) async {
+    if (functionsService == null) {
       throw ServerException(
-        message: e.message ?? 'Failed to load lessons',
-        code: e.code,
+        message: 'Authorization service unavailable',
+        code: 503,
       );
-    } catch (e) {
-      throw ServerException(message: e.toString());
+    }
+
+    try {
+      final lessons = <LessonModel>[];
+      final seenLessonIds = <String>{};
+      final seenCursors = <String>{};
+      String? cursor;
+
+      for (var page = 0; page < _maxAuthorizedListPages; page++) {
+        final body = <String, dynamic>{
+          'action': 'list_lessons',
+          'limit': _authorizedListPageSize,
+          'categoryId': ?categoryId,
+          'cursor': ?cursor,
+        };
+        final result = await functionsService!.execute(
+          'getAuthorizedLesson',
+          body: body,
+          usePost: true,
+        );
+        final data = result.bodyJson;
+        if (!result.isCompleted ||
+            result.statusCode != 200 ||
+            data == null ||
+            data['ok'] != true ||
+            data['lessons'] is! List) {
+          throw ServerException(
+            message:
+                data?['message'] as String? ??
+                'Failed to load authorized lesson metadata',
+            code: result.statusCode,
+          );
+        }
+
+        for (final rawLesson in data['lessons'] as List) {
+          if (rawLesson is! Map) {
+            throw ServerException(
+              message: 'Malformed authorized lesson metadata',
+              code: 502,
+            );
+          }
+          final lessonMap = Map<String, dynamic>.from(rawLesson);
+          final lessonId = lessonMap['id'];
+          if (lessonId is! String ||
+              lessonId.isEmpty ||
+              !seenLessonIds.add(lessonId)) {
+            throw ServerException(
+              message: 'Malformed or duplicate lesson metadata',
+              code: 502,
+            );
+          }
+          lessons.add(LessonModel.fromJson(lessonMap, lessonId));
+        }
+
+        if (data['hasMore'] != true) return lessons;
+        final nextCursor = data['nextCursor'];
+        if (nextCursor is! String ||
+            nextCursor.isEmpty ||
+            !seenCursors.add(nextCursor)) {
+          throw ServerException(
+            message: 'Malformed lesson-list pagination cursor',
+            code: 502,
+          );
+        }
+        cursor = nextCursor;
+      }
+
+      throw ServerException(
+        message: 'Lesson list exceeded the safe pagination bound',
+        code: 502,
+      );
+    } on ServerException {
+      rethrow;
+    } catch (error) {
+      throw ServerException(
+        message: 'Failed to load authorized lesson metadata: $error',
+      );
     }
   }
 
   @override
-  Future<List<LessonModel>> getLessonsByCategory(String categoryId) async {
-    try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        queries: [
-          Query.equal('categoryId', categoryId),
-          Query.orderAsc('order'),
-          Query.limit(500),
-        ],
-      );
-      return documents
-          .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
-          .toList();
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to load lessons by category',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
+  Future<List<LessonModel>> getLessons() => _getAuthorizedLessonList();
+
+  @override
+  Future<List<LessonModel>> getLessonsByCategory(String categoryId) =>
+      _getAuthorizedLessonList(categoryId: categoryId);
 
   @override
   Future<LessonModel> getAuthorizedLesson(String id) async {

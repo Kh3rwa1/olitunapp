@@ -338,8 +338,14 @@ class ContentItemSerialization {
           true,
       isPremium:
           json['is_premium'] as bool? ?? json['isPremium'] as bool? ?? false,
+      isPreview:
+          json['isPreview'] as bool? ?? json['is_preview'] as bool? ?? false,
+      isLocked: json['isLocked'] as bool? ?? false,
+      accessReason: json['accessReason'] as String?,
       tags: parsedTags,
-      difficulty: json['difficulty'] as String?,
+      difficulty:
+          json['difficulty'] as String? ??
+          (parsedKind == ContentKind.lesson ? json['level'] as String? : null),
       durationSeconds:
           json['duration_seconds'] as int? ?? json['durationSeconds'] as int?,
       updatedAt: parsedUpdatedAt,
@@ -412,7 +418,7 @@ class ContentItemSerialization {
           if (item.categoryId.isNotEmpty) 'categoryId': item.categoryId,
           'titleOlChiki': resolvedTitleOlChiki,
           'titleLatin': item.title,
-          'level': 'beginner',
+          'level': item.difficulty ?? 'beginner',
           'description': item.subtitle ?? '',
           'order': item.order,
           'estimatedMinutes': item.durationSeconds != null
@@ -420,6 +426,7 @@ class ContentItemSerialization {
               : 5,
           'isActive': item.isPublished,
           'isPremium': item.isPremium,
+          'isPreview': item.isPreview,
           'thumbnailUrl': item.heroMedia?.url,
           'heroMediaUrl': item.heroMedia?.url,
           'heroMediaType': item.heroMedia?.kind.name,

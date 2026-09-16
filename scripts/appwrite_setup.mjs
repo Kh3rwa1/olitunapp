@@ -180,6 +180,7 @@ const collections = [
       { type: 'string', key: 'level', size: 20, required: false, default: 'beginner' },
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'boolean', key: 'isPreview', required: false, default: false },
       { type: 'integer', key: 'estimatedMinutes', required: false, default: 5 },
       { type: 'string', key: 'thumbnailUrl', size: 512, required: false },
       { type: 'string', key: 'heroMediaUrl', size: 1024, required: false },

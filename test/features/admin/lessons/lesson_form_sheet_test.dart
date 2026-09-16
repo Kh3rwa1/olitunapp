@@ -91,7 +91,7 @@ void main() {
       updatedAt: DateTime(2026),
     );
     when(
-      () => repo.get(ContentKind.lesson, 'lesson_1'),
+      () => repo.getForAdministration(ContentKind.lesson, 'lesson_1'),
     ).thenAnswer((_) async => Right(stored));
 
     await pumpOpener(
@@ -101,14 +101,16 @@ void main() {
     );
 
     expect(find.text('Edit Subcategory'), findsOneWidget);
-    verify(() => repo.get(ContentKind.lesson, 'lesson_1')).called(1);
+    verify(
+      () => repo.getForAdministration(ContentKind.lesson, 'lesson_1'),
+    ).called(1);
   });
 
   testWidgets('edit path falls back to legacy synthesis on repo failure', (
     tester,
   ) async {
     when(
-      () => repo.get(ContentKind.lesson, 'lesson_1'),
+      () => repo.getForAdministration(ContentKind.lesson, 'lesson_1'),
     ).thenAnswer((_) async => const Left(ServerFailure(message: 'offline')));
 
     await pumpOpener(

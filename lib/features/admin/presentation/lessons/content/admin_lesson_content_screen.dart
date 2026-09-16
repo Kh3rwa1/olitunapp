@@ -100,7 +100,10 @@ class _AdminLessonContentScreenState
   Future<void> _loadData() async {
     try {
       final repo = ref.read(contentRepositoryProvider);
-      final result = await repo.get(ContentKind.lesson, widget.lessonId);
+      final result = await repo.getForAdministration(
+        ContentKind.lesson,
+        widget.lessonId,
+      );
       result.fold(
         (failure) {
           if (mounted) context.go('/admin/lessons');

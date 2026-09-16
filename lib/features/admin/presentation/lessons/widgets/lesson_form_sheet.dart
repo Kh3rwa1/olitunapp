@@ -47,7 +47,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
     });
 
     final repo = ref.read(contentRepositoryProvider);
-    final res = await repo.get(ContentKind.lesson, l.id);
+    final res = await repo.getForAdministration(ContentKind.lesson, l.id);
 
     res.fold(
       (failure) {

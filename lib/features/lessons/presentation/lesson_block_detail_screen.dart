@@ -71,7 +71,12 @@ class _LessonBlockDetailScreenState
 
   void _playBlockAudioAtIndex(int index) {
     final lessons = ref.read(learnerLessonsProvider).valueOrNull ?? [];
-    final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+    var lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+    if (lesson != null && lesson.blocks.isEmpty) {
+      lesson = ref
+          .read(learnerLessonDetailProvider(widget.lessonId))
+          .valueOrNull;
+    }
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
       final block = lesson.blocks[index];
       final audioUrl = block.audioUrl;
@@ -181,10 +186,10 @@ class _LessonBlockDetailScreenState
         ),
       ),
       data: (lessons) {
-        final lesson = lessons
+        final listedLesson = lessons
             .where((l) => l.id == widget.lessonId)
             .firstOrNull;
-        if (lesson == null) {
+        if (listedLesson == null) {
           return Scaffold(
             backgroundColor: isDark
                 ? AppColors.quizDarkBackground
@@ -196,6 +201,31 @@ class _LessonBlockDetailScreenState
             ),
           );
         }
+
+        // Authorized catalog responses intentionally contain metadata only.
+        // Hydrate the selected lesson before rendering, while keeping bundled
+        // full-body lessons usable for secure offline fallback.
+        final lessonDetailAsync = listedLesson.blocks.isEmpty
+            ? ref.watch(learnerLessonDetailProvider(widget.lessonId))
+            : null;
+        final hydratedLesson = lessonDetailAsync?.valueOrNull;
+        if (listedLesson.blocks.isEmpty && hydratedLesson == null) {
+          return Scaffold(
+            backgroundColor: isDark
+                ? AppColors.quizDarkBackground
+                : Colors.white,
+            body: lessonDetailAsync?.hasError == true
+                ? DetailLoadErrorBlock(
+                    title: 'Could not load lesson details',
+                    isDark: isDark,
+                    onBack: () => context.canPop()
+                        ? context.pop()
+                        : context.go('/'),
+                  )
+                : const Center(child: CircularProgressIndicator()),
+          );
+        }
+        final lesson = hydratedLesson ?? listedLesson;
 
         // The category list derives lock state from the category-scoped
         // query. This screen must use that same source: the scoped and

@@ -99,13 +99,18 @@ async function loadCategoryMap({ databases, databaseId, categoryId }) {
   );
 }
 
-async function loadPurchasesByCategory({ databases, databaseId, callerUserId }) {
+async function loadPurchasesByCategory({
+  databases,
+  databaseId,
+  callerUserId,
+  purchasesCollectionId,
+}) {
   if (!callerUserId) return new Map();
 
   const purchases = await listAllByCursor({
     databases,
     databaseId,
-    collectionId: 'course_purchases',
+    collectionId: purchasesCollectionId,
     baseQueries: [Query.equal('userId', callerUserId)],
   });
   const byCategory = new Map();
@@ -144,6 +149,8 @@ export async function listAuthorizedLessons({
   databaseId,
   callerUserId,
   body,
+  lessonsCollectionId = 'lessons',
+  purchasesCollectionId = 'course_purchases',
   evaluateAccess,
   onEntitlementError = () => {},
 }) {
@@ -157,7 +164,7 @@ export async function listAuthorizedLessons({
   if (cursor) queries.push(Query.cursorAfter(cursor));
 
   const [lessonResult, categories] = await Promise.all([
-    databases.listDocuments(databaseId, 'lessons', queries),
+    databases.listDocuments(databaseId, lessonsCollectionId, queries),
     loadCategoryMap({ databases, databaseId, categoryId }),
   ]);
   const lessonDocuments = Array.isArray(lessonResult.documents)
@@ -171,6 +178,7 @@ export async function listAuthorizedLessons({
         databases,
         databaseId,
         callerUserId,
+        purchasesCollectionId,
       });
     } catch (_) {
       onEntitlementError();

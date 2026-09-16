@@ -300,6 +300,9 @@ export function createGetAuthorizedLessonHandler({
     // Dynamic function keys are delivered in the runtime request header.
     const apiKey = req.headers['x-appwrite-key'] || process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
     const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
+    const lessonsCollectionId = process.env.LESSONS_COLLECTION_ID || 'lessons';
+    const purchasesCollectionId =
+      process.env.COURSE_PURCHASES_COLLECTION_ID || 'course_purchases';
     const paidMediaBucketId = process.env.PAID_MEDIA_BUCKET_ID || 'paid_media';
 
     let databases = customDatabases;
@@ -328,6 +331,8 @@ export function createGetAuthorizedLessonHandler({
           databaseId,
           callerUserId,
           body,
+          lessonsCollectionId,
+          purchasesCollectionId,
           evaluateAccess: evaluateLessonAccess,
           onEntitlementError: () => error('Failed to query lesson-list entitlements'),
         });
@@ -362,7 +367,7 @@ export function createGetAuthorizedLessonHandler({
 
     let lessonDoc;
     try {
-      lessonDoc = await databases.getDocument(databaseId, 'lessons', lessonId);
+      lessonDoc = await databases.getDocument(databaseId, lessonsCollectionId, lessonId);
     } catch (err) {
       if (err.code === 404) {
         return res.json({ ok: false, error: 'lesson_not_found', message: 'Lesson not found' }, 404);
@@ -396,7 +401,7 @@ export function createGetAuthorizedLessonHandler({
     let purchases = [];
     if (callerUserId) {
       try {
-        const purchaseResult = await databases.listDocuments(databaseId, 'course_purchases', [
+        const purchaseResult = await databases.listDocuments(databaseId, purchasesCollectionId, [
           Query.equal('userId', callerUserId),
           Query.equal('categoryId', lessonDoc.categoryId),
           Query.limit(10),
@@ -503,6 +508,7 @@ export function createGetAuthorizedLessonHandler({
           isActive: lessonDoc.isActive !== false,
           isPreview: lessonDoc.isPreview === true,
           isLocked: true,
+          accessReason: accessDecision.reason,
           blocks: [], // Content body stripped for locked lessons
         },
       });
@@ -524,6 +530,7 @@ export function createGetAuthorizedLessonHandler({
         isActive: lessonDoc.isActive !== false,
         isPreview: lessonDoc.isPreview === true,
         isLocked: false,
+        accessReason: accessDecision.reason,
         data: scopeLessonMedia(parsedData, lessonId, paidMediaBucketId),
         blocks: scopeLessonMedia(Array.isArray(parsedBlocks) ? parsedBlocks : [], lessonId, paidMediaBucketId),
         thumbnailUrl: scopeLessonMedia(lessonDoc.thumbnailUrl, lessonId, paidMediaBucketId),

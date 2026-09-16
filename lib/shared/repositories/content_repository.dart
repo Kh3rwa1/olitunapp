@@ -88,6 +88,25 @@ class ContentRepository {
     return 'content_item_${kind.name}_$id';
   }
 
+  String _administrationCacheItemKey(ContentKind kind, String id) {
+    if (kind == ContentKind.lesson) {
+      return 'content_admin_item_${kind.name}_$id';
+    }
+    return _cacheItemKey(kind, id);
+  }
+
+  Future<void> _cacheAdministrationItem(ContentItem item) async {
+    await CacheService.set(
+      _administrationCacheItemKey(item.kind, item.id),
+      item.toJson(),
+    );
+    if (item.kind == ContentKind.lesson) {
+      // Remove the pre-cutover body cache. Learner reads never consult either
+      // item cache, but deleting the legacy key prevents accidental reuse.
+      await CacheService.delete(_cacheItemKey(item.kind, item.id));
+    }
+  }
+
   ContentItem _parseAuthorizedLesson(
     Map<String, dynamic> rawLesson,
     String lessonId,
@@ -99,7 +118,7 @@ class ContentRepository {
       normalized['durationSeconds'] = (estimatedMinutes * 60).round();
     }
     normalized['isPublished'] = normalized['isActive'] != false;
-    normalized['isPremium'] = normalized['isLocked'] == true;
+    normalized['isPremium'] = normalized['isPremium'] == true;
     return ContentItem.fromJson(normalized, lessonId, ContentKind.lesson);
   }
 
@@ -193,6 +212,8 @@ class ContentRepository {
           data['ok'] == true &&
           data['lesson'] is Map) {
         final lessonMap = Map<String, dynamic>.from(data['lesson'] as Map);
+        lessonMap['isLocked'] ??= data['locked'] == true;
+        lessonMap['accessReason'] ??= data['accessReason'] ?? data['reason'];
         final lessonId = lessonMap['id'];
         if (lessonId is! String || lessonId.isEmpty || lessonId != id) {
           return left(
@@ -268,11 +289,12 @@ class ContentRepository {
         // Authorized lesson metadata intentionally overrides bundled lesson
         // bodies with body-free, server-authoritative lock state.
         final mergedItems = _mergeContentItems(bundledItems, remoteItems);
-        final cachedData = mergedItems.map((item) => item.toJson()).toList();
-        await CacheService.set(cacheKey, cachedData);
-
-        for (final item in mergedItems) {
-          await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
+        if (kind != ContentKind.lesson) {
+          final cachedData = mergedItems.map((item) => item.toJson()).toList();
+          await CacheService.set(cacheKey, cachedData);
+          for (final item in mergedItems) {
+            await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
+          }
         }
 
         return right(mergedItems);
@@ -292,33 +314,35 @@ class ContentRepository {
     List<ContentItem>? fallback,
   }) async {
     try {
-      final cacheKey = _cacheListKey(kind, categoryId);
-      final cached = await CacheService.getList<ContentItem>(
-        cacheKey,
-        (data) => ContentItem.fromJson(data, null, kind),
-      );
-
       final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);
 
+      if (kind == ContentKind.lesson) {
+        // Legacy lesson caches were account-agnostic and could contain paid
+        // bodies or another account's lock decision. Bundled assets are part
+        // of the application binary and therefore already public; they are the
+        // only safe offline lesson fallback.
+        if (bundled.isNotEmpty) return right(bundled);
+        return left(
+          const CacheFailure(
+            message: 'No safely bundled lesson content is available offline.',
+          ),
+        );
+      }
+
+      final cached = await CacheService.getList<ContentItem>(
+        _cacheListKey(kind, categoryId),
+        (data) => ContentItem.fromJson(data, null, kind),
+      );
       if (cached != null && cached.isNotEmpty) {
-        final merged = _mergeContentItems(bundled, cached);
-        return right(merged);
+        return right(_mergeContentItems(bundled, cached));
       }
-
-      if (bundled.isNotEmpty) {
-        return right(bundled);
-      }
-
-      // No cached, bundled, or remotely fetched data is available: surface the
-      // failure so the UI can show its error state instead of fabricated items.
+      if (bundled.isNotEmpty) return right(bundled);
       return left(
         CacheFailure(message: 'No offline content available for ${kind.name}.'),
       );
     } catch (e) {
       final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);
-      if (bundled.isNotEmpty) {
-        return right(bundled);
-      }
+      if (bundled.isNotEmpty) return right(bundled);
       return left(
         CacheFailure(
           message: 'Offline content unavailable for ${kind.name}: $e',
@@ -340,7 +364,6 @@ class ContentRepository {
     String id,
   ) async {
     final collectionId = _getCollectionId(kind);
-    final cacheKey = _cacheItemKey(kind, id);
 
     if (await _networkInfo.isConnected) {
       try {
@@ -351,7 +374,7 @@ class ContentRepository {
         );
 
         final item = ContentItem.fromJson(doc.data, doc.$id, kind);
-        await CacheService.set(cacheKey, item.toJson());
+        await _cacheAdministrationItem(item);
 
         return right(item);
       } catch (e) {
@@ -367,7 +390,7 @@ class ContentRepository {
     String id,
   ) async {
     try {
-      final cacheKey = _cacheItemKey(kind, id);
+      final cacheKey = _administrationCacheItemKey(kind, id);
       final cached = await CacheService.get<ContentItem>(
         cacheKey,
         (data) => ContentItem.fromJson(data, null, kind),
@@ -453,7 +476,6 @@ class ContentRepository {
     }
 
     final collectionId = _getCollectionId(item.kind);
-    final itemCacheKey = _cacheItemKey(item.kind, item.id);
 
     if (await _networkInfo.isConnected) {
       try {
@@ -488,7 +510,7 @@ class ContentRepository {
           }
         }
 
-        await CacheService.set(itemCacheKey, resultItem.toJson());
+        await _cacheAdministrationItem(resultItem);
         // Evict the cached list to force refresh
         await CacheService.delete(_cacheListKey(item.kind, item.categoryId));
         await CacheService.delete(_cacheListKey(item.kind, null));
@@ -507,7 +529,7 @@ class ContentRepository {
       try {
         // The outbox is authoritative. Cache writes are only an optimistic view.
         await _enqueueOfflineMutation(item);
-        await CacheService.set(itemCacheKey, item.toJson());
+        await _cacheAdministrationItem(item);
         await CacheService.delete(_cacheListKey(item.kind, item.categoryId));
         await CacheService.delete(_cacheListKey(item.kind, null));
         return right(item);
@@ -542,7 +564,7 @@ class ContentRepository {
   /// Deletes a content item.
   Future<Either<Failure, Unit>> delete(ContentKind kind, String id) async {
     final collectionId = _getCollectionId(kind);
-    final itemCacheKey = _cacheItemKey(kind, id);
+    final itemCacheKey = _administrationCacheItemKey(kind, id);
 
     if (await _networkInfo.isConnected) {
       try {
@@ -558,6 +580,9 @@ class ContentRepository {
         );
 
         await CacheService.delete(itemCacheKey);
+        if (kind == ContentKind.lesson) {
+          await CacheService.delete(_cacheItemKey(kind, id));
+        }
         if (categoryId != null) {
           await CacheService.delete(_cacheListKey(kind, categoryId));
         }

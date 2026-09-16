@@ -22,6 +22,12 @@ import {
   REVIEW_SCHEMA_LIMITS,
 } from '../functions/mutateReviewState/src/review_schema_contract.js';
 import { rowIdFor } from '../functions/mutateReviewState/src/main.js';
+import {
+  assertReleasePreflight,
+  createApiClient,
+  loadReleasePreflight,
+} from './check_premium_content_permissions.mjs';
+import { readFileSync } from 'node:fs';
 
 function getApiKey() {
   if (process.env.APPWRITE_API_KEY) return process.env.APPWRITE_API_KEY.trim();
@@ -91,6 +97,24 @@ async function main() {
     console.log(`  ✓ Execution role: ${JSON.stringify(fn.execute)}`);
     console.log(`  ✓ Scopes: ${JSON.stringify(fn.scopes)}`);
     console.log(`  ✓ Latest deployment: ${fn.latestDeploymentId} (status: ${fn.latestDeploymentStatus})`);
+
+    const expectedReleaseCommit = process.env.EXPECTED_RELEASE_COMMIT?.trim();
+    if (expectedReleaseCommit) {
+      console.log('  • Verifying active authorization-function and site provenance...');
+      const manifest = JSON.parse(
+        readFileSync(new URL('../appwrite.json', import.meta.url), 'utf8'),
+      );
+      const preflightApi = createApiClient({
+        endpoint: ENDPOINT,
+        projectId: PROJECT_ID,
+        apiKey,
+      });
+      const preflight = await loadReleasePreflight(preflightApi, manifest);
+      assertReleasePreflight(preflight, manifest, expectedReleaseCommit);
+      console.log('  ✓ Active authorization function and Flutter site match the release commit');
+    } else {
+      console.log('  • Release provenance skipped; set EXPECTED_RELEASE_COMMIT to enforce it');
+    }
 
     // 3. Unauthenticated Execution Rejection
     console.log('\n[3/6] Testing unauthenticated execution rejection...');

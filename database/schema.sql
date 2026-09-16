@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `lessons` (
   `level` enum('beginner','intermediate','advanced') NOT NULL DEFAULT 'beginner',
   `order_index` int(11) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `is_preview` tinyint(1) NOT NULL DEFAULT 0,
   `estimated_minutes` int(11) DEFAULT 5,
   `description` text,
   `thumbnail_url` varchar(255) DEFAULT NULL,

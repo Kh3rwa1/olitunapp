@@ -9,7 +9,7 @@ import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 
-class _MockDatabases extends Mock implements Databases {}
+class _MockDatabases extends Mock implements TablesDB {}
 
 class _MockNetworkInfo extends Mock implements NetworkInfo {}
 
@@ -30,10 +30,10 @@ void main() {
   });
 
   test('cachedList never checks connectivity or calls Appwrite', () async {
-    final databases = _MockDatabases();
+    final tablesDB = _MockDatabases();
     final network = _MockNetworkInfo();
     final repository = ContentRepository(
-      databases: databases,
+      tablesDB: tablesDB,
       networkInfo: network,
     );
     final item = ContentItem(
@@ -63,7 +63,7 @@ void main() {
         isTrue,
       ),
     );
-    verifyZeroInteractions(databases);
+    verifyZeroInteractions(tablesDB);
     verifyZeroInteractions(network);
   });
 }

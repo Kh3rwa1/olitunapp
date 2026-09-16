@@ -18,7 +18,7 @@ final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
   final client = ref.watch(appwriteAuthServiceProvider).client;
   final functions = ref.watch(appwriteFunctionsServiceProvider);
   return LessonRemoteDataSourceImpl(
-    Databases(client),
+    TablesDB(client),
     functionsService: functions,
   );
 });

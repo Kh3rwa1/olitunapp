@@ -1,9 +1,8 @@
-// ignore_for_file: deprecated_member_use
 // This collection stores categories for the Learn home tab only
 // (Alphabets, Numbers, Vocabulary, Sentences, Greetings).
 //
 // Bakhed (rhymes/stories) categories are NOT stored here — they live as
-// string fields directly on rhyme documents in the `rhymes` collection.
+// string fields directly on rhyme rows in the `rhymes` collection.
 // See `RhymeModel.category` and `rhymeCategoriesProvider`.
 //
 // DO NOT add Bakhed-only categories to this collection. They will leak
@@ -26,21 +25,21 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 6);
   static const Duration _writeTimeout = Duration(seconds: 15);
 
-  final Databases databases;
+  final TablesDB tablesDB;
 
-  CategoryRemoteDataSourceImpl(this.databases);
+  CategoryRemoteDataSourceImpl(this.tablesDB);
 
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
+      final rows = await AppwriteDatabasesPagination.listRows(
+        tablesDB,
         databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
+        tableId: 'categories',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      return documents
-          .map((doc) => CategoryModel.fromJson(doc.data, doc.$id))
+      return rows
+          .map((row) => CategoryModel.fromJson(row.data, row.$id))
           .toList();
     } on AppwriteException catch (e) {
       throw ServerException(
@@ -55,14 +54,14 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<CategoryModel> getCategoryById(String id) async {
     try {
-      final doc = await databases
-          .getDocument(
+      final row = await tablesDB
+          .getRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: id,
+            tableId: 'categories',
+            rowId: id,
           )
           .timeout(_readTimeout);
-      return CategoryModel.fromJson(doc.data, doc.$id);
+      return CategoryModel.fromJson(row.data, row.$id);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to get category',
@@ -78,11 +77,11 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
     try {
       final data = category.toJson()..remove('id');
       data.removeWhere((key, value) => value == null);
-      await databases
-          .createDocument(
+      await tablesDB
+          .createRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: category.id,
+            tableId: 'categories',
+            rowId: category.id,
             data: data,
             permissions: [Permission.read(Role.any())],
           )
@@ -102,11 +101,11 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
     try {
       final data = category.toJson()..remove('id');
       data.removeWhere((key, value) => value == null);
-      await databases
-          .updateDocument(
+      await tablesDB
+          .updateRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: category.id,
+            tableId: 'categories',
+            rowId: category.id,
             data: data,
           )
           .timeout(_writeTimeout);
@@ -123,11 +122,11 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<void> deleteCategory(String id) async {
     try {
-      await databases
-          .deleteDocument(
+      await tablesDB
+          .deleteRow(
             databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            documentId: id,
+            tableId: 'categories',
+            rowId: id,
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

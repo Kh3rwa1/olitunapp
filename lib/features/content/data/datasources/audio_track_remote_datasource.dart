@@ -37,9 +37,9 @@ abstract class AudioTrackRemoteDataSource {
 class AudioTrackRemoteDataSourceImpl implements AudioTrackRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 8);
 
-  final Databases databases;
+  final TablesDB tablesDB;
 
-  AudioTrackRemoteDataSourceImpl(this.databases);
+  AudioTrackRemoteDataSourceImpl(this.tablesDB);
 
   @override
   Future<List<AudioTrackModel>> getAllTracks({
@@ -98,14 +98,14 @@ class AudioTrackRemoteDataSourceImpl implements AudioTrackRemoteDataSource {
 
   Future<List<AudioTrackModel>> _list(List<String> Function() queries) async {
     try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
+      final rows = await AppwriteDatabasesPagination.listRows(
+        tablesDB,
         databaseId: AppwriteConfig.databaseId,
-        collectionId: 'audio_tracks',
+        tableId: 'audio_tracks',
         queries: queries(),
       ).timeout(_readTimeout);
-      return documents
-          .map((doc) => AudioTrackModel.fromJson(doc.data, doc.$id))
+      return rows
+          .map((row) => AudioTrackModel.fromJson(row.data, row.$id))
           .toList();
     } on AppwriteException catch (e) {
       throw ServerException(

@@ -19,27 +19,27 @@ abstract class StorySegmentRemoteDataSource {
 class StorySegmentRemoteDataSourceImpl implements StorySegmentRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 8);
 
-  final Databases databases;
+  final TablesDB tablesDB;
 
-  StorySegmentRemoteDataSourceImpl(this.databases);
+  StorySegmentRemoteDataSourceImpl(this.tablesDB);
 
   @override
   Future<List<StorySegmentModel>> getSegmentsForStory(String storyId) async {
     final trimmed = storyId.trim();
     if (trimmed.isEmpty) return const <StorySegmentModel>[];
     try {
-      final documents = await AppwriteDatabasesPagination.listDocuments(
-        databases,
+      final rows = await AppwriteDatabasesPagination.listRows(
+        tablesDB,
         databaseId: AppwriteConfig.databaseId,
-        collectionId: 'story_segments',
+        tableId: 'story_segments',
         queries: [
           Query.equal('storyId', trimmed),
           Query.orderAsc('order'),
           Query.limit(500),
         ],
       ).timeout(_readTimeout);
-      return documents
-          .map((doc) => StorySegmentModel.fromJson(doc.data, doc.$id))
+      return rows
+          .map((row) => StorySegmentModel.fromJson(row.data, row.$id))
           .where((segment) => segment.storyId == trimmed)
           .toList();
     } on AppwriteException catch (e) {

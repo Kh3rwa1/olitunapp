@@ -1,11 +1,16 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 
 import 'appwrite_query_paging.dart';
 
+/// Pagination helper for Appwrite's TablesDB row API.
+///
+/// Uses `TablesDB.listRows` (the `/tablesdb/.../rows` endpoints) rather than
+/// the deprecated `Databases.listDocuments` API, which Appwrite deprecated in
+/// 1.8.0. `total: true` must be requested explicitly — the rows endpoint does
+/// not return a total by default, and without it the pagination loop below
+/// would stop after a single page.
 class AppwriteDatabasesPagination {
   const AppwriteDatabasesPagination._();
 
@@ -42,10 +47,10 @@ class AppwriteDatabasesPagination {
     }
   }
 
-  static Future<List<models.Document>> listDocuments(
-    Databases databases, {
+  static Future<List<models.Row>> listRows(
+    TablesDB tablesDB, {
     required String databaseId,
-    required String collectionId,
+    required String tableId,
     List<String>? queries,
     bool paginate = true,
     int pageSize = AppwriteQueryPaging.defaultPageSize,
@@ -55,10 +60,10 @@ class AppwriteDatabasesPagination {
 
     if (!paginate || AppwriteQueryPaging.containsManualPagination(queries)) {
       final result = await _retryWithBackoff(
-        () => databases
-            .listDocuments(
+        () => tablesDB
+            .listRows(
               databaseId: databaseId,
-              collectionId: collectionId,
+              tableId: tableId,
               queries: AppwriteQueryPaging.queriesWithDefaultLimit(
                 queries,
                 pageSize,
@@ -66,36 +71,37 @@ class AppwriteDatabasesPagination {
             )
             .timeout(timeout),
       );
-      return result.documents;
+      return result.rows;
     }
 
     final baseQueries = AppwriteQueryPaging.withoutPaginationQueries(queries);
-    final documents = <models.Document>[];
+    final rows = <models.Row>[];
     var offset = 0;
     var total = 0;
 
     do {
       final result = await _retryWithBackoff(
-        () => databases
-            .listDocuments(
+        () => tablesDB
+            .listRows(
               databaseId: databaseId,
-              collectionId: collectionId,
+              tableId: tableId,
               queries: AppwriteQueryPaging.pagedQueries(
                 baseQueries,
                 limit: pageSize,
                 offset: offset,
               ),
+              total: true,
             )
             .timeout(timeout),
       );
 
       total = result.total;
-      documents.addAll(result.documents);
+      rows.addAll(result.rows);
 
-      if (result.documents.length < pageSize) break;
-      offset += result.documents.length;
-    } while (documents.length < total);
+      if (result.rows.length < pageSize) break;
+      offset += result.rows.length;
+    } while (rows.length < total);
 
-    return documents;
+    return rows;
   }
 }

@@ -35,6 +35,8 @@ jobs:
         run: node scripts/check_color_literals.mjs
       - name: Enforce Sheets-Above-Nav Gate
         run: node scripts/check_sheets_above_nav.mjs
+      - name: Enforce Architecture Boundaries Gate
+        run: node scripts/check_architecture_boundaries.mjs
       - name: Enforce Localization Key Parity Gate
         run: node scripts/check_l10n_parity.mjs
       - name: Enforce Review Corpus ID Integrity

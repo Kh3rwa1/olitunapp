@@ -444,7 +444,9 @@
         "databases.read",
         "databases.write",
         "documents.read",
-        "documents.write"
+        "documents.write",
+        "files.read",
+        "files.write"
       ]
     },
     {

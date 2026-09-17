@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../core/theme/app_spacing.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Keeps the entire draft visible; users choose what to send, never a substring
 /// silently selected by the app.
@@ -34,6 +35,7 @@ class _StudioPassageDialogState extends State<StudioPassageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final length = _controller.text.trim().runes.length;
     return AlertDialog(
       title: Text(widget.title),
@@ -44,10 +46,7 @@ class _StudioPassageDialogState extends State<StudioPassageDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Choose or edit a passage of up to ${widget.limit} characters. '
-                'Your original result will stay unchanged.',
-              ),
+              Text(l10n.aiStudioPassageNote(widget.limit)),
               AppSpacing.gapH16,
               TextField(
                 key: const Key('studio-passage'),
@@ -58,11 +57,11 @@ class _StudioPassageDialogState extends State<StudioPassageDialog> {
                 maxLengthEnforcement: MaxLengthEnforcement.none,
                 onChanged: (_) => setState(() {}),
                 decoration: InputDecoration(
-                  labelText: 'Passage to send',
+                  labelText: l10n.aiStudioPassageToSend,
                   alignLabelWithHint: true,
                   counterText: '$length / ${widget.limit}',
                   errorText: length > widget.limit
-                      ? 'Shorten the passage to continue. Nothing is truncated.'
+                      ? l10n.aiStudioPassageLimitError
                       : null,
                   errorMaxLines: 3,
                   border: const OutlineInputBorder(),
@@ -75,7 +74,7 @@ class _StudioPassageDialogState extends State<StudioPassageDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
           onPressed: length > 0 && length <= widget.limit

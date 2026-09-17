@@ -10,6 +10,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/sharing/growth_share_service.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
 import '../data/studio_recorder.dart';
@@ -23,6 +24,12 @@ enum _Tool {
   const _Tool(this.label, this.icon);
   final String label;
   final IconData icon;
+
+  String localizedLabel(AppLocalizations l10n) => switch (this) {
+    _Tool.transcribe => l10n.aiStudioToolTranscribe,
+    _Tool.translate => l10n.aiStudioToolTranslate,
+    _Tool.scan => l10n.aiStudioToolScan,
+  };
 }
 
 class _Draft {
@@ -321,13 +328,14 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final service = ref.watch(aiStudioServiceProvider);
     ref.listen(aiStudioServiceProvider, (previous, next) {
       if (previous != null && !identical(previous, next)) _resetSession();
     });
     final colors = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('AI Studio')),
+      appBar: AppBar(title: Text(l10n.aiStudioTitle)),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: ResponsiveLayout.pagePadding(context),
@@ -337,12 +345,11 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _header(),
+                  _header(l10n),
                   AppSpacing.gapH24,
                   if (!service.configured) ...[
                     _notice(
-                      'AI processing is not available in this build. You can prepare '
-                      'text here or use the free script converter below.',
+                      l10n.aiStudioNotConfigured,
                       icon: Icons.cloud_off_outlined,
                     ),
                     AppSpacing.gapH16,
@@ -355,7 +362,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                         ChoiceChip(
                           key: Key('tool-${tool.name}'),
                           avatar: Icon(tool.icon, size: 20),
-                          label: Text(tool.label),
+                          label: Text(tool.localizedLabel(l10n)),
                           selected: _tool == tool,
                           padding: AppSpacing.edgeInsetsMd,
                           onSelected: (_) => _selectTool(tool),
@@ -365,8 +372,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                   AppSpacing.gapH24,
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      final input = _inputPanel(service.configured);
-                      final output = _resultPanel();
+                      final input = _inputPanel(service.configured, l10n);
+                      final output = _resultPanel(l10n);
                       // Stack sooner with larger text so both editors stay usable.
                       final wide =
                           constraints.maxWidth >= 900 &&
@@ -390,12 +397,11 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                   TextButton.icon(
                     onPressed: () => context.push('/translate'),
                     icon: const Icon(Icons.swap_horiz_rounded),
-                    label: const Text('Looking for the free script converter?'),
+                    label: Text(l10n.aiStudioLookingForConverter),
                   ),
                   AppSpacing.gapH8,
                   Text(
-                    'AI Studio controls are currently in English. AI results can '
-                    'contain mistakes; review names, numbers and spelling before use.',
+                    l10n.aiStudioDisclaimer,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),
@@ -411,7 +417,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     );
   }
 
-  Widget _header() {
+  Widget _header(AppLocalizations l10n) {
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: AppSpacing.edgeInsetsXxl,
@@ -425,15 +431,14 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           Icon(Icons.auto_awesome_outlined, color: colors.onPrimaryContainer),
           AppSpacing.gapH12,
           Text(
-            'From a page or a voice\nto words you can use.',
+            l10n.aiStudioHeadline,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: colors.onPrimaryContainer,
             ),
           ),
           AppSpacing.gapH12,
           Text(
-            'Translate text, transcribe a short recording, or scan a document. '
-            'Review the result before taking it anywhere.',
+            l10n.aiStudioSubhead,
             style: Theme.of(
               context,
             ).textTheme.bodyLarge?.copyWith(color: colors.onPrimaryContainer),
@@ -444,9 +449,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             runSpacing: AppSpacing.sm,
             children: [
               for (final label in [
-                '1  Add input',
-                '2  Process with consent',
-                '3  Review & use',
+                l10n.aiStudioStep1,
+                l10n.aiStudioStep2,
+                l10n.aiStudioStep3,
               ])
                 Text(label, style: TextStyle(color: colors.onPrimaryContainer)),
             ],
@@ -515,7 +520,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     );
   }
 
-  Widget _inputPanel(bool configured) {
+  Widget _inputPanel(bool configured, AppLocalizations l10n) {
     final draft = _draft;
     final locked = draft.busy || draft.selecting || _recording;
     final scanPending =
@@ -523,21 +528,21 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     final languages = studioLanguages.entries.where(
       (entry) => _tool != _Tool.translate || entry.key != 'sat-IN',
     );
+    final panelTitle = switch (_tool) {
+      _Tool.translate => l10n.aiStudioYourText,
+      _Tool.transcribe => l10n.aiStudioYourAudio,
+      _Tool.scan => l10n.aiStudioYourDocument,
+    };
     return _panel(
-      title:
-          'Your ${_tool == _Tool.translate
-              ? 'text'
-              : _tool == _Tool.transcribe
-              ? 'audio'
-              : 'document'}',
+      title: panelTitle,
       children: [
         DropdownButtonFormField<String>(
           key: ValueKey('language-${_tool.name}-${draft.language}'),
           initialValue: draft.language,
           isExpanded: true,
-          decoration: const InputDecoration(
-            labelText: 'Source language',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.aiStudioSourceLanguage,
+            border: const OutlineInputBorder(),
           ),
           items: [
             for (final entry in languages)
@@ -556,9 +561,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         ),
         AppSpacing.gapH16,
         if (_tool == _Tool.translate) ...[
-          const Text(
-            'Translate into Santali (Ol Chiki). Up to 2,000 characters.',
-          ),
+          Text(l10n.aiStudioTranslateNote),
           AppSpacing.gapH12,
           TextField(
             key: const Key('studio-source'),
@@ -570,21 +573,18 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             maxLengthEnforcement: MaxLengthEnforcement.none,
             onChanged: (_) => setState(() => draft.consent = false),
             decoration: InputDecoration(
-              labelText: 'Text to translate',
+              labelText: l10n.aiStudioTextToTranslate,
               alignLabelWithHint: true,
-              hintText: 'Type or paste your text',
+              hintText: l10n.aiStudioTextPlaceholder,
               border: const OutlineInputBorder(),
               errorText: _source.text.trim().runes.length > 2000
-                  ? 'Choose a passage of 2,000 characters or fewer.'
+                  ? l10n.aiStudioTextLimitError
                   : null,
               errorMaxLines: 3,
             ),
           ),
         ] else if (_tool == _Tool.transcribe) ...[
-          const Text(
-            'Speak normally. Recording stops automatically at 30 seconds. '
-            'You can also upload a WAV file instead.',
-          ),
+          Text(l10n.aiStudioSpeakNote),
           AppSpacing.gapH16,
           FilledButton.icon(
             key: const Key('studio-record'),
@@ -592,23 +592,20 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             icon: const Icon(Icons.mic_rounded),
             label: Text(
               _recording
-                  ? 'Stop recording · ${_recordingSeconds.toString().padLeft(2, '0')}s'
-                  : 'Record voice',
+                  ? l10n.aiStudioStopRecording(
+                      _recordingSeconds.toString().padLeft(2, '0'),
+                    )
+                  : l10n.aiStudioRecordVoice,
             ),
           ),
           if (_recording) ...[
             AppSpacing.gapH8,
-            Semantics(
-              liveRegion: true,
-              child: const Text(
-                'Listening… Tap Stop recording when you are done.',
-              ),
-            ),
+            Semantics(liveRegion: true, child: Text(l10n.aiStudioListening)),
           ],
           AppSpacing.gapH16,
           const Divider(),
           AppSpacing.gapH12,
-          const Text('Or use an existing recording'),
+          Text(l10n.aiStudioOrExistingRecording),
           AppSpacing.gapH8,
           if (draft.input != null) ...[
             _notice(draft.input!.name, icon: Icons.audiotrack_outlined),
@@ -620,16 +617,14 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             icon: const Icon(Icons.upload_file_outlined),
             label: Text(
               draft.selecting
-                  ? 'Opening…'
+                  ? l10n.aiStudioOpening
                   : draft.input == null
-                  ? 'Upload WAV file'
-                  : 'Replace recording',
+                  ? l10n.aiStudioUploadWav
+                  : l10n.aiStudioReplaceRecording,
             ),
           ),
         ] else ...[
-          const Text(
-            'PDF, PNG or JPG · up to 10 MB and 10 pages\nUse a clear, upright page with readable text.',
-          ),
+          Text(l10n.aiStudioDocNote),
           AppSpacing.gapH16,
           if (draft.input != null) ...[
             _notice(draft.input!.name, icon: Icons.insert_drive_file_outlined),
@@ -645,19 +640,20 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 icon: const Icon(Icons.upload_file_outlined),
                 label: Text(
                   draft.selecting
-                      ? 'Opening…'
+                      ? l10n.aiStudioOpening
                       : draft.input == null
-                      ? 'Choose file'
-                      : 'Replace file',
+                      ? l10n.aiStudioChooseFile
+                      : l10n.aiStudioReplaceFile,
                 ),
               ),
               if (_tool == _Tool.scan)
                 OutlinedButton.icon(
+                  key: const Key('studio-camera'),
                   onPressed: locked || scanPending
                       ? null
                       : () => _pick(camera: true),
                   icon: const Icon(Icons.camera_alt_outlined),
-                  label: const Text('Capture page'),
+                  label: Text(l10n.aiStudioCapturePage),
                 ),
             ],
           ),
@@ -676,12 +672,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             onChanged: locked || scanPending
                 ? null
                 : (value) => setState(() => draft.consent = value ?? false),
-            title: const Text('I agree to paid AI processing'),
-            subtitle: const Text(
-              'This sends my text or file to Sarvam, an external AI service, '
-              'and uses the app’s paid processing allowance. Only send content '
-              'you have permission to use. Nothing is published automatically.',
-            ),
+            title: Text(l10n.aiStudioConsentTitle),
+            subtitle: Text(l10n.aiStudioConsentSubtitle),
           ),
         ),
         AppSpacing.gapH16,
@@ -694,10 +686,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             semanticsLabel: 'AI processing in progress',
           ),
           AppSpacing.gapH12,
-          Semantics(
-            liveRegion: true,
-            child: const Text('Processing… Keep this screen open.'),
-          ),
+          Semantics(liveRegion: true, child: Text(l10n.aiStudioProcessing)),
           AppSpacing.gapH12,
         ],
         if (!scanPending)
@@ -707,18 +696,22 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 ? _process
                 : null,
             icon: Icon(_tool.icon),
-            label: Text(draft.busy ? 'Processing…' : '${_tool.label} with AI'),
+            label: Text(
+              draft.busy
+                  ? l10n.aiStudioProcessing
+                  : l10n.aiStudioProcessWithAi(_tool.localizedLabel(l10n)),
+            ),
           ),
       ],
     );
   }
 
-  Widget _resultPanel() {
+  Widget _resultPanel(AppLocalizations l10n) {
     final draft = _draft;
     final hasText = draft.result.text.trim().isNotEmpty;
     final job = draft.job;
     return _panel(
-      title: 'Review & use',
+      title: l10n.aiStudioReviewAndUse,
       children: [
         if (_tool == _Tool.scan && job != null) ...[
           _notice(
@@ -757,16 +750,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         if (!hasText && !draft.edited) ...[
           const Icon(Icons.edit_note_rounded, size: 48),
           AppSpacing.gapH12,
-          const Text(
-            'Your result will appear here.',
-            textAlign: TextAlign.center,
-          ),
+          Text(l10n.aiStudioResultPlaceholder, textAlign: TextAlign.center),
           AppSpacing.gapH8,
-          const Text(
-            'Nothing has been published or shared. Once text is ready, '
-            'you can correct it, copy it, or choose a passage for the next step.',
-            textAlign: TextAlign.center,
-          ),
+          Text(l10n.aiStudioResultDisclaimer, textAlign: TextAlign.center),
           AppSpacing.gapH24,
         ] else ...[
           TextField(
@@ -775,12 +761,12 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             minLines: 7,
             maxLines: 15,
             onChanged: (_) => setState(() => draft.edited = true),
-            decoration: const InputDecoration(
-              labelText: 'Editable result',
+            decoration: InputDecoration(
+              labelText: l10n.aiStudioEditableResult,
               alignLabelWithHint: true,
-              helperText: 'Review AI text before copying or sharing.',
+              helperText: l10n.aiStudioReviewHelper,
               helperMaxLines: 3,
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
           ),
           AppSpacing.gapH16,
@@ -791,14 +777,16 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
               OutlinedButton.icon(
                 onPressed: hasText ? () => _shareResult(copy: true) : null,
                 icon: const Icon(Icons.copy_outlined),
-                label: const Text('Copy'),
+                label: Text(l10n.aiStudioCopy),
               ),
               OutlinedButton.icon(
                 onPressed: hasText ? () => _shareResult(copy: false) : null,
                 icon: const Icon(
                   kIsWeb ? Icons.content_paste_outlined : Icons.share_outlined,
                 ),
-                label: const Text(kIsWeb ? 'Copy to share' : 'Share'),
+                label: Text(
+                  kIsWeb ? l10n.aiStudioCopyToShare : l10n.aiStudioShare,
+                ),
               ),
               if (_tool != _Tool.translate)
                 OutlinedButton.icon(
@@ -809,20 +797,17 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                       ? () => _sendResult(voice: false)
                       : null,
                   icon: const Icon(Icons.translate_rounded),
-                  label: const Text('Translate result'),
+                  label: Text(l10n.aiStudioTranslateResult),
                 ),
               OutlinedButton.icon(
                 onPressed: hasText ? () => _sendResult(voice: true) : null,
                 icon: const Icon(Icons.record_voice_over_outlined),
-                label: const Text('Send to Bodhan'),
+                label: Text(l10n.aiStudioSendToBodhan),
               ),
             ],
           ),
           AppSpacing.gapH12,
-          const Text(
-            'Bodhan accepts a passage up to 600 characters. '
-            'Opening it does not start voice generation.',
-          ),
+          Text(l10n.aiStudioBodhanNote),
           if (_tool != _Tool.translate && draft.language == 'sat-IN') ...[
             AppSpacing.gapH8,
             const Text('Translation is not available for Santali source text.'),

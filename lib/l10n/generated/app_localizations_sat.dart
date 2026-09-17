@@ -1010,4 +1010,253 @@ class AppLocalizationsSat extends AppLocalizations {
   @override
   String get notifGentleBody =>
       'ᱦᱩᱰᱤᱧ ᱫᱚᱦᱲᱟ ᱪᱮᱫ ᱟᱠᱟᱫ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭᱟ। ᱦᱟᱹᱯᱩᱨᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ।';
+
+  @override
+  String get santaliAiVoice => 'ᱥᱟᱱᱛᱟᱲᱤ AI Voice';
+
+  @override
+  String get closeVoiceStudio => 'ᱵᱷᱚᱭᱮᱥ ᱥᱴᱩᱰᱤᱭᱳ ᱵᱚᱸᱫᱽ ᱢᱮ';
+
+  @override
+  String get createVoiceAction => 'ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣ ᱢᱮ';
+
+  @override
+  String get creatingVoiceProgress => 'ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣᱜ ᱠᱟᱱᱟ...';
+
+  @override
+  String get voiceStatusWorking => 'ᱟᱢᱟᱜ ᱠᱟᱛᱷᱟ ᱨᱮ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱲᱟᱝ ᱡᱚᱲᱟᱣᱜ ᱠᱟᱱᱟ…';
+
+  @override
+  String get voiceStatusIdle => 'ᱚᱞ ᱢᱮ᱾ ᱟᱸᱡᱚᱢ ᱢᱮ᱾ ᱦᱟᱹᱴᱤᱧ ᱢᱮ᱾';
+
+  @override
+  String voiceStatusPlaying(String voice) {
+    return 'ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜᱼᱟ • $voice';
+  }
+
+  @override
+  String get voiceStatusReady => 'ᱥᱟᱯᱲᱟᱣ • ᱯᱞᱮ ᱞᱟᱹᱜᱤᱫ ᱡᱚᱴᱮᱫ ᱢᱮ';
+
+  @override
+  String get voiceStatusOpenPlayer => 'ᱟᱲᱟᱝ ᱥᱟᱯᱲᱟᱣ • ᱞᱟᱛᱟᱨ ᱨᱮ ᱯᱞᱮᱭᱟᱨ ᱡᱷᱤᱡ ᱢᱮ';
+
+  @override
+  String get voiceCacheTip =>
+      'ᱫᱤᱥᱟᱹ: ᱫᱚᱦᱲᱟ ᱠᱞᱤᱯ ᱫᱚ ᱛᱩᱨᱩᱛ ᱟᱨ ᱯᱷᱨᱤ ᱜᱮᱭᱟ — ᱠᱮᱪ ᱠᱷᱚᱱ ᱟᱸᱡᱚᱢᱚᱜᱼᱟ᱾';
+
+  @override
+  String get voiceDownloadFailed => 'ᱰᱟᱣᱩᱱᱞᱳᱰ ᱵᱟᱝ ᱦᱩᱭ ᱞᱮᱱᱟ᱾';
+
+  @override
+  String get voiceInputHint => 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — ᱚᱞ ᱪᱤᱠᱤ ᱛᱮ ᱚᱞ ᱢᱮ...';
+
+  @override
+  String get voicePlayerTab => 'ᱯᱞᱮᱭᱟᱨ';
+
+  @override
+  String get voiceCreatingBack => 'ᱟᱢᱟᱜ ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣᱜ ᱠᱟᱱᱟ…';
+
+  @override
+  String get voiceEmptyBack => 'ᱟᱢᱟᱜ ᱟᱲᱟᱝ ᱱᱚᱸᱰᱮ ᱦᱤᱡᱩᱜᱼᱟ';
+
+  @override
+  String get voiceEditText => 'ᱚᱞ ᱥᱟᱡᱟᱣ ᱢᱮ';
+
+  @override
+  String get voiceDismiss => 'ᱵᱟᱸᱫᱽ ᱢᱮ';
+
+  @override
+  String get voicePlaybackSpeed => 'ᱨᱚᱲ ᱨᱮᱱᱟᱜ ᱜᱚᱛᱤ';
+
+  @override
+  String get voiceSaving => 'ᱥᱟᱸᱪᱟᱣᱜ ᱠᱟᱱᱟ…';
+
+  @override
+  String get voiceDownload => 'ᱰᱟᱣᱩᱱᱞᱳᱰ';
+
+  @override
+  String get voiceRegenerate => 'ᱫᱚᱦᱲᱟ ᱵᱮᱱᱟᱣ ᱢᱮ';
+
+  @override
+  String get voicePickerHeader => 'ᱟᱲᱟᱝ  •  VOICE';
+
+  @override
+  String get voiceStyleHeader => 'ᱨᱚᱲ  •  STYLE';
+
+  @override
+  String get voiceSignInUpper => 'ᱥᱟᱭᱤᱱ ᱤᱱ';
+
+  @override
+  String get voiceRetryUpper => 'ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
+
+  @override
+  String get aiStudioTitle => 'AI ᱥᱴᱩᱰᱤᱭᱳ';
+
+  @override
+  String get aiStudioToolTranscribe => 'ᱟᱸᱡᱚᱢ ᱠᱟᱛᱮ ᱚᱞ';
+
+  @override
+  String get aiStudioToolTranslate => 'ᱛᱚᱨᱡᱚᱢᱟ';
+
+  @override
+  String get aiStudioToolScan => 'ᱥᱠᱮᱱ';
+
+  @override
+  String get aiStudioHeadline => 'ᱥᱟᱠᱟᱢ ᱥᱮ ᱟᱲᱟᱝ ᱠᱷᱚᱱ\nᱠᱟᱹᱢᱤᱭᱟᱱ ᱟᱹᱲᱟᱹ ᱨᱮ᱾';
+
+  @override
+  String get aiStudioSubhead =>
+      'ᱚᱞ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ, ᱠᱷᱟᱴᱚ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱚᱞ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ, ᱥᱮ ᱫᱚᱞᱤᱞ ᱥᱠᱮᱱ ᱢᱮ᱾ ᱡᱟᱦᱟᱸᱨᱮ ᱵᱮᱵᱷᱟᱨ ᱢᱟᱬᱟᱝ ᱨᱮ ᱚᱨᱡᱚ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾';
+
+  @override
+  String get aiStudioStep1 => '᱑  ᱤᱱᱯᱩᱴ ᱮᱢ ᱢᱮ';
+
+  @override
+  String get aiStudioStep2 => '᱒  ᱨᱮᱵᱮᱱ ᱥᱟᱶ ᱯᱨᱚᱥᱮᱥ ᱢᱮ';
+
+  @override
+  String get aiStudioStep3 => '᱓  ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱟᱨ ᱵᱮᱵᱷᱟᱨ';
+
+  @override
+  String get aiStudioNotConfigured =>
+      'ᱱᱚᱣᱟ ᱵᱤᱞᱰ ᱨᱮ AI ᱯᱨᱚᱥᱮᱥᱤᱝ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾ ᱟᱢ ᱱᱚᱸᱰᱮ ᱚᱞ ᱥᱟᱯᱲᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱥᱮ ᱞᱟᱛᱟᱨ ᱨᱮᱱᱟᱜ ᱯᱷᱨᱤ ᱥᱠᱨᱤᱯᱴ ᱠᱚᱱᱵᱷᱚᱨᱴᱟᱨ ᱵᱮᱵᱷᱟᱨ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioYourText => 'ᱟᱢᱟᱜ ᱚᱞ';
+
+  @override
+  String get aiStudioYourAudio => 'ᱟᱢᱟᱜ ᱟᱲᱟᱝ';
+
+  @override
+  String get aiStudioYourDocument => 'ᱟᱢᱟᱜ ᱫᱚᱞᱤᱞ';
+
+  @override
+  String get aiStudioSourceLanguage => 'ᱢᱩᱬ ᱯᱟᱹᱨᱥᱤ';
+
+  @override
+  String get aiStudioTranslateNote =>
+      'ᱥᱟᱱᱛᱟᱲᱤ (ᱚᱞ ᱪᱤᱠᱤ) ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ᱾ ᱒,᱐᱐᱐ ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ᱾';
+
+  @override
+  String get aiStudioTextToTranslate => 'ᱛᱚᱨᱡᱚᱢᱟ ᱞᱟᱹᱜᱤᱫ ᱚᱞ';
+
+  @override
+  String get aiStudioTextPlaceholder => 'ᱟᱢᱟᱜ ᱚᱞ ᱴᱟᱭᱤᱯ ᱥᱮ ᱯᱮᱥᱴ ᱢᱮ';
+
+  @override
+  String get aiStudioTextLimitError =>
+      '᱒,᱐᱐᱐ ᱥᱮ ᱠᱚᱢ ᱪᱤᱠᱤ ᱨᱮᱱᱟᱜ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱢᱮ᱾';
+
+  @override
+  String get aiStudioSpeakNote =>
+      'ᱥᱟᱫᱷᱟᱨᱚᱱ ᱞᱮᱠᱟ ᱨᱚᱲ ᱢᱮ᱾ ᱓᱐ ᱥᱮᱠᱮᱱᱰ ᱨᱮ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱟᱡ ᱛᱮᱜᱮ ᱛᱷᱟᱢᱚᱜᱼᱟ᱾ ᱟᱢ WAV ᱯᱷᱟᱭᱤᱞ ᱦᱚᱸ ᱟᱯᱞᱳᱰ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioRecordVoice => 'ᱟᱲᱟᱝ ᱨᱮᱠᱚᱨᱰ ᱢᱮ';
+
+  @override
+  String aiStudioStopRecording(String seconds) {
+    return 'ᱨᱮᱠᱚᱨᱰᱤᱝ ᱛᱷᱟᱢ ᱢᱮ · ${seconds}s';
+  }
+
+  @override
+  String get aiStudioListening =>
+      'ᱟᱸᱡᱚᱢᱮᱫᱟᱭ… ᱯᱩᱨᱟᱹᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱛᱷᱟᱢ ᱨᱮ ᱡᱚᱴᱮᱫ ᱢᱮ᱾';
+
+  @override
+  String get aiStudioOrExistingRecording => 'ᱥᱮ ᱢᱟᱬᱟᱝ ᱨᱮᱱᱟᱜ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱵᱮᱵᱷᱟᱨ ᱢᱮ';
+
+  @override
+  String get aiStudioUploadWav => 'WAV ᱯᱷᱟᱭᱤᱞ ᱟᱯᱞᱳᱰ ᱢᱮ';
+
+  @override
+  String get aiStudioReplaceRecording => 'ᱨᱮᱠᱚᱨᱰᱤᱝ ᱵᱚᱫᱚᱞ ᱢᱮ';
+
+  @override
+  String get aiStudioOpening => 'ᱡᱷᱤᱡᱩᱜ ᱠᱟᱱᱟ…';
+
+  @override
+  String get aiStudioDocNote =>
+      'PDF, PNG ᱥᱮ JPG · ᱑᱐ MB ᱟᱨ ᱑᱐ ᱥᱟᱠᱟᱢ ᱦᱟᱹᱵᱤᱡ\nᱯᱟᱲᱦᱟᱣᱜ ᱞᱮᱠᱟᱱ ᱥᱟᱯᱷᱟ ᱥᱟᱠᱟᱢ ᱵᱮᱵᱷᱟᱨ ᱢᱮ᱾';
+
+  @override
+  String get aiStudioChooseFile => 'ᱯᱷᱟᱭᱤᱞ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get aiStudioReplaceFile => 'ᱯᱷᱟᱭᱤᱞ ᱵᱚᱫᱚᱞ ᱢᱮ';
+
+  @override
+  String get aiStudioCapturePage => 'ᱥᱟᱠᱟᱢ ᱯᱷᱚᱴᱳ ᱛᱩᱞᱟᱹᱣ ᱢᱮ';
+
+  @override
+  String get aiStudioConsentTitle => 'ᱤᱧ ᱯᱮᱭᱤᱰ AI ᱯᱨᱚᱥᱮᱥᱤᱝ ᱨᱮ ᱨᱮᱵᱮᱱ ᱢᱮᱱᱟᱜᱼᱟ';
+
+  @override
+  String get aiStudioConsentSubtitle =>
+      'ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱚᱞ ᱥᱮ ᱯᱷᱟᱭᱤᱞ ᱵᱟᱦᱨᱮ ᱨᱮᱱᱟᱜ AI ᱥᱮᱵᱟ ᱥᱚᱨᱵᱷᱚᱢ ᱴᱷᱮᱱ ᱠᱩᱞᱟ ᱟᱨ ᱟᱯ ᱨᱮᱱᱟᱜ ᱯᱨᱚᱥᱮᱥᱤᱝ ᱠᱳᱴᱟ ᱵᱮᱵᱷᱟᱨᱟ᱾ ᱟᱢ ᱴᱷᱮᱱ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱢᱮᱱᱟᱜ ᱥᱟᱛᱟᱢ ᱜᱮ ᱠᱩᱞ ᱢᱮ᱾ ᱟᱡ ᱛᱮᱫᱚ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioProcessing =>
+      'ᱯᱨᱚᱥᱮᱥᱤᱝ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜᱼᱟ… ᱱᱚᱣᱟ ᱥᱠᱨᱤᱱ ᱡᱷᱤᱡ ᱫᱚᱦᱚᱭ ᱢᱮ᱾';
+
+  @override
+  String aiStudioProcessWithAi(String tool) {
+    return 'AI ᱥᱟᱶ $tool';
+  }
+
+  @override
+  String get aiStudioReviewAndUse => 'ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱟᱨ ᱵᱮᱵᱷᱟᱨ';
+
+  @override
+  String get aiStudioResultPlaceholder => 'ᱟᱢᱟᱜ ᱚᱨᱡᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioResultDisclaimer =>
+      'ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟ ᱟᱠᱟᱱᱟ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱟᱠᱟᱱᱟ᱾ ᱚᱞ ᱥᱟᱯᱲᱟᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱟᱢ ᱥᱩᱫᱷᱨᱟᱹᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ, ᱠᱚᱯᱤ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱥᱮ ᱞᱟᱦᱟᱱᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioEditableResult => 'ᱥᱟᱡᱟᱣ ᱞᱮᱠᱟᱱ ᱚᱨᱡᱚ';
+
+  @override
+  String get aiStudioReviewHelper =>
+      'ᱠᱚᱯᱤ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱢᱟᱬᱟᱝ ᱨᱮ AI ᱚᱞ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾';
+
+  @override
+  String get aiStudioCopy => 'ᱠᱚᱯᱤ';
+
+  @override
+  String get aiStudioShare => 'ᱦᱟᱹᱴᱤᱧ';
+
+  @override
+  String get aiStudioCopyToShare => 'ᱦᱟᱹᱴᱤᱧ ᱞᱟᱹᱜᱤᱫ ᱠᱚᱯᱤ';
+
+  @override
+  String get aiStudioTranslateResult => 'ᱚᱨᱡᱚ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ';
+
+  @override
+  String get aiStudioSendToBodhan => 'ᱵᱳᱫᱷᱚᱱ ᱛᱮ ᱠᱩᱞ ᱢᱮ';
+
+  @override
+  String get aiStudioBodhanNote =>
+      'ᱵᱳᱫᱷᱚᱱ ᱫᱚ ᱖᱐᱐ ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ ᱦᱟᱛᱟᱣᱟ᱾ ᱱᱚᱣᱟ ᱡᱷᱤᱡ ᱞᱮᱠᱷᱟᱱ ᱟᱡ ᱛᱮᱫᱚ ᱟᱲᱟᱝ ᱵᱟᱝ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾';
+
+  @override
+  String get aiStudioLookingForConverter =>
+      'ᱯᱷᱨᱤ ᱥᱠᱨᱤᱯᱴ ᱠᱚᱱᱵᱷᱚᱨᱴᱟᱨ ᱥᱮᱸᱫᱽᱨᱟᱭᱮᱫᱟᱢ?';
+
+  @override
+  String get aiStudioDisclaimer =>
+      'AI ᱚᱨᱡᱚ ᱨᱮ ᱵᱷᱩᱞ ᱛᱟᱦᱮᱸ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ; ᱵᱮᱵᱷᱟᱨ ᱢᱟᱬᱟᱝ ᱨᱮ ᱧᱩᱛᱩᱢ, ᱮᱞ ᱟᱨ ᱵᱟᱱᱟᱱ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾';
+
+  @override
+  String aiStudioPassageNote(int limit) {
+    return '$limit ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱥᱮ ᱥᱟᱡᱟᱣ ᱢᱮ᱾ ᱟᱢᱟᱜ ᱢᱩᱬ ᱚᱨᱡᱚ ᱵᱟᱝ ᱵᱚᱫᱚᱞᱚᱜᱼᱟ᱾';
+  }
+
+  @override
+  String get aiStudioPassageToSend => 'ᱠᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ';
+
+  @override
+  String get aiStudioPassageLimitError =>
+      'ᱞᱟᱦᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱠᱷᱟᱴᱚᱭ ᱢᱮ᱾ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱜᱮᱫ ᱟᱠᱟᱱᱟ᱾';
 }

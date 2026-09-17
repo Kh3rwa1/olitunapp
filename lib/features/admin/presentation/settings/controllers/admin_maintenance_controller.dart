@@ -1,10 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import '../../../../../core/api/appwrite_functions_service.dart';
 import '../../../../../core/auth/admin_restore_client.dart';
 import '../../../../../core/config/appwrite_config.dart';
+import '../../../../../core/error/exceptions.dart';
 
 import '../../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../../core/observability/crash_reporting.dart';
@@ -25,22 +24,21 @@ class AdminMaintenanceController {
   }) async {
     final service = ref.read(appwriteAuthServiceProvider);
     if (!await service.isLoggedIn()) {
-      throw AppwriteException('Sign in as an admin before restoring.', 401);
+      throw AuthException(message: 'Sign in as an admin before restoring.');
     }
+    final functionsService = ref.read(appwriteFunctionsServiceProvider);
     final prefs = await SharedPreferences.getInstance();
-    final functions = Functions(service.client);
     final client = AdminRestoreClient(
       prefs: prefs,
       projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
       execute: (payload) async {
-        final execution = await functions.createExecution(
-          functionId: 'admin-maintenance',
-          body: jsonEncode(payload),
-          xasync: false,
-          method: ExecutionMethod.pOST,
+        final execution = await functionsService.execute(
+          'admin-maintenance',
+          body: payload,
+          usePost: true,
         );
         return parseAdminRestoreResponse(
-          statusCode: execution.responseStatusCode,
+          statusCode: execution.statusCode,
           body: execution.responseBody,
         );
       },
@@ -74,22 +72,21 @@ class AdminMaintenanceController {
   }) async {
     final service = ref.read(appwriteAuthServiceProvider);
     if (!await service.isLoggedIn()) {
-      throw AppwriteException('Sign in as an admin before rolling back.', 401);
+      throw AuthException(message: 'Sign in as an admin before rolling back.');
     }
+    final functionsService = ref.read(appwriteFunctionsServiceProvider);
     final prefs = await SharedPreferences.getInstance();
-    final functions = Functions(service.client);
     final client = AdminRestoreClient(
       prefs: prefs,
       projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
       execute: (payload) async {
-        final execution = await functions.createExecution(
-          functionId: 'admin-maintenance',
-          body: jsonEncode(payload),
-          xasync: false,
-          method: ExecutionMethod.pOST,
+        final execution = await functionsService.execute(
+          'admin-maintenance',
+          body: payload,
+          usePost: true,
         );
         return parseAdminRestoreResponse(
-          statusCode: execution.responseStatusCode,
+          statusCode: execution.statusCode,
           body: execution.responseBody,
         );
       },

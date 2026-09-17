@@ -573,5 +573,108 @@
         }
     },
     "notifGentleTitle": "ଆପଣଙ୍କ ସାନ୍ତାଳୀ ଅପେକ୍ଷା କରିଛି",
-    "notifGentleBody": "ଛୋଟ ରିଭ୍ୟୁ ଶିଖିଥିବାକୁ ସତେଜ ରଖେ। ତରବର ନାହିଁ।"
+    "notifGentleBody": "ଛୋଟ ରିଭ୍ୟୁ ଶିଖିଥିବାକୁ ସତେଜ ରଖେ। ତରବର ନାହିଁ।",
+    "santaliAiVoice": "ସାନ୍ତାଳୀ ଏଆଇ ଭଏସ୍",
+    "closeVoiceStudio": "ଭଏସ୍ ଷ୍ଟୁଡିଓ ବନ୍ଦ କରନ୍ତୁ",
+    "createVoiceAction": "ଭଏସ୍ ତିଆରି କରନ୍ତୁ",
+    "creatingVoiceProgress": "ଭଏସ୍ ତିଆରି ହେଉଛି...",
+    "voiceStatusWorking": "ଆପଣଙ୍କ ଶବ୍ଦକୁ ସାନ୍ତାଳୀ କଣ୍ଠ ଦିଆଯାଉଛି…",
+    "voiceStatusIdle": "ଟାଇପ୍ କରନ୍ତୁ। ଶୁଣନ୍ତୁ। ସେୟାର୍ କରନ୍ତୁ।",
+    "voiceStatusPlaying": "ବାଜୁଛି • {voice}",
+    "@voiceStatusPlaying": {
+        "placeholders": {
+            "voice": {
+                "type": "String"
+            }
+        }
+    },
+    "voiceStatusReady": "ପ୍ରସ୍ତୁତ • ପ୍ଲେ ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ",
+    "voiceStatusOpenPlayer": "ଭଏସ୍ ପ୍ରସ୍ତୁତ • ତଳେ ପ୍ଲେୟାର୍ ଖୋଲନ୍ତୁ",
+    "voiceCacheTip": "ପରାମର୍ଶ: ପୂର୍ବ କ୍ଲିପ୍ ତୁରନ୍ତ ଓ ବିନା ମୂଲ୍ୟରେ ଚାଲେ — ଏହା କ୍ୟାଶରୁ ବାଜିଥାଏ।",
+    "voiceDownloadFailed": "ଡାଉନଲୋଡ୍ ବିଫଳ ହେଲା।",
+    "voiceInputHint": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — ଅଲ ଚିକିରେ ଲେଖନ୍ତୁ...",
+    "voicePlayerTab": "ପ୍ଲେୟାର୍",
+    "voiceCreatingBack": "ଆପଣଙ୍କ ଭଏସ୍ ତିଆରି ହେଉଛି…",
+    "voiceEmptyBack": "ଆପଣଙ୍କ ଭଏସ୍ ଏଠାରେ ଦେଖାଯିବ",
+    "voiceEditText": "ଟେକ୍ସଟ୍ ସମ୍ପାଦନା କରନ୍ତୁ",
+    "voiceDismiss": "ଖାରଜ କରନ୍ତୁ",
+    "voicePlaybackSpeed": "ପ୍ଲେବ୍ୟାକ୍ ଗତି",
+    "voiceSaving": "ସାଇତା ଯାଉଛି…",
+    "voiceDownload": "ଡାଉନଲୋଡ୍",
+    "voiceRegenerate": "ପୁଣି ତିଆରି କରନ୍ତୁ",
+    "voicePickerHeader": "ଭଏସ୍  •  ᱟᱲᱟᱝ",
+    "voiceStyleHeader": "ଶୈଳୀ  •  ᱨᱚᱲ",
+    "voiceSignInUpper": "ସାଇନ୍ ଇନ୍",
+    "voiceRetryUpper": "ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ",
+    "aiStudioTitle": "ଏଆଇ ଷ୍ଟୁଡିଓ",
+    "aiStudioToolTranscribe": "ଟ୍ରାନ୍ସକ୍ରାଇବ୍",
+    "aiStudioToolTranslate": "ଅନୁବାଦ",
+    "aiStudioToolScan": "ସ୍କାନ୍",
+    "aiStudioHeadline": "ପୃଷ୍ଠା ବା କଣ୍ଠରୁ\nବ୍ୟବହାରଯୋଗ୍ୟ ଶବ୍ଦରେ।",
+    "aiStudioSubhead": "ଟେକ୍ସଟ୍ ଅନୁବାଦ କରନ୍ତୁ, ଛୋଟ ରେକର୍ଡିଂ ଟ୍ରାନ୍ସକ୍ରାଇବ୍ କରନ୍ତୁ ବା ଡକ୍ୟୁମେଣ୍ଟ ସ୍କାନ୍ କରନ୍ତୁ। ବ୍ୟବହାର ପୂର୍ବରୁ ଫଳାଫଳ ଯାଞ୍ଚ କରନ୍ତୁ।",
+    "aiStudioStep1": "୧  ଇନପୁଟ୍ ଯୋଡ଼ନ୍ତୁ",
+    "aiStudioStep2": "୨  ସମ୍ମତି ସହ ପ୍ରକ୍ରିୟା କରନ୍ତୁ",
+    "aiStudioStep3": "୩  ଯାଞ୍ଚ ଏବଂ ବ୍ୟବହାର",
+    "aiStudioNotConfigured": "ଏହି ସଂସ୍କରଣରେ ଏଆଇ ପ୍ରକ୍ରିୟା ଉପଲବ୍ଧ ନାହିଁ। ଆପଣ ଏଠାରେ ଟେକ୍ସଟ୍ ପ୍ରସ୍ତୁତ କରିପାରିବେ କିମ୍ବା ତଳେ ଥିବା ମାଗଣା ଲିପି ପରିବର୍ତ୍ତକ ବ୍ୟବହାର କରିପାରିବେ।",
+    "aiStudioYourText": "ଆପଣଙ୍କ ଟେକ୍ସଟ୍",
+    "aiStudioYourAudio": "ଆପଣଙ୍କ ଅଡିଓ",
+    "aiStudioYourDocument": "ଆପଣଙ୍କ ଡକ୍ୟୁମେଣ୍ଟ",
+    "aiStudioSourceLanguage": "ମୂଳ ଭାଷା",
+    "aiStudioTranslateNote": "ସାନ୍ତାଳୀ (ଅଲ ଚିକି)ରେ ଅନୁବାଦ କରନ୍ତୁ। ୨,୦୦୦ ଅକ୍ଷର ପର୍ଯ୍ୟନ୍ତ।",
+    "aiStudioTextToTranslate": "ଅନୁବାଦ ପାଇଁ ଟେକ୍ସଟ୍",
+    "aiStudioTextPlaceholder": "ଆପଣଙ୍କ ଟେକ୍ସଟ୍ ଟାଇପ୍ କିମ୍ବା ପେଷ୍ଟ କରନ୍ତୁ",
+    "aiStudioTextLimitError": "୨,୦୦୦ ବା ତା'ଠାରୁ କମ୍ ଅକ୍ଷର ବିଶିଷ୍ଟ ଅଂଶ ବାଛନ୍ତୁ।",
+    "aiStudioSpeakNote": "ସାଧାରଣ ଭାବରେ କୁହନ୍ତୁ। ୩୦ ସେକେଣ୍ଡରେ ରେକର୍ଡିଂ ଆପେ ଆପେ ବନ୍ଦ ହୋଇଯିବ। ଆପଣ ଚାହିଁଲେ ଏକ WAV ଫାଇଲ୍ ମଧ୍ୟ ଅପଲୋଡ୍ କରିପାରିବେ।",
+    "aiStudioRecordVoice": "ଭଏସ୍ ରେକର୍ଡ କରନ୍ତୁ",
+    "aiStudioStopRecording": "ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ · {seconds} ସେ",
+    "@aiStudioStopRecording": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioListening": "ଶୁଣୁଛି… ଶେଷ ହେଲେ ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ ଉପରେ ଟ୍ୟାପ୍ କରନ୍ତୁ।",
+    "aiStudioOrExistingRecording": "କିମ୍ବା ପୂର୍ବରୁ ଥିବା ରେକର୍ଡିଂ ବ୍ୟବହାର କରନ୍ତୁ",
+    "aiStudioUploadWav": "WAV ଫାଇଲ୍ ଅପଲୋଡ୍ କରନ୍ତୁ",
+    "aiStudioReplaceRecording": "ରେକର୍ଡିଂ ବଦଳାନ୍ତୁ",
+    "aiStudioOpening": "ଖୋଲୁଛି…",
+    "aiStudioDocNote": "PDF, PNG କିମ୍ବା JPG · ୧୦ MB ଏବଂ ୧୦ ପୃଷ୍ଠା ପର୍ଯ୍ୟନ୍ତ\nପଢ଼ିବା ଯୋଗ୍ୟ ସ୍ପଷ୍ଟ ପୃଷ୍ଠା ବ୍ୟବହାର କରନ୍ତୁ।",
+    "aiStudioChooseFile": "ଫାଇଲ୍ ବାଛନ୍ତୁ",
+    "aiStudioReplaceFile": "ଫାଇଲ୍ ବଦଳାନ୍ତୁ",
+    "aiStudioCapturePage": "ପୃଷ୍ଠାର ଫଟୋ ନିଅନ୍ତୁ",
+    "aiStudioConsentTitle": "ମୁଁ ଦେୟଯୁକ୍ତ ଏଆଇ ପ୍ରକ୍ରିୟାକରଣରେ ସମ୍ମତ",
+    "aiStudioConsentSubtitle": "ଏହା ଆପଣଙ୍କ ଟେକ୍ସଟ୍ ବା ଫାଇଲ୍ ବାହ୍ୟ ଏଆଇ ସେବା ସର୍ଭମକୁ ପଠାଏ ଏବଂ ଆପ୍'ର ପ୍ରକ୍ରିୟାକରଣ କୋଟା ବ୍ୟବହାର କରେ। କେବଳ ଅନୁମତି ଥିବା ବିଷୟ ପଠାନ୍ତୁ। କୌଣସି ବିଷୟ ଆପେ ଆପେ ପ୍ରକାଶିତ ହୁଏ ନାହିଁ।",
+    "aiStudioProcessing": "ପ୍ରକ୍ରିୟାକରଣ ଚାଲିଛି… ଏହି ସ୍କ୍ରିନ୍ ଖୋଲା ରଖନ୍ତୁ।",
+    "aiStudioProcessWithAi": "ଏଆଇ ସହିତ {tool}",
+    "@aiStudioProcessWithAi": {
+        "placeholders": {
+            "tool": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioReviewAndUse": "ଯାଞ୍ଚ ଏବଂ ବ୍ୟବହାର",
+    "aiStudioResultPlaceholder": "ଆପଣଙ୍କ ଫଳାଫଳ ଏଠାରେ ଦେଖାଯିବ।",
+    "aiStudioResultDisclaimer": "କିଛି ପ୍ରକାଶିତ ବା ସେୟାର୍ ହୋଇନାହିଁ। ଟେକ୍ସଟ୍ ପ୍ରସ୍ତୁତ ହେଲେ ଆପଣ ଏହାକୁ ସଂଶୋଧନ କରିପାରିବେ, କପି କରିପାରିବେ ବା ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ ପାଇଁ ବାଛିପାରିବେ।",
+    "aiStudioEditableResult": "ସମ୍ପାଦନାଯୋଗ୍ୟ ଫଳାଫଳ",
+    "aiStudioReviewHelper": "କପି ବା ସେୟାର୍ କରିବା ପୂର୍ବରୁ ଏଆଇ ଟେକ୍ସଟ୍ ଯାଞ୍ଚ କରନ୍ତୁ।",
+    "aiStudioCopy": "କପି କରନ୍ତୁ",
+    "aiStudioShare": "ସେୟାର୍ କରନ୍ତୁ",
+    "aiStudioCopyToShare": "ସେୟାର୍ ପାଇଁ କପି କରନ୍ତୁ",
+    "aiStudioTranslateResult": "ଫଳାଫଳ ଅନୁବାଦ କରନ୍ତୁ",
+    "aiStudioSendToBodhan": "ବୋଧନକୁ ପଠାନ୍ତୁ",
+    "aiStudioBodhanNote": "ବୋଧନ ୬୦୦ ଅକ୍ଷର ପର୍ଯ୍ୟନ୍ତ ଗ୍ରହଣ କରେ। ଏହା ଖୋଲିବା ଦ୍ୱାରା ଭଏସ୍ ତିଆରି ଆରମ୍ଭ ହୁଏ ନାହିଁ।",
+    "aiStudioLookingForConverter": "ମାଗଣା ଲିପି ପରିବର୍ତ୍ତକ ଖୋଜୁଛନ୍ତି କି?",
+    "aiStudioDisclaimer": "ଏଆଇ ଫଳାଫଳରେ ତ୍ରୁଟି ଥାଇପାରେ; ବ୍ୟବହାର ପୂର୍ବରୁ ନାମ, ସଂଖ୍ୟା ଏବଂ ବନାନ ଯାଞ୍ଚ କରନ୍ତୁ।",
+    "aiStudioPassageNote": "{limit} ଅକ୍ଷର ପର୍ଯ୍ୟନ୍ତ ଏକ ଅଂଶ ବାଛନ୍ତୁ ବା ସମ୍ପାଦନା କରନ୍ତୁ। ଆପଣଙ୍କ ମୂଳ ଫଳାଫଳ ଅପରିବର୍ତ୍ତିତ ରହିବ।",
+    "@aiStudioPassageNote": {
+        "placeholders": {
+            "limit": {
+                "type": "int"
+            }
+        }
+    },
+    "aiStudioPassageToSend": "ପଠାଇବା ପାଇଁ ଅଂଶ",
+    "aiStudioPassageLimitError": "ଆଗକୁ ବଢ଼ିବା ପାଇଁ ଅଂଶକୁ ଛୋଟ କରନ୍ତୁ। କିଛି କଟାଯାଇ ନାହିଁ।"
 }

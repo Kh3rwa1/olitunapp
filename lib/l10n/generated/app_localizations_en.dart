@@ -1012,4 +1012,253 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get notifGentleBody =>
       'A short review keeps what you learned fresh. No rush.';
+
+  @override
+  String get santaliAiVoice => 'Santali AI Voice';
+
+  @override
+  String get closeVoiceStudio => 'Close voice studio';
+
+  @override
+  String get createVoiceAction => 'CREATE VOICE';
+
+  @override
+  String get creatingVoiceProgress => 'CREATING VOICE...';
+
+  @override
+  String get voiceStatusWorking => 'Giving your words a Santali voice…';
+
+  @override
+  String get voiceStatusIdle => 'Type it. Hear it. Share it.';
+
+  @override
+  String voiceStatusPlaying(String voice) {
+    return 'Playing • $voice';
+  }
+
+  @override
+  String get voiceStatusReady => 'Ready • tap play';
+
+  @override
+  String get voiceStatusOpenPlayer => 'Voice ready • open player below';
+
+  @override
+  String get voiceCacheTip =>
+      'Tip: repeat clips are instant and free — they replay from cache.';
+
+  @override
+  String get voiceDownloadFailed => 'Download failed.';
+
+  @override
+  String get voiceInputHint => 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — type in Ol Chiki...';
+
+  @override
+  String get voicePlayerTab => 'PLAYER';
+
+  @override
+  String get voiceCreatingBack => 'Creating your voice…';
+
+  @override
+  String get voiceEmptyBack => 'Your voice will appear here';
+
+  @override
+  String get voiceEditText => 'Edit text';
+
+  @override
+  String get voiceDismiss => 'Dismiss';
+
+  @override
+  String get voicePlaybackSpeed => 'Playback speed';
+
+  @override
+  String get voiceSaving => 'SAVING…';
+
+  @override
+  String get voiceDownload => 'DOWNLOAD';
+
+  @override
+  String get voiceRegenerate => 'REGENERATE';
+
+  @override
+  String get voicePickerHeader => 'VOICE  •  ᱟᱲᱟᱝ';
+
+  @override
+  String get voiceStyleHeader => 'STYLE  •  ᱨᱚᱲ';
+
+  @override
+  String get voiceSignInUpper => 'SIGN IN';
+
+  @override
+  String get voiceRetryUpper => 'RETRY';
+
+  @override
+  String get aiStudioTitle => 'AI Studio';
+
+  @override
+  String get aiStudioToolTranscribe => 'Transcribe';
+
+  @override
+  String get aiStudioToolTranslate => 'Translate';
+
+  @override
+  String get aiStudioToolScan => 'Scan';
+
+  @override
+  String get aiStudioHeadline =>
+      'From a page or a voice\nto words you can use.';
+
+  @override
+  String get aiStudioSubhead =>
+      'Translate text, transcribe a short recording, or scan a document. Review the result before taking it anywhere.';
+
+  @override
+  String get aiStudioStep1 => '1  Add input';
+
+  @override
+  String get aiStudioStep2 => '2  Process with consent';
+
+  @override
+  String get aiStudioStep3 => '3  Review & use';
+
+  @override
+  String get aiStudioNotConfigured =>
+      'AI processing is not available in this build. You can prepare text here or use the free script converter below.';
+
+  @override
+  String get aiStudioYourText => 'Your text';
+
+  @override
+  String get aiStudioYourAudio => 'Your audio';
+
+  @override
+  String get aiStudioYourDocument => 'Your document';
+
+  @override
+  String get aiStudioSourceLanguage => 'Source language';
+
+  @override
+  String get aiStudioTranslateNote =>
+      'Translate into Santali (Ol Chiki). Up to 2,000 characters.';
+
+  @override
+  String get aiStudioTextToTranslate => 'Text to translate';
+
+  @override
+  String get aiStudioTextPlaceholder => 'Type or paste your text';
+
+  @override
+  String get aiStudioTextLimitError =>
+      'Choose a passage of 2,000 characters or fewer.';
+
+  @override
+  String get aiStudioSpeakNote =>
+      'Speak normally. Recording stops automatically at 30 seconds. You can also upload a WAV file instead.';
+
+  @override
+  String get aiStudioRecordVoice => 'Record voice';
+
+  @override
+  String aiStudioStopRecording(String seconds) {
+    return 'Stop recording · ${seconds}s';
+  }
+
+  @override
+  String get aiStudioListening =>
+      'Listening… Tap Stop recording when you are done.';
+
+  @override
+  String get aiStudioOrExistingRecording => 'Or use an existing recording';
+
+  @override
+  String get aiStudioUploadWav => 'Upload WAV file';
+
+  @override
+  String get aiStudioReplaceRecording => 'Replace recording';
+
+  @override
+  String get aiStudioOpening => 'Opening…';
+
+  @override
+  String get aiStudioDocNote =>
+      'PDF, PNG or JPG · up to 10 MB and 10 pages\nUse a clear, upright page with readable text.';
+
+  @override
+  String get aiStudioChooseFile => 'Choose file';
+
+  @override
+  String get aiStudioReplaceFile => 'Replace file';
+
+  @override
+  String get aiStudioCapturePage => 'Capture page';
+
+  @override
+  String get aiStudioConsentTitle => 'I agree to paid AI processing';
+
+  @override
+  String get aiStudioConsentSubtitle =>
+      'This sends my text or file to Sarvam, an external AI service, and uses the app’s paid processing allowance. Only send content you have permission to use. Nothing is published automatically.';
+
+  @override
+  String get aiStudioProcessing => 'Processing… Keep this screen open.';
+
+  @override
+  String aiStudioProcessWithAi(String tool) {
+    return '$tool with AI';
+  }
+
+  @override
+  String get aiStudioReviewAndUse => 'Review & use';
+
+  @override
+  String get aiStudioResultPlaceholder => 'Your result will appear here.';
+
+  @override
+  String get aiStudioResultDisclaimer =>
+      'Nothing has been published or shared. Once text is ready, you can correct it, copy it, or choose a passage for the next step.';
+
+  @override
+  String get aiStudioEditableResult => 'Editable result';
+
+  @override
+  String get aiStudioReviewHelper =>
+      'Review AI text before copying or sharing.';
+
+  @override
+  String get aiStudioCopy => 'Copy';
+
+  @override
+  String get aiStudioShare => 'Share';
+
+  @override
+  String get aiStudioCopyToShare => 'Copy to share';
+
+  @override
+  String get aiStudioTranslateResult => 'Translate result';
+
+  @override
+  String get aiStudioSendToBodhan => 'Send to Bodhan';
+
+  @override
+  String get aiStudioBodhanNote =>
+      'Bodhan accepts a passage up to 600 characters. Opening it does not start voice generation.';
+
+  @override
+  String get aiStudioLookingForConverter =>
+      'Looking for the free script converter?';
+
+  @override
+  String get aiStudioDisclaimer =>
+      'AI results can contain mistakes; review names, numbers and spelling before use.';
+
+  @override
+  String aiStudioPassageNote(int limit) {
+    return 'Choose or edit a passage of up to $limit characters. Your original result will stay unchanged.';
+  }
+
+  @override
+  String get aiStudioPassageToSend => 'Passage to send';
+
+  @override
+  String get aiStudioPassageLimitError =>
+      'Shorten the passage to continue. Nothing is truncated.';
 }

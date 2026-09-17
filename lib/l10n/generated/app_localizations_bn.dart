@@ -1009,4 +1009,254 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get notifGentleBody => 'ছোট্ট রিভিউ শেখাটা তাজা রাখে। তাড়া নেই।';
+
+  @override
+  String get santaliAiVoice => 'সাঁওতালি এআই ভয়েস';
+
+  @override
+  String get closeVoiceStudio => 'ভয়েস স্টুডিও বন্ধ করুন';
+
+  @override
+  String get createVoiceAction => 'ভয়েস তৈরি করুন';
+
+  @override
+  String get creatingVoiceProgress => 'ভয়েস তৈরি হচ্ছে...';
+
+  @override
+  String get voiceStatusWorking => 'আপনার কথায় সাঁওতালি কণ্ঠ দেওয়া হচ্ছে…';
+
+  @override
+  String get voiceStatusIdle => 'টাইপ করুন। শুনুন। শেয়ার করুন।';
+
+  @override
+  String voiceStatusPlaying(String voice) {
+    return 'চলছে • $voice';
+  }
+
+  @override
+  String get voiceStatusReady => 'প্রস্তুত • প্লে করতে ট্যাপ করুন';
+
+  @override
+  String get voiceStatusOpenPlayer => 'ভয়েস প্রস্তুত • নিচে প্লেয়ার খুলুন';
+
+  @override
+  String get voiceCacheTip =>
+      'পরামর্শ: আগের অডিও তৎক্ষণাৎ এবং বিনামূল্যে প্লে হয় — এটি ক্যাশ থেকে বাজে।';
+
+  @override
+  String get voiceDownloadFailed => 'ডাউনলোড ব্যর্থ হয়েছে।';
+
+  @override
+  String get voiceInputHint => 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — অল চিকিতে লিখুন...';
+
+  @override
+  String get voicePlayerTab => 'প্লেয়ার';
+
+  @override
+  String get voiceCreatingBack => 'আপনার ভয়েস তৈরি করা হচ্ছে…';
+
+  @override
+  String get voiceEmptyBack => 'আপনার ভয়েস এখানে প্রদর্শিত হবে';
+
+  @override
+  String get voiceEditText => 'লেখা সম্পাদনা করুন';
+
+  @override
+  String get voiceDismiss => 'বাতিল করুন';
+
+  @override
+  String get voicePlaybackSpeed => 'প্লেব্যাকের গতি';
+
+  @override
+  String get voiceSaving => 'সংরক্ষণ করা হচ্ছে…';
+
+  @override
+  String get voiceDownload => 'ডাউনলোড';
+
+  @override
+  String get voiceRegenerate => 'পুনরায় তৈরি করুন';
+
+  @override
+  String get voicePickerHeader => 'ভয়েস  •  আড়াং';
+
+  @override
+  String get voiceStyleHeader => 'ধরন  •  রড়';
+
+  @override
+  String get voiceSignInUpper => 'সাইন ইন';
+
+  @override
+  String get voiceRetryUpper => 'আবার চেষ্টা করুন';
+
+  @override
+  String get aiStudioTitle => 'এআই স্টুডিও';
+
+  @override
+  String get aiStudioToolTranscribe => 'ট্রান্সক্রাইব';
+
+  @override
+  String get aiStudioToolTranslate => 'অনুবাদ';
+
+  @override
+  String get aiStudioToolScan => 'স্ক্যান';
+
+  @override
+  String get aiStudioHeadline =>
+      'কাগজ বা কণ্ঠ থেকে\nব্যবহারযোগ্য কথায় রূপান্তর।';
+
+  @override
+  String get aiStudioSubhead =>
+      'লেখা অনুবাদ করুন, সংক্ষিপ্ত রেকর্ডিং ট্রান্সক্রাইব করুন অথবা নথি স্ক্যান করুন। ব্যবহারের পূর্বে ফলাফলটি পর্যালোচনা করুন।';
+
+  @override
+  String get aiStudioStep1 => '১  ইনপুট যুক্ত করুন';
+
+  @override
+  String get aiStudioStep2 => '২  সম্মতি নিয়ে প্রক্রিয়া করুন';
+
+  @override
+  String get aiStudioStep3 => '৩  পর্যালোচনা ও ব্যবহার';
+
+  @override
+  String get aiStudioNotConfigured =>
+      'এই সংস্করণে এআই প্রসেসিং উপলব্ধ নেই। আপনি এখানে পাঠ্য প্রস্তুত করতে পারেন অথবা নিচের বিনামূল্যের লিপি রূপান্তরকারী ব্যবহার করতে পারেন।';
+
+  @override
+  String get aiStudioYourText => 'আপনার লেখা';
+
+  @override
+  String get aiStudioYourAudio => 'আপনার অডিও';
+
+  @override
+  String get aiStudioYourDocument => 'আপনার নথি';
+
+  @override
+  String get aiStudioSourceLanguage => 'মূল ভাষা';
+
+  @override
+  String get aiStudioTranslateNote =>
+      'সাঁওতালিতে (অল চিকি) অনুবাদ করুন। সর্বোচ্চ ২,০০০ অক্ষর।';
+
+  @override
+  String get aiStudioTextToTranslate => 'অনুবাদের লেখা';
+
+  @override
+  String get aiStudioTextPlaceholder => 'আপনার লেখা টাইপ বা পেস্ট করুন';
+
+  @override
+  String get aiStudioTextLimitError =>
+      '২,০০০ বা তার কম অক্ষরের অংশ নির্বাচন করুন।';
+
+  @override
+  String get aiStudioSpeakNote =>
+      'স্বাভাবিকভাবে কথা বলুন। ৩০ সেকেন্ডে রেকর্ডিং স্বয়ংক্রিয়ভাবে বন্ধ হবে। আপনি একটি WAV ফাইলও আপলোড করতে পারেন।';
+
+  @override
+  String get aiStudioRecordVoice => 'ভয়েস রেকর্ড করুন';
+
+  @override
+  String aiStudioStopRecording(String seconds) {
+    return 'রেকর্ডিং থামান · $seconds সে';
+  }
+
+  @override
+  String get aiStudioListening => 'শুনছি… শেষ হলে রেকর্ডিং থামান-এ ট্যাপ করুন।';
+
+  @override
+  String get aiStudioOrExistingRecording =>
+      'অথবা আগের কোনো রেকর্ডিং ব্যবহার করুন';
+
+  @override
+  String get aiStudioUploadWav => 'WAV ফাইল আপলোড করুন';
+
+  @override
+  String get aiStudioReplaceRecording => 'রেকর্ডিং পরিবর্তন করুন';
+
+  @override
+  String get aiStudioOpening => 'খোলা হচ্ছে…';
+
+  @override
+  String get aiStudioDocNote =>
+      'PDF, PNG বা JPG · ১০ এমবি এবং ১০ পৃষ্ঠা পর্যন্ত\nপঠনযোগ্য স্পষ্ট সোজা পৃষ্ঠা ব্যবহার করুন।';
+
+  @override
+  String get aiStudioChooseFile => 'ফাইল নির্বাচন করুন';
+
+  @override
+  String get aiStudioReplaceFile => 'ফাইল পরিবর্তন করুন';
+
+  @override
+  String get aiStudioCapturePage => 'পৃষ্ঠার ছবি তুলুন';
+
+  @override
+  String get aiStudioConsentTitle => 'আমি প্রদত্ত এআই প্রক্রিয়াকরণে সম্মত';
+
+  @override
+  String get aiStudioConsentSubtitle =>
+      'এটি আপনার লেখা বা ফাইল বহিরাগত এআই পরিষেবা সর্বমে পাঠায় এবং অ্যাপের প্রসেসিং কোটা ব্যবহার করে। শুধু অনুমোদিত সামগ্রী পাঠান। স্বয়ংক্রিয়ভাবে কিছু প্রকাশ করা হয় না।';
+
+  @override
+  String get aiStudioProcessing =>
+      'প্রক্রিয়াকরণ চলছে… এই স্ক্রিনটি খোলা রাখুন।';
+
+  @override
+  String aiStudioProcessWithAi(String tool) {
+    return 'এআই দিয়ে $tool';
+  }
+
+  @override
+  String get aiStudioReviewAndUse => 'পর্যালোচনা ও ব্যবহার';
+
+  @override
+  String get aiStudioResultPlaceholder => 'আপনার ফলাফল এখানে প্রদর্শিত হবে।';
+
+  @override
+  String get aiStudioResultDisclaimer =>
+      'কিছুই প্রকাশ বা শেয়ার করা হয়নি। লেখা প্রস্তুত হলে আপনি তা সংশোধন করতে পারেন, কপি করতে পারেন বা পরবর্তী ধাপের জন্য অংশ বেছে নিতে পারেন।';
+
+  @override
+  String get aiStudioEditableResult => 'সম্পাদনাযোগ্য ফলাফল';
+
+  @override
+  String get aiStudioReviewHelper =>
+      'কপি বা শেয়ার করার আগে এআই লেখা পর্যালোচনা করুন।';
+
+  @override
+  String get aiStudioCopy => 'কপি করুন';
+
+  @override
+  String get aiStudioShare => 'শেয়ার করুন';
+
+  @override
+  String get aiStudioCopyToShare => 'শেয়ার করতে কপি করুন';
+
+  @override
+  String get aiStudioTranslateResult => 'ফলাফল অনুবাদ করুন';
+
+  @override
+  String get aiStudioSendToBodhan => 'বোধনে পাঠান';
+
+  @override
+  String get aiStudioBodhanNote =>
+      'বোধন ৬০০ অক্ষর পর্যন্ত পাঠ্য গ্রহণ করে। এটি খুললে ভয়েস তৈরি শুরু হয় না।';
+
+  @override
+  String get aiStudioLookingForConverter =>
+      'বিনামূল্যে লিপি রূপান্তরকারী খুঁজছেন?';
+
+  @override
+  String get aiStudioDisclaimer =>
+      'এআই ফলাফলে ভুল থাকতে পারে; ব্যবহারের পূর্বে নাম, সংখ্যা এবং বানান যাচাই করুন।';
+
+  @override
+  String aiStudioPassageNote(int limit) {
+    return '$limit অক্ষর পর্যন্ত একটি অংশ বেছে নিন বা সম্পাদনা করুন। আপনার মূল ফলাফল অপরিবর্তিত থাকবে।';
+  }
+
+  @override
+  String get aiStudioPassageToSend => 'পাঠানোর অংশ';
+
+  @override
+  String get aiStudioPassageLimitError =>
+      'এগিয়ে যেতে অংশটি ছোট করুন। কোনো কিছুই নিজে থেকে কাটা হয়নি।';
 }

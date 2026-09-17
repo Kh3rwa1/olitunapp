@@ -23,6 +23,7 @@ paths = [
   '''^test/''',
   '''^functions/test/''',
   '''^functions/translator/test/''',
+  '''^functions/santaliVoice/test/''',
   '''^scripts/test_gitleaks_rules\.mjs$''',
   '''cookies\.txt$''',
 ]

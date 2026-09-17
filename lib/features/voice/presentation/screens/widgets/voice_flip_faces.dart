@@ -5,6 +5,7 @@ import '../../../../../core/audio/playback_controller.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import '../../providers/santali_voice_providers.dart';
 import 'mini_bars.dart';
 
@@ -35,6 +36,7 @@ class VoiceInputFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return FocusGlowField(
       key: glowKey,
       focusNode: focusNode,
@@ -70,7 +72,7 @@ class VoiceInputFace extends StatelessWidget {
                 ),
                 cursorColor: AppColors.primary,
                 decoration: InputDecoration(
-                  hintText: 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — type in Ol Chiki...',
+                  hintText: l10n.voiceInputHint,
                   hintStyle: AppTypography.inter(
                     color: (isDark ? Colors.white : Colors.black).withValues(
                       alpha: 0.3,
@@ -91,18 +93,18 @@ class VoiceInputFace extends StatelessWidget {
                 if (hasClip) ...[
                   GestureDetector(
                     onTap: onFlipToBack,
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.graphic_eq_rounded,
                           size: 18,
                           color: AppColors.primary,
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 4),
                         Text(
-                          'PLAYER',
-                          style: TextStyle(
+                          l10n.voicePlayerTab,
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.0,
@@ -183,6 +185,7 @@ class VoicePlayerFace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final activeClip = clip;
     if (activeClip == null || isLoading) {
       // Shown immediately after CREATE VOICE is tapped (the card flips
@@ -205,9 +208,7 @@ class VoicePlayerFace extends StatelessWidget {
             const SizedBox(width: 14),
             Flexible(
               child: Text(
-                isLoading
-                    ? 'Creating your voice…'
-                    : 'Your voice will appear here',
+                isLoading ? l10n.voiceCreatingBack : l10n.voiceEmptyBack,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
@@ -276,12 +277,12 @@ class VoicePlayerFace extends StatelessWidget {
               ),
               _FaceIcon(
                 icon: Icons.edit_rounded,
-                tooltip: 'Edit text',
+                tooltip: l10n.voiceEditText,
                 onTap: onEdit,
               ),
               _FaceIcon(
                 icon: Icons.close_rounded,
-                tooltip: 'Dismiss',
+                tooltip: l10n.voiceDismiss,
                 onTap: onDismiss,
               ),
             ],
@@ -393,14 +394,14 @@ class VoicePlayerFace extends StatelessWidget {
               _FaceChip(
                 label:
                     '${state.speed.toStringAsFixed(state.speed == 0.75 || state.speed == 1.25 ? 2 : 1)}×',
-                tooltip: 'Playback speed',
+                tooltip: l10n.voicePlaybackSpeed,
                 onTap: onSpeedTap,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: _FaceChip(
-                  label: isDownloading ? 'SAVING…' : 'DOWNLOAD',
-                  tooltip: 'Download',
+                  label: isDownloading ? l10n.voiceSaving : l10n.voiceDownload,
+                  tooltip: l10n.voiceDownload,
                   icon: isDownloading ? null : Icons.download_rounded,
                   onTap: onDownload,
                 ),
@@ -408,8 +409,8 @@ class VoicePlayerFace extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: _FaceChip(
-                  label: 'REGENERATE',
-                  tooltip: 'Regenerate',
+                  label: l10n.voiceRegenerate,
+                  tooltip: l10n.voiceRegenerate,
                   icon: Icons.refresh_rounded,
                   onTap: onRegenerate,
                 ),

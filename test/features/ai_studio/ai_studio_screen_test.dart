@@ -8,6 +8,7 @@ import 'package:itun/features/ai_studio/data/ai_studio_service.dart';
 import 'package:itun/features/ai_studio/data/studio_input_picker.dart';
 import 'package:itun/features/ai_studio/data/studio_recorder.dart';
 import 'package:itun/features/ai_studio/presentation/ai_studio_screen.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _Service extends Mock implements AiStudioService {}
@@ -19,9 +20,10 @@ class _Input extends Mock implements StudioInput {}
 class _Job extends Mock implements StudioJob {}
 
 class _Recorder implements StudioRecorder {
-  _Recorder(this.input);
+  _Recorder(this.input, {this.startError});
 
   final StudioInput input;
+  final Object? startError;
   int starts = 0;
   int stops = 0;
   int cancels = 0;
@@ -32,6 +34,7 @@ class _Recorder implements StudioRecorder {
 
   @override
   Future<void> start() async {
+    if (startError != null) throw startError!;
     starts++;
     _isRecording = true;
   }
@@ -90,6 +93,8 @@ void main() {
           studioRecorderProvider.overrideWithValue(recorder),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           builder: (context, child) => MediaQuery(
             data: MediaQuery.of(
               context,
@@ -256,6 +261,59 @@ void main() {
       await tester.pumpAndSettle();
       expect(recorder.stops, 1);
       expect(find.text('microphone.wav'), findsOneWidget);
+      expect(processButton(tester).onPressed, isNull);
+    },
+  );
+
+  testWidgets(
+    'handles microphone permission denied gracefully without crash or hang',
+    (tester) async {
+      recorder = _Recorder(
+        StudioInput(bytes: Uint8List(4), name: 'microphone.wav'),
+        startError: const StudioException('MIC_PERMISSION'),
+      );
+      await pump(tester);
+      await tap(tester, find.byKey(const Key('studio-record')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Allow microphone access'), findsOneWidget);
+      expect(find.text('Record voice'), findsOneWidget);
+      expect(processButton(tester).onPressed, isNull);
+      expect(recorder.isRecording, isFalse);
+    },
+  );
+
+  testWidgets('handles microphone unavailable or platform error gracefully', (
+    tester,
+  ) async {
+    recorder = _Recorder(
+      StudioInput(bytes: Uint8List(4), name: 'microphone.wav'),
+      startError: Exception('Hardware microphone unavailable'),
+    );
+    await pump(tester);
+    await tap(tester, find.byKey(const Key('studio-record')));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Could not start the microphone'),
+      findsOneWidget,
+    );
+    expect(find.text('Record voice'), findsOneWidget);
+    expect(recorder.isRecording, isFalse);
+  });
+
+  testWidgets(
+    'handles camera capture permission denied or unsupported gracefully',
+    (tester) async {
+      when(
+        () => picker.capturePage(),
+      ).thenThrow(Exception('Camera permission denied'));
+      await pump(tester);
+      await tap(tester, find.byKey(const Key('tool-scan')));
+      await tap(tester, find.byKey(const Key('studio-camera')));
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Could not open this file'), findsOneWidget);
       expect(processButton(tester).onPressed, isNull);
     },
   );

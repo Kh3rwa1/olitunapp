@@ -38,11 +38,17 @@ Email **security@olitun.app** with a comprehensive description of the issue and 
 - Double-spend and race condition exploits are prevented by unique composite database indexes on `(user_id, category_id)`.
 - The incentivized review-for-unlock flow was **removed** from the client (Google Play incentivized-review policy risk). Legacy `play_store_review` entitlement records remain valid server-side; new unlocks are paid only.
 
-### G. Content Security Policy (CSP) & Web Isolation
-- **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated. All runtime scripts (boot helpers, PWA install/update flow, auth callback) are externalized files (`web/pwa_runtime.js`, `web/pwa_install.js`, `web/auth_redirect.js`) — no inline scripts exist in any HTML template.
+### G. Content Security Policy (CSP) & Web Permissions Policy
+- **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval' https://checkout.razorpay.com`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated. All runtime scripts (boot helpers, PWA install/update flow, auth callback) are externalized files (`web/pwa_runtime.js`, `web/pwa_install.js`, `web/auth_redirect.js`) — no inline scripts exist in any HTML template.
 - **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com` to accommodate Flutter Web engine layout mutations.
+- **`font-src`:** Set to `'self' https://fonts.gstatic.com`.
+- **`img-src`:** Restricted to `'self' data: blob: https://*.appwrite.io https://*.appwrite.run https://*.razorpay.com`.
+- **`media-src`:** Restricted to `'self' blob: https://*.appwrite.io https://*.appwrite.run`.
+- **`connect-src`:** Restricted to `'self' https://*.appwrite.io https://*.appwrite.run https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://api.razorpay.com`.
+- **`frame-src`:** Restricted to `'self' https://api.razorpay.com https://checkout.razorpay.com` for verified checkout modals.
 - **Additional directives:** `worker-src 'self'` (service worker), `base-uri 'self'`, `object-src 'none'`, `frame-ancestors 'self'`.
-- **Host scope:** The CSP in `vercel.json` applies only to the Vercel-hosted deployment. The Appwrite Sites host (`olitunapp.appwrite.network`) applies its own headers — when promoting Appwrite Sites to the primary production host, mirror this CSP there.
+- **`Permissions-Policy`:** Set strictly to `camera=(self), microphone=(self), geolocation=()`. Camera and microphone access are allowed solely for the same origin to power in-app voice recording and OCR scanning in AI Studio without allowing third-party origin delegation. Geolocation remains globally disabled `()`.
+- **Host scope:** The headers in `vercel.json` apply to the Vercel-hosted deployment. The Appwrite Sites host (`olitunapp.appwrite.network`) applies its own headers — when promoting Appwrite Sites to the primary production host, mirror these policies there.
 
 ---
 

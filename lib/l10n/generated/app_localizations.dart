@@ -1915,6 +1915,456 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A short review keeps what you learned fresh. No rush.'**
   String get notifGentleBody;
+
+  /// No description provided for @santaliAiVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Santali AI Voice'**
+  String get santaliAiVoice;
+
+  /// No description provided for @closeVoiceStudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Close voice studio'**
+  String get closeVoiceStudio;
+
+  /// No description provided for @createVoiceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATE VOICE'**
+  String get createVoiceAction;
+
+  /// No description provided for @creatingVoiceProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'CREATING VOICE...'**
+  String get creatingVoiceProgress;
+
+  /// No description provided for @voiceStatusWorking.
+  ///
+  /// In en, this message translates to:
+  /// **'Giving your words a Santali voice…'**
+  String get voiceStatusWorking;
+
+  /// No description provided for @voiceStatusIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type it. Hear it. Share it.'**
+  String get voiceStatusIdle;
+
+  /// No description provided for @voiceStatusPlaying.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing • {voice}'**
+  String voiceStatusPlaying(String voice);
+
+  /// No description provided for @voiceStatusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready • tap play'**
+  String get voiceStatusReady;
+
+  /// No description provided for @voiceStatusOpenPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice ready • open player below'**
+  String get voiceStatusOpenPlayer;
+
+  /// No description provided for @voiceCacheTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: repeat clips are instant and free — they replay from cache.'**
+  String get voiceCacheTip;
+
+  /// No description provided for @voiceDownloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed.'**
+  String get voiceDownloadFailed;
+
+  /// No description provided for @voiceInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — type in Ol Chiki...'**
+  String get voiceInputHint;
+
+  /// No description provided for @voicePlayerTab.
+  ///
+  /// In en, this message translates to:
+  /// **'PLAYER'**
+  String get voicePlayerTab;
+
+  /// No description provided for @voiceCreatingBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating your voice…'**
+  String get voiceCreatingBack;
+
+  /// No description provided for @voiceEmptyBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Your voice will appear here'**
+  String get voiceEmptyBack;
+
+  /// No description provided for @voiceEditText.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit text'**
+  String get voiceEditText;
+
+  /// No description provided for @voiceDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get voiceDismiss;
+
+  /// No description provided for @voicePlaybackSpeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Playback speed'**
+  String get voicePlaybackSpeed;
+
+  /// No description provided for @voiceSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'SAVING…'**
+  String get voiceSaving;
+
+  /// No description provided for @voiceDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'DOWNLOAD'**
+  String get voiceDownload;
+
+  /// No description provided for @voiceRegenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'REGENERATE'**
+  String get voiceRegenerate;
+
+  /// No description provided for @voicePickerHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'VOICE  •  ᱟᱲᱟᱝ'**
+  String get voicePickerHeader;
+
+  /// No description provided for @voiceStyleHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'STYLE  •  ᱨᱚᱲ'**
+  String get voiceStyleHeader;
+
+  /// No description provided for @voiceSignInUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'SIGN IN'**
+  String get voiceSignInUpper;
+
+  /// No description provided for @voiceRetryUpper.
+  ///
+  /// In en, this message translates to:
+  /// **'RETRY'**
+  String get voiceRetryUpper;
+
+  /// No description provided for @aiStudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Studio'**
+  String get aiStudioTitle;
+
+  /// No description provided for @aiStudioToolTranscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Transcribe'**
+  String get aiStudioToolTranscribe;
+
+  /// No description provided for @aiStudioToolTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate'**
+  String get aiStudioToolTranslate;
+
+  /// No description provided for @aiStudioToolScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get aiStudioToolScan;
+
+  /// No description provided for @aiStudioHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'From a page or a voice\nto words you can use.'**
+  String get aiStudioHeadline;
+
+  /// No description provided for @aiStudioSubhead.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate text, transcribe a short recording, or scan a document. Review the result before taking it anywhere.'**
+  String get aiStudioSubhead;
+
+  /// No description provided for @aiStudioStep1.
+  ///
+  /// In en, this message translates to:
+  /// **'1  Add input'**
+  String get aiStudioStep1;
+
+  /// No description provided for @aiStudioStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2  Process with consent'**
+  String get aiStudioStep2;
+
+  /// No description provided for @aiStudioStep3.
+  ///
+  /// In en, this message translates to:
+  /// **'3  Review & use'**
+  String get aiStudioStep3;
+
+  /// No description provided for @aiStudioNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'AI processing is not available in this build. You can prepare text here or use the free script converter below.'**
+  String get aiStudioNotConfigured;
+
+  /// No description provided for @aiStudioYourText.
+  ///
+  /// In en, this message translates to:
+  /// **'Your text'**
+  String get aiStudioYourText;
+
+  /// No description provided for @aiStudioYourAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Your audio'**
+  String get aiStudioYourAudio;
+
+  /// No description provided for @aiStudioYourDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'Your document'**
+  String get aiStudioYourDocument;
+
+  /// No description provided for @aiStudioSourceLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Source language'**
+  String get aiStudioSourceLanguage;
+
+  /// No description provided for @aiStudioTranslateNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate into Santali (Ol Chiki). Up to 2,000 characters.'**
+  String get aiStudioTranslateNote;
+
+  /// No description provided for @aiStudioTextToTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Text to translate'**
+  String get aiStudioTextToTranslate;
+
+  /// No description provided for @aiStudioTextPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or paste your text'**
+  String get aiStudioTextPlaceholder;
+
+  /// No description provided for @aiStudioTextLimitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a passage of 2,000 characters or fewer.'**
+  String get aiStudioTextLimitError;
+
+  /// No description provided for @aiStudioSpeakNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak normally. Recording stops automatically at 30 seconds. You can also upload a WAV file instead.'**
+  String get aiStudioSpeakNote;
+
+  /// No description provided for @aiStudioRecordVoice.
+  ///
+  /// In en, this message translates to:
+  /// **'Record voice'**
+  String get aiStudioRecordVoice;
+
+  /// No description provided for @aiStudioStopRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording · {seconds}s'**
+  String aiStudioStopRecording(String seconds);
+
+  /// No description provided for @aiStudioListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening… Tap Stop recording when you are done.'**
+  String get aiStudioListening;
+
+  /// No description provided for @aiStudioOrExistingRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Or use an existing recording'**
+  String get aiStudioOrExistingRecording;
+
+  /// No description provided for @aiStudioUploadWav.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload WAV file'**
+  String get aiStudioUploadWav;
+
+  /// No description provided for @aiStudioReplaceRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace recording'**
+  String get aiStudioReplaceRecording;
+
+  /// No description provided for @aiStudioOpening.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening…'**
+  String get aiStudioOpening;
+
+  /// No description provided for @aiStudioDocNote.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF, PNG or JPG · up to 10 MB and 10 pages\nUse a clear, upright page with readable text.'**
+  String get aiStudioDocNote;
+
+  /// No description provided for @aiStudioChooseFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose file'**
+  String get aiStudioChooseFile;
+
+  /// No description provided for @aiStudioReplaceFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace file'**
+  String get aiStudioReplaceFile;
+
+  /// No description provided for @aiStudioCapturePage.
+  ///
+  /// In en, this message translates to:
+  /// **'Capture page'**
+  String get aiStudioCapturePage;
+
+  /// No description provided for @aiStudioConsentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree to paid AI processing'**
+  String get aiStudioConsentTitle;
+
+  /// No description provided for @aiStudioConsentSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This sends my text or file to Sarvam, an external AI service, and uses the app’s paid processing allowance. Only send content you have permission to use. Nothing is published automatically.'**
+  String get aiStudioConsentSubtitle;
+
+  /// No description provided for @aiStudioProcessing.
+  ///
+  /// In en, this message translates to:
+  /// **'Processing… Keep this screen open.'**
+  String get aiStudioProcessing;
+
+  /// No description provided for @aiStudioProcessWithAi.
+  ///
+  /// In en, this message translates to:
+  /// **'{tool} with AI'**
+  String aiStudioProcessWithAi(String tool);
+
+  /// No description provided for @aiStudioReviewAndUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Review & use'**
+  String get aiStudioReviewAndUse;
+
+  /// No description provided for @aiStudioResultPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Your result will appear here.'**
+  String get aiStudioResultPlaceholder;
+
+  /// No description provided for @aiStudioResultDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing has been published or shared. Once text is ready, you can correct it, copy it, or choose a passage for the next step.'**
+  String get aiStudioResultDisclaimer;
+
+  /// No description provided for @aiStudioEditableResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Editable result'**
+  String get aiStudioEditableResult;
+
+  /// No description provided for @aiStudioReviewHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'Review AI text before copying or sharing.'**
+  String get aiStudioReviewHelper;
+
+  /// No description provided for @aiStudioCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get aiStudioCopy;
+
+  /// No description provided for @aiStudioShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get aiStudioShare;
+
+  /// No description provided for @aiStudioCopyToShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to share'**
+  String get aiStudioCopyToShare;
+
+  /// No description provided for @aiStudioTranslateResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Translate result'**
+  String get aiStudioTranslateResult;
+
+  /// No description provided for @aiStudioSendToBodhan.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to Bodhan'**
+  String get aiStudioSendToBodhan;
+
+  /// No description provided for @aiStudioBodhanNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Bodhan accepts a passage up to 600 characters. Opening it does not start voice generation.'**
+  String get aiStudioBodhanNote;
+
+  /// No description provided for @aiStudioLookingForConverter.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking for the free script converter?'**
+  String get aiStudioLookingForConverter;
+
+  /// No description provided for @aiStudioDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'AI results can contain mistakes; review names, numbers and spelling before use.'**
+  String get aiStudioDisclaimer;
+
+  /// No description provided for @aiStudioPassageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose or edit a passage of up to {limit} characters. Your original result will stay unchanged.'**
+  String aiStudioPassageNote(int limit);
+
+  /// No description provided for @aiStudioPassageToSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Passage to send'**
+  String get aiStudioPassageToSend;
+
+  /// No description provided for @aiStudioPassageLimitError.
+  ///
+  /// In en, this message translates to:
+  /// **'Shorten the passage to continue. Nothing is truncated.'**
+  String get aiStudioPassageLimitError;
 }
 
 class _AppLocalizationsDelegate

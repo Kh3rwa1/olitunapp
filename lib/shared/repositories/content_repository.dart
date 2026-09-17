@@ -1,13 +1,12 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:itun/core/api/appwrite_databases_pagination.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
-import 'package:itun/core/config/appwrite_config.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
+import 'package:uuid/uuid.dart';
 import 'content_seed_loader.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/security/premium_content_policy.dart';
@@ -26,17 +25,20 @@ class ContentRepository {
   static const int _authorizedLessonListPageSize = 100;
   static const int _maxAuthorizedLessonListPages = 100;
 
-  final TablesDB _tablesDB;
+  final ContentRemoteDataSource? _remoteDataSource;
   final NetworkInfo _networkInfo;
   final MutationOutboxService? _mutationOutbox;
   final AppwriteFunctionsService? _functionsService;
 
   ContentRepository({
-    required TablesDB tablesDB,
+    ContentRemoteDataSource? remoteDataSource,
+    dynamic tablesDB,
     required NetworkInfo networkInfo,
     MutationOutboxService? mutationOutbox,
     AppwriteFunctionsService? functionsService,
-  }) : _tablesDB = tablesDB,
+  }) : _remoteDataSource =
+           remoteDataSource ??
+           ContentRemoteDataSourceFactory.fromDynamic(tablesDB),
        _networkInfo = networkInfo,
        _mutationOutbox = mutationOutbox,
        _functionsService = functionsService;
@@ -262,24 +264,23 @@ class ContentRepository {
         if (kind == ContentKind.lesson) {
           remoteItems = await _listAuthorizedLessons(categoryId);
         } else {
+          final remoteDataSource = _remoteDataSource;
+          if (remoteDataSource == null) {
+            return await _getCachedList(
+              kind,
+              categoryId,
+              fallback: bundledItems,
+            );
+          }
           final categoryAttribute = _categoryAttribute(kind);
-          final List<String> queries = [
-            if (categoryAttribute != null &&
-                categoryId != null &&
-                categoryId.isNotEmpty)
-              Query.equal(categoryAttribute, categoryId),
-            if (_hasOrderAttribute(kind)) Query.orderAsc('order'),
-            Query.limit(500),
-          ];
-
-          final response = await AppwriteDatabasesPagination.listRows(
-            _tablesDB,
-            databaseId: AppwriteConfig.databaseId,
+          final rows = await remoteDataSource.listRows(
             tableId: tableId,
-            queries: queries,
+            categoryAttribute: categoryAttribute,
+            categoryId: categoryId,
+            orderAsc: _hasOrderAttribute(kind),
           );
-          remoteItems = response
-              .map((row) => ContentItem.fromJson(row.data, row.$id, kind))
+          remoteItems = rows
+              .map((row) => ContentItem.fromJson(row.data, row.id, kind))
               .toList();
         }
 
@@ -362,13 +363,12 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
-        final row = await _tablesDB.getRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: tableId,
-          rowId: id,
-        );
+        final remoteDataSource = _remoteDataSource;
+        if (remoteDataSource == null) return await _getCachedItem(kind, id);
 
-        final item = ContentItem.fromJson(row.data, row.$id, kind);
+        final row = await remoteDataSource.getRow(tableId: tableId, rowId: id);
+
+        final item = ContentItem.fromJson(row.data, row.id, kind);
         await _cacheAdministrationItem(item);
 
         return right(item);
@@ -434,18 +434,21 @@ class ContentRepository {
     }
 
     try {
-      final category = await _tablesDB
-          .getRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: item.categoryId,
-          )
-          .timeout(const Duration(seconds: 6));
+      final remoteDataSource = _remoteDataSource;
+      if (remoteDataSource == null) {
+        return PremiumContentPolicy.forContentItem(
+          isPremium: item.isPremium,
+          categoryResolved: false,
+        );
+      }
+      final categoryData = await remoteDataSource.getCategory(
+        categoryId: item.categoryId,
+      );
       return PremiumContentPolicy.forContentItem(
         isPremium: item.isPremium,
-        categoryUnlockMode: category.data['unlockMode'] as String?,
+        categoryUnlockMode: categoryData['unlockMode'] as String?,
         lessonOrder: item.order,
-        previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+        previewLessonCount: categoryData['previewLessonCount'] as int? ?? 0,
       );
     } catch (_) {
       return PremiumContentPolicy.forContentItem(
@@ -454,9 +457,6 @@ class ContentRepository {
       );
     }
   }
-
-  List<String> _readPermissions(PublicationDecision decision) =>
-      decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
 
   /// Upserts a content item to Appwrite and updates the local cache.
   Future<Either<Failure, ContentItem>> upsert(
@@ -474,36 +474,22 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
+        final remoteDataSource = _remoteDataSource;
+        if (remoteDataSource == null) {
+          return left(
+            const ServerFailure(message: 'Remote content source unavailable'),
+          );
+        }
         final decision = await _publicationDecisionFor(item);
-        final permissions = _readPermissions(decision);
         final appwritePayload = item.toAppwriteAttributes();
 
-        ContentItem? resultItem;
-        try {
-          // Attempt to create document first
-          final row = await _tablesDB.createRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: tableId,
-            rowId: item.id,
-            data: appwritePayload,
-            permissions: permissions,
-          );
-          resultItem = ContentItem.fromJson(row.data, row.$id, item.kind);
-        } on AppwriteException catch (ae) {
-          if (ae.code == 409) {
-            // Document already exists, perform update
-            final row = await _tablesDB.updateRow(
-              databaseId: AppwriteConfig.databaseId,
-              tableId: tableId,
-              rowId: item.id,
-              data: appwritePayload,
-              permissions: permissions,
-            );
-            resultItem = ContentItem.fromJson(row.data, row.$id, item.kind);
-          } else {
-            rethrow;
-          }
-        }
+        final row = await remoteDataSource.upsertRow(
+          tableId: tableId,
+          rowId: item.id,
+          data: appwritePayload,
+          allowAnonymousRead: decision.allowAnonymousRead,
+        );
+        final resultItem = ContentItem.fromJson(row.data, row.id, item.kind);
 
         await _cacheAdministrationItem(resultItem);
         // Evict the cached list to force refresh
@@ -542,7 +528,8 @@ class ContentRepository {
     try {
       await outbox.enqueueMutation(
         PendingMutation(
-          operationId: 'upsert_${item.kind.name}_${item.id}_${ID.unique()}',
+          operationId:
+              'upsert_${item.kind.name}_${item.id}_${const Uuid().v4()}',
           userId: contentMutationQueueUserId,
           operationType: 'content.upsert',
           entityId: item.id,
@@ -563,16 +550,18 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
+        final remoteDataSource = _remoteDataSource;
+        if (remoteDataSource == null) {
+          return left(
+            const ServerFailure(message: 'Remote content source unavailable'),
+          );
+        }
         // Read item to know categoryId before deletion for cache clear
         final itemRes = await getForAdministration(kind, id);
         String? categoryId;
         itemRes.fold((_) {}, (item) => categoryId = item.categoryId);
 
-        await _tablesDB.deleteRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: tableId,
-          rowId: id,
-        );
+        await remoteDataSource.deleteRow(tableId: tableId, rowId: id);
 
         await CacheService.delete(itemCacheKey);
         if (kind == ContentKind.lesson) {

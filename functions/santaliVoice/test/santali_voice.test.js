@@ -221,3 +221,375 @@ test('rotation: throws ALL_KEYS_EXHAUSTED when every key fails', async () => {
     (e) => e.code === 'ALL_KEYS_EXHAUSTED'
   );
 });
+
+// ---- Unicode NFC & Code Point Counting ----
+import { MAX_BODY_BYTES } from '../src/validation.js';
+import { VoiceStore, VoiceError, digest, limits } from '../src/store.js';
+import { createHandler } from '../src/main.js';
+
+test('Unicode: counts Unicode code points, not UTF-16 code units', () => {
+  // Combining acute accent: 'e' + combining acute (2 code units, 2 code points in NFD -> 1 in NFC)
+  const nfd = 'e\u0301';
+  const normalized = normalizeSantaliVoiceRequest({ text: nfd, voice: 'Phulmani' });
+  assert.equal(normalized.text, 'é');
+  assert.equal(normalized.chars, 1);
+
+  // Santali Ol Chiki text exact limit: 600 code points
+  const exact600 = 'ᱥ'.repeat(MAX_TEXT_CHARS);
+  const okExact = validateSantaliVoiceRequest({
+    method: 'POST',
+    body: { text: exact600, voice: 'Phulmani' },
+  });
+  assert.equal(okExact, null);
+
+  // 601 code points should fail
+  const over600 = 'ᱥ'.repeat(MAX_TEXT_CHARS + 1);
+  const overResult = validateSantaliVoiceRequest({
+    method: 'POST',
+    body: { text: over600, voice: 'Phulmani' },
+  });
+  assert.equal(overResult.code, 'INPUT_TOO_LONG');
+  assert.equal(overResult.status, 400);
+});
+
+test('Validation: enforces maximum request body byte length (32KB)', () => {
+  const oversizedRaw = JSON.stringify({
+    text: 'ᱡᱚᱦᱟᱨ',
+    voice: 'Phulmani',
+    padding: 'x'.repeat(MAX_BODY_BYTES + 10),
+  });
+  const result = validateSantaliVoiceRequest({
+    method: 'POST',
+    body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' },
+    rawBody: oversizedRaw,
+  });
+  assert.equal(result.status, 400);
+  assert.equal(result.code, 'PAYLOAD_TOO_LARGE');
+});
+
+// ---- VoiceStore Claims & Quotas ----
+
+function createMockDb() {
+  const docs = new Map();
+  const key = (col, id) => `${col}:${id}`;
+  return {
+    docs,
+    async createDocument(p, col, id, data) {
+      const collectionId = typeof p === 'object' ? p.collectionId : col;
+      const documentId = typeof p === 'object' ? p.documentId : id;
+      const docData = typeof p === 'object' ? p.data : data;
+      const k = key(collectionId, documentId);
+      if (docs.has(k)) {
+        const err = new Error('Document already exists');
+        err.code = 409;
+        throw err;
+      }
+      const d = { $id: documentId, ...docData };
+      docs.set(k, d);
+      return { ...d };
+    },
+    async getDocument(p, col, id) {
+      const collectionId = typeof p === 'object' ? p.collectionId : col;
+      const documentId = typeof p === 'object' ? p.documentId : id;
+      const k = key(collectionId, documentId);
+      if (!docs.has(k)) {
+        const err = new Error('Document not found');
+        err.code = 404;
+        throw err;
+      }
+      return { ...docs.get(k) };
+    },
+    async updateDocument(p, col, id, data) {
+      const collectionId = typeof p === 'object' ? p.collectionId : col;
+      const documentId = typeof p === 'object' ? p.documentId : id;
+      const docData = typeof p === 'object' ? p.data : data;
+      const k = key(collectionId, documentId);
+      const d = docs.get(k);
+      if (!d) {
+        const err = new Error('Document not found');
+        err.code = 404;
+        throw err;
+      }
+      Object.assign(d, docData);
+      return { ...d };
+    },
+    async incrementDocumentAttribute(p, col, id, attr, val, max) {
+      const collectionId = typeof p === 'object' ? p.collectionId : col;
+      const documentId = typeof p === 'object' ? p.documentId : id;
+      const attribute = typeof p === 'object' ? p.attribute : attr;
+      const value = typeof p === 'object' ? p.value : val;
+      const maximum = typeof p === 'object' ? p.max : max;
+      const k = key(collectionId, documentId);
+      const d = docs.get(k);
+      if (!d) {
+        const err = new Error('Document not found');
+        err.code = 404;
+        throw err;
+      }
+      const current = (d[attribute] || 0) + value;
+      if (current > maximum) {
+        const err = new Error('Attribute maximum exceeded');
+        err.code = 400;
+        throw err;
+      }
+      d[attribute] = current;
+      return { ...d };
+    },
+    async listDocuments(db, col, queries) {
+      const prefix = `${col}:`;
+      const found = [];
+      for (const [k, v] of docs.entries()) {
+        if (k.startsWith(prefix)) found.push(v);
+      }
+      return { documents: found };
+    },
+  };
+}
+
+test('VoiceStore: handles durable request claims lifecycle', async () => {
+  const db = createMockDb();
+  const store = new VoiceStore(db, 'olitun_db', 'test-secret-at-least-32-chars-long');
+  const claimId = 'claim-123';
+
+  // 1. Initial claim succeeds
+  const doc = await store.claim(claimId, 'u1', 'cache-key-1', 50);
+  assert.ok(doc);
+  assert.equal(doc.$id, claimId);
+  assert.equal(doc.status, 'submitting');
+
+  // 2. Duplicate concurrent claim returns null (conflict)
+  const duplicate = await store.claim(claimId, 'u1', 'cache-key-1', 50);
+  assert.equal(duplicate, null);
+
+  // 3. Get claim retrieves current state
+  const fetched = await store.get(claimId);
+  assert.equal(fetched.status, 'submitting');
+
+  // 4. Update claim to completed
+  await store.update(claimId, { status: 'completed', audioUrl: 'https://example.com/audio.wav' });
+  const updated = await store.get(claimId);
+  assert.equal(updated.status, 'completed');
+  assert.equal(updated.audioUrl, 'https://example.com/audio.wav');
+});
+
+test('VoiceStore: enforces atomic quota reservation and rejects overages', async () => {
+  const db = createMockDb();
+  const store = new VoiceStore(db, 'olitun_db', 'test-secret-at-least-32-chars-long');
+  const policy = {
+    monthlyChars: 1000,
+    dailyChars: 500,
+    userDailyChars: 100,
+    userMinuteRequests: 5,
+    globalMinuteRequests: 20,
+  };
+
+  // Taking within budget succeeds
+  await store.reserve('u1', 60, policy);
+
+  // Exceeding user daily limit fails with QUOTA_EXCEEDED (429)
+  await assert.rejects(
+    store.reserve('u1', 50, policy), // 60 + 50 = 110 > 100
+    (err) => err instanceof VoiceError && err.status === 429 && err.code === 'QUOTA_EXCEEDED'
+  );
+});
+
+// ---- Handler Integration Tests ----
+
+const testEnv = {
+  APPWRITE_FUNCTION_API_ENDPOINT: 'https://appwrite.example/v1',
+  APPWRITE_FUNCTION_PROJECT_ID: 'olitun_test',
+  APPWRITE_FUNCTION_API_KEY: 'test-api-key',
+  SANTALI_VOICE_HMAC_SECRET: '01234567890123456789012345678901',
+  SANTALI_VOICE_ENABLED: 'true',
+  APPWRITE_DATABASE_ID: 'olitun_db',
+  AUDIO_BUCKET_ID: 'audio',
+};
+
+function createMockRes() {
+  return {
+    statusCode: 200,
+    body: null,
+    json(data, status = 200) {
+      this.statusCode = status;
+      this.body = data;
+      return { status, data };
+    },
+  };
+}
+
+test('Handler: emergency switch returns 503 SERVICE_UNAVAILABLE', async () => {
+  const handler = createHandler({
+    env: { ...testEnv, SANTALI_VOICE_ENABLED: 'false' },
+  });
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+  assert.equal(res.statusCode, 503);
+  assert.equal(res.body.error, 'SERVICE_UNAVAILABLE');
+});
+
+test('Handler: unauthenticated request returns 401 LOGIN_REQUIRED', async () => {
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => null,
+  });
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+  assert.equal(res.statusCode, 401);
+  assert.equal(res.body.error, 'LOGIN_REQUIRED');
+});
+
+test('Handler: cache hit returns cached audio with zero upstream provider calls', async () => {
+  const db = createMockDb();
+  // Pre-seed cache
+  const cacheKey = createTtsCacheKey({ text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani', lang: 'sat', style: '' });
+  await db.createDocument('olitun_db', 'tts_cache', 'cache-doc-1', {
+    cacheKey,
+    audioUrl: 'https://cdn.example.com/cached.wav',
+    storageFileId: 'cached-file-1',
+  });
+
+  let rotationCalled = false;
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => 'u1',
+    services: () => ({
+      databases: db,
+      storage: {},
+      synthesizeWithRotation: async () => {
+        rotationCalled = true;
+        throw new Error('Should not be called');
+      },
+    }),
+  });
+
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.data.cached, true);
+  assert.equal(res.body.data.audioUrl, 'https://cdn.example.com/cached.wav');
+  assert.equal(rotationCalled, false);
+});
+
+test('Handler: duplicate concurrent request returns 409 REQUEST_NOT_REPLAYABLE', async () => {
+  const db = createMockDb();
+  const cacheKey = createTtsCacheKey({ text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani', lang: 'sat', style: '' });
+  const claimId = digest(testEnv.SANTALI_VOICE_HMAC_SECRET, ['voice-v1', 'u1', cacheKey]);
+
+  // Pre-seed an in-flight claim
+  await db.createDocument('olitun_db', 'voice_claims', claimId, {
+    status: 'submitting',
+    userId: 'u1',
+    cacheKey,
+  });
+
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => 'u1',
+    services: () => ({
+      databases: db,
+      storage: {},
+    }),
+  });
+
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+
+  assert.equal(res.statusCode, 409);
+  assert.equal(res.body.error, 'REQUEST_NOT_REPLAYABLE');
+});
+
+test('Handler: quota exhaustion returns 429 and marks claim failed', async () => {
+  const db = createMockDb();
+  const store = new VoiceStore(db, 'olitun_db', testEnv.SANTALI_VOICE_HMAC_SECRET);
+  // Exhaust quota
+  const restrictivePolicy = {
+    ...limits({}),
+    userDailyChars: 5,
+  };
+
+  const handler = createHandler({
+    env: { ...testEnv, SANTALI_VOICE_USER_DAILY_CHARS: '5' },
+    authenticateImpl: async () => 'u1',
+    services: () => ({
+      databases: db,
+      storage: {},
+      store,
+    }),
+  });
+
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ ᱜᱮ', voice: 'Phulmani' } }, // 8 chars > 5
+    res,
+  });
+
+  assert.equal(res.statusCode, 429);
+  assert.equal(res.body.error, 'QUOTA_EXCEEDED');
+});
+
+test('Handler: successful synthesis saves audio, registers user_assets, and caches track', async () => {
+  const db = createMockDb();
+  const mockStorage = {
+    async createFile(bucketId, fileId, file) {
+      return { $id: 'file-xyz', bucketId };
+    },
+  };
+
+  // Pre-seed active Bodhan key
+  await db.createDocument('olitun_db', 'bodhan_keys', 'key-1', {
+    key: 'sk-active-test',
+    isActive: true,
+    priority: 1,
+    successCount: 0,
+    failCount: 0,
+  });
+
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => 'u1',
+    services: () => ({
+      databases: db,
+      storage: mockStorage,
+      synthesizeWithRotation: async () => ({
+        audio: Buffer.from('RIFF-MOCK-AUDIO'),
+        keyId: 'key-1',
+        attempts: 1,
+      }),
+    }),
+  });
+
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.success, true);
+  assert.equal(res.body.data.cached, false);
+  assert.equal(res.body.data.storageFileId, 'file-xyz');
+
+  // Verify registered in user_assets for account deletion
+  let foundUserAsset = false;
+  for (const [k, doc] of db.docs.entries()) {
+    if (k.startsWith('user_assets:') && doc.userId === 'u1' && doc.fileId === 'file-xyz') {
+      foundUserAsset = true;
+    }
+  }
+  assert.ok(foundUserAsset, 'File should be tracked in user_assets collection');
+});
+

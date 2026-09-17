@@ -1,10 +1,9 @@
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/api/appwrite_functions_service.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
@@ -15,10 +14,10 @@ import 'package:itun/shared/repositories/content_repository.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
+  final remoteDataSource = ref.watch(contentRemoteDataSourceProvider);
   final networkInfo = ref.watch(networkInfoProvider);
   return ContentRepository(
-    tablesDB: TablesDB(authService.client),
+    remoteDataSource: remoteDataSource,
     networkInfo: networkInfo,
     mutationOutbox: ref.watch(mutationOutboxProvider),
     functionsService: ref.watch(appwriteFunctionsServiceProvider),

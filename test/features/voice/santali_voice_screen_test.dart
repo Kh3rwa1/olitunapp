@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/voice/presentation/screens/santali_voice_screen.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -39,7 +40,11 @@ void main() {
           audioServiceProvider.overrideWithValue(audio),
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
-        child: const MaterialApp(home: SantaliVoiceScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: SantaliVoiceScreen(),
+        ),
       ),
     );
     await tester.pump(const Duration(milliseconds: 800));
@@ -82,6 +87,8 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: SantaliVoiceScreen(initialText: 'ᱡᱚᱦᱟᱨ'),
         ),
       ),

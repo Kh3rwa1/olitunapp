@@ -78,9 +78,20 @@ capabilities exclusively through these anti-corruption seams:
 | --- | --- | --- |
 | `AppwriteDbService` | `core/api/appwrite_db_service.dart` | All TablesDB reads/writes (retry, paging, breadcrumbs) |
 | `AppwriteFunctionsService` | `core/api/appwrite_functions_service.dart` | Serverless function RPCs; returns neutral `FunctionExecutionResult` |
+| `ContentRemoteDataSource` | `core/api/content_remote_datasource.dart` | Remote datasource abstraction isolating Appwrite TablesDB from shared repositories |
 | `DbQuery` / `DbId` | `core/api/appwrite_query_builders.dart` | Query-string builders + unique ID generation |
 | `AppwriteErrorClassifier` | `core/error/appwrite_error_classifier.dart` | Exception → neutral error-info mapping |
 | `data/di/*.dart` | `features/*/data/di/` | Datasource/repository provider wiring beside the impls it constructs |
+
+### Boundary Enforcement
+
+Architecture boundaries are strictly validated in CI (`.github/workflows/flutter-ci.yml`) via:
+```bash
+node scripts/check_architecture_boundaries.mjs
+```
+This check verifies that:
+1. No presentation layers (`lib/features/*/presentation/`) directly import `package:appwrite`.
+2. Shared repositories (`lib/shared/repositories/`) do not import `package:appwrite`, using `ContentRemoteDataSource` instead.
 
 Providers for cross-feature data live in `shared/providers/` (documented in
 the directory table above); the content repository and mutation outbox are
@@ -165,10 +176,10 @@ Serverless Node-22 functions live under `functions/`. Key scheduled jobs:
 | Function | Schedule | Purpose |
 | --- | --- | --- |
 | `aggregateLearningAnalytics` | `30 0 * * *` | Rolls up raw analytics events into daily summaries |
-| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events older than 90 days, expired rate-limit records, and translation-cache entries (90-day retention) |
+| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events (90d), expired rate-limits, translation-cache (90d), AI Studio inputs (24h), AI Studio jobs (30d), audio TTS cache (90d + storage cleanup), and voice claims (7d) |
 | `backupCollections` | `0 4 * * 0` | Weekly JSON backup of core content to `admin_backups` bucket (12-file rolling retention) |
 
-Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), Bakhed progress (`recordBakhedProgress`), and public Binti Guru waitlist signups (`bintiWaitlist` — validated, rate-limited per caller and phone, deduplicated; the collection has no public write access).
+Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), voice synthesis (`santaliVoice`), Bakhed progress (`recordBakhedProgress`), and public Binti Guru waitlist signups (`bintiWaitlist` — validated, rate-limited per caller and phone, deduplicated; the collection has no public write access).
 
 ### Version Pinning & Governance Exceptions
 

@@ -11,6 +11,7 @@ import '../../../../core/motion/motion.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../providers/santali_voice_providers.dart';
@@ -248,21 +249,23 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     if (!mounted) return;
     setState(() => _isDownloading = false);
     final failure = ref.read(voiceDownloadServiceProvider).errorMessage;
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message ?? failure ?? 'Download failed.')),
+      SnackBar(content: Text(message ?? failure ?? l10n.voiceDownloadFailed)),
     );
   }
 
-  String _statusText(bool playing, bool mine) {
-    if (_isLoading) return 'Giving your words a Santali voice…';
-    if (_clip == null) return 'Type it. Hear it. Share it.';
-    if (playing) return 'Playing • ${_clip!.voice}';
-    if (mine) return 'Ready • tap play';
-    return 'Voice ready • open player below';
+  String _statusText(AppLocalizations l10n, bool playing, bool mine) {
+    if (_isLoading) return l10n.voiceStatusWorking;
+    if (_clip == null) return l10n.voiceStatusIdle;
+    if (playing) return l10n.voiceStatusPlaying(_clip!.voice);
+    if (mine) return l10n.voiceStatusReady;
+    return l10n.voiceStatusOpenPlayer;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final voice = ref.watch(santaliVoiceNameProvider);
     final style = ref.watch(santaliVoiceStyleProvider);
@@ -283,10 +286,11 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        toolbarHeight: 52,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+        toolbarHeight: 56,
+        leadingWidth: 56,
+        leading: Center(
           child: CircleAvatar(
+            radius: 22,
             backgroundColor: (isDark ? Colors.white : Colors.black).withValues(
               alpha: 0.1,
             ),
@@ -296,13 +300,13 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                 color: isDark ? Colors.white : Colors.black,
                 size: 20,
               ),
-              tooltip: 'Close voice studio',
+              tooltip: l10n.closeVoiceStudio,
               onPressed: () => context.pop(),
             ),
           ),
         ),
         title: Text(
-          'Santali AI Voice',
+          l10n.santaliAiVoice,
           style: AppTypography.inter(
             fontSize: 17,
             fontWeight: FontWeight.w700,
@@ -327,6 +331,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                     voice,
                     style,
                     mine,
+                    l10n,
                   );
                 }
                 return Center(
@@ -341,6 +346,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                         voice,
                         style,
                         mine,
+                        l10n,
                       ),
                     ),
                   ),
@@ -361,6 +367,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     String voice,
     String style,
     bool mine,
+    AppLocalizations l10n,
   ) {
     return Center(
       child: ConstrainedBox(
@@ -374,7 +381,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                 isDark: isDark,
                 phase: phase,
                 playing: playing,
-                statusText: _statusText(playing, mine),
+                statusText: _statusText(l10n, playing, mine),
                 big: true,
               ),
               const SizedBox(height: 24),
@@ -397,8 +404,8 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                         const SizedBox(height: 16),
                         DuoButton(
                           text: _isLoading
-                              ? 'CREATING YOUR VOICE...'
-                              : 'CREATE VOICE',
+                              ? l10n.creatingVoiceProgress
+                              : l10n.createVoiceAction,
                           icon: _isLoading ? null : Icons.mic_rounded,
                           isLoading: _isLoading,
                           onPressed: _generate,
@@ -444,7 +451,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                           ),
                           const SizedBox(height: 18),
                           Text(
-                            'Tip: repeat clips are instant and free — they replay from cache.',
+                            l10n.voiceCacheTip,
                             style: AppTypography.inter(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w500,
@@ -475,6 +482,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     String voice,
     String style,
     bool mine,
+    AppLocalizations l10n,
   ) {
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -487,7 +495,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
               isDark: isDark,
               phase: phase,
               playing: playing,
-              statusText: _statusText(playing, mine),
+              statusText: _statusText(l10n, playing, mine),
             ),
             const SizedBox(height: 10),
             // Flip card: small text box ⇄ player.
@@ -500,7 +508,9 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
             StyleRailSelector(isDark: isDark, selected: style),
             const Spacer(),
             DuoButton(
-              text: _isLoading ? 'CREATING...' : 'CREATE VOICE',
+              text: _isLoading
+                  ? l10n.creatingVoiceProgress
+                  : l10n.createVoiceAction,
               icon: _isLoading ? null : Icons.mic_rounded,
               isLoading: _isLoading,
               onPressed: _generate,

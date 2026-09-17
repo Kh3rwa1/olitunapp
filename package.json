@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:backend && node scripts/test_gitleaks_rules.mjs",
-    "test:backend": "node scripts/check_environment_isolation.mjs && node scripts/sync_shared_modules.mjs --check && node scripts/verify_function_deployment.mjs && node scripts/check_review_corpus_ids.mjs && node --test scripts/check_review_corpus_ids.test.mjs scripts/check_premium_content_permissions.test.mjs && node --test functions/test/*.test.js functions/translator/test/*.test.js functions/syncDailyAffirmation/test/*.test.js functions/bintiWaitlist/test/*.test.js"
+    "test:backend": "node scripts/check_environment_isolation.mjs && node scripts/sync_shared_modules.mjs --check && node scripts/verify_function_deployment.mjs && node scripts/check_review_corpus_ids.mjs && node --test scripts/check_review_corpus_ids.test.mjs scripts/check_premium_content_permissions.test.mjs test/web/*.mjs test/account_deletion/*.mjs && node --test functions/test/*.test.js functions/translator/test/*.test.js functions/syncDailyAffirmation/test/*.test.js functions/bintiWaitlist/test/*.test.js functions/santaliVoice/test/*.test.js"
   },
   "dependencies": {
     "@vitalets/google-translate-api": "^9.2.1",

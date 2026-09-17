@@ -10,6 +10,7 @@ export const BODHAN_MODEL = 'indic-speak';
 
 export const MAX_TEXT_CHARS = 600;
 export const MIN_TEXT_CHARS = 1;
+export const MAX_BODY_BYTES = 32768;
 
 /** The two native Santali voices: [voiceName, langCode, gender]. */
 const VOICE_ROWS = [
@@ -55,14 +56,23 @@ export const ALLOWED_STYLES = Object.freeze(
 );
 
 /**
+ * Counts Unicode code points (runes) correctly across all script planes,
+ * preventing astral-plane characters or combining marks from breaking bounds.
+ */
+export function countCodePoints(text) {
+  return [...String(text || '').normalize('NFC')].length;
+}
+
+/**
  * Stable cache key over the exact synthesis inputs so repeat requests
  * (same text + voice + lang + style) never spend Bodhan credits twice.
  */
 export function createTtsCacheKey({ text, voice, lang, style }) {
+  const normalizedText = String(text || '').normalize('NFC').trim();
   return createHash('sha256')
     .update(
       JSON.stringify({
-        text: String(text || '').trim(),
+        text: normalizedText,
         voice: String(voice || DEFAULT_VOICE),
         lang: String(lang || DEFAULT_LANG).toLowerCase(),
         style: String(style || '').trim(),
@@ -75,7 +85,7 @@ export function createTtsCacheKey({ text, voice, lang, style }) {
  * Validates a voice request. Returns null when valid, otherwise a
  * `{ status, code, message }` rejection. Exported for unit tests.
  */
-export function validateSantaliVoiceRequest({ method, body }) {
+export function validateSantaliVoiceRequest({ method, body, rawBody }) {
   if (method !== 'POST') {
     return { status: 405, code: 'METHOD_NOT_ALLOWED', message: 'Method not allowed.' };
   }
@@ -83,11 +93,26 @@ export function validateSantaliVoiceRequest({ method, body }) {
     return { status: 400, code: 'INVALID_JSON', message: 'Invalid JSON payload.' };
   }
 
-  const text = typeof body.text === 'string' ? body.text.trim() : '';
-  if (!text) {
+  // Enforce request body size limits
+  if (rawBody && typeof rawBody === 'string' && rawBody.length > MAX_BODY_BYTES) {
+    return { status: 400, code: 'PAYLOAD_TOO_LARGE', message: 'Request body exceeds size limit.' };
+  }
+  try {
+    if (JSON.stringify(body).length > MAX_BODY_BYTES) {
+      return { status: 400, code: 'PAYLOAD_TOO_LARGE', message: 'Request body exceeds size limit.' };
+    }
+  } catch (_) {
+    return { status: 400, code: 'INVALID_JSON', message: 'Invalid JSON payload.' };
+  }
+
+  const rawText = typeof body.text === 'string' ? body.text : '';
+  const normalizedText = rawText.normalize('NFC').trim();
+  const codePoints = countCodePoints(normalizedText);
+
+  if (codePoints < MIN_TEXT_CHARS) {
     return { status: 400, code: 'INVALID_INPUT', message: 'Text is empty. Type something first.' };
   }
-  if (text.length > MAX_TEXT_CHARS) {
+  if (codePoints > MAX_TEXT_CHARS) {
     return {
       status: 400,
       code: 'INPUT_TOO_LONG',
@@ -115,15 +140,17 @@ export function validateSantaliVoiceRequest({ method, body }) {
   return null;
 }
 
-/** Normalized request values (applies defaults). */
+/** Normalized request values (applies defaults, Unicode NFC, code point counts). */
 export function normalizeSantaliVoiceRequest(body) {
   const style = typeof body.style === 'string' ? body.style.trim() : '';
+  const normalizedText = String(body.text || '').normalize('NFC').trim();
   return {
-    text: body.text.trim(),
+    text: normalizedText,
     voice: typeof body.voice === 'string' && body.voice.trim() ? body.voice.trim() : DEFAULT_VOICE,
     lang: typeof body.lang === 'string' && body.lang.trim()
       ? body.lang.trim().toLowerCase()
       : DEFAULT_LANG,
     style,
+    chars: countCodePoints(normalizedText),
   };
 }

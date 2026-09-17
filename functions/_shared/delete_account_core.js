@@ -34,6 +34,9 @@ const USER_DATA_COLLECTIONS = [
   'user_badges',
   'reward_events',
   'binti_guru_waitlist',
+  'ai_studio_jobs',
+  'review_states',
+  'voice_claims',
 ];
 
 const ANONYMIZED_USER_ID = 'anonymized_deleted_user';
@@ -270,7 +273,9 @@ export default async ({
   const storage = injectedStorage || new Storage(client);
 
   const pseudoSubject = generatePseudonymousId(userId, hmacSecret);
-  const requestId = `del_req_${pseudoSubject}`;
+  // Appwrite custom document IDs are limited to 36 characters. Keep all
+  // 128 bits of the pseudonymous identifier within that limit.
+  const requestId = `del_${pseudoSubject}`;
 
   log(`[${correlationId}] [DELETION_STARTED] State machine initialized`);
 
@@ -387,6 +392,7 @@ export default async ({
           break;
         }
 
+        let assetPageFailed = false;
         for (const asset of assets.documents) {
           try {
             await storage.deleteFile(asset.bucketId, asset.fileId);
@@ -395,6 +401,10 @@ export default async ({
               log(`[${correlationId}] [STORAGE_DELETE_WARN] Code: ${ERROR_CODES.STORAGE_DELETE_FAILED}`);
               cleanupSuccess = false;
               sanitizedErrorCode = ERROR_CODES.STORAGE_DELETE_FAILED;
+              assetPageFailed = true;
+              // Preserve the only durable reference to the unremoved file.
+              // A later invocation can retry it; never orphan it here.
+              continue;
             }
           }
 
@@ -405,9 +415,14 @@ export default async ({
               log(`[${correlationId}] [ASSET_REGISTRY_WARN] Code: ${ERROR_CODES.DOCUMENT_DELETE_FAILED}`);
               cleanupSuccess = false;
               sanitizedErrorCode = ERROR_CODES.DOCUMENT_DELETE_FAILED;
+              assetPageFailed = true;
             }
           }
         }
+
+        // Finish the current page, but do not hammer a failed asset up to 50
+        // times in one request. Keep Auth intact and retry in a later call.
+        if (assetPageFailed) break;
       }
 
       if (fileIterations >= maxFileIterations) {

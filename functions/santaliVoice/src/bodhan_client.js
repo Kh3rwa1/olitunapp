@@ -21,7 +21,7 @@ export async function synthesizeWithKey({
   fetchImpl = fetch,
   timeoutMs = 45000,
 }) {
-  if (!apiKey) throw classifiedError('invalid_key', 'Empty Bodhan API key.');
+  if (!apiKey) throw classifiedError('invalid_key', 'Empty voice service key.');
 
   const instructions = style ? { lang, style } : { lang };
   let res;
@@ -43,7 +43,7 @@ export async function synthesizeWithKey({
   } catch (networkErr) {
     throw classifiedError(
       'upstream_error',
-      `Bodhan request failed: ${networkErr?.message || 'network error'}`
+      'Voice service provider connection timed out or failed.'
     );
   }
 
@@ -51,28 +51,27 @@ export async function synthesizeWithKey({
     const contentType = res.headers?.get?.('content-type') || '';
     const buffer = Buffer.from(await res.arrayBuffer());
     if (buffer.length === 0) {
-      throw classifiedError('upstream_error', 'Bodhan returned empty audio.');
+      throw classifiedError('upstream_error', 'Voice service returned empty audio.');
     }
     if (contentType.includes('application/json')) {
-      // Some gateways wrap audio in JSON on odd paths; treat as failure
-      // so rotation can try the next key rather than saving garbage.
-      throw classifiedError(
-        'upstream_error',
-        `Bodhan returned JSON instead of audio: ${buffer.toString('utf8').slice(0, 300)}`
-      );
+      throw classifiedError('upstream_error', 'Voice service returned invalid audio format.');
     }
     return { audio: buffer };
   }
 
   const errText = await res.text().catch(() => '');
-  const snippet = errText.slice(0, 500);
   const lowered = errText.toLowerCase();
 
   if (res.status === 422) {
-    throw classifiedError('bad_request', `Bodhan rejected the request (422): ${snippet}`);
+    throw classifiedError('bad_request', 'The voice service could not synthesize this text.');
   }
-  if (res.status === 401 || res.status === 403 || lowered.includes('invalid api key') || lowered.includes('authentication error')) {
-    throw classifiedError('invalid_key', `Bodhan auth failed (${res.status}): ${snippet}`);
+  if (
+    res.status === 401 ||
+    res.status === 403 ||
+    lowered.includes('invalid api key') ||
+    lowered.includes('authentication error')
+  ) {
+    throw classifiedError('invalid_key', 'Voice service authentication failure.');
   }
   if (
     res.status === 402 ||
@@ -82,12 +81,12 @@ export async function synthesizeWithKey({
     lowered.includes('billing') ||
     lowered.includes('payment')
   ) {
-    throw classifiedError('credit_ended', `Bodhan key out of credit (${res.status}): ${snippet}`);
+    throw classifiedError('credit_ended', 'Voice service credits exhausted.');
   }
   if (res.status === 429) {
-    throw classifiedError('rate_limited', `Bodhan rate limited (429): ${snippet}`);
+    throw classifiedError('rate_limited', 'Voice service rate limit reached.');
   }
-  throw classifiedError('upstream_error', `Bodhan failed (${res.status}): ${snippet}`);
+  throw classifiedError('upstream_error', 'Voice service provider error.');
 }
 
 function classifiedError(reason, message) {

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 import 'mini_bars.dart';
 
 /// Loading / error dock under the generate button. The player itself
@@ -28,6 +29,7 @@ class StudioStatusDock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (isLoading) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -36,16 +38,16 @@ class StudioStatusDock extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            MiniBars(barCount: 12, height: 22),
-            SizedBox(width: 12),
+            const MiniBars(barCount: 12, height: 22),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'Giving your words a Santali voice…',
+                l10n.voiceStatusWorking,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
                   fontSize: 13,
@@ -74,7 +76,7 @@ class StudioStatusDock extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                error ?? 'Something went wrong.',
+                error ?? l10n.somethingWentWrong,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTypography.inter(
@@ -86,7 +88,9 @@ class StudioStatusDock extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             _DockAction(
-              label: loginRequired ? 'SIGN IN' : 'RETRY',
+              label: loginRequired
+                  ? l10n.voiceSignInUpper
+                  : l10n.voiceRetryUpper,
               onTap: loginRequired ? onLogin : onRetry,
             ),
           ],

@@ -25,6 +25,9 @@ const USER_DATA_COLLECTIONS = [
   'user_badges',
   'reward_events',
   'binti_guru_waitlist',
+  'ai_studio_jobs',
+  'review_states',
+  'voice_claims',
 ];
 
 const ANONYMIZED_USER_ID = 'anonymized_deleted_user';

@@ -573,5 +573,108 @@
         }
     },
     "notifGentleTitle": "ᱟᱢᱟᱜ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱟᱸᱜᱤ ᱦᱟᱠᱟᱱᱟ",
-    "notifGentleBody": "ᱦᱩᱰᱤᱧ ᱫᱚᱦᱲᱟ ᱪᱮᱫ ᱟᱠᱟᱫ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭᱟ। ᱦᱟᱹᱯᱩᱨᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ।"
+    "notifGentleBody": "ᱦᱩᱰᱤᱧ ᱫᱚᱦᱲᱟ ᱪᱮᱫ ᱟᱠᱟᱫ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭᱟ। ᱦᱟᱹᱯᱩᱨᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ।",
+    "santaliAiVoice": "ᱥᱟᱱᱛᱟᱲᱤ AI Voice",
+    "closeVoiceStudio": "ᱵᱷᱚᱭᱮᱥ ᱥᱴᱩᱰᱤᱭᱳ ᱵᱚᱸᱫᱽ ᱢᱮ",
+    "createVoiceAction": "ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣ ᱢᱮ",
+    "creatingVoiceProgress": "ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣᱜ ᱠᱟᱱᱟ...",
+    "voiceStatusWorking": "ᱟᱢᱟᱜ ᱠᱟᱛᱷᱟ ᱨᱮ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱲᱟᱝ ᱡᱚᱲᱟᱣᱜ ᱠᱟᱱᱟ…",
+    "voiceStatusIdle": "ᱚᱞ ᱢᱮ᱾ ᱟᱸᱡᱚᱢ ᱢᱮ᱾ ᱦᱟᱹᱴᱤᱧ ᱢᱮ᱾",
+    "voiceStatusPlaying": "ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜᱼᱟ • {voice}",
+    "@voiceStatusPlaying": {
+        "placeholders": {
+            "voice": {
+                "type": "String"
+            }
+        }
+    },
+    "voiceStatusReady": "ᱥᱟᱯᱲᱟᱣ • ᱯᱞᱮ ᱞᱟᱹᱜᱤᱫ ᱡᱚᱴᱮᱫ ᱢᱮ",
+    "voiceStatusOpenPlayer": "ᱟᱲᱟᱝ ᱥᱟᱯᱲᱟᱣ • ᱞᱟᱛᱟᱨ ᱨᱮ ᱯᱞᱮᱭᱟᱨ ᱡᱷᱤᱡ ᱢᱮ",
+    "voiceCacheTip": "ᱫᱤᱥᱟᱹ: ᱫᱚᱦᱲᱟ ᱠᱞᱤᱯ ᱫᱚ ᱛᱩᱨᱩᱛ ᱟᱨ ᱯᱷᱨᱤ ᱜᱮᱭᱟ — ᱠᱮᱪ ᱠᱷᱚᱱ ᱟᱸᱡᱚᱢᱚᱜᱼᱟ᱾",
+    "voiceDownloadFailed": "ᱰᱟᱣᱩᱱᱞᱳᱰ ᱵᱟᱝ ᱦᱩᱭ ᱞᱮᱱᱟ᱾",
+    "voiceInputHint": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — ᱚᱞ ᱪᱤᱠᱤ ᱛᱮ ᱚᱞ ᱢᱮ...",
+    "voicePlayerTab": "ᱯᱞᱮᱭᱟᱨ",
+    "voiceCreatingBack": "ᱟᱢᱟᱜ ᱟᱲᱟᱝ ᱵᱮᱱᱟᱣᱜ ᱠᱟᱱᱟ…",
+    "voiceEmptyBack": "ᱟᱢᱟᱜ ᱟᱲᱟᱝ ᱱᱚᱸᱰᱮ ᱦᱤᱡᱩᱜᱼᱟ",
+    "voiceEditText": "ᱚᱞ ᱥᱟᱡᱟᱣ ᱢᱮ",
+    "voiceDismiss": "ᱵᱟᱸᱫᱽ ᱢᱮ",
+    "voicePlaybackSpeed": "ᱨᱚᱲ ᱨᱮᱱᱟᱜ ᱜᱚᱛᱤ",
+    "voiceSaving": "ᱥᱟᱸᱪᱟᱣᱜ ᱠᱟᱱᱟ…",
+    "voiceDownload": "ᱰᱟᱣᱩᱱᱞᱳᱰ",
+    "voiceRegenerate": "ᱫᱚᱦᱲᱟ ᱵᱮᱱᱟᱣ ᱢᱮ",
+    "voicePickerHeader": "ᱟᱲᱟᱝ  •  VOICE",
+    "voiceStyleHeader": "ᱨᱚᱲ  •  STYLE",
+    "voiceSignInUpper": "ᱥᱟᱭᱤᱱ ᱤᱱ",
+    "voiceRetryUpper": "ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ",
+    "aiStudioTitle": "AI ᱥᱴᱩᱰᱤᱭᱳ",
+    "aiStudioToolTranscribe": "ᱟᱸᱡᱚᱢ ᱠᱟᱛᱮ ᱚᱞ",
+    "aiStudioToolTranslate": "ᱛᱚᱨᱡᱚᱢᱟ",
+    "aiStudioToolScan": "ᱥᱠᱮᱱ",
+    "aiStudioHeadline": "ᱥᱟᱠᱟᱢ ᱥᱮ ᱟᱲᱟᱝ ᱠᱷᱚᱱ\nᱠᱟᱹᱢᱤᱭᱟᱱ ᱟᱹᱲᱟᱹ ᱨᱮ᱾",
+    "aiStudioSubhead": "ᱚᱞ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ, ᱠᱷᱟᱴᱚ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱚᱞ ᱨᱮ ᱵᱚᱫᱚᱞ ᱢᱮ, ᱥᱮ ᱫᱚᱞᱤᱞ ᱥᱠᱮᱱ ᱢᱮ᱾ ᱡᱟᱦᱟᱸᱨᱮ ᱵᱮᱵᱷᱟᱨ ᱢᱟᱬᱟᱝ ᱨᱮ ᱚᱨᱡᱚ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾",
+    "aiStudioStep1": "᱑  ᱤᱱᱯᱩᱴ ᱮᱢ ᱢᱮ",
+    "aiStudioStep2": "᱒  ᱨᱮᱵᱮᱱ ᱥᱟᱶ ᱯᱨᱚᱥᱮᱥ ᱢᱮ",
+    "aiStudioStep3": "᱓  ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱟᱨ ᱵᱮᱵᱷᱟᱨ",
+    "aiStudioNotConfigured": "ᱱᱚᱣᱟ ᱵᱤᱞᱰ ᱨᱮ AI ᱯᱨᱚᱥᱮᱥᱤᱝ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾ ᱟᱢ ᱱᱚᱸᱰᱮ ᱚᱞ ᱥᱟᱯᱲᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱥᱮ ᱞᱟᱛᱟᱨ ᱨᱮᱱᱟᱜ ᱯᱷᱨᱤ ᱥᱠᱨᱤᱯᱴ ᱠᱚᱱᱵᱷᱚᱨᱴᱟᱨ ᱵᱮᱵᱷᱟᱨ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾",
+    "aiStudioYourText": "ᱟᱢᱟᱜ ᱚᱞ",
+    "aiStudioYourAudio": "ᱟᱢᱟᱜ ᱟᱲᱟᱝ",
+    "aiStudioYourDocument": "ᱟᱢᱟᱜ ᱫᱚᱞᱤᱞ",
+    "aiStudioSourceLanguage": "ᱢᱩᱬ ᱯᱟᱹᱨᱥᱤ",
+    "aiStudioTranslateNote": "ᱥᱟᱱᱛᱟᱲᱤ (ᱚᱞ ᱪᱤᱠᱤ) ᱛᱮ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ᱾ ᱒,᱐᱐᱐ ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ᱾",
+    "aiStudioTextToTranslate": "ᱛᱚᱨᱡᱚᱢᱟ ᱞᱟᱹᱜᱤᱫ ᱚᱞ",
+    "aiStudioTextPlaceholder": "ᱟᱢᱟᱜ ᱚᱞ ᱴᱟᱭᱤᱯ ᱥᱮ ᱯᱮᱥᱴ ᱢᱮ",
+    "aiStudioTextLimitError": "᱒,᱐᱐᱐ ᱥᱮ ᱠᱚᱢ ᱪᱤᱠᱤ ᱨᱮᱱᱟᱜ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱢᱮ᱾",
+    "aiStudioSpeakNote": "ᱥᱟᱫᱷᱟᱨᱚᱱ ᱞᱮᱠᱟ ᱨᱚᱲ ᱢᱮ᱾ ᱓᱐ ᱥᱮᱠᱮᱱᱰ ᱨᱮ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱟᱡ ᱛᱮᱜᱮ ᱛᱷᱟᱢᱚᱜᱼᱟ᱾ ᱟᱢ WAV ᱯᱷᱟᱭᱤᱞ ᱦᱚᱸ ᱟᱯᱞᱳᱰ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾",
+    "aiStudioRecordVoice": "ᱟᱲᱟᱝ ᱨᱮᱠᱚᱨᱰ ᱢᱮ",
+    "aiStudioStopRecording": "ᱨᱮᱠᱚᱨᱰᱤᱝ ᱛᱷᱟᱢ ᱢᱮ · {seconds}s",
+    "@aiStudioStopRecording": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioListening": "ᱟᱸᱡᱚᱢᱮᱫᱟᱭ… ᱯᱩᱨᱟᱹᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱛᱷᱟᱢ ᱨᱮ ᱡᱚᱴᱮᱫ ᱢᱮ᱾",
+    "aiStudioOrExistingRecording": "ᱥᱮ ᱢᱟᱬᱟᱝ ᱨᱮᱱᱟᱜ ᱨᱮᱠᱚᱨᱰᱤᱝ ᱵᱮᱵᱷᱟᱨ ᱢᱮ",
+    "aiStudioUploadWav": "WAV ᱯᱷᱟᱭᱤᱞ ᱟᱯᱞᱳᱰ ᱢᱮ",
+    "aiStudioReplaceRecording": "ᱨᱮᱠᱚᱨᱰᱤᱝ ᱵᱚᱫᱚᱞ ᱢᱮ",
+    "aiStudioOpening": "ᱡᱷᱤᱡᱩᱜ ᱠᱟᱱᱟ…",
+    "aiStudioDocNote": "PDF, PNG ᱥᱮ JPG · ᱑᱐ MB ᱟᱨ ᱑᱐ ᱥᱟᱠᱟᱢ ᱦᱟᱹᱵᱤᱡ\nᱯᱟᱲᱦᱟᱣᱜ ᱞᱮᱠᱟᱱ ᱥᱟᱯᱷᱟ ᱥᱟᱠᱟᱢ ᱵᱮᱵᱷᱟᱨ ᱢᱮ᱾",
+    "aiStudioChooseFile": "ᱯᱷᱟᱭᱤᱞ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "aiStudioReplaceFile": "ᱯᱷᱟᱭᱤᱞ ᱵᱚᱫᱚᱞ ᱢᱮ",
+    "aiStudioCapturePage": "ᱥᱟᱠᱟᱢ ᱯᱷᱚᱴᱳ ᱛᱩᱞᱟᱹᱣ ᱢᱮ",
+    "aiStudioConsentTitle": "ᱤᱧ ᱯᱮᱭᱤᱰ AI ᱯᱨᱚᱥᱮᱥᱤᱝ ᱨᱮ ᱨᱮᱵᱮᱱ ᱢᱮᱱᱟᱜᱼᱟ",
+    "aiStudioConsentSubtitle": "ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱚᱞ ᱥᱮ ᱯᱷᱟᱭᱤᱞ ᱵᱟᱦᱨᱮ ᱨᱮᱱᱟᱜ AI ᱥᱮᱵᱟ ᱥᱚᱨᱵᱷᱚᱢ ᱴᱷᱮᱱ ᱠᱩᱞᱟ ᱟᱨ ᱟᱯ ᱨᱮᱱᱟᱜ ᱯᱨᱚᱥᱮᱥᱤᱝ ᱠᱳᱴᱟ ᱵᱮᱵᱷᱟᱨᱟ᱾ ᱟᱢ ᱴᱷᱮᱱ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱢᱮᱱᱟᱜ ᱥᱟᱛᱟᱢ ᱜᱮ ᱠᱩᱞ ᱢᱮ᱾ ᱟᱡ ᱛᱮᱫᱚ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟᱜᱼᱟ᱾",
+    "aiStudioProcessing": "ᱯᱨᱚᱥᱮᱥᱤᱝ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜᱼᱟ… ᱱᱚᱣᱟ ᱥᱠᱨᱤᱱ ᱡᱷᱤᱡ ᱫᱚᱦᱚᱭ ᱢᱮ᱾",
+    "aiStudioProcessWithAi": "AI ᱥᱟᱶ {tool}",
+    "@aiStudioProcessWithAi": {
+        "placeholders": {
+            "tool": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioReviewAndUse": "ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱟᱨ ᱵᱮᱵᱷᱟᱨ",
+    "aiStudioResultPlaceholder": "ᱟᱢᱟᱜ ᱚᱨᱡᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜᱼᱟ᱾",
+    "aiStudioResultDisclaimer": "ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟ ᱟᱠᱟᱱᱟ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱟᱠᱟᱱᱟ᱾ ᱚᱞ ᱥᱟᱯᱲᱟᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱟᱢ ᱥᱩᱫᱷᱨᱟᱹᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ, ᱠᱚᱯᱤ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱥᱮ ᱞᱟᱦᱟᱱᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾",
+    "aiStudioEditableResult": "ᱥᱟᱡᱟᱣ ᱞᱮᱠᱟᱱ ᱚᱨᱡᱚ",
+    "aiStudioReviewHelper": "ᱠᱚᱯᱤ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱢᱟᱬᱟᱝ ᱨᱮ AI ᱚᱞ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾",
+    "aiStudioCopy": "ᱠᱚᱯᱤ",
+    "aiStudioShare": "ᱦᱟᱹᱴᱤᱧ",
+    "aiStudioCopyToShare": "ᱦᱟᱹᱴᱤᱧ ᱞᱟᱹᱜᱤᱫ ᱠᱚᱯᱤ",
+    "aiStudioTranslateResult": "ᱚᱨᱡᱚ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ",
+    "aiStudioSendToBodhan": "ᱵᱳᱫᱷᱚᱱ ᱛᱮ ᱠᱩᱞ ᱢᱮ",
+    "aiStudioBodhanNote": "ᱵᱳᱫᱷᱚᱱ ᱫᱚ ᱖᱐᱐ ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ ᱦᱟᱛᱟᱣᱟ᱾ ᱱᱚᱣᱟ ᱡᱷᱤᱡ ᱞᱮᱠᱷᱟᱱ ᱟᱡ ᱛᱮᱫᱚ ᱟᱲᱟᱝ ᱵᱟᱝ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾",
+    "aiStudioLookingForConverter": "ᱯᱷᱨᱤ ᱥᱠᱨᱤᱯᱴ ᱠᱚᱱᱵᱷᱚᱨᱴᱟᱨ ᱥᱮᱸᱫᱽᱨᱟᱭᱮᱫᱟᱢ?",
+    "aiStudioDisclaimer": "AI ᱚᱨᱡᱚ ᱨᱮ ᱵᱷᱩᱞ ᱛᱟᱦᱮᱸ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ; ᱵᱮᱵᱷᱟᱨ ᱢᱟᱬᱟᱝ ᱨᱮ ᱧᱩᱛᱩᱢ, ᱮᱞ ᱟᱨ ᱵᱟᱱᱟᱱ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾",
+    "aiStudioPassageNote": "{limit} ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱥᱮ ᱥᱟᱡᱟᱣ ᱢᱮ᱾ ᱟᱢᱟᱜ ᱢᱩᱬ ᱚᱨᱡᱚ ᱵᱟᱝ ᱵᱚᱫᱚᱞᱚᱜᱼᱟ᱾",
+    "@aiStudioPassageNote": {
+        "placeholders": {
+            "limit": {
+                "type": "int"
+            }
+        }
+    },
+    "aiStudioPassageToSend": "ᱠᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ",
+    "aiStudioPassageLimitError": "ᱞᱟᱦᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱠᱷᱟᱴᱚᱭ ᱢᱮ᱾ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱜᱮᱫ ᱟᱠᱟᱱᱟ᱾"
 }

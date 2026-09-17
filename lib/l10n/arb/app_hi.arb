@@ -573,5 +573,108 @@
         }
     },
     "notifGentleTitle": "आपकी संताली प्रतीक्षा कर रही है",
-    "notifGentleBody": "छोटा रिव्यू सीखा हुआ ताज़ा रखता है। कोई जल्दी नहीं।"
+    "notifGentleBody": "छोटा रिव्यू सीखा हुआ ताज़ा रखता है। कोई जल्दी नहीं।",
+    "santaliAiVoice": "संताली एआई आवाज़",
+    "closeVoiceStudio": "वॉइस स्टूडियो बंद करें",
+    "createVoiceAction": "वॉइस बनाएं",
+    "creatingVoiceProgress": "वॉइस बन रही है...",
+    "voiceStatusWorking": "आपके शब्दों को संताली आवाज़ दी जा रही है…",
+    "voiceStatusIdle": "टाइप करें। सुनें। शेयर करें।",
+    "voiceStatusPlaying": "बज रहा है • {voice}",
+    "@voiceStatusPlaying": {
+        "placeholders": {
+            "voice": {
+                "type": "String"
+            }
+        }
+    },
+    "voiceStatusReady": "तैयार • प्ले करने के लिए टैप करें",
+    "voiceStatusOpenPlayer": "वॉइस तैयार • नीचे प्लेयर खोलें",
+    "voiceCacheTip": "सुझाव: पहले से तैयार क्लिप तुरंत और निःशुल्क चलते हैं — ये कैश से बजते हैं।",
+    "voiceDownloadFailed": "डाउनलोड विफल रहा।",
+    "voiceInputHint": "ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ? — ओल चिकी में टाइप करें...",
+    "voicePlayerTab": "प्लेयर",
+    "voiceCreatingBack": "आपकी आवाज़ बनाई जा रही है…",
+    "voiceEmptyBack": "आपकी आवाज़ यहाँ दिखाई देगी",
+    "voiceEditText": "टेक्स्ट संपादित करें",
+    "voiceDismiss": "हटाएं",
+    "voicePlaybackSpeed": "प्लेबैक गति",
+    "voiceSaving": "सहेजा जा रहा है…",
+    "voiceDownload": "डाउनलोड",
+    "voiceRegenerate": "फिर से बनाएं",
+    "voicePickerHeader": "आवाज़  •  ᱟᱲᱟᱝ",
+    "voiceStyleHeader": "शैली  •  ᱨᱚᱲ",
+    "voiceSignInUpper": "साइन इन",
+    "voiceRetryUpper": "पुनः प्रयास करें",
+    "aiStudioTitle": "एआई स्टूडियो",
+    "aiStudioToolTranscribe": "ट्रांसक्राइब",
+    "aiStudioToolTranslate": "अनुवाद",
+    "aiStudioToolScan": "स्कैन",
+    "aiStudioHeadline": "पन्ने या आवाज़ से\nउपयोगी शब्दों में।",
+    "aiStudioSubhead": "टेक्स्ट का अनुवाद करें, छोटी रिकॉर्डिंग ट्रांसक्राइब करें, या दस्तावेज़ स्कैन करें। आगे उपयोग से पहले परिणाम की समीक्षा करें।",
+    "aiStudioStep1": "1  इनपुट जोड़ें",
+    "aiStudioStep2": "2  सहमति के साथ प्रोसेस करें",
+    "aiStudioStep3": "3  समीक्षा और उपयोग करें",
+    "aiStudioNotConfigured": "इस संस्करण में एआई प्रोसेसिंग उपलब्ध नहीं है। आप यहाँ टेक्स्ट तैयार कर सकते हैं या नीचे निःशुल्क लिपि परिवर्तक का उपयोग कर सकते हैं।",
+    "aiStudioYourText": "आपका टेक्स्ट",
+    "aiStudioYourAudio": "आपका ऑडियो",
+    "aiStudioYourDocument": "आपका दस्तावेज़",
+    "aiStudioSourceLanguage": "स्रोत भाषा",
+    "aiStudioTranslateNote": "संताली (ओल चिकी) में अनुवाद करें। अधिकतम 2,000 अक्षर।",
+    "aiStudioTextToTranslate": "अनुवाद के लिए टेक्स्ट",
+    "aiStudioTextPlaceholder": "अपना टेक्स्ट टाइप या पेस्ट करें",
+    "aiStudioTextLimitError": "2,000 या उससे कम अक्षरों का अंश चुनें।",
+    "aiStudioSpeakNote": "सामान्य रूप से बोलें। रिकॉर्डिंग 30 सेकंड में अपने आप रुक जाएगी। आप इसके बजाय WAV फ़ाइल भी अपलोड कर सकते हैं।",
+    "aiStudioRecordVoice": "वॉइस रिकॉर्ड करें",
+    "aiStudioStopRecording": "रिकॉर्डिंग रोकें · {seconds} से",
+    "@aiStudioStopRecording": {
+        "placeholders": {
+            "seconds": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioListening": "सुन रहे हैं… पूरा होने पर रिकॉर्डिंग रोकें पर टैप करें।",
+    "aiStudioOrExistingRecording": "या किसी मौजूदा रिकॉर्डिंग का उपयोग करें",
+    "aiStudioUploadWav": "WAV फ़ाइल अपलोड करें",
+    "aiStudioReplaceRecording": "रिकॉर्डिंग बदलें",
+    "aiStudioOpening": "खोल रहे हैं…",
+    "aiStudioDocNote": "PDF, PNG या JPG · 10 MB और 10 पृष्ठों तक\nस्पष्ट और पढ़ने योग्य पन्ने का उपयोग करें।",
+    "aiStudioChooseFile": "फ़ाइल चुनें",
+    "aiStudioReplaceFile": "फ़ाइल बदलें",
+    "aiStudioCapturePage": "पृष्ठ की फ़ोटो लें",
+    "aiStudioConsentTitle": "मैं सशुल्क एआई प्रोसेसिंग से सहमत हूँ",
+    "aiStudioConsentSubtitle": "यह आपके टेक्स्ट या फ़ाइल को बाहरी एआई सेवा सर्वम को भेजता है और ऐप के प्रोसेसिंग भत्ते का उपयोग करता है। केवल वही सामग्री भेजें जिसकी अनुमति आपके पास हो। कुछ भी स्वतः प्रकाशित नहीं होता।",
+    "aiStudioProcessing": "प्रोसेसिंग जारी है… इस स्क्रीन को खुला रखें।",
+    "aiStudioProcessWithAi": "एआई के साथ {tool}",
+    "@aiStudioProcessWithAi": {
+        "placeholders": {
+            "tool": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioReviewAndUse": "समीक्षा और उपयोग",
+    "aiStudioResultPlaceholder": "आपका परिणाम यहाँ दिखाई देगा।",
+    "aiStudioResultDisclaimer": "कुछ भी प्रकाशित या साझा नहीं किया गया है। टेक्स्ट तैयार होने पर आप इसे सही कर सकते हैं, कॉपी कर सकते हैं या अगले कदम के लिए अंश चुन सकते हैं।",
+    "aiStudioEditableResult": "संपादन योग्य परिणाम",
+    "aiStudioReviewHelper": "कॉपी या शेयर करने से पहले एआई टेक्स्ट की समीक्षा करें।",
+    "aiStudioCopy": "कॉपी करें",
+    "aiStudioShare": "शेयर करें",
+    "aiStudioCopyToShare": "शेयर के लिए कॉपी करें",
+    "aiStudioTranslateResult": "परिणाम का अनुवाद करें",
+    "aiStudioSendToBodhan": "बोधन को भेजें",
+    "aiStudioBodhanNote": "बोधन 600 अक्षरों तक का अंश स्वीकार करता है। इसे खोलने पर वॉइस निर्माण शुरू नहीं होता।",
+    "aiStudioLookingForConverter": "क्या आप निःशुल्क लिपि परिवर्तक ढूंढ रहे हैं?",
+    "aiStudioDisclaimer": "एআই परिणामों में त्रुटियाँ हो सकती हैं; उपयोग से पहले नाम, संख्या और वर्तनी की समीक्षा करें।",
+    "aiStudioPassageNote": "{limit} अक्षरों तक का अंश चुनें या संपादित करें। आपका मूल परिणाम अपरिवर्तित रहेगा।",
+    "@aiStudioPassageNote": {
+        "placeholders": {
+            "limit": {
+                "type": "int"
+            }
+        }
+    },
+    "aiStudioPassageToSend": "भेजने के लिए अंश",
+    "aiStudioPassageLimitError": "आगे बढ़ने के लिए अंश को छोटा करें। कुछ भी काटा नहीं गया है।"
 }

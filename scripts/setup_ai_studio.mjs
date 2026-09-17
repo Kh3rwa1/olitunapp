@@ -6,7 +6,15 @@ import { JOBS, QUOTAS } from '../functions/aiStudio/src/store.js';
 
 export const schema = {
   [JOBS]: {
-    strings: { userId: 36, action: 20, language: 10, status: 24, providerJobId: 128, text: 100000 },
+    strings: {
+      userId: 36,
+      action: 20,
+      language: 10,
+      status: 24,
+      providerJobId: 128,
+      fileFingerprint: 64,
+      text: 100000,
+    },
     integers: ['checkedAt'],
   },
   [QUOTAS]: { strings: { period: 32 }, integers: ['used'] },
@@ -41,6 +49,9 @@ export async function setup({ db, storage, databaseId }) {
     }
   }
 }
+// Existing collections keep working: an attribute missing from a pre-update
+// deployment is created here; a conflicting definition fails closed.
+
 async function verifyAttribute(db, base, key, type, size) {
   for (let attempt = 0; attempt < 30; attempt++) {
     const attr = await db.getAttribute({ ...base, key });

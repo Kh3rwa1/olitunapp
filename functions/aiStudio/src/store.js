@@ -24,10 +24,10 @@ export class Store {
     try { return await this.db.getDocument({ databaseId: this.databaseId, collectionId: JOBS, documentId: id }); }
     catch (e) { if (e.code === 404) return null; throw e; }
   }
-  async claim(id, userId, action, language) {
+  async claim(id, userId, action, language, extra = {}) {
     try {
       return await this.db.createDocument({ databaseId: this.databaseId, collectionId: JOBS, documentId: id,
-        data: { userId, action, language, status: 'submitting', providerJobId: '', text: '', checkedAt: 0 }, permissions: [] });
+        data: { userId, action, language, status: 'submitting', providerJobId: '', text: '', checkedAt: 0, ...extra }, permissions: [] });
     } catch (e) { if (e.code === 409) return null; throw e; }
   }
   async update(id, data) {

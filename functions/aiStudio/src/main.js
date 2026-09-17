@@ -50,6 +50,14 @@ export async function execute({ body, userId, store, provider, input, policy, se
     if (TERMINAL.includes(job.status) || !job.providerJobId || now() - job.checkedAt < 12000) return publicJob(job);
     await store.ocrLimit();
     const result = await provider.ocrStatus(job.providerJobId);
+    if (
+      Array.isArray(result?.documents) &&
+      result.documents.every(
+        (document) => document?.status === 'failed' && (document?.error ?? document?.message) !== undefined,
+      )
+    ) {
+      fail('PROVIDER_UNAVAILABLE', 'Sarvam could not read this document. Please retry with a clearer page.', 502);
+    }
     const updated = await store.update(job.$id, { ...result, checkedAt: now() });
     return publicJob(updated);
   }
@@ -60,8 +68,10 @@ export async function execute({ body, userId, store, provider, input, policy, se
     else file = identifyDocument(bytes);
   }
   const fingerprint = bytes ? createHash('sha256').update(bytes).digest('hex') : body.text;
-  const id = digest(secret, ['request-v1', userId, body.action, body.language, fingerprint]);
-  const claimed = await store.claim(id, userId, body.action, body.language);
+  // request-v2: the v1 OCR parser stored completed records with empty text
+  // for the old provider schema; bumping the version bypasses poisoned rows.
+  const id = digest(secret, ['request-v2', userId, body.action, body.language, fingerprint]);
+  const claimed = await store.claim(id, userId, body.action, body.language, bytes ? { fileFingerprint: fingerprint } : {});
   if (!claimed) {
     const old = await store.get(id);
     if (!old || old.userId !== userId) fail('SERVICE_UNAVAILABLE', 'AI Studio is unavailable.', 503);

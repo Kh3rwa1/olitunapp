@@ -67,7 +67,6 @@ class AdminSidebar extends ConsumerWidget {
                   hasActiveChild:
                       location == '/admin/translations' ||
                       location == '/admin/categories' ||
-                      location == '/admin/affirmations' ||
                       location == '/admin/banners' ||
                       location == '/admin/lessons',
                   children: [
@@ -83,13 +82,6 @@ class AdminSidebar extends ConsumerWidget {
                       label: 'Categories',
                       isSelected: location == '/admin/categories',
                       onTap: () => _navigate(context, '/admin/categories'),
-                      isCompact: isCompact,
-                    ),
-                    AdminNavItem(
-                      icon: Icons.auto_awesome_rounded,
-                      label: 'Daily Affirmations',
-                      isSelected: location == '/admin/affirmations',
-                      onTap: () => _navigate(context, '/admin/affirmations'),
                       isCompact: isCompact,
                     ),
                     AdminNavItem(

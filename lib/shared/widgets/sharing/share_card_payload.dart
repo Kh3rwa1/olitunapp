@@ -4,7 +4,6 @@ enum ShareCardKind {
   quizResult,
   streakMilestone,
   badgeAchievement,
-  dailyAffirmation,
 }
 
 class ShareCardPayload {

@@ -112,7 +112,6 @@ async function run() {
     { id: 'bakhed_vocabulary', name: 'Bakhed Vocabulary' },
     { id: 'bakhed_cultural_notes', name: 'Bakhed Cultural Notes' },
     { id: 'bakhed_listening_progress', name: 'Bakhed Listening Progress' },
-    { id: 'daily_affirmations', name: 'Daily Affirmations' },
     { id: 'course_purchases', name: 'Course Purchases' },
     { id: 'payment_claims', name: 'Payment Claims' },
     { id: 'refund_claims', name: 'Refund Claims' },

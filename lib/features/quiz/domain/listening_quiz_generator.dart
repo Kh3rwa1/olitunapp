@@ -2,6 +2,7 @@ import '../../../shared/models/content_models.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 
 import 'lesson_quiz_generator.dart';
+import 'quiz_identity_validation.dart';
 
 /// Generates a listening quiz from a lesson's playable audio blocks.
 ///
@@ -104,9 +105,11 @@ class ListeningQuizGenerator {
                   block.data?['sourceSentence'] ??
                   block.data?['sentence_id'])
               as String?;
-      final hasCanonical =
-          (sourceWordId != null && sourceWordId.trim().isNotEmpty) ||
-          (sourceSentenceId != null && sourceSentenceId.trim().isNotEmpty);
+      // Exactly-one normalization (see normalizeSourceAttribution).
+      final attribution = normalizeSourceAttribution(
+        sourceWordId: sourceWordId,
+        sourceSentenceId: sourceSentenceId,
+      );
 
       questions.add(
         QuizQuestion(
@@ -118,9 +121,9 @@ class ListeningQuizGenerator {
           correctIndex: correctIndex,
           audioUrl: audioUrl,
           explanation: olChiki,
-          sourceWordId: sourceWordId,
-          sourceSentenceId: sourceSentenceId,
-          isNonMemory: !hasCanonical,
+          sourceWordId: attribution.wordId,
+          sourceSentenceId: attribution.sentenceId,
+          isNonMemory: !attribution.hasCanonical,
         ),
       );
     }

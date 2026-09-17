@@ -1,6 +1,7 @@
 import '../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../shared/models/content_models.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
+import 'quiz_identity_validation.dart';
 
 class LessonQuizGenerator {
   const LessonQuizGenerator._();
@@ -92,9 +93,12 @@ class LessonQuizGenerator {
                   block.data?['sourceSentence'] ??
                   block.data?['sentence_id'])
               as String?;
-      final hasCanonical =
-          (sourceWordId != null && sourceWordId.trim().isNotEmpty) ||
-          (sourceSentenceId != null && sourceSentenceId.trim().isNotEmpty);
+      // Exactly-one normalization: a block carrying both ids keeps the
+      // word attribution (documented build-time choice, logged).
+      final attribution = normalizeSourceAttribution(
+        sourceWordId: sourceWordId,
+        sourceSentenceId: sourceSentenceId,
+      );
 
       questions.add(
         QuizQuestion(
@@ -104,9 +108,9 @@ class LessonQuizGenerator {
           optionsLatin: options,
           correctIndex: correctIndex,
           audioUrl: block.audioUrl,
-          sourceWordId: sourceWordId,
-          sourceSentenceId: sourceSentenceId,
-          isNonMemory: !hasCanonical,
+          sourceWordId: attribution.wordId,
+          sourceSentenceId: attribution.sentenceId,
+          isNonMemory: !attribution.hasCanonical,
         ),
       );
     }

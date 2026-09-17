@@ -15,12 +15,16 @@ class QuizCatalog {
           promptLatin: 'Which sound does this letter make?',
           optionsOlChiki: ['a', 'i', 'u', 'o'],
           optionsLatin: ['a', 'i', 'u', 'o'],
+          // Letters are traced, not retrieved: excluded from SRS by design.
+          isNonMemory: true,
         ),
         QuizQuestion(
           promptOlChiki: 'ᱛ',
           promptLatin: 'Identify this consonant:',
           optionsOlChiki: ['at', 'ag', 'al', 'ak'],
           optionsLatin: ['at', 'ag', 'al', 'ak'],
+          // Letters are traced, not retrieved: excluded from SRS by design.
+          isNonMemory: true,
         ),
       ],
     ),
@@ -36,6 +40,8 @@ class QuizCatalog {
           optionsOlChiki: ['4', '5', '6', '7'],
           optionsLatin: ['4', '5', '6', '7'],
           correctIndex: 1,
+          // Arithmetic drill: not vocabulary retrieval; excluded from SRS.
+          isNonMemory: true,
         ),
         QuizQuestion(
           promptOlChiki: '᱙ - ᱕ = ?',
@@ -43,6 +49,8 @@ class QuizCatalog {
           optionsOlChiki: ['3', '4', '5', '0'],
           optionsLatin: ['3', '4', '5', '0'],
           correctIndex: 1,
+          // Arithmetic drill: not vocabulary retrieval; excluded from SRS.
+          isNonMemory: true,
         ),
         QuizQuestion(
           promptOlChiki: '᱓ × ᱓ = ?',
@@ -50,6 +58,8 @@ class QuizCatalog {
           optionsOlChiki: ['6', '7', '8', '9'],
           optionsLatin: ['6', '7', '8', '9'],
           correctIndex: 3,
+          // Arithmetic drill: not vocabulary retrieval; excluded from SRS.
+          isNonMemory: true,
         ),
         QuizQuestion(
           promptOlChiki: '᱘ ÷ ᱒ = ?',
@@ -57,6 +67,8 @@ class QuizCatalog {
           optionsOlChiki: ['2', '3', '4', '5'],
           optionsLatin: ['2', '3', '4', '5'],
           correctIndex: 2,
+          // Arithmetic drill: not vocabulary retrieval; excluded from SRS.
+          isNonMemory: true,
         ),
       ],
     ),

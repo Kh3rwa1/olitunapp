@@ -8,6 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
 import '../../core/storage/hive_service.dart';
+import '../../features/quiz/domain/quiz_identity_validation.dart';
+import '../../features/review/domain/review_corpus_identity.dart';
 import '../models/content_models.dart';
 import '../quiz_engine/quiz_engine.dart';
 import 'language_settings_providers.dart';
@@ -188,6 +190,7 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
   }
 
   Future<void> add(QuizModel item) async {
+    _validateForPublish(item);
     final previous = _baseQuizzes;
     await _applyOptimistic([..._baseQuizzes, item]);
     try {
@@ -202,6 +205,7 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
   }
 
   Future<void> update(QuizModel item) async {
+    _validateForPublish(item);
     final previous = _baseQuizzes;
     await _applyOptimistic([
       for (final quiz in _baseQuizzes)
@@ -242,6 +246,25 @@ class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
   Future<void> addQuiz(QuizModel item) async => add(item);
   Future<void> updateQuiz(QuizModel item) async => update(item);
   Future<void> deleteQuiz(String id) async => delete(id);
+
+  /// Publish boundary: blocks invalid new/edited quizzes BEFORE any local
+  /// optimistic write or remote mutation. Structural rules (exactly-one
+  /// attribution, non-memory exclusivity) always apply. Corpus rules
+  /// (existence, alias, tombstone, type) apply against the verified map;
+  /// when the map is unavailable publication fails closed with a clear
+  /// retry-online error — the UI is never the only enforcement layer.
+  void _validateForPublish(QuizModel item) {
+    final corpusMap = ref.read(corpusIdentityMapProvider).valueOrNull;
+    final errors = validateQuizForPublish(item, corpusMap: corpusMap);
+    if (errors.isNotEmpty) {
+      final detail = errors.take(5).join(' | ');
+      AppLogger.debug('QuizzesNotifier: publish blocked: $detail');
+      throw ArgumentError(
+        'Quiz "${item.id}" cannot be published with invalid question '
+        'identity: $detail${errors.length > 5 ? ' (+${errors.length - 5} more)' : ''}',
+      );
+    }
+  }
 
   Future<void> seedToAppwrite() async {
     state = const AsyncValue.loading();

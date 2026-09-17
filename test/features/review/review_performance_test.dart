@@ -50,7 +50,7 @@ void main() {
       }
       await store.persist();
       final sw = Stopwatch()..start();
-      final due = store.due(t0, limit: 20);
+      final due = store.due(t0);
       sw.stop();
       expect(due.length, lessThanOrEqualTo(20));
       expect(sw.elapsedMilliseconds, lessThan(2000));

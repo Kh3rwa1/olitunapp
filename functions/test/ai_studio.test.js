@@ -89,8 +89,8 @@ test('REST requests use fixed endpoints, required model and confirmed response f
   assert.equal(requests[0].url, 'https://api.sarvam.ai/translate'); assert.equal(requests[0].options.redirect, 'error');
   assert.equal(await provider.transcribe(wav(), 'sat-IN'), 'hello'); assert.equal(requests[1].options.body.get('mode'), 'transcribe'); assert.equal(requests[1].options.body.get('language_code'), 'sat-IN');
 });
-test('OCR REST uses md output and documents/pages/content results, including partial completion', async () => {
-  const requests = []; const responses = [{ job_id: 'provider-job', status: 'pending' }, { job_id: 'provider-job', status: 'partially_completed' }, { type: 'digitise', job_id: 'provider-job', status: 'partially_completed', documents: [{ pages: [{ page_number: 1, content: '<b>plain</b> text' }] }] }];
+test('OCR REST uses md output and documents/pages/blocks results, including partial completion', async () => {
+  const requests = []; const responses = [{ job_id: 'provider-job', status: 'pending' }, { job_id: 'provider-job', status: 'partially_completed' }, { type: 'digitise', job_id: 'provider-job', status: 'partially_completed', documents: [{ filename: 'input.pdf', page_count: 1, status: 'completed', pages: [{ page_num: 1, blocks: [{ block_id: 'p1-b1', text: '<b>plain</b> text', layout_tag: 'paragraph', reading_order: 1 }] }] }] }];
   const provider = new Sarvam('unit-secret', async (url, options) => { requests.push({ url, options }); return json(responses.shift()); });
   await provider.ocrStart(Buffer.from('%PDF-test'), 'sat-IN', { mime: 'application/pdf', name: 'input.pdf' });
   assert.equal(requests[0].options.body.get('output_format'), 'md'); assert.equal(requests[0].options.body.get('language'), 'sat-IN');

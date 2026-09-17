@@ -58,7 +58,26 @@ export class Sarvam {
     if (!['completed', 'partially_completed'].includes(status)) return { status };
     const result = await this.call(`${path}/results?format=json`);
     if (result.job_id !== jobId || result.type !== 'digitise' || !Array.isArray(result.documents)) fail('INVALID_PROVIDER_RESPONSE', 'The OCR result is unavailable.', 502);
-    const pages = result.documents.flatMap(doc => Array.isArray(doc.pages) ? [...doc.pages].sort((a, b) => a.page_number - b.page_number) : []);
-    return { status, text: plainText(pages.map(page => typeof page.content === 'string' ? page.content : '').join('\n\n')) };
+    const pages = result.documents.flatMap(doc => Array.isArray(doc.pages) ? [...doc.pages].sort((a, b) => (a.page_number ?? a.page_num ?? 0) - (b.page_number ?? b.page_num ?? 0)) : []);
+    const pageTexts = pages.map((page) => {
+      if (typeof page.content === 'string' && page.content.trim()) {
+        return page.content;
+      }
+      if (Array.isArray(page.blocks)) {
+        const ordered = [...page.blocks].sort(
+          (a, b) =>
+            (a?.reading_order ?? Number.MAX_SAFE_INTEGER) -
+            (b?.reading_order ?? Number.MAX_SAFE_INTEGER),
+        );
+        return ordered
+          .map((block) =>
+            typeof block?.text === 'string' ? block.text : '',
+          )
+          .filter((text) => text.trim())
+          .join('\n');
+      }
+      return '';
+    });
+    return { status, text: plainText(pageTexts.join('\n\n')) };
   }
 }

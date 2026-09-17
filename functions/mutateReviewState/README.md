@@ -101,3 +101,24 @@ Successful responses preserve the legacy `rows` and `documents` fields and add p
 | 413 | `PAYLOAD_TOO_LARGE` | `stateJson` exceeds 8,192 bytes |
 | 500 | `SERVER_MISCONFIGURED` | Missing server environment variables |
 | 500 | `SERVER_ERROR` | Internal error |
+
+## applyRecall — idempotent operation sync (multi-device)
+
+Snapshots alone cannot preserve independent recalls from two devices, so
+each answered question is also a stable operation (`action: "applyRecall"`):
+
+- **Idempotency**: one ledger row per `(userId, operationId)` in the
+  `review_operations` table (row id `operationRowIdFor`). Duplicate delivery
+  returns `{ok:true, duplicate:true}` without re-applying.
+- **Exact counters**: deltas (`correct ? (typing ? 2 : 1) : 0` successes,
+  mirroring `MemoryScheduler`) apply on the current snapshot, so A and B
+  from a shared base are both retained in any delivery order. Clock skew
+  never loses recalls (`occurredAt` only orders scheduling fields, which are
+  monotonic newest-wins with lexicographic `operationId` tie-break).
+- **Crash/concurrency safety**: snapshot rows carry `lastOperationId` plus a
+  bounded `recentOperationIds` list (10, ignored by older Dart clients);
+  applies verify-and-repair (max 3 attempts). Cross-type applies rejected.
+- **Transition**: existing `review_states` rows are the baseline; old
+  snapshot-only clients keep working via the compat path. Provision with
+  `node scripts/create_review_collection.mjs --apply` (both tables) and
+  include `review_operations` in deletion/retention handling.

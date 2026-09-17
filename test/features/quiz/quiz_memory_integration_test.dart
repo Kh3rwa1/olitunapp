@@ -14,7 +14,7 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/quiz_engine/sentence_quiz_builder.dart';
@@ -140,13 +140,16 @@ void main() {
       expect(resolved?.itemType, ReviewItemType.sentence);
     });
 
-    test('word wins over sentence when both are set', () {
+    test('both IDs set refuses to guess (exactly-one attribution)', () {
       final q = QuizQuestion(
         promptOlChiki: 'x',
         sourceWordId: 'w1',
         sourceSentenceId: 's1',
       );
-      expect(resolveQuizMemoryItem(q)?.itemId, 'w1');
+      // Double-attributed questions must be fixed at content-build time
+      // (see normalizeSourceAttribution); the runtime resolver never
+      // silently prioritizes one side.
+      expect(resolveQuizMemoryItem(q), isNull);
     });
 
     test('missing/blank source IDs fail safe to null', () {

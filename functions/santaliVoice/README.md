@@ -151,3 +151,23 @@ flutter run --dart-define=SANTALI_VOICE_FUNCTION_ID=santaliVoice
 npm install
 npm test   # node --test test/*.test.js
 ```
+
+## Auth & quota state machine (hardened)
+
+- **Identity**: verified JWT wins; a JWT bound to a different user than
+  `x-appwrite-user-id` fails closed (401). Header-only requests are trusted
+  because execute access is `["users"]` — Appwrite's gateway rejects
+  unauthenticated direct-HTTP calls and injects a truthful header for
+  session executions.
+- **Quota states**: `claimed(submitting)` → `reserved` → `providerSubmitted`
+  → `generated` → `uploaded` → `delivered(completed)`. Failures after reserve
+  refund exactly once (`failed` + `quotaState: refunded`); failed claims are
+  permanently non-replayable so one claim can never bill twice. There is no
+  `failedCharged` state by design: uncertain provider outcomes refund the
+  user and absorb provider cost. Partial multi-scope reservations are
+  compensated. Stale `submitting` claims are reclaimed after 15 minutes.
+- **Privacy**: input text is normalized (NFC, rune-counted) and its hash
+  keys the cache; request rows and `tts_cache` entries (which retain up to
+  2000 chars of source text) inherit the documented retention schedule
+  (`tts_cache` 90d + file deletion, `voice_claims` 7d) and user-file cleanup
+  via `user_assets` on account deletion. Never log full private text.

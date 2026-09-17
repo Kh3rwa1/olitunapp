@@ -4,7 +4,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../shared/providers/language_settings_providers.dart';
-import '../data/review_store.dart';
+import '../data/review_store_notifier.dart';
 import '../domain/review_item.dart';
 import 'review_exercise.dart';
 

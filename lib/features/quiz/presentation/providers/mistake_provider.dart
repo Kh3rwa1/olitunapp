@@ -1,109 +1,51 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
+import '../../../../core/auth/account_scope.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../core/logging/app_logger.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../review/data/review_store.dart';
+import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_memory_resolver.dart';
+import 'mistake_item.dart';
+import 'mistake_storage.dart';
 
-class MistakeItem {
-  final String quizId;
-  final String questionId;
-  final int questionIndex;
-  final QuizQuestion question;
-  final String addedAt;
-  final bool isResolved;
-  final String? resolvedAt;
+export 'mistake_item.dart';
 
-  MistakeItem({
-    required this.quizId,
-    String? questionId,
-    required this.questionIndex,
-    required this.question,
-    required this.addedAt,
-    this.isResolved = false,
-    this.resolvedAt,
-  }) : questionId = questionId ?? '${quizId}_$questionIndex';
-
-  MistakeItem copyWith({
-    String? quizId,
-    String? questionId,
-    int? questionIndex,
-    QuizQuestion? question,
-    String? addedAt,
-    bool? isResolved,
-    String? resolvedAt,
-  }) {
-    return MistakeItem(
-      quizId: quizId ?? this.quizId,
-      questionId: questionId ?? this.questionId,
-      questionIndex: questionIndex ?? this.questionIndex,
-      question: question ?? this.question,
-      addedAt: addedAt ?? this.addedAt,
-      isResolved: isResolved ?? this.isResolved,
-      resolvedAt: resolvedAt ?? this.resolvedAt,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'quizId': quizId,
-      'questionId': questionId,
-      'questionIndex': questionIndex,
-      'question': question.toMap(),
-      'addedAt': addedAt,
-      'isResolved': isResolved,
-      'resolvedAt': resolvedAt,
-    };
-  }
-
-  factory MistakeItem.fromJson(Map<String, dynamic> json) {
-    final snapshot = json['question'] ?? json['questionSnapshot'];
-    return MistakeItem(
-      quizId: json['quizId'] ?? '',
-      questionId: json['questionId'] as String?,
-      questionIndex: json['questionIndex'] ?? 0,
-      question: QuizQuestion.fromMap(_readQuestionSnapshot(snapshot)),
-      addedAt: json['addedAt'] ?? json['lastMissedAt'] ?? '',
-      isResolved: json['isResolved'] as bool? ?? false,
-      resolvedAt: json['resolvedAt'] as String?,
-    );
-  }
-
-  static Map<String, dynamic> _readQuestionSnapshot(dynamic snapshot) {
-    try {
-      if (snapshot is String && snapshot.trim().isNotEmpty) {
-        final decoded = jsonDecode(snapshot);
-        if (decoded is Map) {
-          return Map<String, dynamic>.from(decoded);
-        }
-      }
-      if (snapshot is Map) {
-        return Map<String, dynamic>.from(snapshot);
-      }
-    } catch (_) {
-      // Remote mistakes should never break the local review queue.
-    }
-    return <String, dynamic>{};
-  }
-}
+/// Domain terms live in mistake_item.dart; account-scoped persistence and
+/// legacy/guest migration live in mistake_storage.dart. This file owns the
+/// derived recovery queue, the durable backend outbox, and provider wiring.
 
 class MistakeNotifier extends Notifier<List<MistakeItem>> {
-  static const String _prefKey = 'user_mistakes_list';
-  static const String _masteredKey = 'user_mistakes_mastered_count';
-  static const String _resolvedAuditKey = 'user_mistakes_resolved_audit_v1';
+  // Legacy mastered counter is read-only compat (SRS derives mastery).
+  static const String _legacyMasteredKey = 'user_mistakes_mastered_count';
+
+  StreamSubscription<SharedPreferences>? _scopeSubscription;
 
   @override
   List<MistakeItem> build() {
-    ref.onDispose(() {
-      // Provider disposed — pending backend sync result will be dropped by Riverpod.
+    final prefs = ref.watch(sharedPreferencesProvider);
+    // Account switch: dispose this owner's state and reload for the new
+    // owner. Stale cross-account state is never published.
+    _scopeSubscription?.cancel();
+    final captured = mistakeOwnerSuffix(prefs);
+    _scopeSubscription = AccountScope.changes.listen((changedPrefs) {
+      if (mistakeOwnerSuffix(changedPrefs) != captured) {
+        ref.invalidateSelf();
+      }
     });
-    // Listen to canonical ReviewStore updates to ensure convergence
+    ref.onDispose(() {
+      _scopeSubscription?.cancel();
+      _scopeSubscription = null;
+    });
+    // Listen to canonical ReviewStore updates to ensure convergence.
+    // Only SRS-mastered items auto-resolve (Review state NEVER resolves).
     ref.listen<AsyncValue<ReviewStore>>(reviewStoreProvider, (previous, next) {
       final store = next.valueOrNull;
       if (store != null) {
@@ -113,26 +55,29 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     // Deferred: `state` may not be read or written inside build().
     Future.microtask(_loadMistakes);
     unawaited(Future.microtask(syncFromBackend));
+    unawaited(Future.microtask(_replayOutbox));
     return [];
   }
 
-  bool _isItemMasteredOrInReview(ReviewStore? store, QuizQuestion question) {
+  /// Recovery criterion (explicit policy): the attributed item recorded
+  /// strictly more successful recalls AFTER the mistake than at record
+  /// time. One correct recall after the mistake recovers the queue item —
+  /// without ever calling Review state "mastered" and without touching any
+  /// mastered counter. Non-memory questions (unresolvable to SRS) never
+  /// auto-recover; they resolve only via explicit [resolveMistake].
+  bool _hasRecovered(ReviewStore? store, MistakeItem item) {
     if (store == null) return false;
-    final resolved = resolveQuizMemoryItem(question);
-    if (resolved != null) {
-      final memItem = store.get(resolved.itemId);
-      if (memItem != null) {
-        return memItem.masteryState == MasteryState.mastered ||
-            memItem.masteryState == MasteryState.review;
-      }
-    }
-    return false;
+    final resolved = resolveQuizMemoryItem(item.question);
+    if (resolved == null) return false;
+    final memItem = store.get(resolved.itemId);
+    if (memItem == null) return false;
+    return memItem.successfulRecalls > item.baselineSuccesses;
   }
 
   List<MistakeItem> _loadResolvedAudit() {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final raw = prefs.getString(_resolvedAuditKey);
+      final raw = prefs.getString(mistakeAuditKey(mistakeOwnerSuffix(prefs)));
       if (raw != null && raw.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(raw);
         return decoded
@@ -154,7 +99,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
           ? audit.sublist(audit.length - 500)
           : audit;
       final raw = jsonEncode(bounded.map((item) => item.toJson()).toList());
-      await prefs.setString(_resolvedAuditKey, raw);
+      await prefs.setString(mistakeAuditKey(mistakeOwnerSuffix(prefs)), raw);
     } catch (e) {
       AppLogger.debug('MistakeNotifier: Failed to save resolved audit: $e');
     }
@@ -165,31 +110,25 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   void _loadMistakes() {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final raw = prefs.getString(_prefKey);
-      if (raw != null && raw.isNotEmpty) {
-        final List<dynamic> decoded = jsonDecode(raw);
-        final store = ref.read(reviewStoreProvider).valueOrNull;
-        final resolvedAudit = _loadResolvedAudit();
-        final resolvedKeys = {
-          for (final item in resolvedAudit) '${item.quizId}:${item.questionId}',
-        };
+      final suffix = mistakeOwnerSuffix(prefs);
+      unawaited(claimLegacyMistakes(prefs, suffix));
+      final store = ref.read(reviewStoreProvider).valueOrNull;
+      final resolvedAudit = _loadResolvedAudit();
+      final resolvedKeys = {
+        for (final item in resolvedAudit) '${item.quizId}:${item.questionId}',
+      };
 
-        state = decoded
-            .map(
-              (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
-            )
-            .where((item) {
-              final key = '${item.quizId}:${item.questionId}';
-              if (item.isResolved || resolvedKeys.contains(key)) {
-                return false;
-              }
-              if (_isItemMasteredOrInReview(store, item.question)) {
-                return false;
-              }
-              return true;
-            })
-            .toList();
-      }
+      state = readMistakeList(prefs, mistakeListKey(suffix)).where((item) {
+        final key = '${item.quizId}:${item.questionId}';
+        if (item.isResolved || resolvedKeys.contains(key)) {
+          return false;
+        }
+        // Recovered items (criterion met after record time) leave the queue.
+        if (_hasRecovered(store, item)) {
+          return false;
+        }
+        return true;
+      }).toList();
     } catch (e) {
       AppLogger.debug('MistakeNotifier: Failed to load mistakes: $e');
       state = [];
@@ -200,19 +139,121 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       final raw = jsonEncode(state.map((item) => item.toJson()).toList());
-      await prefs.setString(_prefKey, raw);
+      await prefs.setString(mistakeListKey(mistakeOwnerSuffix(prefs)), raw);
     } catch (e) {
       AppLogger.debug('MistakeNotifier: Failed to save mistakes: $e');
     }
   }
 
+  /// Mastered count is DERIVED from the SRS authority only. Review state
+  /// never increments it, and local resolution never fabricates it. The
+  /// legacy counter key is read-only compat for pre-scoped installs.
   int get masteredCount {
     final store = ref.read(reviewStoreProvider).valueOrNull;
     if (store != null) {
       return store.countsByState()[MasteryState.mastered] ?? 0;
     }
-    final prefs = ref.read(sharedPreferencesProvider);
-    return prefs.getInt(_masteredKey) ?? 0;
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      return prefs.getInt(_legacyMasteredKey) ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  // --- Durable account-scoped outbox for backend mistake mutations ---
+
+  List<MistakeOutboxEntry> _readOutbox(SharedPreferences prefs) {
+    try {
+      final raw = prefs.getString(mistakeOutboxKey(mistakeOwnerSuffix(prefs)));
+      if (raw == null || raw.isEmpty) return [];
+      final List<dynamic> decoded = jsonDecode(raw);
+      return decoded
+          .map((e) => MistakeOutboxEntry.fromJson(Map<String, dynamic>.from(e)))
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<void> _writeOutbox(
+    SharedPreferences prefs,
+    List<MistakeOutboxEntry> entries,
+  ) async {
+    await prefs.setString(
+      mistakeOutboxKey(mistakeOwnerSuffix(prefs)),
+      jsonEncode(entries.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  /// Number of unacknowledged backend mistake mutations (diagnostics).
+  int get pendingBackendMutations {
+    try {
+      return _readOutbox(ref.read(sharedPreferencesProvider)).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<void> _enqueueOutbox(MistakeOutboxEntry entry) async {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final entries = _readOutbox(prefs);
+      if (entries.any((e) => e.idempotencyKey == entry.idempotencyKey)) return;
+      entries.add(entry);
+      await _writeOutbox(prefs, entries);
+    } catch (e) {
+      AppLogger.debug('MistakeNotifier: outbox enqueue failed: $e');
+    }
+  }
+
+  Future<void> _replayOutbox() async {
+    late final SharedPreferences prefs;
+    try {
+      prefs = ref.read(sharedPreferencesProvider);
+    } catch (_) {
+      return;
+    }
+    final entries = _readOutbox(prefs);
+    if (entries.isEmpty) return;
+    final remaining = <MistakeOutboxEntry>[];
+    for (final entry in entries) {
+      final ok = await _sendOutboxEntry(entry);
+      if (!ok) remaining.add(entry);
+    }
+    await _writeOutbox(prefs, remaining);
+  }
+
+  /// Sends one entry. Returns true when acknowledged (or safely droppable).
+  /// Failures stay queued — never logged-and-swallowed.
+  Future<bool> _sendOutboxEntry(MistakeOutboxEntry entry) async {
+    try {
+      final functions = ref.read(appwriteFunctionsServiceProvider);
+      final String functionId;
+      switch (entry.kind) {
+        case 'record':
+          functionId = 'recordMistake';
+          break;
+        case 'resolve':
+          // Deployed compat function id. It resolves the recovery TASK
+          // (audit), not SRS mastery — see deprecation note on
+          // [masterMistake] and functions/markMistakeMastered/README.
+          functionId = 'markMistakeMastered';
+          break;
+        case 'complete':
+          functionId = 'completeMistakeReview';
+          break;
+        default:
+          return true; // Unknown kind: drop (forward-compat).
+      }
+      final response = await functions.execute(functionId, body: entry.body);
+      return response.isCompleted;
+    } catch (e) {
+      AppLogger.debug(
+        'MistakeNotifier: backend ${entry.kind} queued for retry: $e',
+      );
+      return false;
+    }
   }
 
   Future<void> recordMistake({
@@ -236,26 +277,57 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
       (item) => item.quizId == quizId && item.questionIndex == questionIndex,
     );
     if (!exists) {
+      // Capture the SRS baseline for the recovery criterion. Non-memory
+      // questions resolve to null and keep baseline 0 (history only, never
+      // auto-recovered via SRS).
+      var baseline = 0;
+      try {
+        final store = ref.read(reviewStoreProvider).valueOrNull;
+        final resolved = resolveQuizMemoryItem(question);
+        if (resolved != null) {
+          baseline = store?.get(resolved.itemId)?.successfulRecalls ?? 0;
+        }
+      } catch (_) {
+        baseline = 0;
+      }
       final newItem = MistakeItem(
         quizId: quizId,
         questionIndex: questionIndex,
         question: question,
         addedAt: DateTime.now().toIso8601String(),
+        baselineSuccesses: baseline,
       );
 
       state = [...state, newItem];
       await _saveMistakes();
     }
 
-    await _recordMistakeRemotely(
-      quizId: quizId,
-      questionIndex: questionIndex,
-      question: question,
-      wrongAnswer: wrongAnswer,
+    // Durable backend record with a retry-stable idempotency key. The SRS
+    // recall/failure operation for attributable answers is recorded by the
+    // quiz/review flows via ReviewStore (single authority); non-memory
+    // questions keep quiz history here and never enter SRS.
+    await _enqueueOutbox(
+      MistakeOutboxEntry(
+        idempotencyKey: 'mistake:$qId',
+        kind: 'record',
+        body: {
+          'quizId': quizId,
+          'questionId': qId,
+          'questionIndex': questionIndex,
+          'wrongAnswer': wrongAnswer ?? '',
+          'correctAnswer': _correctAnswerFor(question),
+          'questionSnapshot': question.toMap(),
+        },
+        enqueuedAt: DateTime.now().toIso8601String(),
+      ),
     );
+    unawaited(_replayOutbox());
   }
 
-  Future<void> masterMistake({
+  /// Resolves a recovery TASK (removes it from the queue, appends audit).
+  /// This does NOT award SRS mastery — only [MasteryState.mastered] does.
+  /// Remote acknowledgement is durable: failures stay in the outbox.
+  Future<void> resolveMistake({
     required String quizId,
     required int questionIndex,
   }) async {
@@ -289,17 +361,29 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
           .toList();
       await _saveMistakes();
 
-      // Increment mastered count
-      final prefs = ref.read(sharedPreferencesProvider);
-      final count = prefs.getInt(_masteredKey) ?? 0;
-      await prefs.setInt(_masteredKey, count + toResolve.length);
-
-      await _markMistakeMasteredRemotely(
-        quizId: quizId,
-        questionIndex: questionIndex,
+      await _enqueueOutbox(
+        MistakeOutboxEntry(
+          idempotencyKey: 'resolve:$quizId:${toResolve.first.questionId}',
+          kind: 'resolve',
+          body: {
+            'quizId': quizId,
+            'questionId': toResolve.first.questionId,
+            'questionIndex': questionIndex,
+          },
+          enqueuedAt: nowStr,
+        ),
       );
+      unawaited(_replayOutbox());
     }
   }
+
+  /// Deprecated misleading name. Use [resolveMistake]: completing a review
+  /// task is not SRS mastery. Removal planned once call sites migrate.
+  @Deprecated('Use resolveMistake instead. Removal: v1.5.0.')
+  Future<void> masterMistake({
+    required String quizId,
+    required int questionIndex,
+  }) => resolveMistake(quizId: quizId, questionIndex: questionIndex);
 
   Future<void> completeReviewSession({
     required int score,
@@ -307,10 +391,11 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     required List<MistakeItem> reviewedMistakes,
     required List<MistakeItem> masteredMistakes,
   }) async {
-    try {
-      final functions = ref.read(appwriteFunctionsServiceProvider);
-      final response = await functions.execute(
-        'completeMistakeReview',
+    await _enqueueOutbox(
+      MistakeOutboxEntry(
+        idempotencyKey:
+            'complete:${DateTime.now().millisecondsSinceEpoch}:$score:$total',
+        kind: 'complete',
         body: {
           'questionIds': reviewedMistakes
               .map((item) => '${item.quizId}:${item.questionId}')
@@ -321,18 +406,27 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
           'score': score,
           'total': total,
         },
-      );
-      if (!response.isCompleted) {
-        throw Exception('completeMistakeReview did not complete');
-      }
-    } catch (e) {
-      AppLogger.debug('MistakeNotifier: complete review sync failed: $e');
-    }
+        enqueuedAt: DateTime.now().toIso8601String(),
+      ),
+    );
+    unawaited(_replayOutbox());
   }
 
   Future<void> clearAll() async {
     state = [];
     await _saveMistakes();
+  }
+
+  /// Guest -> account mistake migration (union semantics in
+  /// mistake_storage.dart). Called on sign-in.
+  Future<void> migrateGuestMistakes() async {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final merged = await mergeGuestMistakes(prefs, mistakeOwnerSuffix(prefs));
+      if (merged) _loadMistakes();
+    } catch (e) {
+      AppLogger.debug('MistakeNotifier: guest migration failed: $e');
+    }
   }
 
   Future<void> syncFromBackend() async {
@@ -353,7 +447,8 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
 
       // UNIFIED CANONICAL LEARNING MEMORY STATE:
       // Reinstall/backend sync must never resurrect mistakes for items already
-      // resolved locally or mastered/in-review in the canonical ReviewStore.
+      // resolved locally or SRS-mastered in the canonical ReviewStore.
+      // Review (non-mastered) items stay queued: Review is not recovery.
       final store = ref.read(reviewStoreProvider).valueOrNull;
       final resolvedAudit = _loadResolvedAudit();
       final resolvedKeys = {
@@ -365,7 +460,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
         if (item.isResolved || resolvedKeys.contains(key)) {
           return false;
         }
-        if (_isItemMasteredOrInReview(store, item.question)) {
+        if (_hasRecovered(store, item)) {
           return false;
         }
         return true;
@@ -383,78 +478,42 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     }
   }
 
-  /// Reconciles legacy mistake state when an item is successfully recalled
-  /// or mastered in Today's Review or other retrieval sessions.
+  /// Reconciles mistake state when an item is recalled in Today's Review or
+  /// other retrieval sessions. Resolution follows the explicit recovery
+  /// criterion (new successes after record time), never bare lifecycle
+  /// state: Review-without-new-success stays queued.
   Future<void> reconcileRecoveredItem(String itemId) async {
-    final toMaster = state.where((item) {
+    final store = ref.read(reviewStoreProvider).valueOrNull;
+    final toResolve = state.where((item) {
       final resolved = resolveQuizMemoryItem(item.question);
-      if (resolved != null && resolved.itemId == itemId) return true;
+      if (resolved != null) {
+        if (resolved.itemId != itemId) return false;
+        return _hasRecovered(store, item);
+      }
       if (item.question.sourceWordId == itemId ||
           item.question.sourceSentenceId == itemId ||
           item.questionId == itemId ||
           item.quizId == itemId) {
-        return true;
+        return _hasRecovered(store, item);
       }
       return false;
     }).toList();
 
-    for (final m in toMaster) {
-      await masterMistake(quizId: m.quizId, questionIndex: m.questionIndex);
+    for (final m in toResolve) {
+      await resolveMistake(quizId: m.quizId, questionIndex: m.questionIndex);
     }
   }
 
-  /// Reconciles all active mistakes against a snapshot of canonical ReviewStore states.
+  /// Reconciles all active mistakes against a snapshot of canonical
+  /// ReviewStore states. Items meeting the recovery criterion resolve;
+  /// anything else (including Review-but-not-recovered) remains queued.
   Future<void> reconcileWithReviewStore(ReviewStore store) async {
-    final toMaster = state.where((item) {
-      return _isItemMasteredOrInReview(store, item.question);
+    final toResolve = state.where((item) {
+      return _hasRecovered(store, item);
     }).toList();
 
-    for (final m in toMaster) {
-      await masterMistake(quizId: m.quizId, questionIndex: m.questionIndex);
-    }
-  }
-
-  Future<void> _recordMistakeRemotely({
-    required String quizId,
-    required int questionIndex,
-    required QuizQuestion question,
-    String? wrongAnswer,
-  }) async {
-    try {
-      final functions = ref.read(appwriteFunctionsServiceProvider);
-      final correctAnswer = _correctAnswerFor(question);
-      await functions.execute(
-        'recordMistake',
-        body: {
-          'quizId': quizId,
-          'questionId': '${quizId}_$questionIndex',
-          'questionIndex': questionIndex,
-          'wrongAnswer': wrongAnswer ?? '',
-          'correctAnswer': correctAnswer,
-          'questionSnapshot': question.toMap(),
-        },
-      );
-    } catch (e) {
-      AppLogger.debug('MistakeNotifier: remote record failed: $e');
-    }
-  }
-
-  Future<void> _markMistakeMasteredRemotely({
-    required String quizId,
-    required int questionIndex,
-  }) async {
-    try {
-      final functions = ref.read(appwriteFunctionsServiceProvider);
-      await functions.execute(
-        'markMistakeMastered',
-        body: {
-          'quizId': quizId,
-          'questionId': '${quizId}_$questionIndex',
-          'questionIndex': questionIndex,
-        },
-      );
-    } catch (e) {
-      AppLogger.debug('MistakeNotifier: remote mastery failed: $e');
+    for (final m in toResolve) {
+      await resolveMistake(quizId: m.quizId, questionIndex: m.questionIndex);
     }
   }
 

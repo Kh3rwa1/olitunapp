@@ -86,22 +86,38 @@ export async function authenticate(req, cfg, makeAccount = (client) => new Accou
       : '';
   const jwt = bearer || headers['x-appwrite-user-jwt'];
 
+  // Verified JWT identity is preferred and never taken from the caller.
+  let jwtUser = null;
   if (jwt && typeof jwt === 'string' && jwt.trim() && jwt.length <= 8192) {
     try {
       const client = new Client().setEndpoint(cfg.endpoint).setProject(cfg.projectId).setJWT(jwt.trim());
       const user = await makeAccount(client).get();
       if (user?.$id && user.status !== false) {
-        return user.$id;
+        jwtUser = user.$id;
       }
     } catch (_) {
-      // Fallback to session header if JWT validation fails
+      // Invalid JWT: fall through to the binding rules below (fail closed
+      // unless the platform header is the only signal — see below).
     }
   }
 
-  const userId = headers['x-appwrite-user-id'];
-  if (typeof userId === 'string' && userId.trim() && userId.length <= 36) {
-    return userId.trim();
-  }
+  const rawHeaderUser = headers['x-appwrite-user-id'];
+  const headerUser =
+    typeof rawHeaderUser === 'string' && rawHeaderUser.trim() && rawHeaderUser.length <= 36
+      ? rawHeaderUser.trim()
+      : null;
+
+  // Binding rule: when BOTH signals are present they must agree. A forged
+  // header paired with another user's (or an invalid) JWT fails closed.
+  // Header-only requests are accepted because this function's execute
+  // access is restricted to authenticated users (`execute: ["users"]` in
+  // appwrite.config.json): Appwrite's gateway rejects unauthenticated
+  // direct-HTTP calls before this code runs and injects a truthful
+  // x-appwrite-user-id for session executions. Direct-external forged
+  // headers without a session never reach us. See README (auth section).
+  if (jwtUser && headerUser && jwtUser !== headerUser) return null;
+  if (jwtUser) return jwtUser;
+  if (headerUser) return headerUser;
 
   return null;
 }
@@ -193,8 +209,31 @@ export function createHandler({
     }
 
     // ---- 3. Durable Request Claim: prevent concurrent identical submissions ----
+    // Quota state machine: claimed -> reserved -> providerSubmitted ->
+    // generated -> uploaded -> delivered(completed). Failures after reserve
+    // refund exactly once (failed claims are permanently non-replayable, so
+    // no double-spend vector exists) and land in failed+refunded. There is
+    // intentionally NO failedCharged state: uncertain provider outcomes
+    // (timeouts) refund the user and absorb provider cost rather than
+    // charging for undelivered audio; blind automatic resubmission is
+    // forbidden (409 REQUEST_NOT_REPLAYABLE) so one claim can never bill
+    // twice. Stale `submitting` claims (crash mid-flight) are reclaimed
+    // after STALE_CLAIM_MS instead of locking the text forever.
     const claimId = digest(config.secret, ['voice-v1', userId, cacheKey]);
-    const claimed = await store.claim(claimId, userId, cacheKey, chars);
+    const STALE_CLAIM_MS = 15 * 60 * 1000;
+    const failClaim = async (reason) => {
+      // reason: { taken, event, message }
+      if (reason.taken) {
+        try {
+          await store.release(reason.taken, chars);
+        } catch (releaseErr) {
+          error(JSON.stringify({ event: 'tts_refund_failed', error: releaseErr?.message }));
+        }
+      }
+      await store.update(claimId, { status: 'failed', quotaState: reason.taken ? 'refunded' : 'unreserved' });
+      if (reason.event) error(JSON.stringify(reason.event));
+    };
+    let claimed = await store.claim(claimId, userId, cacheKey, chars);
     if (!claimed) {
       const existing = await store.get(claimId);
       if (existing?.status === 'completed' && existing.audioUrl) {
@@ -211,28 +250,40 @@ export function createHandler({
         );
       }
       if (existing?.status === 'submitting') {
+        const age = Date.now() - (existing.checkedAt || 0);
+        if (age > STALE_CLAIM_MS) {
+          if (await store.reclaimIfStale(claimId, STALE_CLAIM_MS)) {
+            log(JSON.stringify({ event: 'tts_stale_claim_reclaimed', ageMs: age }));
+            claimed = await store.claim(claimId, userId, cacheKey, chars);
+          }
+        }
+        if (!claimed) {
+          return res.json(
+            err(
+              'This voice request is already in progress. Please wait for it to complete.',
+              'REQUEST_NOT_REPLAYABLE'
+            ),
+            409
+          );
+        }
+      } else if (!claimed) {
         return res.json(
           err(
-            'This voice request is already in progress. Please wait for it to complete.',
+            'This request previously could not be completed. It will not be submitted again automatically.',
             'REQUEST_NOT_REPLAYABLE'
           ),
           409
         );
       }
-      return res.json(
-        err(
-          'This request previously could not be completed. It will not be submitted again automatically.',
-          'REQUEST_NOT_REPLAYABLE'
-        ),
-        409
-      );
     }
 
     // ---- 4. Check and reserve character quota atomically ----
+    let taken = null;
     try {
-      await store.reserve(userId, chars, config.policy);
+      taken = await store.reserve(userId, chars, config.policy);
+      await store.update(claimId, { status: 'reserved' });
     } catch (quotaErr) {
-      await store.update(claimId, { status: 'failed' });
+      await store.update(claimId, { status: 'failed', quotaState: 'unreserved' });
       const code = quotaErr instanceof VoiceError ? quotaErr.code : 'QUOTA_EXCEEDED';
       const status = quotaErr instanceof VoiceError ? quotaErr.status : 429;
       return res.json(err(quotaErr.message || 'Voice quota exceeded.', code), status);
@@ -243,13 +294,13 @@ export function createHandler({
     try {
       keys = await loadActiveKeys(databases, config.databaseId);
     } catch (keysErr) {
-      await store.update(claimId, { status: 'failed' });
-      error(JSON.stringify({ event: 'tts_keys_lookup_failed', error: keysErr?.message }));
+      await failClaim({ taken, event: { event: 'tts_keys_lookup_failed', error: keysErr?.message } });
       return res.json(err('Voice service is unavailable.', 'SERVER_MISCONFIGURED'), 503);
     }
 
     let synthesis;
     try {
+      await store.update(claimId, { status: 'providerSubmitted' });
       synthesis = await synthRotation({
         databases,
         dbId: config.databaseId,
@@ -260,9 +311,11 @@ export function createHandler({
         style,
         fetchImpl,
       });
+      await store.update(claimId, { status: 'generated' });
     } catch (synthErr) {
-      // Fail closed: keep claim marked as failed to prevent duplicate charging on uncertain outcome
-      await store.update(claimId, { status: 'failed' });
+      // Refund: reservation is released (see state-machine note above);
+      // the claim stays failed/non-replayable so this bills at most once.
+      await failClaim({ taken });
       if (synthErr?.reason === 'bad_request') {
         return res.json(err('The voice service could not synthesize this text.', 'UPSTREAM_REJECTED'), 422);
       }
@@ -289,13 +342,15 @@ export function createHandler({
       );
       uploaded = await storage.createFile(AUDIO_BUCKET_ID, ID.unique(), file);
     } catch (uploadErr) {
-      await store.update(claimId, { status: 'failed' });
-      error(JSON.stringify({ event: 'tts_upload_failed', error: uploadErr?.message }));
+      // Explicit upload-failure policy: provider work is absorbed as our
+      // loss, the user's reservation is refunded, and retry is a new claim.
+      await failClaim({ taken, event: { event: 'tts_upload_failed', error: uploadErr?.message } });
       return res.json(
         err('Voice was created but could not be saved. Try again.', 'UPLOAD_FAILED'),
         502
       );
     }
+    await store.update(claimId, { status: 'uploaded' });
 
     const audioUrl = storageViewUrl(env, uploaded.$id);
     const timestamp = new Date().toISOString();
@@ -315,6 +370,7 @@ export function createHandler({
     // ---- 8. Update claim to completed & save to tts_cache ----
     await store.update(claimId, {
       status: 'completed',
+      quotaState: 'consumed',
       audioUrl,
       storageFileId: uploaded.$id,
     });

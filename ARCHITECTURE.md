@@ -42,7 +42,6 @@ lib/
 │   └── theme/                   # AppTheme, AppColors, AdminTokens
 ├── features/
 │   ├── admin/                   # CMS dashboard (presentation-heavy)
-│   ├── affirmations/            # Daily affirmation flows
 │   ├── auth/                    # data/domain/presentation layers
 │   ├── categories/              # data/domain/presentation layers
 │   ├── content/                 # Content detail surfaces (data/domain/presentation)
@@ -184,3 +183,28 @@ Event-driven functions handle gamification (`getUserGamificationSummary`, `recor
 ### Version Pinning & Governance Exceptions
 
 - **`functions/translator/`**: Intentionally version-frozen on `node-appwrite: 25.1.0` due to upstream removal of `account.createJWT` in `node-appwrite` 28.0.0. Excluded from automated Dependabot updates and governed by `scripts/verify_node_dependency_alignment.mjs`. See [functions/translator/README.md](functions/translator/README.md) for full context and revisit criteria.
+
+## Learner-State Authority (forensic hardening)
+
+Single documented source of truth per state — see
+[docs/architecture/learner_state_authority.md](docs/architecture/learner_state_authority.md):
+
+- **Review/SRS mastery**: `ReviewStore` locally (one `ReviewStateLocalRepository`
+  persistence boundary, account-scoped keys, pure in-memory transitions +
+  explicit durability), `review_states` snapshot rows + `review_operations`
+  idempotency ledger remotely. One stable recall operation per answered
+  question; snapshot merge is the backward-compatible read path only (never
+  last-writer-wins for evidence).
+- **Mistake history**: append-only per-account audit. The live recovery queue
+  is DERIVED from SRS via the explicit recovery criterion (new successes
+  after record time). Review state is never "mastered".
+- **Quiz identity**: exactly-one verified corpus attribution or explicit
+  non-memory, enforced at domain, admin, repository, CI, and runtime layers.
+- **Guest/legacy migration**: receipted state machine (`prepared/applied/
+  sourceCleared/completed/failed`), claim-once legacy ownership, quarantined
+  ambiguity.
+- **Rewards/analytics**: server-authoritative totals with idempotent origin
+  keys; analytics events are never product authority.
+
+Sync, persistence, quota, and rollback details:
+[docs/architecture/review_persistence_and_sync.md](docs/architecture/review_persistence_and_sync.md).

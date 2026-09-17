@@ -38,8 +38,10 @@ void main() {
         expect(store.get('w1')?.masteryState, MasteryState.review);
         expect(store.get('w1')?.nextReviewAt, DateTime.utc(2026, 1, 2, 9));
 
-        // Next persist writes the versioned v2 format.
+        // Next persist writes the versioned v2 format (explicit durability:
+        // pure mutations never persist implicitly).
         store.adoptRemote(store.get('w1')!);
+        await store.persist();
         final saved =
             jsonDecode(prefs.getString(ReviewStore.storageKey)!) as Map;
         expect(saved['schemaVersion'], ReviewStore.schemaVersion);

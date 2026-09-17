@@ -1157,7 +1157,8 @@ async function main() {
     console.log(`  ✅ Done: ${col.name}\n`);
   }
 
-  // 2b. Provision and verify review_states table
+  // 2b. Provision and verify review_states + review_operations tables
+  // (operation ledger for idempotent multi-device recall sync).
   console.log('📋 Provisioning review_states table...');
   const reviewApiClient = createApiClient({
     endpoint: ENDPOINT,
@@ -1166,6 +1167,9 @@ async function main() {
   });
   await applyTable(reviewApiClient, { db: DATABASE_ID, tableId: 'review_states' });
   console.log('  ✅ Done: review_states\n');
+  console.log('📋 Provisioning review_operations table...');
+  await applyTable(reviewApiClient, { db: DATABASE_ID, tableId: 'review_operations' });
+  console.log('  ✅ Done: review_operations\n');
 
   // 3. Create the admin Team (idempotent — 409 = already exists)
   console.log('👥 Creating admin team...');

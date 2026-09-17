@@ -8,8 +8,11 @@
 //    queued writes to Appwrite — online it drains in seconds; offline it
 //    stays queued and drains on reconnect.
 //  - PULL path: startup/login/connectivity pulls the user's server rows
-//    and merges per item (LWW on lastReviewedAt). Server-newer wins;
-//    local-newer is re-enqueued for push. No full history fetch on Home.
+//    and merges per item via [ReviewStateMergePolicy] (deterministic
+//    evidence combination — NOT last-writer-wins: concurrent recalls from
+//    multiple devices are preserved, not clobbered). Server-newer wins for
+//    display fields only; local-newer is re-enqueued for push. No full
+//    history fetch on Home.
 //
 // Failure handling: malformed rows skipped, network failures keep the
 // outbox entry for retry, pull failures leave the local state untouched.
@@ -24,70 +27,9 @@ import '../domain/review_corpus_identity.dart';
 import '../domain/review_item.dart';
 import '../domain/review_repository.dart';
 import '../domain/review_state_merge_policy.dart';
+import 'review_recall_operation.dart';
 import 'review_store.dart';
-
-/// Outbox operation type for review-state upserts (one replay handler).
-const reviewStateOperationType = 'review_state.upsert';
-
-/// Outbox operation type for review-state cloud deletion (idempotent).
-const reviewStateDeleteOperationType = 'review_state.delete';
-
-/// Minimal outbox contract needed by review sync. MutationOutboxService
-/// satisfies it in production (adapter in review_sync_init.dart); tests
-/// use an in-memory fake — no Hive, no Appwrite.
-abstract class ReviewOutbox {
-  Future<void> enqueueMutation(PendingMutation mutation);
-  Future<List<PendingMutation>> getPendingMutations(String userId);
-  Future<void> recordAttemptFailed(
-    String userId,
-    String operationId,
-    String error, {
-    bool isPermanent = false,
-  });
-  Future<void> markCompleted(String userId, String operationId);
-  Future<MutationStatus?> getMutationStatus(String userId, String operationId);
-  Future<PendingMutation?> getMutation(String userId, String operationId);
-}
-
-class MutationOutboxAdapter implements ReviewOutbox {
-  final MutationOutboxService _service;
-  const MutationOutboxAdapter(this._service);
-
-  @override
-  Future<void> enqueueMutation(PendingMutation mutation) =>
-      _service.enqueueMutation(mutation);
-
-  @override
-  Future<List<PendingMutation>> getPendingMutations(String userId) =>
-      _service.getPendingMutations(userId);
-
-  @override
-  Future<void> recordAttemptFailed(
-    String userId,
-    String operationId,
-    String error, {
-    bool isPermanent = false,
-  }) => _service.recordAttemptFailed(
-    userId,
-    operationId,
-    error,
-    isPermanent: isPermanent,
-  );
-
-  @override
-  Future<void> markCompleted(String userId, String operationId) =>
-      _service.markCompleted(userId, operationId);
-
-  @override
-  Future<MutationStatus?> getMutationStatus(
-    String userId,
-    String operationId,
-  ) => _service.getMutationStatus(userId, operationId);
-
-  @override
-  Future<PendingMutation?> getMutation(String userId, String operationId) =>
-      _service.getMutation(userId, operationId);
-}
+import 'review_sync_outbox.dart';
 
 class ReviewStateSync {
   final ReviewRepository repository;
@@ -100,6 +42,9 @@ class ReviewStateSync {
   String? _cachedUserId;
   Future<void>? _activeSync;
   Future<void>? _activeReplay;
+
+  /// Observable sync health (WS7). Mutated in place by sync/replay.
+  final ReviewSyncMetrics metrics = ReviewSyncMetrics();
 
   ReviewStateSync({
     required this.repository,
@@ -116,10 +61,52 @@ class ReviewStateSync {
     _cachedUserId = null;
   }
 
+  /// Queues one stable recall operation for durable cloud apply. The
+  /// operation's own [ReviewRecallOperation.operationId] is the outbox key,
+  /// so retries/replays after timeout or process death never double-apply.
+  /// Returns the operationId on success, null for guests/offline-queued
+  /// failures (the entry simply stays queued). No-op when validation fails.
+  Future<String?> enqueueRecallOperation(ReviewRecallOperation op) async {
+    try {
+      final reason = op.validate();
+      if (reason != null) {
+        AppLogger.debug('ReviewStateSync: invalid recall op dropped: $reason');
+        return null;
+      }
+      final userId = _cachedUserId ?? await resolveUserId();
+      _cachedUserId = userId;
+      if (userId == null || userId.isEmpty) return null;
+      if (op.userId.isNotEmpty && op.userId != userId) {
+        AppLogger.debug('ReviewStateSync: recall op user mismatch; dropped.');
+        return null;
+      }
+      await outbox.enqueueMutation(
+        PendingMutation(
+          operationId: op.operationId,
+          userId: userId,
+          operationType: reviewRecallOperationType,
+          entityId: op.itemId,
+          payload: op.toMap(),
+          createdAt: DateTime.now(),
+        ),
+      );
+      metrics.totalRecallOperations++;
+      return op.operationId;
+    } catch (e) {
+      // Cloud sync must never break learning.
+      AppLogger.debug('ReviewStateSync: recall enqueue failed: $e');
+      return null;
+    }
+  }
+
   /// Queues one local mutation for durable cloud push. Local Hive write —
   /// cheap enough to call after every learning event. No-ops for guests
   /// (local-only until the first sync resolves the user) and when offline
   /// (the entry simply stays queued). Returns the generated operationId on success.
+  ///
+  /// Compatibility path: snapshot upsert coalesced by userId + canonical
+  /// itemId. Callers answering questions should prefer
+  /// [enqueueRecallOperation] (exactly one stable op per answer).
   Future<String?> enqueueLocalMutation(MemoryItemState item) async {
     try {
       final userId = _cachedUserId ?? await resolveUserId();
@@ -182,7 +169,7 @@ class ReviewStateSync {
   }
 
   /// Startup/login/connectivity sync: pull server rows, merge per item
-  /// (LWW on lastReviewedAt), then drain the outbox. Single-flight: a
+  /// (deterministic evidence merge), then drain the outbox. Single-flight: a
   /// sync already in progress is awaited, never duplicated.
   Future<ReviewSyncResult> syncNow() async {
     final existing = _activeSync;
@@ -190,11 +177,14 @@ class ReviewStateSync {
       await existing;
       return ReviewSyncResult.empty;
     }
+    final stopwatch = Stopwatch()..start();
     final pending = _pullAndMerge();
     _activeSync = pending;
     try {
       final result = await pending;
       await replayQueued();
+      stopwatch.stop();
+      metrics.lastSyncDuration = stopwatch.elapsed;
       return result;
     } finally {
       _activeSync = null;
@@ -210,6 +200,17 @@ class ReviewStateSync {
       final store = await loadStore();
       final remote = await repository.loadRemoteStates(userId);
       final merged = mergeRemote(store, remote);
+      // Single durable write for the whole pull adoption batch (never N
+      // full-map writes for N adopted rows).
+      if (merged.result.adopted > 0) {
+        final ok = await store.persist();
+        if (!ok) {
+          AppLogger.debug(
+            'ReviewStateSync: pull adoption persist failed; local state '
+            'kept in memory and will be retried on next mutation.',
+          );
+        }
+      }
 
       // Canonical items must be persisted/enqueued FIRST before old rows are deleted
       final canonicalOpIds = <String, String>{};
@@ -241,8 +242,10 @@ class ReviewStateSync {
     }
   }
 
-  /// Conflict resolution: per-item LWW on lastReviewedAt (introducedAt as
-  /// the never-reviewed fallback). Reconciles against [corpusMap] when available:
+  /// Conflict resolution: per-item deterministic merge (see
+  /// [ReviewStateMergePolicy]; NOT last-writer-wins) with
+  /// [ReviewStateSync.mergeRemote]'s never-reviewed fallback on
+  /// introducedAt. Reconciles against [corpusMap] when available:
   /// - Tombstoned remote items are queued for deletion without being adopted.
   /// - Renamed remote items are migrated to the canonical ID, collisions resolved
   ///   by effective timestamp, canonical state saved/enqueued, and old row queued for delete.
@@ -369,20 +372,44 @@ class ReviewStateSync {
 
   Future<ReviewSyncResult> _replayQueued() async {
     var replayed = 0, failed = 0, skipped = 0;
+    var bytesWritten = 0;
     try {
       final userId = _cachedUserId ?? await resolveUserId();
       _cachedUserId = userId;
       if (userId == null || userId.isEmpty) return ReviewSyncResult.empty;
 
       final pending = await outbox.getPendingMutations(userId);
+      // Refresh metrics snapshot (no learning text included).
+      metrics.pendingOperations = pending.length;
+      DateTime? oldest;
+      for (final m in pending) {
+        if (oldest == null || m.createdAt.isBefore(oldest)) {
+          oldest = m.createdAt;
+        }
+        if (m.status == MutationStatus.deadLetter) metrics.deadLetterCount++;
+      }
+      if (oldest != null) {
+        metrics.oldestPendingAge = DateTime.now().difference(oldest);
+      }
       final store = await loadStore();
       final now = DateTime.now();
+      final seenOpIds = <String>{};
       for (final mutation in pending) {
         if (mutation.operationType != reviewStateOperationType &&
-            mutation.operationType != reviewStateDeleteOperationType) {
+            mutation.operationType != reviewStateDeleteOperationType &&
+            mutation.operationType != reviewRecallOperationType) {
           continue;
         }
         if (mutation.status == MutationStatus.deadLetter) {
+          skipped++;
+          continue;
+        }
+        // Coalescing guard: the same stable operationId MUST appear at
+        // most once per replay pass. A duplicate entry is counted and
+        // completed without re-applying (idempotent, never double-counts).
+        if (!seenOpIds.add(mutation.operationId)) {
+          metrics.duplicateOperationCount++;
+          await outbox.markCompleted(userId, mutation.operationId);
           skipped++;
           continue;
         }
@@ -393,6 +420,64 @@ class ReviewStateSync {
           continue;
         }
         try {
+          if (mutation.operationType == reviewRecallOperationType) {
+            final op = ReviewRecallOperation.fromMap(
+              Map<String, dynamic>.from(mutation.payload),
+            );
+            final reason = op.validate();
+            if (reason != null) {
+              await outbox.recordAttemptFailed(
+                userId,
+                mutation.operationId,
+                'invalid recall op: $reason',
+                isPermanent: true,
+              );
+              skipped++;
+              continue;
+            }
+            if (op.userId.isNotEmpty && op.userId != userId) {
+              await outbox.recordAttemptFailed(
+                userId,
+                mutation.operationId,
+                'recall op owner mismatch',
+                isPermanent: true,
+              );
+              skipped++;
+              continue;
+            }
+            final opRepo = repository is ReviewOperationRepository
+                ? repository as ReviewOperationRepository
+                : null;
+            if (opRepo != null) {
+              // Idempotent server apply by operationId.
+              final applied = await opRepo.applyRecallOperation(
+                userId,
+                ReviewRecallOperationPayload(
+                  operationId: op.operationId,
+                  userId: userId,
+                  itemId: op.itemId,
+                  itemType: op.itemType,
+                  exerciseType: op.exerciseType,
+                  correct: op.correct,
+                  responseTimeMs: op.responseTimeMs,
+                  occurredAt: op.occurredAt,
+                  deviceId: op.deviceId,
+                  localSequence: op.localSequence,
+                  schemaVersion: op.schemaVersion,
+                ),
+              );
+              if (!applied) metrics.duplicateOperationCount++;
+            } else {
+              // Compatibility fallback: push the LIVE snapshot once.
+              final live = store.get(op.itemId);
+              if (live != null) {
+                await repository.pushState(userId, live);
+              }
+            }
+            await outbox.markCompleted(userId, mutation.operationId);
+            replayed++;
+            continue;
+          }
           if (mutation.operationType == reviewStateDeleteOperationType) {
             final itemId = mutation.entityId;
             if (itemId.isEmpty) {
@@ -471,6 +556,7 @@ class ReviewStateSync {
           // rapid-fire sequence of recalls converges to the latest.
           final live = store.get(item.itemId) ?? item;
           await repository.pushState(userId, live);
+          bytesWritten += mutation.payload.length;
           await outbox.markCompleted(userId, mutation.operationId);
           replayed++;
         } catch (e) {
@@ -482,6 +568,10 @@ class ReviewStateSync {
           );
         }
       }
+      metrics.replaySuccess += replayed;
+      metrics.replayFailure += failed;
+      metrics.lastBytesWritten = bytesWritten;
+      metrics.pendingOperations = 0;
     } catch (e) {
       AppLogger.debug('ReviewStateSync: replay failed: $e');
     }

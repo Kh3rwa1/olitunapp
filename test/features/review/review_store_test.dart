@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_corpus_identity.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -118,6 +119,8 @@ void main() {
         exerciseType: ReviewExerciseType.typing,
         now: t0,
       );
+      // Durability is explicit: pure mutations never persist implicitly.
+      await first.persist();
       final second = await ReviewStore.load(prefs);
       expect(second.get('w1')?.successfulRecalls, 2);
       expect(second.get('w1')?.typingSuccesses, 1);
@@ -242,7 +245,8 @@ void main() {
         expect(store.get('w2')?.typingSuccesses, 3);
         expect(store.quarantined(), isEmpty);
 
-        // Next mutation persists in v3 format
+        // Next mutation persists in v3 format (explicit durability: pure
+        // mutations never persist implicitly).
         store.recordRecall(
           itemId: 'w1',
           itemType: ReviewItemType.word,
@@ -250,6 +254,7 @@ void main() {
           exerciseType: ReviewExerciseType.typing,
           now: t0.add(const Duration(days: 3)),
         );
+        await store.persist();
 
         final rawAfter = prefs.getString(ReviewStore.storageKey)!;
         final decoded = jsonDecode(rawAfter) as Map<String, dynamic>;
@@ -273,7 +278,7 @@ void main() {
         expect(store.get('w1')?.itemId, 'w1');
         expect(store.quarantined(), isEmpty);
 
-        // Mutate to trigger persist in v3 format
+        // Mutate to trigger persist in v3 format (explicit durability).
         store.recordRecall(
           itemId: 'w1',
           itemType: ReviewItemType.word,
@@ -281,6 +286,7 @@ void main() {
           exerciseType: ReviewExerciseType.recognition,
           now: t0.add(const Duration(days: 3)),
         );
+        await store.persist();
 
         final rawAfter = prefs.getString(ReviewStore.storageKey)!;
         final decoded = jsonDecode(rawAfter) as Map<String, dynamic>;
@@ -330,6 +336,8 @@ void main() {
         expect(recon.hasChanges, isTrue);
         expect(store.quarantinedCount(), 1);
         expect(store.get('w_orphan'), isNull);
+        // Reconciliation is pure in memory; durability is explicit.
+        await store.persist();
 
         // Restart store by reloading from prefs
         final store2 = await ReviewStore.load(prefs);

@@ -20,7 +20,7 @@ import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';

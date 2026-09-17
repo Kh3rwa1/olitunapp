@@ -1,29 +1,50 @@
 // Offline-first persistence for item-level learning state.
 //
-// Storage: single SharedPreferences JSON map (key `review_states_v1`),
-// versioned via [schemaVersion]. Format v3:
+// Storage: one versioned JSON document per account owner
+// (key `review_states_<scope>`, legacy `review_states_v1` claimed once via
+// the migration ledger), versioned via [schemaVersion]. Format v3:
 //   {"schemaVersion": 3, "items": {itemId: <MemoryItemState.toMap()>}, "quarantine": {itemId: <MemoryItemState.toMap()>}}
 // Legacy v1 (flat itemId -> state, no version key) and v2 (schemaVersion: 2)
 // are migrated on load and rewritten in v3 on the next persist — learner progress survives
 // app updates (P12). Cloud sync (Appwrite `review_states`) layers on
 // top of this local cache: see review_state_sync.dart.
 //
+// Persistence boundary: exactly one — [ReviewStateLocalRepository]
+// (see review_state_local_repository.dart). [ReviewStore] mutation methods
+// ([recordRecall], [ensureIntroduced], [adoptRemote], [reconcile]) are pure
+// in-memory transitions and NEVER persist implicitly. Durability is owned
+// by [ReviewStoreNotifier], which executes the single mandated transaction
+// sequence per logical mutation:
+//
+//   1. capture current account scope
+//   2. validate item identity
+//   3. compute next state (pure)
+//   4. persist state under the captured account scope (awaited)
+//   5. confirm the account scope is still current
+//   6. publish Riverpod state
+//   7. enqueue cloud mutation (only after local durability)
+//   8. trigger opportunistic replay
+//
+// Retention: there is NO fixed item cap. A local cleanup must never delete
+// fresh/learning/review items without explicit archival and remote
+// coordination (see REMOTE coordination in review_state_sync.dart); the
+// previous 2,000-item arbitrary eviction has been removed.
+//
 // Performance: one prefs read at startup; every mutation is a single
-// prefs write of the compact map. No Appwrite reads on home open — the
+// serialized repository write. No Appwrite reads on home open — the
 // provider caches the decoded map and exposes cheap derived counts.
 
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/auth/account_scope.dart';
-import '../../../core/storage/hive_service.dart';
 import '../domain/memory_scheduler.dart';
 import '../domain/review_corpus_identity.dart';
 import '../domain/review_item.dart';
-import 'review_state_sync.dart';
+import 'review_state_local_repository.dart';
 
 class ReviewStore {
   static const storageKey = 'review_states_v1';
@@ -33,24 +54,57 @@ class ReviewStore {
 
   /// Bump on any format change; load() migrates older persisted data.
   static const int schemaVersion = 3;
-  static const maxItems = 2000;
 
-  final SharedPreferences _prefs;
+  /// Previous fixed cap, retained for documentation only.
+  ///
+  /// The cap used to evict an arbitrary active item once reached. It is NO
+  /// LONGER enforced: learner state is never silently evicted merely because
+  /// a threshold was reached. Local cleanup of mastered items requires
+  /// explicit archival with remote coordination (not yet implemented; any
+  /// future policy must preserve the no-active-eviction invariant and keep
+  /// deleted state from reappearing via cloud sync).
+  // ignore: unused_field
+  static const int maxItems = 2000;
+
+  final ReviewStateLocalRepository _repository;
   final String _storageKey;
+
+  /// Owner label captured at load, used to detect cross-account misuse.
+  /// Compared by [ReviewStoreNotifier] against the live scope; the store
+  /// itself always persists under [_storageKey] (the captured owner's key)
+  /// and never re-derives the key mid-transaction.
+  final String _capturedOwnerLabel;
   final Map<String, MemoryItemState> _states;
   final Map<String, MemoryItemState> _quarantined;
   ReviewCorpusIdentityMap? _corpusMap;
 
   ReviewStore._(
-    this._prefs,
+    this._repository,
     this._states, [
     Map<String, MemoryItemState>? quarantined,
     this._corpusMap,
     String? storageKey,
+    String? capturedOwnerLabel,
   ]) : _quarantined = quarantined ?? {},
-       _storageKey = storageKey ?? ReviewStore.storageKey;
+       _storageKey = storageKey ?? ReviewStore.storageKey,
+       _capturedOwnerLabel =
+           capturedOwnerLabel ?? storageKey ?? ReviewStore.storageKey;
 
   String get storageKeyUsed => _storageKey;
+
+  /// Owner label captured when this store was loaded. The notifier compares
+  /// it with the live scope after each durable write.
+  String get capturedOwnerLabel => _capturedOwnerLabel;
+
+  @visibleForTesting
+  ReviewStateLocalRepository get repository => _repository;
+
+  /// Immutable snapshot of the current in-memory state for durability.
+  ReviewStateSnapshot snapshot() => ReviewStateSnapshot(
+    schemaVersion: schemaVersion,
+    items: Map<String, MemoryItemState>.unmodifiable(Map.of(_states)),
+    quarantine: Map<String, MemoryItemState>.unmodifiable(Map.of(_quarantined)),
+  );
 
   static Future<ReviewStore> load(
     SharedPreferences prefs, {
@@ -58,21 +112,72 @@ class ReviewStore {
     String? storageKey,
     AccountScope? scope,
   }) async {
+    final repository = SharedPreferencesReviewStateRepository(prefs);
+    return loadWithRepository(
+      repository,
+      prefs: prefs,
+      corpusMap: corpusMap,
+      storageKey: storageKey,
+      scope: scope,
+    );
+  }
+
+  /// Test seam: load using an injected repository (e.g. the delayed fake).
+  /// [prefs] is still required for the legacy-claim read path.
+  static Future<ReviewStore> loadWithRepository(
+    ReviewStateLocalRepository repository, {
+    required SharedPreferences prefs,
+    ReviewCorpusIdentityMap? corpusMap,
+    String? storageKey,
+    AccountScope? scope,
+  }) async {
     final effectiveKey =
         storageKey ??
         (scope != null ? scope.reviewKey : ReviewStore.storageKey);
+    final ownerLabel = scope != null
+        ? scope.reviewKey
+        : (storageKey ?? ReviewStore.storageKey);
 
-    String? raw = prefs.getString(effectiveKey);
+    String? raw;
     bool needsLegacyMigration = false;
-    if ((raw == null || raw.isEmpty) &&
-        effectiveKey != ReviewStore.storageKey &&
-        prefs.containsKey(ReviewStore.storageKey)) {
-      raw = prefs.getString(ReviewStore.storageKey);
-      needsLegacyMigration = true;
+    final snapshot = await repository.load(effectiveKey);
+    if (snapshot.items.isEmpty && snapshot.quarantine.isEmpty) {
+      // Fall through to the legacy-claim path below (raw prefs read) so
+      // unowned `review_states_v1` data is handled exactly once by the
+      // migration ledger instead of being silently imported.
+      raw = prefs.getString(effectiveKey);
+      if ((raw == null || raw.isEmpty) &&
+          effectiveKey != ReviewStore.storageKey &&
+          prefs.containsKey(ReviewStore.storageKey)) {
+        raw = prefs.getString(ReviewStore.storageKey);
+        needsLegacyMigration = true;
+      }
+    }
+
+    if (snapshot.items.isNotEmpty || snapshot.quarantine.isNotEmpty) {
+      final store = ReviewStore._(
+        repository,
+        Map.of(snapshot.items),
+        Map.of(snapshot.quarantine),
+        corpusMap,
+        effectiveKey,
+        ownerLabel,
+      );
+      if (corpusMap != null) {
+        store.reconcile(corpusMap);
+      }
+      return store;
     }
 
     if (raw == null || raw.isEmpty) {
-      final store = ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
+      final store = ReviewStore._(
+        repository,
+        {},
+        null,
+        corpusMap,
+        effectiveKey,
+        ownerLabel,
+      );
       if (corpusMap != null) {
         store.reconcile(corpusMap);
       }
@@ -81,32 +186,35 @@ class ReviewStore {
     try {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        return ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
+        return ReviewStore._(
+          repository,
+          {},
+          null,
+          corpusMap,
+          effectiveKey,
+          ownerLabel,
+        );
       }
-      // v3 format: {"schemaVersion": 3, "items": {...}, "quarantine": {...}}.
-      // v2 format: {"schemaVersion": 2, "items": {...}}.
-      // v1 legacy: flat {itemId: state} — migrated in place, then
-      // rewritten as v3 on the next persist.
-      final itemsMap = decoded['items'] is Map
-          ? Map<String, dynamic>.from(decoded['items'] as Map)
-          : Map<String, dynamic>.from(decoded);
-      final states = <String, MemoryItemState>{};
-      itemsMap.forEach((key, value) {
+      final map = Map<String, dynamic>.from(decoded);
+      final itemsRaw = map['items'] is Map
+          ? Map<String, dynamic>.from(map['items'] as Map)
+          : Map<String, dynamic>.from(map);
+      final items = <String, MemoryItemState>{};
+      itemsRaw.forEach((key, value) {
         try {
           if (value is Map) {
             final item = MemoryItemState.fromMap(
               Map<String, dynamic>.from(value),
             );
-            if (item.itemId.isNotEmpty) states[item.itemId] = item;
+            if (item.itemId.isNotEmpty) items[item.itemId] = item;
           }
         } catch (_) {
           // Corrupt entry: skip, keep the rest.
         }
       });
-
       final quarantined = <String, MemoryItemState>{};
-      if (decoded['quarantine'] is Map) {
-        final qMap = Map<String, dynamic>.from(decoded['quarantine'] as Map);
+      if (map['quarantine'] is Map) {
+        final qMap = Map<String, dynamic>.from(map['quarantine'] as Map);
         qMap.forEach((key, value) {
           try {
             if (value is Map) {
@@ -120,23 +228,31 @@ class ReviewStore {
           }
         });
       }
-
       final store = ReviewStore._(
-        prefs,
-        states,
+        repository,
+        items,
         quarantined,
         corpusMap,
         effectiveKey,
+        ownerLabel,
       );
       if (corpusMap != null) {
         store.reconcile(corpusMap);
       }
       if (needsLegacyMigration) {
+        // Best-effort legacy claim: failure is observed, never silent.
         await store.persist();
       }
       return store;
     } catch (_) {
-      return ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
+      return ReviewStore._(
+        repository,
+        {},
+        null,
+        corpusMap,
+        effectiveKey,
+        ownerLabel,
+      );
     }
   }
 
@@ -144,19 +260,19 @@ class ReviewStore {
 
   MemoryItemState? get(String itemId) => _states[itemId];
 
-  /// Writes a server state into the local cache during sync (server-newer
-  /// wins, or item unknown locally). Bypasses the dirty/enqueue path so
-  /// pull-merge cannot loop back into pushes. The local persist wins on
-  /// the next mutation only via the normal scheduler flow.
+  /// Applies a server state to the in-memory cache during sync. PURE: does
+  /// not persist. Callers ([ReviewStateSync], migration) persist explicitly
+  /// so one logical adoption causes exactly one durable write.
   MemoryItemState adoptRemote(MemoryItemState item) {
     if (item.itemId.isEmpty) return item;
     _states[item.itemId] = item;
-    _persist();
     return item;
   }
 
-  /// Introduce if absent. Returns the (new or existing) state.
-  /// Never overwrites existing scheduling data (duplicate-safe).
+  /// Introduce if absent. PURE: returns the (new or existing) state without
+  /// persisting. Never overwrites existing scheduling data (duplicate-safe).
+  /// There is no eviction: every introduced item is retained locally until
+  /// an explicit, remotely-coordinated archival policy exists.
   MemoryItemState ensureIntroduced({
     required String itemId,
     required ReviewItemType itemType,
@@ -164,23 +280,24 @@ class ReviewStore {
   }) {
     final existing = _states[itemId];
     if (existing != null) return existing;
-    if (_states.length >= maxItems) {
-      return _evictAndIntroduce(itemId, itemType, now);
-    }
     final introduced = MemoryScheduler.introduce(
       itemId: itemId,
       itemType: itemType,
       now: now,
     );
     _states[itemId] = introduced;
-    _persist();
     return introduced;
   }
 
-  /// Record a recall and reschedule. Auto-introduces unknown items first
-  /// (so callers never need a separate "is this tracked?" check).
-  /// Returns the new state plus whether a mastery threshold was just
-  /// crossed (REVIEW / MASTERED) — used for retention analytics.
+  /// Record a recall and reschedule. PURE: auto-introduces unknown items
+  /// first, computes the next scheduler state, and returns it — without
+  /// persisting. Returns the new state plus whether a mastery threshold was
+  /// just crossed (REVIEW / MASTERED) — used for retention analytics.
+  ///
+  /// Durability note: [becameReview]/[becameMastered] describe the
+  /// in-memory transition only. They become durable (and safe to report as
+  /// product progress) once the owning transaction's [persist] succeeds;
+  /// see [ReviewStoreNotifier.recordRecall].
   ({MemoryItemState state, bool becameReview, bool becameMastered})
   recordRecall({
     required String itemId,
@@ -205,7 +322,6 @@ class ReviewStore {
       ),
     );
     _states[itemId] = after;
-    _persist();
     return (
       state: after,
       becameReview: !wasReview && after.masteryState == MasteryState.review,
@@ -264,39 +380,17 @@ class ReviewStore {
     return counts;
   }
 
+  /// Removes active AND quarantined state for exactly this store's captured
+  /// owner. Never touches another owner's key.
   Future<void> clear() async {
     _states.clear();
     _quarantined.clear();
-    await _prefs.remove(_storageKey);
+    await _repository.clear(_storageKey);
   }
 
-  /// Hard cap guard: evict the least-valuable mastered item to make room.
-  /// (Mastered items with the longest intervals are safest to drop; their
-  /// content remains re-introducible from the verified corpus.)
-  MemoryItemState _evictAndIntroduce(
-    String itemId,
-    ReviewItemType itemType,
-    DateTime now,
-  ) {
-    MemoryItemState? victim;
-    for (final item in _states.values) {
-      if (item.masteryState != MasteryState.mastered) continue;
-      if (victim == null || item.intervalDays > victim.intervalDays) {
-        victim = item;
-      }
-    }
-    victim ??= _states.values.first;
-    _states.remove(victim.itemId);
-    final introduced = MemoryScheduler.introduce(
-      itemId: itemId,
-      itemType: itemType,
-      now: now,
-    );
-    _states[itemId] = introduced;
-    _persist();
-    return introduced;
-  }
-
+  /// Reconciles in-memory state against the corpus map. PURE: applies the
+  /// reconciled maps in memory and returns the result without persisting;
+  /// the caller persists once if [ReviewReconciliationResult.hasChanges].
   ReviewReconciliationResult reconcile(ReviewCorpusIdentityMap corpusMap) {
     _corpusMap = corpusMap;
     final result = ReviewStateReconciler.reconcile(
@@ -311,7 +405,6 @@ class ReviewStore {
       _quarantined
         ..clear()
         ..addAll(result.quarantinedStates);
-      _persist();
     }
     return result;
   }
@@ -323,42 +416,21 @@ class ReviewStore {
 
   int quarantinedCount() => _quarantined.length;
 
-  Future<void> _persistQueue = Future<void>.value();
+  /// The ONE durable write path. Serialized by the repository (invocation
+  /// order preserved), awaited by the caller, with deterministic
+  /// true/false propagation. Failures are exposed to the repository's
+  /// [ReviewStorageObserver] — never silently swallowed.
+  Future<bool> persist() => _repository.save(_storageKey, snapshot());
 
-  /// Persists memory state to disk. Writes to preferences cache immediately
-  /// and serializes disk flushing via a queue to ensure rapid consecutive mutations
-  /// never race or overwrite newer state.
-  /// Returns a Future that completes once the write has finished.
-  Future<bool> persist() {
-    try {
-      final payload = <String, dynamic>{
-        'schemaVersion': schemaVersion,
-        'items': {for (final e in _states.entries) e.key: e.value.toMap()},
-        'quarantine': {
-          for (final e in _quarantined.entries) e.key: e.value.toMap(),
-        },
-      };
-      final setFuture = _prefs.setString(_storageKey, jsonEncode(payload));
-      final completer = Completer<bool>();
-      _persistQueue = _persistQueue.then((_) async {
-        try {
-          final ok = await setFuture;
-          completer.complete(ok);
-        } catch (_) {
-          completer.complete(false);
-        }
-      });
-      return completer.future;
-    } catch (_) {
-      return Future.value(false);
-    }
-  }
+  /// Awaits [persist] and throws [ReviewStorageException] on failure so a
+  /// correctness-critical mutation cannot be mistaken for durable success.
+  Future<void> persistOrThrow() =>
+      _repository.saveOrThrow(_storageKey, snapshot());
 
-  void _persist() {
-    persist();
-  }
-
-  /// Records recall and awaits durable disk persistence.
+  /// Records a recall in memory, then performs exactly ONE durable write.
+  /// Prefer the notifier transaction ([ReviewStoreNotifier.recordRecall])
+  /// in production; this helper exists for call sites that own a store
+  /// directly (sync, migration, tests).
   Future<({MemoryItemState state, bool becameReview, bool becameMastered})>
   recordRecallDurable({
     required String itemId,
@@ -380,7 +452,7 @@ class ReviewStore {
     return result;
   }
 
-  /// Introduces item and awaits durable disk persistence.
+  /// Introduces an item in memory, then performs exactly ONE durable write.
   Future<MemoryItemState> ensureIntroducedDurable({
     required String itemId,
     required ReviewItemType itemType,
@@ -395,155 +467,3 @@ class ReviewStore {
     return result;
   }
 }
-
-/// Async load-once provider; UI watches the synchronous derived providers
-/// below so home-screen open never awaits storage.
-final reviewStoreProvider =
-    AsyncNotifierProvider<ReviewStoreNotifier, ReviewStore>(
-      ReviewStoreNotifier.new,
-    );
-
-class ReviewStoreNotifier extends AsyncNotifier<ReviewStore> {
-  /// Cloud sync attached by the app-root sync loop (review_sync_init).
-  /// Null in bare test containers and for guests — the notifier never
-  /// constructs Appwrite providers itself, so unit tests keep running
-  /// local-only with zero behavior change.
-  ReviewStateSync? _attachedSync;
-  AccountScope? _scope;
-  StreamSubscription<SharedPreferences>? _scopeSubscription;
-
-  @override
-  Future<ReviewStore> build() async {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    final scope = AccountScope.capture(prefs);
-    _scope = scope;
-
-    _scopeSubscription?.cancel();
-    _scopeSubscription = AccountScope.changes.listen((changedPrefs) {
-      final newScope = AccountScope.capture(changedPrefs);
-      if (_scope?.userId != newScope.userId ||
-          _scope?.isGuest != newScope.isGuest) {
-        _scope = newScope;
-        ref.invalidateSelf();
-      }
-    });
-
-    ref.onDispose(() {
-      _scopeSubscription?.cancel();
-      _scopeSubscription = null;
-    });
-
-    ReviewCorpusIdentityMap corpusMap;
-    try {
-      corpusMap = await ref.watch(corpusIdentityMapProvider.future);
-    } catch (_) {
-      corpusMap = ReviewCorpusIdentityMap.degraded();
-    }
-    return ReviewStore.load(prefs, corpusMap: corpusMap, scope: scope);
-  }
-
-  /// Awaits the loaded store for external users (sync service). Public so
-  /// plain providers can read it without touching the protected `future`.
-  Future<ReviewStore> current() => future;
-
-  /// Called once by the app-root sync wiring. Idempotent.
-  void attachSync(ReviewStateSync sync) {
-    _attachedSync = sync;
-  }
-
-  /// Re-emits the current store so Riverpod watchers (e.g. dueReviewCountProvider)
-  /// update immediately when remote sync adopts new items.
-  void notifyStoreChanged() {
-    final currentStore = state.valueOrNull;
-    if (currentStore != null) {
-      state = AsyncValue.data(currentStore);
-    }
-  }
-
-  /// Durable cloud write for one local mutation. Enqueues locally, then
-  /// opportunistically drains the outbox (near-zero push latency online;
-  /// a cheap local scan offline). No-op unless sync is attached — cloud
-  /// sync can never break learning.
-  void _enqueueCloudWrite(MemoryItemState item) {
-    final sync = _attachedSync;
-    if (sync == null) return;
-    try {
-      // ignore: discarded_futures
-      sync.enqueueLocalMutation(item).then((_) => sync.replayQueued());
-    } catch (_) {
-      // Cloud sync must never break learning.
-    }
-  }
-
-  /// Mutate then re-emit (state object is mutable internally; emit a new
-  /// AsyncValue so watchers rebuild).
-  ///
-  /// Awaits the provider's own build future rather than loading a second
-  /// store instance: a fallback load racing the in-flight build() would
-  /// let the empty build result overwrite the just-recorded item.
-  Future<({MemoryItemState state, bool becameReview, bool becameMastered})>
-  recordRecall({
-    required String itemId,
-    required ReviewItemType itemType,
-    required bool correct,
-    required ReviewExerciseType exerciseType,
-    int? responseTimeMs,
-    DateTime? now,
-  }) async {
-    final store = await future;
-    final result = store.recordRecall(
-      itemId: itemId,
-      itemType: itemType,
-      correct: correct,
-      exerciseType: exerciseType,
-      now: (now ?? DateTime.now()).toUtc(),
-      responseTimeMs: responseTimeMs,
-    );
-    await store.persist();
-    state = AsyncValue.data(store);
-    _enqueueCloudWrite(result.state);
-    return result;
-  }
-
-  Future<MemoryItemState> ensureIntroduced({
-    required String itemId,
-    required ReviewItemType itemType,
-    DateTime? now,
-  }) async {
-    final store = await future;
-    final item = store.ensureIntroduced(
-      itemId: itemId,
-      itemType: itemType,
-      now: (now ?? DateTime.now()).toUtc(),
-    );
-    await store.persist();
-    state = AsyncValue.data(store);
-    _enqueueCloudWrite(item);
-    return item;
-  }
-}
-
-/// Injectable clock (tests override with a fixed time).
-final reviewClockProvider = Provider<DateTime Function()>((ref) {
-  return () => DateTime.now().toUtc();
-});
-
-/// Due queue (max 20). Synchronous off the loaded store; empty while loading.
-final dueReviewItemsProvider = Provider<List<MemoryItemState>>((ref) {
-  final store = ref.watch(reviewStoreProvider).valueOrNull;
-  if (store == null) return const [];
-  return store.due(ref.watch(reviewClockProvider)());
-});
-
-final dueReviewCountProvider = Provider<int>((ref) {
-  final store = ref.watch(reviewStoreProvider).valueOrNull;
-  if (store == null) return 0;
-  return store.dueCount(ref.watch(reviewClockProvider)());
-});
-
-/// Measurable retention headline: "N items retained".
-final retainedItemsCountProvider = Provider<int>((ref) {
-  final store = ref.watch(reviewStoreProvider).valueOrNull;
-  if (store == null) return 0;
-  return store.retainedCount();
-});

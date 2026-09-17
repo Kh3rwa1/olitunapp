@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../shared/models/content_models.dart' hide CategoryModel;
+import '../../../../../quiz/domain/quiz_identity_validation.dart';
+import '../../../../../review/domain/review_corpus_identity.dart';
+import '../../../../../review/domain/review_item.dart';
 import '../../../widgets/admin_form_widgets.dart';
+import 'corpus_picker_sheet.dart';
 import 'option_editor.dart';
 import 'quiz_validation.dart';
 
 /// Full question editor supporting MCQ and Fill-in-the-blank
-class QuestionEditorSheet extends StatefulWidget {
+class QuestionEditorSheet extends ConsumerStatefulWidget {
   final QuizQuestion? question;
   final ValueChanged<QuizQuestion> onSave;
   const QuestionEditorSheet({super.key, this.question, required this.onSave});
 
   @override
-  State<QuestionEditorSheet> createState() => _QuestionEditorSheetState();
+  ConsumerState<QuestionEditorSheet> createState() =>
+      _QuestionEditorSheetState();
 }
 
-class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
+class _QuestionEditorSheetState extends ConsumerState<QuestionEditorSheet> {
   String _type = 'mcq';
 
   // MCQ fields
@@ -77,10 +83,19 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
     _isNonMemory =
         q?.isNonMemory ??
         (q?.sourceWordId == null && q?.sourceSentenceId == null);
+    // Refresh the live attribution status line while typing.
+    _sourceWordId.addListener(_onAttributionChanged);
+    _sourceSentenceId.addListener(_onAttributionChanged);
+  }
+
+  void _onAttributionChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
+    _sourceWordId.removeListener(_onAttributionChanged);
+    _sourceSentenceId.removeListener(_onAttributionChanged);
     _promptOlChiki.dispose();
     _promptLatin.dispose();
     _explanation.dispose();
@@ -109,7 +124,6 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
     final sentenceId = _sourceSentenceId.text.trim().isNotEmpty
         ? _sourceSentenceId.text.trim()
         : null;
-
     final QuizQuestion questionToSave;
     if (_type == 'fill_blank') {
       questionToSave = QuizQuestion(
@@ -150,6 +164,7 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
       );
     }
 
+    // Structural gate (always enforced, offline-safe).
     final error = QuizValidation.validateQuestionIdentity(questionToSave);
     if (error != null) {
       ScaffoldMessenger.of(
@@ -158,8 +173,57 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
       return;
     }
 
+    // Corpus gate (enforced when the verified map is available; otherwise
+    // the publish boundary fails closed and this save carries an explicit
+    // unverified note).
+    final corpusMap = ref.read(corpusIdentityMapProvider).valueOrNull;
+    if (corpusMap != null &&
+        corpusMap.availabilityState !=
+            CorpusAvailabilityState.corpusUnavailable) {
+      final strict = validateQuestionIdentity(
+        questionToSave,
+        corpusMap: corpusMap,
+      );
+      if (!strict.isPublishable) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(strict.message ?? 'Invalid corpus identity.')),
+        );
+        return;
+      }
+      if (strict.resolvedViaAlias) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Note: ID resolves via alias to canonical '
+              '"${strict.canonicalId}". Saved with the canonical link.',
+            ),
+          ),
+        );
+      }
+    }
+
     widget.onSave(questionToSave);
     Navigator.pop(context);
+  }
+
+  Future<void> _browseCorpus() async {
+    final picked = await showCorpusPickerSheet(context);
+    if (picked == null) return;
+    setState(() {
+      if (picked.isNonMemory) {
+        _isNonMemory = true;
+        _sourceWordId.clear();
+        _sourceSentenceId.clear();
+      } else if (picked.itemType == ReviewItemType.word) {
+        _isNonMemory = false;
+        _sourceWordId.text = picked.itemId;
+        _sourceSentenceId.clear();
+      } else {
+        _isNonMemory = false;
+        _sourceSentenceId.text = picked.itemId;
+        _sourceWordId.clear();
+      }
+    });
   }
 
   @override
@@ -326,6 +390,11 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
                 ),
                 if (!_isNonMemory) ...[
                   const SizedBox(height: 8),
+                  CorpusAttributionStatus(
+                    wordId: _sourceWordId.text,
+                    sentenceId: _sourceSentenceId.text,
+                  ),
+                  const SizedBox(height: 8),
                   AdminTextField(
                     controller: _sourceWordId,
                     label: 'Source Word ID (optional)',
@@ -336,6 +405,24 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
                     controller: _sourceSentenceId,
                     label: 'Source Sentence ID (optional)',
                     hint: 'e.g. s_daily_life_1',
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _browseCorpus,
+                      icon: const Icon(Icons.library_books_rounded, size: 18),
+                      label: const Text('Browse verified corpus'),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Pick exactly one verified item instead of typing a raw ID. '
+                    'Aliases resolve with a warning; retired IDs are blocked.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AdminTokens.textTertiary(isDark),
+                    ),
                   ),
                 ],
               ],
@@ -437,3 +524,6 @@ class TypeChip extends StatelessWidget {
     );
   }
 }
+
+/// Result of the corpus picker: either a verified item or an explicit
+/// non-memory decision.

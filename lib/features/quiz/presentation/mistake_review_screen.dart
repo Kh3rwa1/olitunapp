@@ -14,7 +14,7 @@ import '../presentation/widgets/quiz_feedback_panel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../features/profile/presentation/providers/user_stats_provider.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
-import '../../review/data/review_store.dart';
+import '../../review/data/review_store_notifier.dart';
 import '../../review/domain/review_item.dart';
 import '../domain/quiz_memory_resolver.dart';
 
@@ -410,7 +410,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                                 HapticFeedback.lightImpact();
                                 ref
                                     .read(mistakeProvider.notifier)
-                                    .masterMistake(
+                                    .resolveMistake(
                                       quizId: currentMistake.quizId,
                                       questionIndex:
                                           currentMistake.questionIndex,

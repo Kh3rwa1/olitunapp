@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/analytics/analytics_service.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
-import '../../../review/data/review_store.dart';
+import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../data/typing_practice_settings.dart';
 import '../../domain/practice_scoring_rules.dart';

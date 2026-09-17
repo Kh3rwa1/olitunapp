@@ -27,6 +27,7 @@ const USER_DATA_COLLECTIONS = [
   'binti_guru_waitlist',
   'ai_studio_jobs',
   'review_states',
+  'review_operations',
   'voice_claims',
 ];
 

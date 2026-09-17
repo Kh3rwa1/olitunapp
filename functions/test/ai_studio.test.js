@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { authenticate, privateInput, execute, createHandler } from '../aiStudio/src/main.js';
 import { validateBody, wavDuration, MAX_BYTES } from '../aiStudio/src/validation.js';
 import { Store, limits, JOBS } from '../aiStudio/src/store.js';
-import { Sarvam } from '../aiStudio/src/sarvam.js';
+import { Sarvam, stripTags, plainText } from '../aiStudio/src/sarvam.js';
 const secret = 'unit-test-hmac-secret-not-production';
 const env = { APPWRITE_ENDPOINT: 'https://appwrite.example/v1', APPWRITE_PROJECT_ID: 'test', APPWRITE_API_KEY: 'unit-key', SARVAM_API_KEY: 'unit-provider-key', AI_STUDIO_HMAC_SECRET: secret, AI_STUDIO_ENABLED: 'true' };
 const cfg = { endpoint: env.APPWRITE_ENDPOINT, projectId: 'test' };
@@ -96,6 +96,14 @@ test('OCR REST uses md output and documents/pages/blocks results, including part
   assert.equal(requests[0].options.body.get('output_format'), 'md'); assert.equal(requests[0].options.body.get('language'), 'sat-IN');
   assert.deepEqual(await provider.ocrStatus('provider-job'), { status: 'partially_completed', text: 'plain text' });
   assert.ok(requests[2].url.endsWith('/provider-job/results?format=json'));
+});
+test('provider markup is stripped without tag-matching regular expressions', () => {
+  assert.equal(stripTags('<b>plain</b> text'), 'plain text');
+  assert.equal(stripTags('a < b'), 'a < b');
+  assert.equal(stripTags('a < b > c'), 'a  c');
+  assert.ok(!stripTags('<scr<script>ipt>alert(1)</scr<script>ipt>').includes('<'));
+  assert.ok(!plainText('<script src=x>alert(1)').includes('<'));
+  assert.ok(!stripTags('<img src=x onerror=alert(1)>hi').includes('<'));
 });
 test('provider errors do not leak input or secrets and are not retried', async () => {
   let calls = 0; const provider = new Sarvam('unit-secret', async () => { calls++; return new Response('secret input', { status: 429 }); });

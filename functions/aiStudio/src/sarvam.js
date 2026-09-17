@@ -4,7 +4,26 @@ export const TERMINAL = ['completed', 'partially_completed', 'failed', 'rejected
 export function plainText(value) {
   if (typeof value !== 'string' || value.length > 100000) fail('INVALID_PROVIDER_RESPONSE', 'The extracted result is unavailable.', 502);
   // Treat provider content as inert text; never return a URL or a rich rendering instruction.
-  return value.replace(/<[^>]*>/g, '').replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').trim();
+  return stripTags(value).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').trim();
+}
+
+// Removes markup with an explicit scanner instead of a tag-matching
+// regular expression: regex tag filters are bypassable (unclosed or
+// nested angle brackets survive them), while skipping every '<' run
+// through its next '>' provably leaves no tag behind. Unterminated '<'
+// runs are kept verbatim, matching the previous filter exactly.
+export function stripTags(value) {
+  let out = '';
+  let i = 0;
+  while (i < value.length) {
+    const open = value.indexOf('<', i);
+    if (open === -1) return out + value.slice(i);
+    const close = value.indexOf('>', open + 1);
+    if (close === -1) return out + value.slice(i);
+    out += value.slice(i, open);
+    i = close + 1;
+  }
+  return out;
 }
 export class Sarvam {
   constructor(apiKey, fetchImpl = fetch) { this.apiKey = apiKey; this.fetch = fetchImpl; }
@@ -82,9 +101,9 @@ export function resultText(result) {
       .map((page) => {
         if (
           typeof page.content === 'string' &&
-          page.content.replace(/<[^>]*>/g, '').trim()
+          stripTags(page.content).trim()
         ) {
-          return page.content.replace(/<[^>]*>/g, '').trim();
+          return stripTags(page.content).trim();
         }
         const blocks = Array.isArray(page.blocks) ? page.blocks : [];
         return blocks
@@ -96,7 +115,7 @@ export function resultText(result) {
           )
           .map((block) =>
             typeof block.text === 'string'
-              ? block.text.replace(/<[^>]*>/g, '').trim()
+              ? stripTags(block.text).trim()
               : '',
           )
           .filter((text) => text)

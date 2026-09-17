@@ -80,3 +80,11 @@ A server-secret HMAC of user, action, language and normalized text/file-content 
 
 Mocked tests cover validated auth, strict parameters, private ownership, real PCM duration, concurrent idempotency, atomic spending ceilings, fail-closed quota storage, no paid retries, cross-user OCR access, partial results, confirmed REST fields, safe errors and handler envelopes. A mocked default-handler smoke test and setup dry-run were also run. No live services were changed, deployed or called for paid processing.
 
+
+## Deployment notes (Appwrite Cloud, verified 2026-09-17)
+
+* Function variables are injected at deployment time: create/update variables **before** deploying, or redeploy after changing them.
+* Variable **IDs are project-scoped** on Cloud: two functions cannot both use ID `APPWRITE_API_KEY` (santaliVoice already holds lowercase `appwrite-api-key`). Use a unique ID and keep the env **key** as `APPWRITE_API_KEY`; the key, not the ID, becomes the injected environment name.
+* The privileged key (`APPWRITE_API_KEY`) must be set as a function variable; Cloud does not inject one automatically. Scope it to what the function needs.
+* The CLI push rejects local `node-22.0` vs remote `node-22` runtime strings; deploy via `scripts/deploy_changed_functions.py` for new functions, or REST multipart `POST /functions/{id}/deployments` with `activate=true` for redeploys.
+* Final live verification: `dart run tool/ai_studio_live_e2e.dart` (session → JWT → authenticated execution → asserts Ol Chiki U+1C50–U+1C7F output).

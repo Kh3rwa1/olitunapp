@@ -85,3 +85,6 @@ mapping.txt
 sites/
 build_web_v*.zip
 
+# --- iOS ephemeral tooling (generated per-machine) ---------------------------
+ios/Flutter/ephemeral/
+

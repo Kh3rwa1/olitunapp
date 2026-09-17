@@ -10,6 +10,7 @@ import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/presentation/mistake_review_screen.dart';
 import '../../features/review/presentation/review_session_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
+import '../../features/ai_studio/presentation/ai_studio_screen.dart';
 import '../../features/voice/presentation/screens/santali_voice_screen.dart';
 import '../../shared/models/content_item.dart';
 import 'route_names.dart';
@@ -126,7 +127,13 @@ List<RouteBase> buildLearningRoutes({
       ),
     ),
     modalRoute(path: '/translate', child: (_, _) => const AiTranslatorScreen()),
-    modalRoute(path: '/voice', child: (_, _) => const SantaliVoiceScreen()),
+    modalRoute(
+      path: '/voice',
+      child: (_, state) => SantaliVoiceScreen(
+        initialText: state.extra is String ? state.extra as String : null,
+      ),
+    ),
+    modalRoute(path: '/studio', child: (_, _) => const AiStudioScreen()),
     drillRoute(
       path: '/quiz/:quizId',
       name: RouteNames.quiz,

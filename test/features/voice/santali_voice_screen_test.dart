@@ -52,4 +52,42 @@ void main() {
     // Neutral style default is visible in the style rail.
     expect(find.text('Neutral'), findsOneWidget);
   });
+
+  testWidgets('AI Studio passage handoff pre-fills the studio text box', (
+    WidgetTester tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    final audio = _FakeAudioService();
+    when(() => audio.isPlayingStream).thenAnswer((_) => const Stream.empty());
+    when(() => audio.positionStream).thenAnswer((_) => const Stream.empty());
+    when(() => audio.durationStream).thenAnswer((_) => const Stream.empty());
+    when(
+      () => audio.processingStateStream,
+    ).thenAnswer((_) => const Stream.empty());
+    when(
+      () => audio.webPlaybackEndedStream,
+    ).thenAnswer((_) => const Stream<void>.empty());
+    when(() => audio.currentUrl).thenReturn(null);
+    when(() => audio.currentProcessingState).thenReturn(ProcessingState.idle);
+    tester.view.physicalSize = const Size(2000, 2400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          audioServiceProvider.overrideWithValue(audio),
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+        child: const MaterialApp(
+          home: SantaliVoiceScreen(initialText: 'ᱡᱚᱦᱟᱨ'),
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(find.text('ᱡᱚᱦᱟᱨ'), findsOneWidget);
+  });
 }

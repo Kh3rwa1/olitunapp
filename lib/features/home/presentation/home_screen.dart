@@ -19,7 +19,6 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/motion/motion.dart';
 import '../domain/continue_lesson_logic.dart';
-import 'widgets/today_affirmation_card.dart';
 import 'widgets/next_best_action_card.dart';
 import '../../review/presentation/today_review_card.dart';
 import 'widgets/home_content_grid.dart';
@@ -214,12 +213,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 20),
 
         // (5) Secondary content lives BELOW the learning actions:
-        // affirmation + banners carousel (explore/discover context).
-        const Padding(
-          padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: RepaintBoundary(child: TodayAffirmationCard()),
-        ),
-        const SizedBox(height: 20),
+        // banners carousel (explore/discover context).
         HomeBannersCarousel(isDark: isDark),
         const SizedBox(height: 24),
 

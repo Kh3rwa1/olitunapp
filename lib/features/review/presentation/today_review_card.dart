@@ -1,7 +1,7 @@
 // Today's Review hero card: the primary home-screen action.
 //
 // Hierarchy: TODAY'S REVIEW → CONTINUE LEARNING → EXPLORE. Nothing competes
-// with this card — no banners, affirmations, missions or ads above it.
+// with this card — no banners, missions or ads above it.
 // No fake urgency: when nothing is due it says so and offers the honest
 // next step (continue lesson / learn something new).
 

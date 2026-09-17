@@ -14,7 +14,6 @@ import '../../features/admin/presentation/words/admin_words_screen.dart';
 import '../../features/admin/presentation/sentences/admin_sentences_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
-import '../../features/admin/presentation/affirmations/admin_affirmations_screen.dart';
 import '../../features/admin/presentation/purchases/admin_purchases_screen.dart';
 import '../../features/admin/presentation/binti_waitlist/admin_binti_waitlist_screen.dart';
 import '../../features/admin/presentation/access/admin_access_screen.dart';
@@ -168,10 +167,6 @@ List<RouteBase> buildAdminRoutes({
           path: '/admin/maintenance',
           builder: (context, state) =>
               const AdminGamificationScreen(section: 'maintenance'),
-        ),
-        adminRoute(
-          path: '/admin/affirmations',
-          builder: (context, state) => const AdminAffirmationsScreen(),
         ),
         adminRoute(
           path: '/admin/purchases',

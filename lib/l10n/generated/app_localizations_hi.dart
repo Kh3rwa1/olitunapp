@@ -584,18 +584,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get nbaCtaExploreBakhed => 'बाखेड़ खोजें';
 
   @override
-  String get affirmationListen => 'सुनें';
-
-  @override
-  String get affirmationStop => 'रोकें';
-
-  @override
-  String get affirmationMarkRead => 'पढ़ा हुआ चिह्नित करें';
-
-  @override
-  String get affirmationRead => 'पढ़ें';
-
-  @override
   String get hindi => 'हिंदी';
 
   @override

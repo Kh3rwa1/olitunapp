@@ -77,19 +77,6 @@
             ]
         },
         {
-            "name": "Affirmations",
-            "short_name": "Quotes",
-            "description": "Daily Santali affirmations and inspiration.",
-            "url": "/#/affirmations",
-            "icons": [
-                {
-                    "src": "icons/Icon-192.png",
-                    "sizes": "192x192",
-                    "type": "image/png"
-                }
-            ]
-        },
-        {
             "name": "Profile",
             "short_name": "Profile",
             "description": "Review progress, badges, and settings.",

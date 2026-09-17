@@ -111,7 +111,7 @@ class AudioService {
   ///
   /// Emits false on pause, stop, natural completion AND playback failure —
   /// consumers should derive UI state from this instead of local booleans,
-  /// which silently desync (the affirmation-card bug class).
+  /// which silently desync.
   Stream<bool> get isPlayingStream =>
       _player.playerStateStream.map((state) => state.playing);
 

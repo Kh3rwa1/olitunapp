@@ -67,7 +67,6 @@ updates:
       - "/functions/recordBakhedProgress"
       - "/functions/recordMistake"
       - "/functions/reviewContent"
-      - "/functions/syncDailyAffirmation"
       - "/functions/verifyCoursePurchase"
       - "/scripts"
     schedule:

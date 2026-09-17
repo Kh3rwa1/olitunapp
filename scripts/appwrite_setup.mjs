@@ -733,24 +733,6 @@ const collections = [
     ],
   },
   {
-    id: 'daily_affirmations',
-    name: 'Daily Affirmations',
-    attrs: [
-      { type: 'string', key: 'olChikiText', size: 500, required: true },
-      { type: 'string', key: 'santaliPhonetic', size: 500, required: true },
-      { type: 'string', key: 'englishMeaning', size: 500, required: true },
-      { type: 'string', key: 'audioUrl', size: 1024, required: false },
-      { type: 'string', key: 'category', size: 50, required: true },
-      { type: 'boolean', key: 'isPremium', required: false, default: false },
-      { type: 'integer', key: 'order', required: true },
-      { type: 'string', key: 'publishedAt', size: 30, required: true },
-    ],
-    indexes: [
-      { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
-      { key: 'idx_category_published', type: 'key', attributes: ['category', 'publishedAt'] },
-    ],
-  },
-  {
     id: 'course_purchases',
     name: 'Course Purchases',
     documentSecurity: true,

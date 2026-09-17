@@ -81,21 +81,6 @@ class MockMistakeNotifier extends MistakeNotifier {
   List<MistakeItem> build() => [];
 }
 
-class MockAffirmationsNotifier extends AffirmationsNotifier {
-  @override
-  AsyncValue<List<AffirmationModel>> build() => AsyncValue.data([
-    AffirmationModel(
-      id: 'aff_1',
-      olChikiText: 'ᱚᱞ ᱪᱤᱠᱤ',
-      santaliPhonetic: 'ol chiki',
-      englishMeaning: 'Ol Chiki is beautiful',
-      category: 'identity',
-      order: 1,
-      publishedAt: '',
-    ),
-  ]);
-}
-
 void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -151,7 +136,6 @@ void main() {
             (ref) => Stream.value([ConnectivityResult.wifi]),
           ),
           mistakeProvider.overrideWith(MockMistakeNotifier.new),
-          affirmationsProvider.overrideWith(MockAffirmationsNotifier.new),
         ],
       ),
     );

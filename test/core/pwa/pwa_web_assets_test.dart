@@ -42,7 +42,7 @@ void main() {
       final shortcuts = (manifest['shortcuts'] as List).cast<Map>();
       expect(
         shortcuts.map((item) => item['name']),
-        containsAll(['Learn', 'Bakhed', 'Affirmations', 'Profile']),
+        containsAll(['Learn', 'Bakhed', 'Profile']),
       );
 
       final displayOverride = (manifest['display_override'] as List)

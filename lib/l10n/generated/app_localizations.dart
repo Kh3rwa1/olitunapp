@@ -1166,30 +1166,6 @@ abstract class AppLocalizations {
   /// **'Explore Bakhed'**
   String get nbaCtaExploreBakhed;
 
-  /// No description provided for @affirmationListen.
-  ///
-  /// In en, this message translates to:
-  /// **'Listen'**
-  String get affirmationListen;
-
-  /// No description provided for @affirmationStop.
-  ///
-  /// In en, this message translates to:
-  /// **'Stop'**
-  String get affirmationStop;
-
-  /// No description provided for @affirmationMarkRead.
-  ///
-  /// In en, this message translates to:
-  /// **'Mark Read'**
-  String get affirmationMarkRead;
-
-  /// No description provided for @affirmationRead.
-  ///
-  /// In en, this message translates to:
-  /// **'Read'**
-  String get affirmationRead;
-
   /// No description provided for @hindi.
   ///
   /// In en, this message translates to:

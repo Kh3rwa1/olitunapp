@@ -583,18 +583,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nbaCtaExploreBakhed => 'Explore Bakhed';
 
   @override
-  String get affirmationListen => 'Listen';
-
-  @override
-  String get affirmationStop => 'Stop';
-
-  @override
-  String get affirmationMarkRead => 'Mark Read';
-
-  @override
-  String get affirmationRead => 'Read';
-
-  @override
   String get hindi => 'Hindi';
 
   @override

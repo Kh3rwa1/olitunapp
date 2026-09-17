@@ -12,11 +12,13 @@
 // prefs write of the compact map. No Appwrite reads on home open — the
 // provider caches the decoded map and exposes cheap derived counts.
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/auth/account_scope.dart';
 import '../../../core/storage/hive_service.dart';
 import '../domain/memory_scheduler.dart';
 import '../domain/review_corpus_identity.dart';
@@ -26,11 +28,15 @@ import 'review_state_sync.dart';
 class ReviewStore {
   static const storageKey = 'review_states_v1';
 
+  /// Returns the account-scoped SharedPreferences key for the given scope.
+  static String storageKeyForScope(AccountScope scope) => scope.reviewKey;
+
   /// Bump on any format change; load() migrates older persisted data.
   static const int schemaVersion = 3;
   static const maxItems = 2000;
 
   final SharedPreferences _prefs;
+  final String _storageKey;
   final Map<String, MemoryItemState> _states;
   final Map<String, MemoryItemState> _quarantined;
   ReviewCorpusIdentityMap? _corpusMap;
@@ -40,15 +46,38 @@ class ReviewStore {
     this._states, [
     Map<String, MemoryItemState>? quarantined,
     this._corpusMap,
-  ]) : _quarantined = quarantined ?? {};
+    String? storageKey,
+  ])  : _quarantined = quarantined ?? {},
+        _storageKey = storageKey ?? ReviewStore.storageKey;
+
+  String get storageKeyUsed => _storageKey;
 
   static Future<ReviewStore> load(
     SharedPreferences prefs, {
     ReviewCorpusIdentityMap? corpusMap,
+    String? storageKey,
+    AccountScope? scope,
   }) async {
-    final raw = prefs.getString(storageKey);
+    final effectiveKey = storageKey ??
+        (scope != null ? scope.reviewKey : ReviewStore.storageKey);
+
+    String? raw = prefs.getString(effectiveKey);
+    bool needsLegacyMigration = false;
+    if ((raw == null || raw.isEmpty) &&
+        effectiveKey != ReviewStore.storageKey &&
+        prefs.containsKey(ReviewStore.storageKey)) {
+      raw = prefs.getString(ReviewStore.storageKey);
+      needsLegacyMigration = true;
+    }
+
     if (raw == null || raw.isEmpty) {
-      final store = ReviewStore._(prefs, {}, null, corpusMap);
+      final store = ReviewStore._(
+        prefs,
+        {},
+        null,
+        corpusMap,
+        effectiveKey,
+      );
       if (corpusMap != null) {
         store.reconcile(corpusMap);
       }
@@ -56,7 +85,9 @@ class ReviewStore {
     }
     try {
       final decoded = jsonDecode(raw);
-      if (decoded is! Map) return ReviewStore._(prefs, {});
+      if (decoded is! Map) {
+        return ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
+      }
       // v3 format: {"schemaVersion": 3, "items": {...}, "quarantine": {...}}.
       // v2 format: {"schemaVersion": 2, "items": {...}}.
       // v1 legacy: flat {itemId: state} — migrated in place, then
@@ -95,13 +126,22 @@ class ReviewStore {
         });
       }
 
-      final store = ReviewStore._(prefs, states, quarantined, corpusMap);
+      final store = ReviewStore._(
+        prefs,
+        states,
+        quarantined,
+        corpusMap,
+        effectiveKey,
+      );
       if (corpusMap != null) {
         store.reconcile(corpusMap);
       }
+      if (needsLegacyMigration) {
+        await store.persist();
+      }
       return store;
     } catch (_) {
-      return ReviewStore._(prefs, {});
+      return ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
     }
   }
 
@@ -231,7 +271,8 @@ class ReviewStore {
 
   Future<void> clear() async {
     _states.clear();
-    await _prefs.remove(storageKey);
+    _quarantined.clear();
+    await _prefs.remove(_storageKey);
   }
 
   /// Hard cap guard: evict the least-valuable mastered item to make room.
@@ -287,7 +328,13 @@ class ReviewStore {
 
   int quarantinedCount() => _quarantined.length;
 
-  void _persist() {
+  Future<void> _persistQueue = Future<void>.value();
+
+  /// Persists memory state to disk. Writes to preferences cache immediately
+  /// and serializes disk flushing via a queue to ensure rapid consecutive mutations
+  /// never race or overwrite newer state.
+  /// Returns a Future that completes once the write has finished.
+  Future<bool> persist() {
     try {
       final payload = <String, dynamic>{
         'schemaVersion': schemaVersion,
@@ -296,10 +343,61 @@ class ReviewStore {
           for (final e in _quarantined.entries) e.key: e.value.toMap(),
         },
       };
-      _prefs.setString(storageKey, jsonEncode(payload));
+      final setFuture = _prefs.setString(_storageKey, jsonEncode(payload));
+      final completer = Completer<bool>();
+      _persistQueue = _persistQueue.then((_) async {
+        try {
+          final ok = await setFuture;
+          completer.complete(ok);
+        } catch (_) {
+          completer.complete(false);
+        }
+      });
+      return completer.future;
     } catch (_) {
-      // Persistence must never break learning.
+      return Future.value(false);
     }
+  }
+
+  void _persist() {
+    persist();
+  }
+
+  /// Records recall and awaits durable disk persistence.
+  Future<({MemoryItemState state, bool becameReview, bool becameMastered})>
+  recordRecallDurable({
+    required String itemId,
+    required ReviewItemType itemType,
+    required bool correct,
+    required ReviewExerciseType exerciseType,
+    DateTime? now,
+    int? responseTimeMs,
+  }) async {
+    final result = recordRecall(
+      itemId: itemId,
+      itemType: itemType,
+      correct: correct,
+      exerciseType: exerciseType,
+      now: now ?? DateTime.now(),
+      responseTimeMs: responseTimeMs,
+    );
+    await persist();
+    return result;
+  }
+
+  /// Introduces item and awaits durable disk persistence.
+  Future<MemoryItemState> ensureIntroducedDurable({
+    required String itemId,
+    required ReviewItemType itemType,
+    DateTime? now,
+  }) async {
+    final result = ensureIntroduced(
+      itemId: itemId,
+      itemType: itemType,
+      now: now ?? DateTime.now(),
+    );
+    await persist();
+    return result;
   }
 }
 
@@ -316,17 +414,37 @@ class ReviewStoreNotifier extends AsyncNotifier<ReviewStore> {
   /// constructs Appwrite providers itself, so unit tests keep running
   /// local-only with zero behavior change.
   ReviewStateSync? _attachedSync;
+  AccountScope? _scope;
+  StreamSubscription<SharedPreferences>? _scopeSubscription;
 
   @override
   Future<ReviewStore> build() async {
     final prefs = ref.watch(sharedPreferencesProvider);
+    final scope = AccountScope.capture(prefs);
+    _scope = scope;
+
+    _scopeSubscription?.cancel();
+    _scopeSubscription = AccountScope.changes.listen((changedPrefs) {
+      final newScope = AccountScope.capture(changedPrefs);
+      if (_scope?.userId != newScope.userId ||
+          _scope?.isGuest != newScope.isGuest) {
+        _scope = newScope;
+        ref.invalidateSelf();
+      }
+    });
+
+    ref.onDispose(() {
+      _scopeSubscription?.cancel();
+      _scopeSubscription = null;
+    });
+
     ReviewCorpusIdentityMap corpusMap;
     try {
       corpusMap = await ref.watch(corpusIdentityMapProvider.future);
     } catch (_) {
       corpusMap = ReviewCorpusIdentityMap.degraded();
     }
-    return ReviewStore.load(prefs, corpusMap: corpusMap);
+    return ReviewStore.load(prefs, corpusMap: corpusMap, scope: scope);
   }
 
   /// Awaits the loaded store for external users (sync service). Public so
@@ -386,6 +504,7 @@ class ReviewStoreNotifier extends AsyncNotifier<ReviewStore> {
       now: (now ?? DateTime.now()).toUtc(),
       responseTimeMs: responseTimeMs,
     );
+    await store.persist();
     state = AsyncValue.data(store);
     _enqueueCloudWrite(result.state);
     return result;
@@ -402,6 +521,7 @@ class ReviewStoreNotifier extends AsyncNotifier<ReviewStore> {
       itemType: itemType,
       now: (now ?? DateTime.now()).toUtc(),
     );
+    await store.persist();
     state = AsyncValue.data(store);
     _enqueueCloudWrite(item);
     return item;

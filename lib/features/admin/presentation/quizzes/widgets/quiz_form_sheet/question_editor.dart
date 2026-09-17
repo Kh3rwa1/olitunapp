@@ -5,6 +5,7 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../shared/models/content_models.dart' hide CategoryModel;
 import '../../../widgets/admin_form_widgets.dart';
 import 'option_editor.dart';
+import 'quiz_validation.dart';
 
 /// Full question editor supporting MCQ and Fill-in-the-blank
 class QuestionEditorSheet extends StatefulWidget {
@@ -32,6 +33,11 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
   late final TextEditingController _blankLatin;
   late final TextEditingController _correctAnswer;
   late final List<TextEditingController> _distractorCtrls;
+
+  // Canonical learning item attribution
+  late final TextEditingController _sourceWordId;
+  late final TextEditingController _sourceSentenceId;
+  late bool _isNonMemory;
 
   @override
   void initState() {
@@ -65,6 +71,10 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
         text: i < (q?.distractors.length ?? 0) ? q!.distractors[i] : '',
       ),
     );
+
+    _sourceWordId = TextEditingController(text: q?.sourceWordId ?? '');
+    _sourceSentenceId = TextEditingController(text: q?.sourceSentenceId ?? '');
+    _isNonMemory = q?.isNonMemory ?? (q?.sourceWordId == null && q?.sourceSentenceId == null);
   }
 
   @override
@@ -84,47 +94,68 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
     for (final c in _distractorCtrls) {
       c.dispose();
     }
+    _sourceWordId.dispose();
+    _sourceSentenceId.dispose();
     super.dispose();
   }
 
   void _save() {
     HapticFeedback.lightImpact();
+    final wordId =
+        _sourceWordId.text.trim().isNotEmpty ? _sourceWordId.text.trim() : null;
+    final sentenceId = _sourceSentenceId.text.trim().isNotEmpty
+        ? _sourceSentenceId.text.trim()
+        : null;
+
+    final QuizQuestion questionToSave;
     if (_type == 'fill_blank') {
-      widget.onSave(
-        QuizQuestion(
-          type: 'fill_blank',
-          promptOlChiki: _promptOlChiki.text.trim(),
-          promptLatin: _promptLatin.text.trim().isNotEmpty
-              ? _promptLatin.text.trim()
-              : null,
-          blankSentenceOlChiki: _blankOlChiki.text.trim(),
-          blankSentenceLatin: _blankLatin.text.trim(),
-          correctAnswer: _correctAnswer.text.trim(),
-          distractors: _distractorCtrls
-              .map((c) => c.text.trim())
-              .where((s) => s.isNotEmpty)
-              .toList(),
-          explanation: _explanation.text.trim().isNotEmpty
-              ? _explanation.text.trim()
-              : null,
-        ),
+      questionToSave = QuizQuestion(
+        type: 'fill_blank',
+        promptOlChiki: _promptOlChiki.text.trim(),
+        promptLatin: _promptLatin.text.trim().isNotEmpty
+            ? _promptLatin.text.trim()
+            : null,
+        blankSentenceOlChiki: _blankOlChiki.text.trim(),
+        blankSentenceLatin: _blankLatin.text.trim(),
+        correctAnswer: _correctAnswer.text.trim(),
+        distractors: _distractorCtrls
+            .map((c) => c.text.trim())
+            .where((s) => s.isNotEmpty)
+            .toList(),
+        explanation: _explanation.text.trim().isNotEmpty
+            ? _explanation.text.trim()
+            : null,
+        sourceWordId: wordId,
+        sourceSentenceId: sentenceId,
+        isNonMemory: _isNonMemory,
       );
     } else {
-      widget.onSave(
-        QuizQuestion(
-          promptOlChiki: _promptOlChiki.text.trim(),
-          promptLatin: _promptLatin.text.trim().isNotEmpty
-              ? _promptLatin.text.trim()
-              : null,
-          optionsOlChiki: _optOlChikiCtrls.map((c) => c.text.trim()).toList(),
-          optionsLatin: _optLatinCtrls.map((c) => c.text.trim()).toList(),
-          correctIndex: _correctIndex,
-          explanation: _explanation.text.trim().isNotEmpty
-              ? _explanation.text.trim()
-              : null,
-        ),
+      questionToSave = QuizQuestion(
+        promptOlChiki: _promptOlChiki.text.trim(),
+        promptLatin: _promptLatin.text.trim().isNotEmpty
+            ? _promptLatin.text.trim()
+            : null,
+        optionsOlChiki: _optOlChikiCtrls.map((c) => c.text.trim()).toList(),
+        optionsLatin: _optLatinCtrls.map((c) => c.text.trim()).toList(),
+        correctIndex: _correctIndex,
+        explanation: _explanation.text.trim().isNotEmpty
+            ? _explanation.text.trim()
+            : null,
+        sourceWordId: wordId,
+        sourceSentenceId: sentenceId,
+        isNonMemory: _isNonMemory,
       );
     }
+
+    final error = QuizValidation.validateQuestionIdentity(questionToSave);
+    if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error)),
+      );
+      return;
+    }
+
+    widget.onSave(questionToSave);
     Navigator.pop(context);
   }
 
@@ -266,6 +297,44 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
                   hint: 'Why this is correct',
                   maxLines: 2,
                 ),
+                const SizedBox(height: 16),
+                Material(
+                  color: Colors.transparent,
+                  child: SwitchListTile.adaptive(
+                    value: _isNonMemory,
+                    onChanged: (v) => setState(() => _isNonMemory = v),
+                    title: Text(
+                      'Non-Memory Question',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AdminTokens.textPrimary(isDark),
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Exclude from spaced repetition memory scheduler',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AdminTokens.textTertiary(isDark),
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                if (!_isNonMemory) ...[
+                  const SizedBox(height: 8),
+                  AdminTextField(
+                    controller: _sourceWordId,
+                    label: 'Source Word ID (optional)',
+                    hint: 'e.g. w_ol_chiki_1',
+                  ),
+                  const SizedBox(height: 10),
+                  AdminTextField(
+                    controller: _sourceSentenceId,
+                    label: 'Source Sentence ID (optional)',
+                    hint: 'e.g. s_daily_life_1',
+                  ),
+                ],
               ],
             ),
           ),

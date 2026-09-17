@@ -381,8 +381,15 @@ class QuizSessionNotifier
   /// never content providers — scheduler must never break quizzes.
   void _feedMemory({required QuizQuestion question, required bool isCorrect}) {
     try {
+      if (question.isNonMemory) return;
       final resolved = resolveQuizMemoryItem(question);
-      if (resolved == null) return;
+      if (resolved == null) {
+        AppLogger.warning(
+          'QuizSessionNotifier: skipping memory tracking for unattributed question '
+          '(prompt: "${question.promptOlChiki}")',
+        );
+        return;
+      }
       final isListening = (question.audioUrl?.trim().isNotEmpty ?? false);
       // ignore: discarded_futures
       ref

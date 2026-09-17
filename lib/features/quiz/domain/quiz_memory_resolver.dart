@@ -9,6 +9,7 @@ typedef QuizMemoryItem = ({String itemId, ReviewItemType itemType});
 /// the question carries no attribution (hand-written, lesson-block, admin,
 /// legacy) — the scheduler stays silent rather than tracking wrong items.
 QuizMemoryItem? resolveQuizMemoryItem(QuizQuestion question) {
+  if (question.isNonMemory) return null;
   final wordId = question.sourceWordId?.trim() ?? '';
   if (wordId.isNotEmpty) {
     return (itemId: wordId, itemType: ReviewItemType.word);

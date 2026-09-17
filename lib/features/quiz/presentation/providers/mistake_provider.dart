@@ -8,6 +8,7 @@ import '../../../../core/logging/app_logger.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../review/data/review_store.dart';
+import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_memory_resolver.dart';
 
 class MistakeItem {
@@ -16,6 +17,8 @@ class MistakeItem {
   final int questionIndex;
   final QuizQuestion question;
   final String addedAt;
+  final bool isResolved;
+  final String? resolvedAt;
 
   MistakeItem({
     required this.quizId,
@@ -23,7 +26,29 @@ class MistakeItem {
     required this.questionIndex,
     required this.question,
     required this.addedAt,
+    this.isResolved = false,
+    this.resolvedAt,
   }) : questionId = questionId ?? '${quizId}_$questionIndex';
+
+  MistakeItem copyWith({
+    String? quizId,
+    String? questionId,
+    int? questionIndex,
+    QuizQuestion? question,
+    String? addedAt,
+    bool? isResolved,
+    String? resolvedAt,
+  }) {
+    return MistakeItem(
+      quizId: quizId ?? this.quizId,
+      questionId: questionId ?? this.questionId,
+      questionIndex: questionIndex ?? this.questionIndex,
+      question: question ?? this.question,
+      addedAt: addedAt ?? this.addedAt,
+      isResolved: isResolved ?? this.isResolved,
+      resolvedAt: resolvedAt ?? this.resolvedAt,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -32,6 +57,8 @@ class MistakeItem {
       'questionIndex': questionIndex,
       'question': question.toMap(),
       'addedAt': addedAt,
+      'isResolved': isResolved,
+      'resolvedAt': resolvedAt,
     };
   }
 
@@ -43,6 +70,8 @@ class MistakeItem {
       questionIndex: json['questionIndex'] ?? 0,
       question: QuizQuestion.fromMap(_readQuestionSnapshot(snapshot)),
       addedAt: json['addedAt'] ?? json['lastMissedAt'] ?? '',
+      isResolved: json['isResolved'] as bool? ?? false,
+      resolvedAt: json['resolvedAt'] as String?,
     );
   }
 
@@ -67,6 +96,7 @@ class MistakeItem {
 class MistakeNotifier extends Notifier<List<MistakeItem>> {
   static const String _prefKey = 'user_mistakes_list';
   static const String _masteredKey = 'user_mistakes_mastered_count';
+  static const String _resolvedAuditKey = 'user_mistakes_resolved_audit_v1';
 
   @override
   List<MistakeItem> build() {
@@ -86,6 +116,51 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     return [];
   }
 
+  bool _isItemMasteredOrInReview(ReviewStore? store, QuizQuestion question) {
+    if (store == null) return false;
+    final resolved = resolveQuizMemoryItem(question);
+    if (resolved != null) {
+      final memItem = store.get(resolved.itemId);
+      if (memItem != null) {
+        return memItem.masteryState == MasteryState.mastered ||
+            memItem.masteryState == MasteryState.review;
+      }
+    }
+    return false;
+  }
+
+  List<MistakeItem> _loadResolvedAudit() {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final raw = prefs.getString(_resolvedAuditKey);
+      if (raw != null && raw.isNotEmpty) {
+        final List<dynamic> decoded = jsonDecode(raw);
+        return decoded
+            .map(
+              (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .toList();
+      }
+    } catch (e) {
+      AppLogger.debug('MistakeNotifier: Failed to load resolved audit: $e');
+    }
+    return [];
+  }
+
+  Future<void> _saveResolvedAudit(List<MistakeItem> audit) async {
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final bounded =
+          audit.length > 500 ? audit.sublist(audit.length - 500) : audit;
+      final raw = jsonEncode(bounded.map((item) => item.toJson()).toList());
+      await prefs.setString(_resolvedAuditKey, raw);
+    } catch (e) {
+      AppLogger.debug('MistakeNotifier: Failed to save resolved audit: $e');
+    }
+  }
+
+  List<MistakeItem> get resolvedAudit => _loadResolvedAudit();
+
   void _loadMistakes() {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
@@ -93,19 +168,22 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
       if (raw != null && raw.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(raw);
         final store = ref.read(reviewStoreProvider).valueOrNull;
+        final resolvedAudit = _loadResolvedAudit();
+        final resolvedKeys = {
+          for (final item in resolvedAudit) '${item.quizId}:${item.questionId}',
+        };
+
         state = decoded
             .map(
               (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
             )
             .where((item) {
-              if (store != null) {
-                final resolved = resolveQuizMemoryItem(item.question);
-                if (resolved != null) {
-                  final memItem = store.get(resolved.itemId);
-                  if (memItem != null && memItem.isMastered) {
-                    return false;
-                  }
-                }
+              final key = '${item.quizId}:${item.questionId}';
+              if (item.isResolved || resolvedKeys.contains(key)) {
+                return false;
+              }
+              if (_isItemMasteredOrInReview(store, item.question)) {
+                return false;
               }
               return true;
             })
@@ -128,6 +206,10 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   }
 
   int get masteredCount {
+    final store = ref.read(reviewStoreProvider).valueOrNull;
+    if (store != null) {
+      return store.countsByState()[MasteryState.mastered] ?? 0;
+    }
     final prefs = ref.read(sharedPreferencesProvider);
     return prefs.getInt(_masteredKey) ?? 0;
   }
@@ -138,6 +220,16 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     required QuizQuestion question,
     String? wrongAnswer,
   }) async {
+    final qId = '${quizId}_$questionIndex';
+    final audit = _loadResolvedAudit();
+    final hadAudit = audit.any(
+      (a) => a.quizId == quizId && a.questionId == qId,
+    );
+    if (hadAudit) {
+      audit.removeWhere((a) => a.quizId == quizId && a.questionId == qId);
+      await _saveResolvedAudit(audit);
+    }
+
     // Avoid duplicate records of same quiz/question
     final exists = state.any(
       (item) => item.quizId == quizId && item.questionIndex == questionIndex,
@@ -166,21 +258,41 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     required String quizId,
     required int questionIndex,
   }) async {
-    final originalLength = state.length;
-    state = state
+    final toResolve = state
         .where(
           (item) =>
-              !(item.quizId == quizId && item.questionIndex == questionIndex),
+              item.quizId == quizId && item.questionIndex == questionIndex,
         )
         .toList();
 
-    if (state.length < originalLength) {
+    if (toResolve.isNotEmpty) {
+      final audit = _loadResolvedAudit();
+      final nowStr = DateTime.now().toIso8601String();
+      for (final item in toResolve) {
+        final resolvedItem = item.copyWith(
+          isResolved: true,
+          resolvedAt: nowStr,
+        );
+        audit.removeWhere(
+          (a) => a.quizId == item.quizId && a.questionId == item.questionId,
+        );
+        audit.add(resolvedItem);
+      }
+      await _saveResolvedAudit(audit);
+
+      state = state
+          .where(
+            (item) =>
+                !(item.quizId == quizId && item.questionIndex == questionIndex),
+          )
+          .toList();
       await _saveMistakes();
 
       // Increment mastered count
       final prefs = ref.read(sharedPreferencesProvider);
       final count = prefs.getInt(_masteredKey) ?? 0;
-      await prefs.setInt(_masteredKey, count + 1);
+      await prefs.setInt(_masteredKey, count + toResolve.length);
+
       await _markMistakeMasteredRemotely(
         quizId: quizId,
         questionIndex: questionIndex,
@@ -240,17 +352,20 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
 
       // UNIFIED CANONICAL LEARNING MEMORY STATE:
       // Reinstall/backend sync must never resurrect mistakes for items already
-      // mastered in the canonical ReviewStore.
+      // resolved locally or mastered/in-review in the canonical ReviewStore.
       final store = ref.read(reviewStoreProvider).valueOrNull;
+      final resolvedAudit = _loadResolvedAudit();
+      final resolvedKeys = {
+        for (final item in resolvedAudit) '${item.quizId}:${item.questionId}',
+      };
+
       final filteredRemote = remote.where((item) {
-        if (store != null) {
-          final resolved = resolveQuizMemoryItem(item.question);
-          if (resolved != null) {
-            final memItem = store.get(resolved.itemId);
-            if (memItem != null && memItem.isMastered) {
-              return false;
-            }
-          }
+        final key = '${item.quizId}:${item.questionId}';
+        if (item.isResolved || resolvedKeys.contains(key)) {
+          return false;
+        }
+        if (_isItemMasteredOrInReview(store, item.question)) {
+          return false;
         }
         return true;
       });
@@ -290,14 +405,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   /// Reconciles all active mistakes against a snapshot of canonical ReviewStore states.
   Future<void> reconcileWithReviewStore(ReviewStore store) async {
     final toMaster = state.where((item) {
-      final resolved = resolveQuizMemoryItem(item.question);
-      if (resolved != null) {
-        final memItem = store.get(resolved.itemId);
-        if (memItem != null && memItem.isMastered) {
-          return true;
-        }
-      }
-      return false;
+      return _isItemMasteredOrInReview(store, item.question);
     }).toList();
 
     for (final m in toMaster) {

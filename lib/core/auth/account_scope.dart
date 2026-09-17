@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Local ownership metadata, not an authentication credential. Never infer an
@@ -54,14 +55,25 @@ class AccountScope {
     }
   }
 
+  @visibleForTesting
+  factory AccountScope.forTest(
+    SharedPreferences prefs, {
+    String? userId,
+    bool isGuest = false,
+  }) {
+    return AccountScope._(prefs, 'test_record', userId, isGuest, isGuest);
+  }
+
   bool get isKnown => isGuest || userId != null;
   String get _suffix => isGuest
       ? 'guest'
       : userId == 'guest'
       ? 'account:guest'
       : '$userId';
+  String get suffix => _suffix;
   String get statsKey => 'user_stats_$_suffix';
   String get syncKey => 'is_stats_synced_$_suffix';
+  String get reviewKey => 'review_states_$_suffix';
 
   bool get isCurrent {
     // Only the login operation that created an unresolved incarnation can

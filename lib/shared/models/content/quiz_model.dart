@@ -102,6 +102,7 @@ class QuizQuestion {
   /// The memory scheduler consumes these — never text matching.
   final String? sourceWordId;
   final String? sourceSentenceId;
+  final bool isNonMemory;
 
   QuizQuestion({
     this.type = 'mcq',
@@ -119,7 +120,21 @@ class QuizQuestion {
     this.distractors = const [],
     this.sourceWordId,
     this.sourceSentenceId,
+    this.isNonMemory = false,
   });
+
+  bool get hasCanonicalIdentity =>
+      (sourceWordId != null && sourceWordId!.trim().isNotEmpty) ||
+      (sourceSentenceId != null && sourceSentenceId!.trim().isNotEmpty);
+
+  bool get isCanonicalLearningItem => !isNonMemory && hasCanonicalIdentity;
+
+  String? get canonicalLearningId =>
+      (sourceWordId != null && sourceWordId!.trim().isNotEmpty)
+      ? sourceWordId!.trim()
+      : ((sourceSentenceId != null && sourceSentenceId!.trim().isNotEmpty)
+            ? sourceSentenceId!.trim()
+            : null);
 
   factory QuizQuestion.fromMap(Map<String, dynamic> data) {
     return QuizQuestion(
@@ -138,6 +153,7 @@ class QuizQuestion {
       distractors: List<String>.from(data['distractors'] as List? ?? []),
       sourceWordId: data['sourceWordId'] as String?,
       sourceSentenceId: data['sourceSentenceId'] as String?,
+      isNonMemory: data['isNonMemory'] as bool? ?? false,
     );
   }
 
@@ -158,6 +174,7 @@ class QuizQuestion {
       'distractors': distractors,
       'sourceWordId': sourceWordId,
       'sourceSentenceId': sourceSentenceId,
+      'isNonMemory': isNonMemory,
     };
   }
 
@@ -177,6 +194,7 @@ class QuizQuestion {
     List<String>? distractors,
     String? sourceWordId,
     String? sourceSentenceId,
+    bool? isNonMemory,
   }) {
     return QuizQuestion(
       type: type ?? this.type,
@@ -194,6 +212,7 @@ class QuizQuestion {
       distractors: distractors ?? this.distractors,
       sourceWordId: sourceWordId ?? this.sourceWordId,
       sourceSentenceId: sourceSentenceId ?? this.sourceSentenceId,
+      isNonMemory: isNonMemory ?? this.isNonMemory,
     );
   }
 }

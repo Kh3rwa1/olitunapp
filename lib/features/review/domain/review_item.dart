@@ -220,4 +220,45 @@ class MemoryItemState {
           : null,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MemoryItemState &&
+          runtimeType == other.runtimeType &&
+          itemId == other.itemId &&
+          itemType == other.itemType &&
+          introducedAt == other.introducedAt &&
+          lastPresentedAt == other.lastPresentedAt &&
+          lastReviewedAt == other.lastReviewedAt &&
+          nextReviewAt == other.nextReviewAt &&
+          intervalDays == other.intervalDays &&
+          ease == other.ease &&
+          successfulRecalls == other.successfulRecalls &&
+          failedRecalls == other.failedRecalls &&
+          lapseCount == other.lapseCount &&
+          masteryState == other.masteryState &&
+          lastResponseTimeMs == other.lastResponseTimeMs &&
+          lastExerciseType == other.lastExerciseType &&
+          typingSuccesses == other.typingSuccesses &&
+          firstRecallAt == other.firstRecallAt;
+
+  @override
+  int get hashCode =>
+      itemId.hashCode ^
+      itemType.hashCode ^
+      introducedAt.hashCode ^
+      lastPresentedAt.hashCode ^
+      lastReviewedAt.hashCode ^
+      nextReviewAt.hashCode ^
+      intervalDays.hashCode ^
+      ease.hashCode ^
+      successfulRecalls.hashCode ^
+      failedRecalls.hashCode ^
+      lapseCount.hashCode ^
+      masteryState.hashCode ^
+      lastResponseTimeMs.hashCode ^
+      lastExerciseType.hashCode ^
+      typingSuccesses.hashCode ^
+      firstRecallAt.hashCode;
 }

@@ -10,6 +10,7 @@ import 'quiz_basic_info_section.dart';
 import 'quiz_questions_section.dart';
 import 'quiz_form_actions.dart';
 import 'question_editor.dart';
+import 'quiz_validation.dart';
 import '../../../widgets/common/admin_modal_sheet.dart';
 
 class QuizFormSheet extends ConsumerStatefulWidget {
@@ -148,6 +149,17 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
             isSaveEnabled: _selectedCategoryId != null,
             onCancel: () => Navigator.pop(context),
             onSave: () async {
+              for (var i = 0; i < _questions.length; i++) {
+                final err = QuizValidation.validateQuestionIdentity(
+                  _questions[i],
+                );
+                if (err != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Question #${i + 1}: $err')),
+                  );
+                  return;
+                }
+              }
               final newQuiz = QuizModel(
                 id: widget.quiz?.id ?? const Uuid().v4(),
                 categoryId: _selectedCategoryId!,

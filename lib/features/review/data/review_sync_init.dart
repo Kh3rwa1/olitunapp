@@ -17,9 +17,12 @@ import '../../../core/api/appwrite_functions_service.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
 import '../../../core/offline/mutation_outbox_service.dart';
 import '../../../shared/widgets/state_widgets.dart';
+import '../../../core/logging/app_logger.dart';
+import '../../../core/storage/hive_service.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../domain/review_corpus_identity.dart';
 import 'review_appwrite_repository.dart';
+import 'review_state_migration.dart';
 import 'review_state_sync.dart';
 import 'review_store.dart';
 
@@ -77,10 +80,32 @@ final reviewSyncInitProvider = Provider<void>((ref) {
   // Startup: pull + merge + drain queued writes.
   Future.microtask(runSync);
 
-  // Auth state change (e.g. login/restore): sync immediately.
-  ref.listen<AsyncValue<bool>>(isAuthenticatedProvider, (previous, next) {
+  // Auth state change (e.g. login/restore): migrate guest progress and sync immediately.
+  ref.listen<AsyncValue<bool>>(isAuthenticatedProvider, (previous, next) async {
     if (next.value == true && previous?.value != true) {
       sync.clearCachedUserId();
+      try {
+        final prefs = ref.read(sharedPreferencesProvider);
+        const guestKey = 'review_states_guest';
+        if (prefs.containsKey(guestKey)) {
+          final guestStore = await ReviewStore.load(
+            prefs,
+            storageKey: guestKey,
+          );
+          final accountStore = await ref
+              .read(reviewStoreProvider.notifier)
+              .current();
+          final migration = await ReviewStateMigrator.migrateGuestToAccount(
+            guestStore: guestStore,
+            accountStore: accountStore,
+          );
+          if (migration.hasChanges) {
+            ref.read(reviewStoreProvider.notifier).notifyStoreChanged();
+          }
+        }
+      } catch (e) {
+        AppLogger.debug('ReviewSyncInit: guest migration note: $e');
+      }
       runSync();
     }
   });

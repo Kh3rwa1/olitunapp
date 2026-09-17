@@ -23,6 +23,7 @@ import '../../../core/offline/mutation_outbox_service.dart';
 import '../domain/review_corpus_identity.dart';
 import '../domain/review_item.dart';
 import '../domain/review_repository.dart';
+import '../domain/review_state_merge_policy.dart';
 import 'review_store.dart';
 
 /// Outbox operation type for review-state upserts (one replay handler).
@@ -284,29 +285,22 @@ class ReviewStateSync {
           aliasDeps[item.itemId] = canonicalId;
           final candidate = item.copyWith(itemId: canonicalId);
           final local = store.get(canonicalId);
-          final remoteTs = candidate.lastReviewedAt ?? candidate.introducedAt;
-
           if (local == null) {
             store.adoptRemote(candidate);
             adopted++;
             newer.add(candidate);
             toDelete.add(item.itemId);
           } else {
-            final localTs = local.lastReviewedAt ?? local.introducedAt;
-            if (remoteTs.isAfter(localTs)) {
-              store.adoptRemote(candidate);
+            final merged = ReviewStateMergePolicy.merge(local, candidate);
+            final localNeedsUpdate = merged != local;
+            if (localNeedsUpdate) {
+              store.adoptRemote(merged);
               adopted++;
-              newer.add(candidate);
-              toDelete.add(item.itemId);
-            } else if (localTs.isAfter(remoteTs)) {
-              newer.add(local);
-              toDelete.add(item.itemId);
             } else {
-              // Tie: canonical already in store wins
               keptLocal++;
-              newer.add(local);
-              toDelete.add(item.itemId);
             }
+            newer.add(merged);
+            toDelete.add(item.itemId);
           }
           continue;
         }
@@ -320,22 +314,24 @@ class ReviewStateSync {
         }
       }
 
-      // Active item: standard LWW
+      // Active item: deterministic merge preserving concurrent learning evidence
       final local = store.get(item.itemId);
-      final remoteTs = item.lastReviewedAt ?? item.introducedAt;
       if (local == null) {
         store.adoptRemote(item);
         adopted++;
         continue;
       }
-      final localTs = local.lastReviewedAt ?? local.introducedAt;
-      if (remoteTs.isAfter(localTs)) {
-        store.adoptRemote(item);
+      final merged = ReviewStateMergePolicy.merge(local, item);
+      final localNeedsUpdate = merged != local;
+      final remoteNeedsUpdate = merged != item;
+      if (localNeedsUpdate) {
+        store.adoptRemote(merged);
         adopted++;
-      } else if (localTs.isAfter(remoteTs)) {
-        // Local is newer: caller re-enqueues for push.
-        newer.add(local);
-      } else {
+      }
+      if (remoteNeedsUpdate) {
+        newer.add(merged);
+      }
+      if (!localNeedsUpdate && !remoteNeedsUpdate) {
         keptLocal++;
       }
     }

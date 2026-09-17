@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/quizzes/widgets/quiz_form_sheet/quiz_validation.dart';
+import 'package:itun/shared/models/content_models.dart';
 
 void main() {
   group('QuizValidation.validateTitle', () {
@@ -93,5 +94,48 @@ void main() {
     test('accepts a score surrounded by whitespace', () {
       expect(QuizValidation.validatePassingScore(' 50 '), isNull);
     });
+  });
+
+  group('QuizValidation.validateQuestionIdentity', () {
+    test('accepts questions with sourceWordId', () {
+      final q = QuizQuestion(promptOlChiki: 'ᱚ', sourceWordId: 'w_ol_1');
+      expect(QuizValidation.validateQuestionIdentity(q), isNull);
+    });
+
+    test('accepts questions with sourceSentenceId', () {
+      final q = QuizQuestion(
+        promptOlChiki: 'ᱥᱟᱹᱜᱩᱱ',
+        sourceSentenceId: 's_greeting_1',
+      );
+      expect(QuizValidation.validateQuestionIdentity(q), isNull);
+    });
+
+    test('accepts questions marked isNonMemory even without source IDs', () {
+      final q = QuizQuestion(promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ', isNonMemory: true);
+      expect(QuizValidation.validateQuestionIdentity(q), isNull);
+    });
+
+    test('rejects questions without source IDs when not marked isNonMemory', () {
+      final q = QuizQuestion(promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ');
+      expect(
+        QuizValidation.validateQuestionIdentity(q),
+        'Question must be linked to a corpus item (Word ID or Sentence ID) or marked as Non-Memory.',
+      );
+    });
+
+    test(
+      'rejects questions with blank/whitespace source IDs when not marked isNonMemory',
+      () {
+        final q = QuizQuestion(
+          promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+          sourceWordId: '   ',
+          sourceSentenceId: '',
+        );
+        expect(
+          QuizValidation.validateQuestionIdentity(q),
+          'Question must be linked to a corpus item (Word ID or Sentence ID) or marked as Non-Memory.',
+        );
+      },
+    );
   });
 }

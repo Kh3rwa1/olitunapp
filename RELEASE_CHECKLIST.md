@@ -118,3 +118,34 @@ Every release must complete and verify the following gates before distributing a
 - [ ] Offline lesson progression, quiz scoring, and audio playback functional without active network.
 - [ ] AI Studio and Santali Voice operations function properly and report honest quota states.
 - [ ] Complete account deletion cascade verified against all user-data collections.
+
+---
+
+## 6. Candidate-SHA Staging Evidence (authenticated gate)
+
+PR CI is deterministic and credential-free; it never proves live schema,
+permissions, functions, payments, TTS, or real-device behavior. Release
+candidates additionally require the authenticated staging gate
+(`docs/engineering/staging_gate.md`). A skipped live check is recorded as
+NOT VERIFIED, never as passed.
+
+- [ ] Staging gate ran for the exact candidate SHA (old runs are not evidence).
+- [ ] Recorded: source SHA, artifact checksums, lockfiles, schema snapshot
+  (including `review_states` AND `review_operations`), deployed function
+  versions, environment name, staging journey results, mobile signing,
+  web security headers, rollback version.
+- [ ] Schema verify passes for both review tables:
+  ```bash
+  node scripts/create_review_collection.mjs --verify-only
+  ```
+- [ ] Staging journeys 1–30 pass (guest/offline/kill/restart/migration/
+  account-switch A/B offline convergence/mistake-reinstall/Razorpay test
+  capture+refund/TTS provider-failure quota/account-deletion cascade/
+  cleanup schedules/CSP/service-worker/notifications/ad-consent).
+- [ ] `santaliVoice` and `mutateReviewState` execute access verified as
+  authenticated-users-only (no `any`/`guests`).
+- [ ] Razorpay evidence (test mode) linked to the candidate SHA; no
+  production credentials touched.
+- [ ] Rollback plan references the previous release version and the
+  snapshot/ledger compatibility notes in
+  `docs/architecture/review_persistence_and_sync.md`.

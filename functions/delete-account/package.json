@@ -1,7 +1,7 @@
 {
   "type": "module",
   "dependencies": {
-    "node-appwrite": "15.0.0"
+    "node-appwrite": "29.0.0"
   },
   "name": "delete-account",
   "version": "1.0.0"

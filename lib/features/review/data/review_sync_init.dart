@@ -98,6 +98,8 @@ final reviewSyncInitProvider = Provider<void>((ref) {
           final migration = await ReviewStateMigrator.migrateGuestToAccount(
             guestStore: guestStore,
             accountStore: accountStore,
+            prefs: prefs,
+            destinationOwnerKey: accountStore.storageKeyUsed,
           );
           if (migration.hasChanges) {
             ref.read(reviewStoreProvider.notifier).notifyStoreChanged();

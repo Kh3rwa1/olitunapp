@@ -250,6 +250,9 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
       'nextReviewAt': result.state.nextReviewAt.toIso8601String(),
       'intervalDays': result.state.intervalDays,
       'mastery': result.state.masteryState.json,
+      // Durability witness: analytics consumers must not treat an
+      // undurable transition as product progress.
+      'durable': result.durable,
       // Cohort fields for retention analysis (D1/D7/D30 joins, lapsed
       // mastered items, per-item accuracy).
       'successfulRecalls': result.state.successfulRecalls,
@@ -258,14 +261,16 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
       if (result.state.firstRecallAt != null)
         'firstRecallAt': result.state.firstRecallAt!.toIso8601String(),
     });
-    if (result.becameReview) {
+    // Mastery promotion is only meaningful once durable. An undurable
+    // transition stays in-memory and is retried via the next mutation.
+    if (result.durable && result.becameReview) {
       await _track(LearningAnalyticsEvents.itemPromoted, {
         'itemId': card.itemId,
         'toMastery': result.state.masteryState.json,
         'successfulRecalls': result.state.successfulRecalls,
       });
     }
-    if (result.becameMastered) {
+    if (result.durable && result.becameMastered) {
       _masteredCount++;
       unawaited(
         ref.read(mistakeProvider.notifier).reconcileRecoveredItem(card.itemId),

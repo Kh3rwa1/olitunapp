@@ -35,7 +35,8 @@ import 'widgets/voice_pickers.dart';
 /// `bodhan_api_keys` collection and the `santaliVoice` function rotates
 /// through them server-side when a key runs out of credit.
 class SantaliVoiceScreen extends ConsumerStatefulWidget {
-  const SantaliVoiceScreen({super.key});
+  const SantaliVoiceScreen({super.key, this.initialText});
+  final String? initialText;
 
   @override
   ConsumerState<SantaliVoiceScreen> createState() => _SantaliVoiceScreenState();
@@ -67,6 +68,10 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
   @override
   void initState() {
     super.initState();
+    // AI Studio hands off a passage to narrate.
+    if (widget.initialText case final passage? when passage.isNotEmpty) {
+      _controller.text = passage;
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(santaliVoiceNameProvider.notifier).load();

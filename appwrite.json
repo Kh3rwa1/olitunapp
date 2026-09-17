@@ -656,6 +656,35 @@
         "files.read",
         "tokens.write"
       ]
+    },
+    {
+      "$id": "aiStudio",
+      "name": "aiStudio",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 60,
+      "path": "functions/aiStudio",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write",
+        "files.read",
+        "files.write",
+        "users.read"
+      ]
     }
   ],
   "buckets": [

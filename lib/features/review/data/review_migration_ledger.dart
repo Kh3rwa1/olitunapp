@@ -205,6 +205,11 @@ class MigrationLedger {
 
 /// Stable fingerprint of a review snapshot: sorted per-item evidence.
 /// Two snapshots with equal fingerprints merge identically.
+///
+/// 32-bit FNV-1a: all literals are exactly representable in JavaScript so
+/// `flutter build web` (dart2js) compiles. Combined with the migration-kind
+/// and owner prefixes in the migration id, collisions are not a practical
+/// concern (equality only matches same-source reruns).
 String fingerprintItems(Iterable<MemoryItemState> items) {
   final parts =
       items
@@ -216,14 +221,13 @@ String fingerprintItems(Iterable<MemoryItemState> items) {
           )
           .toList()
         ..sort();
-  // Simple stable hash (FNV-1a 64) — no crypto dependency in data layer.
-  var hash = 0xcbf29ce484222325;
+  var hash = 0x811c9dc5;
   final joined = parts.join(';');
   for (var i = 0; i < joined.length; i++) {
     hash ^= joined.codeUnitAt(i);
-    hash = (hash * 0x100000001b3) & 0xFFFFFFFFFFFFFFFF;
+    hash = (hash * 0x01000193) & 0xFFFFFFFF;
   }
-  return hash.toRadixString(16).padLeft(16, '0');
+  return hash.toRadixString(16).padLeft(8, '0');
 }
 
 class ReviewMigrationEngine {

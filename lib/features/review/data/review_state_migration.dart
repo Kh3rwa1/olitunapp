@@ -13,11 +13,13 @@
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'review_migration_engine.dart';
 import 'review_migration_ledger.dart';
 import 'review_store.dart';
 
+export 'review_migration_engine.dart';
 export 'review_migration_ledger.dart'
-    show ReviewStateMigrationResult, ReviewMigrationEngine, MigrationLedger;
+    show ReviewStateMigrationResult, MigrationLedger;
 
 class ReviewStateMigrator {
   const ReviewStateMigrator._();

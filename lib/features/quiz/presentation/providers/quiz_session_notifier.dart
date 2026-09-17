@@ -8,7 +8,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
-import '../../../review/data/review_store.dart';
+import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import '../../domain/quiz_memory_resolver.dart';

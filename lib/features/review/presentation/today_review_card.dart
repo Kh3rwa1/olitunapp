@@ -12,7 +12,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../data/review_store.dart';
+import '../data/review_store_notifier.dart';
 import '../domain/memory_scheduler.dart';
 
 class TodayReviewCard extends ConsumerWidget {

@@ -10,170 +10,23 @@ import '../../../../core/logging/app_logger.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../review/data/review_store.dart';
+import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_memory_resolver.dart';
+import 'mistake_item.dart';
+import 'mistake_storage.dart';
 
-/// Domain terms (see docs/architecture/learner_state_authority.md):
-/// - recorded mistake: immutable historical incorrect answer (audit).
-/// - unresolved recovery need: derived from current SRS state + policy.
-/// - recovered: item reached SRS MasteryState.mastered.
-/// - review: SRS lifecycle state — NEVER "mastered".
-/// - mastered: SRS MasteryState.mastered ONLY.
-///
-/// [MistakeNotifier] owns the historical audit + the derived recovery queue.
-/// [ReviewStore]/SRS owns current learning weakness. There is exactly one
-/// mastery lifecycle.
+export 'mistake_item.dart';
 
-class MistakeItem {
-  final String quizId;
-  final String questionId;
-  final int questionIndex;
-  final QuizQuestion question;
-  final String addedAt;
-  final bool isResolved;
-  final String? resolvedAt;
-
-  /// SRS `successfulRecalls` for the attributed item at record time.
-  /// Recovery = strictly more successes afterwards (one correct recall
-  /// after the mistake). Legacy records decode to 0 (fail-safe: any
-  /// subsequent success recovers).
-  final int baselineSuccesses;
-
-  MistakeItem({
-    required this.quizId,
-    String? questionId,
-    required this.questionIndex,
-    required this.question,
-    required this.addedAt,
-    this.isResolved = false,
-    this.resolvedAt,
-    this.baselineSuccesses = 0,
-  }) : questionId = questionId ?? '${quizId}_$questionIndex';
-
-  MistakeItem copyWith({
-    String? quizId,
-    String? questionId,
-    int? questionIndex,
-    QuizQuestion? question,
-    String? addedAt,
-    bool? isResolved,
-    String? resolvedAt,
-    int? baselineSuccesses,
-  }) {
-    return MistakeItem(
-      quizId: quizId ?? this.quizId,
-      questionId: questionId ?? this.questionId,
-      questionIndex: questionIndex ?? this.questionIndex,
-      question: question ?? this.question,
-      addedAt: addedAt ?? this.addedAt,
-      isResolved: isResolved ?? this.isResolved,
-      resolvedAt: resolvedAt ?? this.resolvedAt,
-      baselineSuccesses: baselineSuccesses ?? this.baselineSuccesses,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'quizId': quizId,
-      'questionId': questionId,
-      'questionIndex': questionIndex,
-      'question': question.toMap(),
-      'addedAt': addedAt,
-      'isResolved': isResolved,
-      'resolvedAt': resolvedAt,
-      'baselineSuccesses': baselineSuccesses,
-    };
-  }
-
-  factory MistakeItem.fromJson(Map<String, dynamic> json) {
-    final snapshot = json['question'] ?? json['questionSnapshot'];
-    return MistakeItem(
-      quizId: json['quizId'] ?? '',
-      questionId: json['questionId'] as String?,
-      questionIndex: json['questionIndex'] ?? 0,
-      question: QuizQuestion.fromMap(_readQuestionSnapshot(snapshot)),
-      addedAt: json['addedAt'] ?? json['lastMissedAt'] ?? '',
-      isResolved: json['isResolved'] as bool? ?? false,
-      resolvedAt: json['resolvedAt'] as String?,
-      baselineSuccesses: (json['baselineSuccesses'] as num?)?.toInt() ?? 0,
-    );
-  }
-
-  static Map<String, dynamic> _readQuestionSnapshot(dynamic snapshot) {
-    try {
-      if (snapshot is String && snapshot.trim().isNotEmpty) {
-        final decoded = jsonDecode(snapshot);
-        if (decoded is Map) {
-          return Map<String, dynamic>.from(decoded);
-        }
-      }
-      if (snapshot is Map) {
-        return Map<String, dynamic>.from(snapshot);
-      }
-    } catch (_) {
-      // Remote mistakes should never break the local review queue.
-    }
-    return <String, dynamic>{};
-  }
-}
-
-/// One durable outbox entry for a mistake backend mutation. Account-scoped
-/// storage key; idempotency key dedupes retries and replay-after-crash.
-class MistakeOutboxEntry {
-  final String idempotencyKey;
-  final String kind; // 'record' | 'resolve' | 'complete'
-  final Map<String, dynamic> body;
-  final String enqueuedAt;
-
-  const MistakeOutboxEntry({
-    required this.idempotencyKey,
-    required this.kind,
-    required this.body,
-    required this.enqueuedAt,
-  });
-
-  Map<String, dynamic> toJson() => {
-    'idempotencyKey': idempotencyKey,
-    'kind': kind,
-    'body': body,
-    'enqueuedAt': enqueuedAt,
-  };
-
-  factory MistakeOutboxEntry.fromJson(Map<String, dynamic> json) =>
-      MistakeOutboxEntry(
-        idempotencyKey: (json['idempotencyKey'] ?? '').toString(),
-        kind: (json['kind'] ?? '').toString(),
-        body: Map<String, dynamic>.from(json['body'] as Map? ?? const {}),
-        enqueuedAt: (json['enqueuedAt'] ?? '').toString(),
-      );
-}
+/// Domain terms live in mistake_item.dart; account-scoped persistence and
+/// legacy/guest migration live in mistake_storage.dart. This file owns the
+/// derived recovery queue, the durable backend outbox, and provider wiring.
 
 class MistakeNotifier extends Notifier<List<MistakeItem>> {
-  // Legacy GLOBAL keys (unowned). Claimed once per proven owner into scoped
-  // keys below; never read across accounts. See [_scopedKeys] + [_claimLegacy].
-  static const String _legacyPrefKey = 'user_mistakes_list';
+  // Legacy mastered counter is read-only compat (SRS derives mastery).
   static const String _legacyMasteredKey = 'user_mistakes_mastered_count';
-  static const String _legacyResolvedAuditKey =
-      'user_mistakes_resolved_audit_v1';
-  static const String _legacyClaimKey = 'user_mistakes_legacy_claim_v1';
-
-  static String _listKey(String suffix) => 'user_mistakes_list_$suffix';
-  static String _auditKey(String suffix) =>
-      'user_mistakes_resolved_audit_v1_$suffix';
-  static String _outboxKey(String suffix) => 'user_mistakes_outbox_$suffix';
 
   StreamSubscription<SharedPreferences>? _scopeSubscription;
-
-  /// Owner suffix captured for all storage access in this build lifetime.
-  /// Derived from `AccountScope`: `guest`, `<userId>`, or `account:guest`
-  /// for the literal account id "guest" (never collides with guest mode).
-  String _suffix(SharedPreferences prefs) {
-    final scope = AccountScope.capture(prefs);
-    if (scope.isGuest) return 'guest';
-    final id = scope.userId;
-    if (id == null || id.isEmpty) return 'guest';
-    return id == 'guest' ? 'account:guest' : id;
-  }
 
   @override
   List<MistakeItem> build() {
@@ -181,9 +34,9 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     // Account switch: dispose this owner's state and reload for the new
     // owner. Stale cross-account state is never published.
     _scopeSubscription?.cancel();
-    final captured = _suffix(prefs);
+    final captured = mistakeOwnerSuffix(prefs);
     _scopeSubscription = AccountScope.changes.listen((changedPrefs) {
-      if (_suffix(changedPrefs) != captured) {
+      if (mistakeOwnerSuffix(changedPrefs) != captured) {
         ref.invalidateSelf();
       }
     });
@@ -224,7 +77,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   List<MistakeItem> _loadResolvedAudit() {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final raw = prefs.getString(_auditKey(_suffix(prefs)));
+      final raw = prefs.getString(mistakeAuditKey(mistakeOwnerSuffix(prefs)));
       if (raw != null && raw.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(raw);
         return decoded
@@ -246,7 +99,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
           ? audit.sublist(audit.length - 500)
           : audit;
       final raw = jsonEncode(bounded.map((item) => item.toJson()).toList());
-      await prefs.setString(_auditKey(_suffix(prefs)), raw);
+      await prefs.setString(mistakeAuditKey(mistakeOwnerSuffix(prefs)), raw);
     } catch (e) {
       AppLogger.debug('MistakeNotifier: Failed to save resolved audit: $e');
     }
@@ -254,100 +107,18 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
 
   List<MistakeItem> get resolvedAudit => _loadResolvedAudit();
 
-  /// One-time claim of legacy GLOBAL mistake keys into the current proven
-  /// owner's scoped keys. Runs only for known scopes; records a durable
-  /// claim marker so a second account never imports the same legacy data.
-  /// Unknown/corrupt scopes leave legacy keys untouched (fail closed).
-  Future<void> _claimLegacy(SharedPreferences prefs, String suffix) async {
-    final scope = AccountScope.capture(prefs);
-    if (!scope.isKnown) return;
-    if (prefs.getString(_legacyClaimKey) != null) return;
-    final hasLegacy =
-        prefs.containsKey(_legacyPrefKey) ||
-        prefs.containsKey(_legacyResolvedAuditKey);
-    if (!hasLegacy) {
-      await prefs.setString(
-        _legacyClaimKey,
-        jsonEncode({'owner': suffix, 'at': DateTime.now().toIso8601String()}),
-      );
-      return;
-    }
-    try {
-      final legacyRaw = prefs.getString(_legacyPrefKey);
-      if (legacyRaw != null && legacyRaw.isNotEmpty) {
-        final List<dynamic> decoded = jsonDecode(legacyRaw);
-        final legacy = decoded
-            .map(
-              (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
-            )
-            .toList();
-        final current = _readList(prefs, _listKey(suffix));
-        final merged = <String, MistakeItem>{
-          for (final item in current) '${item.quizId}:${item.questionId}': item,
-          for (final item in legacy)
-            if (!(item.isResolved)) '${item.quizId}:${item.questionId}': item,
-        };
-        await prefs.setString(
-          _listKey(suffix),
-          jsonEncode(merged.values.map((e) => e.toJson()).toList()),
-        );
-      }
-      final legacyAuditRaw = prefs.getString(_legacyResolvedAuditKey);
-      if (legacyAuditRaw != null && legacyAuditRaw.isNotEmpty) {
-        final List<dynamic> decoded = jsonDecode(legacyAuditRaw);
-        final legacyAudit = decoded
-            .map(
-              (item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)),
-            )
-            .toList();
-        final currentAudit = _readList(prefs, _auditKey(suffix));
-        final merged = <String, MistakeItem>{
-          for (final item in currentAudit)
-            '${item.quizId}:${item.questionId}': item,
-          for (final item in legacyAudit)
-            '${item.quizId}:${item.questionId}': item,
-        };
-        await prefs.setString(
-          _auditKey(suffix),
-          jsonEncode(merged.values.map((e) => e.toJson()).toList()),
-        );
-      }
-    } catch (e) {
-      AppLogger.debug('MistakeNotifier: legacy claim decode failed: $e');
-    }
-    await prefs.remove(_legacyPrefKey);
-    await prefs.remove(_legacyResolvedAuditKey);
-    await prefs.setString(
-      _legacyClaimKey,
-      jsonEncode({'owner': suffix, 'at': DateTime.now().toIso8601String()}),
-    );
-  }
-
-  List<MistakeItem> _readList(SharedPreferences prefs, String key) {
-    try {
-      final raw = prefs.getString(key);
-      if (raw == null || raw.isEmpty) return [];
-      final List<dynamic> decoded = jsonDecode(raw);
-      return decoded
-          .map((item) => MistakeItem.fromJson(Map<String, dynamic>.from(item)))
-          .toList();
-    } catch (_) {
-      return [];
-    }
-  }
-
   void _loadMistakes() {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final suffix = _suffix(prefs);
-      unawaited(_claimLegacy(prefs, suffix));
+      final suffix = mistakeOwnerSuffix(prefs);
+      unawaited(claimLegacyMistakes(prefs, suffix));
       final store = ref.read(reviewStoreProvider).valueOrNull;
       final resolvedAudit = _loadResolvedAudit();
       final resolvedKeys = {
         for (final item in resolvedAudit) '${item.quizId}:${item.questionId}',
       };
 
-      state = _readList(prefs, _listKey(suffix)).where((item) {
+      state = readMistakeList(prefs, mistakeListKey(suffix)).where((item) {
         final key = '${item.quizId}:${item.questionId}';
         if (item.isResolved || resolvedKeys.contains(key)) {
           return false;
@@ -368,7 +139,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
       final raw = jsonEncode(state.map((item) => item.toJson()).toList());
-      await prefs.setString(_listKey(_suffix(prefs)), raw);
+      await prefs.setString(mistakeListKey(mistakeOwnerSuffix(prefs)), raw);
     } catch (e) {
       AppLogger.debug('MistakeNotifier: Failed to save mistakes: $e');
     }
@@ -394,7 +165,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
 
   List<MistakeOutboxEntry> _readOutbox(SharedPreferences prefs) {
     try {
-      final raw = prefs.getString(_outboxKey(_suffix(prefs)));
+      final raw = prefs.getString(mistakeOutboxKey(mistakeOwnerSuffix(prefs)));
       if (raw == null || raw.isEmpty) return [];
       final List<dynamic> decoded = jsonDecode(raw);
       return decoded
@@ -410,7 +181,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     List<MistakeOutboxEntry> entries,
   ) async {
     await prefs.setString(
-      _outboxKey(_suffix(prefs)),
+      mistakeOutboxKey(mistakeOwnerSuffix(prefs)),
       jsonEncode(entries.map((e) => e.toJson()).toList()),
     );
   }
@@ -646,42 +417,13 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
     await _saveMistakes();
   }
 
-  /// Guest -> account mistake migration (union semantics: idempotent reruns
-  /// converge; never duplicates events). Called on sign-in.
+  /// Guest -> account mistake migration (union semantics in
+  /// mistake_storage.dart). Called on sign-in.
   Future<void> migrateGuestMistakes() async {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final scope = AccountScope.capture(prefs);
-      if (!scope.isKnown || scope.isGuest) return;
-      final accountSuffix = _suffix(prefs);
-      final guestList = _readList(prefs, _listKey('guest'));
-      final guestAudit = _readList(prefs, _auditKey('guest'));
-      if (guestList.isEmpty && guestAudit.isEmpty) return;
-      final accountList = _readList(prefs, _listKey(accountSuffix));
-      final merged = <String, MistakeItem>{
-        for (final item in accountList)
-          '${item.quizId}:${item.questionId}': item,
-        for (final item in guestList)
-          if (!item.isResolved) '${item.quizId}:${item.questionId}': item,
-      };
-      await prefs.setString(
-        _listKey(accountSuffix),
-        jsonEncode(merged.values.map((e) => e.toJson()).toList()),
-      );
-      final accountAudit = _readList(prefs, _auditKey(accountSuffix));
-      final mergedAudit = <String, MistakeItem>{
-        for (final item in accountAudit)
-          '${item.quizId}:${item.questionId}': item,
-        for (final item in guestAudit)
-          '${item.quizId}:${item.questionId}': item,
-      };
-      await prefs.setString(
-        _auditKey(accountSuffix),
-        jsonEncode(mergedAudit.values.map((e) => e.toJson()).toList()),
-      );
-      await prefs.remove(_listKey('guest'));
-      await prefs.remove(_auditKey('guest'));
-      _loadMistakes();
+      final merged = await mergeGuestMistakes(prefs, mistakeOwnerSuffix(prefs));
+      if (merged) _loadMistakes();
     } catch (e) {
       AppLogger.debug('MistakeNotifier: guest migration failed: $e');
     }

@@ -14,7 +14,7 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/quiz_engine/sentence_quiz_builder.dart';

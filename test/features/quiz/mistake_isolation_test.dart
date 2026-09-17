@@ -7,7 +7,7 @@ import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_corpus_identity.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/shared/models/content_models.dart';

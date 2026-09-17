@@ -11,7 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../domain/entities/user_stats_entity.dart';
 
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 
 // Extracted widgets
 import 'widgets/profile_hero_card.dart';

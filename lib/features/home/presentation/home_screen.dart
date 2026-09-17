@@ -8,7 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/ads/ad_service.dart';
 import '../../../core/notifications/notification_service.dart';
-import '../../review/data/review_store.dart';
+import '../../review/data/review_store_notifier.dart';
 import '../../review/domain/memory_scheduler.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/storage/hive_service.dart';

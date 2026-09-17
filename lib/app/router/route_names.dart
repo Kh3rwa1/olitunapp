@@ -13,4 +13,5 @@ class RouteNames {
   static const admin = 'admin';
   static const adminLogin = 'adminLogin';
   static const onboarding = 'onboarding';
+  static const voice = 'voice';
 }

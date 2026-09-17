@@ -26,6 +26,7 @@ import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
+import 'widgets/santali_voice_promo_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 
 export '../domain/continue_lesson_logic.dart';
@@ -335,6 +336,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const RepaintBoundary(
               child: NativeAdWidget(placement: 'home_native_bottom'),
             ),
+            const SizedBox(height: 20),
+            // Santali AI Voice studio promo — bottom of home, the viral
+            // surface. Opens the Bodhan-powered TTS studio (/voice).
+            const RepaintBoundary(child: SantaliVoicePromoCard()),
           ],
         ),
 

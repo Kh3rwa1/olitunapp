@@ -363,4 +363,9 @@ class AppColors {
   static const Color goldSoft = Color(0xFFFFD54F);
   static const Color shadowSoftBlack = Color(0x40000000);
   static const Color violetGlow = Color(0x667C3AED);
+
+  // Santali AI Voice palette — speaker gradients and the ready orb.
+  static const Color voicePurple = Color(0xFF6D28D9);
+  static const Color voiceTeal = Color(0xFF0E7490);
+  static const Color voiceEmerald = Color(0xFF059669);
 }

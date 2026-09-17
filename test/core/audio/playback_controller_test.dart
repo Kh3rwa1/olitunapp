@@ -58,6 +58,11 @@ void main() {
     when(() => audio.seek(any())).thenAnswer((_) async {});
     when(() => audio.setSpeed(any())).thenAnswer((_) async {});
     when(() => audio.tryPlayUrl(any())).thenAnswer((_) async => true);
+    when(
+      () => audio.webPlaybackEndedStream,
+    ).thenAnswer((_) => const Stream<void>.empty());
+    when(() => audio.currentProcessingState).thenReturn(ProcessingState.ready);
+    when(() => audio.currentUrl).thenReturn(null);
   });
 
   tearDown(() async {
@@ -319,7 +324,18 @@ void main() {
       expect(controller.state.isLoading, isFalse);
       expect(controller.state.error, isNull);
       expect(controller.state.current?.id, 'https://a.mp3');
+      expect(controller.state.completed, isTrue);
       expect(controller.playPauseSemanticsLabel, 'Resume audio');
+    });
+
+    test('failed chain end is not marked completed', () async {
+      final controller = build(pause: Duration.zero);
+
+      await controller.play(request(''));
+      await flush();
+
+      expect(controller.state.error, isNotNull);
+      expect(controller.state.completed, isFalse);
     });
 
     test('completion of a foreign clip (Bakhed/SFX hijack) drops stale '
@@ -377,6 +393,129 @@ void main() {
       verifyNever(() => audio.pause());
       verifyNever(() => audio.resume());
       expect(controller.state.isIdle, isTrue);
+    });
+
+    test('resume after natural end seeks to start and plays again', () async {
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+      processingStates.add(ProcessingState.completed);
+      await flush();
+      expect(controller.state.completed, isTrue);
+
+      await controller.resume();
+
+      // Re-arm first (just_audio ignores play() on an ended player),
+      // then resume — the stuck-after-end bug.
+      verify(() => audio.seek(Duration.zero)).called(1);
+      verify(() => audio.resume()).called(1);
+      expect(controller.state.completed, isFalse);
+      expect(controller.state.isPlaying, isTrue);
+    });
+
+    test('toggle after natural end replays from the start', () async {
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+      processingStates.add(ProcessingState.completed);
+      await flush();
+
+      await controller.togglePlayPause();
+
+      verify(() => audio.seek(Duration.zero)).called(1);
+      expect(controller.state.isPlaying, isTrue);
+    });
+
+    test('explicit seek leaves the ended state behind', () async {
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+      processingStates.add(ProcessingState.completed);
+      await flush();
+      expect(controller.state.completed, isTrue);
+
+      await controller.seek(const Duration(seconds: 1));
+
+      expect(controller.state.completed, isFalse);
+    });
+
+    test('resume re-arms when position is parked at duration', () async {
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+      // Completion event lost, but position sits exactly at duration.
+      durations.add(const Duration(seconds: 2));
+      positions.add(const Duration(seconds: 2));
+      await flush();
+      expect(controller.state.completed, isFalse);
+
+      await controller.resume();
+
+      verify(() => audio.seek(Duration.zero)).called(1);
+      verify(() => audio.resume()).called(1);
+      expect(controller.state.isPlaying, isTrue);
+    });
+
+    test('web fallback end marks the clip completed and replayable', () async {
+      final webEnded = StreamController<void>.broadcast();
+      addTearDown(webEnded.close);
+      when(
+        () => audio.webPlaybackEndedStream,
+      ).thenAnswer((_) => webEnded.stream);
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+
+      webEnded.add(null);
+      await flush();
+
+      expect(controller.state.completed, isTrue);
+      expect(controller.state.isPlaying, isFalse);
+
+      await controller.togglePlayPause();
+
+      verify(() => audio.seek(Duration.zero)).called(1);
+      expect(controller.state.isPlaying, isTrue);
+    });
+
+    test(
+      'short clip finishing during startup settles finished, not playing',
+      () async {
+        // A 1-second clip can complete while tryPlayUrl is still awaiting;
+        // just_audio will not emit that completion again, so without the
+        // check the UI would stick on pause+waves with no sound.
+        when(() => audio.currentUrl).thenReturn('https://a.mp3');
+        when(
+          () => audio.currentProcessingState,
+        ).thenReturn(ProcessingState.completed);
+        final controller = build();
+
+        await controller.play(request('https://a.mp3'));
+        await flush();
+
+        expect(controller.state.current?.id, 'https://a.mp3');
+        expect(controller.state.isPlaying, isFalse);
+        expect(controller.state.completed, isTrue);
+      },
+    );
+
+    test('short clip finishing during resume is not marked playing', () async {
+      final controller = build();
+      await controller.play(request('https://a.mp3'));
+      processingStates.add(ProcessingState.completed);
+      await flush();
+      expect(controller.state.completed, isTrue);
+
+      // seek(0) re-arms, then the 1s clip ends again inside resume().
+      when(() => audio.currentUrl).thenReturn('https://a.mp3');
+      when(
+        () => audio.currentProcessingState,
+      ).thenReturn(ProcessingState.completed);
+      when(() => audio.resume()).thenAnswer((_) async {
+        processingStates.add(ProcessingState.completed);
+        await flush();
+      });
+
+      await controller.resume();
+      await flush();
+
+      expect(controller.state.isPlaying, isFalse);
+      expect(controller.state.completed, isTrue);
     });
   });
 

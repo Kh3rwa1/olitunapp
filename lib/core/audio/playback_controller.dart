@@ -93,6 +93,13 @@ class PlaybackState {
   final Duration duration;
   final double speed;
 
+  /// True after a clip played to its natural end (no follow-up, no error).
+  /// just_audio treats play() on an ended player as a no-op with position
+  /// parked at duration, so [resume] must seek back to zero first —
+  /// otherwise the UI shows "playing" while nothing sounds (the stuck
+  /// player). Cleared by play/seek/stop.
+  final bool completed;
+
   const PlaybackState({
     this.current,
     this.rootRequest,
@@ -102,6 +109,7 @@ class PlaybackState {
     this.position = Duration.zero,
     this.duration = Duration.zero,
     this.speed = 1.0,
+    this.completed = false,
   });
 
   /// No clip loaded at all.
@@ -120,6 +128,7 @@ class PlaybackState {
     Duration? position,
     Duration? duration,
     double? speed,
+    bool? completed,
   }) {
     return PlaybackState(
       current: identical(current, _sentinel)
@@ -134,6 +143,7 @@ class PlaybackState {
       position: position ?? this.position,
       duration: duration ?? this.duration,
       speed: speed ?? this.speed,
+      completed: completed ?? this.completed,
     );
   }
 
@@ -175,6 +185,7 @@ class PlaybackController {
   StreamSubscription<ProcessingState>? _processingSub;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
+  StreamSubscription<void>? _webEndedSub;
 
   /// Speed is applied to every new clip so it survives clip transitions.
   double _speedSetting = 1.0;
@@ -197,6 +208,14 @@ class PlaybackController {
       (dur) => _update(dur == null ? _state : _state.copyWith(duration: dur)),
       onError: (Object e) =>
           AppLogger.warning('PlaybackController duration stream error: $e'),
+    );
+    // Web fallback completions: just_audio never sees the native element,
+    // so the service mirrors its `ended` event here. Treated exactly like
+    // a just_audio completion for the loaded clip.
+    _webEndedSub = _audio.webPlaybackEndedStream.listen(
+      (_) => _onProcessingState(ProcessingState.completed),
+      onError: (Object e) =>
+          AppLogger.warning('PlaybackController web-ended stream error: $e'),
     );
   }
 
@@ -245,6 +264,7 @@ class PlaybackController {
         error: null,
         position: Duration.zero,
         duration: Duration.zero,
+        completed: false,
       ),
     );
 
@@ -281,9 +301,29 @@ class PlaybackController {
   }
 
   /// Resumes the loaded clip. Does nothing when nothing is loaded.
+  ///
+  /// Re-arms an ended clip first: just_audio ignores play() once the
+  /// player completed, which surfaced as "tap play after the end and
+  /// nothing happens". The position check covers completions whose event
+  /// never arrived (position parked exactly at duration only happens at
+  /// the very end, so mid-clip resumes are untouched). The post-await
+  /// check covers a very short clip finishing while resuming.
   Future<void> resume() async {
     if (_state.current == null) return;
+    final request = _state.current;
+    final atEnd =
+        _state.completed ||
+        (_state.duration > Duration.zero && _state.position >= _state.duration);
+    if (atEnd) {
+      await _audio.seek(Duration.zero);
+      _update(_state.copyWith(position: Duration.zero, completed: false));
+    }
     await _audio.resume();
+    if (!identical(_state.current, request)) return;
+    if (_state.completed) {
+      _update(_state.copyWith(isPlaying: false));
+      return;
+    }
     _update(_state.copyWith(isPlaying: true));
   }
 
@@ -313,6 +353,7 @@ class PlaybackController {
   }
 
   /// Seeks within the loaded clip; clamps to [0, duration].
+  /// Any explicit seek leaves the ended state behind.
   Future<void> seek(Duration position) async {
     final clamped = position < Duration.zero
         ? Duration.zero
@@ -320,7 +361,7 @@ class PlaybackController {
         ? _state.duration
         : position;
     await _audio.seek(clamped);
-    _update(_state.copyWith(position: clamped));
+    _update(_state.copyWith(position: clamped, completed: false));
   }
 
   /// Sets playback speed (applies now and to subsequent clips).
@@ -354,6 +395,7 @@ class PlaybackController {
     _processingSub?.cancel();
     _positionSub?.cancel();
     _durationSub?.cancel();
+    _webEndedSub?.cancel();
     _listeners.clear();
     _stateStreamController.close();
   }
@@ -388,6 +430,7 @@ class PlaybackController {
         error: null,
         position: Duration.zero,
         duration: Duration.zero,
+        completed: false,
       ),
     );
 
@@ -404,10 +447,27 @@ class PlaybackController {
       return;
     }
 
+    if (_audio.currentUrl == url &&
+        _audio.currentProcessingState == ProcessingState.completed) {
+      // A very short clip finished while we were still starting it.
+      // just_audio will not emit that completion again, so settle the
+      // finished state instead of marking it playing (which stuck the
+      // UI on the pause icon with waves animating and no sound).
+      await _advanceOrFinish(clip, serial, root: root);
+      return;
+    }
+
     if (_speedSetting != 1.0) {
       await _audio.setSpeed(_speedSetting);
     }
-    _update(_state.copyWith(isLoading: false, isPlaying: true, error: null));
+    _update(
+      _state.copyWith(
+        isLoading: false,
+        isPlaying: true,
+        error: null,
+        completed: false,
+      ),
+    );
     // Natural completion advances the chain from _onProcessingState.
   }
 
@@ -440,6 +500,11 @@ class PlaybackController {
   /// After a clip finished (or failed): play [clip.next] after the
   /// inter-clip pause, or settle into a finished state when the chain is
   /// done. An unplayable follow-up clip is skipped gracefully.
+  ///
+  /// A clean chain end marks [PlaybackState.completed] (position is left
+  /// at duration) WITHOUT seeking: seeking would drag the player out of
+  /// the completed processing state and defeat AudioService's media
+  /// session release. [resume] re-arms on the next tap instead.
   Future<void> _advanceOrFinish(
     PlaybackRequest clip,
     int serial, {
@@ -447,7 +512,15 @@ class PlaybackController {
     String? error,
   }) async {
     if (serial != _requestSerial) return;
-    _update(_state.copyWith(isPlaying: false, isLoading: false, error: error));
+    final finishedCleanly = clip.next == null && error == null;
+    _update(
+      _state.copyWith(
+        isPlaying: false,
+        isLoading: false,
+        error: error,
+        completed: finishedCleanly,
+      ),
+    );
 
     final next = clip.next;
     if (next == null) return; // chain complete

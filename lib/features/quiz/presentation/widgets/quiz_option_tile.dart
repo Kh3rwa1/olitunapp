@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/accessibility/learning_semantics.dart';
@@ -12,6 +14,7 @@ class QuizOptionTile extends StatelessWidget {
   final QuizQuestion question;
   final bool isSelected;
   final bool isAnswered;
+  final bool isFocused;
   final VoidCallback onTap;
 
   const QuizOptionTile({
@@ -21,6 +24,7 @@ class QuizOptionTile extends StatelessWidget {
     required this.question,
     required this.isSelected,
     required this.isAnswered,
+    this.isFocused = false,
     required this.onTap,
   });
 
@@ -28,6 +32,11 @@ class QuizOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCorrect = index == question.correctIndex;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
 
     Color bgColor;
     if (isAnswered) {
@@ -41,6 +50,8 @@ class QuizOptionTile extends StatelessWidget {
     } else {
       bgColor = isSelected
           ? AppColors.primary.withValues(alpha: 0.15)
+          : isFocused
+          ? AppColors.primary.withValues(alpha: 0.08)
           : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white);
     }
 
@@ -50,6 +61,14 @@ class QuizOptionTile extends StatelessWidget {
               ? question.optionsOlChiki[index]
               : '');
     final hasOlChiki = optionText.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+    final borderColor = isSelected
+        ? AppColors.primary
+        : isFocused && !isAnswered
+        ? AppColors.primary
+        : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05));
+
+    final borderWidth = isSelected || (isFocused && !isAnswered) ? 2.0 : 1.0;
 
     return Padding(
           padding: const EdgeInsets.only(bottom: 12),
@@ -77,19 +96,14 @@ class QuizOptionTile extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: bgColor,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : (isDark
-                                ? Colors.white10
-                                : Colors.black.withValues(alpha: 0.05)),
-                      width: isSelected ? 2 : 1,
-                    ),
-                    boxShadow: isSelected && !isAnswered
+                    border: Border.all(color: borderColor, width: borderWidth),
+                    boxShadow: (isSelected || isFocused) && !isAnswered
                         ? [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                              blurRadius: 15,
+                              color: AppColors.primary.withValues(
+                                alpha: isSelected ? 0.25 : 0.15,
+                              ),
+                              blurRadius: isSelected ? 15 : 10,
                             ),
                           ]
                         : null,
@@ -109,6 +123,8 @@ class QuizOptionTile extends StatelessWidget {
                           border: Border.all(
                             color: isSelected || (isAnswered && isCorrect)
                                 ? Colors.transparent
+                                : isFocused && !isAnswered
+                                ? AppColors.primary
                                 : (isDark ? Colors.white24 : Colors.black12),
                           ),
                         ),
@@ -143,6 +159,36 @@ class QuizOptionTile extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (!isAnswered && isDesktopWeb)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isFocused
+                                ? AppColors.primary.withValues(alpha: 0.15)
+                                : (isDark
+                                      ? Colors.white10
+                                      : Colors.black.withValues(alpha: 0.05)),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: isFocused
+                                  ? AppColors.primary
+                                  : (isDark ? Colors.white24 : Colors.black12),
+                            ),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isFocused
+                                  ? AppColors.primary
+                                  : (isDark ? Colors.white70 : Colors.black54),
+                            ),
+                          ),
+                        ),
                       if (isAnswered && isCorrect)
                         const Icon(
                           Icons.check_circle_rounded,

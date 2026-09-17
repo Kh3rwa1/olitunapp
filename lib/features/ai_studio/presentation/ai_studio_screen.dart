@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -563,24 +564,48 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         if (_tool == _Tool.translate) ...[
           Text(l10n.aiStudioTranslateNote),
           AppSpacing.gapH12,
-          TextField(
-            key: const Key('studio-source'),
-            controller: _source,
-            enabled: !locked,
-            minLines: 5,
-            maxLines: 10,
-            maxLength: 2000,
-            maxLengthEnforcement: MaxLengthEnforcement.none,
-            onChanged: (_) => setState(() => draft.consent = false),
-            decoration: InputDecoration(
-              labelText: l10n.aiStudioTextToTranslate,
-              alignLabelWithHint: true,
-              hintText: l10n.aiStudioTextPlaceholder,
-              border: const OutlineInputBorder(),
-              errorText: _source.text.trim().runes.length > 2000
-                  ? l10n.aiStudioTextLimitError
-                  : null,
-              errorMaxLines: 3,
+          CallbackShortcuts(
+            bindings: {
+              const SingleActivator(
+                LogicalKeyboardKey.enter,
+                control: true,
+              ): () {
+                if (configured && !locked && draft.consent && _validInput) {
+                  _process();
+                }
+              },
+              const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
+                if (configured && !locked && draft.consent && _validInput) {
+                  _process();
+                }
+              },
+            },
+            child: TextField(
+              key: const Key('studio-source'),
+              controller: _source,
+              enabled: !locked,
+              minLines: 5,
+              maxLines: 10,
+              maxLength: 2000,
+              maxLengthEnforcement: MaxLengthEnforcement.none,
+              onChanged: (_) => setState(() => draft.consent = false),
+              decoration: InputDecoration(
+                labelText: l10n.aiStudioTextToTranslate,
+                alignLabelWithHint: true,
+                hintText: l10n.aiStudioTextPlaceholder,
+                helperText:
+                    (kIsWeb ||
+                        defaultTargetPlatform == TargetPlatform.macOS ||
+                        defaultTargetPlatform == TargetPlatform.windows ||
+                        defaultTargetPlatform == TargetPlatform.linux)
+                    ? 'Press Ctrl+Enter / ⌘+Enter to submit'
+                    : null,
+                border: const OutlineInputBorder(),
+                errorText: _source.text.trim().runes.length > 2000
+                    ? l10n.aiStudioTextLimitError
+                    : null,
+                errorMaxLines: 3,
+              ),
             ),
           ),
         ] else if (_tool == _Tool.transcribe) ...[

@@ -23,6 +23,8 @@ import 'widgets/lesson_block_detail/lesson_block_top_nav_bar.dart';
 import 'widgets/category_lessons/locked_lesson_view.dart';
 import 'widgets/lesson_block_widgets.dart';
 
+part 'lesson_block_detail_nav.dart';
+
 /// Orchestrator screen for presenting lesson blocks in a fluid, swipeable flow.
 class LessonBlockDetailScreen extends ConsumerStatefulWidget {
   final String lessonId;
@@ -42,6 +44,7 @@ class LessonBlockDetailScreen extends ConsumerStatefulWidget {
 class _LessonBlockDetailScreenState
     extends ConsumerState<LessonBlockDetailScreen> {
   late PageController _pageController;
+  late final FocusNode _focusNode;
   int _currentIndex = 0;
   bool _isAudioPlaying = false;
   String? _playingId;
@@ -53,6 +56,10 @@ class _LessonBlockDetailScreenState
     super.initState();
     _currentIndex = widget.initialBlockIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
@@ -65,8 +72,27 @@ class _LessonBlockDetailScreenState
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _goToNext(int totalBlocks) {
+    if (_currentIndex < totalBlocks - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _goToPrevious() {
+    if (_currentIndex > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _playBlockAudioAtIndex(int index) {
@@ -368,171 +394,130 @@ class _LessonBlockDetailScreenState
                 end: Alignment.bottomRight,
               );
 
-        return Scaffold(
-          bottomNavigationBar: const BannerAdWidget(
-            placement: 'lesson_block_bottom',
-          ),
-          body: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(gradient: bgGradient),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: contentBlocks.length,
-                    physics: _resolveScrollPhysics(currentBlock, safeIndex),
-                    itemBuilder: (context, index) {
-                      final block = contentBlocks[index];
-                      final pageRawColor = block.data?['themeColor'] as String?;
-                      final pageThemeColor = _parseThemeColor(
-                        pageRawColor,
-                        AppColors.primary,
-                      );
-                      return LessonBlockItemView(
-                        block: block,
-                        index: index,
-                        accentColor: pageThemeColor,
-                        isDark: isDark,
-                        lesson: lesson,
-                        isDismissedQuiz: _dismissedQuizBlockIndices.contains(
-                          index,
-                        ),
-                        isAudioPlaying: _isAudioPlaying,
-                        playingId: _playingId,
-                        onPlayAudio: _playAudio,
-                        onDismissQuiz: () {
-                          setState(() => _dismissedQuizBlockIndices.add(index));
-                          if (index < contentBlocks.length - 1) {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
+        final isDesktopWeb =
+            kIsWeb ||
+            defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux;
+
+        final shortcuts = <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.pageDown): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.arrowUp): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.pageUp): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.space): () =>
+              _playBlockAudioAtIndex(safeIndex),
+          const SingleActivator(LogicalKeyboardKey.enter): () =>
+              _goToNext(contentBlocks.length),
+        };
+
+        return CallbackShortcuts(
+          bindings: shortcuts,
+          child: Focus(
+            focusNode: _focusNode,
+            autofocus: true,
+            child: Scaffold(
+              bottomNavigationBar: const BannerAdWidget(
+                placement: 'lesson_block_bottom',
+              ),
+              body: AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(gradient: bgGradient),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: _onPageChanged,
+                        itemCount: contentBlocks.length,
+                        physics: _resolveScrollPhysics(currentBlock, safeIndex),
+                        itemBuilder: (context, index) {
+                          final block = contentBlocks[index];
+                          final pageRawColor =
+                              block.data?['themeColor'] as String?;
+                          final pageThemeColor = _parseThemeColor(
+                            pageRawColor,
+                            AppColors.primary,
+                          );
+                          return LessonBlockItemView(
+                            block: block,
+                            index: index,
+                            accentColor: pageThemeColor,
+                            isDark: isDark,
+                            lesson: lesson,
+                            isDismissedQuiz: _dismissedQuizBlockIndices
+                                .contains(index),
+                            isAudioPlaying: _isAudioPlaying,
+                            playingId: _playingId,
+                            onPlayAudio: _playAudio,
+                            onDismissQuiz: () {
+                              setState(
+                                () => _dismissedQuizBlockIndices.add(index),
+                              );
+                              if (index < contentBlocks.length - 1) {
+                                _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            visualMediaUrl: _blockVisualMediaUrl(block),
+                          );
                         },
-                        visualMediaUrl: _blockVisualMediaUrl(block),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    if (isDesktopWeb && safeIndex > 0)
+                      Positioned(
+                        left: 24,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton.filledTonal(
+                            tooltip: 'Previous block (Left arrow)',
+                            onPressed: _goToPrevious,
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                          ),
+                        ),
+                      ),
+                    if (isDesktopWeb && safeIndex < contentBlocks.length - 1)
+                      Positioned(
+                        right: 24,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton.filledTonal(
+                            tooltip: 'Next block (Right arrow / Enter)',
+                            onPressed: () => _goToNext(contentBlocks.length),
+                            icon: const Icon(Icons.arrow_forward_ios_rounded),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 8,
+                      left: 0,
+                      right: 0,
+                      child: _buildTopNav(
+                        currentBlock,
+                        safeIndex,
+                        contentBlocks.length,
+                        blockThemeColor,
+                        isDark,
+                        lesson,
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  left: 0,
-                  right: 0,
-                  child: _buildTopNav(
-                    currentBlock,
-                    safeIndex,
-                    contentBlocks.length,
-                    blockThemeColor,
-                    isDark,
-                    lesson,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );
       },
-    );
-  }
-
-  ScrollPhysics _resolveScrollPhysics(
-    LessonBlockEntity currentBlock,
-    int safeIndex,
-  ) {
-    final settings = ref.watch(typingPracticeSettingsProvider);
-    final isCurrentEligible =
-        settings.enabled &&
-        (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
-        currentBlock.type != 'rhyme' &&
-        currentBlock.type != 'rhymes' &&
-        currentBlock.textOlChiki != null &&
-        currentBlock.textOlChiki!.isNotEmpty &&
-        currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
-
-    if (isCurrentEligible) {
-      final typingPracticeArgs = TypingPracticeArgs(
-        itemKey:
-            '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
-        target: currentBlock.textOlChiki!,
-        latin: currentBlock.textLatin ?? '',
-        meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
-        contentType: currentBlock.type,
-      );
-      final typingState = ref.watch(
-        typingPracticeControllerProvider(typingPracticeArgs),
-      );
-      if (typingState.phase != TypingPhase.idle) {
-        return const NeverScrollableScrollPhysics();
-      }
-    }
-    return const BouncingScrollPhysics();
-  }
-
-  Widget _buildTopNav(
-    LessonBlockEntity currentBlock,
-    int safeIndex,
-    int totalSteps,
-    Color blockThemeColor,
-    bool isDark,
-    LessonEntity lesson,
-  ) {
-    final settings = ref.watch(typingPracticeSettingsProvider);
-    final isCurrentEligible =
-        settings.enabled &&
-        (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
-        currentBlock.type != 'rhyme' &&
-        currentBlock.type != 'rhymes' &&
-        currentBlock.textOlChiki != null &&
-        currentBlock.textOlChiki!.isNotEmpty &&
-        currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
-
-    final typingPracticeArgs = isCurrentEligible
-        ? TypingPracticeArgs(
-            itemKey:
-                '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
-            target: currentBlock.textOlChiki!,
-            latin: currentBlock.textLatin ?? '',
-            meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
-            contentType: currentBlock.type,
-          )
-        : null;
-
-    final typingState = isCurrentEligible && typingPracticeArgs != null
-        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
-        : null;
-
-    final isTypingActive =
-        typingState != null && typingState.phase != TypingPhase.idle;
-
-    return LessonBlockTopNavBar(
-      totalSteps: totalSteps,
-      currentStep: safeIndex,
-      accentColor: blockThemeColor,
-      isDark: isDark,
-      hasAudio:
-          currentBlock.audioUrl != null &&
-          currentBlock.audioUrl!.isNotEmpty &&
-          !isTypingActive,
-      onAudioPressed: () => _playAudio(
-        currentBlock.audioUrl!,
-        '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
-      ),
-      audioKey: ValueKey<String>('audio_${lesson.id}_$safeIndex'),
-      backIcon: isTypingActive ? Icons.close_rounded : null,
-      onBackPressed: isTypingActive
-          ? () {
-              ref
-                  .read(
-                    typingPracticeControllerProvider(
-                      typingPracticeArgs!,
-                    ).notifier,
-                  )
-                  .tryAgain();
-            }
-          : null,
     );
   }
 }

@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -25,30 +28,18 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   int _score = 0;
   bool _answered = false;
   int? _selectedOptionIndex;
+  int _focusedIndex = 0;
+  late final FocusNode _focusNode;
   List<QuizQuestion> _questions = [];
   QuizModel? _quiz;
   bool _isLoading = true;
 
   late AnimationController _celebrationController;
 
-  // Kid-friendly card colors
-  static const List<Color> _cardColors = [
-    AppColors.quizCardA,
-    AppColors.quizCardB,
-    AppColors.quizCardC,
-    AppColors.quizCardD,
-  ];
-
-  static const List<Color> _badgeColors = [
-    AppColors.quizBadgeA,
-    AppColors.quizBadgeB,
-    AppColors.quizBadgeC,
-    AppColors.quizBadgeD,
-  ];
-
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
     _celebrationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -58,6 +49,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _celebrationController.dispose();
     super.dispose();
   }
@@ -131,9 +123,29 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         _currentQuestionIndex++;
         _answered = false;
         _selectedOptionIndex = null;
+        _focusedIndex = 0;
       });
     } else {
       _showResultDialog();
+    }
+  }
+
+  void _moveGrid(int dRow, int dCol) {
+    if (_answered) return;
+    int row = _focusedIndex ~/ 2;
+    int col = _focusedIndex % 2;
+    row = (row + dRow).clamp(0, 1);
+    col = (col + dCol).clamp(0, 1);
+    setState(() {
+      _focusedIndex = row * 2 + col;
+    });
+  }
+
+  void _handleEnter() {
+    if (_answered) {
+      _nextQuestion();
+    } else {
+      _answerQuestion(_focusedIndex);
     }
   }
 
@@ -346,234 +358,131 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         ? question.optionsLatin
         : question.optionsOlChiki;
 
-    return Scaffold(
-      backgroundColor: AppColors.quizBackground,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Column(
-                children: [
-                  // Header
-                  _buildHeader(),
-                  const SizedBox(height: 16),
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
 
-                  // Progress Dots
-                  _buildProgressDots(),
-                  const SizedBox(height: 24),
+    final shortcuts = <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+          _moveGrid(0, 1),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+          _moveGrid(0, -1),
+      const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+          _moveGrid(1, 0),
+      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _moveGrid(-1, 0),
+      const SingleActivator(LogicalKeyboardKey.digit1): () =>
+          _answerQuestion(0),
+      const SingleActivator(LogicalKeyboardKey.numpad1): () =>
+          _answerQuestion(0),
+      const SingleActivator(LogicalKeyboardKey.digit2): () =>
+          _answerQuestion(1),
+      const SingleActivator(LogicalKeyboardKey.numpad2): () =>
+          _answerQuestion(1),
+      const SingleActivator(LogicalKeyboardKey.digit3): () =>
+          _answerQuestion(2),
+      const SingleActivator(LogicalKeyboardKey.numpad3): () =>
+          _answerQuestion(2),
+      const SingleActivator(LogicalKeyboardKey.digit4): () =>
+          _answerQuestion(3),
+      const SingleActivator(LogicalKeyboardKey.numpad4): () =>
+          _answerQuestion(3),
+      const SingleActivator(LogicalKeyboardKey.enter): _handleEnter,
+      const SingleActivator(LogicalKeyboardKey.numpadEnter): _handleEnter,
+      const SingleActivator(LogicalKeyboardKey.space): () {
+        if (_answered) _nextQuestion();
+      },
+    };
 
-                  // Question Card with Ol Chiki character
-                  _buildQuestionCard(question),
-                  const SizedBox(height: 32),
-
-                  // 2x2 Answer Grid
-                  Expanded(
-                    child: _buildAnswerGrid(options, question.correctIndex),
-                  ),
-
-                  // Next Button
-                  if (_answered) _buildNextButton(),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-            const Positioned(
-              top: 4,
-              left: 0,
-              right: 0,
-              child: OfflineStatusBanner(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnswerGrid(List<String> options, int correctIndex) {
-    return GridView.count(
-      crossAxisCount: 2,
-      mainAxisSpacing: 16,
-      crossAxisSpacing: 16,
-      childAspectRatio: 1.3,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: List.generate(options.length.clamp(0, 4), (index) {
-        return _buildAnswerCard(
-          index: index,
-          text: options[index],
-          correctIndex: correctIndex,
-        );
-      }),
-    );
-  }
-
-  Widget _buildAnswerCard({
-    required int index,
-    required String text,
-    required int correctIndex,
-  }) {
-    final isSelected = _selectedOptionIndex == index;
-    final isCorrect = index == correctIndex;
-    final letter = String.fromCharCode(65 + index);
-
-    Color cardBg = _cardColors[index % 4];
-    final Color badgeColor = _badgeColors[index % 4];
-    Color borderColor = Colors.transparent;
-
-    if (_answered) {
-      if (isSelected) {
-        cardBg = isCorrect
-            ? AppColors.quizCorrect.withValues(alpha: 0.2)
-            : AppColors.quizIncorrect.withValues(alpha: 0.2);
-        borderColor = isCorrect
-            ? AppColors.quizCorrect
-            : AppColors.quizIncorrect;
-      } else if (isCorrect) {
-        cardBg = AppColors.quizCorrect.withValues(alpha: 0.15);
-        borderColor = AppColors.quizCorrect;
-      }
-    }
-
-    return GestureDetector(
-          onTap: () => _answerQuestion(index),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            decoration: BoxDecoration(
-              color: cardBg,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: borderColor,
-                width: _answered && (isSelected || isCorrect) ? 3 : 0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: badgeColor.withValues(alpha: 0.15),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+    return CallbackShortcuts(
+      bindings: shortcuts,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: AppColors.quizBackground,
+          body: SafeArea(
             child: Stack(
               children: [
-                // Letter badge
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: badgeColor,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: badgeColor.withValues(alpha: 0.4),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Text(
-                        letter,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Answer text
                 Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: Text(
-                      text,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black87,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: ResponsiveLayout.maxNarrowWidth(context),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
                       ),
-                      textAlign: TextAlign.center,
+                      child: Column(
+                        children: [
+                          // Header
+                          _buildHeader(),
+                          const SizedBox(height: 16),
+
+                          // Progress Dots
+                          _buildProgressDots(),
+                          const SizedBox(height: 24),
+
+                          // Question Card with Ol Chiki character
+                          _buildQuestionCard(question),
+                          const SizedBox(height: 32),
+
+                          // 2x2 Answer Grid
+                          Expanded(
+                            child: _buildAnswerGrid(
+                              options,
+                              question.correctIndex,
+                            ),
+                          ),
+
+                          // Desktop keyboard shortcut guide
+                          if (isDesktopWeb && !_answered)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // Next Button
+                          if (_answered) _buildNextButton(),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-
-                // Feedback icon
-                if (_answered && (isSelected || isCorrect))
-                  Positioned(
-                    top: 12,
-                    right: 12,
-                    child:
-                        Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            color: isCorrect
-                                ? AppColors.quizCorrect
-                                : AppColors.quizIncorrect,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            isCorrect
-                                ? Icons.check_rounded
-                                : Icons.close_rounded,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ).animate().scale(
-                          begin: const Offset(0, 0),
-                          curve: Curves.elasticOut,
-                        ),
-                  ),
+                const Positioned(
+                  top: 4,
+                  left: 0,
+                  right: 0,
+                  child: OfflineStatusBanner(),
+                ),
               ],
             ),
           ),
-        )
-        .animate(delay: (index * 80).ms)
-        .fadeIn()
-        .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOut);
-  }
-
-  Widget _buildNextButton() {
-    return Container(
-      width: double.infinity,
-      height: 56,
-      decoration: BoxDecoration(
-        gradient: AppColors.quizNextButton,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accentCoral.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _nextQuestion,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        child: Text(
-          _currentQuestionIndex < _questions.length - 1
-              ? 'Next Question'
-              : 'Finish Quiz',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.2);
+    );
   }
 }

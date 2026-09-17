@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
@@ -7,6 +8,7 @@ import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../providers/typing_practice_controller.dart';
 import 'ol_chiki_keyboard.dart';
 import 'typing_complete_celebration.dart';
+import 'typing_practice_done_card.dart';
 
 class TypingPracticePanel extends ConsumerStatefulWidget {
   final TypingPracticeArgs args;
@@ -40,7 +42,59 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    _focusNode = FocusNode()..canRequestFocus = false;
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
+    _focusNode = FocusNode(
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+
+        final notifier = ref.read(
+          typingPracticeControllerProvider(widget.args).notifier,
+        );
+        final state = ref.read(typingPracticeControllerProvider(widget.args));
+
+        if (event.logicalKey == LogicalKeyboardKey.backspace) {
+          notifier.deleteLastChar();
+          return KeyEventResult.handled;
+        }
+
+        if (event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+          if (state.phase == TypingPhase.complete ||
+              state.phase == TypingPhase.done) {
+            notifier.tryAgain();
+            return KeyEventResult.handled;
+          }
+          if (state.attemptsTotal >= 6 && state.phase == TypingPhase.typing) {
+            notifier.revealAndContinue();
+            return KeyEventResult.handled;
+          }
+        }
+
+        if (event.logicalKey == LogicalKeyboardKey.space) {
+          notifier.appendChar(' ');
+          return KeyEventResult.handled;
+        }
+
+        final char = event.character;
+        if (char != null && char.isNotEmpty) {
+          notifier.appendChar(char);
+          return KeyEventResult.handled;
+        }
+
+        return KeyEventResult.ignored;
+      },
+    )..canRequestFocus = isDesktopWeb;
+
+    if (isDesktopWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
 
     // Shake animation setup: 300ms total, 4 oscillations, 8px magnitude
     _shakeController = AnimationController(
@@ -153,7 +207,18 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
 
     // Done State Layout
     if (state.phase == TypingPhase.done) {
-      return _buildDoneLayout(context, isDark);
+      return TypingPracticeDoneCard(
+        args: widget.args,
+        isDark: isDark,
+        onTryAgain: () {
+          _audioPlayedOnComplete = false;
+          _lastAttempts = 0;
+          _lastTypedLength = 0;
+          ref
+              .read(typingPracticeControllerProvider(widget.args).notifier)
+              .tryAgain();
+        },
+      );
     }
 
     return Column(
@@ -474,117 +539,5 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     }
 
     return spans;
-  }
-
-  Widget _buildDoneLayout(BuildContext context, bool isDark) {
-    final cardBg = isDark
-        ? AppColors.charcoal.withValues(alpha: 0.5)
-        : Colors.white.withValues(alpha: 0.8);
-    final cardBorder = isDark
-        ? Colors.white10
-        : Colors.black.withValues(alpha: 0.05);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        decoration: BoxDecoration(
-          color: cardBg,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorder),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? Colors.black26
-                  : Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Celebratory check icon and title
-            const Wrap(
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
-                SizedBox(width: 8),
-                Text(
-                  'Practiced Successfully',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            // Ol Chiki resolved word
-            Text(
-              widget.args.target,
-              style: const TextStyle(
-                fontFamily: 'OlChiki',
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 6),
-            // Latin
-            Text(
-              widget.args.latin,
-              style: TextStyle(
-                fontSize: 16,
-                color: isDark ? Colors.grey.shade300 : Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            // Meaning
-            Text(
-              widget.args.meaning,
-              style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.grey.shade400 : Colors.grey.shade500,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Divider(
-              color: isDark
-                  ? Colors.white10
-                  : Colors.black.withValues(alpha: 0.05),
-            ),
-            const SizedBox(height: 12),
-            // Try again link
-            TextButton(
-              onPressed: () {
-                _audioPlayedOnComplete = false;
-                _lastAttempts = 0;
-                _lastTypedLength = 0;
-                ref
-                    .read(
-                      typingPracticeControllerProvider(widget.args).notifier,
-                    )
-                    .tryAgain();
-              },
-              child: const Text(
-                'Try Again',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

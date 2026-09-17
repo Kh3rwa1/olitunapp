@@ -580,33 +580,6 @@
       ]
     },
     {
-      "id": "syncDailyAffirmation",
-      "$id": "syncDailyAffirmation",
-      "name": "syncDailyAffirmation",
-      "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
-      "events": [],
-      "schedule": "0 */3 * * *",
-      "timeout": 30,
-      "path": "functions/syncDailyAffirmation",
-      "entrypoint": "src/main.js",
-      "commands": "npm install",
-      "ignore": [
-        "node_modules",
-        ".npm"
-      ],
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "databases.read",
-        "databases.write",
-        "documents.read",
-        "documents.write"
-      ]
-    },
-    {
       "$id": "bintiWaitlist",
       "name": "bintiWaitlist",
       "runtime": "node-22.0",

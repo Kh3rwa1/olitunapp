@@ -98,14 +98,6 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         color: AppColors.brandBlue,
       ),
       CommandItem(
-        title: 'Daily Affirmations',
-        subtitle: 'Curated daily Santali wisdom and sync',
-        category: 'Navigation',
-        icon: Icons.auto_awesome_rounded,
-        path: '/admin/affirmations',
-        color: AppColors.accentOchre,
-      ),
-      CommandItem(
         title: 'Maintenance Controls',
         subtitle: 'Seeding, cache invalidation, DB backups',
         category: 'Navigation',

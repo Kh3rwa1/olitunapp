@@ -96,7 +96,6 @@ jobs:
             --allow-invisible=lib/shared/widgets/animated_buttons.dart \
             --allow-invisible=lib/shared/widgets/buttons/animated_buttons.dart \
             --allow-invisible=lib/shared/widgets/buttons/button_tokens.dart \
-            --allow-invisible=lib/features/affirmations/domain/affirmation_share_service.dart \
             --allow-invisible=lib/features/practice/domain/practice_scoring_rules.dart \
             --allow-invisible=lib/features/admin/presentation/admin_login_screen.dart \
             --allow-invisible=lib/features/admin/presentation/admin_media_screen.dart \

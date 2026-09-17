@@ -583,18 +583,6 @@ class AppLocalizationsSat extends AppLocalizations {
   String get nbaCtaExploreBakhed => 'ᱵᱟᱠᱷᱮᱬ ᱯᱟᱱᱛᱷᱟᱭ ᱢᱮ';
 
   @override
-  String get affirmationListen => 'ᱟᱸᱡᱚᱢ ᱢᱮ';
-
-  @override
-  String get affirmationStop => 'ᱛᱷᱟᱢᱵᱷᱟᱣ ᱢᱮ';
-
-  @override
-  String get affirmationMarkRead => 'ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ ᱪᱤᱱᱦᱟᱹᱭ ᱢᱮ';
-
-  @override
-  String get affirmationRead => 'ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ';
-
-  @override
   String get hindi => 'ᱦᱤᱱᱫᱤ';
 
   @override

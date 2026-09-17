@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ShareCardKind {
-  quizResult,
-  streakMilestone,
-  badgeAchievement,
-  dailyAffirmation,
-}
+enum ShareCardKind { quizResult, streakMilestone, badgeAchievement }
 
 class ShareCardPayload {
   final ShareCardKind kind;

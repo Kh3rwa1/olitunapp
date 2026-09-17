@@ -585,18 +585,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get nbaCtaExploreBakhed => 'বাখেড় ঘুরে দেখুন';
 
   @override
-  String get affirmationListen => 'শুনুন';
-
-  @override
-  String get affirmationStop => 'থামান';
-
-  @override
-  String get affirmationMarkRead => 'পঠিত হিসেবে চিহ্নিত করুন';
-
-  @override
-  String get affirmationRead => 'পড়ুন';
-
-  @override
   String get hindi => 'হিন্দি';
 
   @override

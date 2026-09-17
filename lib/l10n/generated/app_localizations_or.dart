@@ -585,18 +585,6 @@ class AppLocalizationsOr extends AppLocalizations {
   String get nbaCtaExploreBakhed => 'ବାଖେଡ଼ ଅନ୍ୱେଷଣ କରନ୍ତୁ';
 
   @override
-  String get affirmationListen => 'ଶୁଣନ୍ତୁ';
-
-  @override
-  String get affirmationStop => 'ଅଟକାନ୍ତୁ';
-
-  @override
-  String get affirmationMarkRead => 'ପଢ଼ାଗଲା ବୋଲି ଚିହ୍ନିତ କରନ୍ତୁ';
-
-  @override
-  String get affirmationRead => 'ପଢ଼ନ୍ତୁ';
-
-  @override
   String get hindi => 'ହିନ୍ଦୀ';
 
   @override

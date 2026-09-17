@@ -51,10 +51,10 @@ Defaults (integer paise, ₹1 = 100 paise):
 
 | Environment | Default |
 |---|---:|
-| `AI_STUDIO_MONTHLY_PAISE` | `2000000` (₹20,000) |
-| `AI_STUDIO_DAILY_PAISE` | `65000` (₹650) |
-| `AI_STUDIO_USER_DAILY_PAISE` | `10000` (₹100) |
-| `AI_STUDIO_TRANSLATE_RESERVE_PAISE` | `200` (₹2/full request) |
+| `AI_STUDIO_MONTHLY_PAISE` | `7500000` (₹75,000 — deployed value) |
+| `AI_STUDIO_DAILY_PAISE` | `250000` (₹2,500 — deployed value) |
+| `AI_STUDIO_USER_DAILY_PAISE` | `30000` (₹300 — deployed value) |
+| `AI_STUDIO_TRANSLATE_RESERVE_PAISE` | `400` (₹4/full 2,000-char request) |
 | `AI_STUDIO_TRANSCRIBE_RESERVE_PAISE` | `200` (₹2/up to 30 seconds) |
 | `AI_STUDIO_OCR_RESERVE_PAISE` | `5000` (₹50/up to 10 pages) |
 

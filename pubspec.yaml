@@ -89,9 +89,11 @@ dependencies:
 
   flutter_web_plugins:
     sdk: flutter
-  # 6.2.1 is the final record release compatible with the Appwrite Sites
-  # Flutter 3.35 / Dart 3.9 runtime. v7 requires Flutter 3.44 / Dart 3.12.
-  record: 5.2.0
+  # 6.2.1 is the final record release before v7, which raises the floor
+  # to Flutter 3.44 / Dart 3.12 (above the Appwrite Sites builder runtime).
+  # 6.x also keeps the hasPermission() signature our code and the
+  # record_linux platform package agree on.
+  record: 6.2.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

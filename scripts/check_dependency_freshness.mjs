@@ -25,10 +25,6 @@ const ALLOWED_PIN_EXEMPTIONS = new Map([
     "flutter_local_notifications",
     "Constrained to 20.x: flutter_local_notifications 21.x/22.x requires Dart >=3.10; project pins sdk: ^3.9.0",
   ],
-  [
-    "record",
-    "Constrained to 5.x: record 6.x/7.x require newer Flutter/Dart than the Appwrite Sites builder runtime (Flutter 3.35 / Dart 3.9); project pins sdk: ^3.9.0",
-  ],
 ]);
 
 function checkFlutterFreshness() {

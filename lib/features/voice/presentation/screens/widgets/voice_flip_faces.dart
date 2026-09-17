@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -22,6 +24,7 @@ class VoiceInputFace extends StatelessWidget {
     required this.onFlipToBack,
     required this.onClear,
     required this.onTextChanged,
+    this.onSubmit,
   });
 
   final bool isDark;
@@ -33,6 +36,7 @@ class VoiceInputFace extends StatelessWidget {
   final VoidCallback onFlipToBack;
   final VoidCallback onClear;
   final VoidCallback onTextChanged;
+  final VoidCallback? onSubmit;
 
   @override
   Widget build(BuildContext context) {
@@ -56,33 +60,53 @@ class VoiceInputFace extends StatelessWidget {
         child: Column(
           children: [
             Expanded(
-              child: TextField(
-                controller: controller,
-                focusNode: focusNode,
-                maxLength: maxChars,
-                maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                expands: true,
-                maxLines: null,
-                textAlignVertical: TextAlignVertical.top,
-                onChanged: (_) => onTextChanged(),
-                style: AppTypography.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                cursorColor: AppColors.primary,
-                decoration: InputDecoration(
-                  hintText: l10n.voiceInputHint,
-                  hintStyle: AppTypography.inter(
-                    color: (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.3,
-                    ),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
+              child: CallbackShortcuts(
+                bindings: {
+                  const SingleActivator(
+                    LogicalKeyboardKey.enter,
+                    control: true,
+                  ): () {
+                    if (onSubmit != null && controller.text.trim().isNotEmpty) {
+                      onSubmit!();
+                    }
+                  },
+                  const SingleActivator(
+                    LogicalKeyboardKey.enter,
+                    meta: true,
+                  ): () {
+                    if (onSubmit != null && controller.text.trim().isNotEmpty) {
+                      onSubmit!();
+                    }
+                  },
+                },
+                child: TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  maxLength: maxChars,
+                  maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                  expands: true,
+                  maxLines: null,
+                  textAlignVertical: TextAlignVertical.top,
+                  onChanged: (_) => onTextChanged(),
+                  style: AppTypography.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
-                  border: InputBorder.none,
-                  counterText: '',
-                  contentPadding: EdgeInsets.zero,
+                  cursorColor: AppColors.primary,
+                  decoration: InputDecoration(
+                    hintText: l10n.voiceInputHint,
+                    hintStyle: AppTypography.inter(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.3,
+                      ),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    border: InputBorder.none,
+                    counterText: '',
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
               ),
             ),
@@ -128,6 +152,22 @@ class VoiceInputFace extends StatelessWidget {
                     ),
                   ),
                 const Spacer(),
+                if (kIsWeb ||
+                    defaultTargetPlatform == TargetPlatform.macOS ||
+                    defaultTargetPlatform == TargetPlatform.windows ||
+                    defaultTargetPlatform == TargetPlatform.linux) ...[
+                  Text(
+                    'Ctrl+Enter ↵ to create',
+                    style: AppTypography.inter(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.35,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: controller,
                   builder: (context, value, _) => Text(

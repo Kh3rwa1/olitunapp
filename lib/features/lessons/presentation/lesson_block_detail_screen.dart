@@ -42,6 +42,7 @@ class LessonBlockDetailScreen extends ConsumerStatefulWidget {
 class _LessonBlockDetailScreenState
     extends ConsumerState<LessonBlockDetailScreen> {
   late PageController _pageController;
+  late final FocusNode _focusNode;
   int _currentIndex = 0;
   bool _isAudioPlaying = false;
   String? _playingId;
@@ -53,6 +54,10 @@ class _LessonBlockDetailScreenState
     super.initState();
     _currentIndex = widget.initialBlockIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    _focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _focusNode.requestFocus();
+    });
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(
@@ -65,8 +70,27 @@ class _LessonBlockDetailScreenState
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _goToNext(int totalBlocks) {
+    if (_currentIndex < totalBlocks - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _goToPrevious() {
+    if (_currentIndex > 0) {
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _playBlockAudioAtIndex(int index) {
@@ -368,69 +392,126 @@ class _LessonBlockDetailScreenState
                 end: Alignment.bottomRight,
               );
 
-        return Scaffold(
-          bottomNavigationBar: const BannerAdWidget(
-            placement: 'lesson_block_bottom',
-          ),
-          body: AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-            decoration: BoxDecoration(gradient: bgGradient),
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: contentBlocks.length,
-                    physics: _resolveScrollPhysics(currentBlock, safeIndex),
-                    itemBuilder: (context, index) {
-                      final block = contentBlocks[index];
-                      final pageRawColor = block.data?['themeColor'] as String?;
-                      final pageThemeColor = _parseThemeColor(
-                        pageRawColor,
-                        AppColors.primary,
-                      );
-                      return LessonBlockItemView(
-                        block: block,
-                        index: index,
-                        accentColor: pageThemeColor,
-                        isDark: isDark,
-                        lesson: lesson,
-                        isDismissedQuiz: _dismissedQuizBlockIndices.contains(
-                          index,
-                        ),
-                        isAudioPlaying: _isAudioPlaying,
-                        playingId: _playingId,
-                        onPlayAudio: _playAudio,
-                        onDismissQuiz: () {
-                          setState(() => _dismissedQuizBlockIndices.add(index));
-                          if (index < contentBlocks.length - 1) {
-                            _pageController.nextPage(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                            );
-                          }
+        final isDesktopWeb =
+            kIsWeb ||
+            defaultTargetPlatform == TargetPlatform.macOS ||
+            defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux;
+
+        final shortcuts = <ShortcutActivator, VoidCallback>{
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.pageDown): () =>
+              _goToNext(contentBlocks.length),
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.arrowUp): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.pageUp): _goToPrevious,
+          const SingleActivator(LogicalKeyboardKey.space): () =>
+              _playBlockAudioAtIndex(safeIndex),
+          const SingleActivator(LogicalKeyboardKey.enter): () =>
+              _goToNext(contentBlocks.length),
+        };
+
+        return CallbackShortcuts(
+          bindings: shortcuts,
+          child: Focus(
+            focusNode: _focusNode,
+            autofocus: true,
+            child: Scaffold(
+              bottomNavigationBar: const BannerAdWidget(
+                placement: 'lesson_block_bottom',
+              ),
+              body: AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+                decoration: BoxDecoration(gradient: bgGradient),
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        onPageChanged: _onPageChanged,
+                        itemCount: contentBlocks.length,
+                        physics: _resolveScrollPhysics(currentBlock, safeIndex),
+                        itemBuilder: (context, index) {
+                          final block = contentBlocks[index];
+                          final pageRawColor =
+                              block.data?['themeColor'] as String?;
+                          final pageThemeColor = _parseThemeColor(
+                            pageRawColor,
+                            AppColors.primary,
+                          );
+                          return LessonBlockItemView(
+                            block: block,
+                            index: index,
+                            accentColor: pageThemeColor,
+                            isDark: isDark,
+                            lesson: lesson,
+                            isDismissedQuiz: _dismissedQuizBlockIndices
+                                .contains(index),
+                            isAudioPlaying: _isAudioPlaying,
+                            playingId: _playingId,
+                            onPlayAudio: _playAudio,
+                            onDismissQuiz: () {
+                              setState(
+                                () => _dismissedQuizBlockIndices.add(index),
+                              );
+                              if (index < contentBlocks.length - 1) {
+                                _pageController.nextPage(
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            visualMediaUrl: _blockVisualMediaUrl(block),
+                          );
                         },
-                        visualMediaUrl: _blockVisualMediaUrl(block),
-                      );
-                    },
-                  ),
+                      ),
+                    ),
+                    if (isDesktopWeb && safeIndex > 0)
+                      Positioned(
+                        left: 24,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton.filledTonal(
+                            tooltip: 'Previous block (Left arrow)',
+                            onPressed: _goToPrevious,
+                            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                          ),
+                        ),
+                      ),
+                    if (isDesktopWeb && safeIndex < contentBlocks.length - 1)
+                      Positioned(
+                        right: 24,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: IconButton.filledTonal(
+                            tooltip: 'Next block (Right arrow / Enter)',
+                            onPressed: () => _goToNext(contentBlocks.length),
+                            icon: const Icon(Icons.arrow_forward_ios_rounded),
+                          ),
+                        ),
+                      ),
+                    Positioned(
+                      top: MediaQuery.of(context).padding.top + 8,
+                      left: 0,
+                      right: 0,
+                      child: _buildTopNav(
+                        currentBlock,
+                        safeIndex,
+                        contentBlocks.length,
+                        blockThemeColor,
+                        isDark,
+                        lesson,
+                      ),
+                    ),
+                  ],
                 ),
-                Positioned(
-                  top: MediaQuery.of(context).padding.top + 8,
-                  left: 0,
-                  right: 0,
-                  child: _buildTopNav(
-                    currentBlock,
-                    safeIndex,
-                    contentBlocks.length,
-                    blockThemeColor,
-                    isDark,
-                    lesson,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         );

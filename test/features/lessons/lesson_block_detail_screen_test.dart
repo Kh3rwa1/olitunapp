@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
@@ -509,6 +510,63 @@ void main() {
       // Verify audio playback can be triggered
       await tester.tap(find.text('LISTEN'));
       await tester.pump();
+      await tester.pump(const Duration(seconds: 2));
+    },
+  );
+
+  testWidgets(
+    'LessonBlockDetailScreen navigates blocks with keyboard ArrowRight, ArrowLeft, and Enter',
+    (tester) async {
+      final mockAudioService = MockAudioService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learnerLessonsProvider.overrideWithValue(
+              AsyncValue.data(mockLessons),
+            ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessons)),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_1',
+              initialBlockIndex: 0,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Starts at first page ("At")
+      expect(find.text('At'), findsNWidgets(2));
+
+      // Press ArrowRight to advance
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pumpAndSettle();
+
+      // Now at second page ("Ot")
+      expect(find.text('Ot'), findsNWidgets(2));
+
+      // Press ArrowLeft to return to first page
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+      await tester.pumpAndSettle();
+
+      // Back at first page ("At")
+      expect(find.text('At'), findsNWidgets(2));
+
+      // Press Enter to advance
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.pumpAndSettle();
+
+      // At second page ("Ot") again
+      expect(find.text('Ot'), findsNWidgets(2));
+
       await tester.pump(const Duration(seconds: 2));
     },
   );

@@ -559,6 +559,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
               });
             }
           },
+          onSubmit: _generate,
         ),
         backWidget: VoicePlayerFace(
           isDark: isDark,

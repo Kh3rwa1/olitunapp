@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -25,6 +28,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   int _score = 0;
   bool _answered = false;
   int? _selectedOptionIndex;
+  int _focusedIndex = 0;
+  late final FocusNode _focusNode;
   List<QuizQuestion> _questions = [];
   QuizModel? _quiz;
   bool _isLoading = true;
@@ -49,6 +54,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   @override
   void initState() {
     super.initState();
+    _focusNode = FocusNode();
     _celebrationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
@@ -58,6 +64,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _celebrationController.dispose();
     super.dispose();
   }
@@ -131,9 +138,29 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         _currentQuestionIndex++;
         _answered = false;
         _selectedOptionIndex = null;
+        _focusedIndex = 0;
       });
     } else {
       _showResultDialog();
+    }
+  }
+
+  void _moveGrid(int dRow, int dCol) {
+    if (_answered) return;
+    int row = _focusedIndex ~/ 2;
+    int col = _focusedIndex % 2;
+    row = (row + dRow).clamp(0, 1);
+    col = (col + dCol).clamp(0, 1);
+    setState(() {
+      _focusedIndex = row * 2 + col;
+    });
+  }
+
+  void _handleEnter() {
+    if (_answered) {
+      _nextQuestion();
+    } else {
+      _answerQuestion(_focusedIndex);
     }
   }
 
@@ -346,45 +373,129 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         ? question.optionsLatin
         : question.optionsOlChiki;
 
-    return Scaffold(
-      backgroundColor: AppColors.quizBackground,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              child: Column(
-                children: [
-                  // Header
-                  _buildHeader(),
-                  const SizedBox(height: 16),
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
 
-                  // Progress Dots
-                  _buildProgressDots(),
-                  const SizedBox(height: 24),
+    final shortcuts = <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
+          _moveGrid(0, 1),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
+          _moveGrid(0, -1),
+      const SingleActivator(LogicalKeyboardKey.arrowDown): () =>
+          _moveGrid(1, 0),
+      const SingleActivator(LogicalKeyboardKey.arrowUp): () => _moveGrid(-1, 0),
+      const SingleActivator(LogicalKeyboardKey.digit1): () =>
+          _answerQuestion(0),
+      const SingleActivator(LogicalKeyboardKey.numpad1): () =>
+          _answerQuestion(0),
+      const SingleActivator(LogicalKeyboardKey.digit2): () =>
+          _answerQuestion(1),
+      const SingleActivator(LogicalKeyboardKey.numpad2): () =>
+          _answerQuestion(1),
+      const SingleActivator(LogicalKeyboardKey.digit3): () =>
+          _answerQuestion(2),
+      const SingleActivator(LogicalKeyboardKey.numpad3): () =>
+          _answerQuestion(2),
+      const SingleActivator(LogicalKeyboardKey.digit4): () =>
+          _answerQuestion(3),
+      const SingleActivator(LogicalKeyboardKey.numpad4): () =>
+          _answerQuestion(3),
+      const SingleActivator(LogicalKeyboardKey.enter): _handleEnter,
+      const SingleActivator(LogicalKeyboardKey.numpadEnter): _handleEnter,
+      const SingleActivator(LogicalKeyboardKey.space): () {
+        if (_answered) _nextQuestion();
+      },
+    };
 
-                  // Question Card with Ol Chiki character
-                  _buildQuestionCard(question),
-                  const SizedBox(height: 32),
+    return CallbackShortcuts(
+      bindings: shortcuts,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: AppColors.quizBackground,
+          body: SafeArea(
+            child: Stack(
+              children: [
+                Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: ResponsiveLayout.maxNarrowWidth(context),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      child: Column(
+                        children: [
+                          // Header
+                          _buildHeader(),
+                          const SizedBox(height: 16),
 
-                  // 2x2 Answer Grid
-                  Expanded(
-                    child: _buildAnswerGrid(options, question.correctIndex),
+                          // Progress Dots
+                          _buildProgressDots(),
+                          const SizedBox(height: 24),
+
+                          // Question Card with Ol Chiki character
+                          _buildQuestionCard(question),
+                          const SizedBox(height: 32),
+
+                          // 2x2 Answer Grid
+                          Expanded(
+                            child: _buildAnswerGrid(
+                              options,
+                              question.correctIndex,
+                            ),
+                          ),
+
+                          // Desktop keyboard shortcut guide
+                          if (isDesktopWeb && !_answered)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.04),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: Colors.black.withValues(alpha: 0.06),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                          // Next Button
+                          if (_answered) _buildNextButton(),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
                   ),
-
-                  // Next Button
-                  if (_answered) _buildNextButton(),
-                  const SizedBox(height: 12),
-                ],
-              ),
+                ),
+                const Positioned(
+                  top: 4,
+                  left: 0,
+                  right: 0,
+                  child: OfflineStatusBanner(),
+                ),
+              ],
             ),
-            const Positioned(
-              top: 4,
-              left: 0,
-              right: 0,
-              child: OfflineStatusBanner(),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -403,6 +514,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           index: index,
           text: options[index],
           correctIndex: correctIndex,
+          isFocused: _focusedIndex == index,
         );
       }),
     );
@@ -412,10 +524,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     required int index,
     required String text,
     required int correctIndex,
+    required bool isFocused,
   }) {
     final isSelected = _selectedOptionIndex == index;
     final isCorrect = index == correctIndex;
     final letter = String.fromCharCode(65 + index);
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
 
     Color cardBg = _cardColors[index % 4];
     final Color badgeColor = _badgeColors[index % 4];
@@ -433,7 +551,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         cardBg = AppColors.quizCorrect.withValues(alpha: 0.15);
         borderColor = AppColors.quizCorrect;
       }
+    } else if (isFocused) {
+      borderColor = AppColors.primary;
     }
+
+    final hasHighlightBorder =
+        (_answered && (isSelected || isCorrect)) || (!_answered && isFocused);
 
     return GestureDetector(
           onTap: () => _answerQuestion(index),
@@ -444,12 +567,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
                 color: borderColor,
-                width: _answered && (isSelected || isCorrect) ? 3 : 0,
+                width: hasHighlightBorder ? 3 : 0,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: badgeColor.withValues(alpha: 0.15),
-                  blurRadius: 12,
+                  color: isFocused && !_answered
+                      ? AppColors.primary.withValues(alpha: 0.3)
+                      : badgeColor.withValues(alpha: 0.15),
+                  blurRadius: isFocused && !_answered ? 16 : 12,
                   offset: const Offset(0, 4),
                 ),
               ],
@@ -486,6 +611,36 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                     ),
                   ),
                 ),
+
+                // Desktop shortcut badge
+                if (isDesktopWeb && !_answered)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(
+                          alpha: isFocused ? 0.15 : 0.05,
+                        ),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: isFocused ? AppColors.primary : Colors.black12,
+                        ),
+                      ),
+                      child: Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isFocused ? AppColors.primary : Colors.black45,
+                        ),
+                      ),
+                    ),
+                  ),
 
                 // Answer text
                 Center(
@@ -540,6 +695,12 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   Widget _buildNextButton() {
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
     return Container(
       width: double.infinity,
       height: 56,
@@ -563,15 +724,38 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
             borderRadius: BorderRadius.circular(16),
           ),
         ),
-        child: Text(
-          _currentQuestionIndex < _questions.length - 1
-              ? 'Next Question'
-              : 'Finish Quiz',
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              _currentQuestionIndex < _questions.length - 1
+                  ? 'Next Question'
+                  : 'Finish Quiz',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+            if (isDesktopWeb) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: const Text(
+                  'Enter ↵',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.2);

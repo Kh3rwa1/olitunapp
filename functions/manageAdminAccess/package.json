@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "node-appwrite": "15.0.0"
+    "node-appwrite": "29.0.0"
   },
   "name": "manageAdminAccess",
   "version": "1.0.0",

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/core/presentation/layout/responsive_layout.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
@@ -198,18 +199,23 @@ class LessonBlockItemView extends ConsumerWidget {
             typingState.phase != TypingPhase.idle) {
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: constraints.maxHeight),
-              child: Padding(
-                padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 80,
-                  left: 20,
-                  right: 20,
-                  bottom: 40,
+            child: Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                  maxWidth: ResponsiveLayout.maxNarrowWidth(context),
                 ),
-                child: TypingPracticePanel(
-                  args: typingPracticeArgs!,
-                  audioUrl: block.audioUrl,
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    top: MediaQuery.of(context).padding.top + 80,
+                    left: 20,
+                    right: 20,
+                    bottom: 40,
+                  ),
+                  child: TypingPracticePanel(
+                    args: typingPracticeArgs!,
+                    audioUrl: block.audioUrl,
+                  ),
                 ),
               ),
             ),
@@ -223,35 +229,40 @@ class LessonBlockItemView extends ConsumerWidget {
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: Column(
-              children: [
-                LessonBlockHeroHeader(
-                  block: block,
-                  accentColor: accentColor,
-                  isDark: isDark,
-                  topHeight: topHeight,
-                  blendColor: blendColor,
-                  displayText: displayText,
-                  glyph: glyph,
-                  isLongText: isLongText,
-                  animationUrl: visualMediaUrl,
-                ),
-                LessonBlockCardContent(
-                  block: block,
-                  index: index,
-                  accentColor: accentColor,
-                  isDark: isDark,
-                  lesson: lesson,
-                  displayText: displayText,
-                  isAudioPlaying: isAudioPlaying,
-                  playingId: playingId,
-                  onPlayAudio: onPlayAudio,
-                  typingPracticeArgs: typingPracticeArgs,
-                  isEligibleForTyping: isEligible,
-                ),
-              ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constraints.maxHeight,
+                maxWidth: ResponsiveLayout.maxNarrowWidth(context),
+              ),
+              child: Column(
+                children: [
+                  LessonBlockHeroHeader(
+                    block: block,
+                    accentColor: accentColor,
+                    isDark: isDark,
+                    topHeight: topHeight,
+                    blendColor: blendColor,
+                    displayText: displayText,
+                    glyph: glyph,
+                    isLongText: isLongText,
+                    animationUrl: visualMediaUrl,
+                  ),
+                  LessonBlockCardContent(
+                    block: block,
+                    index: index,
+                    accentColor: accentColor,
+                    isDark: isDark,
+                    lesson: lesson,
+                    displayText: displayText,
+                    isAudioPlaying: isAudioPlaying,
+                    playingId: playingId,
+                    onPlayAudio: onPlayAudio,
+                    typingPracticeArgs: typingPracticeArgs,
+                    isEligibleForTyping: isEligible,
+                  ),
+                ],
+              ),
             ),
           ),
         );

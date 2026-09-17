@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -10,12 +12,14 @@ class QuizFillBlankOptions extends StatelessWidget {
     required this.question,
     required this.state,
     required this.isDark,
+    this.focusedIndex = -1,
     required this.onSelect,
   });
 
   final QuizQuestion question;
   final QuizSessionState state;
   final bool isDark;
+  final int focusedIndex;
   final ValueChanged<int> onSelect;
 
   @override
@@ -72,14 +76,29 @@ class QuizFillBlankOptions extends StatelessWidget {
                   width: 1.5,
                 );
               } else {
-                chipColor = isDark ? AppColors.quizDarkCard : Colors.white;
+                final isFocused = focusedIndex == index;
+                chipColor = isDark
+                    ? (isFocused
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : AppColors.quizDarkCard)
+                    : (isFocused
+                          ? AppColors.primary.withValues(alpha: 0.08)
+                          : Colors.white);
                 textColor = isDark ? Colors.white : Colors.black87;
                 borderSide = BorderSide(
-                  color: isDark ? Colors.white24 : Colors.grey.shade300,
-                  width: 1.5,
+                  color: isFocused
+                      ? AppColors.primary
+                      : (isDark ? Colors.white24 : Colors.grey.shade300),
+                  width: isFocused ? 2.0 : 1.5,
                 );
               }
             }
+
+            final isDesktopWeb =
+                kIsWeb ||
+                defaultTargetPlatform == TargetPlatform.macOS ||
+                defaultTargetPlatform == TargetPlatform.windows ||
+                defaultTargetPlatform == TargetPlatform.linux;
 
             return Semantics(
                   button: true,
@@ -110,23 +129,61 @@ class QuizFillBlankOptions extends StatelessWidget {
                           boxShadow: (!state.isAnswered && !isCurrentSelection)
                               ? [
                                   BoxShadow(
-                                    color: Colors.black.withValues(
-                                      alpha: isDark ? 0.25 : 0.08,
-                                    ),
-                                    blurRadius: 4,
+                                    color: (focusedIndex == index)
+                                        ? AppColors.primary.withValues(
+                                            alpha: 0.25,
+                                          )
+                                        : Colors.black.withValues(
+                                            alpha: isDark ? 0.25 : 0.08,
+                                          ),
+                                    blurRadius: (focusedIndex == index) ? 8 : 4,
                                     offset: const Offset(0, 3),
                                   ),
                                 ]
                               : null,
                         ),
-                        child: Text(
-                          question.optionsOlChiki[index],
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'OlChiki',
-                            color: textColor,
-                          ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              question.optionsOlChiki[index],
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'OlChiki',
+                                color: textColor,
+                              ),
+                            ),
+                            if (isDesktopWeb &&
+                                !state.isAnswered &&
+                                !isCurrentSelection) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 5,
+                                  vertical: 1,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: (focusedIndex == index)
+                                      ? AppColors.primary.withValues(alpha: 0.2)
+                                      : Colors.black.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  '${index + 1}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: (focusedIndex == index)
+                                        ? AppColors.primary
+                                        : (isDark
+                                              ? Colors.white60
+                                              : Colors.black45),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
                         ),
                       ),
                     ),

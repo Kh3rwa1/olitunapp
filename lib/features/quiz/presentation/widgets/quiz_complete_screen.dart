@@ -1,6 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../core/ads/interstitial_ad_manager.dart';
+import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../core/motion/motion.dart';
@@ -55,100 +61,141 @@ class QuizCompleteScreen extends ConsumerWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
-      bottomNavigationBar: const BannerAdWidget(
-        placement: 'quiz_complete_bottom',
-      ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
+    void onContinue() {
+      unawaited(
+        ref
+            .read(interstitialAdManagerProvider)
+            .showIfAllowed(context, 'quiz_complete'),
+      );
+      context.go('/');
+    }
+
+    final shortcuts = <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.enter): onContinue,
+      const SingleActivator(LogicalKeyboardKey.numpadEnter): onContinue,
+      const SingleActivator(LogicalKeyboardKey.space): onContinue,
+    };
+
+    return CallbackShortcuts(
+      bindings: shortcuts,
+      child: Focus(
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
+          bottomNavigationBar: const BannerAdWidget(
+            placement: 'quiz_complete_bottom',
+          ),
+          body: Stack(
+            children: [
+              SafeArea(
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: ResponsiveLayout.maxNarrowWidth(context),
                     ),
                     child: Column(
                       children: [
-                        const SizedBox(height: 24),
-                        // Circular trophy reward visualizer
-                        QuizCompleteTrophy(
-                          isPassing: isPassing,
-                          reduceEffects: reduceEffects,
-                        ),
-                        const SizedBox(height: 28),
-                        Text(
-                          isPassing
-                              ? AppLocalizations.of(context)!.wellDone
-                              : AppLocalizations.of(context)!.keepPracticing,
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : AppColors.pureBlack,
-                            letterSpacing: -0.5,
-                          ),
-                        ).animate().fadeIn(duration: 400.ms),
-                        const SizedBox(height: 6),
-                        Text(
-                          AppLocalizations.of(
-                            context,
-                          )!.youScored(score, totalQuestions),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: isDark ? Colors.white60 : Colors.black54,
-                          ),
-                        ).animate().fadeIn(delay: 150.ms, duration: 400.ms),
-                        const SizedBox(height: 28),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            child: Column(
+                              children: [
+                                const SizedBox(height: 24),
+                                // Circular trophy reward visualizer
+                                QuizCompleteTrophy(
+                                  isPassing: isPassing,
+                                  reduceEffects: reduceEffects,
+                                ),
+                                const SizedBox(height: 28),
+                                Text(
+                                  isPassing
+                                      ? AppLocalizations.of(context)!.wellDone
+                                      : AppLocalizations.of(
+                                          context,
+                                        )!.keepPracticing,
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppColors.pureBlack,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ).animate().fadeIn(duration: 400.ms),
+                                const SizedBox(height: 6),
+                                Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.youScored(score, totalQuestions),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
+                                  ),
+                                ).animate().fadeIn(
+                                  delay: 150.ms,
+                                  duration: 400.ms,
+                                ),
+                                const SizedBox(height: 28),
 
-                        // Bento Stats Grid
-                        QuizCompleteBentoStats(
-                          isDark: isDark,
+                                // Bento Stats Grid
+                                QuizCompleteBentoStats(
+                                  isDark: isDark,
+                                  score: score,
+                                  totalQuestions: totalQuestions,
+                                  percentage: percentage,
+                                  isPassing: isPassing,
+                                  totalStars: totalStars,
+                                  bestCombo: bestCombo,
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Mistakes Review Trigger
+                                if (incorrectQuestionIndices.isNotEmpty)
+                                  MistakeReviewCard(
+                                        mistakeCount:
+                                            incorrectQuestionIndices.length,
+                                        onTap: showMistakesSheet,
+                                        ctaLabel: 'Review Mistakes',
+                                        animationIndex: 5,
+                                      )
+                                      .animate()
+                                      .fadeIn(delay: 450.ms)
+                                      .slideY(begin: 0.1),
+
+                                const SizedBox(height: 16),
+                                const RepaintBoundary(
+                                  child: NativeAdWidget(
+                                    placement: 'quiz_complete_native',
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                        QuizCompleteActions(
+                          isPassing: isPassing,
                           score: score,
                           totalQuestions: totalQuestions,
                           percentage: percentage,
-                          isPassing: isPassing,
                           totalStars: totalStars,
-                          bestCombo: bestCombo,
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Mistakes Review Trigger
-                        if (incorrectQuestionIndices.isNotEmpty)
-                          MistakeReviewCard(
-                            mistakeCount: incorrectQuestionIndices.length,
-                            onTap: showMistakesSheet,
-                            ctaLabel: 'Review Mistakes',
-                            animationIndex: 5,
-                          ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.1),
-
-                        const SizedBox(height: 16),
-                        const RepaintBoundary(
-                          child: NativeAdWidget(
-                            placement: 'quiz_complete_native',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                        ).animate().fadeIn(delay: 500.ms),
                       ],
                     ),
                   ),
                 ),
-                QuizCompleteActions(
-                  isPassing: isPassing,
-                  score: score,
-                  totalQuestions: totalQuestions,
-                  percentage: percentage,
-                  totalStars: totalStars,
-                ).animate().fadeIn(delay: 500.ms),
-              ],
-            ),
+              ),
+              if (isPassing) const Positioned.fill(child: ConfettiBurst()),
+            ],
           ),
-          if (isPassing) const Positioned.fill(child: ConfettiBurst()),
-        ],
+        ),
       ),
     );
   }

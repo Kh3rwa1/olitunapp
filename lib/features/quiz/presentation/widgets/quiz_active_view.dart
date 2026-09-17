@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/config/feature_flags.dart';
 import '../../../../core/languages/providers/target_language_provider.dart';
+import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/models/content_models.dart';
@@ -21,7 +25,7 @@ import 'quiz_progress_bar.dart';
 import 'quiz_question_card.dart';
 import 'quiz_session_hud.dart';
 
-class QuizActiveView extends ConsumerWidget {
+class QuizActiveView extends ConsumerStatefulWidget {
   final String quizId;
   final QuizModel quiz;
   final QuizSessionState state;
@@ -40,26 +44,122 @@ class QuizActiveView extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<QuizActiveView> createState() => _QuizActiveViewState();
+}
+
+class _QuizActiveViewState extends ConsumerState<QuizActiveView> {
+  int _focusedIndex = -1;
+  late final FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(covariant QuizActiveView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.state.currentQuestion != widget.state.currentQuestion) {
+      setState(() {
+        _focusedIndex = -1;
+      });
+      _focusNode.requestFocus();
+    }
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  int get _numOptions {
+    final isFillBlank = widget.question.type == 'fill_blank';
+    return isFillBlank
+        ? widget.question.optionsOlChiki.length
+        : widget.question.optionsLatin.length;
+  }
+
+  void _focusNext() {
+    final count = _numOptions;
+    if (count <= 0) return;
+    setState(() {
+      _focusedIndex = (_focusedIndex + 1) % count;
+    });
+  }
+
+  void _focusPrevious() {
+    final count = _numOptions;
+    if (count <= 0) return;
+    setState(() {
+      _focusedIndex = (_focusedIndex - 1 + count) % count;
+    });
+  }
+
+  void _selectIndex(int index) {
+    if (widget.state.isAnswered) return;
+    if (index >= 0 && index < _numOptions) {
+      setState(() => _focusedIndex = index);
+      widget.onSelectAnswer(index);
+    }
+  }
+
+  void _handleSubmitOrContinue() {
+    if (widget.state.isAnswered) {
+      widget.onContinue();
+    } else if (_focusedIndex >= 0 && _focusedIndex < _numOptions) {
+      widget.onSelectAnswer(_focusedIndex);
+    }
+  }
+
+  void _toggleAudioPlayback() {
+    final audioUrl = widget.question.audioUrl;
+    if (audioUrl == null || audioUrl.trim().isEmpty) return;
+    final playbackState = ref.read(playbackStateProvider).valueOrNull;
+    final isPlaying =
+        playbackState?.isPlaying == true &&
+        playbackState?.current?.id == audioUrl;
+    if (isPlaying) {
+      unawaited(ref.read(playbackControllerProvider).stop());
+    } else {
+      final isListening = widget.question.type == 'listen_meaning';
+      unawaited(
+        ref
+            .read(playbackControllerProvider)
+            .playSingle(
+              id: audioUrl,
+              contentKind: isListening ? 'lesson' : 'quiz_question',
+              contentId: widget.quizId,
+              trackType: 'targetNormal',
+              languageCode: 'sat',
+            ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalQuestions = quiz.questions.length;
+    final totalQuestions = widget.quiz.questions.length;
     final audioQuizzesEnabled = ref
         .watch(featureFlagsProvider)
         .audioQuizzesEnabled;
     final isListeningQuestion =
         audioQuizzesEnabled &&
-        question.type == 'listen_meaning' &&
-        question.audioUrl != null;
-    final isFillBlank = !isListeningQuestion && question.type == 'fill_blank';
+        widget.question.type == 'listen_meaning' &&
+        widget.question.audioUrl != null;
+    final isFillBlank =
+        !isListeningQuestion && widget.question.type == 'fill_blank';
     final correctOptionOlChiki =
-        question.correctIndex >= 0 &&
-            question.correctIndex < question.optionsOlChiki.length
-        ? question.optionsOlChiki[question.correctIndex]
+        widget.question.correctIndex >= 0 &&
+            widget.question.correctIndex < widget.question.optionsOlChiki.length
+        ? widget.question.optionsOlChiki[widget.question.correctIndex]
         : '';
     final correctOptionLatin =
-        question.correctIndex >= 0 &&
-            question.correctIndex < question.optionsLatin.length
-        ? question.optionsLatin[question.correctIndex]
+        widget.question.correctIndex >= 0 &&
+            widget.question.correctIndex < widget.question.optionsLatin.length
+        ? widget.question.optionsLatin[widget.question.correctIndex]
         : correctOptionOlChiki;
 
     Widget buildQuestionArea() {
@@ -68,12 +168,12 @@ class QuizActiveView extends ConsumerWidget {
         final playbackState = playback.valueOrNull;
         final isPlayingThisAudio =
             playbackState?.isPlaying == true &&
-            playbackState?.current?.id == question.audioUrl;
+            playbackState?.current?.id == widget.question.audioUrl;
         final isLoadingThisAudio =
             playbackState?.isLoading == true &&
-            playbackState?.current?.id == question.audioUrl;
+            playbackState?.current?.id == widget.question.audioUrl;
         return ListeningQuestionCard(
-          question: question,
+          question: widget.question,
           isPlaying: isPlayingThisAudio,
           isLoading: isLoadingThisAudio,
           playbackError: playbackState?.error,
@@ -82,9 +182,9 @@ class QuizActiveView extends ConsumerWidget {
               ref
                   .read(playbackControllerProvider)
                   .playSingle(
-                    id: question.audioUrl!,
+                    id: widget.question.audioUrl!,
                     contentKind: 'lesson',
-                    contentId: quizId,
+                    contentId: widget.quizId,
                     trackType: 'targetNormal',
                     languageCode: 'sat',
                   ),
@@ -100,19 +200,20 @@ class QuizActiveView extends ConsumerWidget {
         final playback = ref.watch(playbackStateProvider);
         final playbackState = playback.valueOrNull;
         final hasAudio =
-            question.audioUrl != null && question.audioUrl!.trim().isNotEmpty;
+            widget.question.audioUrl != null &&
+            widget.question.audioUrl!.trim().isNotEmpty;
         final isPlayingThisAudio =
             hasAudio &&
             playbackState?.isPlaying == true &&
-            playbackState?.current?.id == question.audioUrl;
+            playbackState?.current?.id == widget.question.audioUrl;
         final isLoadingThisAudio =
             hasAudio &&
             playbackState?.isLoading == true &&
-            playbackState?.current?.id == question.audioUrl;
+            playbackState?.current?.id == widget.question.audioUrl;
         final manifest = ref.watch(activeLanguageManifestProvider);
 
         return QuizQuestionCard(
-          question: question,
+          question: widget.question,
           fontFamily: manifest.primaryFontFamily,
           isPlaying: isPlayingThisAudio,
           isLoading: isLoadingThisAudio,
@@ -125,9 +226,9 @@ class QuizActiveView extends ConsumerWidget {
                       ref
                           .read(playbackControllerProvider)
                           .playSingle(
-                            id: question.audioUrl!,
+                            id: widget.question.audioUrl!,
                             contentKind: 'quiz_question',
-                            contentId: quizId,
+                            contentId: widget.quizId,
                             trackType: 'targetNormal',
                             languageCode: 'sat',
                           ),
@@ -139,9 +240,9 @@ class QuizActiveView extends ConsumerWidget {
       }
 
       return FillBlankQuestionCard(
-        question: question,
-        selectedAnswer: state.selectedAnswer,
-        isAnswered: state.isAnswered,
+        question: widget.question,
+        selectedAnswer: widget.state.selectedAnswer,
+        isAnswered: widget.state.isAnswered,
       );
     }
 
@@ -149,101 +250,188 @@ class QuizActiveView extends ConsumerWidget {
       if (!isFillBlank) {
         return Column(
           children: List.generate(
-            question.optionsLatin.length,
+            widget.question.optionsLatin.length,
             (index) => QuizOptionTile(
               index: index,
-              currentQuestion: state.currentQuestion,
-              question: question,
-              isSelected: state.selectedAnswer == index,
-              isAnswered: state.isAnswered,
-              onTap: () => onSelectAnswer(index),
+              currentQuestion: widget.state.currentQuestion,
+              question: widget.question,
+              isSelected: widget.state.selectedAnswer == index,
+              isAnswered: widget.state.isAnswered,
+              isFocused: _focusedIndex == index,
+              onTap: () => widget.onSelectAnswer(index),
             ),
           ),
         );
       }
 
       return QuizFillBlankOptions(
-        question: question,
-        state: state,
+        question: widget.question,
+        state: widget.state,
         isDark: isDark,
-        onSelect: onSelectAnswer,
+        focusedIndex: _focusedIndex,
+        onSelect: widget.onSelectAnswer,
       );
     }
 
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          tooltip: 'Close quiz',
-          icon: Icon(
-            Icons.close_rounded,
-            color: isDark ? Colors.white : Colors.black,
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
+    final shortcuts = <ShortcutActivator, VoidCallback>{
+      const SingleActivator(LogicalKeyboardKey.arrowDown): _focusNext,
+      const SingleActivator(LogicalKeyboardKey.arrowRight): _focusNext,
+      const SingleActivator(LogicalKeyboardKey.arrowUp): _focusPrevious,
+      const SingleActivator(LogicalKeyboardKey.arrowLeft): _focusPrevious,
+      const SingleActivator(LogicalKeyboardKey.digit1): () => _selectIndex(0),
+      const SingleActivator(LogicalKeyboardKey.numpad1): () => _selectIndex(0),
+      const SingleActivator(LogicalKeyboardKey.digit2): () => _selectIndex(1),
+      const SingleActivator(LogicalKeyboardKey.numpad2): () => _selectIndex(1),
+      const SingleActivator(LogicalKeyboardKey.digit3): () => _selectIndex(2),
+      const SingleActivator(LogicalKeyboardKey.numpad3): () => _selectIndex(2),
+      const SingleActivator(LogicalKeyboardKey.digit4): () => _selectIndex(3),
+      const SingleActivator(LogicalKeyboardKey.numpad4): () => _selectIndex(3),
+      const SingleActivator(LogicalKeyboardKey.enter): _handleSubmitOrContinue,
+      const SingleActivator(LogicalKeyboardKey.numpadEnter):
+          _handleSubmitOrContinue,
+      const SingleActivator(LogicalKeyboardKey.space): () {
+        if (widget.state.isAnswered) {
+          widget.onContinue();
+        } else {
+          _toggleAudioPlayback();
+        }
+      },
+    };
+
+    return CallbackShortcuts(
+      bindings: shortcuts,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        child: Scaffold(
+          backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              tooltip: 'Close quiz',
+              icon: Icon(
+                Icons.close_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
+            ),
+            title: Text(
+              widget.quiz.title ?? AppLocalizations.of(context)!.quiz,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            actions: [
+              QuizCountPill(
+                current: widget.state.currentQuestion + 1,
+                total: totalQuestions,
+              ),
+            ],
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
-        title: Text(
-          quiz.title ?? AppLocalizations.of(context)!.quiz,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        actions: [
-          QuizCountPill(
-            current: state.currentQuestion + 1,
-            total: totalQuestions,
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                QuizProgressBar(
-                  current: state.currentQuestion + 1,
-                  total: totalQuestions,
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 16),
-                QuizSessionHud(state: state, isDark: isDark),
-                const SizedBox(height: 28),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
+          body: Stack(
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: ResponsiveLayout.maxNarrowWidth(context),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        buildQuestionArea(),
-                        const SizedBox(height: 32),
-                        buildOptionsArea(),
+                        QuizProgressBar(
+                          current: widget.state.currentQuestion + 1,
+                          total: totalQuestions,
+                          isDark: isDark,
+                        ),
                         const SizedBox(height: 16),
+                        QuizSessionHud(state: widget.state, isDark: isDark),
+                        const SizedBox(height: 28),
+                        Expanded(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Column(
+                              children: [
+                                buildQuestionArea(),
+                                const SizedBox(height: 32),
+                                buildOptionsArea(),
+                                if (isDesktopWeb &&
+                                    !widget.state.isAnswered) ...[
+                                  const SizedBox(height: 24),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? Colors.white.withValues(alpha: 0.05)
+                                          : Colors.black.withValues(
+                                              alpha: 0.04,
+                                            ),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? Colors.white.withValues(
+                                                alpha: 0.08,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.06,
+                                              ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '↑ / ↓ Navigate  •  1-4 Choose  •  Enter ↵ Submit',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? Colors.white54
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                                const SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: OfflineStatusBanner(),
+              ),
+            ],
           ),
-          const Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: OfflineStatusBanner(),
-          ),
-        ],
+          bottomNavigationBar: widget.state.isAnswered
+              ? QuizFeedbackPanel(
+                  isCorrect:
+                      widget.state.selectedAnswer ==
+                      widget.question.correctIndex,
+                  correctOptionOlChiki: correctOptionOlChiki,
+                  correctOptionLatin: correctOptionLatin,
+                  explanation: widget.question.explanation,
+                  onContinue: widget.onContinue,
+                )
+              : null,
+        ),
       ),
-      bottomNavigationBar: state.isAnswered
-          ? QuizFeedbackPanel(
-              isCorrect: state.selectedAnswer == question.correctIndex,
-              correctOptionOlChiki: correctOptionOlChiki,
-              correctOptionLatin: correctOptionLatin,
-              explanation: question.explanation,
-              onContinue: onContinue,
-            )
-          : null,
     );
   }
 }

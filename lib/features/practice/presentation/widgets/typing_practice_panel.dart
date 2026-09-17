@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
@@ -40,7 +41,59 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
   void initState() {
     super.initState();
     _textController = TextEditingController();
-    _focusNode = FocusNode()..canRequestFocus = false;
+    final isDesktopWeb =
+        kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
+    _focusNode = FocusNode(
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+
+        final notifier = ref.read(
+          typingPracticeControllerProvider(widget.args).notifier,
+        );
+        final state = ref.read(typingPracticeControllerProvider(widget.args));
+
+        if (event.logicalKey == LogicalKeyboardKey.backspace) {
+          notifier.deleteLastChar();
+          return KeyEventResult.handled;
+        }
+
+        if (event.logicalKey == LogicalKeyboardKey.enter ||
+            event.logicalKey == LogicalKeyboardKey.numpadEnter) {
+          if (state.phase == TypingPhase.complete ||
+              state.phase == TypingPhase.done) {
+            notifier.tryAgain();
+            return KeyEventResult.handled;
+          }
+          if (state.attemptsTotal >= 6 && state.phase == TypingPhase.typing) {
+            notifier.revealAndContinue();
+            return KeyEventResult.handled;
+          }
+        }
+
+        if (event.logicalKey == LogicalKeyboardKey.space) {
+          notifier.appendChar(' ');
+          return KeyEventResult.handled;
+        }
+
+        final char = event.character;
+        if (char != null && char.isNotEmpty) {
+          notifier.appendChar(char);
+          return KeyEventResult.handled;
+        }
+
+        return KeyEventResult.ignored;
+      },
+    )..canRequestFocus = isDesktopWeb;
+
+    if (isDesktopWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _focusNode.requestFocus();
+      });
+    }
 
     // Shake animation setup: 300ms total, 4 oscillations, 8px magnitude
     _shakeController = AnimationController(
@@ -572,14 +625,43 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                     )
                     .tryAgain();
               },
-              child: const Text(
-                'Try Again',
-                style: TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  decoration: TextDecoration.underline,
-                  fontSize: 14,
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Try Again',
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                      fontSize: 14,
+                    ),
+                  ),
+                  if (kIsWeb ||
+                      defaultTargetPlatform == TargetPlatform.macOS ||
+                      defaultTargetPlatform == TargetPlatform.windows ||
+                      defaultTargetPlatform == TargetPlatform.linux) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 1,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Enter ↵',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ],

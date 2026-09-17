@@ -36,25 +36,27 @@ class ReviewStateMergePolicy {
 
     final DateTime? firstRecallAt =
         (a.firstRecallAt != null && b.firstRecallAt != null)
-            ? (a.firstRecallAt!.isBefore(b.firstRecallAt!)
-                ? a.firstRecallAt
-                : b.firstRecallAt)
-            : (a.firstRecallAt ?? b.firstRecallAt);
+        ? (a.firstRecallAt!.isBefore(b.firstRecallAt!)
+              ? a.firstRecallAt
+              : b.firstRecallAt)
+        : (a.firstRecallAt ?? b.firstRecallAt);
 
     final aLast = a.lastReviewedAt;
     final bLast = b.lastReviewedAt;
-    final bool bIsNewer = (aLast == null && bLast != null) ||
+    final bool bIsNewer =
+        (aLast == null && bLast != null) ||
         (aLast != null && bLast != null && bLast.isAfter(aLast));
-    final bool aIsNewer = (bLast == null && aLast != null) ||
+    final bool aIsNewer =
+        (bLast == null && aLast != null) ||
         (aLast != null && bLast != null && aLast.isAfter(bLast));
 
     final lastReviewedAt = bIsNewer ? bLast : (aIsNewer ? aLast : aLast);
     final lastPresentedAt =
         (a.lastPresentedAt != null && b.lastPresentedAt != null)
-            ? (a.lastPresentedAt!.isAfter(b.lastPresentedAt!)
-                ? a.lastPresentedAt
-                : b.lastPresentedAt)
-            : (a.lastPresentedAt ?? b.lastPresentedAt);
+        ? (a.lastPresentedAt!.isAfter(b.lastPresentedAt!)
+              ? a.lastPresentedAt
+              : b.lastPresentedAt)
+        : (a.lastPresentedAt ?? b.lastPresentedAt);
 
     final lastExerciseType = bIsNewer
         ? (b.lastExerciseType ?? a.lastExerciseType)
@@ -68,10 +70,10 @@ class ReviewStateMergePolicy {
     final typingSuccesses = max(a.typingSuccesses, b.typingSuccesses);
     final lapseCount = max(a.lapseCount, b.lapseCount);
 
-    final ease = min(a.ease, b.ease).clamp(
-      MemoryScheduler.minEase,
-      MemoryScheduler.maxEase,
-    );
+    final ease = min(
+      a.ease,
+      b.ease,
+    ).clamp(MemoryScheduler.minEase, MemoryScheduler.maxEase);
 
     final latestWasFailure = bIsNewer
         ? (b.failedRecalls > a.failedRecalls)
@@ -89,8 +91,8 @@ class ReviewStateMergePolicy {
       intervalDays = max(a.intervalDays, b.intervalDays);
       nextReviewAt = (failedRecalls > 0)
           ? (a.nextReviewAt.isBefore(b.nextReviewAt)
-              ? a.nextReviewAt
-              : b.nextReviewAt)
+                ? a.nextReviewAt
+                : b.nextReviewAt)
           : (bIsNewer ? b.nextReviewAt : a.nextReviewAt);
     }
 

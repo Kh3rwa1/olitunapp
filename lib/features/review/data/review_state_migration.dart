@@ -98,24 +98,25 @@ class ReviewStateMigrator {
     // Earliest first successful recall
     final DateTime? firstRecallAt =
         (guest.firstRecallAt != null && account.firstRecallAt != null)
-            ? (guest.firstRecallAt!.isBefore(account.firstRecallAt!)
-                ? guest.firstRecallAt
-                : account.firstRecallAt)
-            : (guest.firstRecallAt ?? account.firstRecallAt);
+        ? (guest.firstRecallAt!.isBefore(account.firstRecallAt!)
+              ? guest.firstRecallAt
+              : account.firstRecallAt)
+        : (guest.firstRecallAt ?? account.firstRecallAt);
 
     // Latest review timestamps
     final gLast = guest.lastReviewedAt;
     final aLast = account.lastReviewedAt;
-    final bool guestIsNewer = (aLast == null && gLast != null) ||
+    final bool guestIsNewer =
+        (aLast == null && gLast != null) ||
         (gLast != null && aLast != null && gLast.isAfter(aLast));
 
     final lastReviewedAt = guestIsNewer ? gLast : (aLast ?? gLast);
     final lastPresentedAt =
         (guest.lastPresentedAt != null && account.lastPresentedAt != null)
-            ? (guest.lastPresentedAt!.isAfter(account.lastPresentedAt!)
-                ? guest.lastPresentedAt
-                : account.lastPresentedAt)
-            : (guest.lastPresentedAt ?? account.lastPresentedAt);
+        ? (guest.lastPresentedAt!.isAfter(account.lastPresentedAt!)
+              ? guest.lastPresentedAt
+              : account.lastPresentedAt)
+        : (guest.lastPresentedAt ?? account.lastPresentedAt);
 
     final lastExerciseType = guestIsNewer
         ? (guest.lastExerciseType ?? account.lastExerciseType)
@@ -139,7 +140,9 @@ class ReviewStateMigrator {
 
     // Interval and next review
     final intervalDays = max(account.intervalDays, guest.intervalDays);
-    DateTime nextReviewAt = guestIsNewer ? guest.nextReviewAt : account.nextReviewAt;
+    DateTime nextReviewAt = guestIsNewer
+        ? guest.nextReviewAt
+        : account.nextReviewAt;
     // If either side had a failure requiring quick re-study, take the earlier due instant
     if (guest.failedRecalls > 0 || account.failedRecalls > 0) {
       if (guest.nextReviewAt.isBefore(account.nextReviewAt)) {

@@ -61,13 +61,7 @@ class AccountScope {
     String? userId,
     bool isGuest = false,
   }) {
-    return AccountScope._(
-      prefs,
-      'test_record',
-      userId,
-      isGuest,
-      isGuest,
-    );
+    return AccountScope._(prefs, 'test_record', userId, isGuest, isGuest);
   }
 
   bool get isKnown => isGuest || userId != null;

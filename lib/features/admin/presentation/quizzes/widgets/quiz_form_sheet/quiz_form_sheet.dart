@@ -150,8 +150,9 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
             onCancel: () => Navigator.pop(context),
             onSave: () async {
               for (var i = 0; i < _questions.length; i++) {
-                final err =
-                    QuizValidation.validateQuestionIdentity(_questions[i]);
+                final err = QuizValidation.validateQuestionIdentity(
+                  _questions[i],
+                );
                 if (err != null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Question #${i + 1}: $err')),

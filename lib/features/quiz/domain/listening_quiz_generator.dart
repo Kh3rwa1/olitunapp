@@ -92,17 +92,20 @@ class ListeningQuizGenerator {
 
       final prompt = _listeningPrompt(teachingLanguage);
 
-      final sourceWordId = (block.data?['sourceWordId'] ??
-              block.data?['wordId'] ??
-              block.data?['sourceWord'] ??
-              block.data?['word_id'])
-          as String?;
-      final sourceSentenceId = (block.data?['sourceSentenceId'] ??
-              block.data?['sentenceId'] ??
-              block.data?['sourceSentence'] ??
-              block.data?['sentence_id'])
-          as String?;
-      final hasCanonical = (sourceWordId != null && sourceWordId.trim().isNotEmpty) ||
+      final sourceWordId =
+          (block.data?['sourceWordId'] ??
+                  block.data?['wordId'] ??
+                  block.data?['sourceWord'] ??
+                  block.data?['word_id'])
+              as String?;
+      final sourceSentenceId =
+          (block.data?['sourceSentenceId'] ??
+                  block.data?['sentenceId'] ??
+                  block.data?['sourceSentence'] ??
+                  block.data?['sentence_id'])
+              as String?;
+      final hasCanonical =
+          (sourceWordId != null && sourceWordId.trim().isNotEmpty) ||
           (sourceSentenceId != null && sourceSentenceId.trim().isNotEmpty);
 
       questions.add(

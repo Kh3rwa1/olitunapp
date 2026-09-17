@@ -88,8 +88,13 @@ final reviewSyncInitProvider = Provider<void>((ref) {
         final prefs = ref.read(sharedPreferencesProvider);
         const guestKey = 'review_states_guest';
         if (prefs.containsKey(guestKey)) {
-          final guestStore = await ReviewStore.load(prefs, storageKey: guestKey);
-          final accountStore = await ref.read(reviewStoreProvider.notifier).current();
+          final guestStore = await ReviewStore.load(
+            prefs,
+            storageKey: guestKey,
+          );
+          final accountStore = await ref
+              .read(reviewStoreProvider.notifier)
+              .current();
           final migration = await ReviewStateMigrator.migrateGuestToAccount(
             guestStore: guestStore,
             accountStore: accountStore,

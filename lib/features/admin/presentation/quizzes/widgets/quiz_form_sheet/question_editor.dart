@@ -74,7 +74,9 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
 
     _sourceWordId = TextEditingController(text: q?.sourceWordId ?? '');
     _sourceSentenceId = TextEditingController(text: q?.sourceSentenceId ?? '');
-    _isNonMemory = q?.isNonMemory ?? (q?.sourceWordId == null && q?.sourceSentenceId == null);
+    _isNonMemory =
+        q?.isNonMemory ??
+        (q?.sourceWordId == null && q?.sourceSentenceId == null);
   }
 
   @override
@@ -101,8 +103,9 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
 
   void _save() {
     HapticFeedback.lightImpact();
-    final wordId =
-        _sourceWordId.text.trim().isNotEmpty ? _sourceWordId.text.trim() : null;
+    final wordId = _sourceWordId.text.trim().isNotEmpty
+        ? _sourceWordId.text.trim()
+        : null;
     final sentenceId = _sourceSentenceId.text.trim().isNotEmpty
         ? _sourceSentenceId.text.trim()
         : null;
@@ -149,9 +152,9 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
 
     final error = QuizValidation.validateQuestionIdentity(questionToSave);
     if (error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
       return;
     }
 

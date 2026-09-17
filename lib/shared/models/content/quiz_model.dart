@@ -131,10 +131,10 @@ class QuizQuestion {
 
   String? get canonicalLearningId =>
       (sourceWordId != null && sourceWordId!.trim().isNotEmpty)
-          ? sourceWordId!.trim()
-          : ((sourceSentenceId != null && sourceSentenceId!.trim().isNotEmpty)
-              ? sourceSentenceId!.trim()
-              : null);
+      ? sourceWordId!.trim()
+      : ((sourceSentenceId != null && sourceSentenceId!.trim().isNotEmpty)
+            ? sourceSentenceId!.trim()
+            : null);
 
   factory QuizQuestion.fromMap(Map<String, dynamic> data) {
     return QuizQuestion(

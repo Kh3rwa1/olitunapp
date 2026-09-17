@@ -98,10 +98,7 @@ void main() {
 
   group('QuizValidation.validateQuestionIdentity', () {
     test('accepts questions with sourceWordId', () {
-      final q = QuizQuestion(
-        promptOlChiki: 'ᱚ',
-        sourceWordId: 'w_ol_1',
-      );
+      final q = QuizQuestion(promptOlChiki: 'ᱚ', sourceWordId: 'w_ol_1');
       expect(QuizValidation.validateQuestionIdentity(q), isNull);
     });
 
@@ -114,33 +111,31 @@ void main() {
     });
 
     test('accepts questions marked isNonMemory even without source IDs', () {
-      final q = QuizQuestion(
-        promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-        isNonMemory: true,
-      );
+      final q = QuizQuestion(promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ', isNonMemory: true);
       expect(QuizValidation.validateQuestionIdentity(q), isNull);
     });
 
     test('rejects questions without source IDs when not marked isNonMemory', () {
-      final q = QuizQuestion(
-        promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-      );
+      final q = QuizQuestion(promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ');
       expect(
         QuizValidation.validateQuestionIdentity(q),
         'Question must be linked to a corpus item (Word ID or Sentence ID) or marked as Non-Memory.',
       );
     });
 
-    test('rejects questions with blank/whitespace source IDs when not marked isNonMemory', () {
-      final q = QuizQuestion(
-        promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-        sourceWordId: '   ',
-        sourceSentenceId: '',
-      );
-      expect(
-        QuizValidation.validateQuestionIdentity(q),
-        'Question must be linked to a corpus item (Word ID or Sentence ID) or marked as Non-Memory.',
-      );
-    });
+    test(
+      'rejects questions with blank/whitespace source IDs when not marked isNonMemory',
+      () {
+        final q = QuizQuestion(
+          promptOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+          sourceWordId: '   ',
+          sourceSentenceId: '',
+        );
+        expect(
+          QuizValidation.validateQuestionIdentity(q),
+          'Question must be linked to a corpus item (Word ID or Sentence ID) or marked as Non-Memory.',
+        );
+      },
+    );
   });
 }

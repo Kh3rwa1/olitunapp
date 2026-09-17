@@ -150,8 +150,9 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
   Future<void> _saveResolvedAudit(List<MistakeItem> audit) async {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final bounded =
-          audit.length > 500 ? audit.sublist(audit.length - 500) : audit;
+      final bounded = audit.length > 500
+          ? audit.sublist(audit.length - 500)
+          : audit;
       final raw = jsonEncode(bounded.map((item) => item.toJson()).toList());
       await prefs.setString(_resolvedAuditKey, raw);
     } catch (e) {

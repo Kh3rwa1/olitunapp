@@ -47,8 +47,8 @@ class ReviewStore {
     Map<String, MemoryItemState>? quarantined,
     this._corpusMap,
     String? storageKey,
-  ])  : _quarantined = quarantined ?? {},
-        _storageKey = storageKey ?? ReviewStore.storageKey;
+  ]) : _quarantined = quarantined ?? {},
+       _storageKey = storageKey ?? ReviewStore.storageKey;
 
   String get storageKeyUsed => _storageKey;
 
@@ -58,7 +58,8 @@ class ReviewStore {
     String? storageKey,
     AccountScope? scope,
   }) async {
-    final effectiveKey = storageKey ??
+    final effectiveKey =
+        storageKey ??
         (scope != null ? scope.reviewKey : ReviewStore.storageKey);
 
     String? raw = prefs.getString(effectiveKey);
@@ -71,13 +72,7 @@ class ReviewStore {
     }
 
     if (raw == null || raw.isEmpty) {
-      final store = ReviewStore._(
-        prefs,
-        {},
-        null,
-        corpusMap,
-        effectiveKey,
-      );
+      final store = ReviewStore._(prefs, {}, null, corpusMap, effectiveKey);
       if (corpusMap != null) {
         store.reconcile(corpusMap);
       }

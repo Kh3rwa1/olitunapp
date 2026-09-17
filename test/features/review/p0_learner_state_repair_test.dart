@@ -93,7 +93,10 @@ void main() {
       }
       expect(item.successfulRecalls, 11);
       expect(item.masteryState, MasteryState.mastered);
-      expect(item.intervalDays, greaterThanOrEqualTo(MemoryScheduler.intervalForMasteredDays));
+      expect(
+        item.intervalDays,
+        greaterThanOrEqualTo(MemoryScheduler.intervalForMasteredDays),
+      );
     });
 
     test('Scenario 3: Lapse demotion', () {
@@ -134,9 +137,15 @@ void main() {
 
       expect(item.lapseCount, 1);
       expect(item.failedRecalls, 1);
-      expect(item.masteryState, MasteryState.review); // Single lapse stays in review
+      expect(
+        item.masteryState,
+        MasteryState.review,
+      ); // Single lapse stays in review
       expect(item.intervalDays, 1.0);
-      expect(item.nextReviewAt, lapseTime.add(MemoryScheduler.reviewRetryDelay));
+      expect(
+        item.nextReviewAt,
+        lapseTime.add(MemoryScheduler.reviewRetryDelay),
+      );
 
       // Repeated failures drop item to learning
       for (var i = 0; i < 6; i++) {
@@ -259,7 +268,10 @@ void main() {
       );
 
       // Earlier nextReviewAt has higher priority (isBefore)
-      expect(overdueItem.nextReviewAt.isBefore(recentItem.nextReviewAt), isTrue);
+      expect(
+        overdueItem.nextReviewAt.isBefore(recentItem.nextReviewAt),
+        isTrue,
+      );
     });
 
     test('Scenario 8: Retention rate accuracy', () {
@@ -290,10 +302,11 @@ void main() {
         nextReviewAt: tIntro,
       );
 
-      final metrics = RetentionMetrics.compute(
-        [item1, item2, item3],
-        now: DateTime.utc(2026, 1, 10),
-      );
+      final metrics = RetentionMetrics.compute([
+        item1,
+        item2,
+        item3,
+      ], now: DateTime.utc(2026, 1, 10));
 
       expect(metrics.introducedCount, 3);
       expect(metrics.d1EligibleCount, 2);
@@ -307,10 +320,7 @@ void main() {
         activeSentenceIds: const {},
         aliases: const [],
         tombstones: const [
-          ReviewIdTombstone(
-            itemType: ReviewItemType.word,
-            id: 'w_tombstone',
-          ),
+          ReviewIdTombstone(itemType: ReviewItemType.word, id: 'w_tombstone'),
         ],
       );
 
@@ -329,10 +339,7 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final scope = AccountScope.forTest(prefs, userId: 'user_123');
 
-      final store = await ReviewStore.load(
-        prefs,
-        scope: scope,
-      );
+      final store = await ReviewStore.load(prefs, scope: scope);
 
       await store.recordRecallDurable(
         itemId: 'w_persist',
@@ -351,34 +358,34 @@ void main() {
       expect(raw!.contains('w_persist'), isTrue);
     });
 
-    test('Scenario 11: Atomic write / anti-corruption skips malformed entries', () async {
-      final corruptData = jsonEncode({
-        'schemaVersion': 3,
-        'items': {
-          'w_good': {
-            'itemId': 'w_good',
-            'itemType': 'word',
-            'introducedAt': '2026-01-01T00:00:00.000Z',
-            'nextReviewAt': '2026-01-02T00:00:00.000Z',
+    test(
+      'Scenario 11: Atomic write / anti-corruption skips malformed entries',
+      () async {
+        final corruptData = jsonEncode({
+          'schemaVersion': 3,
+          'items': {
+            'w_good': {
+              'itemId': 'w_good',
+              'itemType': 'word',
+              'introducedAt': '2026-01-01T00:00:00.000Z',
+              'nextReviewAt': '2026-01-02T00:00:00.000Z',
+            },
+            'w_bad': 'not-a-map',
           },
-          'w_bad': 'not-a-map',
-        },
-      });
+        });
 
-      SharedPreferences.setMockInitialValues({
-        'review_states_guest': corruptData,
-      });
-      final prefs = await SharedPreferences.getInstance();
-      final scope = AccountScope.forTest(prefs, isGuest: true);
+        SharedPreferences.setMockInitialValues({
+          'review_states_guest': corruptData,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final scope = AccountScope.forTest(prefs, isGuest: true);
 
-      final store = await ReviewStore.load(
-        prefs,
-        scope: scope,
-      );
+        final store = await ReviewStore.load(prefs, scope: scope);
 
-      expect(store.get('w_good'), isNotNull);
-      expect(store.get('w_bad'), isNull);
-    });
+        expect(store.get('w_good'), isNotNull);
+        expect(store.get('w_bad'), isNull);
+      },
+    );
 
     test('Scenario 12: App restart state preservation', () async {
       SharedPreferences.setMockInitialValues({});
@@ -410,9 +417,24 @@ void main() {
 
       // Fire multiple rapid durable writes
       await Future.wait<void>([
-        store.recordRecallDurable(itemId: 'w_1', itemType: ReviewItemType.word, correct: true, exerciseType: ReviewExerciseType.recognition),
-        store.recordRecallDurable(itemId: 'w_2', itemType: ReviewItemType.word, correct: true, exerciseType: ReviewExerciseType.recognition),
-        store.recordRecallDurable(itemId: 'w_3', itemType: ReviewItemType.word, correct: true, exerciseType: ReviewExerciseType.recognition),
+        store.recordRecallDurable(
+          itemId: 'w_1',
+          itemType: ReviewItemType.word,
+          correct: true,
+          exerciseType: ReviewExerciseType.recognition,
+        ),
+        store.recordRecallDurable(
+          itemId: 'w_2',
+          itemType: ReviewItemType.word,
+          correct: true,
+          exerciseType: ReviewExerciseType.recognition,
+        ),
+        store.recordRecallDurable(
+          itemId: 'w_3',
+          itemType: ReviewItemType.word,
+          correct: true,
+          exerciseType: ReviewExerciseType.recognition,
+        ),
       ]);
 
       final storeAfter = await ReviewStore.load(prefs, scope: scope);
@@ -428,10 +450,7 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final scope = AccountScope.forTest(prefs, isGuest: true);
 
-      final store = await ReviewStore.load(
-        prefs,
-        scope: scope,
-      );
+      final store = await ReviewStore.load(prefs, scope: scope);
 
       expect(store.all(), isEmpty);
 
@@ -456,10 +475,7 @@ void main() {
       final guestScope = AccountScope.forTest(prefs, isGuest: true);
       final userScope = AccountScope.forTest(prefs, userId: 'user_a');
 
-      final guestStore = await ReviewStore.load(
-        prefs,
-        scope: guestScope,
-      );
+      final guestStore = await ReviewStore.load(prefs, scope: guestScope);
       await guestStore.recordRecallDurable(
         itemId: 'w_guest_only',
         itemType: ReviewItemType.word,
@@ -467,10 +483,7 @@ void main() {
         exerciseType: ReviewExerciseType.recognition,
       );
 
-      final userStore = await ReviewStore.load(
-        prefs,
-        scope: userScope,
-      );
+      final userStore = await ReviewStore.load(prefs, scope: userScope);
 
       expect(guestStore.get('w_guest_only'), isNotNull);
       expect(userStore.get('w_guest_only'), isNull);
@@ -482,14 +495,8 @@ void main() {
       final scopeA = AccountScope.forTest(prefs, userId: 'user_A');
       final scopeB = AccountScope.forTest(prefs, userId: 'user_B');
 
-      final storeA = await ReviewStore.load(
-        prefs,
-        scope: scopeA,
-      );
-      final storeB = await ReviewStore.load(
-        prefs,
-        scope: scopeB,
-      );
+      final storeA = await ReviewStore.load(prefs, scope: scopeA);
+      final storeB = await ReviewStore.load(prefs, scope: scopeB);
 
       await storeA.recordRecallDurable(
         itemId: 'w_userA',
@@ -508,14 +515,8 @@ void main() {
       final guestScope = AccountScope.forTest(prefs, isGuest: true);
       final targetScope = AccountScope.forTest(prefs, userId: 'user_target');
 
-      final guestStore = await ReviewStore.load(
-        prefs,
-        scope: guestScope,
-      );
-      final userStore = await ReviewStore.load(
-        prefs,
-        scope: targetScope,
-      );
+      final guestStore = await ReviewStore.load(prefs, scope: guestScope);
+      final userStore = await ReviewStore.load(prefs, scope: targetScope);
 
       // Guest practiced w_shared and w_guest
       await guestStore.recordRecallDurable(
@@ -557,10 +558,7 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final scope = AccountScope.forTest(prefs, userId: 'user_logout');
 
-      final storeA = await ReviewStore.load(
-        prefs,
-        scope: scope,
-      );
+      final storeA = await ReviewStore.load(prefs, scope: scope);
       await storeA.recordRecallDurable(
         itemId: 'w_temp',
         itemType: ReviewItemType.word,
@@ -616,35 +614,38 @@ void main() {
       expect(ab, equals(ba));
     });
 
-    test('Scenario 20: Concurrent offline recall merging preserves both evidences', () {
-      final devA = MemoryItemState(
-        itemId: 'w_concurrent',
-        itemType: ReviewItemType.word,
-        introducedAt: t1,
-        lastReviewedAt: t2,
-        nextReviewAt: t2.add(const Duration(days: 3)),
-        successfulRecalls: 2,
-      );
-      final devB = MemoryItemState(
-        itemId: 'w_concurrent',
-        itemType: ReviewItemType.word,
-        introducedAt: t1,
-        lastReviewedAt: t2.add(const Duration(hours: 2)),
-        nextReviewAt: t2.add(const Duration(days: 1)),
-        successfulRecalls: 1,
-        failedRecalls: 1, // Dev B had a lapse
-        lapseCount: 1,
-      );
+    test(
+      'Scenario 20: Concurrent offline recall merging preserves both evidences',
+      () {
+        final devA = MemoryItemState(
+          itemId: 'w_concurrent',
+          itemType: ReviewItemType.word,
+          introducedAt: t1,
+          lastReviewedAt: t2,
+          nextReviewAt: t2.add(const Duration(days: 3)),
+          successfulRecalls: 2,
+        );
+        final devB = MemoryItemState(
+          itemId: 'w_concurrent',
+          itemType: ReviewItemType.word,
+          introducedAt: t1,
+          lastReviewedAt: t2.add(const Duration(hours: 2)),
+          nextReviewAt: t2.add(const Duration(days: 1)),
+          successfulRecalls: 1,
+          failedRecalls: 1, // Dev B had a lapse
+          lapseCount: 1,
+        );
 
-      final merged = ReviewStateMergePolicy.merge(devA, devB);
+        final merged = ReviewStateMergePolicy.merge(devA, devB);
 
-      // Max evidence preserved
-      expect(merged.successfulRecalls, 2);
-      expect(merged.failedRecalls, 1);
-      expect(merged.lapseCount, 1);
-      // Safety: failure causes earlier due date to be selected
-      expect(merged.nextReviewAt, devB.nextReviewAt);
-    });
+        // Max evidence preserved
+        expect(merged.successfulRecalls, 2);
+        expect(merged.failedRecalls, 1);
+        expect(merged.lapseCount, 1);
+        // Safety: failure causes earlier due date to be selected
+        expect(merged.nextReviewAt, devB.nextReviewAt);
+      },
+    );
 
     test('Scenario 21: Duplicate sync idempotent handling', () {
       final a = MemoryItemState(
@@ -668,58 +669,67 @@ void main() {
       expect(pass1, equals(pass2));
     });
 
-    test('Scenario 22: Out-of-order review sync does not clobber newer state', () {
-      final newer = MemoryItemState(
-        itemId: 'w_order',
-        itemType: ReviewItemType.word,
-        introducedAt: t1,
-        lastReviewedAt: t2.add(const Duration(days: 5)),
-        nextReviewAt: t2.add(const Duration(days: 10)),
-        successfulRecalls: 5,
-      );
-      final olderStale = MemoryItemState(
-        itemId: 'w_order',
-        itemType: ReviewItemType.word,
-        introducedAt: t1,
-        lastReviewedAt: t2,
-        nextReviewAt: t2.add(const Duration(days: 2)),
-        successfulRecalls: 2,
-      );
+    test(
+      'Scenario 22: Out-of-order review sync does not clobber newer state',
+      () {
+        final newer = MemoryItemState(
+          itemId: 'w_order',
+          itemType: ReviewItemType.word,
+          introducedAt: t1,
+          lastReviewedAt: t2.add(const Duration(days: 5)),
+          nextReviewAt: t2.add(const Duration(days: 10)),
+          successfulRecalls: 5,
+        );
+        final olderStale = MemoryItemState(
+          itemId: 'w_order',
+          itemType: ReviewItemType.word,
+          introducedAt: t1,
+          lastReviewedAt: t2,
+          nextReviewAt: t2.add(const Duration(days: 2)),
+          successfulRecalls: 2,
+        );
 
-      final merged = ReviewStateMergePolicy.merge(newer, olderStale);
+        final merged = ReviewStateMergePolicy.merge(newer, olderStale);
 
-      expect(merged.lastReviewedAt, newer.lastReviewedAt);
-      expect(merged.successfulRecalls, 5);
-    });
+        expect(merged.lastReviewedAt, newer.lastReviewedAt);
+        expect(merged.successfulRecalls, 5);
+      },
+    );
 
-    test('Scenario 23: Clock skew resilience preserves monotonic learning evidence', () {
-      // Device B has clock in 2025 (1 year skewed backwards)
-      final skewedPast = DateTime.utc(2025);
-      final normalTime = DateTime.utc(2026);
+    test(
+      'Scenario 23: Clock skew resilience preserves monotonic learning evidence',
+      () {
+        // Device B has clock in 2025 (1 year skewed backwards)
+        final skewedPast = DateTime.utc(2025);
+        final normalTime = DateTime.utc(2026);
 
-      final devNormal = MemoryItemState(
-        itemId: 'w_skew',
-        itemType: ReviewItemType.word,
-        introducedAt: normalTime,
-        successfulRecalls: 1,
-        nextReviewAt: normalTime.add(const Duration(days: 1)),
-      );
-      final devSkewed = MemoryItemState(
-        itemId: 'w_skew',
-        itemType: ReviewItemType.word,
-        introducedAt: skewedPast,
-        successfulRecalls: 3,
-        failedRecalls: 1,
-        nextReviewAt: skewedPast.add(const Duration(days: 1)),
-      );
+        final devNormal = MemoryItemState(
+          itemId: 'w_skew',
+          itemType: ReviewItemType.word,
+          introducedAt: normalTime,
+          successfulRecalls: 1,
+          nextReviewAt: normalTime.add(const Duration(days: 1)),
+        );
+        final devSkewed = MemoryItemState(
+          itemId: 'w_skew',
+          itemType: ReviewItemType.word,
+          introducedAt: skewedPast,
+          successfulRecalls: 3,
+          failedRecalls: 1,
+          nextReviewAt: skewedPast.add(const Duration(days: 1)),
+        );
 
-      final merged = ReviewStateMergePolicy.merge(devNormal, devSkewed);
+        final merged = ReviewStateMergePolicy.merge(devNormal, devSkewed);
 
-      // Recall counts never regress despite skewed timestamps
-      expect(merged.successfulRecalls, 3);
-      expect(merged.failedRecalls, 1);
-      expect(merged.introducedAt, skewedPast); // Earliest introduction retained
-    });
+        // Recall counts never regress despite skewed timestamps
+        expect(merged.successfulRecalls, 3);
+        expect(merged.failedRecalls, 1);
+        expect(
+          merged.introducedAt,
+          skewedPast,
+        ); // Earliest introduction retained
+      },
+    );
 
     test('Scenario 24: Alias resolution maps old ID to canonical ID', () {
       final map = ReviewCorpusIdentityMap(
@@ -735,7 +745,13 @@ void main() {
         tombstones: const [],
       );
 
-      expect(map.resolveCanonicalId('w_deprecated', expectedType: ReviewItemType.word), 'w_canonical');
+      expect(
+        map.resolveCanonicalId(
+          'w_deprecated',
+          expectedType: ReviewItemType.word,
+        ),
+        'w_canonical',
+      );
       expect(map.isActive('w_canonical'), isTrue);
       expect(map.isActive('w_deprecated'), isFalse);
     });
@@ -745,19 +761,20 @@ void main() {
   // GROUP 5: LEARNING IDENTITY (Scenarios 25–29)
   // ===========================================================================
   group('P0 Canonical Learning Item Identity (Scenarios 25-29)', () {
-    test('Scenario 25: Reject non-canonical learning item in memory engine', () {
-      final unlinked = QuizQuestion(
-        promptOlChiki: 'ᱚ',
-      );
-      expect(resolveQuizMemoryItem(unlinked), isNull);
+    test(
+      'Scenario 25: Reject non-canonical learning item in memory engine',
+      () {
+        final unlinked = QuizQuestion(promptOlChiki: 'ᱚ');
+        expect(resolveQuizMemoryItem(unlinked), isNull);
 
-      final explicitNonMemory = QuizQuestion(
-        promptOlChiki: 'ᱚ',
-        sourceWordId: 'w_word_1',
-        isNonMemory: true,
-      );
-      expect(resolveQuizMemoryItem(explicitNonMemory), isNull);
-    });
+        final explicitNonMemory = QuizQuestion(
+          promptOlChiki: 'ᱚ',
+          sourceWordId: 'w_word_1',
+          isNonMemory: true,
+        );
+        expect(resolveQuizMemoryItem(explicitNonMemory), isNull);
+      },
+    );
 
     test('Scenario 26: Correct item mapping for word quiz', () {
       final wordQuestion = QuizQuestion(
@@ -796,14 +813,23 @@ void main() {
       final validWord = QuizQuestion(promptOlChiki: 'ᱚ', sourceWordId: 'w_1');
       expect(QuizValidation.validateQuestionIdentity(validWord), isNull);
 
-      final validSentence = QuizQuestion(promptOlChiki: 'ᱥᱟᱹᱜᱩᱱ', sourceSentenceId: 's_1');
+      final validSentence = QuizQuestion(
+        promptOlChiki: 'ᱥᱟᱹᱜᱩᱱ',
+        sourceSentenceId: 's_1',
+      );
       expect(QuizValidation.validateQuestionIdentity(validSentence), isNull);
 
-      final validNonMemory = QuizQuestion(promptOlChiki: 'Comprehension', isNonMemory: true);
+      final validNonMemory = QuizQuestion(
+        promptOlChiki: 'Comprehension',
+        isNonMemory: true,
+      );
       expect(QuizValidation.validateQuestionIdentity(validNonMemory), isNull);
 
       final invalidUnlinked = QuizQuestion(promptOlChiki: 'Orphan');
-      expect(QuizValidation.validateQuestionIdentity(invalidUnlinked), isNotNull);
+      expect(
+        QuizValidation.validateQuestionIdentity(invalidUnlinked),
+        isNotNull,
+      );
     });
   });
 
@@ -833,7 +859,10 @@ void main() {
 
       expect(afterLapse.failedRecalls, 1);
       expect(afterLapse.lapseCount, 1);
-      expect(afterLapse.masteryState, MasteryState.review); // Demoted from mastered
+      expect(
+        afterLapse.masteryState,
+        MasteryState.review,
+      ); // Demoted from mastered
       expect(afterLapse.intervalDays, 1.0); // Reset interval
     });
 
@@ -876,29 +905,32 @@ void main() {
       expect(item.masteryState == MasteryState.mastered, isTrue);
     });
 
-    test('Scenario 33: Resolved mistakes preserve audit trail and never resurrect', () {
-      final mistake = MistakeItem(
-        quizId: 'q_1',
-        questionIndex: 0,
-        question: QuizQuestion(promptOlChiki: 'ᱚᱞ', sourceWordId: 'w_audit'),
-        addedAt: '2026-01-01T10:00:00.000Z',
-      );
+    test(
+      'Scenario 33: Resolved mistakes preserve audit trail and never resurrect',
+      () {
+        final mistake = MistakeItem(
+          quizId: 'q_1',
+          questionIndex: 0,
+          question: QuizQuestion(promptOlChiki: 'ᱚᱞ', sourceWordId: 'w_audit'),
+          addedAt: '2026-01-01T10:00:00.000Z',
+        );
 
-      final resolved = mistake.copyWith(
-        isResolved: true,
-        resolvedAt: '2026-01-02T12:00:00.000Z',
-      );
+        final resolved = mistake.copyWith(
+          isResolved: true,
+          resolvedAt: '2026-01-02T12:00:00.000Z',
+        );
 
-      expect(resolved.isResolved, isTrue);
-      expect(resolved.resolvedAt, '2026-01-02T12:00:00.000Z');
+        expect(resolved.isResolved, isTrue);
+        expect(resolved.resolvedAt, '2026-01-02T12:00:00.000Z');
 
-      // Check serialization round-trip
-      final json = resolved.toJson();
-      final restored = MistakeItem.fromJson(json);
+        // Check serialization round-trip
+        final json = resolved.toJson();
+        final restored = MistakeItem.fromJson(json);
 
-      expect(restored.isResolved, isTrue);
-      expect(restored.resolvedAt, '2026-01-02T12:00:00.000Z');
-      expect(restored.questionId, '${mistake.quizId}_0');
-    });
+        expect(restored.isResolved, isTrue);
+        expect(restored.resolvedAt, '2026-01-02T12:00:00.000Z');
+        expect(restored.questionId, '${mistake.quizId}_0');
+      },
+    );
   });
 }

@@ -410,7 +410,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                                 HapticFeedback.lightImpact();
                                 ref
                                     .read(mistakeProvider.notifier)
-                                    .masterMistake(
+                                    .resolveMistake(
                                       quizId: currentMistake.quizId,
                                       questionIndex:
                                           currentMistake.questionIndex,

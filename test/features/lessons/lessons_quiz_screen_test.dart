@@ -155,16 +155,13 @@ void main() {
     );
   });
 
-  testWidgets('renders the hardcoded fallback quiz when quizId is null', (
-    tester,
-  ) async {
+  testWidgets('missing quizId renders the not-found state, never a '
+      'hardcoded alphabet question', (tester) async {
     await pumpQuizScreen(tester);
 
-    expect(find.text('1/1Q'), findsOneWidget);
-    expect(find.text('Which sound does this letter make?'), findsOneWidget);
-    expect(find.text('a'), findsOneWidget);
-    expect(find.text('o'), findsOneWidget);
-    expect(find.byType(OfflineStatusBanner), findsOneWidget);
+    expect(find.text('Quiz not found'), findsOneWidget);
+    expect(find.text('Which sound does this letter make?'), findsNothing);
+    expect(find.text('1/1Q'), findsNothing);
   });
 
   testWidgets('loads the quiz matching the provided quizId', (tester) async {
@@ -175,12 +172,12 @@ void main() {
     expect(find.text('Ol Chiki Basics'), findsNothing);
   });
 
-  testWidgets('unknown quizId falls back to the hardcoded question', (
-    tester,
-  ) async {
+  testWidgets('unknown quizId renders the not-found state, never a '
+      'hardcoded alphabet question', (tester) async {
     await pumpQuizScreen(tester, quizId: 'missing', quizzes: [_quiz()]);
 
-    expect(find.text('1/1Q'), findsOneWidget);
+    expect(find.text('Quiz not found'), findsOneWidget);
+    expect(find.text('1/1Q'), findsNothing);
   });
 
   testWidgets('empty quiz renders the empty state', (tester) async {

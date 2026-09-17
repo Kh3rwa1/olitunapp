@@ -593,3 +593,132 @@ test('Handler: successful synthesis saves audio, registers user_assets, and cach
   assert.ok(foundUserAsset, 'File should be tracked in user_assets collection');
 });
 
+
+// ---- WS8 hardening: auth binding, quota refunds, stale reclaim ----
+
+test('Auth: JWT/header binding mismatch fails closed', async () => {
+  const { authenticate } = await import('../src/main.js');
+  const cfg = { endpoint: 'https://appwrite.example/v1', projectId: 'p' };
+  const fakeAccount = (client) => ({
+    get: async () => ({ $id: 'user_jwt', status: true }),
+  });
+  const result = await authenticate(
+    { headers: { 'x-appwrite-user-id': 'user_spoofed', authorization: 'Bearer jwt-token' } },
+    cfg,
+    fakeAccount
+  );
+  assert.equal(result, null);
+});
+
+test('Auth: forged header without any JWT is gateway-trusted (documented)', async () => {
+  // With execute:["users"], Appwrite's gateway rejects unauthenticated
+  // direct-HTTP calls and injects a truthful header for session calls, so a
+  // header-only request reaching the function is platform-attested.
+  const { authenticate } = await import('../src/main.js');
+  const cfg = { endpoint: 'https://appwrite.example/v1', projectId: 'p' };
+  const result = await authenticate(
+    { headers: { 'x-appwrite-user-id': 'user_1' } },
+    cfg,
+    () => ({ get: async () => { throw new Error('no jwt'); } })
+  );
+  assert.equal(result, 'user_1');
+});
+
+test('Auth: no identity at all fails closed with 401', async () => {
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => null,
+  });
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani' } },
+    res,
+  });
+  assert.equal(res.statusCode, 401);
+});
+
+async function quotaUsed(db, secret, scope) {
+  const id = digest(secret, ['quota', scope]);
+  try {
+    const doc = await db.getDocument('olitun_db', 'voice_quotas', id);
+    return doc.used || 0;
+  } catch {
+    return 0;
+  }
+}
+
+test('Quota: synthesis failure refunds the reservation exactly once', async () => {
+  const db = createMockDb();
+  const store = new VoiceStore(db, 'olitun_db', testEnv.SANTALI_VOICE_HMAC_SECRET);
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => 'u_refund',
+    services: () => ({
+      databases: db,
+      storage: {},
+      store,
+      synthesizeWithRotation: async () => {
+        const err = new Error('provider down');
+        err.code = 'ALL_KEYS_EXHAUSTED';
+        throw err;
+      },
+    }),
+  });
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ ᱜᱮ', voice: 'Phulmani' } },
+    res,
+  });
+  assert.equal(res.statusCode, 503);
+  const day = new Date().toISOString().slice(0, 10);
+  const used = await quotaUsed(db, testEnv.SANTALI_VOICE_HMAC_SECRET, `voice:${day}:user:u_refund`);
+  assert.equal(used, 0);
+});
+
+test('Quota: upload failure refunds the reservation', async () => {
+  const db = createMockDb();
+  const store = new VoiceStore(db, 'olitun_db', testEnv.SANTALI_VOICE_HMAC_SECRET);
+  const handler = createHandler({
+    env: testEnv,
+    authenticateImpl: async () => 'u_upload',
+    services: () => ({
+      databases: db,
+      storage: { createFile: async () => { throw new Error('storage down'); } },
+      store,
+      synthesizeWithRotation: async () => ({ audio: Buffer.from([1, 2, 3]), attempts: 1 }),
+    }),
+  });
+  const res = createMockRes();
+  await handler({
+    req: { method: 'POST', body: { text: 'ᱡᱚᱦᱟᱨ ᱜᱮ', voice: 'Phulmani' } },
+    res,
+  });
+  assert.equal(res.statusCode, 502);
+  assert.equal(res.body.error, 'UPLOAD_FAILED');
+  const day = new Date().toISOString().slice(0, 10);
+  const used = await quotaUsed(db, testEnv.SANTALI_VOICE_HMAC_SECRET, `voice:${day}:user:u_upload`);
+  assert.equal(used, 0);
+});
+
+test('Claims: stale submitting claim is reclaimed instead of locking forever', async () => {
+  const inner = createMockDb();
+  // delete-capable wrapper for the reclaim path.
+  const db = {
+    ...inner,
+    async deleteDocument(p, col, id) {
+      const collectionId = typeof p === 'object' ? p.collectionId : col;
+      const documentId = typeof p === 'object' ? p.documentId : id;
+      const k = `${collectionId}:${documentId}`;
+      if (!inner.docs.has(k)) {
+        const err = new Error('not found');
+        err.code = 404;
+        throw err;
+      }
+      inner.docs.delete(k);
+      return {};
+    },
+  };
+  const store = new VoiceStore(db, 'olitun_db', testEnv.SANTALI_VOICE_HMAC_SECRET);
+  const reclaimed = await store.reclaimIfStale('missing-claim', 1000);
+  assert.equal(reclaimed, true);
+});

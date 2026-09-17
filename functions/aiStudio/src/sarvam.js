@@ -106,4 +106,3 @@ export function resultText(result) {
       .join('\n\n'),
   );
 }
-

@@ -37,6 +37,8 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Olitun uses the microphone to turn your spoken Santali and Indic languages into editable text.</string>
 	<!-- Google AdMob Configuration -->
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>

@@ -56,6 +56,10 @@ class StudioException implements Exception {
       'The AI processing allowance is temporarily reached. Please try later.',
     'INVALID_INPUT' || 'INVALID_FILE' || 'INVALID_TEXT' =>
       'Check the selected language, file format and input limits.',
+    'INVALID_AUDIO' =>
+      'The recording is invalid or too long. Record a clip of 30 seconds or less.',
+    'MIC_PERMISSION' =>
+      'Allow microphone access in your browser or device settings, then try again.',
     'REQUEST_NOT_REPLAYABLE' =>
       'This request is pending or could not be confirmed. It will not be submitted again automatically.',
     'PROVIDER_UNAVAILABLE' =>

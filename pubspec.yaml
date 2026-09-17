@@ -89,6 +89,9 @@ dependencies:
 
   flutter_web_plugins:
     sdk: flutter
+  # 6.2.1 is the final record release compatible with the Appwrite Sites
+  # Flutter 3.35 / Dart 3.9 runtime. v7 requires Flutter 3.44 / Dart 3.12.
+  record: 5.2.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,11 +12,12 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
+import '../data/studio_recorder.dart';
 import 'studio_passage_dialog.dart';
 
 enum _Tool {
-  translate('Translate', Icons.translate_rounded),
   transcribe('Transcribe', Icons.graphic_eq_rounded),
+  translate('Translate', Icons.translate_rounded),
   scan('Scan', Icons.document_scanner_outlined);
 
   const _Tool(this.label, this.icon);
@@ -49,12 +52,16 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
   final _source = TextEditingController();
   final _drafts = {for (final tool in _Tool.values) tool: _Draft()};
   final _share = const GrowthShareService();
-  _Tool _tool = _Tool.translate;
+  _Tool _tool = _Tool.transcribe;
   int _generation = 0;
+  bool _recording = false;
+  int _recordingSeconds = 0;
+  Timer? _recordingTimer;
   _Draft get _draft => _drafts[_tool]!;
 
   @override
   void dispose() {
+    _recordingTimer?.cancel();
     _source.dispose();
     for (final draft in _drafts.values) {
       draft.dispose();
@@ -63,6 +70,12 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
   }
 
   void _resetSession() {
+    _recordingTimer?.cancel();
+    if (_recording) {
+      unawaited(ref.read(studioRecorderProvider).cancel());
+    }
+    _recording = false;
+    _recordingSeconds = 0;
     _generation++;
     _source.clear();
     for (final draft in _drafts.values) {
@@ -111,6 +124,85 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         setState(() => draft.selecting = false);
       }
     }
+  }
+
+  Future<void> _toggleRecording() async {
+    if (_tool != _Tool.transcribe || _draft.busy || _draft.selecting) return;
+    final draft = _draft;
+    final recorder = ref.read(studioRecorderProvider);
+    final generation = _generation;
+    try {
+      if (!_recording) {
+        await recorder.start();
+        if (!mounted || generation != _generation) {
+          await recorder.cancel();
+          return;
+        }
+        setState(() {
+          draft.error = null;
+          _recording = true;
+          _recordingSeconds = 0;
+        });
+        _recordingTimer?.cancel();
+        _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (!mounted || generation != _generation || !_recording) {
+            timer.cancel();
+            return;
+          }
+          if (_recordingSeconds >= 29) {
+            unawaited(_toggleRecording());
+            return;
+          }
+          setState(() => _recordingSeconds++);
+        });
+        return;
+      }
+
+      _recordingTimer?.cancel();
+      final input = await recorder.stop();
+      if (!mounted || generation != _generation) return;
+      setState(() {
+        _recording = false;
+        _recordingSeconds = 0;
+        if (input == null) {
+          draft.error =
+              'No speech was captured. Check microphone access and try again.';
+        } else {
+          draft.input = input;
+          draft.consent = false;
+        }
+      });
+    } on StudioException catch (error) {
+      if (mounted && generation == _generation) {
+        setState(() {
+          _recording = false;
+          _recordingSeconds = 0;
+          draft.error = error.userMessage;
+        });
+      }
+    } catch (_) {
+      if (mounted && generation == _generation) {
+        setState(() {
+          _recording = false;
+          _recordingSeconds = 0;
+          draft.error =
+              'Could not start the microphone. Allow access and make sure no other app is using it.';
+        });
+      }
+    }
+  }
+
+  void _selectTool(_Tool tool) {
+    if (_tool == tool) return;
+    if (_recording) {
+      _recordingTimer?.cancel();
+      unawaited(ref.read(studioRecorderProvider).cancel());
+    }
+    setState(() {
+      _recording = false;
+      _recordingSeconds = 0;
+      _tool = tool;
+    });
   }
 
   Future<void> _process({bool checkStatus = false}) async {
@@ -266,7 +358,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                           label: Text(tool.label),
                           selected: _tool == tool,
                           padding: AppSpacing.edgeInsetsMd,
-                          onSelected: (_) => setState(() => _tool = tool),
+                          onSelected: (_) => _selectTool(tool),
                         ),
                     ],
                   ),
@@ -425,7 +517,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
 
   Widget _inputPanel(bool configured) {
     final draft = _draft;
-    final locked = draft.busy || draft.selecting;
+    final locked = draft.busy || draft.selecting || _recording;
     final scanPending =
         _tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal;
     final languages = studioLanguages.entries.where(
@@ -488,11 +580,55 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
               errorMaxLines: 3,
             ),
           ),
+        ] else if (_tool == _Tool.transcribe) ...[
+          const Text(
+            'Speak normally. Recording stops automatically at 30 seconds. '
+            'You can also upload a WAV file instead.',
+          ),
+          AppSpacing.gapH16,
+          FilledButton.icon(
+            key: const Key('studio-record'),
+            onPressed: draft.busy || draft.selecting ? null : _toggleRecording,
+            icon: const Icon(Icons.mic_rounded),
+            label: Text(
+              _recording
+                  ? 'Stop recording · ${_recordingSeconds.toString().padLeft(2, '0')}s'
+                  : 'Record voice',
+            ),
+          ),
+          if (_recording) ...[
+            AppSpacing.gapH8,
+            Semantics(
+              liveRegion: true,
+              child: const Text(
+                'Listening… Tap Stop recording when you are done.',
+              ),
+            ),
+          ],
+          AppSpacing.gapH16,
+          const Divider(),
+          AppSpacing.gapH12,
+          const Text('Or use an existing recording'),
+          AppSpacing.gapH8,
+          if (draft.input != null) ...[
+            _notice(draft.input!.name, icon: Icons.audiotrack_outlined),
+            AppSpacing.gapH12,
+          ],
+          OutlinedButton.icon(
+            key: const Key('studio-pick'),
+            onPressed: locked ? null : _pick,
+            icon: const Icon(Icons.upload_file_outlined),
+            label: Text(
+              draft.selecting
+                  ? 'Opening…'
+                  : draft.input == null
+                  ? 'Upload WAV file'
+                  : 'Replace recording',
+            ),
+          ),
         ] else ...[
-          Text(
-            _tool == _Tool.transcribe
-                ? 'WAV only · PCM16 · mono · 16 kHz\nUp to 30 seconds and 1 MB. No live recording.'
-                : 'PDF, PNG or JPG · up to 10 MB and 10 pages\nUse a clear, upright page with readable text.',
+          const Text(
+            'PDF, PNG or JPG · up to 10 MB and 10 pages\nUse a clear, upright page with readable text.',
           ),
           AppSpacing.gapH16,
           if (draft.input != null) ...[

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/ai_studio/data/ai_studio_service.dart';
 import 'package:itun/features/ai_studio/data/studio_input_picker.dart';
+import 'package:itun/features/ai_studio/data/studio_recorder.dart';
 import 'package:itun/features/ai_studio/presentation/ai_studio_screen.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -17,10 +18,46 @@ class _Input extends Mock implements StudioInput {}
 
 class _Job extends Mock implements StudioJob {}
 
+class _Recorder implements StudioRecorder {
+  _Recorder(this.input);
+
+  final StudioInput input;
+  int starts = 0;
+  int stops = 0;
+  int cancels = 0;
+  bool _isRecording = false;
+
+  @override
+  bool get isRecording => _isRecording;
+
+  @override
+  Future<void> start() async {
+    starts++;
+    _isRecording = true;
+  }
+
+  @override
+  Future<StudioInput?> stop() async {
+    stops++;
+    _isRecording = false;
+    return input;
+  }
+
+  @override
+  Future<void> cancel() async {
+    cancels++;
+    _isRecording = false;
+  }
+
+  @override
+  Future<void> dispose() async {}
+}
+
 void main() {
   late _Service service;
   late _Picker picker;
   late _Input input;
+  late _Recorder recorder;
 
   setUp(() {
     service = _Service();
@@ -31,6 +68,9 @@ void main() {
     when(() => input.bytes).thenReturn(Uint8List(4));
     when(() => picker.pickAudio()).thenAnswer((_) async => input);
     when(() => picker.pickDocument()).thenAnswer((_) async => input);
+    recorder = _Recorder(
+      StudioInput(bytes: Uint8List.fromList([1, 0]), name: 'microphone.wav'),
+    );
   });
 
   Future<void> pump(
@@ -47,6 +87,7 @@ void main() {
         overrides: [
           aiStudioServiceProvider.overrideWithValue(service),
           studioInputPickerProvider.overrideWithValue(picker),
+          studioRecorderProvider.overrideWithValue(recorder),
         ],
         child: MaterialApp(
           builder: (context, child) => MediaQuery(
@@ -72,6 +113,8 @@ void main() {
       tap(tester, find.byKey(const Key('studio-consent')));
   Future<void> process(WidgetTester tester) =>
       tap(tester, find.byKey(const Key('studio-process')));
+  Future<void> selectTranslate(WidgetTester tester) =>
+      tap(tester, find.byKey(const Key('tool-translate')));
   FilledButton processButton(WidgetTester tester) =>
       tester.widget(find.byKey(const Key('studio-process')));
 
@@ -84,6 +127,7 @@ void main() {
       await pump(tester);
       expect(find.text('AI Studio'), findsOneWidget);
       expect(find.textContaining('Sarvam'), findsOneWidget);
+      await selectTranslate(tester);
       expect(processButton(tester).onPressed, isNull);
       await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
       await tester.pump();
@@ -106,6 +150,7 @@ void main() {
     when(() => service.configured).thenReturn(false);
     await pump(tester);
     expect(find.textContaining('not available in this build'), findsOneWidget);
+    await selectTranslate(tester);
     await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
     await consent(tester);
     expect(processButton(tester).onPressed, isNull);
@@ -120,6 +165,7 @@ void main() {
         () => service.translate('hello', 'hi-IN'),
       ).thenAnswer((_) => response.future);
       await pump(tester);
+      await selectTranslate(tester);
       await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
       await consent(tester);
       await process(tester);
@@ -178,6 +224,7 @@ void main() {
     tester,
   ) async {
     await pump(tester);
+    await selectTranslate(tester);
     final text = 'a' * 2001;
     await tester.enterText(find.byKey(const Key('studio-source')), text);
     await consent(tester);
@@ -190,6 +237,28 @@ void main() {
       text,
     );
   });
+
+  testWidgets(
+    'transcribe opens first with microphone primary and WAV upload optional',
+    (tester) async {
+      await pump(tester);
+
+      expect(find.byKey(const Key('studio-record')), findsOneWidget);
+      expect(find.text('Record voice'), findsOneWidget);
+      expect(find.text('Upload WAV file'), findsOneWidget);
+      expect(find.byKey(const Key('studio-source')), findsNothing);
+
+      await tap(tester, find.byKey(const Key('studio-record')));
+      expect(recorder.starts, 1);
+      expect(find.text('Stop recording · 00s'), findsOneWidget);
+
+      await tap(tester, find.byKey(const Key('studio-record')));
+      await tester.pumpAndSettle();
+      expect(recorder.stops, 1);
+      expect(find.text('microphone.wav'), findsOneWidget);
+      expect(processButton(tester).onPressed, isNull);
+    },
+  );
 
   testWidgets('small screen and large text do not overflow in any tool', (
     tester,

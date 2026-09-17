@@ -67,11 +67,12 @@ export async function execute({ body, userId, store, provider, input, policy, se
     if (body.action === 'transcribe') duration = wavDuration(bytes);
     else file = identifyDocument(bytes);
   }
-  const fingerprint = bytes ? createHash('sha256').update(bytes).digest('hex') : body.text;
+  const fingerprint = bytes ? createHash('sha256').update(bytes).digest('hex') : createHash('sha256').update(body.text).digest('hex');
   // request-v2: the v1 OCR parser stored completed records with empty text
   // for the old provider schema; bumping the version bypasses poisoned rows.
   const id = digest(secret, ['request-v2', userId, body.action, body.language, fingerprint]);
-  const claimed = await store.claim(id, userId, body.action, body.language, bytes ? { fileFingerprint: fingerprint } : {});
+  // fileFingerprint is a required attribute: always provide the content hash.
+  const claimed = await store.claim(id, userId, body.action, body.language, { fileFingerprint: fingerprint });
   if (!claimed) {
     const old = await store.get(id);
     if (!old || old.userId !== userId) fail('SERVICE_UNAVAILABLE', 'AI Studio is unavailable.', 503);

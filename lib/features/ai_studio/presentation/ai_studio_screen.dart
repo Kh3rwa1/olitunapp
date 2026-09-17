@@ -151,10 +151,12 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           }
         });
       }
-    } catch (_) {
+    } catch (error) {
       if (mounted && generation == _generation) {
         setState(() {
-          draft.error = checkStatus
+          draft.error = error is StudioException
+              ? error.userMessage
+              : checkStatus
               ? 'Could not check this scan. Your job is saved here; try Check status again.'
               : 'Processing failed. Check your connection, sign-in and usage allowance. '
                     'Your input is still here. Retrying may use paid processing again.';

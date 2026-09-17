@@ -74,6 +74,8 @@ jobs:
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
+            --dart-define=SANTALI_VOICE_FUNCTION_ID=santaliVoice \
+            --dart-define=AI_STUDIO_FUNCTION_ID=aiStudio \
             --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
             --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}"
           bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/account_scope.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
-import '../../../core/config/appwrite_config.dart';
 
 const studioLanguages = {
   'hi-IN': 'Hindi',
@@ -50,6 +49,21 @@ class StudioJob {
 class StudioException implements Exception {
   const StudioException(this.code);
   final String code;
+  String get userMessage => switch (code) {
+    'UNAUTHENTICATED' || 'LOGIN_REQUIRED' || 'SESSION_REQUIRED' =>
+      'Please sign in again, then retry. Your input is still here.',
+    'QUOTA_EXCEEDED' =>
+      'The AI processing allowance is temporarily reached. Please try later.',
+    'INVALID_INPUT' || 'INVALID_FILE' || 'INVALID_TEXT' =>
+      'Check the selected language, file format and input limits.',
+    'REQUEST_NOT_REPLAYABLE' =>
+      'This request is pending or could not be confirmed. It will not be submitted again automatically.',
+    'PROVIDER_UNAVAILABLE' =>
+      'Sarvam could not complete this request. Please try later.',
+    'ACCOUNT_CHANGED' =>
+      'Your account changed. Reopen AI Studio before trying again.',
+    _ => 'AI processing could not finish. Please try again later.',
+  };
   @override
   String toString() => 'AI Studio: $code';
 }
@@ -167,19 +181,20 @@ class _StudioTransport {
   Future<Map<String, dynamic>> call(
     Map<String, dynamic> body,
     StudioInput? input,
+  ) => AccountScope.dispatch(() => _callWithSession(body, input));
+
+  Future<Map<String, dynamic>> _callWithSession(
+    Map<String, dynamic> body,
+    StudioInput? input,
   ) async {
     _check();
-    // Mint under the session-mutation lock; the dedicated JWT client then stays
-    // bound to this account even if the shared SDK session changes mid-request.
-    final token = await AccountScope.dispatch(() async {
-      _check();
-      return auth.account.createJWT();
-    });
+    // Keep the session stable until upload, execution and cleanup finish.
+    // A second SDK client still shares cookies; adding setJWT to it causes
+    // Appwrite's user_jwt_and_cookie_set rejection. Authenticate SDK requests
+    // using the existing session and forward JWT only inside execution headers.
+    final token = await auth.account.createJWT();
     _check();
-    final client = Client()
-      ..setEndpoint(AppwriteConfig.endpoint)
-      ..setProject(AppwriteConfig.projectId)
-      ..setJWT(token.jwt);
+    final client = auth.client;
     final storage = Storage(client);
     String? fileId;
     try {
@@ -207,7 +222,7 @@ class _StudioTransport {
         method: ExecutionMethod.pOST,
         xasync: false,
         headers: {'Authorization': 'Bearer ${token.jwt}'},
-        body: jsonEncode({...body, ?fileId: fileId}),
+        body: jsonEncode({...body, 'fileId': ?fileId}),
       );
       _check();
       final decoded = jsonDecode(response.responseBody);
@@ -215,7 +230,11 @@ class _StudioTransport {
           decoded is! Map ||
           decoded['success'] != true ||
           decoded['data'] is! Map) {
-        throw const StudioException('REQUEST_FAILED');
+        throw StudioException(
+          decoded is Map && decoded['error'] is String
+              ? decoded['error'] as String
+              : 'REQUEST_FAILED',
+        );
       }
       return Map<String, dynamic>.from(decoded['data'] as Map);
     } finally {

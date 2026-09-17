@@ -25,7 +25,7 @@ import '../domain/review_item.dart';
 import '../domain/review_repository.dart';
 import 'review_store.dart';
 
-class ReviewAppwriteRepository implements ReviewRepository {
+class ReviewAppwriteRepository implements ReviewOperationRepository {
   final AppwriteDbService _db;
   final AppwriteFunctionsService _functions;
 
@@ -99,6 +99,34 @@ class ReviewAppwriteRepository implements ReviewRepository {
         res.bodyJson?['error'] as String? ?? 'FUNCTION_ERROR',
       );
     }
+  }
+
+  @override
+  Future<bool> applyRecallOperation(
+    String userId,
+    ReviewRecallOperationPayload op,
+  ) async {
+    final res = await _functions.execute(
+      functionId,
+      body: {
+        'action': 'applyRecall',
+        ...op.toMap(),
+        // Ownership is server-derived; the body value is a hint only and
+        // must equal the session user or the server rejects with 403.
+        'userId': userId,
+      },
+      usePost: true,
+    );
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw AppwriteException(
+        'mutateReviewState applyRecall failed with status ${res.statusCode}: ${res.responseBody}',
+        res.statusCode,
+        res.bodyJson?['error'] as String? ?? 'FUNCTION_ERROR',
+      );
+    }
+    final body = res.bodyJson;
+    // Server reports duplicate:true when the operationId was already applied.
+    return body?['duplicate'] != true;
   }
 
   @override

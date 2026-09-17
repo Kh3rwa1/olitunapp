@@ -51,6 +51,47 @@ export const REVIEW_SCHEMA_LIMITS = {
   STATE_JSON_MAX_BYTES: 8192,
   STATE_JSON_MAX_LENGTH: 8192,
   ITEM_TYPES: Object.freeze(['word', 'sentence']),
+  EXERCISE_TYPES: Object.freeze(['recognition', 'typing', 'listening', 'sentence']),
   SUPPORTED_SCHEMA_VERSIONS: Object.freeze([1, 2, 3]),
   DEFAULT_SCHEMA_VERSION: 3,
+  OPERATION_ID_MAX_LENGTH: 128,
+  DEVICE_ID_MAX_LENGTH: 128,
+  RESPONSE_TIME_MAX_MS: 3600000,
 };
+
+/**
+ * Idempotent recall-operation ledger. One row per (user, operationId):
+ * duplicate deliveries return `{ok:true, duplicate:true}` without
+ * re-applying the recall. Rows are user-owned (same deletion/retention
+ * policy as `review_states`) and never store learning text — only
+ * counters, timestamps and opaque ids.
+ */
+export const REVIEW_OPERATIONS_TABLE_SPEC = {
+  id: 'review_operations',
+  name: 'Review Operations',
+  permissions: [],
+  rowSecurity: true,
+};
+
+export const REVIEW_OPERATIONS_COLUMNS_SPEC = [
+  { key: 'userId', type: 'string', size: 80, required: true },
+  { key: 'operationId', type: 'string', size: 128, required: true },
+  { key: 'itemId', type: 'string', size: 120, required: true },
+  { key: 'occurredAt', type: 'datetime', required: true },
+  { key: 'appliedAt', type: 'datetime', required: true },
+];
+
+export const REVIEW_OPERATIONS_INDEXES_SPEC = [
+  {
+    key: 'idx_ops_user_item',
+    type: 'key',
+    columns: ['userId', 'itemId'],
+    orders: ['ASC', 'ASC'],
+  },
+  {
+    key: 'idx_ops_user_occurred',
+    type: 'key',
+    columns: ['userId', 'occurredAt'],
+    orders: ['ASC', 'ASC'],
+  },
+];

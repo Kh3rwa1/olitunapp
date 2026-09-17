@@ -18,12 +18,18 @@ import {
   REVIEW_TABLE_SPEC,
   REVIEW_COLUMNS_SPEC,
   REVIEW_INDEXES_SPEC,
+  REVIEW_OPERATIONS_TABLE_SPEC,
+  REVIEW_OPERATIONS_COLUMNS_SPEC,
+  REVIEW_OPERATIONS_INDEXES_SPEC,
   REVIEW_SCHEMA_LIMITS,
 } from '../functions/mutateReviewState/src/review_schema_contract.js';
 
 export const TABLE_SPEC = REVIEW_TABLE_SPEC;
 export const COLUMNS_SPEC = REVIEW_COLUMNS_SPEC;
 export const INDEXES_SPEC = REVIEW_INDEXES_SPEC;
+export const OPERATIONS_TABLE_SPEC = REVIEW_OPERATIONS_TABLE_SPEC;
+export const OPERATIONS_COLUMNS_SPEC = REVIEW_OPERATIONS_COLUMNS_SPEC;
+export const OPERATIONS_INDEXES_SPEC = REVIEW_OPERATIONS_INDEXES_SPEC;
 export { REVIEW_SCHEMA_LIMITS };
 
 export function maskSecret(secret) {
@@ -83,8 +89,20 @@ export function createApiClient({ endpoint, projectId, apiKey, verifyOnly = fals
   };
 }
 
+export function specsFor(tableId) {
+  if (tableId === OPERATIONS_TABLE_SPEC.id) {
+    return {
+      table: OPERATIONS_TABLE_SPEC,
+      columns: OPERATIONS_COLUMNS_SPEC,
+      indexes: OPERATIONS_INDEXES_SPEC,
+    };
+  }
+  return { table: TABLE_SPEC, columns: COLUMNS_SPEC, indexes: INDEXES_SPEC };
+}
+
 export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_states' } = {}) {
   const drifts = [];
+  const { table: tableSpec, columns: columnsSpec, indexes: indexesSpec } = specsFor(tableId);
 
   // 1. Verify database exists
   const database = await api.get(`/tablesdb/${db}`);
@@ -102,7 +120,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
 
   // 3. Verify table permissions
   const remotePerms = Array.isArray(table.permissions) ? table.permissions : [];
-  const expectedPerms = TABLE_SPEC.permissions;
+  const expectedPerms = tableSpec.permissions;
   const hasExpectedPerms =
     remotePerms.length === expectedPerms.length &&
     expectedPerms.every((p) => remotePerms.includes(p));
@@ -119,7 +137,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
   }
 
   // 4. Verify row security
-  if (table.rowSecurity !== true) {
+  if (table.rowSecurity !== tableSpec.rowSecurity) {
     drifts.push(`Table rowSecurity drift: expected true, got ${table.rowSecurity}`);
   }
 
@@ -127,7 +145,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
   const remoteCols = Array.isArray(table.columns) ? table.columns : [];
   const remoteColMap = new Map(remoteCols.map((c) => [c.key, c]));
 
-  for (const expected of COLUMNS_SPEC) {
+  for (const expected of columnsSpec) {
     const remote = remoteColMap.get(expected.key);
     if (!remote) {
       drifts.push(`Missing column: "${expected.key}" (${expected.type})`);
@@ -177,7 +195,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
   }
 
   // Check extra columns
-  const expectedColKeys = new Set(COLUMNS_SPEC.map((c) => c.key));
+  const expectedColKeys = new Set(columnsSpec.map((c) => c.key));
   for (const col of remoteCols) {
     if (!expectedColKeys.has(col.key)) {
       drifts.push(`Unexpected extra column found: "${col.key}"`);
@@ -192,7 +210,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
   }
   const remoteIndexMap = new Map(remoteIndexes.map((i) => [i.key, i]));
 
-  for (const expected of INDEXES_SPEC) {
+  for (const expected of indexesSpec) {
     const remote = remoteIndexMap.get(expected.key);
     if (!remote) {
       drifts.push(`Missing index: "${expected.key}"`);
@@ -231,7 +249,7 @@ export async function verifyTable(api, { db = 'olitun_db', tableId = 'review_sta
 
 export async function waitColumnsAvailable(
   api,
-  { db = 'olitun_db', tableId = 'review_states', maxWaitMs = 60000, intervalMs = 1000 } = {}
+  { db = 'olitun_db', tableId = 'review_states', maxWaitMs = 60000, intervalMs = 1000, expectedColumns = null } = {}
 ) {
   const startTime = Date.now();
   while (Date.now() - startTime < maxWaitMs) {
@@ -239,7 +257,8 @@ export async function waitColumnsAvailable(
     if (table) {
       const cols = table.columns || [];
       const pending = cols.filter((c) => c.status !== 'available');
-      if (cols.length >= COLUMNS_SPEC.length && pending.length === 0) {
+      const want = Array.isArray(expectedColumns) ? expectedColumns.length : COLUMNS_SPEC.length;
+      if (cols.length >= want && pending.length === 0) {
         return;
       }
     }
@@ -257,6 +276,7 @@ export async function applyTable(
     pollIntervalMs = 1000,
   } = {}
 ) {
+  const { table: tableSpec, columns: columnsSpec, indexes: indexesSpec } = specsFor(tableId);
   // 1. Verify database exists
   const database = await api.get(`/tablesdb/${db}`);
   if (!database) {
@@ -271,9 +291,9 @@ export async function applyTable(
       table = await api.post(`/tablesdb/${db}/tables`, {
         databaseId: db,
         tableId: tableId,
-        name: TABLE_SPEC.name,
-        permissions: TABLE_SPEC.permissions,
-        rowSecurity: TABLE_SPEC.rowSecurity,
+        name: tableSpec.name,
+        permissions: tableSpec.permissions,
+        rowSecurity: tableSpec.rowSecurity,
       });
       console.log(`  table ${tableId}: created`);
     } catch (e) {
@@ -287,7 +307,7 @@ export async function applyTable(
   } else {
     // Check permissions and rowSecurity drift
     const remotePerms = Array.isArray(table.permissions) ? table.permissions : [];
-    const expectedPerms = TABLE_SPEC.permissions;
+    const expectedPerms = tableSpec.permissions;
     const permsMatch =
       remotePerms.length === expectedPerms.length &&
       expectedPerms.every((p) => remotePerms.includes(p));
@@ -305,7 +325,7 @@ export async function applyTable(
 
   // 3. Create missing columns
   const existingCols = new Set((table.columns || []).map((c) => c.key));
-  for (const col of COLUMNS_SPEC) {
+  for (const col of columnsSpec) {
     if (existingCols.has(col.key)) {
       console.log(`  column ${col.key}: already exists (skip)`);
       if (col.type === 'integer' && col.default !== undefined) {
@@ -350,6 +370,7 @@ export async function applyTable(
     tableId,
     maxWaitMs: pollTimeoutMs,
     intervalMs: pollIntervalMs,
+    expectedColumns: columnsSpec,
   });
   console.log('  all columns available');
 
@@ -364,7 +385,7 @@ export async function applyTable(
     }
   }
 
-  for (const index of INDEXES_SPEC) {
+  for (const index of indexesSpec) {
     if (existingIndexes.has(index.key)) {
       console.log(`  index ${index.key}: already exists (skip)`);
       continue;
@@ -461,27 +482,37 @@ export async function run(argv = process.argv.slice(2), env = process.env) {
     verifyOnly: isVerifyOnly,
   });
 
+  const tablesToManage = tableId === TABLE_SPEC.id
+    ? [TABLE_SPEC.id, OPERATIONS_TABLE_SPEC.id]
+    : [tableId];
+
   if (isVerifyOnly) {
-    console.log(`Running deep verification on ${db}.${tableId}...`);
-    const result = await verifyTable(api, { db, tableId });
-    if (!result.ok) {
-      console.error(`\n❌ Drift detected on ${db}.${tableId}:`);
-      for (const d of result.drifts) {
-        console.error(`  - ${d}`);
+    let failed = false;
+    for (const tid of tablesToManage) {
+      console.log(`Running deep verification on ${db}.${tid}...`);
+      const result = await verifyTable(api, { db, tableId: tid });
+      if (!result.ok) {
+        console.error(`\n❌ Drift detected on ${db}.${tid}:`);
+        for (const d of result.drifts) {
+          console.error(`  - ${d}`);
+        }
+        failed = true;
+        continue;
       }
-      process.exit(1);
+      console.log(`\n✅ Schema verified: ${db}.${tid} matches expected specification exactly (0 drift).`);
     }
-    console.log(`\n✅ Schema verified: ${db}.${tableId} matches expected specification exactly (0 drift).`);
-    process.exit(0);
+    process.exit(failed ? 1 : 0);
   }
 
   if (isApply) {
-    await applyTable(api, {
-      db,
-      tableId,
-      pollTimeoutMs,
-      pollIntervalMs,
-    });
+    for (const tid of tablesToManage) {
+      await applyTable(api, {
+        db,
+        tableId: tid,
+        pollTimeoutMs,
+        pollIntervalMs,
+      });
+    }
     process.exit(0);
   }
 }

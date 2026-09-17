@@ -55,6 +55,26 @@ class QuizRepository {
 
 final quizRepositoryProvider = Provider(QuizRepository.new);
 
+/// Resolves the lesson body quizzes generate from.
+///
+/// Catalog lessons are intentionally metadata-only (blocks empty); the full
+/// body arrives through [learnerLessonDetailProvider] — the same hydration
+/// `LessonBlockDetailScreen` uses. Generating from the unhydrated catalog is
+/// what produced the fake 1/1 lesson-title quiz for affected lessons, so an
+/// empty-block catalog lesson hydrates before generation instead of falling
+/// back to placeholder questions. Lessons that already carry blocks
+/// (bundled/offline bodies) generate directly with no extra fetch.
+AsyncValue<LessonEntity> _resolveQuizLesson(
+  Ref ref,
+  LessonEntity catalogLesson,
+  String lessonId,
+) {
+  if (catalogLesson.blocks.isNotEmpty) {
+    return AsyncValue.data(catalogLesson);
+  }
+  return ref.watch(learnerLessonDetailProvider(lessonId));
+}
+
 final dynamicLessonQuizProvider = Provider.family<QuizModel, LessonEntity>((
   ref,
   lesson,
@@ -114,12 +134,29 @@ final quizResultProvider =
         }
 
         final lessons = lessonsAsync.valueOrNull ?? [];
-        final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+        final catalogLesson = lessons
+            .where((l) => l.id == lessonId)
+            .firstOrNull;
 
-        if (lesson == null) {
+        if (catalogLesson == null) {
           return const AsyncValue.data(
             Left(ServerFailure(message: 'Lesson not found.')),
           );
+        }
+
+        final resolved = _resolveQuizLesson(ref, catalogLesson, lessonId);
+        if (resolved.isLoading) {
+          // Lesson body still hydrating through the detail boundary.
+          return const AsyncValue.loading();
+        }
+        if (resolved.hasError) {
+          return const AsyncValue.data(
+            Left(ServerFailure(message: 'Could not load the lesson content.')),
+          );
+        }
+        final lesson = resolved.valueOrNull;
+        if (lesson == null) {
+          return const AsyncValue.loading();
         }
 
         final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
@@ -153,12 +190,29 @@ final quizResultProvider =
         }
 
         final lessons = lessonsAsync.valueOrNull ?? [];
-        final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+        final catalogLesson = lessons
+            .where((l) => l.id == lessonId)
+            .firstOrNull;
 
-        if (lesson == null) {
+        if (catalogLesson == null) {
           return const AsyncValue.data(
             Left(ServerFailure(message: 'Lesson not found.')),
           );
+        }
+
+        final resolved = _resolveQuizLesson(ref, catalogLesson, lessonId);
+        if (resolved.isLoading) {
+          // Lesson body still hydrating through the detail boundary.
+          return const AsyncValue.loading();
+        }
+        if (resolved.hasError) {
+          return const AsyncValue.data(
+            Left(ServerFailure(message: 'Could not load the lesson content.')),
+          );
+        }
+        final lesson = resolved.valueOrNull;
+        if (lesson == null) {
+          return const AsyncValue.loading();
         }
 
         final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);

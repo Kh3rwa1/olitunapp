@@ -140,6 +140,7 @@ Future<void> _pumpUnavailableQuiz(
   required List<Override> extraOverrides,
 }) async {
   SharedPreferences.setMockInitialValues({});
+  final prefs = await SharedPreferences.getInstance();
   final playback = MockPlaybackController();
   when(playback.stop).thenAnswer((_) async {});
   final router = GoRouter(
@@ -164,12 +165,18 @@ Future<void> _pumpUnavailableQuiz(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
         playbackControllerProvider.overrideWithValue(playback),
         effectiveTeachingLanguageProvider.overrideWithValue('hi'),
         effectiveScriptModeProvider.overrideWithValue('both'),
         activeLanguageManifestProvider.overrideWithValue(
           LanguageRegistry.findByCode('sat'),
         ),
+        // The catalog lesson carries no blocks, so the quiz hydrates
+        // through the detail boundary — which resolves empty here.
+        learnerLessonDetailProvider(
+          'lesson_conv3',
+        ).overrideWith((_) => Future.value(_emptyLesson)),
         ...extraOverrides,
       ],
       child: MaterialApp.router(routerConfig: router),

@@ -71,11 +71,21 @@ lesson above.
 
 ## Findings
 
-1. **"Modern Conversational Exchanges III" is healthy in the bundled seed**
-   (22 valid blocks, 10 Hindi questions from `data.meaning_hi`). The reported
-   1/1 title quiz therefore came from missing/malformed blocks at runtime —
-   e.g. an unhydrated metadata-only listing — not from this content. That
-   path now fails closed instead of inventing a title question.
+1. **The 1/1 title quiz hit every lesson through the full-screen quiz
+   route, not because of per-lesson content.** The lesson catalog is
+   intentionally metadata-only (`learnerLessonsProvider`: "Catalog providers
+   intentionally keep lesson blocks empty"); the full body arrives via
+   `learnerLessonDetailProvider`, which `LessonBlockDetailScreen` uses but
+   `quizResultProvider` did not. Every `dynamic_quiz_*` opened through
+   `/quiz/:quizId` therefore generated from zero blocks and took the title
+   fallback. `quizResultProvider` now hydrates through the detail boundary
+   before generating (loading while hydrating, fail-closed error when
+   hydration fails, direct generation for lessons that already carry
+   blocks) — covered by
+   `test/features/quiz/quiz_result_hydration_test.dart`. "Modern
+   Conversational Exchanges III" is healthy in the bundled seed (22 valid
+   blocks, 10 Hindi questions from `data.meaning_hi`), so with hydration it
+   generates real sentence questions.
 2. **Four lessons generate fewer than five questions**: the grammar lessons
    listed above (3/3/2/2). They need more sentence blocks (content work —
    no production data was changed).

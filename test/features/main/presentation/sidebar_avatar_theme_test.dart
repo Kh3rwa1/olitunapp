@@ -6,6 +6,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/main/presentation/main_shell/widgets/sidebar_avatar_icon.dart';
 import 'package:itun/features/main/presentation/main_shell/widgets/theme_toggle_switch.dart';
 import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
+import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -77,7 +78,14 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // Sidebar resolves avatars against the background remote sync;
+          // fail it fast to keep the test hermetic and timer-free.
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
+        ],
         child: const MaterialApp(home: Scaffold(body: SidebarAvatarIcon())),
       ),
     );
@@ -96,7 +104,14 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // Sidebar resolves avatars against the background remote sync;
+          // fail it fast to keep the test hermetic and timer-free.
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
+        ],
         child: const MaterialApp(home: Scaffold(body: SidebarAvatarIcon())),
       ),
     );

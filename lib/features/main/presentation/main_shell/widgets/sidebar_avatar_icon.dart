@@ -42,7 +42,7 @@ class SidebarAvatarIcon extends ConsumerWidget {
               )
             : ClipOval(
                 child: AvatarLottie(
-                  avatar: profileAvatarById(avatarId) ?? kProfileAvatars.first,
+                  avatar: ref.watch(resolvedAvatarProvider(avatarId)),
                   width: 38,
                   height: 38,
                   fallback: Text(

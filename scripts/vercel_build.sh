@@ -27,3 +27,5 @@ flutter build web --release \
   --dart-define=AI_STUDIO_FUNCTION_ID="${AI_STUDIO_FUNCTION_ID:-aiStudio}" \
   --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
   --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}"
+
+node scripts/verify_pwa_offline.mjs

@@ -259,7 +259,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String avatarId,
     int colorIndex,
   ) async {
-    await _prefs.setString('user_avatar_id', normalizeAvatarId(avatarId));
+    // The caller normalizes against the latest catalog (bundled + merged
+    // remote), so store verbatim: re-normalizing here with the bundled-only
+    // set would silently downgrade a freshly synced remote pick to default.
+    await _prefs.setString(
+      'user_avatar_id',
+      avatarId.isEmpty ? kDefaultAvatarId : avatarId,
+    );
     await _prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);
   }

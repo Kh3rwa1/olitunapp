@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class CoverThumbnail extends StatefulWidget {
@@ -154,6 +155,7 @@ class _CoverThumbnailState extends State<CoverThumbnail> {
       // decoding them full-res per card is wasted memory and jank.
       content = CachedNetworkImage(
         imageUrl: media.url,
+        cacheManager: olitunImageCacheManager,
         fit: widget.fit,
         memCacheWidth: 800,
         errorWidget: (context, url, error) =>

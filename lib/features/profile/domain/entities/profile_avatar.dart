@@ -252,6 +252,41 @@ const List<ProfileAvatar> kProfileAvatars = [
   ),
 ];
 
+/// Merges remotely synced avatars into the bundled catalog for display.
+///
+/// The bundled order is preserved so the picker grid never reshuffles when
+/// the background sync lands: remote entries win on id conflicts (admin
+/// updates without an app release) and genuinely new remote ids are appended
+/// in bucket order. An empty [remote] list returns [kProfileAvatars].
+List<ProfileAvatar> mergeAvatarCatalog(List<ProfileAvatar> remote) {
+  if (remote.isEmpty) return kProfileAvatars;
+  final merged = List<ProfileAvatar>.of(kProfileAvatars);
+  final indexById = <String, int>{
+    for (var i = 0; i < merged.length; i++) merged[i].id: i,
+  };
+  for (final avatar in remote) {
+    final index = indexById[avatar.id];
+    if (index == null) {
+      indexById[avatar.id] = merged.length;
+      merged.add(avatar);
+    } else {
+      merged[index] = avatar;
+    }
+  }
+  return List<ProfileAvatar>.unmodifiable(merged);
+}
+
+/// Like [normalizeAvatarId] but additionally accepts ids from the background
+/// remote sync (see `availableAvatarsProvider`). [knownIds] is the set of ids
+/// in the latest catalog emission; unknown values still migrate to the
+/// default asset so legacy emoji can never persist as a selection.
+String normalizeAvatarIdWithRemote(String? id, Iterable<String>? knownIds) {
+  if (id == kInitialAvatarId) return kInitialAvatarId;
+  if (id == null || id.isEmpty) return kDefaultAvatarId;
+  if (profileAvatarById(id) != null) return id;
+  if (knownIds != null && knownIds.contains(id)) return id;
+  return kDefaultAvatarId;
+}
 ProfileAvatar? profileAvatarById(String id) {
   for (final avatar in kProfileAvatars) {
     if (avatar.id == id) return avatar;

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
 import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.dart';
+import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 import 'package:itun/features/profile/presentation/widgets/profile_hero_card.dart';
 
@@ -45,6 +46,11 @@ Widget _wrap({
         if (leaderboardError) throw StateError('offline');
         return leaderboard ?? _leaderboard();
       }),
+      // Hero resolves avatars against the background remote sync; keep the
+      // unit under test hermetic and timer-free by failing the sync fast.
+      remoteAvatarListProvider.overrideWith(
+        (ref) async => throw StateError('offline'),
+      ),
     ],
     child: MaterialApp(
       home: Scaffold(
@@ -84,6 +90,9 @@ void main() {
       ProviderScope(
         overrides: [
           weeklyLeaderboardProvider.overrideWith((ref) async => _leaderboard()),
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
         ],
         child: MaterialApp(
           home: Scaffold(

@@ -3,7 +3,7 @@
 /// Admins upload `.json` Lottie files to the `profile_avatars` Appwrite
 /// Storage bucket; each file becomes one avatar choice with no app release.
 /// See `RemoteAvatarDatasource` for syncing and `availableAvatarsProvider`
-/// for the remote-first resolution order.
+/// for the bundled-first, background-merge resolution order.
 library;
 
 import 'avatar_ol_chiki_names.dart';

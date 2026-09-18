@@ -43,5 +43,6 @@ EOF
 
 node scripts/patch_service_worker.mjs
 node scripts/verify_service_worker_patch.mjs
+node scripts/verify_pwa_offline.mjs
 
 echo "Web build and service-worker verification completed."

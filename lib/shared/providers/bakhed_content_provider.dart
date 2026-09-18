@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/logging/app_logger.dart';
+import '../../core/storage/cache_service.dart';
 
 class BakhedLyricLine extends Equatable {
   final String id;
@@ -34,6 +35,18 @@ class BakhedLyricLine extends Equatable {
       latin: _readString(json['latin']),
       meaning: _readString(json['meaning']),
     );
+  }
+
+  Map<String, dynamic> toCacheJson() {
+    return {
+      'id': id,
+      'lineIndex': lineIndex,
+      'startMs': startMs,
+      'endMs': endMs,
+      'olChiki': olChiki,
+      'latin': latin,
+      'meaning': meaning,
+    };
   }
 
   Map<String, dynamic> toJson(String bakhedId) {
@@ -109,6 +122,17 @@ class BakhedVocabularyItem extends Equatable {
     );
   }
 
+  Map<String, dynamic> toCacheJson() {
+    return {
+      'id': id,
+      'olChiki': olChiki,
+      'latin': latin,
+      'meaning': meaning,
+      'audioFileId': audioFileId,
+      'sortOrder': sortOrder,
+    };
+  }
+
   Map<String, dynamic> toJson(String bakhedId) {
     return {
       if (id.isNotEmpty) 'id': id,
@@ -175,6 +199,16 @@ class BakhedCulturalNote extends Equatable {
     );
   }
 
+  Map<String, dynamic> toCacheJson() {
+    return {
+      'noteId': noteId,
+      'title': title,
+      'body': body,
+      'source': source,
+      'isPublished': isPublished,
+    };
+  }
+
   Map<String, dynamic> toJson(String bakhedId) {
     return {
       if (noteId.isNotEmpty) 'id': noteId,
@@ -219,47 +253,126 @@ class BakhedLearningContent {
   });
 
   static const empty = BakhedLearningContent();
+
+  bool get isEmpty =>
+      lyrics.isEmpty && vocabulary.isEmpty && culturalNotes.isEmpty;
+
+  Map<String, dynamic> toCacheJson() {
+    return {
+      'lyrics': lyrics.map((line) => line.toCacheJson()).toList(),
+      'vocabulary': vocabulary.map((item) => item.toCacheJson()).toList(),
+      'culturalNotes': culturalNotes.map((note) => note.toCacheJson()).toList(),
+    };
+  }
+
+  factory BakhedLearningContent.fromCacheJson(Map<String, dynamic> json) {
+    List<T> decodeList<T>(
+      dynamic raw,
+      T Function(Map<String, dynamic>) fromJson,
+    ) {
+      if (raw is! List) return <T>[];
+      return raw
+          .whereType<Map<String, dynamic>>()
+          .map(fromJson)
+          .toList(growable: false);
+    }
+
+    return BakhedLearningContent(
+      lyrics: decodeList(json['lyrics'], BakhedLyricLine.fromJson),
+      vocabulary: decodeList(json['vocabulary'], BakhedVocabularyItem.fromJson),
+      culturalNotes: decodeList(
+        json['culturalNotes'],
+        BakhedCulturalNote.fromJson,
+      ),
+    );
+  }
+}
+
+String _bakhedContentCacheKey(String bakhedId) => 'bakhed_content_$bakhedId';
+
+Future<BakhedLearningContent> _fetchBakhedLearningContent(
+  AppwriteDbService db,
+  String trimmedId,
+) async {
+  final results = await Future.wait([
+    db.listDocuments(
+      'bakhed_lyrics',
+      queries: [
+        Query.equal('bakhedId', trimmedId),
+        Query.orderAsc('lineIndex'),
+        Query.limit(100),
+      ],
+    ),
+    db.listDocuments(
+      'bakhed_vocabulary',
+      queries: [
+        Query.equal('bakhedId', trimmedId),
+        Query.orderAsc('sortOrder'),
+        Query.limit(100),
+      ],
+    ),
+    db.listDocuments(
+      'bakhed_cultural_notes',
+      queries: [
+        Query.equal('bakhedId', trimmedId),
+        Query.equal('isPublished', true),
+        Query.limit(20),
+      ],
+    ),
+  ]);
+
+  return BakhedLearningContent(
+    lyrics: results[0].map(BakhedLyricLine.fromJson).toList(),
+    vocabulary: results[1].map(BakhedVocabularyItem.fromJson).toList(),
+    culturalNotes: results[2].map(BakhedCulturalNote.fromJson).toList(),
+  );
 }
 
 final bakhedLearningContentProvider =
     FutureProvider.family<BakhedLearningContent, String>((ref, bakhedId) async {
       final trimmedId = bakhedId.trim();
       if (trimmedId.isEmpty) return BakhedLearningContent.empty;
+      final cacheKey = _bakhedContentCacheKey(trimmedId);
+
+      // Stale-while-revalidate: serve Hive instantly (even past TTL) so
+      // Bakhed detail opens offline; refresh in the background only when past
+      // TTL, then rebuild once with fresh data. The freshness gate prevents
+      // a refresh → invalidateSelf → refresh rebuild loop.
+      final fresh = await CacheService.getStrictlyFresh(
+        cacheKey,
+        BakhedLearningContent.fromCacheJson,
+      );
+      final cached =
+          fresh ??
+          await CacheService.get(
+            cacheKey,
+            BakhedLearningContent.fromCacheJson,
+          );
+      if (cached != null && !cached.isEmpty) {
+        if (fresh == null) {
+          Future(() async {
+            try {
+              final db = ref.read(appwriteDbServiceProvider);
+              final latest = await _fetchBakhedLearningContent(db, trimmedId);
+              if (!latest.isEmpty) {
+                await CacheService.set(cacheKey, latest.toCacheJson());
+                ref.invalidateSelf();
+              }
+            } catch (_) {
+              // Offline: the stale copy above stays on screen.
+            }
+          });
+        }
+        return cached;
+      }
 
       try {
         final db = ref.read(appwriteDbServiceProvider);
-        final results = await Future.wait([
-          db.listDocuments(
-            'bakhed_lyrics',
-            queries: [
-              Query.equal('bakhedId', trimmedId),
-              Query.orderAsc('lineIndex'),
-              Query.limit(100),
-            ],
-          ),
-          db.listDocuments(
-            'bakhed_vocabulary',
-            queries: [
-              Query.equal('bakhedId', trimmedId),
-              Query.orderAsc('sortOrder'),
-              Query.limit(100),
-            ],
-          ),
-          db.listDocuments(
-            'bakhed_cultural_notes',
-            queries: [
-              Query.equal('bakhedId', trimmedId),
-              Query.equal('isPublished', true),
-              Query.limit(20),
-            ],
-          ),
-        ]);
-
-        return BakhedLearningContent(
-          lyrics: results[0].map(BakhedLyricLine.fromJson).toList(),
-          vocabulary: results[1].map(BakhedVocabularyItem.fromJson).toList(),
-          culturalNotes: results[2].map(BakhedCulturalNote.fromJson).toList(),
-        );
+        final content = await _fetchBakhedLearningContent(db, trimmedId);
+        if (!content.isEmpty) {
+          await CacheService.set(cacheKey, content.toCacheJson());
+        }
+        return content;
       } catch (e) {
         AppLogger.debug('Bakhed content fallback for $trimmedId: $e');
         return BakhedLearningContent.empty;

@@ -52,6 +52,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               child: CachedNetworkImage(
                 imageUrl: imageBlock.media.url,
+                cacheManager: olitunImageCacheManager,
                 fit: BoxFit.cover,
                 memCacheWidth: 1080,
                 placeholder: (context, url) => Container(

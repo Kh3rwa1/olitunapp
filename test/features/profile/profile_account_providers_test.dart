@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
@@ -44,8 +45,21 @@ void main() {
   });
 
   testWidgets('every catalog avatar is present in the asset manifest', (
-    _,
+    tester,
   ) async {
+    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final bundled = manifest.listAssets().toSet();
+    final missing = kProfileAvatars
+        .where((avatar) => !bundled.contains(avatar.assetPath))
+        .toList(growable: false);
+
+    expect(
+      missing.map((avatar) => avatar.assetPath),
+      isEmpty,
+    );
+  });
+
+  test('availableAvatarsProvider emits bundled catalog first when offline', () async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
@@ -59,10 +73,10 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    final avatars = await container.read(availableAvatarsProvider.future);
+    final first = await container.read(availableAvatarsProvider.future);
 
     expect(
-      avatars.map((avatar) => avatar.id),
+      first.map((avatar) => avatar.id),
       orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
     );
   });

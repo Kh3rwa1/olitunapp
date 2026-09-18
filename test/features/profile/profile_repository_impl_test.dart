@@ -116,10 +116,12 @@ void main() {
     expect(prefs.getInt('user_avatar_color'), 3);
   });
 
-  test('updateAvatar normalizes unknown ids to default', () async {
-    final res = await repo.updateAvatar('🦊', 1);
+  test('updateAvatar stores the caller-normalized id verbatim', () async {
+    // Normalization (bundled + merged remote ids) happens in the notifier and
+    // picker via normalizeAvatarIdWithRemote; the repo only guards empty.
+    final res = await repo.updateAvatar('dragon', 1);
     expect(res.isRight(), isTrue);
-    expect(prefs.getString('user_avatar_id'), 'default');
+    expect(prefs.getString('user_avatar_id'), 'dragon');
   });
 
   test(

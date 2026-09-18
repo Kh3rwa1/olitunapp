@@ -6,7 +6,7 @@ import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 
-/// Bottom-of-home promo for the Santali AI Voice studio.
+/// Bottom-of-home promo for the AI Voice studio.
 ///
 /// Loud on purpose: this is the viral surface. Tapping opens `/voice`.
 class SantaliVoicePromoCard extends StatelessWidget {
@@ -18,8 +18,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
     final reduce = RespectMotion.of(context);
 
     final card = PressableScale(
-      semanticLabel:
-          'Santali AI Voice. Type text, hear it in Santali, share the audio.',
+      semanticLabel: 'AI Voice. Type text, hear it in Santali.',
       onTap: () => context.push('/voice'),
       child: BentoCell(
         gradient: const LinearGradient(
@@ -87,7 +86,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                           ),
                           SizedBox(width: 5),
                           Text(
-                            'NEW • SANTALI AI',
+                            'NEW • AI VOICE',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -105,9 +104,9 @@ class SantaliVoicePromoCard extends StatelessWidget {
                   children: [
                     Icon(Icons.mic_rounded, color: Colors.white, size: 26),
                     SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Santali AI Voice',
+                      Expanded(
+                        child: Text(
+                          'AI Voice',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
@@ -121,7 +120,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Type anything — hear Phulmani or Sibu speak it. Save it. Share it.',
+                  'Type anything — hear it in Santali.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,

@@ -12,7 +12,8 @@
     }
   });
 
-  // Safety fallback: if app takes >8s to boot, show reload button
+  // Safety fallback: if app takes >8s to boot, show reload button.
+  // Offline, the button still works because the shell is cached by sw.js.
   setTimeout(function() {
     var reloadBtn = document.getElementById('loading-reload-btn');
     if (reloadBtn && document.getElementById('loading-indicator')) {
@@ -37,30 +38,99 @@
   window.addEventListener('online', updateOnlineStatus);
   if (!navigator.onLine) updateOnlineStatus();
 
-  // Service Worker Update Listener
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.addEventListener('controllerchange', function() {
-      // Automatically reload when new service worker takes control if requested
-    });
+  // --- Custom offline-first service worker (web/sw.js) ---
+  // Flutter's flutter_service_worker.js is a deprecated stub that unregisters
+  // itself, so offline only works once this worker controls the scope.
+  // Registration is delayed until window load so the first paint (splash) is
+  // never blocked on tablets / low-end iPhones.
+  function showUpdateToast(registration) {
+    var updateToast = document.getElementById('pwa-update-toast');
+    var updateBtn = document.getElementById('pwa-update-btn');
+    if (!updateToast || !updateBtn) return;
+    if (updateToast.style.display === 'flex') return;
+    updateToast.style.display = 'flex';
+    updateBtn.onclick = function() {
+      var worker = registration.waiting || registration.installing;
+      if (worker) {
+        try {
+          worker.postMessage({ action: 'skipWaiting' });
+        } catch (_) { /* older iOS: fall through to reload */ }
+      }
+      // Give skipWaiting a beat, then reload into the fresh shell.
+      setTimeout(function() { window.location.reload(); }, 400);
+    };
+  }
 
-    navigator.serviceWorker.ready.then(function(registration) {
-      registration.addEventListener('updatefound', function() {
-        var newWorker = registration.installing;
-        if (!newWorker) return;
-        newWorker.addEventListener('statechange', function() {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            var updateToast = document.getElementById('pwa-update-toast');
-            var updateBtn = document.getElementById('pwa-update-btn');
-            if (updateToast && updateBtn) {
-              updateToast.style.display = 'flex';
-              updateBtn.onclick = function() {
-                newWorker.postMessage({ action: 'skipWaiting' });
-                window.location.reload();
-              };
-            }
+  function trackUpdates(registration) {
+    if (!registration) return;
+    registration.addEventListener('updatefound', function() {
+      var newWorker = registration.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', function() {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateToast(registration);
+        }
+      });
+    });
+    // Handle the case where an update was installed while the page was closed.
+    if (registration.waiting && navigator.serviceWorker.controller) {
+      showUpdateToast(registration);
+    }
+  }
+
+  function registerOfflineWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    // file:// and some in-app webviews have no SW support scope — skip quietly.
+    var isHttp = /^https?:$/.test(window.location.protocol);
+    if (!isHttp) return;
+
+    // Clean up any legacy Flutter stub so it can never evict our worker.
+    // The stub unregisters itself on activate, but an already-installed copy
+    // from an older deploy may still be registered under this scope.
+    try {
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        regs.forEach(function(r) {
+          var script = (r.active && r.active.scriptURL) || '';
+          if (script.indexOf('flutter_service_worker.js') !== -1) {
+            r.unregister().catch(function() {});
           }
         });
+      }).catch(function() {});
+    } catch (_) {}
+
+    window.addEventListener('load', function() {
+      navigator.serviceWorker.register('sw.js', { scope: './' }).then(
+        function(registration) {
+          trackUpdates(registration);
+          // Check for updates when the PWA returns to foreground — keeps
+          // tablets that stay suspended for days from going stale.
+          document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+              registration.update().catch(function() {});
+            }
+          });
+        },
+        function(err) {
+          // Offline-first is best-effort: the app still boots online.
+          if (window.console && console.warn) {
+            console.warn('Olitun offline worker registration failed:', err);
+          }
+        },
+      );
+
+      // Reload once when the fresh worker takes control (standard UX).
+      var reloaded = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (reloaded) return;
+        reloaded = true;
+        // Only auto-reload if the update toast isn't already asking the user.
+        var toast = document.getElementById('pwa-update-toast');
+        if (!toast || toast.style.display !== 'flex') {
+          window.location.reload();
+        }
       });
     });
   }
+
+  registerOfflineWorker();
 })();

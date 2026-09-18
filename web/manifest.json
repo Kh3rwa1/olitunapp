@@ -2,14 +2,15 @@
     "name": "Olitun - Learn Santali and Ol Chiki",
     "short_name": "Olitun",
     "description": "A warm Santali learning coach for Ol Chiki lessons, Bakhed listening, quizzes, mistake review, and gentle daily progress.",
-    "start_url": "/?source=pwa",
+    "start_url": "/",
     "scope": "/",
     "id": "/",
     "display": "standalone",
     "display_override": [
-        "window-controls-overlay",
         "standalone",
-        "minimal-ui"
+        "minimal-ui",
+        "window-controls-overlay",
+        "browser"
     ],
     "background_color": "#070B13",
     "theme_color": "#00C767",
@@ -25,6 +26,12 @@
     "dir": "ltr",
     "icons": [
         {
+            "src": "icons/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
             "type": "image/png",
@@ -35,6 +42,12 @@
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         },
         {
             "src": "icons/Icon-maskable-192.png",
@@ -54,7 +67,7 @@
             "name": "Learn",
             "short_name": "Learn",
             "description": "Continue your next Santali learning step.",
-            "url": "/?shortcut=learn",
+            "url": "/",
             "icons": [
                 {
                     "src": "icons/Icon-192.png",
@@ -103,7 +116,14 @@
             "sizes": "1440x900",
             "type": "image/png",
             "form_factor": "wide",
-            "label": "Olitun welcome screen on desktop"
+            "label": "Olitun welcome screen on desktop and tablet landscape"
+        },
+        {
+            "src": "screenshots/welcome-narrow.png",
+            "sizes": "390x844",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Olitun welcome screen on tablet portrait"
         }
     ],
     "launch_handler": {
@@ -111,9 +131,5 @@
             "navigate-existing",
             "auto"
         ]
-    },
-    "handle_links": "preferred",
-    "edge_side_panel": {
-        "preferred_width": 400
     }
 }

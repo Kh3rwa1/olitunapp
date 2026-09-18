@@ -167,17 +167,12 @@
         },
       );
 
-      // Reload once when the fresh worker takes control (standard UX).
-      var reloaded = false;
-      navigator.serviceWorker.addEventListener('controllerchange', function() {
-        if (reloaded) return;
-        reloaded = true;
-        // Only auto-reload if the update toast isn't already asking the user.
-        var toast = document.getElementById('pwa-update-toast');
-        if (!toast || toast.style.display !== 'flex') {
-          window.location.reload();
-        }
-      });
+      // NOTE: deliberately no reload on controllerchange. A previous
+      // version reloaded here, which looped forever against Flutter's own
+      // service-worker registration (every reload reset the once-guard and
+      // the two workers kept alternating control). Flutter no longer
+      // registers a worker (see scripts/patch_service_worker.dart) and
+      // updates are offered through the toast above, so no reload is needed.
     });
   }
 

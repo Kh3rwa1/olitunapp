@@ -345,7 +345,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     return Scaffold(
       backgroundColor: isDark
           ? AppColors.translatorDarkBg
-          : const Color(0xFFF3F5F8),
+          : AppColors.studioLightBg,
       appBar: _buildAppBar(l10n, isDark),
       body: Stack(
         children: [
@@ -388,7 +388,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             colors: [
               AppColors.translatorDarkBg,
               AppColors.translatorDarkMid,
-              Color(0xFF0D1420),
+              AppColors.studioAtmosphereDark,
             ],
           ),
         ),
@@ -696,7 +696,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: selected
-                ? (isDark ? const Color(0xFF1E2A40) : Colors.white)
+                ? (isDark ? AppColors.studioActiveTabDark : Colors.white)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(9),
             border: selected
@@ -876,7 +876,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF101724) : Colors.white,
+        color: isDark ? AppColors.studioCardDark : Colors.white,
         borderRadius: BorderRadius.circular(isMobile ? 18 : 20),
         border: Border.all(
           color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
@@ -918,11 +918,15 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = error
-        ? (isDark ? const Color(0xFF2C1414) : const Color(0xFFFDE8E8))
-        : (isDark ? const Color(0xFF131C2E) : const Color(0xFFEBF3FC));
+        ? (isDark
+              ? AppColors.studioNoticeErrorDark
+              : AppColors.studioNoticeErrorLight)
+        : (isDark
+              ? AppColors.studioNoticeInfoDark
+              : AppColors.studioNoticeInfoLight);
     final fg = error
-        ? const Color(0xFFFF6E6E)
-        : (isDark ? Colors.white70 : const Color(0xFF1E3A8A));
+        ? AppColors.studioNoticeErrorFg
+        : (isDark ? Colors.white70 : AppColors.studioNoticeInfoFg);
 
     return Semantics(
       liveRegion: true,
@@ -933,7 +937,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: error
-                ? const Color(0xFFFF5252).withValues(alpha: 0.3)
+                ? AppColors.error.withValues(alpha: 0.3)
                 : (isDark ? Colors.white12 : Colors.black12),
           ),
         ),
@@ -1006,7 +1010,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             key: ValueKey('language-${_tool.name}-${draft.language}'),
             initialValue: draft.language,
             isExpanded: true,
-            dropdownColor: isDark ? const Color(0xFF141C2B) : Colors.white,
+            dropdownColor: isDark ? AppColors.studioDropdownDark : Colors.white,
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black87,
               fontSize: 12,
@@ -1118,7 +1122,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             child: const LinearProgressIndicator(
               semanticsLabel: 'AI processing in progress',
               color: AppColors.primary,
-              backgroundColor: Color(0xFF1A2333),
+              backgroundColor: AppColors.studioProgressBg,
               minHeight: 4,
             ),
           ),
@@ -1277,13 +1281,13 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: _recording
-                        ? const Color(0xFFFF453A)
+                        ? AppColors.studioRecordingRed
                         : AppColors.primary,
                     boxShadow: [
                       BoxShadow(
                         color:
                             (_recording
-                                    ? const Color(0xFFFF453A)
+                                    ? AppColors.studioRecordingRed
                                     : AppColors.primary)
                                 .withValues(alpha: 0.35),
                         blurRadius: _recording ? 20 : 12,
@@ -1305,10 +1309,10 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 key: const Key('studio-record'),
                 style: FilledButton.styleFrom(
                   backgroundColor: _recording
-                      ? const Color(0xFFFF453A).withValues(alpha: 0.15)
+                      ? AppColors.studioRecordingRed.withValues(alpha: 0.15)
                       : AppColors.primary.withValues(alpha: 0.12),
                   foregroundColor: _recording
-                      ? const Color(0xFFFF453A)
+                      ? AppColors.studioRecordingRed
                       : AppColors.primary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,

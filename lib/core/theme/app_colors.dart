@@ -215,6 +215,21 @@ class AppColors {
   static const Color translatorLightCardC = Color(0xFFE8F0FF);
   static const Color xpNeutral = Color(0xFF9E9E9E);
 
+  // AI Studio Surface & Component Tokens
+  static const Color studioLightBg = Color(0xFFF3F5F8);
+  static const Color studioAtmosphereDark = Color(0xFF0D1420);
+  static const Color studioCardDark = Color(0xFF101724);
+  static const Color studioDropdownDark = Color(0xFF141C2B);
+  static const Color studioActiveTabDark = Color(0xFF1E2A40);
+  static const Color studioProgressBg = Color(0xFF1A2333);
+  static const Color studioNoticeErrorDark = Color(0xFF2C1414);
+  static const Color studioNoticeErrorLight = Color(0xFFFDE8E8);
+  static const Color studioNoticeInfoDark = Color(0xFF131C2E);
+  static const Color studioNoticeInfoLight = Color(0xFFEBF3FC);
+  static const Color studioNoticeErrorFg = Color(0xFFFF6E6E);
+  static const Color studioNoticeInfoFg = Color(0xFF1E3A8A);
+  static const Color studioRecordingRed = Color(0xFFFF453A);
+
   // Gradients
   static const LinearGradient heroGradient = LinearGradient(
     colors: [primary, primaryDark],

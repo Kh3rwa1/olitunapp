@@ -1180,13 +1180,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aiStudioCapturePage => 'पृष्ठ की फ़ोटो लें';
 
   @override
-  String get aiStudioConsentTitle => 'मैं सशुल्क एआई प्रोसेसिंग से सहमत हूँ';
-
-  @override
-  String get aiStudioConsentSubtitle =>
-      'यह आपके टेक्स्ट या फ़ाइल को बाहरी एआई सेवा सर्वम को भेजता है और ऐप के प्रोसेसिंग भत्ते का उपयोग करता है। केवल वही सामग्री भेजें जिसकी अनुमति आपके पास हो। कुछ भी स्वतः प्रकाशित नहीं होता।';
-
-  @override
   String get aiStudioProcessing =>
       'प्रोसेसिंग जारी है… इस स्क्रीन को खुला रखें।';
 
@@ -1206,9 +1199,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'कुछ भी प्रकाशित या साझा नहीं किया गया है। टेक्स्ट तैयार होने पर आप इसे सही कर सकते हैं, कॉपी कर सकते हैं या अगले कदम के लिए अंश चुन सकते हैं।';
 
   @override
-  String get aiStudioEditableResult => 'संपादन योग्य परिणाम';
-
-  @override
   String get aiStudioReviewHelper =>
       'कॉपी या शेयर करने से पहले एआई टेक्स्ट की समीक्षा करें।';
 
@@ -1225,11 +1215,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get aiStudioTranslateResult => 'परिणाम का अनुवाद करें';
 
   @override
-  String get aiStudioSendToBodhan => 'बोधन को भेजें';
+  String get aiStudioSendToVoiceStudio => 'वॉयस स्टूडियो';
 
   @override
-  String get aiStudioBodhanNote =>
-      'बोधन 600 अक्षरों तक का अंश स्वीकार करता है। इसे खोलने पर वॉइस निर्माण शुरू नहीं होता।';
+  String get aiStudioAuto => 'ऑटो';
+
+  @override
+  String get aiStudioLive => 'लाइव';
+
+  @override
+  String get aiStudioThinking => 'सोच रहा है';
+
+  @override
+  String get aiStudioScanningLive =>
+      'आपका पेज पढ़ा जा रहा है — अपडेट यहाँ लाइव दिखेंगे।';
 
   @override
   String get aiStudioLookingForConverter =>

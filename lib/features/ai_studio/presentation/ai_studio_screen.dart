@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,22 +34,29 @@ enum _Tool {
   };
 }
 
-enum _MobileTab { input, result }
-
 class _Draft {
+  _Draft({this.language = 'hi-IN'});
+
   final result = TextEditingController();
-  String language = 'hi-IN';
+  String language;
   String resultLanguage = 'hi-IN';
   StudioInput? input;
   StudioJob? job;
   String? error;
-  bool consent = false;
   bool edited = false;
   bool busy = false;
   bool selecting = false;
+  // Realtime automation: runs by itself as soon as input is ready.
+  bool auto = true;
+  // Monotonic request id; stale responses that lose the race are dropped.
+  int seq = 0;
+  // Set when input changed while a request was in flight.
+  bool pendingAuto = false;
 
   void dispose() => result.dispose();
 }
+
+enum _LiveState { listening, thinking, live, ready, idle }
 
 /// Private, review-first AAA+ AI workspace.
 class AiStudioScreen extends ConsumerStatefulWidget {
@@ -57,21 +66,50 @@ class AiStudioScreen extends ConsumerStatefulWidget {
   ConsumerState<AiStudioScreen> createState() => _AiStudioScreenState();
 }
 
-class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
+class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
+    with SingleTickerProviderStateMixin {
+  static const _autoDebounce = Duration(milliseconds: 750);
+  static const _pollInterval = Duration(seconds: 3);
+  static const _maxPollAttempts = 20;
+  static const _wideBreakpoint = 820.0;
+
   final _source = TextEditingController();
-  final _drafts = {for (final tool in _Tool.values) tool: _Draft()};
+  final _drafts = {
+    _Tool.transcribe: _Draft(language: 'sat-IN'),
+    _Tool.translate: _Draft(),
+    _Tool.scan: _Draft(language: 'sat-IN'),
+  };
+  final _flip = FlipCardController();
+  final _flipKey = GlobalKey();
+  bool _flipBusy = false;
   final _share = const GrowthShareService();
   _Tool _tool = _Tool.transcribe;
-  _MobileTab _mobileTab = _MobileTab.input;
   int _generation = 0;
   bool _recording = false;
   int _recordingSeconds = 0;
   Timer? _recordingTimer;
+  Timer? _debounce;
+  Timer? _poll;
+  int _pollAttempts = 0;
+  late final AnimationController _pulse;
   _Draft get _draft => _drafts[_tool]!;
+
+  @override
+  void initState() {
+    super.initState();
+    // Idle unless recording or thinking; keeps widget tests settling.
+    _pulse = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+  }
 
   @override
   void dispose() {
     _recordingTimer?.cancel();
+    _debounce?.cancel();
+    _poll?.cancel();
+    _pulse.dispose();
     _source.dispose();
     for (final draft in _drafts.values) {
       draft.dispose();
@@ -81,6 +119,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
 
   void _resetSession() {
     _recordingTimer?.cancel();
+    _debounce?.cancel();
+    _poll?.cancel();
+    _pollAttempts = 0;
     if (_recording) {
       unawaited(ref.read(studioRecorderProvider).cancel());
     }
@@ -93,12 +134,11 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       draft.input = null;
       draft.job = null;
       draft.error = null;
-      draft.consent = false;
       draft.edited = false;
       draft.busy = false;
       draft.selecting = false;
     }
-    _mobileTab = _MobileTab.input;
+    unawaited(_flipTo(showResult: false));
     setState(() {});
   }
 
@@ -110,18 +150,14 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       draft.selecting = true;
       draft.error = null;
     });
+    StudioInput? picked;
     try {
       final picker = ref.read(studioInputPickerProvider);
-      final input = tool == _Tool.transcribe
+      picked = tool == _Tool.transcribe
           ? await picker.pickAudio()
           : camera
           ? await picker.capturePage()
           : await picker.pickDocument();
-      if (!mounted || generation != _generation || input == null) return;
-      setState(() {
-        draft.input = input;
-        draft.consent = false;
-      });
     } catch (_) {
       if (mounted && generation == _generation) {
         setState(() {
@@ -135,6 +171,11 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         setState(() => draft.selecting = false);
       }
     }
+    if (!mounted || generation != _generation || picked == null) return;
+    setState(() {
+      draft.input = picked;
+    });
+    _maybeAutoRun();
   }
 
   Future<void> _toggleRecording() async {
@@ -180,9 +221,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
               'No speech was captured. Check microphone access and try again.';
         } else {
           draft.input = input;
-          draft.consent = false;
         }
       });
+      if (input != null) _maybeAutoRun();
     } on StudioException catch (error) {
       if (mounted && generation == _generation) {
         setState(() {
@@ -205,58 +246,154 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
 
   void _selectTool(_Tool tool) {
     if (_tool == tool) return;
+    _debounce?.cancel();
+    _poll?.cancel();
+    _pollAttempts = 0;
     if (_recording) {
       _recordingTimer?.cancel();
       unawaited(ref.read(studioRecorderProvider).cancel());
     }
+    // Invalidate any in-flight request for the outgoing tool so its late
+    // response can never overwrite the new tool's state.
+    _draft.seq++;
+    _draft.busy = false;
+    _draft.pendingAuto = false;
+    unawaited(_flipTo(showResult: false));
     setState(() {
       _recording = false;
       _recordingSeconds = 0;
       _tool = tool;
-      _mobileTab = _MobileTab.input;
     });
   }
 
-  Future<void> _process({bool checkStatus = false}) async {
+  /// Flips the mobile card to the requested face. No-ops on wide layouts
+  /// (no card there) and while a flip is already running.
+  Future<void> _flipTo({required bool showResult}) async {
+    if (_flipBusy) return;
+    final face = _flipKey.currentState as FlipCardState?;
+    if (face == null || MediaQuery.sizeOf(context).width >= _wideBreakpoint) {
+      return;
+    }
+    if (face.isFront == !showResult) return;
+    _flipBusy = true;
+    try {
+      await _flip.flipcard();
+    } finally {
+      _flipBusy = false;
+    }
+  }
+
+  /// Fires the current tool by itself when it is armed: Auto is on, the
+  /// backend is configured and the input is valid. Safe to call from any
+  /// input change; it no-ops unless everything is ready.
+  void _maybeAutoRun() {
+    final draft = _draft;
+    final tool = _tool;
+    if (!draft.auto) return;
+    if (_recording || draft.selecting) return;
+    final service = ref.read(aiStudioServiceProvider);
+    if (!service.configured || !_validInput) return;
+    // Realtime translate waits for a word-ish input to spare paid calls;
+    // the manual button still accepts a single character.
+    if (tool == _Tool.translate && _source.text.trim().length < 2) return;
+    // A running scan owns its own auto-poll loop.
+    if (tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal) {
+      return;
+    }
+    if (draft.busy) {
+      draft.pendingAuto = true;
+      return;
+    }
+    unawaited(_process());
+  }
+
+  void _onSourceChanged() {
+    _debounce?.cancel();
+    setState(() {});
+    if (_tool != _Tool.translate) return;
+    _debounce = Timer(_autoDebounce, () {
+      if (mounted) _maybeAutoRun();
+    });
+  }
+
+  void _schedulePoll() {
+    _poll?.cancel();
+    final generation = _generation;
+    if (_tool != _Tool.scan) return;
+    final draft = _draft;
+    final job = draft.job;
+    if (job == null || job.isTerminal) return;
+    final jobId = job.id;
+    _poll = Timer(_pollInterval, () {
+      if (!mounted || generation != _generation || _tool != _Tool.scan) return;
+      final current = _draft;
+      if (current.job?.id != jobId || current.job!.isTerminal) return;
+      if (current.busy) {
+        // A manual check is in flight; its completion reschedules us.
+        _schedulePoll();
+        return;
+      }
+      if (_pollAttempts >= _maxPollAttempts) return;
+      _pollAttempts++;
+      unawaited(_process(checkStatus: true, autoPoll: true));
+    });
+  }
+
+  Future<void> _process({
+    bool checkStatus = false,
+    bool autoPoll = false,
+  }) async {
     final draft = _draft;
     final tool = _tool;
     final generation = _generation;
     final service = ref.read(aiStudioServiceProvider);
-    if (draft.busy || !service.configured || !draft.consent) return;
+    if (draft.busy || !service.configured) return;
     if (!checkStatus && !_validInput) return;
+    if (checkStatus && draft.job == null) return;
+    final seq = ++draft.seq;
+    draft.pendingAuto = false;
+    _poll?.cancel();
+    if (!checkStatus) _pollAttempts = 0;
     setState(() {
       draft.busy = true;
       draft.error = null;
     });
+    bool alive() =>
+        mounted &&
+        generation == _generation &&
+        _tool == tool &&
+        draft.seq == seq;
     try {
       if (tool == _Tool.scan) {
         final job = checkStatus
             ? await service.pollOcr(draft.job!.id)
             : await service.startOcr(draft.input!, draft.language);
-        if (!mounted || generation != _generation) return;
+        if (!alive()) return;
         setState(() {
           draft.job = job;
           draft.resultLanguage = draft.language;
           if (!draft.edited) draft.result.text = job.text;
-          _mobileTab = _MobileTab.result;
         });
+        unawaited(_flipTo(showResult: true));
       } else {
         final text = tool == _Tool.translate
             ? await service.translate(_source.text.trim(), draft.language)
             : await service.transcribe(draft.input!, draft.language);
-        if (!mounted || generation != _generation) return;
+        if (!alive()) return;
         setState(() {
           draft.result.text = text;
           draft.edited = false;
-          _mobileTab = _MobileTab.result;
           if (text.trim().isEmpty) {
             draft.error =
                 'No text was returned. Review your input before retrying.';
           }
         });
+        unawaited(_flipTo(showResult: true));
       }
     } catch (error) {
-      if (mounted && generation == _generation) {
+      // Silent for background auto-polls (the loop retries); loud for
+      // anything the user explicitly started or armed.
+      if (alive() && !autoPoll) {
         setState(() {
           draft.error = error is StudioException
               ? error.userMessage
@@ -267,9 +404,16 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         });
       }
     } finally {
-      if (mounted && generation == _generation) {
-        setState(() => draft.busy = false);
-      }
+      if (draft.seq == seq) draft.busy = false;
+    }
+    if (!mounted || generation != _generation) return;
+    setState(() {});
+    if (draft.seq != seq || _tool != tool) return;
+    if (tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal) {
+      _schedulePoll();
+    } else if (draft.pendingAuto) {
+      draft.pendingAuto = false;
+      _maybeAutoRun();
     }
   }
 
@@ -286,8 +430,10 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       builder: (_) => StudioPassageDialog(
         text: _draft.result.text,
         limit: voice ? 600 : 2000,
-        title: voice ? 'Choose text for Bodhan' : 'Choose text to translate',
-        action: voice ? 'Open Bodhan' : 'Use in Translate',
+        title: voice
+            ? 'Choose text for Voice Studio'
+            : 'Choose text to translate',
+        action: voice ? 'Open Voice Studio' : 'Use in Translate',
       ),
     );
     if (!mounted || generation != _generation || passage == null) return;
@@ -298,10 +444,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         _source.text = passage;
         _tool = _Tool.translate;
         _draft.language = sourceLanguage == 'sat-IN' ? 'hi-IN' : sourceLanguage;
-        _draft.consent = false;
         _draft.error = null;
-        _mobileTab = _MobileTab.input;
       });
+      unawaited(_flipTo(showResult: false));
     }
   }
 
@@ -332,6 +477,204 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  // ── Realtime Status ──────────────────────────────────────────────────
+  _LiveState _liveState(bool configured) {
+    if (_recording) return _LiveState.listening;
+    if (_draft.busy) return _LiveState.thinking;
+    if (configured && _draft.auto && _validInput) {
+      return _LiveState.live;
+    }
+    if (_draft.result.text.trim().isNotEmpty) return _LiveState.ready;
+    return _LiveState.idle;
+  }
+
+  /// The pulse animation only runs while recording or thinking so idle
+  /// frames (and widget-test pumps) always settle.
+  void _syncPulse() {
+    final active = _recording || _drafts.values.any((draft) => draft.busy);
+    if (active && !_pulse.isAnimating) {
+      _pulse.repeat();
+    } else if (!active && _pulse.isAnimating) {
+      _pulse.stop();
+    }
+  }
+
+  Widget _pulseDot(Color color, {required bool animate}) {
+    if (!animate) {
+      return Container(
+        width: 5,
+        height: 5,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      );
+    }
+    return AnimatedBuilder(
+      animation: _pulse,
+      builder: (_, _) {
+        final wave = math.sin(_pulse.value * 2 * math.pi);
+        return Container(
+          width: 5 + 2.5 * (0.5 + 0.5 * wave),
+          height: 5 + 2.5 * (0.5 + 0.5 * wave),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: color.withValues(alpha: 0.55 + 0.45 * wave),
+            boxShadow: [
+              BoxShadow(
+                color: color.withValues(alpha: 0.5),
+                blurRadius: 6 + 4 * wave,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _statusBadge(AppLocalizations l10n, bool configured) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final state = _liveState(configured);
+    final (label, color, animate) = switch (state) {
+      _LiveState.listening => (
+        '00:${_recordingSeconds.toString().padLeft(2, '0')}',
+        AppColors.studioRecordingRed,
+        true,
+      ),
+      _LiveState.thinking => (
+        l10n.aiStudioThinking.toUpperCase(),
+        AppColors.amberEmber,
+        true,
+      ),
+      _LiveState.live => (
+        l10n.aiStudioLive.toUpperCase(),
+        AppColors.primary,
+        false,
+      ),
+      _LiveState.ready => ('READY', AppColors.primary, false),
+      _LiveState.idle => (
+        'IDLE',
+        isDark ? Colors.white54 : Colors.black45,
+        false,
+      ),
+    };
+    return Semantics(
+      liveRegion: true,
+      label: 'AI Studio status: $label',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: color.withValues(alpha: 0.35)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _pulseDot(color, animate: animate),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                color: state == _LiveState.idle
+                    ? (isDark ? Colors.white54 : Colors.black45)
+                    : color,
+                fontSize: 8.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1.1,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _waveform() {
+    return Semantics(
+      label: 'Recording audio levels',
+      child: AnimatedBuilder(
+        animation: _pulse,
+        builder: (_, _) {
+          final t = _pulse.value * 2 * math.pi;
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (var i = 0; i < 28; i++)
+                Container(
+                  width: 3,
+                  height: 5 + 15 * (0.5 + 0.5 * math.sin(t * 2 + i * 0.65)),
+                  margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                  decoration: BoxDecoration(
+                    color:
+                        (i % 4 == 0
+                                ? AppColors.studioRecordingRed
+                                : AppColors.primary)
+                            .withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _autoPill(_Draft draft, bool isDark) {
+    final on = draft.auto;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: const Key('studio-auto'),
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          setState(() => draft.auto = !draft.auto);
+          if (draft.auto) _maybeAutoRun();
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          decoration: BoxDecoration(
+            color: on
+                ? AppColors.primary.withValues(alpha: 0.14)
+                : (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.04,
+                  ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: on
+                  ? AppColors.primary.withValues(alpha: 0.45)
+                  : (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.12,
+                    ),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                on ? Icons.bolt_rounded : Icons.bolt_outlined,
+                size: 15,
+                color: on
+                    ? AppColors.primary
+                    : (isDark ? Colors.white54 : Colors.black45),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                AppLocalizations.of(context)!.aiStudioAuto,
+                style: TextStyle(
+                  color: on
+                      ? AppColors.primary
+                      : (isDark ? Colors.white70 : Colors.black87),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -341,6 +684,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     });
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    _syncPulse();
 
     return Scaffold(
       backgroundColor: isDark
@@ -486,39 +830,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.3),
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 5,
-                  height: 5,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                const Text(
-                  'READY',
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _statusBadge(l10n, ref.watch(aiStudioServiceProvider).configured),
         ],
       ),
       actions: [
@@ -638,123 +950,6 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     );
   }
 
-  // ── Mobile Mode Switcher ─────────────────────────────────────────────
-  Widget _buildMobileTabSwitcher(AppLocalizations l10n, bool isDark) {
-    final hasResult = _draft.result.text.trim().isNotEmpty || _draft.edited;
-    return Container(
-      height: 38,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _mobileTabButton(
-              tab: _MobileTab.input,
-              label: '1. Input',
-              icon: Icons.edit_note_rounded,
-              selected: _mobileTab == _MobileTab.input,
-              isDark: isDark,
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: _mobileTabButton(
-              tab: _MobileTab.result,
-              label: '2. Result',
-              icon: Icons.auto_awesome_rounded,
-              selected: _mobileTab == _MobileTab.result,
-              hasBadge: hasResult,
-              isDark: isDark,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _mobileTabButton({
-    required _MobileTab tab,
-    required String label,
-    required IconData icon,
-    required bool selected,
-    required bool isDark,
-    bool hasBadge = false,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(9),
-        onTap: () => setState(() => _mobileTab = tab),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: selected
-                ? (isDark ? AppColors.studioActiveTabDark : Colors.white)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(9),
-            border: selected
-                ? Border.all(
-                    color: (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.12,
-                    ),
-                  )
-                : null,
-            boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 14,
-                color: selected
-                    ? AppColors.primary
-                    : (isDark ? Colors.white54 : Colors.black45),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: selected
-                      ? (isDark ? Colors.white : Colors.black87)
-                      : (isDark ? Colors.white54 : Colors.black45),
-                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  fontSize: 12,
-                ),
-              ),
-              if (hasBadge) ...[
-                const SizedBox(width: 6),
-                Container(
-                  width: 6,
-                  height: 6,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   // ── Desktop Single Screen Viewport (Two Columns, Non-Scrollable) ──────
   Widget _buildDesktopSingleScreenBody(
     bool configured,
@@ -815,7 +1010,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     );
   }
 
-  // ── Mobile Single Screen Viewport (Non-Scrollable, Instant Deck) ─────
+  // ── Mobile Flip Viewport (Input front, Result back) ──────────────────
   Widget _buildMobileSingleScreenBody(
     bool configured,
     AppLocalizations l10n,
@@ -828,25 +1023,29 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         children: [
           _buildToolSwitcher(l10n, isDark),
           const SizedBox(height: 8),
-          _buildMobileTabSwitcher(l10n, isDark),
-          const SizedBox(height: 8),
           if (!configured) ...[
             _notice(l10n.aiStudioNotConfigured, icon: Icons.cloud_off_outlined),
             const SizedBox(height: 8),
           ],
           Expanded(
-            child: IndexedStack(
-              index: _mobileTab.index,
-              children: [
-                _inputPanel(
-                  configured,
-                  l10n,
-                  isDark,
-                  flex: true,
-                  isMobile: true,
-                ),
-                _resultPanel(l10n, isDark, flex: true, isMobile: true),
-              ],
+            child: FlipCard(
+              key: _flipKey,
+              controller: _flip,
+              rotateSide: RotateSide.right,
+              animationDuration: const Duration(milliseconds: 550),
+              frontWidget: _inputPanel(
+                configured,
+                l10n,
+                isDark,
+                flex: true,
+                isMobile: true,
+              ),
+              backWidget: _resultPanel(
+                l10n,
+                isDark,
+                flex: true,
+                isMobile: true,
+              ),
             ),
           ),
           const SizedBox(height: 6),
@@ -1059,10 +1258,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 ? null
                 : (value) {
                     if (value != null) {
-                      setState(() {
-                        draft.language = value;
-                        draft.consent = false;
-                      });
+                      setState(() => draft.language = value);
+                      _maybeAutoRun();
                     }
                   },
           ),
@@ -1129,101 +1326,80 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           const SizedBox(height: 5),
           Semantics(
             liveRegion: true,
-            child: Text(
-              l10n.aiStudioProcessing,
-              style: const TextStyle(
-                color: AppColors.primary,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
+            child: AnimatedBuilder(
+              animation: _pulse,
+              builder: (_, _) {
+                final dots = '.' * (1 + ((_pulse.value * 3).floor() % 3));
+                return Text(
+                  '${l10n.aiStudioThinking}$dots',
+                  style: const TextStyle(
+                    color: AppColors.amberEmber,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
         ],
-        // Sleek Consent Bar
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-          decoration: BoxDecoration(
-            color: (isDark ? Colors.white : Colors.black).withValues(
-              alpha: 0.03,
-            ),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: draft.consent
-                  ? AppColors.primary.withValues(alpha: 0.35)
-                  : (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.06,
-                    ),
-            ),
-          ),
-          child: Material(
-            type: MaterialType.transparency,
-            child: CheckboxListTile(
-              key: const Key('studio-consent'),
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              controlAffinity: ListTileControlAffinity.leading,
-              activeColor: AppColors.primary,
-              checkColor: AppColors.elevatedButtonFg,
-              value: draft.consent,
-              onChanged: locked || scanPending
-                  ? null
-                  : (value) => setState(() => draft.consent = value ?? false),
-              title: Text(
-                l10n.aiStudioConsentTitle,
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black87,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 11.5,
-                ),
-              ),
-              subtitle: Text(
-                l10n.aiStudioConsentSubtitle,
-                style: TextStyle(
-                  color: isDark ? Colors.white60 : Colors.black54,
-                  fontSize: 10,
-                  height: 1.2,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
         if (!scanPending) ...[
           const SizedBox(height: 8),
-          SizedBox(
-            height: isMobile ? 42 : 46,
-            child: FilledButton.icon(
-              key: const Key('studio-process'),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.elevatedButtonFg,
-                disabledBackgroundColor: (isDark ? Colors.white : Colors.black)
-                    .withValues(alpha: 0.06),
-                disabledForegroundColor: isDark
-                    ? Colors.white24
-                    : Colors.black26,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              _autoPill(draft, isDark),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FilledButton(
+                  key: const Key('studio-process'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: AppColors.elevatedButtonFg,
+                    disabledBackgroundColor:
+                        (isDark ? Colors.white : Colors.black).withValues(
+                          alpha: 0.06,
+                        ),
+                    disabledForegroundColor: isDark
+                        ? Colors.white24
+                        : Colors.black26,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 13,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: configured && !locked && _validInput
+                      ? () => unawaited(_process())
+                      : null,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(_tool.icon, size: 16),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          draft.busy
+                              ? l10n.aiStudioProcessing
+                              : l10n.aiStudioProcessWithAi(
+                                  _tool.localizedLabel(l10n),
+                                ),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: isMobile ? 13 : 13.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                elevation: 0,
               ),
-              onPressed: configured && !locked && draft.consent && _validInput
-                  ? _process
-                  : null,
-              icon: Icon(_tool.icon, size: 16),
-              label: Text(
-                draft.busy
-                    ? l10n.aiStudioProcessing
-                    : l10n.aiStudioProcessWithAi(_tool.localizedLabel(l10n)),
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  fontSize: isMobile ? 13 : 13.5,
-                ),
-              ),
-            ),
+            ],
           ),
         ],
       ],
@@ -1338,7 +1514,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 ),
               ),
               if (_recording) ...[
-                const SizedBox(height: 6),
+                const SizedBox(height: 10),
+                _waveform(),
+                const SizedBox(height: 8),
                 Semantics(
                   liveRegion: true,
                   child: Text(
@@ -1438,12 +1616,12 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          if (configured && !locked && draft.consent && _validInput) {
+          if (configured && !locked && _validInput) {
             _process();
           }
         },
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-          if (configured && !locked && draft.consent && _validInput) {
+          if (configured && !locked && _validInput) {
             _process();
           }
         },
@@ -1461,7 +1639,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           fontSize: isMobile ? 13.5 : 14,
           height: 1.45,
         ),
-        onChanged: (_) => setState(() => draft.consent = false),
+        onChanged: (_) => _onSourceChanged(),
         decoration: InputDecoration(
           hintText: l10n.aiStudioTextPlaceholder,
           hintStyle: TextStyle(
@@ -1727,51 +1905,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-          decoration: BoxDecoration(
-            color: hasText
-                ? AppColors.primary.withValues(alpha: 0.12)
-                : (isDark ? Colors.white : Colors.black).withValues(
-                    alpha: 0.06,
-                  ),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: hasText
-                  ? AppColors.primary.withValues(alpha: 0.3)
-                  : (isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.08,
-                    ),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 5,
-                height: 5,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: hasText
-                      ? AppColors.primary
-                      : (isDark ? Colors.white38 : Colors.black38),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                hasText ? 'READY' : 'IDLE',
-                style: TextStyle(
-                  color: hasText
-                      ? AppColors.primary
-                      : (isDark ? Colors.white54 : Colors.black45),
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1.1,
-                ),
-              ),
-            ],
-          ),
-        ),
+        _statusBadge(l10n, ref.watch(aiStudioServiceProvider).configured),
       ],
     );
 
@@ -1781,8 +1915,11 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _notice(
-            'Scan status: ${job.status}. '
-            '${job.isTerminal ? 'Review any available text below.' : 'Use Check status for updates. Keep this screen open to retain this job.'}',
+            job.isTerminal
+                ? 'Scan status: ${job.status}. Review any available text below.'
+                : (draft.auto
+                      ? l10n.aiStudioScanningLive
+                      : 'Scan status: ${job.status}. Use Check status for updates. Keep this screen open to retain this job.'),
             icon: job.isTerminal
                 ? Icons.description_outlined
                 : Icons.hourglass_top_rounded,
@@ -1990,9 +2127,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                   ),
                 ),
                 onPressed: hasText ? () => _sendResult(voice: true) : null,
-                icon: const Icon(Icons.record_voice_over_outlined, size: 14),
+                icon: const Icon(Icons.graphic_eq_rounded, size: 14),
                 label: Text(
-                  l10n.aiStudioSendToBodhan,
+                  l10n.aiStudioSendToVoiceStudio,
                   style: const TextStyle(
                     fontSize: 11.5,
                     fontWeight: FontWeight.w700,
@@ -2010,7 +2147,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                 ),
-                onPressed: () => setState(() => _mobileTab = _MobileTab.input),
+                onPressed: () => unawaited(_flipTo(showResult: false)),
                 icon: const Icon(Icons.arrow_back_rounded, size: 13),
                 label: const Text(
                   'Edit source input',
@@ -2025,7 +2162,27 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
 
     return _studioCard(
       header: header,
-      body: body,
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 280),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.04),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(
+            'result-${_tool.name}-$hasText-${job?.status ?? 'none'}',
+          ),
+          child: body,
+        ),
+      ),
       footer: footer,
       isDark: isDark,
       flex: flex,
@@ -2052,8 +2209,6 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       ),
       onChanged: (_) => setState(() => draft.edited = true),
       decoration: InputDecoration(
-        labelText: l10n.aiStudioEditableResult,
-        alignLabelWithHint: true,
         hintText: l10n.aiStudioResultPlaceholder,
         filled: true,
         fillColor: (isDark ? Colors.black : Colors.white).withValues(

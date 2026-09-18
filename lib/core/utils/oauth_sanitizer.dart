@@ -11,6 +11,13 @@ class OAuthSanitizer {
     }
   }
 
+  /// Removes a one-time OAuth `error` query parameter after it was shown.
+  static void clearOAuthError() {
+    if (kIsWeb) {
+      clearOAuthErrorParam();
+    }
+  }
+
   static bool isAllowedRedirect(String path) {
     const allowlist = {
       '/',

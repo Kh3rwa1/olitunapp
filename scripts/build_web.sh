@@ -41,7 +41,8 @@ cat <<EOF > build/web/build-info.json
 }
 EOF
 
-node scripts/patch_service_worker.mjs
-node scripts/verify_service_worker_patch.mjs
+dart run scripts/patch_service_worker.dart
+dart run scripts/verify_service_worker_patch.dart
+dart run scripts/verify_pwa_offline.dart
 
 echo "Web build and service-worker verification completed."

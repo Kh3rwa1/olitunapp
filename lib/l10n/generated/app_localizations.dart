@@ -2222,18 +2222,6 @@ abstract class AppLocalizations {
   /// **'Capture page'**
   String get aiStudioCapturePage;
 
-  /// No description provided for @aiStudioConsentTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'I agree to paid AI processing'**
-  String get aiStudioConsentTitle;
-
-  /// No description provided for @aiStudioConsentSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'This sends my text or file to Sarvam, an external AI service, and uses the app’s paid processing allowance. Only send content you have permission to use. Nothing is published automatically.'**
-  String get aiStudioConsentSubtitle;
-
   /// No description provided for @aiStudioProcessing.
   ///
   /// In en, this message translates to:
@@ -2263,12 +2251,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nothing has been published or shared. Once text is ready, you can correct it, copy it, or choose a passage for the next step.'**
   String get aiStudioResultDisclaimer;
-
-  /// No description provided for @aiStudioEditableResult.
-  ///
-  /// In en, this message translates to:
-  /// **'Editable result'**
-  String get aiStudioEditableResult;
 
   /// No description provided for @aiStudioReviewHelper.
   ///
@@ -2300,17 +2282,35 @@ abstract class AppLocalizations {
   /// **'Translate result'**
   String get aiStudioTranslateResult;
 
-  /// No description provided for @aiStudioSendToBodhan.
+  /// No description provided for @aiStudioSendToVoiceStudio.
   ///
   /// In en, this message translates to:
-  /// **'Send to Bodhan'**
-  String get aiStudioSendToBodhan;
+  /// **'Voice Studio'**
+  String get aiStudioSendToVoiceStudio;
 
-  /// No description provided for @aiStudioBodhanNote.
+  /// No description provided for @aiStudioAuto.
   ///
   /// In en, this message translates to:
-  /// **'Bodhan accepts a passage up to 600 characters. Opening it does not start voice generation.'**
-  String get aiStudioBodhanNote;
+  /// **'Auto'**
+  String get aiStudioAuto;
+
+  /// No description provided for @aiStudioLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live'**
+  String get aiStudioLive;
+
+  /// No description provided for @aiStudioThinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get aiStudioThinking;
+
+  /// No description provided for @aiStudioScanningLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading your page — updates appear here live.'**
+  String get aiStudioScanningLive;
 
   /// No description provided for @aiStudioLookingForConverter.
   ///

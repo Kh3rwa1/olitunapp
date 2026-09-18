@@ -1180,13 +1180,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiStudioCapturePage => 'Capture page';
 
   @override
-  String get aiStudioConsentTitle => 'I agree to paid AI processing';
-
-  @override
-  String get aiStudioConsentSubtitle =>
-      'This sends my text or file to Sarvam, an external AI service, and uses the app’s paid processing allowance. Only send content you have permission to use. Nothing is published automatically.';
-
-  @override
   String get aiStudioProcessing => 'Processing… Keep this screen open.';
 
   @override
@@ -1205,9 +1198,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nothing has been published or shared. Once text is ready, you can correct it, copy it, or choose a passage for the next step.';
 
   @override
-  String get aiStudioEditableResult => 'Editable result';
-
-  @override
   String get aiStudioReviewHelper =>
       'Review AI text before copying or sharing.';
 
@@ -1224,11 +1214,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiStudioTranslateResult => 'Translate result';
 
   @override
-  String get aiStudioSendToBodhan => 'Send to Bodhan';
+  String get aiStudioSendToVoiceStudio => 'Voice Studio';
 
   @override
-  String get aiStudioBodhanNote =>
-      'Bodhan accepts a passage up to 600 characters. Opening it does not start voice generation.';
+  String get aiStudioAuto => 'Auto';
+
+  @override
+  String get aiStudioLive => 'Live';
+
+  @override
+  String get aiStudioThinking => 'Thinking';
+
+  @override
+  String get aiStudioScanningLive =>
+      'Reading your page — updates appear here live.';
 
   @override
   String get aiStudioLookingForConverter =>

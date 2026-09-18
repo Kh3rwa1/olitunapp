@@ -26,7 +26,7 @@ void main() {
 
   if (failures.isNotEmpty) {
     print('Verification Failure:');
-    for (var f in failures) print('  - \$f');
+    for (var f in failures) print('  - ${f}');
     exit(1);
   }
 

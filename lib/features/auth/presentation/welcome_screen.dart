@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
@@ -6,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/utils/oauth_sanitizer.dart';
 import '../presentation/controllers/auth_controller.dart';
 import '../presentation/providers/auth_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
@@ -21,6 +24,10 @@ class WelcomeScreen extends ConsumerWidget {
     return Scaffold(
       body: Stack(
         children: [
+          // Shows a one-time OAuth failure (e.g. ?error= after a redirect
+          // back from Google) that would otherwise sit silently in the URL.
+          const _OAuthFailureNotice(),
+
           // Animated gradient background
           _buildBackground(isDark, size),
 
@@ -525,4 +532,69 @@ class _FeatureData {
   final String subtitle;
 
   _FeatureData(this.icon, this.title, this.subtitle);
+}
+
+/// Surfaces a one-time OAuth redirect failure (`/welcome?error=...`) as a
+/// snackbar and then removes it from the URL. Renders nothing itself.
+class _OAuthFailureNotice extends ConsumerStatefulWidget {
+  const _OAuthFailureNotice();
+
+  @override
+  ConsumerState<_OAuthFailureNotice> createState() =>
+      _OAuthFailureNoticeState();
+}
+
+class _OAuthFailureNoticeState extends ConsumerState<_OAuthFailureNotice> {
+  bool _shown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!kIsWeb) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShow());
+  }
+
+  void _maybeShow() {
+    if (_shown || !mounted) return;
+    _shown = true;
+    String raw = '';
+    try {
+      raw = GoRouterState.of(context).uri.queryParameters['error'] ?? '';
+    } catch (_) {
+      return;
+    }
+    if (raw.isEmpty) return;
+
+    var message = 'Google sign-in failed. Please try again.';
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is Map) {
+        final type = '${decoded['type'] ?? ''}';
+        final detail = '${decoded['message'] ?? ''}';
+        if (type == 'user_already_exists' ||
+            detail.contains('already exists')) {
+          message =
+              'An account with this email already exists. '
+              'Please sign in with Email instead.';
+        } else if (detail.isNotEmpty) {
+          message = 'Google sign-in failed: $detail';
+        }
+      }
+    } catch (_) {
+      // Keep the default message when the payload is not JSON.
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+    OAuthSanitizer.clearOAuthError();
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

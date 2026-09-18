@@ -182,6 +182,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
 
     try {
       if (kIsWeb) {
+        // Drop any stale or anonymous session first (mirrors mobile below):
+        // otherwise the backend tries to attach the Google identity to the
+        // wrong user and fails with 409 user_already_exists.
+        try {
+          await _account.deleteSession(sessionId: 'current');
+        } catch (_) {}
         final origin = Uri.base.origin;
         final oauthUrl =
             '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'

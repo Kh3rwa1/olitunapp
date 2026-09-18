@@ -35,6 +35,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   bool _linkedLessonCompletionRecorded = false;
   late final PlaybackController _playback;
 
+  /// True for quizzes generated from a lesson (dynamic/listening) or opened
+  /// with an explicit lesson context — these fail closed with the lesson
+  /// unavailable state instead of the generic empty state.
+  bool _isLessonQuiz(QuizModel quiz) {
+    return (widget.lessonId != null && widget.lessonId!.trim().isNotEmpty) ||
+        quiz.id.startsWith('dynamic_quiz_') ||
+        quiz.id.startsWith('listening_quiz_');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -250,6 +259,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         ),
         (quiz) {
           if (quiz.questions.isEmpty) {
+            // Fail closed: invalid lesson content yields an empty quiz.
+            // Lesson-linked quizzes surface an honest unavailable state
+            // (no result is saved, no stars/mastery/streak/progression is
+            // awarded — the session below never starts). Standalone
+            // quizzes keep the generic empty state.
+            if (_isLessonQuiz(quiz)) {
+              return _QuizUnavailableView(lessonId: widget.lessonId);
+            }
             return Scaffold(
               body: AppEmptyState(
                 title: 'Quiz is Empty',
@@ -298,6 +315,63 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             onContinue: () => unawaited(notifier.nextQuestion(quiz)),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Honest unavailable state for lesson quizzes with no generatable
+/// questions. Renders no question, starts no session (so no result is
+/// saved and no stars/mastery/streak/progression is awarded), and offers
+/// Back / Finish Lesson navigation.
+class _QuizUnavailableView extends StatelessWidget {
+  const _QuizUnavailableView({this.lessonId});
+
+  final String? lessonId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.quiz_outlined, size: 56),
+              const SizedBox(height: 16),
+              const Text(
+                'Quiz unavailable',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Quiz unavailable — this lesson does not contain enough '
+                'valid questions yet.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/'),
+                  child: const Text('Back'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (lessonId != null && lessonId!.trim().isNotEmpty)
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: () => context.go('/lesson/${lessonId!.trim()}'),
+                    child: const Text('Finish Lesson'),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -1,24 +1,65 @@
 import '../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../shared/models/content_models.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
+import 'quiz_generation_diagnostics.dart';
 import 'quiz_identity_validation.dart';
+
+export 'quiz_generation_diagnostics.dart';
 
 class LessonQuizGenerator {
   const LessonQuizGenerator._();
 
+  /// Legacy entry point. Returns the generated quiz, or a quiz with zero
+  /// questions when nothing valid could be generated. Callers must treat an
+  /// empty quiz as "unavailable" — never substitute placeholder questions.
   static QuizModel generate(
     LessonEntity lesson, {
     String teachingLanguage = 'en',
     String scriptMode = 'both',
     String targetLanguage = 'sat',
   }) {
+    return generateResult(
+      lesson,
+      teachingLanguage: teachingLanguage,
+      scriptMode: scriptMode,
+      targetLanguage: targetLanguage,
+    ).quiz;
+  }
+
+  /// Generates sentence/word/letter/number questions from lesson blocks and
+  /// reports bounded per-block rejection diagnostics (lesson ID + block
+  /// index only — no sentence text or translations).
+  ///
+  /// Fail-closed contract: when no valid questions can be generated the
+  /// result carries an empty quiz. Lesson titles are never used as learning
+  /// questions.
+  static QuizGenerationResult generateResult(
+    LessonEntity lesson, {
+    String teachingLanguage = 'en',
+    String scriptMode = 'both',
+    String targetLanguage = 'sat',
+  }) {
     final questions = <QuizQuestion>[];
+    final rejections = <BlockRejection>[];
+    void reject(int index, List<String> reasons) {
+      if (rejections.length >= QuizGenerationResult.maxRejections) return;
+      rejections.add(BlockRejection(blockIndex: index, reasons: reasons));
+    }
+
     final blocks = lesson.blocks.where((b) => b.type != 'quiz').toList();
 
     final isNumberCategory = lesson.categoryId.toLowerCase().contains('number');
     final isAlphabetCategory =
         lesson.categoryId.toLowerCase().contains('alphabet') ||
         lesson.categoryId.toLowerCase().contains('letter');
+    // Indic meaning prompts must be answered with real translations, never
+    // with romanized Santali passed off as Hindi/Bengali/Odia.
+    final requiresExplicitMeaning =
+        (teachingLanguage == 'hi' ||
+            teachingLanguage == 'bn' ||
+            teachingLanguage == 'or') &&
+        !isAlphabetCategory &&
+        !isNumberCategory;
 
     // Pre-resolve options for all blocks in the lesson
     final resolvedBlockOptions = <String>[];
@@ -34,15 +75,29 @@ class LessonQuizGenerator {
       }
     }
 
+    final seenPrompts = <String>{};
+    var validBlockCount = 0;
+
     for (int i = 0; i < blocks.length; i++) {
       final block = blocks[i];
+      if (block.dataMalformed) {
+        reject(i, const [QuizRejectionReason.malformedData]);
+        continue;
+      }
       final olChiki = block.textOlChiki?.trim();
       final latin = block.textLatin?.trim();
 
-      if (olChiki == null ||
-          olChiki.isEmpty ||
-          latin == null ||
-          latin.isEmpty) {
+      if (olChiki == null || olChiki.isEmpty) {
+        reject(i, const [QuizRejectionReason.missingOlChiki]);
+        continue;
+      }
+      if (latin == null || latin.isEmpty) {
+        reject(i, const [QuizRejectionReason.missingLatin]);
+        continue;
+      }
+      if (requiresExplicitMeaning &&
+          !hasExplicitMeaning(block, teachingLanguage)) {
+        reject(i, const [QuizRejectionReason.missingMeaning]);
         continue;
       }
 
@@ -52,7 +107,16 @@ class LessonQuizGenerator {
         isAlphabet: isAlphabetCategory,
         isNumber: isNumberCategory,
       );
-      if (correctOption.isEmpty) continue;
+      if (correctOption.isEmpty) {
+        reject(i, const [QuizRejectionReason.missingMeaning]);
+        continue;
+      }
+
+      final promptKey = olChiki;
+      if (!seenPrompts.add(promptKey)) {
+        reject(i, const [QuizRejectionReason.duplicateContent]);
+        continue;
+      }
 
       // 1. Gather other items in the same lesson as high-quality distractors
       final otherBlockTranslations = resolvedBlockOptions
@@ -74,6 +138,19 @@ class LessonQuizGenerator {
 
       final options = [correctOption, ...distractors.take(3)]..shuffle();
       final correctIndex = options.indexOf(correctOption);
+
+      // Every multiple-choice question needs four unique, non-empty options
+      // with a valid correct index — otherwise it is rejected, not shipped.
+      if (options.length < 4 ||
+          correctIndex < 0 ||
+          options.any((o) => o.trim().isEmpty) ||
+          options.toSet().length != options.length) {
+        seenPrompts.remove(promptKey);
+        reject(i, const [QuizRejectionReason.insufficientDistractors]);
+        continue;
+      }
+
+      validBlockCount++;
 
       final promptLatin = isNumberCategory
           ? _numberPrompt(teachingLanguage)
@@ -115,30 +192,37 @@ class LessonQuizGenerator {
       );
     }
 
-    // Fallback: If no interactive blocks could be extracted, generate a lesson-title question
-    if (questions.isEmpty) {
-      final fallbackPrompt = _titlePrompt(teachingLanguage);
-      final fallbackOptions = _titleFallbackOptions(
-        lesson.titleLatin,
-        teachingLanguage,
-      );
-      questions.add(
-        QuizQuestion(
-          promptOlChiki: lesson.titleOlChiki,
-          promptLatin: fallbackPrompt,
-          optionsOlChiki: fallbackOptions,
-          optionsLatin: fallbackOptions,
-          isNonMemory: true,
-        ),
-      );
-    }
+    // Fallback: removed. A lesson with no generatable blocks yields an
+    // empty quiz so the UI can fail closed ("Quiz unavailable") instead of
+    // serving a fake lesson-title question. Lesson titles are never
+    // learning questions.
 
-    return QuizModel(
-      id: 'dynamic_quiz_${lesson.id}',
-      categoryId: lesson.categoryId,
-      title: '${lesson.titleLatin} Quiz',
-      questions: questions.take(10).toList(),
+    return QuizGenerationResult(
+      quiz: QuizModel(
+        id: 'dynamic_quiz_${lesson.id}',
+        categoryId: lesson.categoryId,
+        title: '${lesson.titleLatin} Quiz',
+        questions: questions.take(10).toList(),
+      ),
+      lessonId: lesson.id,
+      validBlockCount: validBlockCount,
+      rejections: rejections,
     );
+  }
+
+  /// True when [block] carries an explicit translation for [lang]: either a
+  /// `data.meaning_<lang>` entry or the dedicated `textHindi`/`textBengali`/
+  /// `textOdia` field. Machine transliteration and romanized Santali do not
+  /// count — they must never be presented as a Hindi/Bengali/Odia meaning.
+  static bool hasExplicitMeaning(LessonBlockEntity block, String lang) {
+    if (_getExplicitMeaning(block, lang).isNotEmpty) return true;
+    final field = switch (lang) {
+      'hi' => block.textHindi,
+      'bn' => block.textBengali,
+      'or' => block.textOdia,
+      _ => null,
+    };
+    return field?.trim().isNotEmpty == true;
   }
 
   static String resolveBlockOption(
@@ -307,38 +391,6 @@ class LessonQuizGenerator {
       case 'en':
       default:
         return 'Choose the correct English meaning:';
-    }
-  }
-
-  static String _titlePrompt(String lang) {
-    switch (lang) {
-      case 'hi':
-        return 'Choose the correct Hindi title for this lesson:';
-      case 'bn':
-        return 'Choose the correct Bengali title for this lesson:';
-      case 'or':
-        return 'Choose the correct Odia title for this lesson:';
-      case 'sat':
-        return 'ᱱᱚᱶᱟ ᱯᱟᱲᱦᱟᱣ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ:';
-      case 'en':
-      default:
-        return 'Choose the correct English title for this lesson:';
-    }
-  }
-
-  static List<String> _titleFallbackOptions(String title, String lang) {
-    switch (lang) {
-      case 'hi':
-        return [title, 'अन्य पाठ', 'अभ्यास', 'समीक्षा'];
-      case 'bn':
-        return [title, 'অন্য পাঠ', 'অনুশীলন', 'পর্যালোচনা'];
-      case 'or':
-        return [title, 'ଅନ୍ୟ ପାଠ', 'ଅଭ୍ୟାସ', 'ସମୀକ୍ଷା'];
-      case 'sat':
-        return [title, 'ᱮᱴᱟᱜ ᱯᱟᱲᱦᱟᱣ', 'ᱯᱨᱟᱠᱴᱤᱥ', 'ᱨᱩᱣᱟᱹᱲ'];
-      case 'en':
-      default:
-        return [title, 'Other Lesson', 'Practice', 'Review'];
     }
   }
 

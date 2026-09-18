@@ -86,6 +86,16 @@ class LessonBlockItemView extends ConsumerWidget {
 
       if (quizId.startsWith('dynamic_quiz_')) {
         final quiz = ref.watch(dynamicLessonQuizProvider(lesson));
+        // Fail closed: invalid lesson content yields an empty quiz, which
+        // must surface an honest unavailable state — never a fake question.
+        if (quiz.questions.isEmpty) {
+          return _InlineQuizUnavailable(
+            isDark: isDark,
+            accentColor: accentColor,
+            isError: false,
+            onSkip: onDismissQuiz,
+          );
+        }
         return LayoutBuilder(
           builder: (context, constraints) => LessonBlockQuizCTA(
             lessonId: lesson.id,

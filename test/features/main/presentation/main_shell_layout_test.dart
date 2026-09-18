@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/main/presentation/main_shell/main_shell_screen.dart';
 import 'package:itun/features/main/presentation/main_shell/widgets/desktop_sidebar.dart';
+import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -61,7 +62,14 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // Desktop sidebar renders the animated avatar, which resolves
+          // against the background remote sync; fail it fast here.
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
+        ],
         child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,

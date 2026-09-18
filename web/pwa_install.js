@@ -17,10 +17,14 @@ function baseBannerStyle() {
 }
 
 function isSnoozed() {
-    const dismissedAt = localStorage.getItem('pwa_install_dismissed_at');
-    if (!dismissedAt) return false;
-    const elapsed = Date.now() - parseInt(dismissedAt, 10);
-    return elapsed < SNOOZE_MS;
+    try {
+        const dismissedAt = localStorage.getItem('pwa_install_dismissed_at');
+        if (!dismissedAt) return false;
+        const elapsed = Date.now() - parseInt(dismissedAt, 10);
+        return elapsed < SNOOZE_MS;
+    } catch (_) {
+        return false;
+    }
 }
 
 function showInstallBanner() {
@@ -106,7 +110,13 @@ function triggerInstall() {
         deferredPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
                 window.dispatchEvent(new CustomEvent('pwa-installed'));
+            } else {
+                dismissInstall();
+                return;
             }
+            deferredPrompt = null;
+            removeBanner();
+        }).catch(() => {
             deferredPrompt = null;
             removeBanner();
         });
@@ -114,7 +124,9 @@ function triggerInstall() {
 }
 
 function dismissInstall() {
-    localStorage.setItem('pwa_install_dismissed_at', Date.now().toString());
+    try {
+        localStorage.setItem('pwa_install_dismissed_at', Date.now().toString());
+    } catch (_) {}
     window.dispatchEvent(new CustomEvent('pwa-dismissed'));
     removeBanner();
 }
@@ -125,10 +137,39 @@ function removeBanner() {
     if (banner) banner.remove();
 }
 
-// iOS Safari Smart Add-To-Home-Screen Banner
+// --- Device detection (iPhone / iPad / Android tablet aware) ---
+function isAppleDevice() {
+    const ua = navigator.userAgent || '';
+    // Classic iPhone / iPod / pre-13 iPad.
+    if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) return true;
+    // iPadOS 13+: reports as "Macintosh" but has touch + mobile Safari bits.
+    const isMacWithTouch =
+        /Macintosh/.test(ua) &&
+        typeof navigator.maxTouchPoints === 'number' &&
+        navigator.maxTouchPoints > 1;
+    if (isMacWithTouch) return true;
+    return false;
+}
+
+function isIPad() {
+    const ua = navigator.userAgent || '';
+    if (/iPad/.test(ua)) return true;
+    return (
+        /Macintosh/.test(ua) &&
+        typeof navigator.maxTouchPoints === 'number' &&
+        navigator.maxTouchPoints > 1
+    );
+}
+
+function isSafariBrowser() {
+    const ua = navigator.userAgent || '';
+    return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|mercury/i.test(ua);
+}
+
+// iOS/iPadOS Safari Smart Add-To-Home-Screen Banner
 window.addEventListener('load', () => {
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isSafari = /Safari/.test(navigator.userAgent) && !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
+    const isIOS = isAppleDevice();
+    const isSafari = isSafariBrowser();
     const isStandalone = isStandalonePwa();
 
     if (isIOS && isSafari && !isStandalone && !isSnoozed()) {
@@ -144,8 +185,13 @@ window.addEventListener('load', () => {
             wrapper.style.cssText = `${baseBannerStyle()}background:#111827;color:#FFFFFF;border:1px solid #374151;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;`;
 
             const text = document.createElement('div');
-            text.style.cssText = 'font-size:13px;font-weight:600;line-height:1.4;';
-            text.innerHTML = 'Install <strong>Olitun</strong>: Tap <span style="font-size:15px;">⎋</span> Share then <strong>Add to Home Screen ＋</strong>';
+            text.style.cssText = 'font-size:13px;font-weight:600;line-height:1.5;';
+            // iPad shows the Share button in the top toolbar, iPhone at the
+            // bottom — tailor the hint so tab users are not left guessing.
+            const shareHint = isIPad()
+                ? 'Tap <strong>Share</strong> <span aria-hidden="true" style="font-size:15px;">&#8599;</span> in the top toolbar, then <strong>Add to Home Screen</strong>'
+                : 'Tap <strong>Share</strong> <span aria-hidden="true" style="font-size:15px;">&#8593;</span> in the bottom toolbar, then <strong>Add to Home Screen</strong>';
+            text.innerHTML = '<strong>Olitun</strong> works offline once installed.<br>' + shareHint;
 
             const close = document.createElement('button');
             close.type = 'button';
@@ -162,15 +208,28 @@ window.addEventListener('load', () => {
 });
 
 window.addEventListener('appinstalled', () => {
-    localStorage.setItem('pwa_installed', '1');
+    try {
+        localStorage.setItem('pwa_installed', '1');
+    } catch (_) {}
     window.dispatchEvent(new CustomEvent('pwa-installed'));
     removeBanner();
 });
 
 function isStandalonePwa() {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           window.matchMedia('(display-mode: window-controls-overlay)').matches ||
-           window.navigator.standalone === true ||
-           document.referrer.includes('android-app://');
+    try {
+        if (window.matchMedia('(display-mode: standalone)').matches) return true;
+        if (window.matchMedia('(display-mode: fullscreen)').matches) return true;
+        if (window.matchMedia('(display-mode: minimal-ui)').matches) return true;
+        if (window.matchMedia('(display-mode: window-controls-overlay)').matches) return true;
+    } catch (_) {}
+    if (window.navigator.standalone === true) return true;
+    try {
+        if (document.referrer.includes('android-app://')) return true;
+    } catch (_) {}
+    try {
+        const params = new URLSearchParams(window.location.search);
+        // Installed launches historically carried ?source=pwa / ?shortcut=*.
+        if (params.has('source') || params.has('shortcut')) return true;
+    } catch (_) {}
+    return false;
 }
-

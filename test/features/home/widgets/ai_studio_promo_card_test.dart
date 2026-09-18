@@ -34,10 +34,10 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 800));
 
-      expect(find.text('Santali AI Studio'), findsOneWidget);
-      expect(find.textContaining('NEW • SANTALI AI STUDIO'), findsOneWidget);
+      expect(find.text('AI Studio'), findsOneWidget);
+      expect(find.textContaining('NEW • AI STUDIO'), findsOneWidget);
 
-      await tester.tap(find.text('Santali AI Studio'));
+      await tester.tap(find.text('AI Studio'));
       await tester.pumpAndSettle();
 
       expect(find.text('ai-studio'), findsOneWidget);

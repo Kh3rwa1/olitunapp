@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
@@ -103,9 +104,66 @@ Future<ProviderContainer> _container({
   return container;
 }
 
+/// Collects data emissions until [done] holds. Riverpod's exposed stream
+/// only closes on provider dispose, so `.toList()` would hang forever.
+Future<List<List<ProfileAvatar>>> _emissionsUntil(
+  ProviderContainer container,
+  bool Function(List<List<ProfileAvatar>> emissions) done,
+) async {
+  final emissions = <List<ProfileAvatar>>[];
+  final sub = container.listen<AsyncValue<List<ProfileAvatar>>>(
+    availableAvatarsProvider,
+    (_, next) => next.whenData(emissions.add),
+    fireImmediately: true,
+  );
+  try {
+    final deadline = DateTime.now().add(const Duration(seconds: 5));
+    while (!done(emissions)) {
+      if (DateTime.now().isAfter(deadline)) {
+        throw StateError('Timed out waiting for avatar emissions');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+    }
+    // Extra pump so an unexpected follow-up yield would surface.
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    return List.of(emissions);
+  } finally {
+    sub.close();
+  }
+}
+
 void main() {
   test(
-    'availableAvatarsProvider prefers the remote set when sync succeeds',
+    'availableAvatarsProvider emits bundled catalog instantly without network',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      // A network that never answers: the old blocking implementation would
+      // stall on the 8s sync timeout, so the first frame must arrive well
+      // before that to prove the picker never blocks on Appwrite.
+      final gate = Completer<FileList>();
+      addTearDown(() {
+        if (!gate.isCompleted) gate.completeError(StateError('teardown'));
+      });
+      final storage = MockStorage();
+      when(
+        () => storage.listFiles(bucketId: any(named: 'bucketId')),
+      ).thenAnswer((_) => gate.future);
+
+      final container = await _container(prefs: prefs, storage: storage);
+      final first = await container
+          .read(availableAvatarsProvider.future)
+          .timeout(const Duration(seconds: 2));
+
+      expect(
+        first.map((avatar) => avatar.id),
+        orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+      );
+    },
+  );
+
+  test(
+    'availableAvatarsProvider merges the remote set in the background',
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
@@ -121,15 +179,27 @@ void main() {
       ).thenAnswer((_) async => _lottieBytes());
 
       final container = await _container(prefs: prefs, storage: storage);
-      final avatars = await container.read(availableAvatarsProvider.future);
+      final emissions = await _emissionsUntil(container, (e) => e.length >= 2);
 
-      expect(avatars.map((a) => a.id), ['dragon']);
-      expect(avatars.first.isRemote, isTrue);
+      // Bundled first (instant grid), merged catalog once sync lands.
+      expect(
+        emissions.first.map((a) => a.id),
+        orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+      );
+      final merged = emissions.last;
+      expect(
+        merged.map((a) => a.id),
+        orderedEquals([
+          ...kProfileAvatars.map((avatar) => avatar.id),
+          'dragon',
+        ]),
+      );
+      expect(merged.last.isRemote, isTrue);
     },
   );
 
   test(
-    'availableAvatarsProvider falls back to bundled when sync fails',
+    'availableAvatarsProvider keeps bundled catalog when sync fails',
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
@@ -139,9 +209,10 @@ void main() {
       ).thenThrow(AppwriteException('offline'));
 
       final container = await _container(prefs: prefs, storage: storage);
-      final avatars = await container.read(availableAvatarsProvider.future);
+      final emissions = await _emissionsUntil(container, (e) => e.isNotEmpty);
 
-      expect(avatars, kProfileAvatars);
+      expect(emissions.length, 1);
+      expect(emissions.single, kProfileAvatars);
     },
   );
 
@@ -165,12 +236,26 @@ void main() {
       ).thenAnswer((_) async => renderable);
 
       final container = await _container(prefs: prefs, storage: storage);
-      final avatars = await container.read(availableAvatarsProvider.future);
+      final emissions = await _emissionsUntil(
+        container,
+        (e) => e.any((list) => list.any((avatar) => avatar.isRemote)),
+      );
+      final merged = emissions.last;
+      final remote = merged.firstWhere((avatar) => avatar.isRemote);
       final bytes = await container.read(
-        avatarArtworkBytesProvider(avatars.first).future,
+        avatarArtworkBytesProvider(remote).future,
       );
 
       expect(bytes, renderable);
+
+      // Second read is served from the in-memory memo: no re-download.
+      await container.read(avatarArtworkBytesProvider(remote).future);
+      verify(
+        () => storage.getFileDownload(
+          bucketId: any(named: 'bucketId'),
+          fileId: any(named: 'fileId'),
+        ),
+      ).called(1);
     },
   );
 

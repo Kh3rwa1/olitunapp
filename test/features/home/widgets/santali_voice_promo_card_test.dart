@@ -34,7 +34,7 @@ void main() {
       );
       await tester.pump(const Duration(milliseconds: 800));
 
-      expect(find.text('Santali AI Voice'), findsOneWidget);
+      expect(find.text('AI Voice'), findsOneWidget);
       expect(find.text('Try now'), findsOneWidget);
 
       await tester.tap(find.text('Try now'));

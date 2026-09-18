@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/media/olitun_image_cache.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
@@ -195,10 +197,12 @@ class _BannerSlide extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      Image.network(
-                        banner.imageUrl!,
+                      CachedNetworkImage(
+                        imageUrl: banner.imageUrl!,
+                        cacheManager: olitunImageCacheManager,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
+                        memCacheWidth: 1080,
+                        errorWidget: (context, url, error) =>
                             const SizedBox.shrink(),
                       ),
                       // dark vignette so text stays readable

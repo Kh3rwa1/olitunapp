@@ -6,7 +6,10 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <!-- viewport-fit=cover + safe-area insets keep the app correct on iPhone
+       notch/Dynamic Island and iPad multitasking; allow pinch-zoom for
+       accessibility on tablets. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 
   <!-- SEO & Primary Meta -->
   <title>Olitun - Learn Santali & Ol Chiki</title>
@@ -47,6 +50,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Olitun">
+  <!-- iPhone + iPad icon sizes. iOS picks the closest match; all files exist
+       so Add to Home Screen never falls back to a screenshot on any device. -->
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="120x120" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icons/apple-touch-icon.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
   <!-- Favicon & Manifest -->

@@ -521,12 +521,19 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateAvatar(String avatarId, int colorIndex) async {
-    final result = await _repository.updateAvatar(avatarId, colorIndex);
-    result.fold((failure) => null, (_) {
-      ref.read(userAvatarIdProvider.notifier).state = normalizeAvatarId(
-        avatarId,
-      );
-      ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
-    });
+    // Publish first so the hero/sidebar swap instantly; persistence is a
+    // prefs-only write that resolves in milliseconds.
+    final knownIds = ref
+        .read(availableAvatarsProvider)
+        .valueOrNull
+        ?.map((avatar) => avatar.id);
+    final nextId = normalizeAvatarIdWithRemote(avatarId, knownIds);
+    ref.read(userAvatarIdProvider.notifier).state = nextId;
+    ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
+    final result = await _repository.updateAvatar(nextId, colorIndex);
+    result.fold(
+      (failure) => AppLogger.debug('Profile: Failed to save avatar: $failure'),
+      (_) {},
+    );
   }
 }

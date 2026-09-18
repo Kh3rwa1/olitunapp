@@ -8,6 +8,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/features/profile/presentation/providers/user_stats_provider.dart';
@@ -88,6 +89,11 @@ void main() {
         learningAnalyticsServiceProvider.overrideWithValue(analytics),
         appConnectivityProvider.overrideWith(
           (ref) => Stream.value([ConnectivityResult.wifi]),
+        ),
+        // Avatar persistence resolves ids against the latest catalog; keep
+        // the background Appwrite sync out of these unit tests.
+        remoteAvatarListProvider.overrideWith(
+          (ref) async => const <ProfileAvatar>[],
         ),
         if (now != null) userStatsClockProvider.overrideWithValue(now),
       ],

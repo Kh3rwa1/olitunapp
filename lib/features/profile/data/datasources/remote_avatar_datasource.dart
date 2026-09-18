@@ -12,15 +12,21 @@ import 'remote_avatar_sources.dart';
 /// Syncs the live avatar set from the `profile_avatars` Appwrite Storage
 /// bucket into the local disk cache.
 ///
-/// Resolution order (see `availableAvatarsProvider`): remote entries win
-/// whenever this sync succeeds; any failure falls back to the bundled
-/// catalog, and previously cached files keep working offline.
+/// Resolution order (see `availableAvatarsProvider`): the bundled catalog is
+/// always shown instantly; synced entries merge in the background (remote
+/// wins on id conflicts) whenever this sync succeeds. Any failure keeps the
+/// bundled set, and previously cached files keep working offline.
 class RemoteAvatarDatasource {
   RemoteAvatarDatasource(this._storage, [RemoteAvatarCache? cache])
     : _cache = cache ?? createRemoteAvatarCache();
 
   final Storage _storage;
   final RemoteAvatarCache _cache;
+
+  /// In-memory memo so repeat views within a session never re-download.
+  /// Matters most on web, where there is no disk cache and artwork otherwise
+  /// streams from Appwrite on every picker open.
+  final Map<String, List<int>> _memoryBytes = {};
 
   static const String manifestName = 'manifest.json';
 
@@ -50,6 +56,7 @@ class RemoteAvatarDatasource {
             );
             _assertValidLottie(bytes, file.name);
             await _cache.writeBytes(localName, bytes);
+            _memoryBytes[file.$id] = bytes;
             await _writeManifestValue(file.$id, file.$updatedAt);
           }
         }
@@ -77,11 +84,15 @@ class RemoteAvatarDatasource {
   }
 
   /// Raw bytes for one synced avatar, used by the artwork provider. Serves
-  /// the disk cache on native platforms; on web (no file system) streams
-  /// the file on demand instead.
+  /// the in-memory memo first, then the disk cache on native platforms;
+  /// on web (no file system) streams the file on demand instead.
   Future<Either<Failure, List<int>>> readArtworkBytes(String fileId) async {
+    final memo = _memoryBytes[fileId];
+    if (memo != null) return Right(memo);
     try {
-      return Right(await _cache.readBytes('$fileId.json'));
+      final bytes = await _cache.readBytes('$fileId.json');
+      _memoryBytes[fileId] = bytes;
+      return Right(bytes);
     } catch (_) {
       if (!_cache.isSupported) {
         try {
@@ -90,6 +101,7 @@ class RemoteAvatarDatasource {
             fileId: fileId,
           );
           _assertValidLottie(bytes, fileId);
+          _memoryBytes[fileId] = bytes;
           return Right(bytes);
         } on AppwriteException catch (e) {
           return Left(_classify(e));

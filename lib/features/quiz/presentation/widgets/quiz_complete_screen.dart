@@ -76,6 +76,11 @@ class QuizCompleteScreen extends ConsumerWidget {
       const SingleActivator(LogicalKeyboardKey.space): onContinue,
     };
 
+    final isDesktopOrTablet = ResponsiveLayout.isTablet(context);
+    final maxWidth = isDesktopOrTablet
+        ? 840.0
+        : ResponsiveLayout.maxNarrowWidth(context);
+
     return CallbackShortcuts(
       bindings: shortcuts,
       child: Focus(
@@ -90,27 +95,27 @@ class QuizCompleteScreen extends ConsumerWidget {
               SafeArea(
                 child: Center(
                   child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: ResponsiveLayout.maxNarrowWidth(context),
-                    ),
+                    constraints: BoxConstraints(maxWidth: maxWidth),
                     child: Column(
                       children: [
                         Expanded(
                           child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(
+                            physics: isDesktopOrTablet
+                                ? const ClampingScrollPhysics()
+                                : const BouncingScrollPhysics(),
+                            padding: EdgeInsets.symmetric(
                               horizontal: 24,
-                              vertical: 16,
+                              vertical: isDesktopOrTablet ? 12 : 16,
                             ),
                             child: Column(
                               children: [
-                                const SizedBox(height: 24),
+                                SizedBox(height: isDesktopOrTablet ? 12 : 24),
                                 // Circular trophy reward visualizer
                                 QuizCompleteTrophy(
                                   isPassing: isPassing,
                                   reduceEffects: reduceEffects,
                                 ),
-                                const SizedBox(height: 28),
+                                SizedBox(height: isDesktopOrTablet ? 16 : 28),
                                 Text(
                                   isPassing
                                       ? AppLocalizations.of(context)!.wellDone
@@ -118,7 +123,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                           context,
                                         )!.keepPracticing,
                                   style: TextStyle(
-                                    fontSize: 30,
+                                    fontSize: isDesktopOrTablet ? 28 : 30,
                                     fontWeight: FontWeight.w900,
                                     color: isDark
                                         ? Colors.white
@@ -142,7 +147,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                   delay: 150.ms,
                                   duration: 400.ms,
                                 ),
-                                const SizedBox(height: 28),
+                                SizedBox(height: isDesktopOrTablet ? 18 : 28),
 
                                 // Bento Stats Grid
                                 QuizCompleteBentoStats(
@@ -154,7 +159,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                   totalStars: totalStars,
                                   bestCombo: bestCombo,
                                 ),
-                                const SizedBox(height: 24),
+                                SizedBox(height: isDesktopOrTablet ? 16 : 24),
 
                                 // Mistakes Review Trigger
                                 if (incorrectQuestionIndices.isNotEmpty)
@@ -169,13 +174,12 @@ class QuizCompleteScreen extends ConsumerWidget {
                                       .fadeIn(delay: 450.ms)
                                       .slideY(begin: 0.1),
 
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 8),
                                 const RepaintBoundary(
                                   child: NativeAdWidget(
                                     placement: 'quiz_complete_native',
                                   ),
                                 ),
-                                const SizedBox(height: 16),
                               ],
                             ),
                           ),

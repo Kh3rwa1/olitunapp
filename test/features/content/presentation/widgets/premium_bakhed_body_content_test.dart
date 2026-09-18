@@ -149,14 +149,65 @@ void main() {
     expect(db.getFileViewUrl('audio', 'file-1'), 'https://cdn.test/file.mp3');
   });
 
-  testWidgets('empty vocabulary shows the placeholder message', (tester) async {
-    await pumpBody(tester, content: const BakhedLearningContent());
+  testWidgets(
+    'when lyrics, vocabulary and notes are not uploaded those options do not appear and only player is visible',
+    (tester) async {
+      await pumpBody(tester, content: const BakhedLearningContent());
 
-    await tester.tap(find.text('Vocabulary'));
-    await tester.pump(const Duration(milliseconds: 100));
+      // Options should NOT appear
+      expect(find.text('Lyrics'), findsNothing);
+      expect(find.text('Vocabulary'), findsNothing);
+      expect(find.text('Notes'), findsNothing);
 
-    expect(find.text('No vocabulary items defined.'), findsOneWidget);
-  });
+      // Player controls and top bar are visible
+      expect(find.text('Rain Song'), findsOneWidget);
+      expect(find.text('BAKHED'), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'desktop screen displays full-screen optimized player without tabs when content is not uploaded',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            playbackControllerProvider.overrideWithValue(
+              PlaybackController(audioService: audio),
+            ),
+            appwriteDbServiceProvider.overrideWithValue(db),
+            bakhedLearningContentProvider(
+              'bakhed-1',
+            ).overrideWith((ref) async => const BakhedLearningContent()),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: PremiumBakhedBody(item: item, accentColor: Colors.teal),
+            ),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // Tabs should NOT appear on desktop when content is not uploaded
+      expect(find.text('Lyrics'), findsNothing);
+      expect(find.text('Vocabulary'), findsNothing);
+      expect(find.text('Notes'), findsNothing);
+
+      // Player elements visible in full screen
+      expect(find.text('Rain Song'), findsOneWidget);
+      expect(find.text('BAKHED'), findsOneWidget);
+      expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    },
+  );
 
   testWidgets('cultural notes panel shows published notes with sources', (
     tester,

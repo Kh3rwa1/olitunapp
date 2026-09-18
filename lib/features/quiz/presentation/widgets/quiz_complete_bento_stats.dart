@@ -48,10 +48,15 @@ class QuizCompleteBentoStats extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isWide = screenWidth >= 640;
+    final crossAxisCount = isWide ? 4 : 2;
+    final childAspectRatio = isWide ? 1.55 : 1.25;
+
     return GridView.count(
       shrinkWrap: true,
-      crossAxisCount: 2,
-      childAspectRatio: 1.25,
+      crossAxisCount: crossAxisCount,
+      childAspectRatio: childAspectRatio,
       crossAxisSpacing: 14,
       mainAxisSpacing: 14,
       physics: const NeverScrollableScrollPhysics(),

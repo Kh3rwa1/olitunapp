@@ -16,6 +16,7 @@ import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../providers/audio_playback_providers.dart';
 
 part 'premium_bakhed_body_content.dart';
+part 'premium_bakhed_body_fullscreen.dart';
 part 'premium_bakhed_body_layouts.dart';
 
 /// Premium Bakhed immersive player & learning hub (lyrics / vocabulary /
@@ -87,6 +88,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     required bool hasValidDuration,
     required double maxSliderVal,
     required double currentSliderVal,
+    required bool hasLyrics,
+    required bool hasVocab,
+    required bool hasNotes,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,7 +155,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _buildSubTabsBar(),
+                _buildSubTabsBar(
+                  hasLyrics: hasLyrics,
+                  hasVocab: hasVocab,
+                  hasNotes: hasNotes,
+                ),
                 const SizedBox(height: 16),
                 Expanded(
                   child: Container(
@@ -169,6 +177,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       isPlaying,
                       positionMs,
                       accentColor,
+                      hasLyrics: hasLyrics,
+                      hasVocab: hasVocab,
+                      hasNotes: hasNotes,
                     ),
                   ),
                 ),
@@ -193,6 +204,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     required double maxSliderVal,
     required double currentSliderVal,
     required BoxConstraints constraints,
+    required bool hasLyrics,
+    required bool hasVocab,
+    required bool hasNotes,
   }) {
     final double artMaxHeight = (constraints.maxHeight * 0.24).clamp(
       150.0,
@@ -256,7 +270,12 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
         // SubTabs Switcher
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: _buildSubTabsBar(isCompact: true),
+          child: _buildSubTabsBar(
+            hasLyrics: hasLyrics,
+            hasVocab: hasVocab,
+            hasNotes: hasNotes,
+            isCompact: true,
+          ),
         ),
 
         const SizedBox(height: 10),
@@ -281,6 +300,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               isPlaying,
               positionMs,
               accentColor,
+              hasLyrics: hasLyrics,
+              hasVocab: hasVocab,
+              hasNotes: hasNotes,
             ),
           ),
         ),
@@ -328,6 +350,19 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                 : (positionMs > 0 ? positionMs.toDouble() : 0.0))
             .clamp(0.0, maxSliderVal);
 
+    final content = learningContentAsync.valueOrNull;
+    final hasLyrics =
+        (content?.lyrics.isNotEmpty ?? false) ||
+        item.blocks.whereType<TextBlock>().any(
+          (b) =>
+              (b.textOlChiki != null && b.textOlChiki!.isNotEmpty) ||
+              (b.textLatin != null && b.textLatin!.isNotEmpty) ||
+              b.markdown.isNotEmpty,
+        );
+    final hasVocab = content?.vocabulary.isNotEmpty ?? false;
+    final hasNotes = content?.culturalNotes.isNotEmpty ?? false;
+    final hasAnyContent = hasLyrics || hasVocab || hasNotes;
+
     return Scaffold(
       backgroundColor:
           AppColors.bakhedBackground, // Deep premium midnight black
@@ -368,7 +403,38 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                if (constraints.maxWidth >= 840) {
+                final isDesktop = constraints.maxWidth >= 840;
+
+                if (!hasAnyContent) {
+                  return isDesktop
+                      ? _buildFullScreenDesktopLayout(
+                          context: context,
+                          item: item,
+                          accentColor: accentColor,
+                          audioState: audioState,
+                          isPlaying: isPlaying,
+                          durationMs: durationMs,
+                          positionMs: positionMs,
+                          hasValidDuration: hasValidDuration,
+                          maxSliderVal: maxSliderVal,
+                          currentSliderVal: currentSliderVal,
+                        )
+                      : _buildFullScreenMobileLayout(
+                          context: context,
+                          item: item,
+                          accentColor: accentColor,
+                          audioState: audioState,
+                          isPlaying: isPlaying,
+                          durationMs: durationMs,
+                          positionMs: positionMs,
+                          hasValidDuration: hasValidDuration,
+                          maxSliderVal: maxSliderVal,
+                          currentSliderVal: currentSliderVal,
+                          constraints: constraints,
+                        );
+                }
+
+                if (isDesktop) {
                   return _buildDesktopLayout(
                     context: context,
                     item: item,
@@ -381,6 +447,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     hasValidDuration: hasValidDuration,
                     maxSliderVal: maxSliderVal,
                     currentSliderVal: currentSliderVal,
+                    hasLyrics: hasLyrics,
+                    hasVocab: hasVocab,
+                    hasNotes: hasNotes,
                   );
                 } else {
                   return _buildMobileLayout(
@@ -396,6 +465,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     maxSliderVal: maxSliderVal,
                     currentSliderVal: currentSliderVal,
                     constraints: constraints,
+                    hasLyrics: hasLyrics,
+                    hasVocab: hasVocab,
+                    hasNotes: hasNotes,
                   );
                 }
               },

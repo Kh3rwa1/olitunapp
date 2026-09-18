@@ -421,7 +421,55 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
     );
   }
 
-  Widget _buildSubTabsBar({bool isCompact = false}) {
+  Widget _buildSubTabsBar({
+    required bool hasLyrics,
+    required bool hasVocab,
+    required bool hasNotes,
+    bool isCompact = false,
+  }) {
+    final tabs = <Widget>[];
+
+    if (hasLyrics) {
+      tabs.add(
+        Expanded(
+          child: _buildSubTabButton(
+            0,
+            Icons.lyrics_rounded,
+            'Lyrics',
+            isCompact: isCompact,
+          ),
+        ),
+      );
+    }
+    if (hasVocab) {
+      tabs.add(
+        Expanded(
+          child: _buildSubTabButton(
+            1,
+            Icons.menu_book_rounded,
+            'Vocabulary',
+            isCompact: isCompact,
+          ),
+        ),
+      );
+    }
+    if (hasNotes) {
+      tabs.add(
+        Expanded(
+          child: _buildSubTabButton(
+            2,
+            Icons.auto_stories_rounded,
+            'Notes',
+            isCompact: isCompact,
+          ),
+        ),
+      );
+    }
+
+    if (tabs.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       height: isCompact ? 46 : 50,
       padding: const EdgeInsets.all(4),
@@ -430,34 +478,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: Colors.white12),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildSubTabButton(
-              0,
-              Icons.lyrics_rounded,
-              'Lyrics',
-              isCompact: isCompact,
-            ),
-          ),
-          Expanded(
-            child: _buildSubTabButton(
-              1,
-              Icons.menu_book_rounded,
-              'Vocabulary',
-              isCompact: isCompact,
-            ),
-          ),
-          Expanded(
-            child: _buildSubTabButton(
-              2,
-              Icons.auto_stories_rounded,
-              'Notes',
-              isCompact: isCompact,
-            ),
-          ),
-        ],
-      ),
+      child: Row(children: tabs),
     );
   }
 }

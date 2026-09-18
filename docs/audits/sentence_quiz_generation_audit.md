@@ -71,6 +71,17 @@ lesson above.
 
 ## Findings
 
+0. **Production stores block meanings under `meta`, not `data` — and the app
+   never read `meta`.** The live `lesson_sentences_conversational_3` document
+   keeps `meaning_hi`/`meaning_en`/`meaning_bn`/`meaning_or` (and
+   `textHindi`/`textBengali`/`textOdia`) inside each block's `meta` object,
+   with no `data` key at all. `LessonBlockModel.fromJson` only read `data`,
+   so every production block looked meaning-less to generation and the new
+   `missing_meaning` gate rejected all of them — the lesson-end quiz showed
+   "No questions yet" despite 21 rendered blocks. `fromJson` now merges
+   `meta` underneath explicit values (explicit `data`/canonical fields win),
+   restoring real `meaning_hi` questions. Lesson-facing text fields in `meta`
+   are backfills only, same as before.
 1. **The 1/1 title quiz hit every lesson through the full-screen quiz
    route, not because of per-lesson content.** The lesson catalog is
    intentionally metadata-only (`learnerLessonsProvider`: "Catalog providers

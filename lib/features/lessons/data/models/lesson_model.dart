@@ -255,6 +255,9 @@ class LessonBlockModel extends LessonBlockEntity {
   ///
   /// * canonical `textOlChiki` / `textLatin` / `textBengali` / `textHindi` /
   ///   `textOdia`, plus snake_case aliases (`text_ol_chiki`, …);
+  /// * production `meta` payloads (meanings and display text stored under
+  ///   `meta` instead of `data`): merged underneath explicit values, so an
+  ///   explicit `data` entry or canonical field always wins;
   /// * legacy `content` / `text` payloads, used only when neither canonical
   ///   field is present: content containing Ol Chiki codepoints becomes
   ///   `textOlChiki` (never `textLatin` — arbitrary Latin text is not Ol
@@ -269,16 +272,24 @@ class LessonBlockModel extends LessonBlockEntity {
       json['data'],
       onMalformed: () => malformedData = true,
     );
+    final metaData = json['meta'] is Map
+        ? (json['meta'] as Map).cast<String, dynamic>()
+        : null;
     final content = json['content'] as String? ?? json['text'] as String?;
-    final rawOlChiki =
-        json['textOlChiki'] as String? ?? json['text_ol_chiki'] as String?;
-    final rawLatin =
-        json['textLatin'] as String? ?? json['text_latin'] as String?;
-    final rawBengali =
-        json['textBengali'] as String? ?? json['text_bengali'] as String?;
-    final rawHindi =
-        json['textHindi'] as String? ?? json['text_hindi'] as String?;
-    final rawOdia = json['textOdia'] as String? ?? json['text_odia'] as String?;
+
+    String? pickText(String canonical, String snake, String metaKey) {
+      final explicit = json[canonical] as String? ?? json[snake] as String?;
+      if (explicit != null && explicit.isNotEmpty) return explicit;
+      final fromMeta = metaData?[metaKey] as String?;
+      if (fromMeta != null && fromMeta.isNotEmpty) return fromMeta;
+      return explicit;
+    }
+
+    final rawOlChiki = pickText('textOlChiki', 'text_ol_chiki', 'textOlChiki');
+    final rawLatin = pickText('textLatin', 'text_latin', 'textLatin');
+    final rawBengali = pickText('textBengali', 'text_bengali', 'textBengali');
+    final rawHindi = pickText('textHindi', 'text_hindi', 'textHindi');
+    final rawOdia = pickText('textOdia', 'text_odia', 'textOdia');
 
     String? resolvedOlChiki = rawOlChiki;
     String? resolvedLatin = rawLatin;
@@ -294,6 +305,10 @@ class LessonBlockModel extends LessonBlockEntity {
       }
     }
 
+    // Explicit `data` wins over `meta` on conflicts; absent payloads stay
+    // null rather than becoming an empty map.
+    final mergedPayload = {...?metaData, ...?parsedData};
+
     return LessonBlockModel(
       type: json['type'] as String? ?? 'text',
       textOlChiki: resolvedOlChiki,
@@ -303,7 +318,9 @@ class LessonBlockModel extends LessonBlockEntity {
       textOdia: rawOdia,
       imageUrl: json['imageUrl'] as String? ?? json['image_url'] as String?,
       audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
-      data: _canonicalizeAttribution(parsedData),
+      data: _canonicalizeAttribution(
+        mergedPayload.isEmpty ? null : mergedPayload,
+      ),
       dataMalformed: malformedData,
     );
   }

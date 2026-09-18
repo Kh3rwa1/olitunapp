@@ -40,13 +40,22 @@ const seedPath = path.join(
 const nonEmpty = (value) =>
   typeof value === 'string' && value.trim().length > 0;
 
-function explicitMeaning(block, lang) {
+// Production stores meanings under block `meta` instead of `data`
+// (seed files use `data`); explicit `data` wins on conflicts.
+function payload(block) {
   const data =
     block.data && typeof block.data === 'object' ? block.data : {};
-  if (nonEmpty(data[`meaning_${lang}`])) return true;
-  if (lang === 'hi') return nonEmpty(block.textHindi);
-  if (lang === 'bn') return nonEmpty(block.textBengali);
-  if (lang === 'or') return nonEmpty(block.textOdia);
+  const meta =
+    block.meta && typeof block.meta === 'object' ? block.meta : {};
+  return { ...meta, ...data };
+}
+
+function explicitMeaning(block, lang) {
+  const merged = payload(block);
+  if (nonEmpty(merged[`meaning_${lang}`])) return true;
+  if (lang === 'hi') return nonEmpty(block.textHindi ?? merged.textHindi);
+  if (lang === 'bn') return nonEmpty(block.textBengali ?? merged.textBengali);
+  if (lang === 'or') return nonEmpty(block.textOdia ?? merged.textOdia);
   return false;
 }
 
@@ -97,9 +106,9 @@ function main() {
     const en = estimateQuestions(blocks, 'en');
     const hi = estimateQuestions(blocks, 'hi');
     const attributed = blocks.filter((b) => {
-      const data = b.data && typeof b.data === 'object' ? b.data : {};
+      const merged = payload(b);
       return ['sourceSentenceId', 'sentenceId', 'sourceSentence'].some((k) =>
-        nonEmpty(data[k]),
+        nonEmpty(merged[k]),
       );
     }).length;
     const findings = [];

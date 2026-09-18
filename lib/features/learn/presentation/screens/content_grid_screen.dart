@@ -153,12 +153,56 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
           }
 
           final width = MediaQuery.of(context).size.width;
-          final int crossAxisCount = width >= 600 ? 4 : 3;
+          final int crossAxisCount;
+          final double childAspectRatio;
+          final double maxWidth;
 
-          return GridView.builder(
+          if (widget.kind == ContentKind.number) {
+            if (width >= 600) {
+              crossAxisCount = 5;
+              childAspectRatio = 1.45;
+              maxWidth = 960;
+            } else {
+              crossAxisCount = 3;
+              childAspectRatio = 1.15;
+              maxWidth = double.infinity;
+            }
+          } else if (widget.kind == ContentKind.letter) {
+            if (width >= 1000) {
+              crossAxisCount = 6;
+              childAspectRatio = 1.5;
+              maxWidth = 1040;
+            } else if (width >= 600) {
+              crossAxisCount = 4;
+              childAspectRatio = 1.3;
+              maxWidth = 860;
+            } else {
+              crossAxisCount = 3;
+              childAspectRatio = 1.15;
+              maxWidth = double.infinity;
+            }
+          } else {
+            if (width >= 1000) {
+              crossAxisCount = 5;
+              childAspectRatio = 1.4;
+              maxWidth = 1040;
+            } else if (width >= 600) {
+              crossAxisCount = 4;
+              childAspectRatio = 1.3;
+              maxWidth = 860;
+            } else {
+              crossAxisCount = 3;
+              childAspectRatio = 1.15;
+              maxWidth = double.infinity;
+            }
+          }
+
+          final grid = GridView.builder(
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.all(16.0),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
+              childAspectRatio: childAspectRatio,
               crossAxisSpacing: 12.0,
               mainAxisSpacing: 12.0,
             ),
@@ -171,6 +215,16 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
               );
             },
           );
+
+          if (maxWidth.isFinite) {
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: maxWidth),
+                child: grid,
+              ),
+            );
+          }
+          return grid;
         },
         loading: () => const AppLoadingState(type: AppLoadingType.page),
         error: (err, _) => AppErrorState(

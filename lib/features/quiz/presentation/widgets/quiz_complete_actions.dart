@@ -29,191 +29,198 @@ class QuizCompleteActions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Rewarded Bonus Stars Action
-          Consumer(
-            builder: (context, ref, _) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: () async {
-                      final rewarded = ref.read(rewardedAdManagerProvider);
-                      final shown = await rewarded.show(
-                        context: context,
-                        placement: 'quiz_reward_bonus_stars',
-                        rewardType: RewardType.stars,
-                        amount: 50,
-                        onRewardGranted: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: const Text('Bonus 50 Stars Earned! ⭐'),
-                              backgroundColor: AppColors.success,
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 580),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Rewarded Bonus Stars Action
+              Consumer(
+                builder: (context, ref, _) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton.icon(
+                        onPressed: () async {
+                          final rewarded = ref.read(rewardedAdManagerProvider);
+                          final shown = await rewarded.show(
+                            context: context,
+                            placement: 'quiz_reward_bonus_stars',
+                            rewardType: RewardType.stars,
+                            amount: 50,
+                            onRewardGranted: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text(
+                                    'Bonus 50 Stars Earned! ⭐',
+                                  ),
+                                  backgroundColor: AppColors.success,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              );
+                            },
                           );
+                          if (!shown && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: const Text(
+                                  'Rewarded ad is cooling down. Try again later.',
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            );
+                          }
                         },
-                      );
-                      if (!shown && context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: const Text(
-                              'Rewarded ad is cooling down. Try again later.',
-                            ),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        icon: const Icon(
+                          Icons.stars_rounded,
+                          color: AppColors.accentGoldDark,
+                          size: 22,
+                        ),
+                        label: const FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Watch Ad for +50 Bonus Stars',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.accentGoldDark,
                             ),
                           ),
-                        );
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.stars_rounded,
-                      color: AppColors.accentGoldDark,
-                      size: 22,
-                    ),
-                    label: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        'Watch Ad for +50 Bonus Stars',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accentGoldDark,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          side: const BorderSide(
+                            color: AppColors.accentGold,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                       ),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                  );
+                },
+              ),
+              if (isPassing) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        SocialShareModal.show(
+                          context,
+                          payload: ShareCardPayload.quizResult(
+                            score: score,
+                            total: totalQuestions,
+                            percentage: percentage,
+                            stars: totalStars,
+                          ),
+                        );
+                      },
+                      icon: const Icon(
+                        Icons.share_rounded,
+                        color: AppColors.primary,
+                        size: 18,
                       ),
-                      side: const BorderSide(
-                        color: AppColors.accentGold,
-                        width: 1.5,
+                      label: const Text(
+                        'Share Achievement',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-          if (isPassing) ...[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: SizedBox(
+              ],
+              SizedBox(
                 width: double.infinity,
-                height: 48,
-                child: OutlinedButton.icon(
+                height: 54,
+                child: ElevatedButton(
                   onPressed: () {
-                    SocialShareModal.show(
-                      context,
-                      payload: ShareCardPayload.quizResult(
-                        score: score,
-                        total: totalQuestions,
-                        percentage: percentage,
-                        stars: totalStars,
-                      ),
+                    unawaited(
+                      ref
+                          .read(interstitialAdManagerProvider)
+                          .showIfAllowed(context, 'quiz_complete'),
                     );
+                    context.go('/');
                   },
-                  icon: const Icon(
-                    Icons.share_rounded,
-                    color: AppColors.primary,
-                    size: 18,
-                  ),
-                  label: const Text(
-                    'Share Achievement',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                ),
-              ),
-            ),
-          ],
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton(
-              onPressed: () {
-                unawaited(
-                  ref
-                      .read(interstitialAdManagerProvider)
-                      .showIfAllowed(context, 'quiz_complete'),
-                );
-                context.go('/');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.continueButton,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                  if (kIsWeb ||
-                      defaultTargetPlatform == TargetPlatform.macOS ||
-                      defaultTargetPlatform == TargetPlatform.windows ||
-                      defaultTargetPlatform == TargetPlatform.linux) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'Enter ↵',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        AppLocalizations.of(context)!.continueButton,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.5,
                         ),
                       ),
-                    ),
-                  ],
-                ],
+                      if (kIsWeb ||
+                          defaultTargetPlatform == TargetPlatform.macOS ||
+                          defaultTargetPlatform == TargetPlatform.windows ||
+                          defaultTargetPlatform == TargetPlatform.linux) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Enter ↵',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

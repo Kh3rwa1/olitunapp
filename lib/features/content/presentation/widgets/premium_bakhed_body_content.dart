@@ -3,14 +3,29 @@ part of 'premium_bakhed_body.dart';
 /// Lyrics / vocabulary / cultural-notes panel builders for
 /// [_PremiumBakhedBodyState], extracted into this library part.
 extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
+  int _getEffectiveSubTab({
+    required bool hasLyrics,
+    required bool hasVocab,
+    required bool hasNotes,
+  }) {
+    if (_activeSubTab == 0 && hasLyrics) return 0;
+    if (_activeSubTab == 1 && hasVocab) return 1;
+    if (_activeSubTab == 2 && hasNotes) return 2;
+    if (hasLyrics) return 0;
+    if (hasVocab) return 1;
+    if (hasNotes) return 2;
+    return 0;
+  }
+
   Widget _buildActiveSubTabContent(
     BakhedLearningContent content,
     ContentItem item,
     bool isPlaying,
     int positionMs,
-    Color accentColor,
-  ) {
-    switch (_activeSubTab) {
+    Color accentColor, {
+    required int subTab,
+  }) {
+    switch (subTab) {
       case 0:
         return _buildSyncedLyrics(
           content.lyrics,
@@ -32,8 +47,11 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     ContentItem item,
     bool isPlaying,
     int positionMs,
-    Color accentColor,
-  ) {
+    Color accentColor, {
+    required bool hasLyrics,
+    required bool hasVocab,
+    required bool hasNotes,
+  }) {
     return learningContentAsync.when(
       data: (content) {
         if (content == null) {
@@ -44,12 +62,18 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
             ),
           );
         }
+        final subTab = _getEffectiveSubTab(
+          hasLyrics: hasLyrics,
+          hasVocab: hasVocab,
+          hasNotes: hasNotes,
+        );
         return _buildActiveSubTabContent(
           content,
           item,
           isPlaying,
           positionMs,
           accentColor,
+          subTab: subTab,
         );
       },
       loading: () => const Center(

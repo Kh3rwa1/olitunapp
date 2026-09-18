@@ -33,6 +33,8 @@ jobs:
         run: node scripts/check_typography.mjs
       - name: Enforce Color Token Gate
         run: node scripts/check_color_literals.mjs
+      - name: Enforce Appwrite Deployability Gate
+        run: node scripts/check_appwrite_deployable.mjs
       - name: Enforce Sheets-Above-Nav Gate
         run: node scripts/check_sheets_above_nav.mjs
       - name: Enforce Architecture Boundaries Gate

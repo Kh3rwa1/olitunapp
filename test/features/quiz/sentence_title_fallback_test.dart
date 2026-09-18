@@ -378,5 +378,47 @@ void main() {
       expect(result.rejections, hasLength(1));
       expect(result.rejections.single.blockIndex, 0);
     });
+
+    test('production meta-shaped blocks generate real meaning questions', () {
+      // Production stores meanings under block `meta`, not `data`.
+      final blocks = List.generate(5, (i) {
+        final parsed = LessonBlockModel.fromJson({
+          'id': '',
+          'order': i,
+          'type': 'text',
+          'markdown': 'Sendra katha number $i',
+          'textOlChiki': 'ᱥᱮᱸᱫᱨᱟ ᱠᱟᱛᱷᱟ $i',
+          'textLatin': 'Sendra katha number $i',
+          'audioUrl': 'https://example.com/audio/$i.mp3',
+          'meta': {
+            'meaning': _meaningsEn[i],
+            'meaning_en': _meaningsEn[i],
+            'meaning_hi': _meaningsHi[i],
+            'meaning_bn': _meaningsBn[i],
+            'meaning_or': _meaningsOr[i],
+          },
+        });
+        return LessonBlockEntity(
+          type: parsed.type,
+          textOlChiki: parsed.textOlChiki,
+          textLatin: parsed.textLatin,
+          audioUrl: parsed.audioUrl,
+          data: parsed.data,
+        );
+      });
+      final lesson = _sentenceLesson(id: 'lesson_conv3', blocks: blocks);
+
+      final quiz = LessonQuizGenerator.generate(lesson, teachingLanguage: 'hi');
+
+      expect(quiz.questions, hasLength(5));
+      for (final q in quiz.questions) {
+        expect(q.promptLatin, 'Choose the correct Hindi meaning:');
+      }
+      expect(
+        quiz.questions.map((q) => q.optionsLatin[q.correctIndex]).toSet(),
+        contains('क्या आप आज देश की यात्रा पर जा रहे हैं?'),
+      );
+      _expectWellFormedMcq(quiz);
+    });
   });
 }

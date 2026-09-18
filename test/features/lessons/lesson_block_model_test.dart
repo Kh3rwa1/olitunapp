@@ -179,5 +179,53 @@ void main() {
       expect(revived.dataMalformed, isTrue);
       expect(revived.textOlChiki, 'ᱥᱮᱸᱫᱨᱟ');
     });
+
+    test('production meta payloads merge underneath explicit values', () {
+      final block = LessonBlockModel.fromJson({
+        'id': '',
+        'order': 0,
+        'type': 'text',
+        'markdown': 'Am do tehenj disom daran em chalag kana?',
+        'textOlChiki': 'ᱟᱢ ᱫᱚ ᱛᱮᱦᱮᱧ',
+        'textLatin': 'Am do tehenj disom daran em chalag kana?',
+        'audioUrl': 'https://example.com/a.mp3',
+        'meta': {
+          'meaning': 'Are you going to travel the country today?',
+          'meaning_en': 'Are you going to travel the country today?',
+          'meaning_hi': 'क्या तुम आज देश भ्रमण पर जा रहे हो?',
+          'textHindi': 'आम द तेहेञ दिसम दारान एम चालाग काना?',
+        },
+      });
+
+      expect(block.data?['meaning_hi'], 'क्या तुम आज देश भ्रमण पर जा रहे हो?');
+      expect(
+        block.data?['meaning_en'],
+        'Are you going to travel the country today?',
+      );
+      expect(block.dataMalformed, isFalse);
+    });
+
+    test('explicit data wins over meta on key conflicts', () {
+      final block = LessonBlockModel.fromJson({
+        'type': 'text',
+        'textOlChiki': 'ᱥᱮᱸᱫᱨᱟ',
+        'textLatin': 'Sendra katha',
+        'data': {'meaning_hi': 'canonical meaning'},
+        'meta': {'meaning_hi': 'stale meaning'},
+      });
+
+      expect(block.data?['meaning_hi'], 'canonical meaning');
+    });
+
+    test('meta text fields backfill absent canonical fields only', () {
+      final block = LessonBlockModel.fromJson({
+        'type': 'text',
+        'textLatin': 'Sendra katha',
+        'meta': {'textOlChiki': 'ᱥᱮᱸᱫᱨᱟ'},
+      });
+
+      expect(block.textOlChiki, 'ᱥᱮᱸᱫᱨᱟ');
+      expect(block.textLatin, 'Sendra katha');
+    });
   });
 }

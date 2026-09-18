@@ -7,10 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/sharing/growth_share_service.dart';
-import '../../../core/theme/app_radius.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
@@ -33,6 +32,8 @@ enum _Tool {
   };
 }
 
+enum _MobileTab { input, result }
+
 class _Draft {
   final result = TextEditingController();
   String language = 'hi-IN';
@@ -48,7 +49,7 @@ class _Draft {
   void dispose() => result.dispose();
 }
 
-/// Private, review-first workspace. Inputs and jobs live only in this screen.
+/// Private, review-first AAA+ AI workspace.
 class AiStudioScreen extends ConsumerStatefulWidget {
   const AiStudioScreen({super.key});
 
@@ -61,6 +62,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
   final _drafts = {for (final tool in _Tool.values) tool: _Draft()};
   final _share = const GrowthShareService();
   _Tool _tool = _Tool.transcribe;
+  _MobileTab _mobileTab = _MobileTab.input;
   int _generation = 0;
   bool _recording = false;
   int _recordingSeconds = 0;
@@ -96,6 +98,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       draft.busy = false;
       draft.selecting = false;
     }
+    _mobileTab = _MobileTab.input;
     setState(() {});
   }
 
@@ -210,6 +213,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       _recording = false;
       _recordingSeconds = 0;
       _tool = tool;
+      _mobileTab = _MobileTab.input;
     });
   }
 
@@ -233,9 +237,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         setState(() {
           draft.job = job;
           draft.resultLanguage = draft.language;
-          // Manual edits survive later status checks. Latest extracted text
-          // remains available via the explicit restore action.
           if (!draft.edited) draft.result.text = job.text;
+          _mobileTab = _MobileTab.result;
         });
       } else {
         final text = tool == _Tool.translate
@@ -245,6 +248,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         setState(() {
           draft.result.text = text;
           draft.edited = false;
+          _mobileTab = _MobileTab.result;
           if (text.trim().isEmpty) {
             draft.error =
                 'No text was returned. Review your input before retrying.';
@@ -296,6 +300,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
         _draft.language = sourceLanguage == 'sat-IN' ? 'hi-IN' : sourceLanguage;
         _draft.consent = false;
         _draft.error = null;
+        _mobileTab = _MobileTab.input;
       });
     }
   }
@@ -334,184 +339,92 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     ref.listen(aiStudioServiceProvider, (previous, next) {
       if (previous != null && !identical(previous, next)) _resetSession();
     });
-    final colors = Theme.of(context).colorScheme;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.aiStudioTitle)),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: ResponsiveLayout.pagePadding(context),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1120),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _header(l10n),
-                  AppSpacing.gapH24,
-                  if (!service.configured) ...[
-                    _notice(
-                      l10n.aiStudioNotConfigured,
-                      icon: Icons.cloud_off_outlined,
-                    ),
-                    AppSpacing.gapH16,
-                  ],
-                  Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: [
-                      for (final tool in _Tool.values)
-                        ChoiceChip(
-                          key: Key('tool-${tool.name}'),
-                          avatar: Icon(tool.icon, size: 20),
-                          label: Text(tool.localizedLabel(l10n)),
-                          selected: _tool == tool,
-                          padding: AppSpacing.edgeInsetsMd,
-                          onSelected: (_) => _selectTool(tool),
-                        ),
-                    ],
-                  ),
-                  AppSpacing.gapH24,
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final input = _inputPanel(service.configured, l10n);
-                      final output = _resultPanel(l10n);
-                      // Stack sooner with larger text so both editors stay usable.
-                      final wide =
-                          constraints.maxWidth >= 900 &&
-                          MediaQuery.textScalerOf(context).scale(16) <= 22;
-                      return wide
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(child: input),
-                                AppSpacing.gapW24,
-                                Expanded(child: output),
-                              ],
-                            )
-                          : Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [input, AppSpacing.gapH24, output],
-                            );
-                    },
-                  ),
-                  AppSpacing.gapH24,
-                  TextButton.icon(
-                    onPressed: () => context.push('/translate'),
-                    icon: const Icon(Icons.swap_horiz_rounded),
-                    label: Text(l10n.aiStudioLookingForConverter),
-                  ),
-                  AppSpacing.gapH8,
-                  Text(
-                    l10n.aiStudioDisclaimer,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  AppSpacing.gapH24,
-                ],
-              ),
+      backgroundColor: isDark
+          ? AppColors.translatorDarkBg
+          : const Color(0xFFF3F5F8),
+      appBar: _buildAppBar(l10n, isDark),
+      body: Stack(
+        children: [
+          _buildAtmosphere(isDark),
+          SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 820;
+
+                if (!isWide) {
+                  return _buildMobileSingleScreenBody(
+                    service.configured,
+                    l10n,
+                    isDark,
+                  );
+                }
+
+                return _buildDesktopSingleScreenBody(
+                  service.configured,
+                  l10n,
+                  isDark,
+                );
+              },
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _header(AppLocalizations l10n) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppSpacing.edgeInsetsXxl,
-      decoration: BoxDecoration(
-        color: colors.primaryContainer,
-        borderRadius: AppRadius.borderXxl,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.auto_awesome_outlined, color: colors.onPrimaryContainer),
-          AppSpacing.gapH12,
-          Text(
-            l10n.aiStudioHeadline,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: colors.onPrimaryContainer,
-            ),
-          ),
-          AppSpacing.gapH12,
-          Text(
-            l10n.aiStudioSubhead,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyLarge?.copyWith(color: colors.onPrimaryContainer),
-          ),
-          AppSpacing.gapH20,
-          Wrap(
-            spacing: AppSpacing.lg,
-            runSpacing: AppSpacing.sm,
-            children: [
-              for (final label in [
-                l10n.aiStudioStep1,
-                l10n.aiStudioStep2,
-                l10n.aiStudioStep3,
-              ])
-                Text(label, style: TextStyle(color: colors.onPrimaryContainer)),
+  // ── Atmospheric Background ───────────────────────────────────────────
+  Widget _buildAtmosphere(bool isDark) {
+    if (!isDark) return const SizedBox.shrink();
+    return Positioned.fill(
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.translatorDarkBg,
+              AppColors.translatorDarkMid,
+              Color(0xFF0D1420),
             ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _panel({required String title, required List<Widget> children}) {
-    final colors = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppSpacing.edgeInsetsXl,
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: AppRadius.borderXl,
-        border: Border.all(color: colors.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Semantics(
-            header: true,
-            child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-          ),
-          AppSpacing.gapH20,
-          ...children,
-        ],
-      ),
-    );
-  }
-
-  Widget _notice(
-    String text, {
-    IconData icon = Icons.info_outline,
-    bool error = false,
-  }) {
-    final colors = Theme.of(context).colorScheme;
-    return Semantics(
-      liveRegion: true,
-      child: Container(
-        padding: AppSpacing.edgeInsetsLg,
-        decoration: BoxDecoration(
-          color: error ? colors.errorContainer : colors.surfaceContainerHighest,
-          borderRadius: AppRadius.borderMd,
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Icon(
-              icon,
-              color: error ? colors.onErrorContainer : colors.onSurface,
+            Positioned(
+              top: -100,
+              left: -80,
+              child: Container(
+                width: 380,
+                height: 380,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.primary.withValues(alpha: 0.08),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
             ),
-            AppSpacing.gapW12,
-            Expanded(
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: error ? colors.onErrorContainer : colors.onSurface,
+            Positioned(
+              bottom: -120,
+              right: -100,
+              child: Container(
+                width: 440,
+                height: 440,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      AppColors.bakhedGlowBlue.withValues(alpha: 0.14),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -521,7 +434,539 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
     );
   }
 
-  Widget _inputPanel(bool configured, AppLocalizations l10n) {
+  // ── Sleek Studio Navigation Header ────────────────────────────────────
+  PreferredSizeWidget _buildAppBar(AppLocalizations l10n, bool isDark) {
+    return AppBar(
+      backgroundColor: isDark
+          ? AppColors.translatorDarkBg.withValues(alpha: 0.95)
+          : Colors.white.withValues(alpha: 0.95),
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      toolbarHeight: 52,
+      leadingWidth: 50,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 10),
+        child: Center(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () => context.pop(),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.06,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.08,
+                  ),
+                ),
+              ),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                size: 18,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+          ),
+        ),
+      ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            l10n.aiStudioTitle,
+            style: AppTypography.inter(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.4,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2.5),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Text(
+                  'READY',
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 10),
+          child: Center(
+            child: IconButton(
+              tooltip: l10n.aiStudioLookingForConverter,
+              icon: Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.06,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.08,
+                    ),
+                  ),
+                ),
+                child: Icon(
+                  Icons.swap_horiz_rounded,
+                  size: 16,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              onPressed: () => context.push('/translate'),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Tool Switcher Pill Capsule ───────────────────────────────────────
+  Widget _buildToolSwitcher(AppLocalizations l10n, bool isDark) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.08,
+            ),
+          ),
+        ),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 4,
+          runSpacing: 4,
+          children: [
+            for (final tool in _Tool.values) _toolPill(tool, l10n, isDark),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _toolPill(_Tool tool, AppLocalizations l10n, bool isDark) {
+    final selected = _tool == tool;
+    return Material(
+      key: Key('tool-${tool.name}'),
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(11),
+        onTap: () => _selectTool(tool),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(11),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                tool.icon,
+                size: 14,
+                color: selected
+                    ? AppColors.elevatedButtonFg
+                    : isDark
+                    ? Colors.white70
+                    : Colors.black54,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                tool.localizedLabel(l10n),
+                style: TextStyle(
+                  color: selected
+                      ? AppColors.elevatedButtonFg
+                      : isDark
+                      ? Colors.white70
+                      : Colors.black87,
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Mobile Mode Switcher ─────────────────────────────────────────────
+  Widget _buildMobileTabSwitcher(AppLocalizations l10n, bool isDark) {
+    final hasResult = _draft.result.text.trim().isNotEmpty || _draft.edited;
+    return Container(
+      height: 38,
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _mobileTabButton(
+              tab: _MobileTab.input,
+              label: '1. Input',
+              icon: Icons.edit_note_rounded,
+              selected: _mobileTab == _MobileTab.input,
+              isDark: isDark,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: _mobileTabButton(
+              tab: _MobileTab.result,
+              label: '2. Result',
+              icon: Icons.auto_awesome_rounded,
+              selected: _mobileTab == _MobileTab.result,
+              hasBadge: hasResult,
+              isDark: isDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mobileTabButton({
+    required _MobileTab tab,
+    required String label,
+    required IconData icon,
+    required bool selected,
+    required bool isDark,
+    bool hasBadge = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(9),
+        onTap: () => setState(() => _mobileTab = tab),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected
+                ? (isDark ? const Color(0xFF1E2A40) : Colors.white)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+            border: selected
+                ? Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.12,
+                    ),
+                  )
+                : null,
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: selected
+                    ? AppColors.primary
+                    : (isDark ? Colors.white54 : Colors.black45),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: selected
+                      ? (isDark ? Colors.white : Colors.black87)
+                      : (isDark ? Colors.white54 : Colors.black45),
+                  fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              if (hasBadge) ...[
+                const SizedBox(width: 6),
+                Container(
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Desktop Single Screen Viewport (Two Columns, Non-Scrollable) ──────
+  Widget _buildDesktopSingleScreenBody(
+    bool configured,
+    AppLocalizations l10n,
+    bool isDark,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildToolSwitcher(l10n, isDark),
+          const SizedBox(height: 12),
+          if (!configured) ...[
+            _notice(l10n.aiStudioNotConfigured, icon: Icons.cloud_off_outlined),
+            const SizedBox(height: 10),
+          ],
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: _inputPanel(
+                    configured,
+                    l10n,
+                    isDark,
+                    flex: true,
+                    isMobile: false,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 6,
+                  child: _resultPanel(
+                    l10n,
+                    isDark,
+                    flex: true,
+                    isMobile: false,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            l10n.aiStudioDisclaimer,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.35)
+                  : Colors.black38,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Mobile Single Screen Viewport (Non-Scrollable, Instant Deck) ─────
+  Widget _buildMobileSingleScreenBody(
+    bool configured,
+    AppLocalizations l10n,
+    bool isDark,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildToolSwitcher(l10n, isDark),
+          const SizedBox(height: 8),
+          _buildMobileTabSwitcher(l10n, isDark),
+          const SizedBox(height: 8),
+          if (!configured) ...[
+            _notice(l10n.aiStudioNotConfigured, icon: Icons.cloud_off_outlined),
+            const SizedBox(height: 8),
+          ],
+          Expanded(
+            child: IndexedStack(
+              index: _mobileTab.index,
+              children: [
+                _inputPanel(
+                  configured,
+                  l10n,
+                  isDark,
+                  flex: true,
+                  isMobile: true,
+                ),
+                _resultPanel(l10n, isDark, flex: true, isMobile: true),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            l10n.aiStudioDisclaimer,
+            style: TextStyle(
+              fontSize: 10,
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.35)
+                  : Colors.black38,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Glass Studio Workspace Card ──────────────────────────────────────
+  Widget _studioCard({
+    required Widget header,
+    required Widget body,
+    Widget? footer,
+    required bool isDark,
+    required bool flex,
+    required bool isMobile,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF101724) : Colors.white,
+        borderRadius: BorderRadius.circular(isMobile ? 18 : 20),
+        border: Border.all(
+          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(isMobile ? 14 : 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            header,
+            SizedBox(height: isMobile ? 10 : 14),
+            if (flex)
+              Expanded(child: SingleChildScrollView(child: body))
+            else
+              body,
+            if (footer != null) ...[
+              SizedBox(height: isMobile ? 10 : 14),
+              footer,
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Notice Banner ────────────────────────────────────────────────────
+  Widget _notice(
+    String text, {
+    IconData icon = Icons.info_outline,
+    bool error = false,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bg = error
+        ? (isDark ? const Color(0xFF2C1414) : const Color(0xFFFDE8E8))
+        : (isDark ? const Color(0xFF131C2E) : const Color(0xFFEBF3FC));
+    final fg = error
+        ? const Color(0xFFFF6E6E)
+        : (isDark ? Colors.white70 : const Color(0xFF1E3A8A));
+
+    return Semantics(
+      liveRegion: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: error
+                ? const Color(0xFFFF5252).withValues(alpha: 0.3)
+                : (isDark ? Colors.white12 : Colors.black12),
+          ),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, size: 15, color: fg),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: fg,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Input Panel ──────────────────────────────────────────────────────
+  Widget _inputPanel(
+    bool configured,
+    AppLocalizations l10n,
+    bool isDark, {
+    required bool flex,
+    required bool isMobile,
+  }) {
     final draft = _draft;
     final locked = draft.busy || draft.selecting || _recording;
     final scanPending =
@@ -534,211 +979,803 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
       _Tool.transcribe => l10n.aiStudioYourAudio,
       _Tool.scan => l10n.aiStudioYourDocument,
     };
-    return _panel(
-      title: panelTitle,
-      children: [
-        DropdownButtonFormField<String>(
-          key: ValueKey('language-${_tool.name}-${draft.language}'),
-          initialValue: draft.language,
-          isExpanded: true,
-          decoration: InputDecoration(
-            labelText: l10n.aiStudioSourceLanguage,
-            border: const OutlineInputBorder(),
+
+    final header = LayoutBuilder(
+      builder: (context, headerConstraints) {
+        final compact =
+            headerConstraints.maxWidth < 280 ||
+            MediaQuery.textScalerOf(context).scale(16) > 20;
+
+        final titleWidget = Semantics(
+          header: true,
+          child: Text(
+            panelTitle,
+            style: AppTypography.inter(
+              fontSize: isMobile ? 15 : 16,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
-          items: [
-            for (final entry in languages)
-              DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+        );
+
+        final dropdownWidget = SizedBox(
+          width: compact ? double.infinity : (isMobile ? 136 : 154),
+          height: 36,
+          child: DropdownButtonFormField<String>(
+            key: ValueKey('language-${_tool.name}-${draft.language}'),
+            initialValue: draft.language,
+            isExpanded: true,
+            dropdownColor: isDark ? const Color(0xFF141C2B) : Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(horizontal: 10),
+              filled: true,
+              fillColor: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.04,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.08,
+                  ),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.08,
+                  ),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+            ),
+            items: [
+              for (final entry in languages)
+                DropdownMenuItem(
+                  value: entry.key,
+                  child: Text(entry.value, overflow: TextOverflow.ellipsis),
+                ),
+            ],
+            onChanged: locked || scanPending
+                ? null
+                : (value) {
+                    if (value != null) {
+                      setState(() {
+                        draft.language = value;
+                        draft.consent = false;
+                      });
+                    }
+                  },
+          ),
+        );
+
+        if (compact) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [titleWidget, const SizedBox(height: 6), dropdownWidget],
+          );
+        }
+
+        return Row(
+          children: [
+            Expanded(child: titleWidget),
+            const SizedBox(width: 8),
+            dropdownWidget,
           ],
-          onChanged: locked || scanPending
-              ? null
-              : (value) {
-                  if (value != null) {
-                    setState(() {
-                      draft.language = value;
-                      draft.consent = false;
-                    });
-                  }
-                },
-        ),
-        AppSpacing.gapH16,
-        if (_tool == _Tool.translate) ...[
-          Text(l10n.aiStudioTranslateNote),
-          AppSpacing.gapH12,
-          CallbackShortcuts(
-            bindings: {
-              const SingleActivator(
-                LogicalKeyboardKey.enter,
-                control: true,
-              ): () {
-                if (configured && !locked && draft.consent && _validInput) {
-                  _process();
-                }
-              },
-              const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-                if (configured && !locked && draft.consent && _validInput) {
-                  _process();
-                }
-              },
-            },
-            child: TextField(
-              key: const Key('studio-source'),
-              controller: _source,
-              enabled: !locked,
-              minLines: 5,
-              maxLines: 10,
-              maxLength: 2000,
-              maxLengthEnforcement: MaxLengthEnforcement.none,
-              onChanged: (_) => setState(() => draft.consent = false),
-              decoration: InputDecoration(
-                labelText: l10n.aiStudioTextToTranslate,
-                alignLabelWithHint: true,
-                hintText: l10n.aiStudioTextPlaceholder,
-                helperText:
-                    (kIsWeb ||
-                        defaultTargetPlatform == TargetPlatform.macOS ||
-                        defaultTargetPlatform == TargetPlatform.windows ||
-                        defaultTargetPlatform == TargetPlatform.linux)
-                    ? 'Press Ctrl+Enter / ⌘+Enter to submit'
-                    : null,
-                border: const OutlineInputBorder(),
-                errorText: _source.text.trim().runes.length > 2000
-                    ? l10n.aiStudioTextLimitError
-                    : null,
-                errorMaxLines: 3,
+        );
+      },
+    );
+
+    Widget body;
+    if (_tool == _Tool.translate) {
+      body = _buildTranslateInput(
+        configured,
+        locked,
+        draft,
+        l10n,
+        isDark,
+        isMobile,
+      );
+    } else if (_tool == _Tool.transcribe) {
+      body = _buildTranscribeInput(locked, draft, l10n, isDark, isMobile);
+    } else {
+      body = _buildScanInput(
+        locked,
+        scanPending,
+        draft,
+        l10n,
+        isDark,
+        isMobile,
+      );
+    }
+
+    final footer = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (draft.error != null) ...[
+          _notice(draft.error!, error: true, icon: Icons.error_outline_rounded),
+          const SizedBox(height: 8),
+        ],
+        if (draft.busy) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: const LinearProgressIndicator(
+              semanticsLabel: 'AI processing in progress',
+              color: AppColors.primary,
+              backgroundColor: Color(0xFF1A2333),
+              minHeight: 4,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Semantics(
+            liveRegion: true,
+            child: Text(
+              l10n.aiStudioProcessing,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        // Sleek Consent Bar
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.03,
+            ),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: draft.consent
+                  ? AppColors.primary.withValues(alpha: 0.35)
+                  : (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.06,
+                    ),
+            ),
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: CheckboxListTile(
+              key: const Key('studio-consent'),
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              controlAffinity: ListTileControlAffinity.leading,
+              activeColor: AppColors.primary,
+              checkColor: AppColors.elevatedButtonFg,
+              value: draft.consent,
+              onChanged: locked || scanPending
+                  ? null
+                  : (value) => setState(() => draft.consent = value ?? false),
+              title: Text(
+                l10n.aiStudioConsentTitle,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                ),
+              ),
+              subtitle: Text(
+                l10n.aiStudioConsentSubtitle,
+                style: TextStyle(
+                  color: isDark ? Colors.white60 : Colors.black54,
+                  fontSize: 10,
+                  height: 1.2,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ),
-        ] else if (_tool == _Tool.transcribe) ...[
-          Text(l10n.aiStudioSpeakNote),
-          AppSpacing.gapH16,
-          FilledButton.icon(
-            key: const Key('studio-record'),
-            onPressed: draft.busy || draft.selecting ? null : _toggleRecording,
-            icon: const Icon(Icons.mic_rounded),
-            label: Text(
-              _recording
-                  ? l10n.aiStudioStopRecording(
-                      _recordingSeconds.toString().padLeft(2, '0'),
-                    )
-                  : l10n.aiStudioRecordVoice,
+        ),
+        if (!scanPending) ...[
+          const SizedBox(height: 8),
+          SizedBox(
+            height: isMobile ? 42 : 46,
+            child: FilledButton.icon(
+              key: const Key('studio-process'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.elevatedButtonFg,
+                disabledBackgroundColor: (isDark ? Colors.white : Colors.black)
+                    .withValues(alpha: 0.06),
+                disabledForegroundColor: isDark
+                    ? Colors.white24
+                    : Colors.black26,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: configured && !locked && draft.consent && _validInput
+                  ? _process
+                  : null,
+              icon: Icon(_tool.icon, size: 16),
+              label: Text(
+                draft.busy
+                    ? l10n.aiStudioProcessing
+                    : l10n.aiStudioProcessWithAi(_tool.localizedLabel(l10n)),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: isMobile ? 13 : 13.5,
+                ),
+              ),
             ),
           ),
-          if (_recording) ...[
-            AppSpacing.gapH8,
-            Semantics(liveRegion: true, child: Text(l10n.aiStudioListening)),
-          ],
-          AppSpacing.gapH16,
-          const Divider(),
-          AppSpacing.gapH12,
-          Text(l10n.aiStudioOrExistingRecording),
-          AppSpacing.gapH8,
-          if (draft.input != null) ...[
-            _notice(draft.input!.name, icon: Icons.audiotrack_outlined),
-            AppSpacing.gapH12,
-          ],
-          OutlinedButton.icon(
+        ],
+      ],
+    );
+
+    return _studioCard(
+      header: header,
+      body: body,
+      footer: footer,
+      isDark: isDark,
+      flex: flex,
+      isMobile: isMobile,
+    );
+  }
+
+  // ── Tool 1: Transcribe Input ─────────────────────────────────────────
+  Widget _buildTranscribeInput(
+    bool locked,
+    _Draft draft,
+    AppLocalizations l10n,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            vertical: isMobile ? 16 : 22,
+            horizontal: 14,
+          ),
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.03,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: _recording
+                  ? AppColors.primary.withValues(alpha: 0.5)
+                  : (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.06,
+                    ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: draft.busy || draft.selecting ? null : _toggleRecording,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: isMobile ? 64 : 70,
+                  height: isMobile ? 64 : 70,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _recording
+                        ? const Color(0xFFFF453A)
+                        : AppColors.primary,
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            (_recording
+                                    ? const Color(0xFFFF453A)
+                                    : AppColors.primary)
+                                .withValues(alpha: 0.35),
+                        blurRadius: _recording ? 20 : 12,
+                        spreadRadius: _recording ? 3 : 0,
+                      ),
+                    ],
+                  ),
+                  child: Icon(
+                    _recording ? Icons.stop_rounded : Icons.mic_rounded,
+                    size: isMobile ? 28 : 32,
+                    color: _recording
+                        ? Colors.white
+                        : AppColors.elevatedButtonFg,
+                  ),
+                ),
+              ),
+              SizedBox(height: isMobile ? 10 : 14),
+              FilledButton.tonal(
+                key: const Key('studio-record'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: _recording
+                      ? const Color(0xFFFF453A).withValues(alpha: 0.15)
+                      : AppColors.primary.withValues(alpha: 0.12),
+                  foregroundColor: _recording
+                      ? const Color(0xFFFF453A)
+                      : AppColors.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 7,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                onPressed: draft.busy || draft.selecting
+                    ? null
+                    : _toggleRecording,
+                child: Text(
+                  _recording
+                      ? l10n.aiStudioStopRecording(
+                          _recordingSeconds.toString().padLeft(2, '0'),
+                        )
+                      : l10n.aiStudioRecordVoice,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ),
+              if (_recording) ...[
+                const SizedBox(height: 6),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    l10n.aiStudioListening,
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        SizedBox(height: isMobile ? 10 : 14),
+        if (draft.input != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.audiotrack_rounded,
+                  color: AppColors.primary,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    draft.input!.name,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 15,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
             key: const Key('studio-pick'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: isDark ? Colors.white70 : Colors.black87,
+              side: BorderSide(
+                color: (isDark ? Colors.white : Colors.black).withValues(
+                  alpha: 0.12,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: locked ? null : _pick,
-            icon: const Icon(Icons.upload_file_outlined),
+            icon: const Icon(Icons.upload_file_outlined, size: 15),
             label: Text(
               draft.selecting
                   ? l10n.aiStudioOpening
                   : draft.input == null
                   ? l10n.aiStudioUploadWav
                   : l10n.aiStudioReplaceRecording,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
             ),
-          ),
-        ] else ...[
-          Text(l10n.aiStudioDocNote),
-          AppSpacing.gapH16,
-          if (draft.input != null) ...[
-            _notice(draft.input!.name, icon: Icons.insert_drive_file_outlined),
-            AppSpacing.gapH12,
-          ],
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: [
-              OutlinedButton.icon(
-                key: const Key('studio-pick'),
-                onPressed: locked || scanPending ? null : _pick,
-                icon: const Icon(Icons.upload_file_outlined),
-                label: Text(
-                  draft.selecting
-                      ? l10n.aiStudioOpening
-                      : draft.input == null
-                      ? l10n.aiStudioChooseFile
-                      : l10n.aiStudioReplaceFile,
-                ),
-              ),
-              if (_tool == _Tool.scan)
-                OutlinedButton.icon(
-                  key: const Key('studio-camera'),
-                  onPressed: locked || scanPending
-                      ? null
-                      : () => _pick(camera: true),
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  label: Text(l10n.aiStudioCapturePage),
-                ),
-            ],
-          ),
-        ],
-        AppSpacing.gapH20,
-        // The enclosing card paints a background color on a DecoratedBox;
-        // ListTile asserts against that. A transparent Material restores the
-        // tile's own ink surface without changing the card's look.
-        Material(
-          type: MaterialType.transparency,
-          child: CheckboxListTile(
-            key: const Key('studio-consent'),
-            contentPadding: EdgeInsets.zero,
-            controlAffinity: ListTileControlAffinity.leading,
-            value: draft.consent,
-            onChanged: locked || scanPending
-                ? null
-                : (value) => setState(() => draft.consent = value ?? false),
-            title: Text(l10n.aiStudioConsentTitle),
-            subtitle: Text(l10n.aiStudioConsentSubtitle),
           ),
         ),
-        AppSpacing.gapH16,
-        if (draft.error != null) ...[
-          _notice(draft.error!, error: true, icon: Icons.error_outline),
-          AppSpacing.gapH16,
-        ],
-        if (draft.busy) ...[
-          const LinearProgressIndicator(
-            semanticsLabel: 'AI processing in progress',
-          ),
-          AppSpacing.gapH12,
-          Semantics(liveRegion: true, child: Text(l10n.aiStudioProcessing)),
-          AppSpacing.gapH12,
-        ],
-        if (!scanPending)
-          FilledButton.icon(
-            key: const Key('studio-process'),
-            onPressed: configured && !locked && draft.consent && _validInput
-                ? _process
-                : null,
-            icon: Icon(_tool.icon),
-            label: Text(
-              draft.busy
-                  ? l10n.aiStudioProcessing
-                  : l10n.aiStudioProcessWithAi(_tool.localizedLabel(l10n)),
-            ),
-          ),
       ],
     );
   }
 
-  Widget _resultPanel(AppLocalizations l10n) {
+  // ── Tool 2: Translate Input ──────────────────────────────────────────
+  Widget _buildTranslateInput(
+    bool configured,
+    bool locked,
+    _Draft draft,
+    AppLocalizations l10n,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return CallbackShortcuts(
+      bindings: {
+        const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
+          if (configured && !locked && draft.consent && _validInput) {
+            _process();
+          }
+        },
+        const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
+          if (configured && !locked && draft.consent && _validInput) {
+            _process();
+          }
+        },
+      },
+      child: TextField(
+        key: const Key('studio-source'),
+        controller: _source,
+        enabled: !locked,
+        minLines: isMobile ? 4 : 5,
+        maxLines: null,
+        maxLength: 2000,
+        maxLengthEnforcement: MaxLengthEnforcement.none,
+        style: TextStyle(
+          color: isDark ? Colors.white : Colors.black87,
+          fontSize: isMobile ? 13.5 : 14,
+          height: 1.45,
+        ),
+        onChanged: (_) => setState(() => draft.consent = false),
+        decoration: InputDecoration(
+          hintText: l10n.aiStudioTextPlaceholder,
+          hintStyle: TextStyle(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.35,
+            ),
+            fontSize: 13,
+          ),
+          filled: true,
+          fillColor: (isDark ? Colors.black : Colors.white).withValues(
+            alpha: 0.25,
+          ),
+          contentPadding: const EdgeInsets.all(12),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.08,
+              ),
+            ),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.08,
+              ),
+            ),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          ),
+          errorText: _source.text.trim().runes.length > 2000
+              ? l10n.aiStudioTextLimitError
+              : null,
+          helperText:
+              (!isMobile &&
+                  (kIsWeb ||
+                      defaultTargetPlatform == TargetPlatform.macOS ||
+                      defaultTargetPlatform == TargetPlatform.windows ||
+                      defaultTargetPlatform == TargetPlatform.linux))
+              ? 'Press Ctrl+Enter / ⌘+Enter to submit'
+              : null,
+          helperStyle: TextStyle(
+            fontSize: 10,
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.4,
+            ),
+          ),
+          counterStyle: TextStyle(
+            fontSize: 10,
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.4,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Tool 3: Scan Input ───────────────────────────────────────────────
+  Widget _buildScanInput(
+    bool locked,
+    bool scanPending,
+    _Draft draft,
+    AppLocalizations l10n,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(
+            vertical: isMobile ? 18 : 24,
+            horizontal: 14,
+          ),
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.03,
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.06,
+              ),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.document_scanner_outlined,
+                size: isMobile ? 30 : 36,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Upload document or capture page',
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'PDF, PNG or JPG · up to 10 MB',
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : Colors.black38,
+                  fontSize: 10.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: isMobile ? 10 : 14),
+        if (draft.input != null) ...[
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.insert_drive_file_outlined,
+                  color: AppColors.primary,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    draft.input!.name,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.primary,
+                  size: 15,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+        ],
+        LayoutBuilder(
+          builder: (context, boxConstraints) {
+            final compact = boxConstraints.maxWidth < 240;
+            final pickButton = OutlinedButton.icon(
+              key: const Key('studio-pick'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                side: BorderSide(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.12,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: locked || scanPending ? null : _pick,
+              icon: const Icon(Icons.upload_file_outlined, size: 15),
+              label: Text(
+                draft.selecting
+                    ? l10n.aiStudioOpening
+                    : draft.input == null
+                    ? l10n.aiStudioChooseFile
+                    : l10n.aiStudioReplaceFile,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+
+            final cameraButton = OutlinedButton.icon(
+              key: const Key('studio-camera'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                side: BorderSide(
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.12,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: locked || scanPending
+                  ? null
+                  : () => _pick(camera: true),
+              icon: const Icon(Icons.camera_alt_outlined, size: 15),
+              label: Text(
+                l10n.aiStudioCapturePage,
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            );
+
+            if (compact) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [pickButton, const SizedBox(height: 6), cameraButton],
+              );
+            }
+
+            return Row(
+              children: [
+                Expanded(child: pickButton),
+                const SizedBox(width: 8),
+                Expanded(child: cameraButton),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // ── Result Panel ─────────────────────────────────────────────────────
+  Widget _resultPanel(
+    AppLocalizations l10n,
+    bool isDark, {
+    required bool flex,
+    required bool isMobile,
+  }) {
     final draft = _draft;
     final hasText = draft.result.text.trim().isNotEmpty;
     final job = draft.job;
-    return _panel(
-      title: l10n.aiStudioReviewAndUse,
+
+    final header = Row(
       children: [
-        if (_tool == _Tool.scan && job != null) ...[
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              l10n.aiStudioReviewAndUse,
+              style: AppTypography.inter(
+                fontSize: isMobile ? 15 : 16,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+          decoration: BoxDecoration(
+            color: hasText
+                ? AppColors.primary.withValues(alpha: 0.12)
+                : (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.06,
+                  ),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: hasText
+                  ? AppColors.primary.withValues(alpha: 0.3)
+                  : (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.08,
+                    ),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 5,
+                height: 5,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: hasText
+                      ? AppColors.primary
+                      : (isDark ? Colors.white38 : Colors.black38),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                hasText ? 'READY' : 'IDLE',
+                style: TextStyle(
+                  color: hasText
+                      ? AppColors.primary
+                      : (isDark ? Colors.white54 : Colors.black45),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+
+    Widget body;
+    if (_tool == _Tool.scan && job != null) {
+      body = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           _notice(
             'Scan status: ${job.status}. '
             '${job.isTerminal ? 'Review any available text below.' : 'Use Check status for updates. Keep this screen open to retain this job.'}',
@@ -746,99 +1783,300 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen> {
                 ? Icons.description_outlined
                 : Icons.hourglass_top_rounded,
           ),
-          AppSpacing.gapH8,
+          const SizedBox(height: 6),
           SelectableText(
             'Job: ${job.id}',
-            style: Theme.of(context).textTheme.bodySmall,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
           ),
-          AppSpacing.gapH12,
-          if (!job.isTerminal)
+          const SizedBox(height: 6),
+          if (!job.isTerminal) ...[
             OutlinedButton.icon(
               key: const Key('studio-check-status'),
               onPressed:
                   draft.busy || !ref.watch(aiStudioServiceProvider).configured
                   ? null
                   : () => _process(checkStatus: true),
-              icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Check status'),
+              icon: const Icon(Icons.refresh_rounded, size: 15),
+              label: const Text(
+                'Check status',
+                style: TextStyle(fontSize: 11.5),
+              ),
             ),
-          if (draft.edited && job.text.isNotEmpty)
+            const SizedBox(height: 6),
+          ],
+          if (draft.edited && job.text.isNotEmpty) ...[
             TextButton(
               onPressed: () => setState(() {
                 draft.result.text = job.text;
                 draft.edited = false;
               }),
-              child: const Text('Replace my edits with latest scan text'),
+              child: const Text(
+                'Replace my edits with latest scan text',
+                style: TextStyle(fontSize: 11),
+              ),
             ),
-          AppSpacing.gapH16,
+            const SizedBox(height: 6),
+          ],
+          _buildResultEditor(draft, l10n, isDark, isMobile),
         ],
-        if (!hasText && !draft.edited) ...[
-          const Icon(Icons.edit_note_rounded, size: 48),
-          AppSpacing.gapH12,
-          Text(l10n.aiStudioResultPlaceholder, textAlign: TextAlign.center),
-          AppSpacing.gapH8,
-          Text(l10n.aiStudioResultDisclaimer, textAlign: TextAlign.center),
-          AppSpacing.gapH24,
-        ] else ...[
-          TextField(
-            key: ValueKey('studio-result-${_tool.name}'),
-            controller: draft.result,
-            minLines: 7,
-            maxLines: 15,
-            onChanged: (_) => setState(() => draft.edited = true),
-            decoration: InputDecoration(
-              labelText: l10n.aiStudioEditableResult,
-              alignLabelWithHint: true,
-              helperText: l10n.aiStudioReviewHelper,
-              helperMaxLines: 3,
-              border: const OutlineInputBorder(),
-            ),
+      );
+    } else if (!hasText && !draft.edited) {
+      body = Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: isMobile ? 44 : 52,
+                height: isMobile ? 44 : 52,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: (isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.04,
+                  ),
+                  border: Border.all(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.08,
+                    ),
+                  ),
+                ),
+                child: Icon(
+                  Icons.auto_awesome_rounded,
+                  size: isMobile ? 20 : 24,
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.aiStudioResultPlaceholder,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : Colors.black87,
+                  fontSize: isMobile ? 13 : 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.aiStudioResultDisclaimer,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isDark ? Colors.white38 : Colors.black45,
+                  fontSize: isMobile ? 10.5 : 11,
+                ),
+              ),
+            ],
           ),
-          AppSpacing.gapH16,
+        ),
+      );
+    } else {
+      body = _buildResultEditor(draft, l10n, isDark, isMobile);
+    }
+
+    Widget? footer;
+    if (hasText || draft.edited) {
+      footer = Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
           Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
+            spacing: 6,
+            runSpacing: 6,
             children: [
               OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                  side: BorderSide(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.12,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                ),
                 onPressed: hasText ? () => _shareResult(copy: true) : null,
-                icon: const Icon(Icons.copy_outlined),
-                label: Text(l10n.aiStudioCopy),
+                icon: const Icon(Icons.copy_outlined, size: 14),
+                label: Text(
+                  l10n.aiStudioCopy,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
               OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                  side: BorderSide(
+                    color: (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.12,
+                    ),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                ),
                 onPressed: hasText ? () => _shareResult(copy: false) : null,
                 icon: const Icon(
                   kIsWeb ? Icons.content_paste_outlined : Icons.share_outlined,
+                  size: 14,
                 ),
                 label: Text(
                   kIsWeb ? l10n.aiStudioCopyToShare : l10n.aiStudioShare,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               if (_tool != _Tool.translate)
                 OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                    side: BorderSide(
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.12,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 7,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                  ),
                   onPressed:
                       hasText &&
                           draft.language != 'sat-IN' &&
                           !_drafts[_Tool.translate]!.busy
                       ? () => _sendResult(voice: false)
                       : null,
-                  icon: const Icon(Icons.translate_rounded),
-                  label: Text(l10n.aiStudioTranslateResult),
+                  icon: const Icon(Icons.translate_rounded, size: 14),
+                  label: Text(
+                    l10n.aiStudioTranslateResult,
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
-              OutlinedButton.icon(
+              FilledButton.tonalIcon(
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  foregroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                ),
                 onPressed: hasText ? () => _sendResult(voice: true) : null,
-                icon: const Icon(Icons.record_voice_over_outlined),
-                label: Text(l10n.aiStudioSendToBodhan),
+                icon: const Icon(Icons.record_voice_over_outlined, size: 14),
+                label: Text(
+                  l10n.aiStudioSendToBodhan,
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-          AppSpacing.gapH12,
-          Text(l10n.aiStudioBodhanNote),
-          if (_tool != _Tool.translate && draft.language == 'sat-IN') ...[
-            AppSpacing.gapH8,
-            const Text('Translation is not available for Santali source text.'),
+          if (isMobile) ...[
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                ),
+                onPressed: () => setState(() => _mobileTab = _MobileTab.input),
+                icon: const Icon(Icons.arrow_back_rounded, size: 13),
+                label: const Text(
+                  'Edit source input',
+                  style: TextStyle(fontSize: 11.5),
+                ),
+              ),
+            ),
           ],
         ],
-      ],
+      );
+    }
+
+    return _studioCard(
+      header: header,
+      body: body,
+      footer: footer,
+      isDark: isDark,
+      flex: flex,
+      isMobile: isMobile,
+    );
+  }
+
+  Widget _buildResultEditor(
+    _Draft draft,
+    AppLocalizations l10n,
+    bool isDark,
+    bool isMobile,
+  ) {
+    return TextField(
+      key: ValueKey('studio-result-${_tool.name}'),
+      controller: draft.result,
+      minLines: isMobile ? 5 : 6,
+      maxLines: null,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
+        fontFamily: 'OlChiki',
+        fontSize: isMobile ? 14 : 15,
+        height: 1.5,
+      ),
+      onChanged: (_) => setState(() => draft.edited = true),
+      decoration: InputDecoration(
+        labelText: l10n.aiStudioEditableResult,
+        alignLabelWithHint: true,
+        hintText: l10n.aiStudioResultPlaceholder,
+        filled: true,
+        fillColor: (isDark ? Colors.black : Colors.white).withValues(
+          alpha: 0.25,
+        ),
+        contentPadding: const EdgeInsets.all(12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.08,
+            ),
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.08,
+            ),
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+      ),
     );
   }
 }

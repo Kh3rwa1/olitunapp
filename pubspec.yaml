@@ -29,6 +29,7 @@ dependencies:
   flutter_flip_card: ^0.0.6
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
   flutter_svg: ^2.0.17
   fl_chart: ^1.2.0
 

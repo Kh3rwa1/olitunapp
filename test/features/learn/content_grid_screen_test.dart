@@ -229,7 +229,70 @@ void main() {
         gridViewTablet.gridDelegate
             as SliverGridDelegateWithFixedCrossAxisCount;
     expect(delegateTablet.crossAxisCount, equals(4));
+
+    // Now set screen width to desktop (e.g. 1200 width)
+    tester.view.physicalSize = const Size(1200, 800);
+    await tester.pump();
+    await tester.pumpAndSettle();
+
+    final gridViewDesktop = tester.widget<GridView>(find.byType(GridView));
+    final delegateDesktop =
+        gridViewDesktop.gridDelegate
+            as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegateDesktop.crossAxisCount, equals(6));
   });
+
+  testWidgets(
+    'ContentGridScreen renders 5 columns for numbers on tablet/desktop',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final mockNumberItem = ContentItem(
+        id: 'num_1',
+        kind: ContentKind.number,
+        categoryId: 'numbers',
+        title: 'One',
+        olChiki: '᱑',
+        blocks: const [],
+        updatedAt: DateTime(2026, 5, 25),
+      );
+
+      tester.view.physicalSize = const Size(1000, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
+            audioServiceProvider.overrideWithValue(MockAudioService()),
+            contentListProvider((
+              ContentKind.number,
+              null,
+            )).overrideWith((ref) => [mockNumberItem]),
+          ],
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ContentGridScreen(kind: ContentKind.number),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final gridView = tester.widget<GridView>(find.byType(GridView));
+      final delegate =
+          gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+      expect(delegate.crossAxisCount, equals(5));
+    },
+  );
 
   testWidgets(
     'ContentGridScreen triggers audio playback and conditional trace icon',

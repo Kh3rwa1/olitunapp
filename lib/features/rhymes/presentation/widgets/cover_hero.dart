@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/media/olitun_image_cache.dart';
 
 /// Autoplay looping muted video hero for the Bakhed detail screen.
 ///
@@ -195,9 +196,11 @@ class _CoverHeroState extends State<CoverHero> with WidgetsBindingObserver {
       );
     }
 
-    // Image cover — preserve existing CachedNetworkImage behavior
+    // Image cover — shared persistent cache so Bakhed artwork survives
+    // restarts and offline opens.
     return CachedNetworkImage(
       imageUrl: media.url,
+      cacheManager: olitunImageCacheManager,
       fit: BoxFit.cover,
       memCacheWidth: 800,
       placeholder: (context, url) => Container(color: Colors.black26),

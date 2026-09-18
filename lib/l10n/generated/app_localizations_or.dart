@@ -1178,13 +1178,6 @@ class AppLocalizationsOr extends AppLocalizations {
   String get aiStudioCapturePage => 'ପୃଷ୍ଠାର ଫଟୋ ନିଅନ୍ତୁ';
 
   @override
-  String get aiStudioConsentTitle => 'ମୁଁ ଦେୟଯୁକ୍ତ ଏଆଇ ପ୍ରକ୍ରିୟାକରଣରେ ସମ୍ମତ';
-
-  @override
-  String get aiStudioConsentSubtitle =>
-      'ଏହା ଆପଣଙ୍କ ଟେକ୍ସଟ୍ ବା ଫାଇଲ୍ ବାହ୍ୟ ଏଆଇ ସେବା ସର୍ଭମକୁ ପଠାଏ ଏବଂ ଆପ୍\'ର ପ୍ରକ୍ରିୟାକରଣ କୋଟା ବ୍ୟବହାର କରେ। କେବଳ ଅନୁମତି ଥିବା ବିଷୟ ପଠାନ୍ତୁ। କୌଣସି ବିଷୟ ଆପେ ଆପେ ପ୍ରକାଶିତ ହୁଏ ନାହିଁ।';
-
-  @override
   String get aiStudioProcessing =>
       'ପ୍ରକ୍ରିୟାକରଣ ଚାଲିଛି… ଏହି ସ୍କ୍ରିନ୍ ଖୋଲା ରଖନ୍ତୁ।';
 
@@ -1204,9 +1197,6 @@ class AppLocalizationsOr extends AppLocalizations {
       'କିଛି ପ୍ରକାଶିତ ବା ସେୟାର୍ ହୋଇନାହିଁ। ଟେକ୍ସଟ୍ ପ୍ରସ୍ତୁତ ହେଲେ ଆପଣ ଏହାକୁ ସଂଶୋଧନ କରିପାରିବେ, କପି କରିପାରିବେ ବା ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ ପାଇଁ ବାଛିପାରିବେ।';
 
   @override
-  String get aiStudioEditableResult => 'ସମ୍ପାଦନାଯୋଗ୍ୟ ଫଳାଫଳ';
-
-  @override
   String get aiStudioReviewHelper =>
       'କପି ବା ସେୟାର୍ କରିବା ପୂର୍ବରୁ ଏଆଇ ଟେକ୍ସଟ୍ ଯାଞ୍ଚ କରନ୍ତୁ।';
 
@@ -1223,11 +1213,20 @@ class AppLocalizationsOr extends AppLocalizations {
   String get aiStudioTranslateResult => 'ଫଳାଫଳ ଅନୁବାଦ କରନ୍ତୁ';
 
   @override
-  String get aiStudioSendToBodhan => 'ବୋଧନକୁ ପଠାନ୍ତୁ';
+  String get aiStudioSendToVoiceStudio => 'ଭଏସ୍ ଷ୍ଟୁଡିଓ';
 
   @override
-  String get aiStudioBodhanNote =>
-      'ବୋଧନ ୬୦୦ ଅକ୍ଷର ପର୍ଯ୍ୟନ୍ତ ଗ୍ରହଣ କରେ। ଏହା ଖୋଲିବା ଦ୍ୱାରା ଭଏସ୍ ତିଆରି ଆରମ୍ଭ ହୁଏ ନାହିଁ।';
+  String get aiStudioAuto => 'ଅଟୋ';
+
+  @override
+  String get aiStudioLive => 'ଲାଇଭ୍';
+
+  @override
+  String get aiStudioThinking => 'ଚିନ୍ତା କରୁଛି';
+
+  @override
+  String get aiStudioScanningLive =>
+      'ଆପଣଙ୍କ ପୃଷ୍ଠା ପଢ଼ାଯାଉଛି — ଅପଡେଟ୍ ଏଠାରେ ଲାଇଭ୍ ଦେଖାଯିବ।';
 
   @override
   String get aiStudioLookingForConverter =>

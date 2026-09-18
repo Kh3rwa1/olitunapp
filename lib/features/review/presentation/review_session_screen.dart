@@ -27,7 +27,7 @@ import '../../../shared/providers/content_providers.dart';
 import '../../../shared/providers/learner_content_providers.dart';
 import '../../profile/presentation/providers/profile_providers.dart';
 import '../../quiz/presentation/providers/mistake_provider.dart';
-import '../data/review_store.dart';
+import '../data/review_store_notifier.dart';
 import '../domain/review_item.dart';
 import 'review_exercise.dart';
 import 'review_queue_provider.dart';

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/media/olitun_image_cache.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -77,6 +78,7 @@ class PaywallHeader extends StatelessWidget {
                       category.courseHeroImageUrl!.isNotEmpty)
                     CachedNetworkImage(
                       imageUrl: category.courseHeroImageUrl!,
+                      cacheManager: olitunImageCacheManager,
                       fit: BoxFit.cover,
                       memCacheWidth: 1080,
                       width: double.infinity,

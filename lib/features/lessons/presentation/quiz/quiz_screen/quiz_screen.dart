@@ -34,6 +34,11 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   QuizModel? _quiz;
   bool _isLoading = true;
 
+  /// Fail-closed load state. Null when the quiz resolved; otherwise the
+  /// reason no quiz is shown. A missing quiz is never replaced with an
+  /// unrelated hardcoded alphabet question.
+  String? _loadError;
+
   late AnimationController _celebrationController;
 
   @override
@@ -55,18 +60,41 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   void _loadQuiz() {
-    if (widget.quizId == null) {
-      _loadHardcoded();
+    // A missing quiz id is a not-found state, not an alphabet question.
+    if (widget.quizId == null || widget.quizId!.trim().isEmpty) {
+      setState(() {
+        _loadError = 'Quiz not found.';
+        _isLoading = false;
+      });
       return;
     }
 
     try {
-      final quiz = ref
-          .read(quizzesProvider)
-          .value
-          ?.firstWhere((q) => q.id == widget.quizId);
+      final quizzesAsync = ref.read(quizzesProvider);
+      if (quizzesAsync.isLoading) {
+        // Content still loading: stay in the loading state; the provider
+        // listener in build() reloads once content arrives.
+        return;
+      }
+      if (quizzesAsync.hasError) {
+        setState(() {
+          _loadError = 'Could not load the quiz.';
+          _isLoading = false;
+        });
+        return;
+      }
+      QuizModel? quiz;
+      for (final candidate in quizzesAsync.valueOrNull ?? const <QuizModel>[]) {
+        if (candidate.id == widget.quizId) {
+          quiz = candidate;
+          break;
+        }
+      }
       if (quiz == null) {
-        _loadHardcoded();
+        setState(() {
+          _loadError = 'Quiz not found.';
+          _isLoading = false;
+        });
         return;
       }
 
@@ -76,26 +104,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         _quiz = quiz;
         // In a real app, we might filter questions by level
         // For now, we use the quiz's questions, but we could augment this logic
-        _questions = quiz.questions;
+        _questions = quiz?.questions ?? const [];
+        _loadError = null;
         _isLoading = false;
       });
     } catch (e) {
-      _loadHardcoded();
+      setState(() {
+        _loadError = 'Could not load the quiz.';
+        _isLoading = false;
+      });
     }
-  }
-
-  void _loadHardcoded() {
-    setState(() {
-      _questions = [
-        QuizQuestion(
-          promptOlChiki: 'ᱚ',
-          promptLatin: 'Which sound does this letter make?',
-          optionsOlChiki: ['a', 'i', 'u', 'o'],
-          optionsLatin: ['a', 'i', 'u', 'o'],
-        ),
-      ];
-      _isLoading = false;
-    });
   }
 
   void _answerQuestion(int index) {
@@ -150,6 +168,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   }
 
   void _showResultDialog() {
+    // Fail closed: an empty quiz has no result to persist and no progress
+    // to award.
+    if (_questions.isEmpty) return;
     final percentage = (_score / _questions.length * 100).round();
     final isPassing = QuizScoringRules.isPassing(_score, _questions.length);
 
@@ -332,11 +353,32 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   @override
   Widget build(BuildContext context) {
+    // Retry the load when quiz content arrives after the first frame.
+    ref.listen(quizzesProvider, (_, _) {
+      if (!mounted || !_isLoading || _quiz != null || _loadError != null) {
+        return;
+      }
+      _loadQuiz();
+    });
+
     if (_isLoading) {
       return const Scaffold(
         body: AppLoadingState(
           type: AppLoadingType.page,
           message: 'Loading Quiz...',
+        ),
+      );
+    }
+
+    if (_loadError != null) {
+      return Scaffold(
+        body: AppEmptyState(
+          title: 'Quiz not found',
+          description:
+              'This quiz could not be found. It may have been removed.',
+          buttonText: 'Back to Quizzes',
+          onButtonPressed: () => context.go('/quizzes'),
+          icon: Icons.quiz_outlined,
         ),
       );
     }

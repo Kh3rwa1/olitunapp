@@ -42,4 +42,51 @@ void main() {
       expect((decoded['layers'] as List).isNotEmpty, isTrue, reason: avatar.id);
     }
   });
+
+  test('merge keeps bundled order and appends new remote ids', () {
+    const dragon = ProfileAvatar(
+      id: 'dragon',
+      assetFileName: 'avatar_dragon.json',
+      label: 'Dragon',
+      remoteFileId: 'file-dragon',
+    );
+
+    expect(mergeAvatarCatalog(const []), same(kProfileAvatars));
+
+    final merged = mergeAvatarCatalog(const [dragon]);
+    expect(
+      merged.map((avatar) => avatar.id),
+      orderedEquals([...kProfileAvatars.map((avatar) => avatar.id), 'dragon']),
+    );
+    expect(merged.last.isRemote, isTrue);
+  });
+
+  test('merge lets remote win on id conflicts without reshuffling', () {
+    const updated = ProfileAvatar(
+      id: 'owl',
+      assetFileName: 'avatar_owl_v2.json',
+      label: 'Owl v2',
+      remoteFileId: 'file-owl',
+    );
+
+    final merged = mergeAvatarCatalog(const [updated]);
+    expect(
+      merged.map((avatar) => avatar.id),
+      orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+    );
+    expect(merged.firstWhere((avatar) => avatar.id == 'owl'), updated);
+  });
+
+  test('remote-aware normalization accepts synced ids, rejects the rest', () {
+    expect(normalizeAvatarIdWithRemote('dragon', {'dragon'}), 'dragon');
+    expect(normalizeAvatarIdWithRemote('dragon', {'other'}), kDefaultAvatarId);
+    expect(normalizeAvatarIdWithRemote('dragon', null), kDefaultAvatarId);
+    expect(normalizeAvatarIdWithRemote('owl', null), 'owl');
+    expect(
+      normalizeAvatarIdWithRemote(kInitialAvatarId, {'dragon'}),
+      kInitialAvatarId,
+    );
+    expect(normalizeAvatarIdWithRemote('🦊', {'dragon'}), kDefaultAvatarId);
+    expect(normalizeAvatarIdWithRemote('', {'dragon'}), kDefaultAvatarId);
+  });
 }

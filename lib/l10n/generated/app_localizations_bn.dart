@@ -1177,13 +1177,6 @@ class AppLocalizationsBn extends AppLocalizations {
   String get aiStudioCapturePage => 'পৃষ্ঠার ছবি তুলুন';
 
   @override
-  String get aiStudioConsentTitle => 'আমি প্রদত্ত এআই প্রক্রিয়াকরণে সম্মত';
-
-  @override
-  String get aiStudioConsentSubtitle =>
-      'এটি আপনার লেখা বা ফাইল বহিরাগত এআই পরিষেবা সর্বমে পাঠায় এবং অ্যাপের প্রসেসিং কোটা ব্যবহার করে। শুধু অনুমোদিত সামগ্রী পাঠান। স্বয়ংক্রিয়ভাবে কিছু প্রকাশ করা হয় না।';
-
-  @override
   String get aiStudioProcessing =>
       'প্রক্রিয়াকরণ চলছে… এই স্ক্রিনটি খোলা রাখুন।';
 
@@ -1203,9 +1196,6 @@ class AppLocalizationsBn extends AppLocalizations {
       'কিছুই প্রকাশ বা শেয়ার করা হয়নি। লেখা প্রস্তুত হলে আপনি তা সংশোধন করতে পারেন, কপি করতে পারেন বা পরবর্তী ধাপের জন্য অংশ বেছে নিতে পারেন।';
 
   @override
-  String get aiStudioEditableResult => 'সম্পাদনাযোগ্য ফলাফল';
-
-  @override
   String get aiStudioReviewHelper =>
       'কপি বা শেয়ার করার আগে এআই লেখা পর্যালোচনা করুন।';
 
@@ -1222,11 +1212,20 @@ class AppLocalizationsBn extends AppLocalizations {
   String get aiStudioTranslateResult => 'ফলাফল অনুবাদ করুন';
 
   @override
-  String get aiStudioSendToBodhan => 'বোধনে পাঠান';
+  String get aiStudioSendToVoiceStudio => 'ভয়েস স্টুডিও';
 
   @override
-  String get aiStudioBodhanNote =>
-      'বোধন ৬০০ অক্ষর পর্যন্ত পাঠ্য গ্রহণ করে। এটি খুললে ভয়েস তৈরি শুরু হয় না।';
+  String get aiStudioAuto => 'অটো';
+
+  @override
+  String get aiStudioLive => 'লাইভ';
+
+  @override
+  String get aiStudioThinking => 'ভাবছে';
+
+  @override
+  String get aiStudioScanningLive =>
+      'আপনার পৃষ্ঠা পড়া হচ্ছে — আপডেট এখানে লাইভ দেখা যাবে।';
 
   @override
   String get aiStudioLookingForConverter =>

@@ -25,6 +25,8 @@ import 'review_appwrite_repository.dart';
 import 'review_state_migration.dart';
 import 'review_state_sync.dart';
 import 'review_store.dart';
+import 'review_store_notifier.dart';
+import 'review_sync_outbox.dart';
 
 final reviewStateSyncProvider = Provider<ReviewStateSync>((ref) {
   final store = ref.watch(reviewStoreProvider.notifier);

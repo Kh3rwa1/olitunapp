@@ -92,6 +92,11 @@ class LessonBlockEntity extends Equatable {
   final String? audioUrl;
   final Map<String, dynamic>? data;
 
+  /// True when the block's `data` payload arrived as a malformed JSON string
+  /// and could not be parsed. Consumers must treat the block as
+  /// untrustworthy (fail closed) rather than guessing at its content.
+  final bool dataMalformed;
+
   const LessonBlockEntity({
     required this.type,
     this.textOlChiki,
@@ -102,6 +107,7 @@ class LessonBlockEntity extends Equatable {
     this.imageUrl,
     this.audioUrl,
     this.data,
+    this.dataMalformed = false,
   });
 
   @override
@@ -115,5 +121,6 @@ class LessonBlockEntity extends Equatable {
     imageUrl,
     audioUrl,
     data,
+    dataMalformed,
   ];
 }

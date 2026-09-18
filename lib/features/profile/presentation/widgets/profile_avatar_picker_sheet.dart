@@ -43,7 +43,16 @@ class _ProfileAvatarPickerSheetState
   @override
   void initState() {
     super.initState();
-    _selectedAvatarId = normalizeAvatarId(widget.initialAvatarId);
+    final knownIds =
+        widget.avatarsForTesting?.map((avatar) => avatar.id) ??
+        ref
+            .read(availableAvatarsProvider)
+            .valueOrNull
+            ?.map((avatar) => avatar.id);
+    _selectedAvatarId = normalizeAvatarIdWithRemote(
+      widget.initialAvatarId,
+      knownIds,
+    );
     _selectedColorIndex = widget.initialColorIndex.clamp(
       0,
       AppColors.avatarPalettes.length - 1,
@@ -53,7 +62,20 @@ class _ProfileAvatarPickerSheetState
   Future<void> _persist({String? avatarId, int? colorIndex}) async {
     if (_isSaving) return;
 
-    final nextAvatarId = normalizeAvatarId(avatarId ?? _selectedAvatarId);
+    // Ids offered by the visible grid are valid by construction; normalize
+    // against them (bundled + background-merged remote) instead of the
+    // bundled-only set so a freshly synced remote pick persists verbatim.
+    final knownIds =
+        widget.avatarsForTesting?.map((avatar) => avatar.id) ??
+        ref
+            .read(availableAvatarsProvider)
+            .valueOrNull
+            ?.map((avatar) => avatar.id) ??
+        kProfileAvatars.map((avatar) => avatar.id);
+    final nextAvatarId = normalizeAvatarIdWithRemote(
+      avatarId ?? _selectedAvatarId,
+      knownIds,
+    );
     final nextColorIndex = (colorIndex ?? _selectedColorIndex).clamp(
       0,
       AppColors.avatarPalettes.length - 1,

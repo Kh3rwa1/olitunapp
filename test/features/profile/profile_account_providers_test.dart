@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
@@ -44,28 +45,41 @@ void main() {
   });
 
   testWidgets('every catalog avatar is present in the asset manifest', (
-    _,
+    tester,
   ) async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        // A failing sync must fall back to bundled, never hang on network.
-        remoteAvatarListProvider.overrideWith(
-          (ref) async => throw StateError('offline'),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+    final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+    final bundled = manifest.listAssets().toSet();
+    final missing = kProfileAvatars
+        .where((avatar) => !bundled.contains(avatar.assetPath))
+        .toList(growable: false);
 
-    final avatars = await container.read(availableAvatarsProvider.future);
-
-    expect(
-      avatars.map((avatar) => avatar.id),
-      orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
-    );
+    expect(missing.map((avatar) => avatar.assetPath), isEmpty);
   });
+
+  test(
+    'availableAvatarsProvider emits bundled catalog first when offline',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // A failing sync must fall back to bundled, never hang on network.
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final first = await container.read(availableAvatarsProvider.future);
+
+      expect(
+        first.map((avatar) => avatar.id),
+        orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+      );
+    },
+  );
 
   test('account providers read stored preference values', () async {
     final container = await containerFor({

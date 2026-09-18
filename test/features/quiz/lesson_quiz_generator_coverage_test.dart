@@ -23,7 +23,7 @@ void main() {
       expect(quiz.questions.first.promptOlChiki, isNotNull);
     });
 
-    test('generate fallback question when lesson has no text blocks', () {
+    test('generate returns an empty quiz when lesson has no text blocks', () {
       const lesson = LessonEntity(
         id: 'lesson_empty',
         categoryId: 'cat_numbers',
@@ -33,8 +33,12 @@ void main() {
 
       final quiz = LessonQuizGenerator.generate(lesson);
       expect(quiz.id, 'dynamic_quiz_lesson_empty');
-      expect(quiz.questions.length, 1);
-      expect(quiz.questions.first.promptOlChiki, 'ᱮᱞ');
+      // Fail closed: no fake lesson-title question is generated.
+      expect(quiz.questions, isEmpty);
+
+      final result = LessonQuizGenerator.generateResult(lesson);
+      expect(result.isFailure, isTrue);
+      expect(result.validBlockCount, 0);
     });
   });
 }

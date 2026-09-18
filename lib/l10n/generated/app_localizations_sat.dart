@@ -1177,13 +1177,6 @@ class AppLocalizationsSat extends AppLocalizations {
   String get aiStudioCapturePage => 'ᱥᱟᱠᱟᱢ ᱯᱷᱚᱴᱳ ᱛᱩᱞᱟᱹᱣ ᱢᱮ';
 
   @override
-  String get aiStudioConsentTitle => 'ᱤᱧ ᱯᱮᱭᱤᱰ AI ᱯᱨᱚᱥᱮᱥᱤᱝ ᱨᱮ ᱨᱮᱵᱮᱱ ᱢᱮᱱᱟᱜᱼᱟ';
-
-  @override
-  String get aiStudioConsentSubtitle =>
-      'ᱱᱚᱣᱟ ᱫᱚ ᱟᱢᱟᱜ ᱚᱞ ᱥᱮ ᱯᱷᱟᱭᱤᱞ ᱵᱟᱦᱨᱮ ᱨᱮᱱᱟᱜ AI ᱥᱮᱵᱟ ᱥᱚᱨᱵᱷᱚᱢ ᱴᱷᱮᱱ ᱠᱩᱞᱟ ᱟᱨ ᱟᱯ ᱨᱮᱱᱟᱜ ᱯᱨᱚᱥᱮᱥᱤᱝ ᱠᱳᱴᱟ ᱵᱮᱵᱷᱟᱨᱟ᱾ ᱟᱢ ᱴᱷᱮᱱ ᱟᱹᱭᱫᱟᱹᱨᱤ ᱢᱮᱱᱟᱜ ᱥᱟᱛᱟᱢ ᱜᱮ ᱠᱩᱞ ᱢᱮ᱾ ᱟᱡ ᱛᱮᱫᱚ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟᱜᱼᱟ᱾';
-
-  @override
   String get aiStudioProcessing =>
       'ᱯᱨᱚᱥᱮᱥᱤᱝ ᱪᱟᱹᱞᱩ ᱢᱮᱱᱟᱜᱼᱟ… ᱱᱚᱣᱟ ᱥᱠᱨᱤᱱ ᱡᱷᱤᱡ ᱫᱚᱦᱚᱭ ᱢᱮ᱾';
 
@@ -1203,9 +1196,6 @@ class AppLocalizationsSat extends AppLocalizations {
       'ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱪᱷᱟᱯᱟ ᱟᱠᱟᱱᱟ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱟᱠᱟᱱᱟ᱾ ᱚᱞ ᱥᱟᱯᱲᱟᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱟᱢ ᱥᱩᱫᱷᱨᱟᱹᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ, ᱠᱚᱯᱤ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ ᱥᱮ ᱞᱟᱦᱟᱱᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱪᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾';
 
   @override
-  String get aiStudioEditableResult => 'ᱥᱟᱡᱟᱣ ᱞᱮᱠᱟᱱ ᱚᱨᱡᱚ';
-
-  @override
   String get aiStudioReviewHelper =>
       'ᱠᱚᱯᱤ ᱥᱮ ᱦᱟᱹᱴᱤᱧ ᱢᱟᱬᱟᱝ ᱨᱮ AI ᱚᱞ ᱧᱮᱞ ᱵᱤᱰᱟᱹᱣ ᱢᱮ᱾';
 
@@ -1222,11 +1212,20 @@ class AppLocalizationsSat extends AppLocalizations {
   String get aiStudioTranslateResult => 'ᱚᱨᱡᱚ ᱛᱚᱨᱡᱚᱢᱟᱭ ᱢᱮ';
 
   @override
-  String get aiStudioSendToBodhan => 'ᱵᱳᱫᱷᱚᱱ ᱛᱮ ᱠᱩᱞ ᱢᱮ';
+  String get aiStudioSendToVoiceStudio => 'ᱵᱷᱚᱭᱮᱥ ᱥᱴᱩᱰᱤᱭᱳ';
 
   @override
-  String get aiStudioBodhanNote =>
-      'ᱵᱳᱫᱷᱚᱱ ᱫᱚ ᱖᱐᱐ ᱪᱤᱠᱤ ᱦᱟᱹᱵᱤᱡ ᱦᱟᱛᱟᱣᱟ᱾ ᱱᱚᱣᱟ ᱡᱷᱤᱡ ᱞᱮᱠᱷᱟᱱ ᱟᱡ ᱛᱮᱫᱚ ᱟᱲᱟᱝ ᱵᱟᱝ ᱵᱮᱱᱟᱣᱜᱼᱟ᱾';
+  String get aiStudioAuto => 'ᱚᱴᱚ';
+
+  @override
+  String get aiStudioLive => 'ᱞᱟᱭᱤᱵᱷ';
+
+  @override
+  String get aiStudioThinking => 'ᱩᱭᱦᱟᱹᱨᱮᱫᱟᱭ';
+
+  @override
+  String get aiStudioScanningLive =>
+      'ᱟᱢᱟᱜ ᱥᱟᱦᱴᱟ ᱯᱟᱲᱦᱟᱜ ᱢᱮᱱᱟᱜᱼᱟ, ᱱᱟᱦᱟᱜ ᱚᱨᱡᱚ ᱱᱚᱸᱰᱮ ᱧᱮᱞᱚᱜᱼᱟ᱾';
 
   @override
   String get aiStudioLookingForConverter =>

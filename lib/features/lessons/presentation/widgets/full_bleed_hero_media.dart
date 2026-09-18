@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/media/authorized_media.dart';
+import '../../../../core/media/olitun_image_cache.dart';
 import '../../../../shared/widgets/authorized_media_display.dart';
 import '../../../../shared/utils/media_type_resolver.dart';
 import 'platform_view_stub.dart'
@@ -454,13 +456,18 @@ class _HeroImage extends StatelessWidget {
       );
     }
 
-    return Image.network(
-      url,
+    // Disk-cached so lesson artwork survives restarts and offline opens
+    // (previously a bare Image.network that re-downloaded every visit).
+    return CachedNetworkImage(
+      imageUrl: url,
+      cacheManager: olitunImageCacheManager,
       width: double.infinity,
       height: double.infinity,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.high,
-      errorBuilder: (context, error, stackTrace) => fallback,
+      memCacheWidth: 1080,
+      placeholder: (context, url) => fallback,
+      errorWidget: (context, url, error) => fallback,
     );
   }
 }

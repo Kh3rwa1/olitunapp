@@ -15,7 +15,9 @@
   RewriteCond %{REQUEST_URI} ^/admin-panel [NC]
   RewriteRule .? - [L]
 
-  # 4. Skip rules for actual files or directories
+  # 4. Skip rules for actual files or directories (sw.js, manifest.json,
+  #    offline.html, icons/, canvaskit/, assets/ are served directly so the
+  #    service worker keeps its "/" scope and offline cache stays valid).
   RewriteCond %{REQUEST_FILENAME} -f [OR]
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule .? - [L]
@@ -27,11 +29,18 @@
   RewriteRule . /index.html [L]
 </IfModule>
 
-# Disable caching for HTML and JS files to ensure latest build is used
+# Shell files must always revalidate so PWA updates land promptly, while the
+# service worker cache (Cache API) still serves them offline.
 <IfModule mod_headers.c>
-  <FilesMatch "\.(html|js|json|css)$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  <FilesMatch "^(index\.html|offline\.html|flutter_bootstrap\.js|flutter\.js|main\.dart\.js|sw\.js|manifest\.json|version\.json|build-info\.json)$">
+    Header set Cache-Control "no-cache, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires 0
+  </FilesMatch>
+  <Files "sw.js">
+    Header set Service-Worker-Allowed "/"
+  </Files>
+  <FilesMatch "\.(html|css)$">
+    Header set Cache-Control "no-cache, must-revalidate"
   </FilesMatch>
 </IfModule>

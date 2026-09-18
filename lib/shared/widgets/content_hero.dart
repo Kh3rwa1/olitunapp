@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
@@ -275,6 +276,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
       case ContentMediaKind.image:
         return CachedNetworkImage(
           imageUrl: media.url,
+          cacheManager: olitunImageCacheManager,
           fit: BoxFit.cover,
           memCacheWidth: 1080,
           placeholder: (context, url) => Container(color: Colors.black12),
@@ -314,6 +316,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
           if (media.posterUrl != null)
             CachedNetworkImage(
               imageUrl: media.posterUrl!,
+              cacheManager: olitunImageCacheManager,
               fit: BoxFit.cover,
               memCacheWidth: 800,
             )

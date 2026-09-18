@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
+import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
@@ -20,7 +21,7 @@ import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
-import 'package:itun/features/review/data/review_store.dart';
+import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';

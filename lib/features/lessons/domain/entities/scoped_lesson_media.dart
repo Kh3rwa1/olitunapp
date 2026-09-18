@@ -36,6 +36,7 @@ LessonEntity scopeLessonMedia(LessonEntity lesson) {
             imageUrl: scope(block.imageUrl),
             audioUrl: scope(block.audioUrl),
             data: scopeData(block.data),
+            dataMalformed: block.dataMalformed,
           ),
         )
         .toList(),

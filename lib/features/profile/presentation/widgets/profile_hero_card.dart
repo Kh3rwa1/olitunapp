@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
+import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 import 'avatar_lottie.dart';
 
@@ -91,7 +92,7 @@ class ProfileHeroCard extends ConsumerWidget {
     final isTransparentBg = avatarColors.every((color) => color.a == 0.0);
     final avatarLabel = usesProfileInitial(avatarId)
         ? 'Name initial'
-        : profileAvatarById(avatarId)?.label ?? kProfileAvatars.first.label;
+        : ref.watch(resolvedAvatarProvider(avatarId)).label;
     final levelColor = _getLevelColor();
 
     return Container(
@@ -163,9 +164,9 @@ class ProfileHeroCard extends ConsumerWidget {
                           child: !usesProfileInitial(avatarId)
                               ? ClipOval(
                                   child: AvatarLottie(
-                                    avatar:
-                                        profileAvatarById(avatarId) ??
-                                        kProfileAvatars.first,
+                                    avatar: ref.watch(
+                                      resolvedAvatarProvider(avatarId),
+                                    ),
                                     width: avatarSize,
                                     height: avatarSize,
                                     animate: !reduceMotion,

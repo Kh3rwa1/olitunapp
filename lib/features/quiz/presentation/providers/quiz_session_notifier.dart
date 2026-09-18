@@ -8,7 +8,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
-import '../../../review/data/review_store.dart';
+import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import '../../domain/quiz_memory_resolver.dart';
@@ -138,6 +138,10 @@ class QuizSessionNotifier
 
   void startQuiz(QuizModel quiz, {Random? testRng}) {
     if (state.hasStarted) return;
+    // Fail closed: an empty quiz has no session to start. Without this
+    // guard the completion path could persist a zero-question result and
+    // pay out progress for content that never existed.
+    if (quiz.questions.isEmpty) return;
 
     final rng =
         testRng ??
@@ -207,6 +211,7 @@ class QuizSessionNotifier
   }
 
   void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
+    if (quiz.questions.isEmpty) return;
     if (state.isAnswered || state.isQuizComplete || state.hearts <= 0) return;
 
     final isCorrect = index == question.correctIndex;
@@ -327,6 +332,9 @@ class QuizSessionNotifier
   }
 
   Future<void> nextQuestion(QuizModel quiz) async {
+    // Fail closed: empty quizzes never complete, persist results, or pay
+    // stars/missions — see startQuiz.
+    if (quiz.questions.isEmpty) return;
     if (state.isQuizComplete || !state.isAnswered || state.isOutOfHearts) {
       return;
     }

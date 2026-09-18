@@ -42,6 +42,8 @@ class PcmStudioRecorder implements StudioRecorder {
     if (!await _recorder.hasPermission()) {
       throw const StudioException('MIC_PERMISSION');
     }
+    await _subscription?.cancel();
+    _subscription = null;
     _chunks.clear();
     final stream = await _recorder.startStream(
       const RecordConfig(
@@ -60,10 +62,17 @@ class PcmStudioRecorder implements StudioRecorder {
   @override
   Future<StudioInput?> stop() async {
     if (!_isRecording) return null;
-    await _recorder.stop();
-    await _subscription?.cancel();
-    _subscription = null;
-    _isRecording = false;
+    try {
+      await _recorder.stop();
+    } finally {
+      // Always release the stream subscription and reset state, even when
+      // the platform stop fails. Otherwise the recorder wedges in a
+      // recording state and every later start/stop operates on a dead
+      // stream.
+      await _subscription?.cancel();
+      _subscription = null;
+      _isRecording = false;
+    }
 
     if (_chunks.isEmpty) return null;
     final pcm = BytesBuilder(copy: false);
@@ -123,7 +132,13 @@ Uint8List pcm16ToWav(Uint8List pcm) {
   return wav;
 }
 
-final studioRecorderProvider = Provider.autoDispose<StudioRecorder>((ref) {
+// The Studio screen reads this provider on separate taps/frames (record
+// start, then record stop) without ever watching it. It must be a plain
+// app-lifetime provider: as an autoDispose provider it would be disposed
+// between those reads (no listeners), which cancels the in-flight recording
+// and makes stop() run on a fresh idle instance that always returns null —
+// i.e. "No speech was captured" on every attempt.
+final studioRecorderProvider = Provider<StudioRecorder>((ref) {
   final recorder = PcmStudioRecorder();
   ref.onDispose(() => unawaited(recorder.dispose()));
   return recorder;

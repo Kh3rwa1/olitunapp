@@ -57,6 +57,13 @@ class _Recorder implements StudioRecorder {
 }
 
 void main() {
+  setUpAll(() {
+    registerFallbackValue('');
+    registerFallbackValue(
+      StudioInput(bytes: Uint8List(0), name: 'fallback.wav'),
+    );
+  });
+
   late _Service service;
   late _Picker picker;
   late _Input input;
@@ -114,8 +121,6 @@ void main() {
     await tester.pump();
   }
 
-  Future<void> consent(WidgetTester tester) =>
-      tap(tester, find.byKey(const Key('studio-consent')));
   Future<void> process(WidgetTester tester) =>
       tap(tester, find.byKey(const Key('studio-process')));
   Future<void> selectTranslate(WidgetTester tester) =>
@@ -123,31 +128,66 @@ void main() {
   FilledButton processButton(WidgetTester tester) =>
       tester.widget(find.byKey(const Key('studio-process')));
 
-  testWidgets(
-    'requires consent, renders actual result, and invalidates consent on edit',
-    (tester) async {
-      when(
-        () => service.translate('hello', 'hi-IN'),
-      ).thenAnswer((_) async => 'Actual response');
-      await pump(tester);
-      expect(find.text('AI Studio'), findsOneWidget);
-      expect(find.textContaining('Sarvam'), findsOneWidget);
-      await selectTranslate(tester);
-      expect(processButton(tester).onPressed, isNull);
-      await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
-      await tester.pump();
-      expect(processButton(tester).onPressed, isNull);
-      await consent(tester);
-      expect(processButton(tester).onPressed, isNotNull);
-      await process(tester);
-      await tester.pumpAndSettle();
-      expect(find.text('Actual response'), findsOneWidget);
-      verify(() => service.translate('hello', 'hi-IN')).called(1);
-      await tester.enterText(find.byKey(const Key('studio-source')), 'changed');
-      await tester.pump();
-      expect(processButton(tester).onPressed, isNull);
-    },
-  );
+  testWidgets('manual mode runs on demand without auto-firing', (tester) async {
+    when(
+      () => service.translate('hello', 'hi-IN'),
+    ).thenAnswer((_) async => 'Actual response');
+    await pump(tester);
+    expect(find.text('AI Studio'), findsOneWidget);
+    expect(find.text('Auto'), findsOneWidget);
+    await selectTranslate(tester);
+    await tester.pumpAndSettle();
+    await tap(tester, find.byKey(const Key('studio-auto')));
+    await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
+    await tester.pump();
+    expect(processButton(tester).onPressed, isNotNull);
+    await tester.pump(const Duration(milliseconds: 800));
+    verifyNever(() => service.translate(any(), any()));
+    await process(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Actual response'), findsOneWidget);
+    verify(() => service.translate('hello', 'hi-IN')).called(1);
+  });
+
+  testWidgets('realtime auto-translate runs as you type, no button needed', (
+    tester,
+  ) async {
+    when(
+      () => service.translate('hello', 'hi-IN'),
+    ).thenAnswer((_) async => 'Actual response');
+    when(
+      () => service.translate('hello!', 'hi-IN'),
+    ).thenAnswer((_) async => 'Actual response!');
+    await pump(tester);
+    await selectTranslate(tester);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+    expect(find.text('Actual response'), findsOneWidget);
+    verify(() => service.translate('hello', 'hi-IN')).called(1);
+    await tester.enterText(find.byKey(const Key('studio-source')), 'hello!');
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+    expect(find.text('Actual response!'), findsOneWidget);
+    verify(() => service.translate('hello!', 'hi-IN')).called(1);
+  });
+
+  testWidgets('realtime auto-transcribes in Santali when a recording stops', (
+    tester,
+  ) async {
+    when(
+      () => service.transcribe(any(), any()),
+    ).thenAnswer((_) async => 'spoken hello');
+    await pump(tester);
+    await tap(tester, find.byKey(const Key('studio-record')));
+    expect(recorder.starts, 1);
+    await tap(tester, find.byKey(const Key('studio-record')));
+    await tester.pumpAndSettle();
+    expect(recorder.stops, 1);
+    expect(find.text('spoken hello'), findsOneWidget);
+    verify(() => service.transcribe(any(), 'sat-IN')).called(1);
+  });
 
   testWidgets('unconfigured service disables processing without fake results', (
     tester,
@@ -156,8 +196,8 @@ void main() {
     await pump(tester);
     expect(find.textContaining('not available in this build'), findsOneWidget);
     await selectTranslate(tester);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
-    await consent(tester);
     expect(processButton(tester).onPressed, isNull);
     expect(find.text('Your result will appear here.'), findsOneWidget);
   });
@@ -172,7 +212,7 @@ void main() {
       await pump(tester);
       await selectTranslate(tester);
       await tester.enterText(find.byKey(const Key('studio-source')), 'hello');
-      await consent(tester);
+      await tester.pump();
       await process(tester);
       expect(find.byType(LinearProgressIndicator), findsOneWidget);
       expect(processButton(tester).onPressed, isNull);
@@ -185,7 +225,7 @@ void main() {
     },
   );
 
-  testWidgets('scan is manual, retains job across tools and preserves edits', (
+  testWidgets('scan submits and polls automatically, preserving edits', (
     tester,
   ) async {
     final pending = _Job();
@@ -198,30 +238,59 @@ void main() {
     when(() => complete.status).thenReturn('completed');
     when(() => complete.text).thenReturn('Full page');
     when(() => complete.isTerminal).thenReturn(true);
-    when(
-      () => service.startOcr(input, 'hi-IN'),
-    ).thenAnswer((_) async => pending);
+    when(() => service.startOcr(any(), any())).thenAnswer((_) async => pending);
     when(() => service.pollOcr('job-1')).thenAnswer((_) async => complete);
     await pump(tester);
     await tap(tester, find.byKey(const Key('tool-scan')));
+    await tester.pumpAndSettle();
     await tap(tester, find.byKey(const Key('studio-pick')));
-    await consent(tester);
-    await process(tester);
     await tester.pumpAndSettle();
     expect(find.text('Partial page'), findsOneWidget);
-    await tester.pump(const Duration(minutes: 1));
-    verifyNever(() => service.pollOcr('job-1'));
+    verify(() => service.startOcr(any(), 'sat-IN')).called(1);
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pumpAndSettle();
+    expect(find.text('Full page'), findsOneWidget);
+    verify(() => service.pollOcr('job-1')).called(1);
     await tester.enterText(
       find.byKey(const Key('studio-result-scan')),
       'My corrected page',
     );
     await tap(tester, find.byKey(const Key('tool-transcribe')));
-    await tap(tester, find.byKey(const Key('tool-scan')));
-    expect(find.text('Job: job-1'), findsOneWidget);
-    await tap(tester, find.byKey(const Key('studio-check-status')));
     await tester.pumpAndSettle();
+    await tap(tester, find.byKey(const Key('tool-scan')));
+    await tester.pumpAndSettle();
+    expect(find.text('Job: job-1'), findsOneWidget);
     expect(find.text('My corrected page'), findsOneWidget);
     expect(find.text('Full page'), findsNothing);
+  });
+
+  testWidgets('scan check-status button works as a manual fallback', (
+    tester,
+  ) async {
+    final pending = _Job();
+    final complete = _Job();
+    when(() => pending.id).thenReturn('job-1');
+    when(() => pending.status).thenReturn('processing');
+    when(() => pending.text).thenReturn('Partial page');
+    when(() => pending.isTerminal).thenReturn(false);
+    when(() => complete.id).thenReturn('job-1');
+    when(() => complete.status).thenReturn('completed');
+    when(() => complete.text).thenReturn('Full page');
+    when(() => complete.isTerminal).thenReturn(true);
+    when(() => service.startOcr(any(), any())).thenAnswer((_) async => pending);
+    when(() => service.pollOcr('job-1')).thenAnswer((_) async => complete);
+    await pump(tester);
+    await tap(tester, find.byKey(const Key('tool-scan')));
+    await tester.pumpAndSettle();
+    await tap(tester, find.byKey(const Key('studio-pick')));
+    await tester.pumpAndSettle();
+    expect(find.text('Partial page'), findsOneWidget);
+    await tap(tester, find.byKey(const Key('studio-check-status')));
+    await tester.pumpAndSettle();
+    expect(find.text('Full page'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
+    await tester.pumpAndSettle();
+    expect(find.text('Full page'), findsOneWidget);
     verify(() => service.pollOcr('job-1')).called(1);
   });
 
@@ -232,7 +301,6 @@ void main() {
     await selectTranslate(tester);
     final text = 'a' * 2001;
     await tester.enterText(find.byKey(const Key('studio-source')), text);
-    await consent(tester);
     expect(processButton(tester).onPressed, isNull);
     expect(
       tester
@@ -246,6 +314,9 @@ void main() {
   testWidgets(
     'transcribe opens first with microphone primary and WAV upload optional',
     (tester) async {
+      when(
+        () => service.transcribe(any(), any()),
+      ).thenAnswer((_) async => 'spoken hello');
       await pump(tester);
 
       expect(find.byKey(const Key('studio-record')), findsOneWidget);
@@ -261,9 +332,31 @@ void main() {
       await tester.pumpAndSettle();
       expect(recorder.stops, 1);
       expect(find.text('microphone.wav'), findsOneWidget);
-      expect(processButton(tester).onPressed, isNull);
+      expect(find.text('spoken hello'), findsOneWidget);
+      expect(processButton(tester).onPressed, isNotNull);
     },
   );
+
+  testWidgets('mobile flips to the result and back to edit the input', (
+    tester,
+  ) async {
+    when(
+      () => service.transcribe(any(), any()),
+    ).thenAnswer((_) async => 'spoken hello');
+    await pump(tester, size: const Size(360, 800));
+
+    expect(find.text('Record voice'), findsOneWidget);
+    await tap(tester, find.byKey(const Key('studio-record')));
+    await tap(tester, find.byKey(const Key('studio-record')));
+    await tester.pumpAndSettle();
+    expect(find.text('spoken hello'), findsOneWidget);
+    expect(find.text('Record voice'), findsNothing);
+
+    await tap(tester, find.text('Edit source input'));
+    await tester.pumpAndSettle();
+    expect(find.text('Record voice'), findsOneWidget);
+    expect(find.text('spoken hello'), findsNothing);
+  });
 
   testWidgets(
     'handles microphone permission denied gracefully without crash or hang',

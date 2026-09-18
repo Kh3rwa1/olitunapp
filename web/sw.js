@@ -56,6 +56,20 @@ const CACHE_FIRST_PREFIXES = [
   '/screenshots/',
 ];
 
+// Exact-or-subdomain host match. A bare endsWith('appwrite.io') would also
+// match attacker domains like evilappwrite.io, letting them plant cached
+// artwork responses.
+function isTrustedHost(hostname, suffix) {
+  return hostname === suffix || hostname.endsWith(`.${suffix}`);
+}
+
+function isAppwriteHost(hostname) {
+  return (
+    isTrustedHost(hostname, 'appwrite.io') ||
+    isTrustedHost(hostname, 'appwrite.run')
+  );
+}
+
 // Appwrite buckets whose view/preview renditions are plain public artwork.
 // Deliberately excludes audio / videos / cover_videos / paid_media: media
 // files are too large for the SW cache, and paid_media serves short-lived
@@ -68,10 +82,7 @@ const MEDIA_VIEW_PATTERN =
 // Lottie/SVG artwork. Checked BEFORE the network-only Appwrite rule below.
 function isCacheableAppwriteMedia(url, request) {
   if (request.method !== 'GET') return false;
-  const host = url.hostname;
-  if (!host.endsWith('appwrite.io') && !host.endsWith('appwrite.run')) {
-    return false;
-  }
+  if (!isAppwriteHost(url.hostname)) return false;
   // Never cache authed or signed responses (paid leases, admin mode).
   if (request.headers.has('authorization')) return false;
   const params = url.searchParams;
@@ -100,7 +111,9 @@ function isNetworkOnly(url) {
   if (url.origin !== self.location.origin) {
     // Allow caching same-origin only; third-party goes to network, except
     // the immutable CDN prefixes handled above (fonts use browser cache).
-    if (NETWORK_ONLY_HOSTS.some((h) => url.hostname.endsWith(h))) return true;
+    if (NETWORK_ONLY_HOSTS.some((h) => isTrustedHost(url.hostname, h))) {
+      return true;
+    }
     return true;
   }
   const path = url.pathname;
@@ -160,7 +173,11 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.action === 'skipWaiting') {
+  if (!event.data || event.data.action !== 'skipWaiting') return;
+  // Only same-origin controlled pages may drive activation: the sender must
+  // be a window client of this registration (service workers can only ever
+  // control same-origin pages, so this rejects foreign MessagePorts).
+  if (event.source instanceof Client) {
     self.skipWaiting();
   }
 });

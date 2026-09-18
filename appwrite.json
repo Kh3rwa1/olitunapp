@@ -888,6 +888,8 @@
         "node_modules",
         ".DS_Store",
         ".replit",
+        "build_artifacts",
+        "scratch.mjs",
         "server.js",
         "vercel.json",
         "database",

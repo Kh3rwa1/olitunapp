@@ -12,6 +12,50 @@
     }
   });
 
+  // Boot diagnostics: surface engine-load failures in the splash note so a
+  // failed deploy never looks like an infinite spinner with no explanation.
+  // Captures script errors (bootstrap, main.dart.js, CanvasKit) from the start.
+  var bootErrors = [];
+  function loaderPresent() {
+    return !!document.getElementById('loading-indicator');
+  }
+  function reportBootStall() {
+    if (!loaderPresent()) return;
+    var notes = document.querySelectorAll('#loading-indicator .loading-note');
+    var detail = bootErrors.length
+      ? 'Error: ' + bootErrors[bootErrors.length - 1]
+      : 'Engine has not signaled first frame yet.';
+    for (var i = 0; i < notes.length; i++) {
+      notes[i].textContent = 'Taking longer than usual. ' + detail;
+    }
+    var reloadBtn = document.getElementById('loading-reload-btn');
+    if (reloadBtn) reloadBtn.style.display = 'inline-block';
+  }
+  function recordBootError(message) {
+    if (!message) return;
+    message = String(message).slice(0, 220);
+    if (bootErrors.indexOf(message) === -1) {
+      bootErrors.push(message);
+      if (bootErrors.length > 3) bootErrors.shift();
+    }
+    reportBootStall();
+  }
+  window.addEventListener('error', function(event) {
+    var msg = (event && (event.message || (event.error && event.error.message))) ||
+      'A script failed to load.';
+    var src = '';
+    if (event && event.target && event.target !== window && event.target.src) {
+      src = ' (' + String(event.target.src).split('/').pop() + ')';
+    }
+    recordBootError(msg + src);
+  }, true);
+  window.addEventListener('unhandledrejection', function(event) {
+    var reason = event && event.reason;
+    var msg = (reason && (reason.message || String(reason))) ||
+      'Unhandled promise rejection.';
+    recordBootError(msg);
+  });
+
   // Safety fallback: if app takes >8s to boot, show reload button.
   // Offline, the button still works because the shell is cached by sw.js.
   setTimeout(function() {
@@ -23,6 +67,11 @@
       });
     }
   }, 8000);
+
+  // Stalled-boot reporter: if the loader is still present, replace the
+  // generic note with the captured error (or lack of first frame).
+  setTimeout(reportBootStall, 12000);
+  setTimeout(reportBootStall, 25000);
 
   // Live Offline / Online Detection
   function updateOnlineStatus() {

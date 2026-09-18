@@ -36,6 +36,24 @@ void main() {
     failures.add('ITUN_PATCHED_SW marker is missing — patch may not have run');
   }
 
+  final bootstrapFile = File('build/web/flutter_bootstrap.js');
+  if (!bootstrapFile.existsSync()) {
+    failures.add('build/web/flutter_bootstrap.js is missing');
+  } else {
+    final bootstrapSrc = bootstrapFile.readAsStringSync();
+    if (RegExp(r'serviceWorkerVersion\s*:\s*"').hasMatch(bootstrapSrc)) {
+      failures.add(
+        'flutter_bootstrap.js still registers a service worker '
+        '(dual-worker reload loop risk)',
+      );
+    }
+    if (!bootstrapSrc.contains('// ITUN_PATCHED_BOOTSTRAP')) {
+      failures.add(
+        'ITUN_PATCHED_BOOTSTRAP marker is missing — patch may not have run',
+      );
+    }
+  }
+
   if (failures.isNotEmpty) {
     print('Verification Failure:');
     for (var f in failures) {
@@ -47,5 +65,6 @@ void main() {
   print(
     'Verification Success: flutter_bootstrap.js is not cached by the service worker.',
   );
+  print('Verification Success: loader registers no service worker.');
   exit(0);
 }

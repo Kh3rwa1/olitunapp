@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+// Build-time helper: prints progress to the Appwrite build log.
 import 'dart:io';
 
 void main() {
@@ -36,7 +38,9 @@ void main() {
 
   if (failures.isNotEmpty) {
     print('Verification Failure:');
-    for (var f in failures) print('  - ${f}');
+    for (var f in failures) {
+      print('  - $f');
+    }
     exit(1);
   }
 

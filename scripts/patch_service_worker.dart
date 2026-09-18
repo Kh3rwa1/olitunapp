@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+// Build-time helper: prints progress to the Appwrite build log.
 import 'dart:io';
 
 void main() {
@@ -50,7 +52,7 @@ void main() {
   }
 
   if (!content.contains('// ITUN_PATCHED_SW')) {
-    content = content.trim() + '\n\n// ITUN_PATCHED_SW\n';
+    content = '${content.trim()}\n\n// ITUN_PATCHED_SW\n';
   }
 
   file.writeAsStringSync(content);

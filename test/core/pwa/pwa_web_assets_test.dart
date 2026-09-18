@@ -11,7 +11,10 @@ void main() {
 
       expect(manifest['name'], contains('Santali'));
       expect(manifest['short_name'], 'Olitun');
-      expect(manifest['start_url'], '/?source=pwa');
+      // Plain "/" (no ?source=pwa query): a query start_url misses the
+      // cached "/" entry, so installed launches failed offline and the
+      // Lighthouse offline-start_url audit failed with it.
+      expect(manifest['start_url'], '/');
       expect(manifest['scope'], '/');
       expect(manifest['id'], '/');
       expect(manifest['display'], 'standalone');

@@ -532,8 +532,7 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     final result = await _repository.updateAvatar(nextId, colorIndex);
     result.fold(
-      (failure) =>
-          AppLogger.debug('Profile: Failed to save avatar: $failure'),
+      (failure) => AppLogger.debug('Profile: Failed to save avatar: $failure'),
       (_) {},
     );
   }

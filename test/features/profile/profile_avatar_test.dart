@@ -31,7 +31,8 @@ void main() {
     expect(usesProfileInitial(kDefaultAvatarId), isFalse);
   });
 
-  test('every bundled avatar is valid non-empty Lottie JSON', () {    for (final avatar in kProfileAvatars) {
+  test('every bundled avatar is valid non-empty Lottie JSON', () {
+    for (final avatar in kProfileAvatars) {
       final decoded = jsonDecode(File(avatar.assetPath).readAsStringSync());
       expect(decoded, isA<Map<String, dynamic>>());
       expect(decoded['v'], isNotNull, reason: avatar.id);
@@ -55,10 +56,7 @@ void main() {
     final merged = mergeAvatarCatalog(const [dragon]);
     expect(
       merged.map((avatar) => avatar.id),
-      orderedEquals([
-        ...kProfileAvatars.map((avatar) => avatar.id),
-        'dragon',
-      ]),
+      orderedEquals([...kProfileAvatars.map((avatar) => avatar.id), 'dragon']),
     );
     expect(merged.last.isRemote, isTrue);
   });

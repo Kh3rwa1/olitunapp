@@ -179,10 +179,7 @@ void main() {
       ).thenAnswer((_) async => _lottieBytes());
 
       final container = await _container(prefs: prefs, storage: storage);
-      final emissions = await _emissionsUntil(
-        container,
-        (e) => e.length >= 2,
-      );
+      final emissions = await _emissionsUntil(container, (e) => e.length >= 2);
 
       // Bundled first (instant grid), merged catalog once sync lands.
       expect(
@@ -212,10 +209,7 @@ void main() {
       ).thenThrow(AppwriteException('offline'));
 
       final container = await _container(prefs: prefs, storage: storage);
-      final emissions = await _emissionsUntil(
-        container,
-        (e) => e.isNotEmpty,
-      );
+      final emissions = await _emissionsUntil(container, (e) => e.isNotEmpty);
 
       expect(emissions.length, 1);
       expect(emissions.single, kProfileAvatars);

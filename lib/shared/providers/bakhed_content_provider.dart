@@ -344,10 +344,7 @@ final bakhedLearningContentProvider =
       );
       final cached =
           fresh ??
-          await CacheService.get(
-            cacheKey,
-            BakhedLearningContent.fromCacheJson,
-          );
+          await CacheService.get(cacheKey, BakhedLearningContent.fromCacheJson);
       if (cached != null && !cached.isEmpty) {
         if (fresh == null) {
           Future(() async {

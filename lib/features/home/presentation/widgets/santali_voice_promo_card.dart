@@ -104,9 +104,9 @@ class SantaliVoicePromoCard extends StatelessWidget {
                   children: [
                     Icon(Icons.mic_rounded, color: Colors.white, size: 26),
                     SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'AI Voice',
+                    Expanded(
+                      child: Text(
+                        'AI Voice',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,

@@ -287,6 +287,7 @@ String normalizeAvatarIdWithRemote(String? id, Iterable<String>? knownIds) {
   if (knownIds != null && knownIds.contains(id)) return id;
   return kDefaultAvatarId;
 }
+
 ProfileAvatar? profileAvatarById(String id) {
   for (final avatar in kProfileAvatars) {
     if (avatar.id == id) return avatar;

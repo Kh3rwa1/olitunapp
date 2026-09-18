@@ -53,33 +53,33 @@ void main() {
         .where((avatar) => !bundled.contains(avatar.assetPath))
         .toList(growable: false);
 
-    expect(
-      missing.map((avatar) => avatar.assetPath),
-      isEmpty,
-    );
+    expect(missing.map((avatar) => avatar.assetPath), isEmpty);
   });
 
-  test('availableAvatarsProvider emits bundled catalog first when offline', () async {
-    SharedPreferences.setMockInitialValues({});
-    final prefs = await SharedPreferences.getInstance();
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        // A failing sync must fall back to bundled, never hang on network.
-        remoteAvatarListProvider.overrideWith(
-          (ref) async => throw StateError('offline'),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+  test(
+    'availableAvatarsProvider emits bundled catalog first when offline',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          // A failing sync must fall back to bundled, never hang on network.
+          remoteAvatarListProvider.overrideWith(
+            (ref) async => throw StateError('offline'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final first = await container.read(availableAvatarsProvider.future);
+      final first = await container.read(availableAvatarsProvider.future);
 
-    expect(
-      first.map((avatar) => avatar.id),
-      orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
-    );
-  });
+      expect(
+        first.map((avatar) => avatar.id),
+        orderedEquals(kProfileAvatars.map((avatar) => avatar.id)),
+      );
+    },
+  );
 
   test('account providers read stored preference values', () async {
     final container = await containerFor({

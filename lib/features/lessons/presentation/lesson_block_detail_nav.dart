@@ -76,6 +76,7 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
       currentStep: safeIndex,
       accentColor: blockThemeColor,
       isDark: isDark,
+      fallbackLocation: '/lessons/${lesson.categoryId}',
       hasAudio:
           currentBlock.audioUrl != null &&
           currentBlock.audioUrl!.isNotEmpty &&

@@ -24,7 +24,7 @@ Future<void> _pump(
     initialLocation: '/category/missing',
     routes: [
       GoRoute(
-        path: '/lessons',
+        path: '/',
         builder: (_, _) => const Scaffold(body: Text('All learning paths')),
       ),
       GoRoute(

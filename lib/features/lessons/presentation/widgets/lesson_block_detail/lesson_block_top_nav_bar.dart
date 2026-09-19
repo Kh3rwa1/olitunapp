@@ -57,6 +57,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
     this.audioKey,
     this.onBackPressed,
     this.backIcon,
+    this.fallbackLocation,
   });
 
   final int totalSteps;
@@ -68,6 +69,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
   final ValueKey<String>? audioKey;
   final VoidCallback? onBackPressed;
   final IconData? backIcon;
+  final String? fallbackLocation;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -122,7 +124,7 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                         if (context.canPop()) {
                           context.pop();
                         } else {
-                          context.go('/');
+                          context.go(fallbackLocation ?? '/');
                         }
                       }
                     },

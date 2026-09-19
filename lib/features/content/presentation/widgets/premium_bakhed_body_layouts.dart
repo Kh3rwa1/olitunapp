@@ -26,7 +26,11 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
               tooltip: 'Go back',
               onPressed: () {
                 HapticFeedback.lightImpact();
-                Navigator.maybePop(context);
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/');
+                }
               },
             ),
           ),

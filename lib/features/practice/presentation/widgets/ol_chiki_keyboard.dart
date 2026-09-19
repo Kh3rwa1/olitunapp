@@ -16,6 +16,10 @@ class OlChikiKeyboard extends ConsumerWidget {
   static const List<String> consonantsR2 = ['ᱢ', 'ᱣ', 'ᱥ', 'ᱦ', 'ᱧ', 'ᱨ'];
   static const List<String> consonantsR3 = ['ᱪ', 'ᱫ', 'ᱬ', 'ᱭ', 'ᱯ', 'ᱰ'];
   static const List<String> consonantsR4 = ['ᱱ', 'ᱲ', 'ᱴ', 'ᱵ', 'ᱶ', 'ᱷ'];
+  // Otted / modifier marks (U+1C78–U+1C7D). Required to type real words
+  // such as ᱥᱟᱹᱜᱩᱱ, ᱦᱮᱸ, ᱡᱩᱢᱤᱫᱽ — the previous 30-key layout made
+  // those targets impossible to complete.
+  static const List<String> marks = ['ᱸ', 'ᱹ', 'ᱺ', 'ᱻ', 'ᱼ', 'ᱽ'];
   static const List<String> digits = [
     '0', // ᱐ mapped in _getA11yLabel and dynamic layout
     '1',
@@ -198,6 +202,8 @@ class OlChikiKeyboard extends ConsumerWidget {
             const SizedBox(height: 6),
             _buildKeyRow(context, ref, consonantsR4),
             const SizedBox(height: 6),
+            _buildKeyRow(context, ref, marks),
+            const SizedBox(height: 6),
             _buildActionRow(context, ref),
             const SizedBox(height: 12),
           ],
@@ -371,7 +377,7 @@ class OlChikiKeyboard extends ConsumerWidget {
               ),
             ),
           ),
-          // । Danda Key
+          // ᱾ Mucaad Key (Ol Chiki punctuation, U+1C7E)
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
@@ -384,7 +390,7 @@ class OlChikiKeyboard extends ConsumerWidget {
                   onPressed: () {
                     ref
                         .read(typingPracticeControllerProvider(args).notifier)
-                        .appendChar('।');
+                        .appendChar('᱾');
                   },
                   child: Container(
                     height: 46,
@@ -399,7 +405,7 @@ class OlChikiKeyboard extends ConsumerWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      '।',
+                      '᱾',
                       style: TextStyle(
                         fontFamily: 'OlChiki',
                         fontSize: 20,

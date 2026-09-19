@@ -55,6 +55,15 @@ void main() {
         // Verify letters are present
         expect(find.text('ᱚ'), findsOneWidget); // vowel row
         expect(find.text('ᱛ'), findsOneWidget); // consonant row
+        // Verify otted / modifier marks row is present (30 + 6 fix)
+        expect(find.text('ᱸ'), findsOneWidget);
+        expect(find.text('ᱹ'), findsOneWidget);
+        expect(find.text('ᱺ'), findsOneWidget);
+        expect(find.text('ᱻ'), findsOneWidget);
+        expect(find.text('ᱼ'), findsOneWidget);
+        expect(find.text('ᱽ'), findsOneWidget);
+        // Verify Ol Chiki mucaad punctuation key
+        expect(find.text('᱾'), findsOneWidget);
         expect(
           find.text(' SPACE '),
           findsNothing,
@@ -133,10 +142,10 @@ void main() {
       await tester.pump();
       expect(controller.appendedChars, contains(' '));
 
-      // Tap ।
-      await tester.tap(find.text('।'));
+      // Tap ᱾ (Ol Chiki mucaad)
+      await tester.tap(find.text('᱾'));
       await tester.pump();
-      expect(controller.appendedChars, contains('।'));
+      expect(controller.appendedChars, contains('᱾'));
     });
 
     testWidgets('4. Done key triggers completed state transition', (
@@ -175,7 +184,7 @@ void main() {
     testWidgets('5. Golden Test: OlChikiKeyboard light theme with digits', (
       tester,
     ) async {
-      tester.view.physicalSize = const Size(390, 420);
+      tester.view.physicalSize = const Size(390, 480);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 
@@ -204,7 +213,7 @@ void main() {
     testWidgets('6. Golden Test: OlChikiKeyboard dark theme without digits', (
       tester,
     ) async {
-      tester.view.physicalSize = const Size(390, 360);
+      tester.view.physicalSize = const Size(390, 420);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
 

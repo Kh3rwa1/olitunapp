@@ -47,7 +47,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/lessons');
+      context.go('/');
     }
   }
 

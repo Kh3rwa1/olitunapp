@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -262,7 +263,14 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
                 ),
                 tooltip: 'Go back',
                 onPressed:
-                    widget.onBackPressed ?? () => Navigator.maybePop(context),
+                    widget.onBackPressed ??
+                    () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/');
+                      }
+                    },
               ),
             ),
           ),

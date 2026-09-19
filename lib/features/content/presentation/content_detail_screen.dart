@@ -37,8 +37,16 @@ part 'widgets/content_detail_sections.dart';
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
   final String id;
+  final String? lessonId;
+  final int blockIndex;
 
-  const ContentDetailScreen({super.key, required this.kind, required this.id});
+  const ContentDetailScreen({
+    super.key,
+    required this.kind,
+    required this.id,
+    this.lessonId,
+    this.blockIndex = 0,
+  });
 
   @override
   ConsumerState<ContentDetailScreen> createState() =>
@@ -68,6 +76,21 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     setState(() {
       _isTracingCompleted = true;
     });
+  }
+
+  /// One step back: pop when the lesson screen is underneath, otherwise
+  /// rebuild it from the preserved lessonId instead of dropping to home.
+  void _handleBack() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    final lessonId = widget.lessonId;
+    if (lessonId != null && lessonId.isNotEmpty) {
+      context.go('/lesson/$lessonId/block/${widget.blockIndex}');
+      return;
+    }
+    context.go('/');
   }
 
   @override
@@ -229,7 +252,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 child: ContentHero(
                   item: item,
                   accentColor: accentColor,
-                  onBackPressed: () => Navigator.maybePop(context),
+                  onBackPressed: _handleBack,
                 ),
               ),
 
@@ -475,9 +498,21 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 height: 52,
                 child: OutlinedButton(
                   onPressed: () {
-                    // Close sheet and go back
+                    // Close sheet and step back to the lesson screen.
+                    final detailContext = this.context;
                     Navigator.pop(sheetContext); // close sheet
-                    Navigator.maybePop(this.context); // close detail screen
+                    if (detailContext.canPop()) {
+                      detailContext.pop();
+                    } else {
+                      final lessonId = widget.lessonId;
+                      if (lessonId != null && lessonId.isNotEmpty) {
+                        detailContext.go(
+                          '/lesson/$lessonId/block/${widget.blockIndex}',
+                        );
+                      } else {
+                        detailContext.go('/');
+                      }
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark ? Colors.white : Colors.black87,

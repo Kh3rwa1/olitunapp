@@ -26,6 +26,8 @@ class ReviewKeyboard extends StatelessWidget {
   static const List<String> consonantsR2 = ['ᱢ', 'ᱣ', 'ᱥ', 'ᱦ', 'ᱧ', 'ᱨ'];
   static const List<String> consonantsR3 = ['ᱪ', 'ᱫ', 'ᱬ', 'ᱭ', 'ᱯ', 'ᱰ'];
   static const List<String> consonantsR4 = ['ᱱ', 'ᱲ', 'ᱴ', 'ᱵ', 'ᱶ', 'ᱷ'];
+  // Otted / modifier marks (U+1C78–U+1C7D) — same set as OlChikiKeyboard.
+  static const List<String> marks = ['ᱸ', 'ᱹ', 'ᱺ', 'ᱻ', 'ᱼ', 'ᱽ'];
   static const List<String> digits = [
     '᱐',
     '᱑',
@@ -48,6 +50,7 @@ class ReviewKeyboard extends StatelessWidget {
       consonantsR2,
       consonantsR3,
       consonantsR4,
+      marks,
       if (showDigits) digits,
     ];
     return Column(

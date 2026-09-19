@@ -335,6 +335,7 @@ class OlChikiCharMaps {
     'ᱴ',
     'ᱵ',
     'ᱶ',
+    'ᱷ',
   };
 
   static const Set<String> vowels = {'ᱚ', 'ᱟ', 'ᱤ', 'ᱩ', 'ᱮ', 'ᱳ'};

@@ -50,7 +50,12 @@ class DynamicBlockGridCell extends ConsumerWidget {
         ? '/lesson/$lessonId/block/$blockIndex'
         : null;
 
-    final activeRoute = navRoute ?? fallbackRoute;
+    var activeRoute = navRoute ?? fallbackRoute;
+    // Preserve the originating block so a deep-linked detail screen can
+    // step back to the same lesson step instead of dropping to home.
+    if (navRoute != null && blockIndex != -1) {
+      activeRoute = '$navRoute?block=$blockIndex';
+    }
 
     return ScaleButton(
       onPressed: () {

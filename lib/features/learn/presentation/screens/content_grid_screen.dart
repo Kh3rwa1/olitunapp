@@ -115,7 +115,13 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
             color: isDark ? Colors.white : Colors.black87,
           ),
           tooltip: 'Go back',
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/');
+            }
+          },
         ),
         title: Text(
           appBarTitle,

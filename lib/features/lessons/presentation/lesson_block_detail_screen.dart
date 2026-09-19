@@ -244,8 +244,15 @@ class _LessonBlockDetailScreenState
                 ? DetailLoadErrorBlock(
                     title: 'Could not load lesson details',
                     isDark: isDark,
-                    onBack: () =>
-                        context.canPop() ? context.pop() : context.go('/'),
+                    onBack: () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(
+                          '/lessons/${listedLesson.categoryId}',
+                        );
+                      }
+                    },
                   )
                 : const Center(child: CircularProgressIndicator()),
           );
@@ -350,7 +357,13 @@ class _LessonBlockDetailScreenState
             body: DetailLoadErrorBlock(
               title: 'No content blocks in this lesson',
               isDark: isDark,
-              onBack: () => context.canPop() ? context.pop() : context.go('/'),
+              onBack: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/lessons/${lesson.categoryId}');
+                }
+              },
             ),
           );
         }

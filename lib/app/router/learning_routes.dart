@@ -85,28 +85,48 @@ List<RouteBase> buildLearningRoutes({
       path: '/letter/:lessonId/:letterId',
       redirect: (context, state) {
         final id = state.pathParameters['letterId'];
-        return '/content/letter/$id';
+        final lessonId = state.pathParameters['lessonId'];
+        final block = state.uri.queryParameters['block'];
+        final blockQ = block != null && block.isNotEmpty
+            ? '&block=$block'
+            : '';
+        return '/content/letter/$id?lessonId=$lessonId$blockQ';
       },
     ),
     GoRoute(
       path: '/word/:lessonId/:wordId',
       redirect: (context, state) {
         final id = state.pathParameters['wordId'];
-        return '/content/word/$id';
+        final lessonId = state.pathParameters['lessonId'];
+        final block = state.uri.queryParameters['block'];
+        final blockQ = block != null && block.isNotEmpty
+            ? '&block=$block'
+            : '';
+        return '/content/word/$id?lessonId=$lessonId$blockQ';
       },
     ),
     GoRoute(
       path: '/number/:lessonId/:numberId',
       redirect: (context, state) {
         final id = state.pathParameters['numberId'];
-        return '/content/number/$id';
+        final lessonId = state.pathParameters['lessonId'];
+        final block = state.uri.queryParameters['block'];
+        final blockQ = block != null && block.isNotEmpty
+            ? '&block=$block'
+            : '';
+        return '/content/number/$id?lessonId=$lessonId$blockQ';
       },
     ),
     GoRoute(
       path: '/sentence/:lessonId/:sentenceId',
       redirect: (context, state) {
         final id = state.pathParameters['sentenceId'];
-        return '/content/sentence/$id';
+        final lessonId = state.pathParameters['lessonId'];
+        final block = state.uri.queryParameters['block'];
+        final blockQ = block != null && block.isNotEmpty
+            ? '&block=$block'
+            : '';
+        return '/content/sentence/$id?lessonId=$lessonId$blockQ';
       },
     ),
     drillRoute(
@@ -115,7 +135,15 @@ List<RouteBase> buildLearningRoutes({
         final kindStr = state.pathParameters['kind'] ?? 'lesson';
         final id = state.pathParameters['id'] ?? '';
         final kind = ContentKind.fromString(kindStr);
-        return ContentDetailScreen(kind: kind, id: id);
+        final lessonId = state.uri.queryParameters['lessonId'];
+        final blockIndex =
+            int.tryParse(state.uri.queryParameters['block'] ?? '') ?? 0;
+        return ContentDetailScreen(
+          kind: kind,
+          id: id,
+          lessonId: lessonId,
+          blockIndex: blockIndex,
+        );
       },
     ),
     drillRoute(

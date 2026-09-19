@@ -248,9 +248,7 @@ class _LessonBlockDetailScreenState
                       if (context.canPop()) {
                         context.pop();
                       } else {
-                        context.go(
-                          '/lessons/${listedLesson.categoryId}',
-                        );
+                        context.go('/lessons/${listedLesson.categoryId}');
                       }
                     },
                   )

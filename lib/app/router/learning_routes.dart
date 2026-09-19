@@ -87,9 +87,7 @@ List<RouteBase> buildLearningRoutes({
         final id = state.pathParameters['letterId'];
         final lessonId = state.pathParameters['lessonId'];
         final block = state.uri.queryParameters['block'];
-        final blockQ = block != null && block.isNotEmpty
-            ? '&block=$block'
-            : '';
+        final blockQ = block != null && block.isNotEmpty ? '&block=$block' : '';
         return '/content/letter/$id?lessonId=$lessonId$blockQ';
       },
     ),
@@ -99,9 +97,7 @@ List<RouteBase> buildLearningRoutes({
         final id = state.pathParameters['wordId'];
         final lessonId = state.pathParameters['lessonId'];
         final block = state.uri.queryParameters['block'];
-        final blockQ = block != null && block.isNotEmpty
-            ? '&block=$block'
-            : '';
+        final blockQ = block != null && block.isNotEmpty ? '&block=$block' : '';
         return '/content/word/$id?lessonId=$lessonId$blockQ';
       },
     ),
@@ -111,9 +107,7 @@ List<RouteBase> buildLearningRoutes({
         final id = state.pathParameters['numberId'];
         final lessonId = state.pathParameters['lessonId'];
         final block = state.uri.queryParameters['block'];
-        final blockQ = block != null && block.isNotEmpty
-            ? '&block=$block'
-            : '';
+        final blockQ = block != null && block.isNotEmpty ? '&block=$block' : '';
         return '/content/number/$id?lessonId=$lessonId$blockQ';
       },
     ),
@@ -123,9 +117,7 @@ List<RouteBase> buildLearningRoutes({
         final id = state.pathParameters['sentenceId'];
         final lessonId = state.pathParameters['lessonId'];
         final block = state.uri.queryParameters['block'];
-        final blockQ = block != null && block.isNotEmpty
-            ? '&block=$block'
-            : '';
+        final blockQ = block != null && block.isNotEmpty ? '&block=$block' : '';
         return '/content/sentence/$id?lessonId=$lessonId$blockQ';
       },
     ),

@@ -5,6 +5,68 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.4.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.3.1...olitun-v1.4.0) (2026-09-19)
+
+
+### Features
+
+* **ai-studio:** realtime auto processing with flip-card result ([#376](https://github.com/Kh3rwa1/olitunapp/issues/376)) ([41ae2c8](https://github.com/Kh3rwa1/olitunapp/commit/41ae2c82598221ce440e793324f6712082fcc684))
+* **ai-studio:** redesign into single-screen AAA+ agency workspace with mobile deck ([#375](https://github.com/Kh3rwa1/olitunapp/issues/375)) ([8f884ff](https://github.com/Kh3rwa1/olitunapp/commit/8f884ff9c82afa721aef93d721343be5fdcbcad8))
+* **desktop:** optimize web and desktop screen layout and keyboard navigation ([#369](https://github.com/Kh3rwa1/olitunapp/issues/369)) ([e5dfdad](https://github.com/Kh3rwa1/olitunapp/commit/e5dfdad74b1b5118fbece2edbd365224f454ab5e))
+* **learning:** spaced repetition review, unified mistake state, and home action lifecycle ([#354](https://github.com/Kh3rwa1/olitunapp/issues/354)) ([96086d5](https://github.com/Kh3rwa1/olitunapp/commit/96086d5a6dd668517362a2c0d606b0de5d15bef9))
+* **lessons:** add Duolingo-style sequential progression ([#325](https://github.com/Kh3rwa1/olitunapp/issues/325)) ([3aa19b0](https://github.com/Kh3rwa1/olitunapp/commit/3aa19b0f66a89fdf02e1cf82fce01b32787f8377))
+* **lessons:** Eyes SFX on lock takeover ([#342](https://github.com/Kh3rwa1/olitunapp/issues/342)) ([20735f6](https://github.com/Kh3rwa1/olitunapp/commit/20735f65770a1c4543838cf79e1cb3bf8fed7475))
+* **lessons:** fun locked-lesson takeover; fix Bakhed tab alignment ([#339](https://github.com/Kh3rwa1/olitunapp/issues/339)) ([97ee08f](https://github.com/Kh3rwa1/olitunapp/commit/97ee08f558cdc262a747f7ee223544ecdea06e56))
+* **motion:** count-up rewards, streak ignition pop, lively empty states ([#330](https://github.com/Kh3rwa1/olitunapp/issues/330)) ([9a2df4e](https://github.com/Kh3rwa1/olitunapp/commit/9a2df4ec510350d3f78a69c463c7ab6fa3cc69fc))
+* **profile:** 11 LottieFiles community avatars ([#335](https://github.com/Kh3rwa1/olitunapp/issues/335)) ([c62a5a5](https://github.com/Kh3rwa1/olitunapp/commit/c62a5a555272a16c695bcad51fff5bc13193e725))
+* **profile:** add 7 more animal avatars from pack 344421 ([#334](https://github.com/Kh3rwa1/olitunapp/issues/334)) ([4636ac0](https://github.com/Kh3rwa1/olitunapp/commit/4636ac01717ae709da2aee8f90e480de21a134f3))
+* **profile:** bigger hero, transparent avatar background ([fd77400](https://github.com/Kh3rwa1/olitunapp/commit/fd77400de323f85f4c673f24ee9496daf350033a))
+* **profile:** choose Lottie animation avatars, replace emoji picker ([#318](https://github.com/Kh3rwa1/olitunapp/issues/318)) ([2247793](https://github.com/Kh3rwa1/olitunapp/commit/2247793029659bce31b590c2781171d376538b35))
+* **profile:** Ol Chiki funny avatar display names ([#352](https://github.com/Kh3rwa1/olitunapp/issues/352)) ([d48d5a9](https://github.com/Kh3rwa1/olitunapp/commit/d48d5a9098d87dd9b566219ac2fe4883b6d2c547))
+* **profile:** serve avatars from the Appwrite bucket with bundled fallback ([#338](https://github.com/Kh3rwa1/olitunapp/issues/338)) ([d40338b](https://github.com/Kh3rwa1/olitunapp/commit/d40338bf1e6cd61f572e6ad3564315eca1ca72ca))
+* remove Today's Wisdom daily affirmations feature ([#367](https://github.com/Kh3rwa1/olitunapp/issues/367)) ([c75da22](https://github.com/Kh3rwa1/olitunapp/commit/c75da22a05cce5d8532b491265c6db84cafacdf0))
+* **review:** enforce Function-only review mutations, TablesDB sync, … ([#355](https://github.com/Kh3rwa1/olitunapp/issues/355)) ([4aacfb0](https://github.com/Kh3rwa1/olitunapp/commit/4aacfb09cc71bc59d32c8fd8909d8d756b034f87))
+* **security:** harden web permissions, voice quotas, retention pruning, account deletion, and architecture boundaries ([#366](https://github.com/Kh3rwa1/olitunapp/issues/366)) ([c91e671](https://github.com/Kh3rwa1/olitunapp/commit/c91e671da769237c9f718a45fb358436f0e47b43))
+* show real weekly Appwrite leaderboard on profile ([#315](https://github.com/Kh3rwa1/olitunapp/issues/315)) ([6744bc4](https://github.com/Kh3rwa1/olitunapp/commit/6744bc40fe69aa7b609169a67cc33269c0d993f4))
+* **web:** animated theme toggle and sidebar avatar ([#336](https://github.com/Kh3rwa1/olitunapp/issues/336)) ([dcdd03e](https://github.com/Kh3rwa1/olitunapp/commit/dcdd03e2fe623742d8ec3ead53123553ec00d555))
+* **web:** premium PWA desktop redesign ([#333](https://github.com/Kh3rwa1/olitunapp/issues/333)) ([70947b2](https://github.com/Kh3rwa1/olitunapp/commit/70947b26582efbebf316f8692c8e65f5ae785f49))
+
+
+### Bug Fixes
+
+* ad lifecycle, offline basics, and notification artwork ([#289](https://github.com/Kh3rwa1/olitunapp/issues/289)) ([7bdf605](https://github.com/Kh3rwa1/olitunapp/commit/7bdf60580ec8c74078c2a463bc03b4890cfe407f))
+* **ads:** remove test unit fallback in release and resolve Android 15/16 advisories ([#286](https://github.com/Kh3rwa1/olitunapp/issues/286)) ([e83e323](https://github.com/Kh3rwa1/olitunapp/commit/e83e3233e93c6a5e2ffffc25e42efbef5ca3f02c))
+* **android:** resolve edge-to-edge deprecations, enable R8 resource shrinking, and bump to build 29 ([#288](https://github.com/Kh3rwa1/olitunapp/issues/288)) ([3f07aef](https://github.com/Kh3rwa1/olitunapp/commit/3f07aef9e1f96031be74031b37737bf8a6ef05c1))
+* **audio:** single shared player for Bakhed, lessons and lock SFX ([#351](https://github.com/Kh3rwa1/olitunapp/issues/351)) ([5c661a9](https://github.com/Kh3rwa1/olitunapp/commit/5c661a986d5765c4a80d7810372a08de3a8ec9a1))
+* **auth:** clear stale session before web Google OAuth, surface redirect errors ([#382](https://github.com/Kh3rwa1/olitunapp/issues/382)) ([b6a891d](https://github.com/Kh3rwa1/olitunapp/commit/b6a891d05a0035c3e18e12b24bb91c8a0f2ea11a))
+* **bakhed:** responsive 2-column player layout on desktop and adaptive mobile player ([#287](https://github.com/Kh3rwa1/olitunapp/issues/287)) ([bc60035](https://github.com/Kh3rwa1/olitunapp/commit/bc60035a4d1270c87e991de43b2cd348ecb14e36))
+* **ci:** ignore SDK-incompatible pub majors until Appwrite builder upgrades ([#344](https://github.com/Kh3rwa1/olitunapp/issues/344)) ([58be2b1](https://github.com/Kh3rwa1/olitunapp/commit/58be2b1c035772000625fb74fe30ec7ee39e3ee9))
+* **deploy:** Dart verification scripts for Appwrite builder, boot-error loader ([#380](https://github.com/Kh3rwa1/olitunapp/issues/380)) ([f20a5a1](https://github.com/Kh3rwa1/olitunapp/commit/f20a5a1fd37eaa9f8a0d6800dfcb1fc0ad1d753a))
+* **deploy:** restore Vercel-style build wrapper in Appwrite to patch service worker ([#378](https://github.com/Kh3rwa1/olitunapp/issues/378)) ([0cdd3d4](https://github.com/Kh3rwa1/olitunapp/commit/0cdd3d42e10b92fc1d5a0aecbcdd19945d772e84))
+* **deps:** cap lottie and image_picker for Appwrite flutter-3.35 builder ([#343](https://github.com/Kh3rwa1/olitunapp/issues/343)) ([ad00a76](https://github.com/Kh3rwa1/olitunapp/commit/ad00a76ad9bef3842a692e7c150bc49d53272c8e))
+* harden production configuration, privacy, and offline reliability ([#291](https://github.com/Kh3rwa1/olitunapp/issues/291)) ([8f6b619](https://github.com/Kh3rwa1/olitunapp/commit/8f6b6195f1f3754b620e219bd54ce9288e58334c))
+* harden sessions, cache-first content, and learning-first Home ([#284](https://github.com/Kh3rwa1/olitunapp/issues/284)) ([de2fbcc](https://github.com/Kh3rwa1/olitunapp/commit/de2fbccd33ac3a1ef3fb18390e5d2f6a6176368c))
+* **lessons:** detail uses category-scoped ordering; bigger profile with transparent avatar background ([#329](https://github.com/Kh3rwa1/olitunapp/issues/329)) ([fd77400](https://github.com/Kh3rwa1/olitunapp/commit/fd77400de323f85f4c673f24ee9496daf350033a))
+* **lessons:** drop redundant TAP TO HEAR pill ([#337](https://github.com/Kh3rwa1/olitunapp/issues/337)) ([5102fc9](https://github.com/Kh3rwa1/olitunapp/commit/5102fc92f448755bead1aa5157cabecc4a538557))
+* **lessons:** lock CTA explicitly tappable with snackbar fallback ([#340](https://github.com/Kh3rwa1/olitunapp/issues/340)) ([58432ef](https://github.com/Kh3rwa1/olitunapp/commit/58432ef5bbe5189a0362eb2cb45a18ec42c20ead))
+* **mcp:** use canonical Appwrite MCP URL with trailing slash ([#327](https://github.com/Kh3rwa1/olitunapp/issues/327)) ([da5f3bc](https://github.com/Kh3rwa1/olitunapp/commit/da5f3bc92e73a9407e0faf91c7f758a89b31cf40))
+* **motion:** SpringPop plays on mount ([#341](https://github.com/Kh3rwa1/olitunapp/issues/341)) ([a7a8c04](https://github.com/Kh3rwa1/olitunapp/commit/a7a8c04517603a0784ea664271bca49728730402))
+* **nav:** detail back steps to lesson, not home; fix(keyboard): add 6 Ol Chiki otted marks ([#383](https://github.com/Kh3rwa1/olitunapp/issues/383)) ([5f31130](https://github.com/Kh3rwa1/olitunapp/commit/5f311300d068c84e3be0ff2a63565378f864272f))
+* **onboarding:** guard completion across disposal and repeated taps ([#285](https://github.com/Kh3rwa1/olitunapp/issues/285)) ([0ba8fe2](https://github.com/Kh3rwa1/olitunapp/commit/0ba8fe2d74cf8888eb21f3206b3a87d96e628b0a))
+* optimize quiz, alphabet, number, and bakhed screens for desktop ([#374](https://github.com/Kh3rwa1/olitunapp/issues/374)) ([c8b2ba7](https://github.com/Kh3rwa1/olitunapp/commit/c8b2ba76f408d7a6a2fe88aed2b591cc71f04287))
+* paginate review state list action ([#359](https://github.com/Kh3rwa1/olitunapp/issues/359)) ([86dc7ac](https://github.com/Kh3rwa1/olitunapp/commit/86dc7ace691863ba9ee3384121d850353c3bcf5b))
+* **profile:** complete accessible avatar experience ([#319](https://github.com/Kh3rwa1/olitunapp/issues/319)) ([2b51bee](https://github.com/Kh3rwa1/olitunapp/commit/2b51beebf6851e4d65db5ce509cc4da717fff5c1))
+* **profile:** contain and animate leaderboard badge ([#322](https://github.com/Kh3rwa1/olitunapp/issues/322)) ([b2bf298](https://github.com/Kh3rwa1/olitunapp/commit/b2bf29805e43785cdba2d9baf3a0b241f5e6e0a7))
+* **profile:** restore all animated avatar choices ([#323](https://github.com/Kh3rwa1/olitunapp/issues/323)) ([303fb8b](https://github.com/Kh3rwa1/olitunapp/commit/303fb8bd8a6e2de438cea206c50ffd52bcee1607))
+* **pwa:** offline shell, persistent media cache, instant avatars, shorter home promos ([#377](https://github.com/Kh3rwa1/olitunapp/issues/377)) ([4e36527](https://github.com/Kh3rwa1/olitunapp/commit/4e36527a69bbaa13882e6adb25da422f327376f6))
+* **pwa:** single service worker to end reload loop ([#381](https://github.com/Kh3rwa1/olitunapp/issues/381)) ([201761d](https://github.com/Kh3rwa1/olitunapp/commit/201761d2c3d1cff0cddec7395decba82f1a1d588))
+* **quiz:** remove invalid lesson-title fallback ([#373](https://github.com/Kh3rwa1/olitunapp/issues/373)) ([b3c5a8e](https://github.com/Kh3rwa1/olitunapp/commit/b3c5a8ecc85230c374d0020787f7438bbf456799))
+* **rhymes:** share one builder for both tab segments so Bakhed Audio ([58432ef](https://github.com/Kh3rwa1/olitunapp/commit/58432ef5bbe5189a0362eb2cb45a18ec42c20ead))
+* **rhymes:** share one builder for both tab segments so Bakhed Audio ([97ee08f](https://github.com/Kh3rwa1/olitunapp/commit/97ee08f558cdc262a747f7ee223544ecdea06e56))
+* **shell:** open bottom sheets above the floating nav ([#331](https://github.com/Kh3rwa1/olitunapp/issues/331)) ([87e305c](https://github.com/Kh3rwa1/olitunapp/commit/87e305cfd3c12d3963ced315a64606b1890eabf3))
+* **sites:** pass APP_ENV=production in Sites web build command ([#317](https://github.com/Kh3rwa1/olitunapp/issues/317)) ([8ce904b](https://github.com/Kh3rwa1/olitunapp/commit/8ce904b72147d02ca2fd236331708a6d36a1f184))
+* **web:** show onboarding after guest sign-in and web OAuth ([#353](https://github.com/Kh3rwa1/olitunapp/issues/353)) ([8720286](https://github.com/Kh3rwa1/olitunapp/commit/8720286fb24409191d9445ec48e157dd11ed8073))
+
 ## [1.3.1] (2026-09-06)
 
 ### Bug Fixes

@@ -302,4 +302,40 @@ void main() {
     expect(attributes['level'], 'advanced');
     expect(attributes['isPreview'], isTrue);
   });
+
+  test(
+    'remote lessons are authoritative and do not merge bundled seed lessons when online',
+    () async {
+      when(
+        () => functions.execute(
+          'getAuthorizedLesson',
+          body: {'action': 'list_lessons', 'limit': 100},
+          usePost: true,
+        ),
+      ).thenAnswer(
+        (_) async => _execution({
+          'ok': true,
+          'lessons': [_lessonMetadata()],
+          'hasMore': false,
+          'nextCursor': null,
+        }),
+      );
+      final repository = ContentRepository(
+        tablesDB: tablesDB,
+        networkInfo: _OnlineNetworkInfo(),
+        functionsService: functions,
+      );
+
+      final result = await repository.list(ContentKind.lesson);
+
+      result.fold((failure) => fail('Expected authorized lessons: $failure'), (
+        items,
+      ) {
+        // Must only contain the remote lesson from the server/admin panel,
+        // not the 20+ bundled seed lessons
+        expect(items.length, 1);
+        expect(items.single.id, 'secure_shared_lesson');
+      });
+    },
+  );
 }

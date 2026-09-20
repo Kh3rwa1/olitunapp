@@ -570,4 +570,58 @@ void main() {
       await tester.pump(const Duration(seconds: 2));
     },
   );
+
+  testWidgets(
+    'LessonBlockDetailScreen renders hydrated latest blocks from server over listed fallback blocks',
+    (tester) async {
+      final mockAudioService = MockAudioService();
+      const hydratedLesson = LessonEntity(
+        id: 'lesson_1',
+        categoryId: 'cat_1',
+        titleOlChiki: 'ᱥᱟᱱᱛᱟᱲᱤ',
+        titleLatin: 'Updated From Admin',
+        description: 'Latest blocks edited in admin panel',
+        order: 1,
+        blocks: [
+          LessonBlockEntity(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱱᱛᱟᱲᱤ',
+            textLatin: 'Admin Fresh Block 1',
+            data: {'pronunciation': 'Santari', 'themeColor': '#10B981'},
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            learnerLessonsProvider.overrideWithValue(
+              AsyncValue.data(mockLessons),
+            ),
+            lessonsByCategoryProvider(
+              'cat_1',
+            ).overrideWithValue(AsyncValue.data(mockLessons)),
+            learnerLessonDetailProvider(
+              'lesson_1',
+            ).overrideWith((ref) async => hydratedLesson),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_1',
+              initialBlockIndex: 0,
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Must display the fresh block from the server/admin panel, NOT the fallback 'At' block
+      expect(find.text('Admin Fresh Block 1'), findsNWidgets(2));
+      expect(find.text('At'), findsNothing);
+    },
+  );
 }

@@ -9,6 +9,7 @@ import '../../../../../core/utils/csv_helper.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/models/content_item_extensions.dart';
 import '../../../../../shared/providers/content_providers.dart';
+import '../../../../../shared/providers/learner_content_providers.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../categories/presentation/providers/category_notifier.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
@@ -185,10 +186,13 @@ class _AdminLessonContentScreenState
             ref.invalidate(
               contentListProvider((ContentKind.lesson, _lesson!.categoryId)),
             );
+            ref.invalidate(lessonsByCategoryProvider(_lesson!.categoryId));
           }
           ref.invalidate(
             contentDetailProvider((ContentKind.lesson, widget.lessonId)),
           );
+          ref.invalidate(learnerLessonsProvider);
+          ref.invalidate(learnerLessonDetailProvider(widget.lessonId));
           // ignore: deprecated_member_use
           ref.invalidate(lessonNotifierProvider);
 

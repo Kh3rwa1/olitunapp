@@ -96,13 +96,14 @@ class _LessonBlockDetailScreenState
   }
 
   void _playBlockAudioAtIndex(int index) {
+    final hydrated = ref
+        .read(learnerLessonDetailProvider(widget.lessonId))
+        .valueOrNull;
     final lessons = ref.read(learnerLessonsProvider).valueOrNull ?? [];
-    var lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
-    if (lesson != null && lesson.blocks.isEmpty) {
-      lesson = ref
-          .read(learnerLessonDetailProvider(widget.lessonId))
-          .valueOrNull;
-    }
+    final listedLesson = lessons
+        .where((l) => l.id == widget.lessonId)
+        .firstOrNull;
+    final lesson = hydrated ?? listedLesson;
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
       final block = lesson.blocks[index];
       final audioUrl = block.audioUrl;
@@ -228,19 +229,21 @@ class _LessonBlockDetailScreenState
           );
         }
 
-        // Authorized catalog responses intentionally contain metadata only.
-        // Hydrate the selected lesson before rendering, while keeping bundled
-        // full-body lessons usable for secure offline fallback.
-        final lessonDetailAsync = listedLesson.blocks.isEmpty
-            ? ref.watch(learnerLessonDetailProvider(widget.lessonId))
-            : null;
-        final hydratedLesson = lessonDetailAsync?.valueOrNull;
-        if (listedLesson.blocks.isEmpty && hydratedLesson == null) {
+        // Always watch learnerLessonDetailProvider to retrieve the authoritative
+        // latest content from the backend (admin panel edits, fresh audio, updated Ol Chiki).
+        final lessonDetailAsync = ref.watch(
+          learnerLessonDetailProvider(widget.lessonId),
+        );
+        final hydratedLesson = lessonDetailAsync.valueOrNull;
+
+        // If fresh data is not yet available and there are no fallback blocks,
+        // show loading or error state.
+        if (hydratedLesson == null && listedLesson.blocks.isEmpty) {
           return Scaffold(
             backgroundColor: isDark
                 ? AppColors.quizDarkBackground
                 : Colors.white,
-            body: lessonDetailAsync?.hasError == true
+            body: lessonDetailAsync.hasError
                 ? DetailLoadErrorBlock(
                     title: 'Could not load lesson details',
                     isDark: isDark,

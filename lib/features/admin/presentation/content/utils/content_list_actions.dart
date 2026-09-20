@@ -10,23 +10,39 @@ import '../widgets/content_form_sheet.dart';
 import 'content_csv_exporter.dart';
 
 class ContentListActions {
-  static void invalidateAllProviders(WidgetRef ref, ContentKind kind) {
+  static void invalidateAllProviders(
+    WidgetRef ref,
+    ContentKind kind, {
+    String? categoryId,
+  }) {
     ref.invalidate(contentListProvider((kind, null)));
+    if (categoryId != null && categoryId.isNotEmpty) {
+      ref.invalidate(contentListProvider((kind, categoryId)));
+    }
     switch (kind) {
       case ContentKind.letter:
         ref.invalidate(lettersProvider);
+        ref.invalidate(learnerLettersProvider);
         break;
       case ContentKind.number:
         ref.invalidate(numbersProvider);
+        ref.invalidate(learnerNumbersProvider);
         break;
       case ContentKind.word:
         ref.invalidate(wordsProvider);
+        ref.invalidate(learnerWordsProvider);
         break;
       case ContentKind.sentence:
         ref.invalidate(sentencesProvider);
+        ref.invalidate(learnerSentencesProvider);
         break;
       case ContentKind.lesson:
+        // ignore: deprecated_member_use
         ref.invalidate(lessonNotifierProvider);
+        ref.invalidate(learnerLessonsProvider);
+        if (categoryId != null && categoryId.isNotEmpty) {
+          ref.invalidate(lessonsByCategoryProvider(categoryId));
+        }
         break;
       case ContentKind.rhyme:
         ref.invalidate(rhymesProvider);
@@ -243,6 +259,16 @@ class ContentListActions {
     if (context.mounted) {
       onComplete();
       invalidateAllProviders(ref, kind);
+      if (kind == ContentKind.lesson) {
+        for (final item in selectedItems) {
+          ref.invalidate(learnerLessonDetailProvider(item.id));
+          ref.invalidate(contentDetailProvider((kind, item.id)));
+          if (item.categoryId.isNotEmpty) {
+            ref.invalidate(contentListProvider((kind, item.categoryId)));
+            ref.invalidate(lessonsByCategoryProvider(item.categoryId));
+          }
+        }
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Successfully deleted $successCount items'),
@@ -348,7 +374,11 @@ class ContentListActions {
           }
         },
         (_) {
-          invalidateAllProviders(ref, kind);
+          invalidateAllProviders(ref, kind, categoryId: item.categoryId);
+          if (kind == ContentKind.lesson) {
+            ref.invalidate(learnerLessonDetailProvider(item.id));
+            ref.invalidate(contentDetailProvider((kind, item.id)));
+          }
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

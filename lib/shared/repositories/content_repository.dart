@@ -284,16 +284,26 @@ class ContentRepository {
               .toList();
         }
 
-        final mergedItems = _mergeContentItems(bundledItems, remoteItems);
+        final List<ContentItem> resolvedItems;
+        if (kind == ContentKind.lesson) {
+          // If remote lessons were retrieved from the backend (admin panel),
+          // they are authoritative. Only fall back to bundled seed if remote returned nothing.
+          resolvedItems = remoteItems.isNotEmpty ? remoteItems : bundledItems;
+        } else {
+          resolvedItems = _mergeContentItems(bundledItems, remoteItems);
+        }
+
         if (kind != ContentKind.lesson) {
-          final cachedData = mergedItems.map((item) => item.toJson()).toList();
+          final cachedData = resolvedItems
+              .map((item) => item.toJson())
+              .toList();
           await CacheService.set(cacheKey, cachedData);
-          for (final item in mergedItems) {
+          for (final item in resolvedItems) {
             await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
           }
         }
 
-        return right(mergedItems);
+        return right(resolvedItems);
       } catch (_) {
         // Never fall back to a direct lesson collection read. A safe local
         // catalog remains usable while the authorization service is offline.

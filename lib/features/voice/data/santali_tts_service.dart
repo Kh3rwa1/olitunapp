@@ -26,23 +26,26 @@ class SantaliVoiceConfig {
   static const String _envUrl = String.fromEnvironment('SANTALI_VOICE_URL');
   static const String _envFunctionId = String.fromEnvironment(
     'SANTALI_VOICE_FUNCTION_ID',
+    defaultValue: 'santaliVoice',
   );
 
   /// Max characters per generation (matches the function's cap and keeps
   /// each request inside Bodhan's ~30s audio guidance).
   static const int maxChars = 600;
 
-  static String get functionId => _envFunctionId;
+  static String get functionId =>
+      AppwriteConfig.isBackendConfigured ? _envFunctionId : '';
 
   static String get executionUrl {
     if (_envUrl.isNotEmpty) return _envUrl;
-    if (_envFunctionId.isNotEmpty) {
+    final fId = functionId;
+    if (fId.isNotEmpty) {
       final endpoint = AppwriteConfig.endpoint.replaceAll(
         RegExp(r'/v1/?$'),
         '',
       );
       if (endpoint.isNotEmpty && !endpoint.contains('example.invalid')) {
-        return '$endpoint/v1/functions/$_envFunctionId/executions';
+        return '$endpoint/v1/functions/$fId/executions';
       }
     }
     return '';
@@ -82,11 +85,12 @@ class VoiceFailure {
 /// execution handling: SDK path with session auth when available, raw-HTTP
 /// fallback for web-cookie contexts.
 class SantaliTtsService {
-  SantaliTtsService({http.Client? client, this.functions})
+  SantaliTtsService({http.Client? client, this.functions, this.auth})
     : _client = client ?? http.Client();
 
   final http.Client _client;
   final Functions? functions;
+  final AppwriteAuthService? auth;
 
   Future<({VoiceClip? clip, VoiceFailure? failure})> synthesize({
     required String text,
@@ -178,11 +182,21 @@ class SantaliTtsService {
     Map<String, dynamic> body,
   ) async {
     try {
+      Map<String, String>? headers;
+      try {
+        final token = await auth?.account.createJWT();
+        if (token != null && token.jwt.isNotEmpty) {
+          headers = {'Authorization': 'Bearer ${token.jwt}'};
+        }
+      } catch (_) {
+        // Fall back to session authentication
+      }
       final execution = await functions.createExecution(
         functionId: functionId,
         body: jsonEncode(body),
         xasync: false,
         method: ExecutionMethod.pOST,
+        headers: headers,
       );
       if (execution.responseStatusCode == 401) {
         return (
@@ -317,5 +331,5 @@ Map<String, dynamic>? _unwrapExecution(String body) {
 
 final santaliTtsServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
-  return SantaliTtsService(functions: Functions(auth.client));
+  return SantaliTtsService(auth: auth, functions: Functions(auth.client));
 });

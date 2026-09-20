@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/auth/account_scope.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/config/appwrite_config.dart';
 
 const studioLanguages = {
   'hi-IN': 'Hindi',
@@ -166,11 +167,15 @@ final aiStudioServiceProvider = Provider<AiStudioService>((ref) {
   });
   return AiStudioService(
     call: transport.call,
-    configured: _studioFunctionId.isNotEmpty,
+    configured:
+        _studioFunctionId.isNotEmpty && AppwriteConfig.isBackendConfigured,
   );
 });
 
-const _studioFunctionId = String.fromEnvironment('AI_STUDIO_FUNCTION_ID');
+const _studioFunctionId = String.fromEnvironment(
+  'AI_STUDIO_FUNCTION_ID',
+  defaultValue: 'aiStudio',
+);
 const _inputBucket = 'ai_studio_inputs';
 
 class _StudioTransport {

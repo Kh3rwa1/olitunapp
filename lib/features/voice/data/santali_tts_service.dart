@@ -331,8 +331,5 @@ Map<String, dynamic>? _unwrapExecution(String body) {
 
 final santaliTtsServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
-  return SantaliTtsService(
-    auth: auth,
-    functions: Functions(auth.client),
-  );
+  return SantaliTtsService(auth: auth, functions: Functions(auth.client));
 });

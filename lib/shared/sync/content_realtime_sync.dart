@@ -47,10 +47,10 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     Realtime? realtimeOverride,
     this.onInvalidated,
     this.onSyncAll,
-  })  : _ref = ref,
-        _client = client,
-        _networkInfoOverride = networkInfo,
-        _realtimeOverride = realtimeOverride;
+  }) : _ref = ref,
+       _client = client,
+       _networkInfoOverride = networkInfo,
+       _realtimeOverride = realtimeOverride;
 
   /// Starts listening to Appwrite Realtime events and lifecycle hooks.
   void initialize() {
@@ -121,7 +121,9 @@ class ContentRealtimeSync with WidgetsBindingObserver {
           AppLogger.debug('[RealtimeSync] Realtime stream error: $error');
         },
       );
-      AppLogger.debug('[RealtimeSync] Successfully subscribed to content channels.');
+      AppLogger.debug(
+        '[RealtimeSync] Successfully subscribed to content channels.',
+      );
     } catch (e) {
       AppLogger.debug('[RealtimeSync] Failed to initialize subscription: $e');
     }
@@ -230,11 +232,7 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     }
 
     // 2. Invalidate Riverpod providers to trigger instant UI refresh
-    invalidateProviders(
-      kind: kind,
-      itemId: itemId,
-      categoryId: categoryId,
-    );
+    invalidateProviders(kind: kind, itemId: itemId, categoryId: categoryId);
   }
 
   /// Invalidates all Riverpod providers associated with a content kind.

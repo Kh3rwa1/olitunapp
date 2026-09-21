@@ -114,31 +114,30 @@ class ContentSeedLoader {
               'assets/seed/lessons.json',
             );
             final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledAllLessons = raw
-                .cast<Map<String, dynamic>>()
-                .map((map) {
-                  final lesson = LessonModel.fromJson(map);
-                  return ContentItem(
-                    id: lesson.id,
-                    kind: ContentKind.lesson,
-                    categoryId: lesson.categoryId,
-                    title: lesson.titleLatin,
-                    titleOlChiki: lesson.titleOlChiki.isNotEmpty
-                        ? lesson.titleOlChiki
-                        : null,
-                    subtitle: lesson.description,
-                    order: lesson.order,
-                    durationSeconds: lesson.estimatedMinutes * 60,
-                    blocks: lesson.blocks
-                        .asMap()
-                        .entries
-                        .map((e) => e.value.toContentBlock(e.key))
-                        .toList(),
-                    isPublished: lesson.isActive,
-                    updatedAt: DateTime(2026, 9, 21),
-                  );
-                })
-                .toList();
+            _cachedBundledAllLessons = raw.cast<Map<String, dynamic>>().map((
+              map,
+            ) {
+              final lesson = LessonModel.fromJson(map);
+              return ContentItem(
+                id: lesson.id,
+                kind: ContentKind.lesson,
+                categoryId: lesson.categoryId,
+                title: lesson.titleLatin,
+                titleOlChiki: lesson.titleOlChiki.isNotEmpty
+                    ? lesson.titleOlChiki
+                    : null,
+                subtitle: lesson.description,
+                order: lesson.order,
+                durationSeconds: lesson.estimatedMinutes * 60,
+                blocks: lesson.blocks
+                    .asMap()
+                    .entries
+                    .map((e) => e.value.toContentBlock(e.key))
+                    .toList(),
+                isPublished: lesson.isActive,
+                updatedAt: DateTime(2026, 9, 21),
+              );
+            }).toList();
           } catch (_) {
             _cachedBundledAllLessons = null;
           }
@@ -173,8 +172,7 @@ class ContentSeedLoader {
             if (categoryId == 'cat_numbers' ||
                 categoryId == 'seed_numbers' ||
                 categoryId.contains('number')) {
-              return l.categoryId.contains('number') ||
-                  l.id.contains('number');
+              return l.categoryId.contains('number') || l.id.contains('number');
             }
             if (categoryId == 'cat_sentences' ||
                 categoryId == 'seed_sentences' ||

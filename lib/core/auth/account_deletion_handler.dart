@@ -1,5 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:appwrite/appwrite.dart';
+import '../logging/app_logger.dart';
+import '../logging/redaction_helper.dart';
 
 enum AccountDeletionOutcomeKind {
   completed,
@@ -109,4 +112,64 @@ AccountDeletionResult parseAccountDeletionExecution({
     isFullSuccess: true,
     statusCode: statusCode != 0 ? statusCode : 200,
   );
+}
+
+Future<void> executeAccountDeletion({
+  required Functions functions,
+  required Future<void> Function() restoreWebSession,
+  required Future<void> Function({bool preserveAccount}) clearLocalSessionState,
+}) async {
+  try {
+    await restoreWebSession();
+
+    final execution = await functions.createExecution(
+      functionId: 'delete-account',
+    );
+
+    final result = parseAccountDeletionExecution(
+      status: execution.status.toString(),
+      statusCode: execution.responseStatusCode,
+      responseBody: execution.responseBody,
+    );
+
+    if (!result.isFullSuccess) {
+      if (result.isAuthDeleted) {
+        await clearLocalSessionState();
+        throw AppwriteException(
+          result.errorMessage ??
+              'Account deleted; final cleanup reconciliation is pending.',
+          result.statusCode,
+          'account_deletion_pending',
+        );
+      }
+
+      throw AppwriteException(
+        result.errorMessage ?? 'Account deletion failed on server',
+        result.statusCode,
+      );
+    }
+
+    await clearLocalSessionState();
+  } on AppwriteException catch (e) {
+    if (e.code == 401 && e.type != 'account_deletion_pending') {
+      await clearLocalSessionState();
+      throw AppwriteException(
+        'Sign in again to confirm account deletion. Deletion is not confirmed.',
+        401,
+        'account_deletion_reauthentication_required',
+      );
+    }
+    AppLogger.error(
+      'Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
+    );
+    rethrow;
+  } catch (e) {
+    AppLogger.error(
+      'Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}',
+    );
+    throw AppwriteException(
+      'Account deletion failed: ${RedactionHelper.sanitize(e.toString())}',
+      500,
+    );
+  }
 }

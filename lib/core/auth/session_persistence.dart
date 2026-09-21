@@ -10,6 +10,15 @@ class SessionPersistence {
   static const String webSessionTimestampKey = 'olitun_web_session_ts';
   static const String hasLocalSessionKey = 'olitun_has_local_session';
 
+  /// Safely extracts the secret from an Appwrite session model if present.
+  static String? extractSecret(dynamic session) {
+    try {
+      final s = session.secret;
+      if (s is String && s.isNotEmpty) return s;
+    } catch (_) {}
+    return null;
+  }
+
   /// Removes the obsolete plaintext copy without changing SDK session state.
   /// Safe to call on every startup, including while offline.
   static Future<void> purgeLegacySessionSecret(SharedPreferences prefs) async {

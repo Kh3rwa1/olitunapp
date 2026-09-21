@@ -117,10 +117,18 @@ class AppwriteAuthService with AdminFunctionsMixin {
       _requireCurrent(owner);
       await prefs.setBool(_hasLocalSessionKey, true);
       if (_isWeb) {
-        await prefs.setInt(
-          SessionPersistence.webSessionTimestampKey,
-          (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-        );
+        String? secret;
+        try {
+          secret = session.secret;
+        } catch (_) {}
+        if (secret != null && secret.isNotEmpty) {
+          await _persistWebSession(secret);
+        } else {
+          await prefs.setInt(
+            SessionPersistence.webSessionTimestampKey,
+            (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+          );
+        }
       }
       _requireCurrent(owner);
       return session;
@@ -186,8 +194,10 @@ class AppwriteAuthService with AdminFunctionsMixin {
         // otherwise the backend tries to attach the Google identity to the
         // wrong user and fails with 409 user_already_exists.
         try {
+          await _restoreWebSession();
           await _account.deleteSession(sessionId: 'current');
         } catch (_) {}
+        await _clearLocalSessionState(preserveAccount: true);
         final origin = Uri.base.origin;
         final oauthUrl =
             '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'

@@ -312,7 +312,10 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
 
               final isAuth = ref.read(isAuthenticatedProvider).value ?? false;
               if (!isAuth) {
-                // Guest mode: wipe local data and return to welcome immediately
+                // Guest mode: ensure any remote anonymous session is deleted and wipe local data
+                try {
+                  await ref.read(authRepositoryProvider).signOut();
+                } catch (_) {}
                 await finalizeLocalWipe();
                 return;
               }

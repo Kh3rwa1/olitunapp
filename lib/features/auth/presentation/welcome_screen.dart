@@ -566,6 +566,7 @@ class _OAuthFailureNoticeState extends ConsumerState<_OAuthFailureNotice> {
     if (raw.isEmpty) return;
 
     var message = 'Google sign-in failed. Please try again.';
+    var isConflict = false;
     try {
       final decoded = jsonDecode(raw);
       if (decoded is Map) {
@@ -573,6 +574,7 @@ class _OAuthFailureNoticeState extends ConsumerState<_OAuthFailureNotice> {
         final detail = '${decoded['message'] ?? ''}';
         if (type == 'user_already_exists' ||
             detail.contains('already exists')) {
+          isConflict = true;
           message =
               'An account with this email already exists. '
               'Please sign in with Email instead.';
@@ -584,12 +586,25 @@ class _OAuthFailureNoticeState extends ConsumerState<_OAuthFailureNotice> {
       // Keep the default message when the payload is not JSON.
     }
 
+    if (isConflict) {
+      try {
+        ref.read(authRepositoryProvider).signOut();
+      } catch (_) {}
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: isConflict
+            ? SnackBarAction(
+                label: 'Use Email',
+                textColor: Colors.white,
+                onPressed: () => context.go('/login'),
+              )
+            : null,
       ),
     );
     OAuthSanitizer.clearOAuthError();

@@ -132,6 +132,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     } else {
       ref.read(categoryNotifierProvider.notifier).addCategory(newCategory);
     }
+    ref.invalidate(categoryNotifierProvider);
     Navigator.pop(context);
   }
 

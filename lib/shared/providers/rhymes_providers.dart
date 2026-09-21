@@ -116,6 +116,8 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
       );
     }
 
+    if (_disposed) return;
+
     // 2. Fetch Network
     try {
       final db = ref.read(appwriteDbServiceProvider);
@@ -144,13 +146,14 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
       }
 
       // 3. Save Cache
-      if (rhymes.isNotEmpty) {
+      if (rhymes.isNotEmpty && !_disposed) {
         await CacheService.set(
           _cacheKey,
           rhymes.map((e) => e.toJson()).toList(),
         );
       }
     } catch (e, stack) {
+      if (_disposed) return;
       AppLogger.error(
         'Error loading rhymes from Appwrite: $e',
         name: 'RhymesProviders',

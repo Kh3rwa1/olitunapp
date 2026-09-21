@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/features/admin/presentation/content/utils/content_list_actions.dart';
 import 'package:itun/features/admin/presentation/widgets/common/admin_modal_sheet.dart';
 import 'package:itun/shared/providers/providers.dart';
 
@@ -99,7 +100,12 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           );
         },
         (_) {
-          ref.invalidate(wordsProvider);
+          ContentListActions.invalidateAllProviders(
+            ref,
+            ContentKind.word,
+            categoryId: item.categoryId,
+            itemId: item.id,
+          );
           Navigator.pop(context);
         },
       );

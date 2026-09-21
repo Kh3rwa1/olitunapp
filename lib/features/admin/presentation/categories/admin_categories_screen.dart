@@ -159,7 +159,12 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
           'Are you sure you want to delete "${category.titleLatin}"? This action cannot be undone.',
     );
     if (ok == true) {
-      ref.read(categoryNotifierProvider.notifier).deleteCategory(category.id);
+      await ref
+          .read(categoryNotifierProvider.notifier)
+          .deleteCategory(category.id);
+      ref.invalidate(categoryNotifierProvider);
+      ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+      ref.invalidate(lessonsByCategoryProvider(category.id));
     }
   }
 

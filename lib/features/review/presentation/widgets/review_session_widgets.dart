@@ -277,7 +277,7 @@ class ReviewTypingArea extends StatelessWidget {
             ),
           ),
           child: Text(
-            typed.isEmpty ? 'ᱚᱞ ᱛᱚᱵᱚᱱ ᱢᱮ …' : typed,
+            typed.isEmpty ? 'ᱚᱞ ᱛᱟᱵᱚᱱ ᱢᱮ' : typed,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'OlChiki',

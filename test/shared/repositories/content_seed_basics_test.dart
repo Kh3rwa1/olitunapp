@@ -172,4 +172,24 @@ void main() {
       }
     },
   );
+
+  test('bundled lessons load comprehensively including greetings and clean text', () async {
+    final allLessons = await ContentSeedLoader.loadBundledSeedItems(
+      ContentKind.lesson,
+      null,
+    );
+    expect(allLessons.length, 54);
+
+    final greetLessons = await ContentSeedLoader.loadBundledSeedItems(
+      ContentKind.lesson,
+      'cat_phrases',
+    );
+    expect(greetLessons.length, 4);
+    expect(greetLessons.any((l) => l.id == 'lesson_greet_1'), isTrue);
+
+    final greet1 = greetLessons.firstWhere((l) => l.id == 'lesson_greet_1');
+    final block1 = greet1.blocks[1] as TextBlock;
+    expect(block1.textOlChiki, 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱯᱷᱟᱹᱜᱩᱱ ᱠᱟᱱᱟ᱾');
+    expect(block1.textLatin, contains('My name is Fagun.'));
+  });
 }

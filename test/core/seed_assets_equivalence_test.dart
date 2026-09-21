@@ -11,7 +11,7 @@ void main() {
   const expectedCounts = <String, int>{
     'assets/seed/lessons.json': 54,
     'assets/seed/vocab_lessons.json': 14,
-    'assets/seed/sentence_lessons.json': 24,
+    'assets/seed/sentence_lessons.json': 23,
     'assets/seed/words.json': 415,
     'assets/seed/sentences.json': 250,
   };

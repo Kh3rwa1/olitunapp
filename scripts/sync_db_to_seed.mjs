@@ -213,10 +213,10 @@ async function main() {
         blocks: l.blocks,
       })),
     ...existingStories,
-  ];
-  writeFileSync(join(seedDir, 'sentence_lessons.json'), JSON.stringify(sentenceLessons, null, 2) + '\n');
-
-  console.log(`done (${allLessons.length} total: ${vocabLessons.length} vocab, ${sentenceLessons.length} sentence)`);
+  // Sentence lessons are preserved from curated offline seed to retain multi-language quiz translations
+  if (!existsSync(join(seedDir, 'sentence_lessons.json'))) {
+    writeFileSync(join(seedDir, 'sentence_lessons.json'), JSON.stringify(sentenceLessons, null, 2) + '\n');
+  }
 
   console.log('\n✅ Successfully synchronized all Appwrite database content to assets/seed/!\n');
 }

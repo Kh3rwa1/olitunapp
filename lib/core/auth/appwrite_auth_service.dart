@@ -117,11 +117,8 @@ class AppwriteAuthService with AdminFunctionsMixin {
       _requireCurrent(owner);
       await prefs.setBool(_hasLocalSessionKey, true);
       if (_isWeb) {
-        String? secret;
-        try {
-          secret = session.secret;
-        } catch (_) {}
-        if (secret != null && secret.isNotEmpty) {
+        final secret = SessionPersistence.extractSecret(session);
+        if (secret != null) {
           await _persistWebSession(secret);
         } else {
           await prefs.setInt(
@@ -198,15 +195,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
           await _account.deleteSession(sessionId: 'current');
         } catch (_) {}
         await _clearLocalSessionState(preserveAccount: true);
-        final origin = Uri.base.origin;
-        final oauthUrl =
-            '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
-            '?project=${AppwriteConfig.projectId}'
-            '&success=${Uri.encodeComponent("$origin/splash")}'
-            '&failure=${Uri.encodeComponent("$origin/welcome")}'
-            '&scopes[]=${Uri.encodeComponent("email")}'
-            '&scopes[]=${Uri.encodeComponent("profile")}';
-        redirectToUrl(oauthUrl);
+        final oauthUrl = buildWebGoogleOAuthUrl(
+          endpoint: AppwriteConfig.endpoint,
+          projectId: AppwriteConfig.projectId,
+          origin: Uri.base.origin,
+        );
+        redirectToUrl(oauthUrl.toString());
       } else {
         // Clear any dangling guest/anonymous session before starting OAuth so the
         // backend doesn't reject session creation with a 401/409 session conflict.
@@ -302,11 +296,8 @@ class AppwriteAuthService with AdminFunctionsMixin {
           }
           _requireCurrent(scope);
           ownerId = session.userId;
-          String? sessionSecret;
-          try {
-            sessionSecret = session.secret;
-          } catch (_) {}
-          if (sessionSecret != null && sessionSecret.isNotEmpty) {
+          final sessionSecret = SessionPersistence.extractSecret(session);
+          if (sessionSecret != null) {
             await _persistWebSession(sessionSecret);
           } else if (_isWeb && secret.isNotEmpty) {
             await _persistWebSession(secret);
@@ -529,65 +520,11 @@ class AppwriteAuthService with AdminFunctionsMixin {
   }
 
   /// Permanently delete the user account from Appwrite and clear all local state.
-  Future<void> deleteAccount() async {
-    try {
-      await _restoreWebSession();
-
-      final execution = await _functions.createExecution(
-        functionId: 'delete-account',
-      );
-
-      // ignore: invalid_use_of_visible_for_testing_member
-      final result = parseAccountDeletionExecution(
-        status: execution.status.toString(),
-        statusCode: execution.responseStatusCode,
-        responseBody: execution.responseBody,
-      );
-
-      if (!result.isFullSuccess) {
-        if (result.isAuthDeleted) {
-          await _clearLocalSessionState();
-          throw AppwriteException(
-            result.errorMessage ??
-                'Account deleted; final cleanup reconciliation is pending.',
-            result.statusCode,
-            'account_deletion_pending',
-          );
-        }
-
-        throw AppwriteException(
-          result.errorMessage ?? 'Account deletion failed on server',
-          result.statusCode,
-        );
-      }
-
-      await _clearLocalSessionState();
-    } on AppwriteException catch (e) {
-      if (e.code == 401 && e.type != 'account_deletion_pending') {
-        // An expired session is not evidence that the account was deleted.
-        await _clearLocalSessionState();
-        throw AppwriteException(
-          'Sign in again to confirm account deletion. Deletion is not confirmed.',
-          401,
-          'account_deletion_reauthentication_required',
-        );
-      }
-      // A 404 can refer to the function or another resource, not the user.
-      // Preserve it as a failure rather than silently reporting deletion.
-      AppLogger.error(
-        'Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
-      );
-      rethrow;
-    } catch (e) {
-      AppLogger.error(
-        'Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}',
-      );
-      throw AppwriteException(
-        'Account deletion failed: ${RedactionHelper.sanitize(e.toString())}',
-        500,
-      );
-    }
-  }
+  Future<void> deleteAccount() => executeAccountDeletion(
+    functions: _functions,
+    restoreWebSession: _restoreWebSession,
+    clearLocalSessionState: _clearLocalSessionState,
+  );
 
   @override
   Functions get functions => _functions;

@@ -88,3 +88,19 @@ Uri buildMobileGoogleOAuthUrl({
   ].join('&');
   return Uri.parse('$endpoint/account/tokens/oauth2/google?$query');
 }
+
+/// Builds the Google OAuth2 token URL for the web redirect flow.
+Uri buildWebGoogleOAuthUrl({
+  required String endpoint,
+  required String projectId,
+  required String origin,
+}) {
+  final query = [
+    'project=${Uri.encodeComponent(projectId)}',
+    'success=${Uri.encodeComponent("$origin/splash")}',
+    'failure=${Uri.encodeComponent("$origin/welcome")}',
+    'scopes[]=${Uri.encodeComponent("email")}',
+    'scopes[]=${Uri.encodeComponent("profile")}',
+  ].join('&');
+  return Uri.parse('$endpoint/account/tokens/oauth2/google?$query');
+}

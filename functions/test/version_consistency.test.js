@@ -30,15 +30,16 @@ test("Version Consistency: verifyReleaseVersion validates live repo metadata", (
   const result = verifyReleaseVersion();
   assert.equal(result.valid, true);
   assert.equal(result.errors.length, 0);
-  assert.equal(result.semver, "1.3.1");
-  assert.equal(result.buildNumber, 30);
+  assert.match(result.semver, /^[0-9]+\.[0-9]+\.[0-9]+$/);
+  assert.ok(Number.isInteger(result.buildNumber) && result.buildNumber > 0);
 });
 
 test("Version Consistency: detect release tag drift", () => {
-  const matchResult = verifyReleaseVersion({ targetTag: "v1.3.1" });
+  const current = verifyReleaseVersion();
+  const matchResult = verifyReleaseVersion({ targetTag: `v${current.semver}` });
   assert.equal(matchResult.valid, true);
 
-  const driftResult = verifyReleaseVersion({ targetTag: "v1.4.0" });
+  const driftResult = verifyReleaseVersion({ targetTag: `v${current.semver}-drift-test` });
   assert.equal(driftResult.valid, false);
   assert.ok(driftResult.errors.some((e) => e.includes("Release tag")));
 });

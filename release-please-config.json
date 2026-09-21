@@ -1,7 +1,7 @@
 {
   "packages": {
     ".": {
-      "release-type": "simple",
+      "release-type": "dart",
       "package-name": "olitun",
       "changelog-path": "CHANGELOG.md"
     }

@@ -38,7 +38,12 @@ class MockAudioService extends Mock implements AudioService {
   @override
   Future<void> playUrl(String url) async {}
   @override
-  Future<bool> tryPlayUrl(String url, {String title = 'Pronunciation', String album = 'Olitun', Uri? artUri}) async => true;
+  Future<bool> tryPlayUrl(
+    String url, {
+    String title = 'Pronunciation',
+    String album = 'Olitun',
+    Uri? artUri,
+  }) async => true;
   @override
   Future<void> stop() async {}
   @override
@@ -77,82 +82,111 @@ void main() {
   ];
 
   group('CategoryLessonsScreen Language Adaptability', () {
-    testWidgets('shows Santali Ol Chiki by default when target language is sat', (tester) async {
-      final prefs = await SharedPreferences.getInstance();
+    testWidgets(
+      'shows Santali Ol Chiki by default when target language is sat',
+      (tester) async {
+        final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            categoryNotifierProvider.overrideWith(() => MockCategoryNotifier([mockAlphabetCategory])),
-            lessonsByCategoryProvider('cat_alphabets').overrideWith((ref) => AsyncValue.data(mockLessons)),
-            purchasedCategoriesProvider.overrideWith((ref) => {'cat_alphabets'}),
-            effectiveScriptModeProvider.overrideWith((ref) => 'both'),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier()),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: CategoryLessonsScreen(categoryId: 'cat_alphabets'),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              categoryNotifierProvider.overrideWith(
+                () => MockCategoryNotifier([mockAlphabetCategory]),
+              ),
+              lessonsByCategoryProvider(
+                'cat_alphabets',
+              ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+              purchasedCategoriesProvider.overrideWith(
+                (ref) => {'cat_alphabets'},
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier(),
+              ),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: CategoryLessonsScreen(categoryId: 'cat_alphabets'),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Ol Chiki'), findsOneWidget);
-      expect(find.text('ᱚᱞ ᱪᱤᱠᱤ'), findsWidgets);
-      // No preview banner for active Santali language
-      expect(find.textContaining('course packs are in preview'), findsNothing);
-    });
+        expect(find.text('Ol Chiki'), findsOneWidget);
+        expect(find.text('ᱚᱞ ᱪᱤᱠᱤ'), findsWidgets);
+        // No preview banner for active Santali language
+        expect(
+          find.textContaining('course packs are in preview'),
+          findsNothing,
+        );
+      },
+    );
 
-    testWidgets('dynamically shows Warang Citi & preview banner when target language is Ho', (tester) async {
-      final prefs = await SharedPreferences.getInstance();
+    testWidgets(
+      'dynamically shows Warang Citi & preview banner when target language is Ho',
+      (tester) async {
+        final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            categoryNotifierProvider.overrideWith(() => MockCategoryNotifier([mockAlphabetCategory])),
-            lessonsByCategoryProvider('cat_alphabets').overrideWith((ref) => AsyncValue.data(mockLessons)),
-            purchasedCategoriesProvider.overrideWith((ref) => {'cat_alphabets'}),
-            effectiveScriptModeProvider.overrideWith((ref) => 'both'),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier('hoc')),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: CategoryLessonsScreen(categoryId: 'cat_alphabets'),
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              categoryNotifierProvider.overrideWith(
+                () => MockCategoryNotifier([mockAlphabetCategory]),
+              ),
+              lessonsByCategoryProvider(
+                'cat_alphabets',
+              ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+              purchasedCategoriesProvider.overrideWith(
+                (ref) => {'cat_alphabets'},
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier('hoc'),
+              ),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: CategoryLessonsScreen(categoryId: 'cat_alphabets'),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Browse all card adapts to Warang Citi
-      expect(find.text('Warang Citi'), findsOneWidget);
-      expect(find.text('𑢹𑣗𑢡𑣊 𑢔𑣂𑢻𑣂'), findsOneWidget);
+        // Browse all card adapts to Warang Citi
+        expect(find.text('Warang Citi'), findsOneWidget);
+        expect(find.text('𑢹𑣗𑢡𑣊 𑢔𑣂𑢻𑣂'), findsOneWidget);
 
-      // Subtitle in hero header adapts to Ho native name
-      expect(find.text('𑢹𑣉 ᱡᱟᱜᱟᱨ'), findsOneWidget);
+        // Subtitle in hero header adapts to Ho native name
+        expect(find.text('𑢹𑣉 ᱡᱟᱜᱟᱨ'), findsOneWidget);
 
-      // Preview banner is shown for Ho
-      expect(
-        find.text('Ho (Warang Citi) course packs are in preview. Foundational learning content is active.'),
-        findsOneWidget,
-      );
-    });
+        // Preview banner is shown for Ho
+        expect(
+          find.text(
+            'Ho (Warang Citi) course packs are in preview. Foundational learning content is active.',
+          ),
+          findsOneWidget,
+        );
+      },
+    );
   });
 
   group('LessonBlockDetailScreen Language Playback & Reactivity', () {
     testWidgets('plays audio with active target language code', (tester) async {
       final prefs = await SharedPreferences.getInstance();
       final mockPlayback = MockPlaybackController();
-      when(() => mockPlayback.playSingle(
-        id: any(named: 'id'),
-        contentKind: any(named: 'contentKind'),
-        contentId: any(named: 'contentId'),
-        trackType: any(named: 'trackType'),
-        languageCode: any(named: 'languageCode'),
-      )).thenAnswer((_) async {});
+      when(
+        () => mockPlayback.playSingle(
+          id: any(named: 'id'),
+          contentKind: any(named: 'contentKind'),
+          contentId: any(named: 'contentId'),
+          trackType: any(named: 'trackType'),
+          languageCode: any(named: 'languageCode'),
+        ),
+      ).thenAnswer((_) async {});
 
       const lesson = LessonEntity(
         id: 'lesson_test_1',
@@ -174,9 +208,15 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             playbackControllerProvider.overrideWithValue(mockPlayback),
-            learnerLessonsProvider.overrideWith((ref) => const AsyncValue.data([lesson])),
-            learnerLessonDetailProvider('lesson_test_1').overrideWith((ref) => Future.value(lesson)),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier('hoc')),
+            learnerLessonsProvider.overrideWith(
+              (ref) => const AsyncValue.data([lesson]),
+            ),
+            learnerLessonDetailProvider(
+              'lesson_test_1',
+            ).overrideWith((ref) => Future.value(lesson)),
+            targetLanguageCodeProvider.overrideWith(
+              (ref) => TargetLanguageNotifier('hoc'),
+            ),
             effectiveTeachingLanguageProvider.overrideWith((ref) => 'en'),
             effectiveScriptModeProvider.overrideWith((ref) => 'both'),
           ],
@@ -198,13 +238,15 @@ void main() {
       await tester.pump();
 
       // Verify playSingle was invoked with active languageCode: 'hoc'
-      verify(() => mockPlayback.playSingle(
-        id: 'https://example.com/audio_a.mp3',
-        contentKind: 'lesson',
-        contentId: any(named: 'contentId'),
-        trackType: 'targetNormal',
-        languageCode: 'hoc',
-      )).called(1);
+      verify(
+        () => mockPlayback.playSingle(
+          id: 'https://example.com/audio_a.mp3',
+          contentKind: 'lesson',
+          contentId: any(named: 'contentId'),
+          trackType: 'targetNormal',
+          languageCode: 'hoc',
+        ),
+      ).called(1);
 
       await tester.pump(const Duration(seconds: 2));
     });

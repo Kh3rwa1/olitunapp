@@ -185,7 +185,8 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                               style: TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w600,
-                                fontFamily: widget.scriptFontFamily ?? 'OlChiki',
+                                fontFamily:
+                                    widget.scriptFontFamily ?? 'OlChiki',
                                 color: isDark
                                     ? Colors.white54
                                     : AppColors.webSlate,

@@ -63,35 +63,38 @@ void main() {
       expect(SantaliNumbers.toNumeral(21, 'en'), '21');
     });
 
-    test('pronunciation generates authentic Santali pronunciations across scripts', () {
-      // 1 (Mit)
-      expect(SantaliNumbers.pronunciation(1, 'bn'), 'মিৎ');
-      expect(SantaliNumbers.pronunciation(1, 'hi'), 'मित');
-      expect(SantaliNumbers.pronunciation(1, 'or'), 'ମିତ୍');
-      expect(SantaliNumbers.pronunciation(1, 'en'), 'Mit');
-      expect(SantaliNumbers.pronunciation(1, 'sat'), 'ᱢᱤᱫ');
+    test(
+      'pronunciation generates authentic Santali pronunciations across scripts',
+      () {
+        // 1 (Mit)
+        expect(SantaliNumbers.pronunciation(1, 'bn'), 'মিৎ');
+        expect(SantaliNumbers.pronunciation(1, 'hi'), 'मित');
+        expect(SantaliNumbers.pronunciation(1, 'or'), 'ମିତ୍');
+        expect(SantaliNumbers.pronunciation(1, 'en'), 'Mit');
+        expect(SantaliNumbers.pronunciation(1, 'sat'), 'ᱢᱤᱫ');
 
-      // 10 (Gel)
-      expect(SantaliNumbers.pronunciation(10, 'bn'), 'গেল');
-      expect(SantaliNumbers.pronunciation(10, 'hi'), 'गेल');
-      expect(SantaliNumbers.pronunciation(10, 'or'), 'ଗେଲ୍');
-      expect(SantaliNumbers.pronunciation(10, 'en'), 'Gel');
-      expect(SantaliNumbers.pronunciation(10, 'sat'), 'ᱜᱮᱞ');
+        // 10 (Gel)
+        expect(SantaliNumbers.pronunciation(10, 'bn'), 'গেল');
+        expect(SantaliNumbers.pronunciation(10, 'hi'), 'गेल');
+        expect(SantaliNumbers.pronunciation(10, 'or'), 'ଗେଲ୍');
+        expect(SantaliNumbers.pronunciation(10, 'en'), 'Gel');
+        expect(SantaliNumbers.pronunciation(10, 'sat'), 'ᱜᱮᱞ');
 
-      // 21 (Isi Mit)
-      expect(SantaliNumbers.pronunciation(21, 'bn'), 'ইসি মিৎ');
-      expect(SantaliNumbers.pronunciation(21, 'hi'), 'इसी मित');
-      expect(SantaliNumbers.pronunciation(21, 'or'), 'ଇସି ମିତ୍');
-      expect(SantaliNumbers.pronunciation(21, 'en'), 'Isi Mit');
-      expect(SantaliNumbers.pronunciation(21, 'sat'), 'ᱤᱥᱤ ᱢᱤᱫ');
+        // 21 (Isi Mit)
+        expect(SantaliNumbers.pronunciation(21, 'bn'), 'ইসি মিৎ');
+        expect(SantaliNumbers.pronunciation(21, 'hi'), 'इसी मित');
+        expect(SantaliNumbers.pronunciation(21, 'or'), 'ଇସି ମିତ୍');
+        expect(SantaliNumbers.pronunciation(21, 'en'), 'Isi Mit');
+        expect(SantaliNumbers.pronunciation(21, 'sat'), 'ᱤᱥᱤ ᱢᱤᱫ');
 
-      // 100 (Say)
-      expect(SantaliNumbers.pronunciation(100, 'bn'), 'সায়');
-      expect(SantaliNumbers.pronunciation(100, 'hi'), 'साय');
-      expect(SantaliNumbers.pronunciation(100, 'or'), 'ସାୟ୍');
-      expect(SantaliNumbers.pronunciation(100, 'en'), 'Say');
-      expect(SantaliNumbers.pronunciation(100, 'sat'), 'ᱥᱟᱭ');
-    });
+        // 100 (Say)
+        expect(SantaliNumbers.pronunciation(100, 'bn'), 'সায়');
+        expect(SantaliNumbers.pronunciation(100, 'hi'), 'साय');
+        expect(SantaliNumbers.pronunciation(100, 'or'), 'ସାୟ୍');
+        expect(SantaliNumbers.pronunciation(100, 'en'), 'Say');
+        expect(SantaliNumbers.pronunciation(100, 'sat'), 'ᱥᱟᱭ');
+      },
+    );
 
     test('teachingLanguageName formats number name and numeral correctly', () {
       // 1
@@ -112,7 +115,10 @@ void main() {
       expect(SantaliNumbers.teachingLanguageName(100, 'bn'), 'একশো (১০০)');
       expect(SantaliNumbers.teachingLanguageName(100, 'hi'), 'एक सौ (१००)');
       expect(SantaliNumbers.teachingLanguageName(100, 'or'), 'ଏକ ଶହ (୧୦୦)');
-      expect(SantaliNumbers.teachingLanguageName(100, 'en'), 'One Hundred (100)');
+      expect(
+        SantaliNumbers.teachingLanguageName(100, 'en'),
+        'One Hundred (100)',
+      );
       expect(SantaliNumbers.teachingLanguageName(100, 'sat'), 'ᱥᱟᱭ (᱑᱐᱐)');
     });
   });
@@ -196,106 +202,129 @@ void main() {
       titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
       titleLatin: 'Numbers 0-9',
       blocks: [
-        LessonBlockEntity(
-          type: 'text',
-          textOlChiki: '᱑',
-          textLatin: '1 – One',
-        ),
+        LessonBlockEntity(type: 'text', textOlChiki: '᱑', textLatin: '1 – One'),
       ],
     );
 
-    testWidgets('renders teaching language title and Santali pronunciation in Bengali', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            learnerLessonsProvider.overrideWith((ref) => const AsyncValue.data([numberLesson])),
-            learnerLessonDetailProvider('lesson_num_test').overrideWith((ref) => Future.value(numberLesson)),
-            effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier()),
-            effectiveScriptModeProvider.overrideWith((ref) => 'both'),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: LessonBlockDetailScreen(
-              lessonId: 'lesson_num_test',
-              initialBlockIndex: 0,
+    testWidgets(
+      'renders teaching language title and Santali pronunciation in Bengali',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              learnerLessonsProvider.overrideWith(
+                (ref) => const AsyncValue.data([numberLesson]),
+              ),
+              learnerLessonDetailProvider(
+                'lesson_num_test',
+              ).overrideWith((ref) => Future.value(numberLesson)),
+              effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier(),
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: LessonBlockDetailScreen(
+                lessonId: 'lesson_num_test',
+                initialBlockIndex: 0,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Top title in teaching language
-      expect(find.text('এক (১)'), findsOneWidget);
-      // Main numeral card
-      expect(find.text('᱑'), findsWidgets);
-      // Subtitle pronunciation in Bengali script
-      expect(find.text('মিৎ'), findsOneWidget);
-    });
+        // Top title in teaching language
+        expect(find.text('এক (১)'), findsOneWidget);
+        // Main numeral card
+        expect(find.text('᱑'), findsWidgets);
+        // Subtitle pronunciation in Bengali script
+        expect(find.text('মিৎ'), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders teaching language title and Santali pronunciation in Odia', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            learnerLessonsProvider.overrideWith((ref) => const AsyncValue.data([numberLesson])),
-            learnerLessonDetailProvider('lesson_num_test').overrideWith((ref) => Future.value(numberLesson)),
-            effectiveTeachingLanguageProvider.overrideWith((ref) => 'or'),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier()),
-            effectiveScriptModeProvider.overrideWith((ref) => 'both'),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: LessonBlockDetailScreen(
-              lessonId: 'lesson_num_test',
-              initialBlockIndex: 0,
+    testWidgets(
+      'renders teaching language title and Santali pronunciation in Odia',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              learnerLessonsProvider.overrideWith(
+                (ref) => const AsyncValue.data([numberLesson]),
+              ),
+              learnerLessonDetailProvider(
+                'lesson_num_test',
+              ).overrideWith((ref) => Future.value(numberLesson)),
+              effectiveTeachingLanguageProvider.overrideWith((ref) => 'or'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier(),
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: LessonBlockDetailScreen(
+                lessonId: 'lesson_num_test',
+                initialBlockIndex: 0,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Top title in teaching language
-      expect(find.text('ଏକ (୧)'), findsOneWidget);
-      // Main numeral card
-      expect(find.text('᱑'), findsWidgets);
-      // Subtitle pronunciation in Odia script
-      expect(find.text('ମିତ୍'), findsOneWidget);
-    });
+        // Top title in teaching language
+        expect(find.text('ଏକ (୧)'), findsOneWidget);
+        // Main numeral card
+        expect(find.text('᱑'), findsWidgets);
+        // Subtitle pronunciation in Odia script
+        expect(find.text('ମିତ୍'), findsOneWidget);
+      },
+    );
 
-    testWidgets('renders teaching language title and Santali pronunciation in Hindi', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            learnerLessonsProvider.overrideWith((ref) => const AsyncValue.data([numberLesson])),
-            learnerLessonDetailProvider('lesson_num_test').overrideWith((ref) => Future.value(numberLesson)),
-            effectiveTeachingLanguageProvider.overrideWith((ref) => 'hi'),
-            targetLanguageCodeProvider.overrideWith((ref) => TargetLanguageNotifier()),
-            effectiveScriptModeProvider.overrideWith((ref) => 'both'),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: LessonBlockDetailScreen(
-              lessonId: 'lesson_num_test',
-              initialBlockIndex: 0,
+    testWidgets(
+      'renders teaching language title and Santali pronunciation in Hindi',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              learnerLessonsProvider.overrideWith(
+                (ref) => const AsyncValue.data([numberLesson]),
+              ),
+              learnerLessonDetailProvider(
+                'lesson_num_test',
+              ).overrideWith((ref) => Future.value(numberLesson)),
+              effectiveTeachingLanguageProvider.overrideWith((ref) => 'hi'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier(),
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: LessonBlockDetailScreen(
+                lessonId: 'lesson_num_test',
+                initialBlockIndex: 0,
+              ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      // Top title in teaching language
-      expect(find.text('एक (१)'), findsOneWidget);
-      // Main numeral card
-      expect(find.text('᱑'), findsWidgets);
-      // Subtitle pronunciation in Devanagari script
-      expect(find.text('मित'), findsOneWidget);
-    });
+        // Top title in teaching language
+        expect(find.text('एक (१)'), findsOneWidget);
+        // Main numeral card
+        expect(find.text('᱑'), findsWidgets);
+        // Subtitle pronunciation in Devanagari script
+        expect(find.text('मित'), findsOneWidget);
+      },
+    );
   });
 
   group('NumberGridContent Widget Tests', () {
@@ -319,32 +348,39 @@ void main() {
       ],
     );
 
-    testWidgets('displays localized number name and pronunciation in Bengali mode', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            learnerNumbersProvider.overrideWith((ref) => AsyncValue.data(mockNumbers)),
-            learnerLessonsProvider.overrideWith((ref) => const AsyncValue.data([lessonWithNumber])),
-            effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
-          ],
-          child: const MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: SingleChildScrollView(
-                child: NumberGridContent(lessonId: 'lesson_with_num'),
+    testWidgets(
+      'displays localized number name and pronunciation in Bengali mode',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              learnerNumbersProvider.overrideWith(
+                (ref) => AsyncValue.data(mockNumbers),
+              ),
+              learnerLessonsProvider.overrideWith(
+                (ref) => const AsyncValue.data([lessonWithNumber]),
+              ),
+              effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: SingleChildScrollView(
+                  child: NumberGridContent(lessonId: 'lesson_with_num'),
+                ),
               ),
             ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('᱑'), findsOneWidget);
-      expect(find.text('এক (১)'), findsOneWidget);
-      expect(find.text('মিৎ'), findsOneWidget);
-      expect(find.text('ᱢᱤᱫ'), findsOneWidget);
-    });
+        expect(find.text('᱑'), findsOneWidget);
+        expect(find.text('এক (১)'), findsOneWidget);
+        expect(find.text('মিৎ'), findsOneWidget);
+        expect(find.text('ᱢᱤᱫ'), findsOneWidget);
+      },
+    );
   });
 }

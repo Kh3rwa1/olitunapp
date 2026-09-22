@@ -298,15 +298,20 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       if (hasBrowseAll && index == 0) {
                         final browseLabel = isAlphabet
                             ? (manifest.code == 'sat'
-                                ? 'Ol Chiki'
-                                : manifest.scriptName)
+                                  ? 'Ol Chiki'
+                                  : manifest.scriptName)
                             : (manifest.code == 'sat' ? 'Lekha' : 'Numbers');
                         final browseScriptLabel = isAlphabet
                             ? (manifest.code == 'sat'
-                                ? 'ᱚᱞ ᱪᱤᱠᱤ'
-                                : (manifest.scriptMetadata.nativeScriptName.isNotEmpty
-                                    ? manifest.scriptMetadata.nativeScriptName
-                                    : manifest.nativeName))
+                                  ? 'ᱚᱞ ᱪᱤᱠᱤ'
+                                  : (manifest
+                                            .scriptMetadata
+                                            .nativeScriptName
+                                            .isNotEmpty
+                                        ? manifest
+                                              .scriptMetadata
+                                              .nativeScriptName
+                                        : manifest.nativeName))
                             : (manifest.code == 'sat' ? 'ᱞᱮᱠᱷᱟ' : '1 2 3');
 
                         final cardWidget = CategoryBrowseAllCard(

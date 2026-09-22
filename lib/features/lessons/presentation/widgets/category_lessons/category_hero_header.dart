@@ -112,17 +112,17 @@ class CategoryHeroHeader extends StatelessWidget {
                             manifest != null && manifest!.code != 'sat';
                         final watermarkText = isNotSantali
                             ? (manifest!.sampleGlyphs.isNotEmpty
-                                ? manifest!.sampleGlyphs.take(2).join()
-                                : (manifest!.nativeName.isNotEmpty
-                                    ? manifest!.nativeName.characters
-                                          .take(2)
-                                          .toString()
-                                    : ''))
+                                  ? manifest!.sampleGlyphs.take(2).join()
+                                  : (manifest!.nativeName.isNotEmpty
+                                        ? manifest!.nativeName.characters
+                                              .take(2)
+                                              .toString()
+                                        : ''))
                             : (category.titleOlChiki.isNotEmpty
-                                ? category.titleOlChiki.characters
-                                      .take(3)
-                                      .toString()
-                                : 'ᱚᱞ');
+                                  ? category.titleOlChiki.characters
+                                        .take(3)
+                                        .toString()
+                                  : 'ᱚᱞ');
                         final watermarkFont = isNotSantali
                             ? manifest!.primaryFontFamily
                             : 'OlChiki';
@@ -243,7 +243,9 @@ class CategoryHeroHeader extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 17,
                                       fontWeight: FontWeight.w600,
-                                      color: Colors.white.withValues(alpha: 0.85),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
                                       letterSpacing: 1.2,
                                       fontFamily: subtitleFont,
                                     ),

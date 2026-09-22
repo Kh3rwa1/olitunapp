@@ -189,9 +189,9 @@ class LessonBlockCardContent extends ConsumerWidget {
                             color: isDark ? Colors.white : accentColor,
                             fontFamily:
                                 (cleanOlChiki.isNotEmpty ||
-                                        manifest.code != 'sat')
-                                    ? manifest.primaryFontFamily
-                                    : null,
+                                    manifest.code != 'sat')
+                                ? manifest.primaryFontFamily
+                                : null,
                             height: 1.3,
                             shadows: [
                               Shadow(

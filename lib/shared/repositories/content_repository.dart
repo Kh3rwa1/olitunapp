@@ -284,14 +284,11 @@ class ContentRepository {
               .toList();
         }
 
-        final List<ContentItem> resolvedItems;
-        if (kind == ContentKind.lesson) {
-          // If remote lessons were retrieved from the backend (admin panel),
-          // they are authoritative. Only fall back to bundled seed if remote returned nothing.
-          resolvedItems = remoteItems.isNotEmpty ? remoteItems : bundledItems;
-        } else {
-          resolvedItems = _mergeContentItems(bundledItems, remoteItems);
-        }
+        // Remote items retrieved from Appwrite are authoritative (admin edits are final).
+        // Only fall back to bundled seed if remote returned nothing.
+        final List<ContentItem> resolvedItems = remoteItems.isNotEmpty
+            ? remoteItems
+            : bundledItems;
 
         if (kind != ContentKind.lesson) {
           final cachedData = resolvedItems

@@ -7,6 +7,7 @@ import 'package:itun/features/ai_studio/data/ai_studio_service.dart';
 
 void main() {
   test('live actual Studio service translation', () async {
+    if (Platform.environment['STUDIO_LIVE_CHECK'] != 'true') return;
     HttpOverrides.global = null;
     final dir = await Directory.systemTemp.createTemp('studio-sdk-check');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -63,5 +64,5 @@ void main() {
         }
       }
     }
-  }, skip: Platform.environment['STUDIO_LIVE_CHECK'] != 'true');
+  });
 }

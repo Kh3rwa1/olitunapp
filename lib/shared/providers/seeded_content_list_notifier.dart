@@ -53,6 +53,7 @@ abstract class SeededContentListNotifier<T>
 
   /// Fetches the remote collection ordered ascending by `order`.
   Future<List<T>> fetchRemote() async {
+    if (_disposed) return [];
     final db = ref.read(appwriteDbServiceProvider);
     final data = await db.listDocuments(
       collectionId,

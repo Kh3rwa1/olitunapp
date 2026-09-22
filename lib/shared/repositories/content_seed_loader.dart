@@ -8,6 +8,7 @@ import 'package:itun/shared/models/content_item_extensions.dart';
 
 /// Loads and caches bundled seed content items from offline asset JSON files.
 class ContentSeedLoader {
+  static List<ContentItem>? _cachedBundledAllLessons;
   static List<ContentItem>? _cachedBundledSentenceLessons;
   static List<ContentItem>? _cachedBundledVocabLessons;
   static List<ContentItem>? _cachedBundledSentences;
@@ -106,16 +107,78 @@ class ContentSeedLoader {
           }
         }
 
-        allLessons.addAll(_cachedBundledSentenceLessons ?? []);
-        allLessons.addAll(_cachedBundledVocabLessons ?? []);
+        // Primary: Load comprehensive lessons.json (all 54 lessons across all categories)
+        if (_cachedBundledAllLessons == null) {
+          try {
+            final jsonStr = await rootBundle.loadString(
+              'assets/seed/lessons.json',
+            );
+            final raw = jsonDecode(jsonStr) as List<dynamic>;
+            _cachedBundledAllLessons = raw.cast<Map<String, dynamic>>().map((
+              map,
+            ) {
+              final lesson = LessonModel.fromJson(map);
+              return ContentItem(
+                id: lesson.id,
+                kind: ContentKind.lesson,
+                categoryId: lesson.categoryId,
+                title: lesson.titleLatin,
+                titleOlChiki: lesson.titleOlChiki.isNotEmpty
+                    ? lesson.titleOlChiki
+                    : null,
+                subtitle: lesson.description,
+                order: lesson.order,
+                durationSeconds: lesson.estimatedMinutes * 60,
+                blocks: lesson.blocks
+                    .asMap()
+                    .entries
+                    .map((e) => e.value.toContentBlock(e.key))
+                    .toList(),
+                isPublished: lesson.isActive,
+                updatedAt: DateTime(2026, 9, 21),
+              );
+            }).toList();
+          } catch (_) {
+            _cachedBundledAllLessons = null;
+          }
+        }
+
+        if (_cachedBundledAllLessons != null &&
+            _cachedBundledAllLessons!.isNotEmpty) {
+          allLessons.addAll(_cachedBundledAllLessons!);
+        } else {
+          allLessons.addAll(_cachedBundledSentenceLessons ?? []);
+          allLessons.addAll(_cachedBundledVocabLessons ?? []);
+        }
 
         if (categoryId != null && categoryId.isNotEmpty) {
           return allLessons.where((l) {
+            if (l.categoryId == categoryId) return true;
+            if (categoryId == 'cat_phrases' ||
+                categoryId == 'seed_phrases' ||
+                categoryId.contains('phrase') ||
+                categoryId.contains('greet')) {
+              return l.categoryId.contains('phrase') ||
+                  l.categoryId.contains('greet') ||
+                  l.id.contains('greet');
+            }
+            if (categoryId == 'cat_alphabets' ||
+                categoryId == 'seed_alphabets' ||
+                categoryId.contains('alphabet') ||
+                categoryId.contains('letter')) {
+              return l.categoryId.contains('alphabet') ||
+                  l.id.contains('alphabet');
+            }
+            if (categoryId == 'cat_numbers' ||
+                categoryId == 'seed_numbers' ||
+                categoryId.contains('number')) {
+              return l.categoryId.contains('number') || l.id.contains('number');
+            }
             if (categoryId == 'cat_sentences' ||
                 categoryId == 'seed_sentences' ||
                 categoryId.contains('sentence')) {
               return l.categoryId == 'cat_sentences' ||
-                  l.categoryId == 'seed_sentences' ||
+                  l.categoryId.contains('sentence') ||
                   l.id.contains('sentence') ||
                   l.id.contains('grammar') ||
                   l.id.contains('story');
@@ -126,8 +189,8 @@ class ContentSeedLoader {
                 categoryId.contains('vocab') ||
                 categoryId.contains('word')) {
               return l.categoryId == 'cat_vocab' ||
-                  l.categoryId == 'cat_words' ||
-                  l.categoryId == 'seed_words' ||
+                  l.categoryId.contains('vocab') ||
+                  l.categoryId.contains('word') ||
                   l.id.contains('vocab');
             }
             return l.categoryId == categoryId;

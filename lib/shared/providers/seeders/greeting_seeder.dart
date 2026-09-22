@@ -65,8 +65,8 @@ class GreetingSeeder {
           ),
           LessonBlockModel(
             type: 'text',
-            textOlChiki: 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ... ᱠᱟᱱᱟ',
-            textLatin: 'Injag njutum do ... kana – My name is ...',
+            textOlChiki: 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱯᱷᱟᱹᱜᱩᱱ ᱠᱟᱱᱟ᱾',
+            textLatin: 'Injag njutum do Phagun kana – My name is Fagun.',
           ),
           LessonBlockModel(
             type: 'text',
@@ -75,8 +75,8 @@ class GreetingSeeder {
           ),
           LessonBlockModel(
             type: 'text',
-            textOlChiki: 'ᱤᱧ ᱫᱚ ... ᱠᱷᱚᱱᱤᱧ ᱦᱮᱡ ᱠᱟᱱᱟ',
-            textLatin: 'In do ... khoninj hej kana – I am from ...',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱟᱹᱛᱩ ᱠᱷᱚᱱᱤᱧ ᱦᱮᱡ ᱠᱟᱱᱟ᱾',
+            textLatin: 'In do aatu khoninj hej kana – I am from a village.',
           ),
           LessonBlockModel(
             type: 'text',

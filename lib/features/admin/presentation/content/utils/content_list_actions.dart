@@ -14,10 +14,17 @@ class ContentListActions {
     WidgetRef ref,
     ContentKind kind, {
     String? categoryId,
+    String? itemId,
   }) {
     ref.invalidate(contentListProvider((kind, null)));
     if (categoryId != null && categoryId.isNotEmpty) {
       ref.invalidate(contentListProvider((kind, categoryId)));
+    }
+    if (itemId != null && itemId.isNotEmpty) {
+      ref.invalidate(contentDetailProvider((kind, itemId)));
+      if (kind == ContentKind.lesson) {
+        ref.invalidate(learnerLessonDetailProvider(itemId));
+      }
     }
     switch (kind) {
       case ContentKind.letter:
@@ -259,12 +266,14 @@ class ContentListActions {
     if (context.mounted) {
       onComplete();
       invalidateAllProviders(ref, kind);
-      if (kind == ContentKind.lesson) {
-        for (final item in selectedItems) {
+      for (final item in selectedItems) {
+        ref.invalidate(contentDetailProvider((kind, item.id)));
+        if (item.categoryId.isNotEmpty) {
+          ref.invalidate(contentListProvider((kind, item.categoryId)));
+        }
+        if (kind == ContentKind.lesson) {
           ref.invalidate(learnerLessonDetailProvider(item.id));
-          ref.invalidate(contentDetailProvider((kind, item.id)));
           if (item.categoryId.isNotEmpty) {
-            ref.invalidate(contentListProvider((kind, item.categoryId)));
             ref.invalidate(lessonsByCategoryProvider(item.categoryId));
           }
         }
@@ -374,11 +383,12 @@ class ContentListActions {
           }
         },
         (_) {
-          invalidateAllProviders(ref, kind, categoryId: item.categoryId);
-          if (kind == ContentKind.lesson) {
-            ref.invalidate(learnerLessonDetailProvider(item.id));
-            ref.invalidate(contentDetailProvider((kind, item.id)));
-          }
+          invalidateAllProviders(
+            ref,
+            kind,
+            categoryId: item.categoryId,
+            itemId: item.id,
+          );
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

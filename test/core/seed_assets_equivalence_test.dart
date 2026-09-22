@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// SentencesNotifier.seed().
 void main() {
   const expectedCounts = <String, int>{
+    'assets/seed/lessons.json': 54,
     'assets/seed/vocab_lessons.json': 14,
     'assets/seed/sentence_lessons.json': 23,
     'assets/seed/words.json': 415,

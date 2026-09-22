@@ -134,17 +134,27 @@ class _AdminLessonContentScreenState
       ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
       : '/admin/lessons';
 
+  Completer<void>? _saveCompleter;
+
   Future<void> _navigateBack() async {
-    if (_hasChanges) {
-      _autoSaveTimer?.cancel();
+    _autoSaveTimer?.cancel();
+    if (_hasChanges || _isSaving) {
       await _saveChanges();
     }
     if (mounted) context.go(_backRoute);
   }
 
   Future<void> _saveChanges() async {
-    if (_contentItem == null || _isSaving) return;
+    if (_contentItem == null) return;
+    if (_isSaving) {
+      await _saveCompleter?.future;
+      if (_hasChanges) {
+        return _saveChanges();
+      }
+      return;
+    }
 
+    _saveCompleter = Completer<void>();
     setState(() => _isSaving = true);
     _changedDuringSave = false;
 
@@ -245,6 +255,9 @@ class _AdminLessonContentScreenState
           ),
         );
       }
+    } finally {
+      _saveCompleter?.complete();
+      _saveCompleter = null;
     }
   }
 

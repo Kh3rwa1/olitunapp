@@ -214,8 +214,8 @@
   {
     "id": "lesson_alphabet_0",
     "categoryId": "cat_alphabets_1778594017948",
-    "titleOlChiki": "ᱚᱞ ᱪᱤᱠᱤ ᱢᱩᱞ",
-    "titleLatin": "Basics of Ol Chiki",
+    "titleOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ (ᱢᱩᱞ ᱖ ᱜᱚᱴᱟᱝ)",
+    "titleLatin": "The 6 Vowels (Raha Arang)",
     "level": "beginner",
     "orderIndex": 0,
     "isActive": true,
@@ -226,40 +226,151 @@
     "audioUrl": null,
     "blocks": [
       {
-        "id": "",
+        "id": "blk_0",
         "order": 0,
         "type": "text",
-        "markdown": "Ol Chiki is the writing system for the Santali language",
-        "textOlChiki": "ᱚᱞ ᱪᱤᱠᱤ",
-        "textLatin": "Ol Chiki is the writing system for the Santali language",
-        "meta": {}
+        "markdown": "Ol Chiki has 6 basic vowels called Raha Arang (ᱨᱟᱦᱟ ᱟᱲᱟᱝ).",
+        "textOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ ᱫᱚ ᱛᱩᱨᱩᱭ ᱜᱚᱴᱟᱝ ᱢᱮᱱᱟᱜᱼᱟ᱾",
+        "textLatin": "Ol Chiki has 6 basic vowels called Raha Arang (ᱨᱟᱦᱟ ᱟᱲᱟᱝ).",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_alphabet_0_intro/view?project=699495910038e39622c5",
+        "meta": {
+          "textBengali": "রাহা আড়াং দ তুরুয় গটাং মেনাঃ-আ।",
+          "textHindi": "राहा आड़ांग द तुरुय गोटांग मेनाग-आ।",
+          "textOdia": "ରାହା ଆଡ଼ାଙ୍ଗ ଦ ତୁରୁୟ ଗଟାଙ୍ଗ ମେନାଗ-ଆ।",
+          "pronunciation": "Raha arang do turuy gotang menag-a.",
+          "meaning": "There are 6 basic vowels in Ol Chiki.",
+          "meaning_en": "There are 6 basic vowels in Ol Chiki.",
+          "meaning_bn": "অল চিকিতে মূল ৬টি স্বরবর্ণ রয়েছে।",
+          "meaning_hi": "ओल चिकी में मूल ६ स्वर वर्ण हैं।",
+          "meaning_or": "ଅଲ ଚିକିରେ ମୂଳ ୬ଟି ସ୍ୱରବର୍ଣ୍ଣ ରହିଛି।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_alphabet_0_intro/view?project=699495910038e39622c5"
+        }
       },
       {
-        "id": "",
+        "id": "blk_1",
         "order": 1,
         "type": "text",
-        "markdown": "Letter \"a\" – the first letter of Ol Chiki",
-        "textOlChiki": "ᱚ",
-        "textLatin": "Letter \"a\" – the first letter of Ol Chiki",
-        "meta": {}
+        "markdown": "ᱚ (a)– as in ᱚᱞ",
+        "textOlChiki": "ᱚ - ᱚᱞ",
+        "textLatin": "ᱚ (a)– as in ᱚᱞ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250190a7f82535f27/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250190a7f82535f27/view?project=699495910038e39622c5",
+          "textBengali": "অ - অল (লেখা )",
+          "textHindi": "अ - अल",
+          "textOdia": "ଅ - ଅଲ",
+          "pronunciation": "ᱚ (a)– as in ᱚᱞ",
+          "meaning": "Vowel ᱚ (a), as in ᱚᱞ (Ol: To write)",
+          "meaning_en": "Vowel ᱚ (a), as in ᱚᱞ (Ol: To write)",
+          "meaning_bn": "স্বরবর্ণ ᱚ (ল), যেমন ᱚᱞ (অল: লেখা )",
+          "meaning_hi": "स्वर ᱚ (ल), जैसे ᱚᱞ (ओल: लिखना)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱚ (ଲ), ଯେପରି ᱚᱞ (ଅଲ୍: ଲେଖିବା )"
+        }
       },
       {
-        "id": "",
+        "id": "blk_2",
         "order": 2,
         "type": "text",
-        "markdown": "Letter \"at\" – used in words like ᱛᱟᱞᱟ (below)",
-        "textOlChiki": "ᱛ",
-        "textLatin": "Letter \"at\" – used in words like ᱛᱟᱞᱟ (below)",
-        "meta": {}
+        "markdown": "ᱟ (aa) – as in ᱟᱭᱳ",
+        "textOlChiki": "ᱟ - ᱟᱭᱳ",
+        "textLatin": "ᱟ (aa) – as in ᱟᱭᱳ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225105a16085db8931/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225105a16085db8931/view?project=699495910038e39622c5",
+          "textBengali": "আ - আয়ো",
+          "textHindi": "आ - आयो",
+          "textOdia": "ଆ - ଆୟୋ",
+          "pronunciation": "ᱟ (aa) – as in ᱟᱭᱳ",
+          "meaning": "Vowel ᱟ (aa), as in ᱟᱭᱳ (Ayo: Mother)",
+          "meaning_en": "Vowel ᱟ (aa), as in ᱟᱭᱳ (Ayo: Mother)",
+          "meaning_bn": "স্বরবর্ণ ᱟ (আ), যেমন ᱟᱭᱳ (আয়ো: মা)",
+          "meaning_hi": "स्वर ᱟ  जैसे ᱟᱭᱳ (आयो: माँ)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱟ,  ଯେପରି ᱟୟୋ (ଆୟୋ: ମାଆ)"
+        }
       },
       {
-        "id": "",
+        "id": "blk_3",
         "order": 3,
         "type": "text",
-        "markdown": "Practice: Combine ᱚ + ᱛ to form \"at\"",
-        "textOlChiki": "ᱚᱛ",
-        "textLatin": "Practice: Combine ᱚ + ᱛ to form \"at\"",
-        "meta": {}
+        "markdown": "ᱤ (I) – as in ᱤᱧ",
+        "textOlChiki": "ᱤ - ᱤᱧ",
+        "textLatin": "ᱤ (I) – as in ᱤᱧ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251b5cfc383d059c4/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251b5cfc383d059c4/view?project=699495910038e39622c5",
+          "textBengali": "ই - ইঞ",
+          "textHindi": "इ - इञ",
+          "textOdia": "ଇ - ଇଞ",
+          "pronunciation": "ᱤ (I) – as in ᱤᱧ",
+          "meaning": "Vowel ᱤ (i), as in ᱤᱧ (Iny: I / Me)",
+          "meaning_en": "Vowel ᱤ (i), as in ᱤᱧ (Iny: I / Me)",
+          "meaning_bn": "স্বরবর্ণ ᱤ (ই), যেমন ᱤᱧ (ইঞ: আমি)",
+          "meaning_hi": "स्वर ᱤ (लि), जैसे ᱤᱧ (इञ: मैं)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱤ (ଲି), ଯେପରି ᱤଞ (ମୁଁ)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱩ (u) – as in ᱩᱞ",
+        "textOlChiki": "ᱩ - ᱩᱞ",
+        "textLatin": "ᱩ (u) – as in ᱩᱞ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22525a21ef8b1b0c78/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22525a21ef8b1b0c78/view?project=699495910038e39622c5",
+          "textBengali": "উ - উল",
+          "textHindi": "उ - उल",
+          "textOdia": "ଉ - ଉଲ",
+          "pronunciation": "ᱩ (u) – as in ᱩᱞ",
+          "meaning": "Vowel ᱩ (u), as in ᱩᱞ (Ul: Mango)",
+          "meaning_en": "Vowel ᱩ (u), as in ᱩᱞ (Ul: Mango)",
+          "meaning_bn": "স্বরবর্ণ ᱩ (লউ), যেমন ᱩᱞ (উল: আম)",
+          "meaning_hi": "स्वर ᱩ (लु), जैसे ᱩᱞ (उल: आम)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱩ (ଲୁ), ଯେପରି ଉଲ୍ (ଆମ୍ବ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱮ (E) – as in ᱮᱱᱮᱡ",
+        "textOlChiki": "ᱮ - ᱮᱱᱮᱡ",
+        "textLatin": "ᱮ (E) – as in ᱮᱱᱮᱡ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252dc708c86888ec6/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252dc708c86888ec6/view?project=699495910038e39622c5",
+          "textBengali": "এ - এনেজ",
+          "textHindi": "ए - एनेज",
+          "textOdia": "ଏ - ଏନେଜ",
+          "pronunciation": "ᱮ (e) – as in ᱮᱱᱮᱡ",
+          "meaning": "Vowel ᱮ (E) as in ᱮᱱᱮᱡ (Enej: Dance)",
+          "meaning_en": "Vowel ᱮ (E) as in ᱮᱱᱮᱡ (Enej: Dance)",
+          "meaning_bn": "স্বরবর্ণ ᱮ (এ), যেমন ᱮᱱᱮᱡ (এনেজ: নাচ)",
+          "meaning_hi": "स्वर ᱮ , जैसे ᱮᱱᱮᱡ (एनेज: नाचना / नृत्य)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱮ, ଯେପରି ଏନେଜ୍ (ନାଚିବା)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+        "textOlChiki": "ᱳ - ᱳᱲᱟᱜ",
+        "textLatin": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2259f209c40c851e46/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2259f209c40c851e46/view?project=699495910038e39622c5",
+          "textBengali": "ও - ওড়াঃ",
+          "textHindi": "ओ - ओड़ाग",
+          "textOdia": "ଓ - ଓଡ଼ାଗ",
+          "pronunciation": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+          "meaning": "Vowel ᱳ (O), as in ᱳᱲᱟᱜ (Orag: House / Home)",
+          "meaning_en": "Vowel ᱳ (O), as in ᱳᱲᱟᱜ (Orag: House / Home)",
+          "meaning_bn": "স্বরবর্ণ ᱳ (ও), যেমন ᱳᱲᱟᱜ (ওড়াঃ: ঘর / বাড়ি)",
+          "meaning_hi": "स्वर ᱳ (O), जैसे ᱳᱲᱟᱜ (ओड़ाग: घर / मकान)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ଓ (O), ଯେପରି ଓଡ଼ାଗ୍ (ଘର)"
+        }
       }
     ],
     "order": 0,
@@ -268,7 +379,7 @@
     "heroPosterUrl": null,
     "hero_media": null,
     "tracing": null,
-    "isPreview": null
+    "isPreview": false
   },
   {
     "id": "lesson_sentences_basics",
@@ -2766,9 +2877,9 @@
         "markdown": "Hasa rong – Brown / Mud color",
         "textOlChiki": "ᱦᱟᱥᱟ ᱨᱚᱝ",
         "textLatin": "Hasa rong – Brown / Mud color",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_6/view?project=699495910038e39622c5",
           "textBengali": "হাসা রং",
           "textHindi": "हासा रङ",
           "textOdia": "ହାସା ରଙ",
@@ -2794,9 +2905,9 @@
         "markdown": "Gulap – Pink",
         "textOlChiki": "ᱜᱩᱞᱟᱹᱯ",
         "textLatin": "Gulap – Pink",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_7/view?project=699495910038e39622c5",
           "textBengali": "গুলাপ",
           "textHindi": "गुलाप",
           "textOdia": "ଗୁଲାପ",
@@ -2822,9 +2933,9 @@
         "markdown": "Kuyla – Charcoal / Deep black",
         "textOlChiki": "ᱠᱩᱭᱞᱟᱹ ᱨᱚᱝ",
         "textLatin": "Kuyla – Charcoal / Deep black",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_8/view?project=699495910038e39622c5",
           "textBengali": "কুয়লা",
           "textHindi": "कुयला रङ",
           "textOdia": "କୁୟଲା ରଙ",
@@ -2850,9 +2961,9 @@
         "markdown": "Chando rong/Rupali – Moon color/silver",
         "textOlChiki": "ᱪᱟᱸᱫᱚ ᱨᱚᱝ/ᱨᱩᱯᱟᱹᱞᱤ",
         "textLatin": "Chando rong/Rupali – Moon color/silver",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_9/view?project=699495910038e39622c5",
           "textBengali": "চাঁদ রং/রুপালি",
           "textHindi": "चाँद रङ/रुपालि",
           "textOdia": "ଚାଁଦ ରଙ/ରୁପାଲି",
@@ -2878,9 +2989,9 @@
         "markdown": "Sengel rong – Orange / Fire color",
         "textOlChiki": "ᱥᱮᱸᱜᱮᱞ ᱨᱚᱝ",
         "textLatin": "Sengel rong – Orange / Fire color",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_10/view?project=699495910038e39622c5",
           "textBengali": "সেঁগেল রং",
           "textHindi": "सेँगेल रङ",
           "textOdia": "ସେଁଗେଲ ରଙ",
@@ -2906,9 +3017,9 @@
         "markdown": "Sakam rong – Leaf green",
         "textOlChiki": "ᱥᱟᱠᱟᱢ ᱨᱚᱝ",
         "textLatin": "Sakam rong – Leaf green",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_11/view?project=699495910038e39622c5",
           "textBengali": "সাকাম রং",
           "textHindi": "साकाम रङ",
           "textOdia": "ସାକାମ ରଙ",
@@ -2934,9 +3045,9 @@
         "markdown": "Serma rong – Sky blue",
         "textOlChiki": "ᱥᱮᱨᱢᱟ ᱨᱚᱝ",
         "textLatin": "Serma rong – Sky blue",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_12/view?project=699495910038e39622c5",
           "textBengali": "সেরমা রং",
           "textHindi": "सेरमा रङ",
           "textOdia": "ସେରମା ରଙ",
@@ -2962,9 +3073,9 @@
         "markdown": "Chomok– Shiny / Bright",
         "textOlChiki": "ᱪᱚᱢᱚᱠ",
         "textLatin": "Chomok– Shiny / Bright",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_colors_13/view?project=699495910038e39622c5",
           "textBengali": "চমকাওয়",
           "textHindi": "चमक",
           "textOdia": "ଚମକ",
@@ -3546,8 +3657,10 @@
           "meaning_en": "Moon",
           "meaning_bn": "চাঁদ",
           "meaning_hi": "चाँद",
-          "meaning_or": "ଚନ୍ଦ୍ର"
-        }
+          "meaning_or": "ଚନ୍ଦ୍ର",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_20/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_20/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_21",
@@ -3565,8 +3678,10 @@
           "meaning_en": "Crocodile",
           "meaning_bn": "কুমির",
           "meaning_hi": "मगरमच्छ",
-          "meaning_or": "କୁମ୍ଭୀର"
-        }
+          "meaning_or": "କୁମ୍ଭୀର",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_21/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_21/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_22",
@@ -3584,8 +3699,10 @@
           "meaning_en": "Garden Lizard",
           "meaning_bn": "কাকলাস/রক্তচোষা",
           "meaning_hi": "गिरगिट",
-          "meaning_or": "ଏଣ୍ଡୁଅ"
-        }
+          "meaning_or": "ଏଣ୍ଡୁଅ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_22/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_22/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_23",
@@ -3603,8 +3720,10 @@
           "meaning_en": "House lizard",
           "meaning_bn": "টিকটিকি",
           "meaning_hi": "छिपकली",
-          "meaning_or": "ଝିଟିପିଟି"
-        }
+          "meaning_or": "ଝିଟିପିଟି",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_23/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_23/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_24",
@@ -3622,8 +3741,10 @@
           "meaning_en": "Chameleon",
           "meaning_bn": "বহুরূপী",
           "meaning_hi": "गिरगिट",
-          "meaning_or": "ବହୁରୂପୀ କିମ୍ବା ଏଣ୍ଡୁଅ"
-        }
+          "meaning_or": "ବହୁରୂପୀ କିମ୍ବା ଏଣ୍ଡୁଅ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_24/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_24/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_25",
@@ -3641,8 +3762,10 @@
           "meaning_en": "Fox",
           "meaning_bn": "শিয়াল /খেঁকশিয়াল",
           "meaning_hi": "लोमड़ी",
-          "meaning_or": "ବିଲୁଆ  କିମ୍ବା ଶିଆଳ"
-        }
+          "meaning_or": "ବିଲୁଆ  କିମ୍ବା ଶିଆଳ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_25/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_25/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_26",
@@ -3660,8 +3783,10 @@
           "meaning_en": "Ant",
           "meaning_bn": "পিঁপড়ে",
           "meaning_hi": "चींटी",
-          "meaning_or": "ପିମ୍ପୁଡ଼ି"
-        }
+          "meaning_or": "ପିମ୍ପୁଡ଼ି",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_26/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_nature_26/view?project=699495910038e39622c5"
       }
     ],
     "order": 0,
@@ -4262,8 +4387,10 @@
           "meaning_en": "Saturday",
           "meaning_bn": "শনিবার",
           "meaning_hi": "शनिवार",
-          "meaning_or": "ଶନିବାର"
-        }
+          "meaning_or": "ଶନିବାର",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_20/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_20/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_21",
@@ -4280,8 +4407,10 @@
           "meaning_en": "Autumn",
           "meaning_bn": "শরৎকাল",
           "meaning_hi": "शरद ऋतु",
-          "meaning_or": "ଶରତ ଋତୁ"
-        }
+          "meaning_or": "ଶରତ ଋତୁ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_21/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_21/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_22",
@@ -4299,8 +4428,10 @@
           "meaning_en": "Pre winter",
           "meaning_bn": "হেমন্ত কাল",
           "meaning_hi": "हेमंत ऋतु",
-          "meaning_or": "ହେମନ୍ତ"
-        }
+          "meaning_or": "ହେମନ୍ତ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_22/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_22/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_23",
@@ -4318,8 +4449,10 @@
           "meaning_en": "Spring",
           "meaning_bn": "বসন্ত কাল",
           "meaning_hi": "बसंत ऋतु",
-          "meaning_or": "ବସନ୍ତ"
-        }
+          "meaning_or": "ବସନ୍ତ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_23/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_23/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_24",
@@ -4337,8 +4470,10 @@
           "meaning_en": "Jan-Feb",
           "meaning_bn": "মাঘ মাস",
           "meaning_hi": "माघ",
-          "meaning_or": "ମାଘ"
-        }
+          "meaning_or": "ମାଘ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_24/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_24/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_25",
@@ -4356,8 +4491,10 @@
           "meaning_en": "February – March",
           "meaning_bn": "ফাল্গুন",
           "meaning_hi": "फाल्गुन / फागुन",
-          "meaning_or": "ଫାଲ୍ଗୁନ / ଫଗୁଣ"
-        }
+          "meaning_or": "ଫାଲ୍ଗୁନ / ଫଗୁଣ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_25/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_25/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_26",
@@ -4375,8 +4512,10 @@
           "meaning_en": "March – April",
           "meaning_bn": "চৈত্র",
           "meaning_hi": "चैत्र",
-          "meaning_or": "ଚୈତ୍ର"
-        }
+          "meaning_or": "ଚୈତ୍ର",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_26/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_26/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_27",
@@ -4394,8 +4533,10 @@
           "meaning_en": "April – May",
           "meaning_bn": "বৈশাখ",
           "meaning_hi": "वैशाख",
-          "meaning_or": "ବୈଶାଖ"
-        }
+          "meaning_or": "ବୈଶାଖ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_27/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_27/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_28",
@@ -4413,8 +4554,10 @@
           "meaning_en": "May – June",
           "meaning_bn": "জৈষ্ঠ্য",
           "meaning_hi": "ज्येष्ठ मास",
-          "meaning_or": "ଜ୍ୟେଷ୍ଠ ମାସ"
-        }
+          "meaning_or": "ଜ୍ୟେଷ୍ଠ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_28/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_28/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_29",
@@ -4432,8 +4575,10 @@
           "meaning_en": "June – July",
           "meaning_bn": "আষাড় মাস",
           "meaning_hi": "आषाढ़ मास",
-          "meaning_or": "ଆଷାଢ଼ ମାସ"
-        }
+          "meaning_or": "ଆଷାଢ଼ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_29/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_29/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_30",
@@ -4451,8 +4596,10 @@
           "meaning_en": "July – August",
           "meaning_bn": "শ্রাবণ মাস",
           "meaning_hi": "श्रावण मास",
-          "meaning_or": "ଶ୍ରାବଣ ମାସ"
-        }
+          "meaning_or": "ଶ୍ରାବଣ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_30/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_30/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_31",
@@ -4470,8 +4617,10 @@
           "meaning_en": "August – September",
           "meaning_bn": "ভাদ্র মাস",
           "meaning_hi": "भाद्रपद मास / भादो मास",
-          "meaning_or": "ଭାଦ୍ରବ ମାସ"
-        }
+          "meaning_or": "ଭାଦ୍ରବ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_31/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_31/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_32",
@@ -4489,8 +4638,10 @@
           "meaning_en": "September – October",
           "meaning_bn": "আশ্বিন",
           "meaning_hi": "आश्विन मास / क्वार मास",
-          "meaning_or": "ଆଶ୍ୱିନ ମାସ"
-        }
+          "meaning_or": "ଆଶ୍ୱିନ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_32/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_32/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_33",
@@ -4508,8 +4659,10 @@
           "meaning_en": "October – November",
           "meaning_bn": "কার্তিক মাস",
           "meaning_hi": "कार्तिक मास",
-          "meaning_or": "କାର୍ତ୍ତିକ ମାସ"
-        }
+          "meaning_or": "କାର୍ତ୍ତିକ ମାସ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_33/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_33/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_34",
@@ -4527,8 +4680,10 @@
           "meaning_en": "November – December",
           "meaning_bn": "অগ্রহায়ণ",
           "meaning_hi": "अग्रहायण/अघन",
-          "meaning_or": "ମାର୍ଗଶୀର"
-        }
+          "meaning_or": "ମାର୍ଗଶୀର",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_34/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_34/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_35",
@@ -4546,8 +4701,10 @@
           "meaning_en": "December – January",
           "meaning_bn": "পৌষ মাস",
           "meaning_hi": "पौष",
-          "meaning_or": "ପୌଷ/ପୁଷ"
-        }
+          "meaning_or": "ପୌଷ/ପୁଷ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_35/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_time_35/view?project=699495910038e39622c5"
       }
     ],
     "order": 0,
@@ -5857,9 +6014,9 @@
         "markdown": "Seta jhali leka – Entangled in trouble / Trapped",
         "textOlChiki": "ᱥᱮᱛᱟ ᱡᱷᱟᱹᱞᱤ ᱞᱮᱠᱟ",
         "textLatin": "Seta jhali leka – Entangled in trouble / Trapped",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_4/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_3/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_4/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_3/view?project=699495910038e39622c5",
           "textBengali": "সেতা ঝালি লেকা",
           "textHindi": "सेता झालि लेका",
           "textOdia": "ସେତା ଝାଲି ଲେକା",
@@ -5885,9 +6042,9 @@
         "markdown": "Manmi jiwi – Human life",
         "textOlChiki": "ᱢᱟᱹᱱᱢᱤ ᱡᱤᱣᱤ",
         "textLatin": "Manmi jiwi – Human life",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_5/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_5/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_4/view?project=699495910038e39622c5",
           "textBengali": "মানমি জিওয়ি",
           "textHindi": "मानमि जिवि",
           "textOdia": "ମାନମି ଜିୱି",
@@ -5913,9 +6070,9 @@
         "markdown": "Man sarhaw – Respect and praise",
         "textOlChiki": "ᱢᱟᱹᱱ ᱥᱟᱨᱦᱟᱣ",
         "textLatin": "Man sarhaw – Respect and praise",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_6/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_5/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_6/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_5/view?project=699495910038e39622c5",
           "textBengali": "মান সারহাওয়",
           "textHindi": "मान सारहाव",
           "textOdia": "ମାନ ସାରହାୱ",
@@ -5941,9 +6098,9 @@
         "markdown": "Langde – Traditional Santal dance",
         "textOlChiki": "ᱞᱟᱜᱽᱬᱮ",
         "textLatin": "Langde – Traditional Santal dance",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_6/view?project=699495910038e39622c5",
           "textBengali": "লাগণে",
           "textHindi": "लागणे",
           "textOdia": "ଲାଗଣେ",
@@ -5969,9 +6126,9 @@
         "markdown": "Dong – Marriage dance and song genre",
         "textOlChiki": "ᱫᱚᱝ",
         "textLatin": "Dong – Marriage dance and song genre",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_7/view?project=699495910038e39622c5",
           "textBengali": "দং",
           "textHindi": "दङ",
           "textOdia": "ଦଙ",
@@ -5997,9 +6154,9 @@
         "markdown": "Tumdag – Clay drum / Madal",
         "textOlChiki": "ᱛᱩᱢᱫᱟᱜ",
         "textLatin": "Tumdag – Clay drum / Madal",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_9/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_9/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_8/view?project=699495910038e39622c5",
           "textBengali": "তুমদাঃ",
           "textHindi": "तुमदाः",
           "textOdia": "ତୁମଦାଃ",
@@ -6025,9 +6182,9 @@
         "markdown": "Tamak – Kettle drum",
         "textOlChiki": "ᱴᱟᱢᱟᱠ",
         "textLatin": "Tamak – Kettle drum",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_9/view?project=699495910038e39622c5",
           "textBengali": "টামাক",
           "textHindi": "टामाक",
           "textOdia": "ଟାମାକ",
@@ -6053,9 +6210,9 @@
         "markdown": "Banam – Traditional single-stringed fiddle",
         "textOlChiki": "ᱵᱟᱱᱟᱢ",
         "textLatin": "Banam – Traditional single-stringed fiddle",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_10/view?project=699495910038e39622c5",
           "textBengali": "বানাম",
           "textHindi": "बानाम",
           "textOdia": "ବାନାମ",
@@ -6081,9 +6238,9 @@
         "markdown": "Tiryo – Bamboo flute",
         "textOlChiki": "ᱛᱤᱨᱭᱳ",
         "textLatin": "Tiryo – Bamboo flute",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_11/view?project=699495910038e39622c5",
           "textBengali": "তিরয়ো",
           "textHindi": "तिरयो",
           "textOdia": "ତିରୟୋ",
@@ -6109,9 +6266,9 @@
         "markdown": "Sarjom – Sal tree (sacred to Santals)",
         "textOlChiki": "ᱥᱟᱨᱡᱚᱢ",
         "textLatin": "Sarjom – Sal tree (sacred to Santals)",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_12/view?project=699495910038e39622c5",
           "textBengali": "সারজম",
           "textHindi": "सारजम",
           "textOdia": "ସାରଜମ",
@@ -6137,9 +6294,9 @@
         "markdown": "Matkam – Mahua",
         "textOlChiki": "ᱢᱟᱛᱠᱚᱢ",
         "textLatin": "Matkam – Mahua",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_13/view?project=699495910038e39622c5",
           "textBengali": "মাতকম",
           "textHindi": "मातकम",
           "textOdia": "ମାତକମ",
@@ -6165,9 +6322,9 @@
         "markdown": "Johar katha – Welcoming words",
         "textOlChiki": "ᱡᱚᱦᱟᱨ ᱠᱟᱛᱷᱟ",
         "textLatin": "Johar katha – Welcoming words",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_15/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_15/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_14/view?project=699495910038e39622c5",
           "textBengali": "জহার কাথা",
           "textHindi": "जहार काथा",
           "textOdia": "ଜହାର କାଥା",
@@ -6193,9 +6350,9 @@
         "markdown": "Kulhi – Village street",
         "textOlChiki": "ᱠᱩᱞᱦᱤ",
         "textLatin": "Kulhi – Village street",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_15/view?project=699495910038e39622c5",
           "textBengali": "কুলহি",
           "textHindi": "कुलहि",
           "textOdia": "କୁଲହି",
@@ -6221,9 +6378,9 @@
         "markdown": "Jaher than – Sacred place of Santhal",
         "textOlChiki": "ᱡᱟᱦᱮᱨ ᱛᱷᱟᱱ",
         "textLatin": "Jaher than – Sacred place of Santhal",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_16/view?project=699495910038e39622c5",
           "textBengali": "জাহের থান",
           "textHindi": "जाहेर थान",
           "textOdia": "ଜାହେର ଥାନ",
@@ -6249,9 +6406,9 @@
         "markdown": "Majhi than",
         "textOlChiki": "ᱢᱟᱡᱷᱤ ᱛᱷᱟᱱ",
         "textLatin": "Majhi than",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_17/view?project=699495910038e39622c5",
           "textBengali": "মাঝি থান",
           "textHindi": "माझि थान",
           "textOdia": "ମାଝି ଥାନ",
@@ -6277,9 +6434,9 @@
         "markdown": "Atu hor – Villagers",
         "textOlChiki": "ᱟᱹᱛᱩ ᱦᱚᱲ",
         "textLatin": "Atu hor – Villagers",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_18/view?project=699495910038e39622c5",
           "textBengali": "আতু হড়",
           "textHindi": "आतु हड़",
           "textOdia": "ଆତୁ ହଡ଼",
@@ -6305,9 +6462,9 @@
         "markdown": "Haram budhi – Ancestors / Old couple",
         "textOlChiki": "ᱦᱟᱲᱟᱢ ᱵᱩᱰᱷᱤ",
         "textLatin": "Haram budhi – Ancestors / Old couple",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_20/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_20/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_19/view?project=699495910038e39622c5",
           "textBengali": "হাড়াম বুঢি",
           "textHindi": "हाड़ाम बुढि",
           "textOdia": "ହାଡ଼ାମ ବୁଢି",
@@ -6333,9 +6490,9 @@
         "markdown": "Daka utu – Rice and curry / Meal",
         "textOlChiki": "ᱫᱟᱠᱟ ᱩᱛᱩ",
         "textLatin": "Daka utu – Rice and curry / Meal",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_20/view?project=699495910038e39622c5",
           "textBengali": "দাকা উতু",
           "textHindi": "दाका उतु",
           "textOdia": "ଦାକା ଉତୁ",
@@ -6370,8 +6527,10 @@
           "pronunciation": "Hor bharsa tumba rasa.",
           "meaning_hi": "कभी किसी पर निर्भर मत रहो-  दूसरों पर ज्यादा भरोसा नहीं करना चाहिए, भरोसा बहुत जल्दी टूट जाता है।",
           "meaning_or": "କେବେବି କାହା ଉପରେ ନିର୍ଭର କର ନାହିଁ- ଅନ୍ୟ ଉପରେ ଅଧିକ ଭରସା କରିବା ଉଚିତ୍ ନୁହେଁ, ଭରସା ବହୁତ ଶୀଘ୍ର ଭାଙ୍ଗିଯାଏ।",
-          "meaning_bn": "কখনো কারো উপর নির্ভর কোরো না।"
-        }
+          "meaning_bn": "কখনো কারো উপর নির্ভর কোরো না।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_21/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_21/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_22",
@@ -6389,8 +6548,10 @@
           "meaning_en": "Sorrow is the true companion-Without experiencing sorrow, you can never know joy.",
           "meaning_bn": "দুঃখ অনুভব না করলে, তুমি কখনোই আনন্দকে চিনতে পারবে না।",
           "meaning_hi": "दुःख ही सच्चा साथी है-बिना दुःख का अनुभव किए, आप कभी सुख को नहीं जान सकते।",
-          "meaning_or": "ଦୁଃଖ ହିଁ ପ୍ରକୃତ ସାଥୀ।-ଦୁଃଖ ଅନୁଭବ ନ କଲେ, ତୁମେ କେବେବି ସୁଖକୁ ଜାଣିପାରିବ ନାହିଁ।"
-        }
+          "meaning_or": "ଦୁଃଖ ହିଁ ପ୍ରକୃତ ସାଥୀ।-ଦୁଃଖ ଅନୁଭବ ନ କଲେ, ତୁମେ କେବେବି ସୁଖକୁ ଜାଣିପାରିବ ନାହିଁ।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_22/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_idioms_intermediate_22/view?project=699495910038e39622c5"
       }
     ],
     "order": 0,
@@ -7145,9 +7306,9 @@
         "markdown": "Luti laraw – Chatting / Gossip",
         "textOlChiki": "ᱞᱩᱴᱤ ᱞᱟᱲᱟᱣ",
         "textLatin": "Luti laraw – Chatting / Gossip",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_4/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_3/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_4/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_3/view?project=699495910038e39622c5",
           "textBengali": "লুটি লাড়াওয়",
           "textHindi": "लुटि लाड़ाव",
           "textOdia": "ଲୁଟି ଲାଡ଼ାୱ",
@@ -7173,9 +7334,9 @@
         "markdown": "Katha kirinj – Buying words / Accepting advice",
         "textOlChiki": "ᱠᱟᱛᱷᱟ ᱠᱤᱨᱤᱧ",
         "textLatin": "Katha kirinj – Buying words / Accepting advice",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_5/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_5/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_4/view?project=699495910038e39622c5",
           "textBengali": "কাথা কিরিঞ",
           "textHindi": "काथा किरिञ",
           "textOdia": "କାଥା କିରିଞ",
@@ -7201,9 +7362,9 @@
         "markdown": "Jiwi lo – Heartburn / Jealousy",
         "textOlChiki": "ᱡᱤᱣᱤ ᱞᱚ",
         "textLatin": "Jiwi lo – Heartburn / Jealousy",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_6/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_5/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_6/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_5/view?project=699495910038e39622c5",
           "textBengali": "জিওয়ি ল",
           "textHindi": "जिवि ल",
           "textOdia": "ଜିୱି ଲ",
@@ -7229,9 +7390,9 @@
         "markdown": "Mone ol – Writing on heart / Deeply remembering",
         "textOlChiki": "ᱢᱚᱱᱮ ᱚᱞ",
         "textLatin": "Mone ol – Writing on heart / Deeply remembering",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_6/view?project=699495910038e39622c5",
           "textBengali": "মনে অল",
           "textHindi": "मने अल",
           "textOdia": "ମନେ ଅଲ",
@@ -7257,9 +7418,9 @@
         "markdown": "Med dag – Tears",
         "textOlChiki": "ᱢᱮᱫ ᱫᱟᱜ",
         "textLatin": "Med dag – Tears",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_7/view?project=699495910038e39622c5",
           "textBengali": "মেদ দাঃ",
           "textHindi": "मेद दा:",
           "textOdia": "ମେଦ ଦା:",
@@ -7285,9 +7446,9 @@
         "markdown": "Landa landa te goj – Dying of laughter",
         "textOlChiki": "ᱞᱟᱸᱫᱟ ᱞᱟᱸᱫᱟ ᱛᱮ ᱜᱚᱡ",
         "textLatin": "Landa landa te goj – Dying of laughter",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_9/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_9/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_8/view?project=699495910038e39622c5",
           "textBengali": "লাঁদা তে গজ",
           "textHindi": "लाँदा लाँदा ते गज",
           "textOdia": "ଲାଁଦା ଲାଁଦା ତେ ଗଜ",
@@ -7313,9 +7474,9 @@
         "markdown": "Kuri hopon – Women / Girls",
         "textOlChiki": "ᱠᱩᱲᱤ ᱦᱚᱯᱚᱱ",
         "textLatin": "Kuri hopon – Women / Girls",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_9/view?project=699495910038e39622c5",
           "textBengali": "কুড়ি হপন",
           "textHindi": "कुड़ि हपन",
           "textOdia": "କୁଡ଼ି ହପନ",
@@ -7341,9 +7502,9 @@
         "markdown": "Kora hopon – Men / Boys",
         "textOlChiki": "ᱠᱚᱲᱟ ᱦᱚᱯᱚᱱ",
         "textLatin": "Kora hopon – Men / Boys",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_10/view?project=699495910038e39622c5",
           "textBengali": "কড়া হপন",
           "textHindi": "कड़ा हपन",
           "textOdia": "କଡ଼ା ହପନ",
@@ -7369,9 +7530,9 @@
         "markdown": "Gate kuri – Female friend",
         "textOlChiki": "ᱜᱟᱛᱮ ᱠᱩᱲᱤ",
         "textLatin": "Gate kuri – Female friend",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_11/view?project=699495910038e39622c5",
           "textBengali": "গাতে কুড়ি",
           "textHindi": "गाते कुड़ि",
           "textOdia": "ଗାତେ କୁଡ଼ି",
@@ -7397,9 +7558,9 @@
         "markdown": "Gate kora – Male friend",
         "textOlChiki": "ᱜᱟᱛᱮ ᱠᱚᱲᱟ",
         "textLatin": "Gate kora – Male friend",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_12/view?project=699495910038e39622c5",
           "textBengali": "গাতে কড়া",
           "textHindi": "गाते कड़ा",
           "textOdia": "ଗାତେ କଡ଼ା",
@@ -7425,9 +7586,9 @@
         "markdown": "Guputi katha – Secret talk / Whisper",
         "textOlChiki": "ᱜᱩᱯᱩᱛᱤ ᱠᱟᱛᱷᱟ",
         "textLatin": "Guputi katha – Secret talk / Whisper",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_13/view?project=699495910038e39622c5",
           "textBengali": "গুপুতি কাথা",
           "textHindi": "गुपुति काथा",
           "textOdia": "ଗୁପୁତି କାଥା",
@@ -7453,9 +7614,9 @@
         "markdown": "Raska mone – Joyful mind / Happy heart",
         "textOlChiki": "ᱨᱟᱹᱥᱠᱟᱹ ᱢᱚᱱᱮ",
         "textLatin": "Raska mone – Joyful mind / Happy heart",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_15/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_15/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_14/view?project=699495910038e39622c5",
           "textBengali": "রাসকা মনে",
           "textHindi": "रासका मने",
           "textOdia": "ରାସକା ମନେ",
@@ -7481,9 +7642,9 @@
         "markdown": "Dukh jiwi – Sorrowful life",
         "textOlChiki": "ᱫᱩᱠᱷ ᱡᱤᱣᱤ",
         "textLatin": "Dukh jiwi – Sorrowful life",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_15/view?project=699495910038e39622c5",
           "textBengali": "দুখ জিওয়ি",
           "textHindi": "दुख जिवि",
           "textOdia": "ଦୁଖ ଜିୱି",
@@ -7509,9 +7670,9 @@
         "markdown": "Hor mone – Public opinion / Human heart",
         "textOlChiki": "ᱦᱚᱲ ᱢᱚᱱᱮ",
         "textLatin": "Hor mone – Public opinion / Human heart",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_16/view?project=699495910038e39622c5",
           "textBengali": "হড় মনে",
           "textHindi": "हड़ मने",
           "textOdia": "ହଡ଼ ମନେ",
@@ -7537,9 +7698,9 @@
         "markdown": "Sibil jom – Delicious food",
         "textOlChiki": "ᱥᱤᱵᱤᱞ ᱡᱚᱢ",
         "textLatin": "Sibil jom – Delicious food",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_17/view?project=699495910038e39622c5",
           "textBengali": "সিবিল জম",
           "textHindi": "सिबिल जम",
           "textOdia": "ସିବିଲ ଜମ",
@@ -7565,9 +7726,9 @@
         "markdown": "Dare udug – Show of strength",
         "textOlChiki": "ᱫᱟᱲᱮ ᱩᱫᱩᱜ",
         "textLatin": "Dare udug – Show of strength",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_18/view?project=699495910038e39622c5",
           "textBengali": "দাড়ে উদুগ",
           "textHindi": "दाड़े उदुग",
           "textOdia": "ଦାଡ଼େ ଉଦୁଗ",
@@ -7593,9 +7754,9 @@
         "markdown": "Mone thaw – Settled mind / Contentment",
         "textOlChiki": "ᱢᱚᱱᱮ ᱴᱷᱟᱶ",
         "textLatin": "Mone thaw – Settled mind / Contentment",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_20/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_20/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_19/view?project=699495910038e39622c5",
           "textBengali": "মনে ঠাও",
           "textHindi": "मने ठाव",
           "textOdia": "ମନେ ଠାୱ",
@@ -7621,9 +7782,9 @@
         "markdown": "Tela",
         "textOlChiki": "ᱛᱮᱞᱟ",
         "textLatin": "Tela",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_20/view?project=699495910038e39622c5",
           "textBengali": "তেলা",
           "textHindi": "तेला",
           "textOdia": "ତେଲା",
@@ -7649,9 +7810,9 @@
         "markdown": "Dinam kami – Daily chore",
         "textOlChiki": "ᱫᱤᱱᱟᱹᱢ ᱠᱟᱹᱢᱤ",
         "textLatin": "Dinam kami – Daily chore",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_22/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_21/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_22/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_21/view?project=699495910038e39622c5",
           "textBengali": "দিনাম কামি",
           "textHindi": "दिनाम कामि",
           "textOdia": "ଦିନାମ କାମି",
@@ -7677,9 +7838,9 @@
         "markdown": "Sagun din – Auspicious day",
         "textOlChiki": "ᱥᱟᱹᱜᱩᱱ ᱫᱤᱱ",
         "textLatin": "Sagun din – Auspicious day",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_23/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_22/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_23/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_22/view?project=699495910038e39622c5",
           "textBengali": "সাগুন দিন",
           "textHindi": "सागुन दिन",
           "textOdia": "ସାଗୁନ ଦିନ",
@@ -7705,9 +7866,9 @@
         "markdown": "Sari mone – Honest heart",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱢᱚᱱᱮ",
         "textLatin": "Sari mone – Honest heart",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_24/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_23/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_24/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_1_23/view?project=699495910038e39622c5",
           "textBengali": "সারি মনে",
           "textHindi": "सारि मने",
           "textOdia": "ସାରି ମନେ",
@@ -7756,9 +7917,9 @@
         "markdown": "Katha rapud",
         "textOlChiki": "ᱠᱟᱛᱷᱟ ᱨᱟᱹᱯᱩᱫ",
         "textLatin": "Katha rapud",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_2/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_0/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_2/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_0/view?project=699495910038e39622c5",
           "textBengali": "কাথা রাপুদ",
           "textHindi": "काथा रापुद",
           "textOdia": "କାଥା ରାପୁଦ",
@@ -7784,9 +7945,9 @@
         "markdown": "Mone hatinj – Sharing feelings / Divided mind",
         "textOlChiki": "ᱢᱚᱱᱮ ᱦᱟᱹᱴᱤᱧ",
         "textLatin": "Mone hatinj – Sharing feelings / Divided mind",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_3/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_1/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_3/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_1/view?project=699495910038e39622c5",
           "textBengali": "মনে হাটিঞ",
           "textHindi": "मने हाटिञ",
           "textOdia": "ମନେ ହାଟିଞ",
@@ -7812,9 +7973,9 @@
         "markdown": "Jiwi jul – Burning life / Passionate / Angry",
         "textOlChiki": "ᱡᱤᱣᱤ ᱡᱩᱞ",
         "textLatin": "Jiwi jul – Burning life / Passionate / Angry",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_4/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_2/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_4/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_2/view?project=699495910038e39622c5",
           "textBengali": "জিওয়ি জুল",
           "textHindi": "जिवि जुल",
           "textOdia": "ଜିୱି ଜୁଲ",
@@ -7840,9 +8001,9 @@
         "markdown": "Landa thok – Weary of laughing",
         "textOlChiki": "ᱞᱟᱸᱫᱟ ᱛᱷᱚᱠ",
         "textLatin": "Landa thok – Weary of laughing",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_5/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_3/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_5/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_3/view?project=699495910038e39622c5",
           "textBengali": "লাঁদা থক",
           "textHindi": "लाँदा थक",
           "textOdia": "ଲାଁଦା ଥକ",
@@ -7868,9 +8029,9 @@
         "markdown": "Ror chehra – Beautiful speech",
         "textOlChiki": "ᱨᱚᱲ ᱪᱮᱦᱨᱟ",
         "textLatin": "Ror chehra – Beautiful speech",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_6/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_6/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_4/view?project=699495910038e39622c5",
           "textBengali": "রড় চেহরা",
           "textHindi": "रड़ चेहरा",
           "textOdia": "ରଡ଼ ଚେହରା",
@@ -7896,9 +8057,9 @@
         "markdown": "Mone dare – Willpower / Mental strength",
         "textOlChiki": "ᱢᱚᱱᱮ ᱫᱟᱲᱮ",
         "textLatin": "Mone dare – Willpower / Mental strength",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_5/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_5/view?project=699495910038e39622c5",
           "textBengali": "মনে দাড়ে",
           "textHindi": "मने दाड़े",
           "textOdia": "ମନେ ଦାଡ଼େ",
@@ -7924,9 +8085,9 @@
         "markdown": "Sagay tol – Binding relationship / Making friends",
         "textOlChiki": "ᱥᱟᱹᱜᱟᱹᱭ ᱛᱚᱞ",
         "textLatin": "Sagay tol – Binding relationship / Making friends",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_6/view?project=699495910038e39622c5",
           "textBengali": "সাগায় তল",
           "textHindi": "सागाय तल",
           "textOdia": "ସାଗାୟ ତଲ",
@@ -7952,9 +8113,9 @@
         "markdown": "Katha tol – Finalizing a promise",
         "textOlChiki": "ᱠᱟᱛᱷᱟ ᱛᱚᱞ",
         "textLatin": "Katha tol – Finalizing a promise",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_9/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_9/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_7/view?project=699495910038e39622c5",
           "textBengali": "কাথা তল",
           "textHindi": "काथा तल",
           "textOdia": "କାଥା ତଲ",
@@ -7980,9 +8141,9 @@
         "markdown": "Mone rara – Relieved / Free mind",
         "textOlChiki": "ᱢᱚᱱᱮ ᱨᱟᱲᱟ",
         "textLatin": "Mone rara – Relieved / Free mind",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_8/view?project=699495910038e39622c5",
           "textBengali": "মনে রাড়া",
           "textHindi": "मने राड़ा",
           "textOdia": "ମନେ ରାଡ଼ା",
@@ -8008,9 +8169,9 @@
         "markdown": "Jiwi tahen – Staying alive / Living",
         "textOlChiki": "ᱡᱤᱣᱤ ᱛᱟᱦᱮᱸᱱ",
         "textLatin": "Jiwi tahen – Staying alive / Living",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_9/view?project=699495910038e39622c5",
           "textBengali": "জিওয়ি তাহেঁন",
           "textHindi": "जिवि ताहेँन",
           "textOdia": "ଜିୱି ତାହେଁନ",
@@ -8036,9 +8197,9 @@
         "markdown": "Dular gate – Sweetheart / Dear friend",
         "textOlChiki": "ᱫᱩᱞᱟᱹᱲ ᱜᱟᱛᱮ",
         "textLatin": "Dular gate – Sweetheart / Dear friend",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_10/view?project=699495910038e39622c5",
           "textBengali": "দুলাড় গাতে",
           "textHindi": "दुलाड़ गाते",
           "textOdia": "ଦୁଲାଡ଼ ଗାତେ",
@@ -8064,9 +8225,9 @@
         "markdown": "Hor hor – Human path / Way of life",
         "textOlChiki": "ᱦᱚᱲ ᱦᱚᱨ",
         "textLatin": "Hor hor – Human path / Way of life",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_11/view?project=699495910038e39622c5",
           "textBengali": "হড় হর",
           "textHindi": "हड़ हर",
           "textOdia": "ହଡ଼ ହର",
@@ -8092,9 +8253,9 @@
         "markdown": "Sari sarhaw – True appreciation",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱥᱟᱨᱦᱟᱣ",
         "textLatin": "Sari sarhaw – True appreciation",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_12/view?project=699495910038e39622c5",
           "textBengali": "সারি সারহাওয়",
           "textHindi": "सारि सारहाव",
           "textOdia": "ସାରି ସାରହାୱ",
@@ -8120,9 +8281,9 @@
         "markdown": "Ror chini ladu – Sweet talks / Flattery",
         "textOlChiki": "ᱨᱚᱲ ᱪᱤᱱᱤ ᱞᱟᱹᱰᱩ",
         "textLatin": "Ror chini ladu – Sweet talks / Flattery",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_15/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_15/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_13/view?project=699495910038e39622c5",
           "textBengali": "রড় চিনি লাডু",
           "textHindi": "रड़ चिनि लाडु",
           "textOdia": "ରଡ଼ ଚିନି ଲାଡୁ",
@@ -8148,9 +8309,9 @@
         "markdown": "Mone kay – Sin of the heart / Guilty conscience",
         "textOlChiki": "ᱢᱚᱱᱮ ᱠᱟᱹᱭ",
         "textLatin": "Mone kay – Sin of the heart / Guilty conscience",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_14/view?project=699495910038e39622c5",
           "textBengali": "মনে কায়",
           "textHindi": "मने काय",
           "textOdia": "ମନେ କାୟ",
@@ -8176,9 +8337,9 @@
         "markdown": "Hali Jiwi – Lively spirit / Fresh energy",
         "textOlChiki": "ᱦᱟᱹᱞᱤ ᱡᱤᱣᱤ",
         "textLatin": "Hali Jiwi – Lively spirit / Fresh energy",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_15/view?project=699495910038e39622c5",
           "textBengali": "হালি জিওয়ি",
           "textHindi": "हालि जिवि",
           "textOdia": "ହାଲି ଜିୱି",
@@ -8204,9 +8365,9 @@
         "markdown": "Kami lagid teyar – Ready to work",
         "textOlChiki": "ᱠᱟᱹᱢᱤ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ",
         "textLatin": "Kami lagid teyar – Ready to work",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_16/view?project=699495910038e39622c5",
           "textBengali": "কামি লাগিদ তেয়ার",
           "textHindi": "कामि लागिद तेयार",
           "textOdia": "କାମି ଲାଗିଦ ତେୟାର",
@@ -8232,9 +8393,9 @@
         "markdown": "Santali language",
         "textOlChiki": "ᱥᱟᱱᱛᱟᱲᱤ ᱨᱚᱲ",
         "textLatin": "Santali language",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_17/view?project=699495910038e39622c5",
           "textBengali": "সানতাড়ি রড়",
           "textHindi": "सानताड़ि रड़",
           "textOdia": "ସାନତାଡ଼ି ରଡ଼",
@@ -8260,9 +8421,9 @@
         "markdown": "Mone reyag  uyhar – Thoughts of the heart",
         "textOlChiki": "ᱢᱚᱱᱮ ᱨᱮᱭᱟᱜ ᱩᱭᱦᱟᱹᱨ",
         "textLatin": "Mone reyag  uyhar – Thoughts of the heart",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_20/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_20/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_18/view?project=699495910038e39622c5",
           "textBengali": "মনে রেয়াঃ উয়হার",
           "textHindi": "मने रेयाग उयहार",
           "textOdia": "ମନେ ରେୟାଗ ଉୟହାର",
@@ -8288,9 +8449,9 @@
         "markdown": "Manmi dare– human strength",
         "textOlChiki": "ᱢᱟᱱᱢᱤ ᱫᱟᱲᱮ",
         "textLatin": "Manmi dare– human strength",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_23/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_23/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_19/view?project=699495910038e39622c5",
           "textBengali": "মানমি দাড়ে",
           "textHindi": "मानमि दाड़े",
           "textOdia": "ମାନମି ଦାଡ଼େ",
@@ -8316,9 +8477,9 @@
         "markdown": "Sari dhorom – True religion / Path of truth",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱫᱷᱚᱨᱚᱢ",
         "textLatin": "Sari dhorom – True religion / Path of truth",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_24/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_24/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_conversational_2_20/view?project=699495910038e39622c5",
           "textBengali": "সারি ধরম",
           "textHindi": "सारि धरम",
           "textOdia": "ସାରି ଧରମ",
@@ -8591,9 +8752,9 @@
         "markdown": "Kudum katha – Riddle talk / Figurative expression",
         "textOlChiki": "ᱠᱩᱫᱩᱢ ᱠᱟᱛᱷᱟ",
         "textLatin": "Kudum katha – Riddle talk / Figurative expression",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_8/view?project=699495910038e39622c5",
           "textBengali": "কুদুম কাথা",
           "textHindi": "कुदुम काथा",
           "textOdia": "କୁଦୁମ କାଥା",
@@ -8619,9 +8780,9 @@
         "markdown": "Benta ror – Idiomatic speech / Indirect speech",
         "textOlChiki": "ᱵᱮᱱᱛᱟ ᱨᱚᱲ",
         "textLatin": "Benta ror – Idiomatic speech / Indirect speech",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_9/view?project=699495910038e39622c5",
           "textBengali": "বেনতা রড়",
           "textHindi": "बेनता रड़",
           "textOdia": "ବେନତା ରଡ଼",
@@ -8647,9 +8808,9 @@
         "markdown": "Haram katha – Ancestral wisdom / Sayings of elders",
         "textOlChiki": "ᱦᱟᱲᱟᱢ ᱠᱟᱛᱷᱟ",
         "textLatin": "Haram katha – Ancestral wisdom / Sayings of elders",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_10/view?project=699495910038e39622c5",
           "textBengali": "হাড়াম কাথা",
           "textHindi": "हाड़ाम काथा",
           "textOdia": "ହାଡ଼ାମ କାଥା",
@@ -8675,9 +8836,9 @@
         "markdown": "Budhi uyhar-Intellectual thought / Wisdom of mind",
         "textOlChiki": "ᱵᱩᱫᱷᱤ ᱩᱭᱦᱟᱹᱨ",
         "textLatin": "Budhi uyhar-Intellectual thought / Wisdom of mind",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_11/view?project=699495910038e39622c5",
           "textBengali": "বুধি উয়হার",
           "textHindi": "बुधि उयहार",
           "textOdia": "ବୁଧି ଉୟହାର",
@@ -8703,9 +8864,9 @@
         "markdown": "Atu ari – Custom of the village",
         "textOlChiki": "ᱟᱹᱛᱩ ᱟᱹᱨᱤ",
         "textLatin": "Atu ari – Custom of the village",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_12/view?project=699495910038e39622c5",
           "textBengali": "আতু আরি",
           "textHindi": "आतु आरि",
           "textOdia": "ଆତୁ ଆରି",
@@ -8731,9 +8892,9 @@
         "markdown": "Jumid dare – Strength in unity",
         "textOlChiki": "ᱡᱩᱢᱤᱫᱽ ᱫᱟᱲᱮ",
         "textLatin": "Jumid dare – Strength in unity",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_15/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_15/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_13/view?project=699495910038e39622c5",
           "textBengali": "জুমিদ দাড়ে",
           "textHindi": "जुमिद दाड़े",
           "textOdia": "ଜୁମିଦ ଦାଡ଼େ",
@@ -8759,9 +8920,9 @@
         "markdown": "Sohrae serenj – Traditional Sohrae songs",
         "textOlChiki": "ᱥᱚᱦᱨᱟᱭ ᱥᱮᱨᱮᱧ",
         "textLatin": "Sohrae serenj – Traditional Sohrae songs",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_14/view?project=699495910038e39622c5",
           "textBengali": "সহরায় সেরেঞ",
           "textHindi": "सहराय सेरेञ",
           "textOdia": "ସହରାୟ ସେରେଞ",
@@ -8787,9 +8948,9 @@
         "markdown": "Baha sakam – Flower petals",
         "textOlChiki": "ᱵᱟᱦᱟ ᱥᱟᱠᱟᱢ",
         "textLatin": "Baha sakam – Flower petals",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_15/view?project=699495910038e39622c5",
           "textBengali": "বাহা সাকাম",
           "textHindi": "बाहा साकाम",
           "textOdia": "ବାହା ସାକାମ",
@@ -8815,9 +8976,9 @@
         "markdown": "Jaher umul – Protection of the sacred grove(Jaher)",
         "textOlChiki": "ᱡᱟᱦᱮᱨ ᱩᱢᱩᱞ",
         "textLatin": "Jaher umul – Protection of the sacred grove(Jaher)",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_16/view?project=699495910038e39622c5",
           "textBengali": "জাহের উমুল",
           "textHindi": "जाहेर उमुल",
           "textOdia": "ଜାହେର ଉମୁଲ",
@@ -8843,9 +9004,9 @@
         "markdown": "Majhi bichar – The judgment of Village chief (Majhi) / Local justice",
         "textOlChiki": "ᱢᱟᱹᱡᱷᱤ ᱵᱤᱪᱟᱹᱨ",
         "textLatin": "Majhi bichar – The judgment of Village chief (Majhi) / Local justice",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_17/view?project=699495910038e39622c5",
           "textBengali": "মাঝি বিচার",
           "textHindi": "माझि बिचार",
           "textOdia": "ମାଝି ବିଚାର",
@@ -8871,9 +9032,9 @@
         "markdown": "Sirjon dular – Love for nature",
         "textOlChiki": "ᱥᱤᱨᱡᱚᱱ ᱫᱩᱞᱟᱹᱲ",
         "textLatin": "Sirjon dular – Love for nature",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_18/view?project=699495910038e39622c5",
           "textBengali": "সিরজন দুলাড়",
           "textHindi": "सिरजन दुलाड़",
           "textOdia": "ସିରଜନ ଦୁଲାଡ଼",
@@ -8899,9 +9060,9 @@
         "markdown": "Ot hasa – Land / Soil / Earth",
         "textOlChiki": "ᱚᱛ ᱦᱟᱥᱟ",
         "textLatin": "Ot hasa – Land / Soil / Earth",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_22/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_22/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_19/view?project=699495910038e39622c5",
           "textBengali": "অত হাসা",
           "textHindi": "अत हासा",
           "textOdia": "ଅତ ହାସା",
@@ -8927,9 +9088,9 @@
         "markdown": "Manmi geyan – Human wisdom",
         "textOlChiki": "ᱢᱟᱹᱱᱢᱤ ᱜᱮᱭᱟᱱ",
         "textLatin": "Manmi geyan – Human wisdom",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_25/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_25/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_1_20/view?project=699495910038e39622c5",
           "textBengali": "মানমি গেয়ান",
           "textHindi": "मानमि गेयान",
           "textOdia": "ମାନମି ଗେୟାନ",
@@ -8978,9 +9139,9 @@
         "markdown": "Bir dare – Forest trees",
         "textOlChiki": "ᱵᱤᱨ ᱫᱟᱨᱮ",
         "textLatin": "Bir dare – Forest trees",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_6/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_0/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_6/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_0/view?project=699495910038e39622c5",
           "textBengali": "বির দারে",
           "textHindi": "बिर दारे",
           "textOdia": "ବିର ଦାରେ",
@@ -9006,9 +9167,9 @@
         "markdown": "Hasa orag – Mud house",
         "textOlChiki": "ᱦᱟᱥᱟ ᱚᱲᱟᱜ",
         "textLatin": "Hasa orag – Mud house",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_1/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_1/view?project=699495910038e39622c5",
           "textBengali": "হাসা অড়াঃ",
           "textHindi": "हासा अड़ाग",
           "textOdia": "ହାସା ଅଡ଼ାଗ",
@@ -9034,9 +9195,9 @@
         "markdown": "Serma ipil – Stars",
         "textOlChiki": "ᱥᱮᱨᱢᱟ ᱤᱯᱤᱞ",
         "textLatin": "Serma ipil – Stars",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_2/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_2/view?project=699495910038e39622c5",
           "textBengali": "সেরমা ইপিল",
           "textHindi": "सेरमा इपिल",
           "textOdia": "ସେରମା ଇପିଲ",
@@ -9062,9 +9223,9 @@
         "markdown": "Njida umul – Night shadow / Mysterious",
         "textOlChiki": "ᱧᱤᱫᱟᱹ ᱩᱢᱩᱞ",
         "textLatin": "Njida umul – Night shadow / Mysterious",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_9/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_3/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_9/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_3/view?project=699495910038e39622c5",
           "textBengali": "ঞিদা উমুল",
           "textHindi": "ञिदा उमुल",
           "textOdia": "ଞିଦା ଉମୁଲ",
@@ -9090,9 +9251,9 @@
         "markdown": "Singe situng – Scorching midday sun",
         "textOlChiki": "ᱥᱤᱸᱜᱮ ᱥᱤᱛᱩᱝ",
         "textLatin": "Singe situng – Scorching midday sun",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_4/view?project=699495910038e39622c5",
           "textBengali": "সিঁগে সিতুং",
           "textHindi": "सिँगे सितुङ",
           "textOdia": "ସିଁଗେ ସିତୁଙ",
@@ -9118,9 +9279,9 @@
         "markdown": "Rimil dag – Rain",
         "textOlChiki": "ᱨᱤᱢᱤᱞ ᱫᱟᱜ",
         "textLatin": "Rimil dag – Rain",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_5/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_5/view?project=699495910038e39622c5",
           "textBengali": "রিমিল দাঃ",
           "textHindi": "रिमिल दाग",
           "textOdia": "ରିମିଲ ଦାଗ",
@@ -9146,9 +9307,9 @@
         "markdown": "Sibil sagay – Sweet relationship / Affectionate bonding",
         "textOlChiki": "ᱥᱤᱵᱤᱞ ᱥᱟᱹᱜᱟᱹᱭ",
         "textLatin": "Sibil sagay – Sweet relationship / Affectionate bonding",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_6/view?project=699495910038e39622c5",
           "textBengali": "সিবিল সাগায়",
           "textHindi": "सिबिल सागाय",
           "textOdia": "ସିବିଲ ସାଗାୟ",
@@ -9174,9 +9335,9 @@
         "markdown": "Ketej Mone – Strong mind / Brave heart",
         "textOlChiki": "ᱠᱮᱴᱮᱡ ᱢᱚᱱᱮ",
         "textLatin": "Ketej Mone – Strong mind / Brave heart",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_7/view?project=699495910038e39622c5",
           "textBengali": "মনে কেটেজ",
           "textHindi": "केटेज मने",
           "textOdia": "କେଟେଜ ମନେ",
@@ -9202,9 +9363,9 @@
         "markdown": "Dular gada – River of love",
         "textOlChiki": "ᱫᱩᱞᱟᱹᱲ ᱜᱟᱰᱟ",
         "textLatin": "Dular gada – River of love",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_8/view?project=699495910038e39622c5",
           "textBengali": "দুলাড় গাডা",
           "textHindi": "दुलाड़ गाडा",
           "textOdia": "ଦୁଲାଡ଼ ଗାଡା",
@@ -9230,9 +9391,9 @@
         "markdown": "Sari guru – True teacher / Master",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱜᱩᱨᱩ",
         "textLatin": "Sari guru – True teacher / Master",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_9/view?project=699495910038e39622c5",
           "textBengali": "সারি গুরু",
           "textHindi": "सारि गुरु",
           "textOdia": "ସାରି ଗୁରୁ",
@@ -9258,9 +9419,9 @@
         "markdown": "Geyan dorya – Ocean of knowledge",
         "textOlChiki": "ᱜᱮᱭᱟᱱ ᱫᱚᱨᱭᱟ",
         "textLatin": "Geyan dorya – Ocean of knowledge",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_10/view?project=699495910038e39622c5",
           "textBengali": "গেয়ান দরয়া",
           "textHindi": "गेयान दरया",
           "textOdia": "ଗେୟାନ ଦରୟା",
@@ -9286,9 +9447,9 @@
         "markdown": "Lakchar hor – Cultural path",
         "textOlChiki": "ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ",
         "textLatin": "Lakchar hor – Cultural path",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_11/view?project=699495910038e39622c5",
           "textBengali": "লাকচার হর",
           "textHindi": "लाकचार हर",
           "textOdia": "ଲାକଚାର ହର",
@@ -9314,9 +9475,9 @@
         "markdown": "Sawhet jiwi – Soul of literature",
         "textOlChiki": "ᱥᱟᱶᱦᱮᱫ ᱡᱤᱣᱤ",
         "textLatin": "Sawhet jiwi – Soul of literature",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_12/view?project=699495910038e39622c5",
           "textBengali": "সাওয়হেদ জিওয়ি",
           "textHindi": "सावहेद जिवि",
           "textOdia": "ସାୱହେଦ ଜିୱି",
@@ -9342,9 +9503,9 @@
         "markdown": "Sirjon dhorom – Religion of nature",
         "textOlChiki": "ᱥᱤᱨᱡᱚᱱ ᱫᱷᱚᱨᱚᱢ",
         "textLatin": "Sirjon dhorom – Religion of nature",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_22/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_22/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_13/view?project=699495910038e39622c5",
           "textBengali": "সিরজন ধরম",
           "textHindi": "सिरजन धरम",
           "textOdia": "ସିରଜନ ଧରମ",
@@ -9370,9 +9531,9 @@
         "markdown": "Disom dare – Power/strength of the land",
         "textOlChiki": "ᱫᱤᱥᱚᱢ ᱫᱟᱲᱮ",
         "textLatin": "Disom dare – Power/strength of the land",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_23/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_23/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_14/view?project=699495910038e39622c5",
           "textBengali": "দিসম দাড়ে",
           "textHindi": "दिसम दाड़े",
           "textOdia": "ଦିସମ ଦାଡ଼େ",
@@ -9398,9 +9559,9 @@
         "markdown": "Sagun nyutum – Good name / Renown",
         "textOlChiki": "ᱥᱟᱹᱜᱩᱱ ᱧᱩᱛᱩᱢ",
         "textLatin": "Sagun nyutum – Good name / Renown",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_24/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_24/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_15/view?project=699495910038e39622c5",
           "textBengali": "সাগুন ঞুতুম",
           "textHindi": "सागुन ञुतुम",
           "textOdia": "ସାଗୁନ ଞୁତୁମ",
@@ -9426,9 +9587,9 @@
         "markdown": "Manmi dhorom –  Humanity / Religion of Humanity",
         "textOlChiki": "ᱢᱟᱹᱱᱢᱤ ᱫᱷᱚᱨᱚᱢ",
         "textLatin": "Manmi dhorom –  Humanity / Religion of Humanity",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_25/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_25/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_16/view?project=699495910038e39622c5",
           "textBengali": "মানমি ধরম",
           "textHindi": "मानमि धरम",
           "textOdia": "ମାନମି ଧରମ",
@@ -9463,8 +9624,10 @@
           "meaning_en": "Mother Earth",
           "meaning_bn": "ধরিত্রী মা",
           "meaning_hi": "धरती माँ",
-          "meaning_or": "ଧରିତ୍ରୀ ମାତା"
-        }
+          "meaning_or": "ଧରିତ୍ରୀ ମାତା",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_17/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_17/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_18",
@@ -9482,8 +9645,10 @@
           "meaning_en": "Motherland",
           "meaning_bn": "জন্মভূমি/মাতৃভূমি",
           "meaning_hi": "जन्मभूमि/मातृभूमि",
-          "meaning_or": "ଜନ୍ମଭୂମି/ମାତୃଭୂମି"
-        }
+          "meaning_or": "ଜନ୍ମଭୂମି/ମାତୃଭୂମି",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_18/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_18/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_19",
@@ -9501,8 +9666,10 @@
           "meaning_en": "True love",
           "meaning_bn": "প্রকৃত ভালোবাসা",
           "meaning_hi": "सच्चा प्यार",
-          "meaning_or": "ପ୍ରକୃତ ପ୍ରେମ"
-        }
+          "meaning_or": "ପ୍ରକୃତ ପ୍ରେମ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_19/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_19/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_20",
@@ -9520,8 +9687,10 @@
           "meaning_en": "Think before you speak, or you will grieve after speaking.",
           "meaning_bn": "বলার আগে ভেবে বলো, নাহলে বলার পরে অনুশোচনা করবে।",
           "meaning_hi": "बोलने से पहले सोचो, वरना बोलने के बाद पछताओगे।",
-          "meaning_or": "କହିବା ଆଗରୁ ଭାବି କୁହ, ନ ହେଲେ କହିସାରିବା ପରେ ଅନୁତାପ କରିବ।"
-        }
+          "meaning_or": "କହିବା ଆଗରୁ ଭାବି କୁହ, ନ ହେଲେ କହିସାରିବା ପରେ ଅନୁତାପ କରିବ।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_20/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_vocab_folk_2_20/view?project=699495910038e39622c5"
       }
     ],
     "order": 0,
@@ -11968,9 +12137,9 @@
         "markdown": "Med  benget kate chalag me, hor re adi dhiri menag aa.",
         "textOlChiki": "ᱢᱮᱫ ᱵᱮᱸᱜᱮᱫ ᱠᱟᱛᱮ ᱪᱟᱞᱟᱜ ᱢᱮ, ᱦᱚᱨ ᱨᱮ ᱟᱹᱰᱤ ᱫᱷᱤᱨᱤ ᱢᱮᱱᱟᱜᱼᱟ.",
         "textLatin": "Med  benget kate chalag me, hor re adi dhiri menag aa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_4/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_3/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_4/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_3/view?project=699495910038e39622c5",
           "textBengali": "মেদ বেঁগেদ কাতে চালাঃ মে, হর রে আডি ধিরি মেনাঃ আ।",
           "textHindi": "मेद लुटुर बेँगेद काते चालाᱺ मे, हर रे आडि धिरि मेनाग आ.",
           "textOdia": "ମେଦ ବେଁଗେଦ କାତେ ଚାଲାଗ ମେ, ହର ରେ ଆଡି ଧିରି ମେନାଗଆ.",
@@ -11996,9 +12165,9 @@
         "markdown": "Am jaha lekam rora, am saw hor ho onka ge ko rora.",
         "textOlChiki": "ᱟᱢ ᱡᱟᱦᱟᱸ ᱞᱮᱠᱟᱢ ᱨᱚᱲᱟ, ᱟᱢ ᱥᱟᱶ ᱦᱚᱲ ᱦᱚᱸ ᱚᱱᱠᱟ ᱜᱮ ᱠᱚ ᱨᱚᱲᱟ।",
         "textLatin": "Am jaha lekam rora, am saw hor ho onka ge ko rora.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_5/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_5/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_4/view?project=699495910038e39622c5",
           "textBengali": "আম জাহাঁ লেকাম রড়া, আম সাও হড় হঁ অনকা গে ক রড়া।",
           "textHindi": "आम जाहाँ लेकाम रड़ा, आम साव हड़ हँ अनका गे क रड़ा।",
           "textOdia": "ଆମ ଜାହାଁ ଲେକାମ ରଡ଼ା, ଆମ ସାୱ ହଡ଼ ହଁ ଅନକା ଗେ କ ରଡ଼ା।",
@@ -12024,9 +12193,9 @@
         "markdown": "Sohrae porob re ale orag te hijug me, adi napay huyug aa.",
         "textOlChiki": "ᱥᱚᱦᱨᱟᱭ ᱯᱚᱨᱚᱵ ᱨᱮ ᱟᱞᱮ ᱚᱲᱟᱜ ᱛᱮ ᱦᱤᱡᱩᱜ ᱢᱮ, ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ।",
         "textLatin": "Sohrae porob re ale orag te hijug me, adi napay huyug aa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_6/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_5/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_6/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_5/view?project=699495910038e39622c5",
           "textBengali": "সহরায় পরব রে আলে অড়াগ তে হিজুগ মে, আডি নাপায় হুয়ুঃ আ।",
           "textHindi": "सहराय परब रे आले अड़ाग ते हिजुग मे, आडि नापाय हुयुगआ।",
           "textOdia": "ସହରାୟ ପରବ ରେ ଆଲେ ଅଡ଼ାଗ ତେ ହିଜୁଗ ମେ, ଆଡି ନାପାୟ ହୁୟୁଗଆ।",
@@ -12052,9 +12221,9 @@
         "markdown": "Guru kolom te ol me, geyan hor re lahag me.",
         "textOlChiki": "ᱜᱩᱨᱩ ᱠᱚᱞᱚᱢ ᱛᱮ ᱚᱞ ᱢᱮ, ᱜᱮᱭᱟᱱ ᱦᱚᱨ ᱨᱮ ᱞᱟᱦᱟᱜ ᱢᱮ।",
         "textLatin": "Guru kolom te ol me, geyan hor re lahag me.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_7/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_6/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_7/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_6/view?project=699495910038e39622c5",
           "textBengali": "গুরু কলম তে অল মে, গেয়ান হর রে লাহাঃ মে।",
           "textHindi": "गुरु कलम ते अल मे, गेयान हर रे लाहाग मे।",
           "textOdia": "ଗୁରୁ କଲମ ତେ ଅଲ ମେ, ଗେୟାନ ହର ରେ ଲାହାଗ ମେ।",
@@ -12080,9 +12249,9 @@
         "markdown": "Ari chali ar lakchar do abowaag uprum kana, ona do banchaw kag me.",
         "textOlChiki": "ᱟᱹᱨᱤ ᱪᱟᱹᱞᱤ ᱟᱨ ᱞᱟᱠᱪᱟᱨ ᱫᱚ ᱟᱵᱚᱣᱟᱜ ᱩᱯᱨᱩᱢ ᱠᱟᱱᱟ, ᱚᱱᱟ ᱫᱚ ᱵᱟᱧᱪᱟᱣ ᱠᱟᱜ ᱢᱮ।",
         "textLatin": "Ari chali ar lakchar do abowaag uprum kana, ona do banchaw kag me.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_8/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_7/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_8/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_7/view?project=699495910038e39622c5",
           "textBengali": "আরি চালি আর লাকচার দ আবওয়াঃ উপরুম কানা, অনা দ বাঞচাও কাঃ মে।",
           "textHindi": "आरि चालि आर लाकचार द आबवाग उपरुम काना, अना द बाञचाव काग मे।",
           "textOdia": "ଆରି ଚାଲି ଆର ଲାକଚାର ଦ ଆବୱାଗ ଉପରୁମ କାନା, ଅନା ଦ ବାଞଚାୱ କାଗ ମେ।",
@@ -12108,9 +12277,9 @@
         "markdown": "Herem ror te sanam horag mone jitkar me.",
         "textOlChiki": "ᱦᱮᱲᱮᱢ ᱨᱚᱲ ᱛᱮ ᱥᱟᱱᱟᱢ ᱦᱚᱲᱟᱜ ᱢᱚᱱᱮ ᱡᱤᱛᱠᱟᱹᱨ ᱢᱮ।",
         "textLatin": "Herem ror te sanam horag mone jitkar me.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_9/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_8/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_9/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_8/view?project=699495910038e39622c5",
           "textBengali": "হেড়েম রড় তে সানাম হড় মনে জিতকার মে।",
           "textHindi": "हेड़ेम रड़ ते सानाम हड़ाग मने जितकार मे।",
           "textOdia": "ହେଡ଼େମ ରଡ଼ ତେ ସାନାମ ହଡ଼ାଗ ମନେ ଜିତକାର ମେ।",
@@ -12136,9 +12305,9 @@
         "markdown": "Sirjoniya do nowa dharti adi chehra te sajaw akadai.",
         "textOlChiki": "ᱥᱤᱨᱡᱚᱱᱤᱭᱟᱹ ᱫᱚ ᱱᱚᱶᱟ ᱫᱷᱟᱹᱨᱛᱤ ᱟᱹᱰᱤ ᱪᱮᱦᱨᱟ ᱛᱮ ᱥᱟᱡᱟᱣ ᱟᱠᱟᱫᱟᱭ।",
         "textLatin": "Sirjoniya do nowa dharti adi chehra te sajaw akadai.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_10/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_10/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_9/view?project=699495910038e39622c5",
           "textBengali": "সিরজনিয়া দ নোওয়া ধারতি আডি চেহরা তে সাজাওয় আকাদায়।",
           "textHindi": "सिरजनिया द नोवा धारति आडि चेहरा ते साजाव आकादाय।",
           "textOdia": "ସିରଜନିୟା ଦ ନୋୱା ଧାରତି ଆଡି ଚେହରା ତେ ସାଜାୱ ଆକାଦାୟ।",
@@ -12164,9 +12333,9 @@
         "markdown": "Amaag jiwi jala re dhiroj dohoy me, mid din sari ge napay huyug aa.",
         "textOlChiki": "ᱟᱢᱟᱜ ᱡᱤᱣᱤ ᱡᱟᱞᱟ ᱨᱮ ᱫᱷᱤᱨᱚᱡᱽ ᱫᱚᱦᱚᱭ ᱢᱮ, ᱢᱤᱫ ᱫᱤᱱ ᱥᱟᱹᱨᱤ ᱜᱮ ᱱᱟᱯᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ",
         "textLatin": "Amaag jiwi jala re dhiroj dohoy me, mid din sari ge napay huyug aa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_11/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_11/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_10/view?project=699495910038e39622c5",
           "textBengali": "আমাঃ জিওয়ি জালা রে ধিরজ দহয় মে, মিদ দিন সারি গে নাপায় হুয়ুঃ আ।",
           "textHindi": "आमाग जिवि जाला रे धिरज दहय मे, मिद दिन सारि गे नापाय हुयुगआ।",
           "textOdia": "ଆମାଗ୍ ଜୀୱୀ ଜାଲା ରେ ଧୀରଜ୍ ଦହୟ ମେ, ମିଦ୍ ଦିନ୍ ସାରି ଗେ ନାପାୟ୍ ହୁୟୁଗ୍-ଆ।",
@@ -12192,9 +12361,9 @@
         "markdown": "Disom daran kate adi lekan geyan em njam dareyag aa.",
         "textOlChiki": "ᱫᱤᱥᱚᱢ ᱫᱟᱨᱟᱱ ᱠᱟᱛᱮ ᱟᱹᱰᱤ ᱞᱮᱠᱟᱱ ᱜᱮᱭᱟᱱ ᱮᱢ ᱧᱟᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ।",
         "textLatin": "Disom daran kate adi lekan geyan em njam dareyag aa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_12/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_12/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_11/view?project=699495910038e39622c5",
           "textBengali": "দিসম দারান কাতে আডি লেকান গেয়ান এম ঞাম দাড়েয়াঃ আ।",
           "textHindi": "दिसम दारान काते आडि लेकान गेयान एम ञाम दाड़ेयागआ।",
           "textOdia": "ଦିସମ ଦାରାନ କାତେ ଆଡି ଲେକାନ ଗେୟାନ ଏମ ଞାମ ଦାଡ଼େୟାଗଆ।",
@@ -12220,9 +12389,9 @@
         "markdown": "Dhorom kami re mone lagaw me, sanam hor man ko emama.",
         "textOlChiki": "ᱫᱷᱚᱨᱚᱢ ᱠᱟᱹᱢᱤ ᱨᱮ ᱢᱚᱱᱮ ᱞᱟᱜᱟᱣ ᱢᱮ, ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱢᱟᱹᱱ ᱠᱚ ᱮᱢᱟᱢᱟ।",
         "textLatin": "Dhorom kami re mone lagaw me, sanam hor man ko emama.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_13/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_12/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_13/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_12/view?project=699495910038e39622c5",
           "textBengali": "ধরম কামি রে মনে লাগাও মে, সানাম হড় মান ক এমামা।",
           "textHindi": "धरम कामि रे मने लागाव मे, सानाम हड़ मान क एमामा।",
           "textOdia": "ଧରମ କାମି ରେ ମନେ ଲାଗାୱ ମେ, ସାନାମ ହଡ଼ ମାନ କ ଏମାମା।",
@@ -12248,9 +12417,9 @@
         "markdown": "Santali sawhet do adi kisarh ar gahir geya.",
         "textOlChiki": "ᱥᱟᱱᱛᱟᱲᱤ ᱥᱟᱶᱦᱮᱫ ᱫᱚ ᱟᱹᱰᱤ ᱠᱤᱥᱟᱹᱬ ᱟᱨ ᱜᱟᱹᱦᱤᱨ ᱜᱮᱭᱟ।",
         "textLatin": "Santali sawhet do adi kisarh ar gahir geya.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_14/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_13/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_14/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_13/view?project=699495910038e39622c5",
           "textBengali": "সানতাড়ি সাওয়হেদ দ আডি কিসাড় আর গাহির গেয়া।",
           "textHindi": "सानताड़ि सावहेद द आडि किसाण आर गाहिर गेया।",
           "textOdia": "ସାନତାଡ଼ି ସାୱହେଦ ଦ ଆଡି କିସାଣ ଆର ଗାହିର ଗେୟା।",
@@ -12276,9 +12445,9 @@
         "markdown": "Olog parhaw kate amaag atu ar disom reyag nyutum marshal me.",
         "textOlChiki": "ᱚᱞᱚᱜ ᱯᱟᱲᱦᱟᱣ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱟᱹᱛᱩ ᱟᱨ ᱫᱤᱥᱚᱢ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ ᱢᱟᱨᱥᱟᱞ ᱢᱮ।",
         "textLatin": "Olog parhaw kate amaag atu ar disom reyag nyutum marshal me.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_15/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_14/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_15/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_14/view?project=699495910038e39622c5",
           "textBengali": "অলঃ পাড়হাওয় কাতে আমাঃ আতু আর দিসম রেয়াঃ ঞুতুম মারসাল মে।",
           "textHindi": "अलग पाड़हाव काते आमाग आतु आर दिसम रेयाग ञुतुम मारसाल मे।",
           "textOdia": "ଅଲଗ ପାଡ଼ହାୱ କାତେ ଆମାଗ ଆତୁ ଆର ଦିସମ ରେୟାଗ ଞୁତୁମ ମାରସାଲ ମେ।",
@@ -12304,9 +12473,9 @@
         "markdown": "Sari guru waag seched te abo sanam hor jiwi re sari santi bon njama.",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱜᱩᱨᱩ ᱣᱟᱜ ᱥᱮᱪᱮᱫ ᱛᱮ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱡᱤᱣᱤ ᱨᱮ ᱥᱟᱹᱨᱤ ᱥᱟᱹᱱᱛᱤ ᱵᱚᱱ ᱧᱟᱢᱟ।",
         "textLatin": "Sari guru waag seched te abo sanam hor jiwi re sari santi bon njama.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_16/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_15/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_16/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_15/view?project=699495910038e39622c5",
           "textBengali": "সারি গুরু আঃ সেচেদ তে আব সানাম হড় জিওয়ি রে সারি সানতি বন ঞামা।",
           "textHindi": "सारि गुरु वाग सेचेद ते आब सानाम हड़ जिवि रे सारि सानति बन ञामा।",
           "textOdia": "ସାରି ଗୁରୁ ୱାଗ ସେଚେଦ ତେ ଆବ ସାନାମ ହଡ଼ ଜିୱି ରେ ସାରି ସାନତି ବନ ଞାମା।",
@@ -12332,9 +12501,9 @@
         "markdown": "Geyan dorya re dubuj kate am do sari dhorom reyag gahir katham baday njama.",
         "textOlChiki": "ᱜᱮᱭᱟᱱ ᱫᱚᱨᱭᱟ ᱨᱮ ᱰᱩᱵᱩᱡ ᱠᱟᱛᱮ ᱟᱢ ᱫᱚ ᱥᱟᱹᱨᱤ ᱫᱷᱚᱨᱚᱢ ᱨᱮᱭᱟᱜ ᱜᱟᱹᱦᱤᱨ ᱠᱟᱛᱷᱟᱢ ᱵᱟᱰᱟᱭ ᱧᱟᱢᱟ।",
         "textLatin": "Geyan dorya re dubuj kate am do sari dhorom reyag gahir katham baday njama.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_17/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_16/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_17/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_16/view?project=699495910038e39622c5",
           "textBengali": "গেয়ান দরয়া রে ডুবুজ কাতে আম দ সারি ধরম রেয়াঃ গাহির কাথাম বাডায় ঞামা।",
           "textHindi": "गेयान दरया रे डुबुज काते आम द सारि धरम रेयाग गाहिर काथाम बाडाय ञामा।",
           "textOdia": "ଗେୟାନ ଦରୟା ରେ ଡୁବୁଜ କାତେ ଆମ ଦ ସାରି ଧରମ ରେୟାଗ ଗାହିର କାଥାମ ବାଡାୟ ଞାମା।",
@@ -12360,9 +12529,9 @@
         "markdown": "Ari chali ar lakchar banchaw doho ge sari hor hopon aag marang dhorom kana.",
         "textOlChiki": "ᱟᱹᱨᱤ ᱪᱟᱹᱞᱤ ᱟᱨ ᱞᱟᱠᱪᱟᱨ ᱵᱟᱧᱪᱟᱣ ᱫᱚᱦᱚ ᱜᱮ ᱥᱟᱹᱨᱤ ᱦᱚᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱨᱟᱝ ᱫᱷᱚᱨᱚᱢ ᱠᱟᱱᱟ।",
         "textLatin": "Ari chali ar lakchar banchaw doho ge sari hor hopon aag marang dhorom kana.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_17/view?project=699495910038e39622c5",
           "textBengali": "আরি চালি আর লাকচার বাঞচাওয় দহ গে সারি হড় হপন আগ মারাং ধরম কানা।",
           "textHindi": "आरि चालि आर लाकचार बाञचाव दह गे सारि हड़ हपन आग माराङ धरम काना।",
           "textOdia": "ଆରି ଚାଲି ଆର ଲାକଚାର ବାଞଚାୱ ଦହ ଗେ ସାରି ହଡ଼ ହପନ ଆଗ ମାରାଙ ଧରମ କାନା।",
@@ -12388,9 +12557,9 @@
         "markdown": "Sirjon dular ar jumid ge abo sanam hor jiwi re sari sukh e ema bona.",
         "textOlChiki": "ᱥᱤᱨᱡᱚᱱ ᱫᱩᱞᱟᱹᱲ ᱟᱨ ᱡᱩᱢᱤᱫᱽ ᱜᱮ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱡᱤᱣᱤ ᱨᱮ ᱥᱟᱹᱨᱤ ᱥᱩᱠᱷ ᱮ ᱮᱢᱟ ᱵᱚᱱᱟ।",
         "textLatin": "Sirjon dular ar jumid ge abo sanam hor jiwi re sari sukh e ema bona.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_complex_advanced_18/view?project=699495910038e39622c5",
           "textBengali": "সিরজন দুলাড় আর জুমিদ গে আব সানাম হড়াঃ জিওয়ি রে সারি সুখ এ এমা বনা।",
           "textHindi": "सिरजन दुलाड़ आर जुमिद गे आब सानाम हुड़ाग जिवि रे सारि सुख ए एमा बना।",
           "textOdia": "ସିରଜନ ଦୁଲାଡ଼ ଆର ଜୁମିଦ ଗେ ଆବ ସାନାମ ହୁଡ଼ାଗ ଜିୱି ରେ ସାରି ସୁଖ ଏ ଏମା ବନା।",
@@ -14819,9 +14988,9 @@
         "markdown": "Jaher umul re ale do sanam hor napay te le tahena.",
         "textOlChiki": "ᱡᱟᱦᱮᱨ ᱩᱢᱩᱞ ᱨᱮ ᱟᱞᱮ ᱫᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱱᱟᱯᱟᱭ ᱛᱮ ᱞᱮ ᱛᱟᱦᱮᱸᱱᱟ।",
         "textLatin": "Jaher umul re ale do sanam hor napay te le tahena.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_18/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_17/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_18/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_17/view?project=699495910038e39622c5",
           "textBengali": "জাহের উমুল রে আলে দ সানাম হড় নাপায় তে লে তাহেঁনা।",
           "textHindi": "जाहेर उमुल रे आले द सानाम हड़ नापाय ते ले ताहेँना।",
           "textOdia": "ଜାହେର ଉମୁଲ ରେ ଆଲେ ଦ ସାନାମ ହଡ଼ ନାପାୟ ତେ ଲେ ତାହେଁନା।",
@@ -14847,9 +15016,9 @@
         "markdown": "Majhi bichar do sanam hor ko manaw batawa.",
         "textOlChiki": "ᱢᱟᱹᱡᱷᱤ ᱵᱤᱪᱟᱹᱨ ᱫᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱠᱚ ᱢᱟᱱᱟᱣ ᱵᱟᱛᱟᱣᱟ।",
         "textLatin": "Majhi bichar do sanam hor ko manaw batawa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_19/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_18/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_19/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_18/view?project=699495910038e39622c5",
           "textBengali": "মাঝি বিচার দ সানাম হড় ক মানাওয় বাতাওয়া।",
           "textHindi": "माझि बिचार द सानाम हड़ क मानाव बातावा।",
           "textOdia": "ମାଝି ବିଚାର ଦ ସାନାମ ହଡ଼ କ ମାନାୱ ବାତାୱା।",
@@ -14875,9 +15044,9 @@
         "markdown": "Santarh dhorom lekate jiwi khandaw ge sari hor kana.",
         "textOlChiki": "ᱥᱟᱱᱛᱟᱲ ᱫᱷᱚᱨᱚᱢ ᱞᱮᱠᱟᱛᱮ ᱡᱤᱣᱤ ᱠᱷᱟᱸᱰᱟᱣ ᱜᱮ ᱥᱟᱹᱨᱤ ᱦᱚᱨ ᱠᱟᱱᱟ।",
         "textLatin": "Santarh dhorom lekate jiwi khandaw ge sari hor kana.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_20/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_20/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_19/view?project=699495910038e39622c5",
           "textBengali": "হড় ধরম লেকাতে জিওয়ি খাঁডাওয় গে সারি হর কানা।",
           "textHindi": "सांताड़ धरम लेकाते जिवि खाँडाव गे सारि हर काना।",
           "textOdia": "ସାନ୍ତାଡ଼ ଧରମ ଲେକାତେ ଜିୱି ଖାଁଡାୱ ଗେ ସାରି ହର କାନା।",
@@ -14903,9 +15072,9 @@
         "markdown": "Sirjon dular ge abo sanam hor jiwi re doho lakti kana.",
         "textOlChiki": "ᱥᱤᱨᱡᱚᱱ ᱫᱩᱞᱟᱹᱲ ᱜᱮ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱡᱤᱣᱤ ᱨᱮ ᱫᱚᱦᱚ ᱞᱟᱹᱠᱛᱤ ᱠᱟᱱᱟ।",
         "textLatin": "Sirjon dular ge abo sanam hor jiwi re doho lakti kana.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_1_20/view?project=699495910038e39622c5",
           "textBengali": "সিরজন দুলাড় গে আব সানাম হড় জিওয়ি রে দহ লাকতি কানা।",
           "textHindi": "सिरजन दुलाड़ गे आब सानाम हड़ जिवि रे दह लाकति काना।",
           "textOdia": "ସିରଜନ ଦୁଲାଡ଼ ଗେ ଆବ ସାନାମ ହଡ଼ ଜିୱି ରେ ଦହ ଲାକତି କାନା।",
@@ -15486,9 +15655,9 @@
         "markdown": "Dular gadi leka amag jiwi do daya te perej kag me.",
         "textOlChiki": "ᱫᱩᱞᱟᱹᱲ ᱜᱟᱹᱰᱤ ᱞᱮᱠᱟ ᱟᱢᱟᱜ ᱡᱤᱣᱤ ᱫᱚ ᱫᱟᱭᱟ ᱛᱮ ᱯᱮᱨᱮᱡ ᱠᱟᱜ ᱢᱮ।",
         "textLatin": "Dular gadi leka amag jiwi do daya te perej kag me.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_20/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_19/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_20/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_19/view?project=699495910038e39622c5",
           "textBengali": "দুলাড় গাডি লেকা আমাঃ জিওয়ি দ দায়া তে পেরেজ কাঃ মে।",
           "textHindi": "दुलाड़ गाडि लेका आमाग जिवि द दाया ते पेरेज काग मे।",
           "textOdia": "ଦୁଲାଡ଼ ଗାଡି ଲେକା ଆମାଗ ଜିୱି ଦ ଦାୟା ତେ ପେରେଜ କାଗ ମେ।",
@@ -15514,9 +15683,9 @@
         "markdown": "Sari guru waag geyan do abo sanam hor sari hor e udug abowa.",
         "textOlChiki": "ᱥᱟᱹᱨᱤ ᱜᱩᱨᱩ ᱟᱜ ᱜᱮᱭᱟᱱ ᱫᱚ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱥᱟᱹᱨᱤ ᱦᱚᱨ ᱮ ᱩᱫᱩᱜ ᱟᱵᱚᱣᱟ।",
         "textLatin": "Sari guru waag geyan do abo sanam hor sari hor e udug abowa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_21/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_21/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_20/view?project=699495910038e39622c5",
           "textBengali": "সারি গুরু ওয়াঃ গেয়ান দ আব সানাম হড় সারি হর এ উদুঃ আবওয়া।",
           "textHindi": "सारि गुरु वाग गेयान द आब सानाम हड़ सारि हर ए उदुग आबवा।",
           "textOdia": "ସାରି ଗୁରୁ ୱାଗ ଗେୟାନ ଦ ଆବ ସାନାମ ହଡ଼ ସାରି ହର ଏ ଉଦୁଗ ଆବୱା।",
@@ -15542,9 +15711,9 @@
         "markdown": "Geyan dorya re dubuj kate sari manik em njam dareyag aa.",
         "textOlChiki": "ᱜᱮᱭᱟᱱ ᱫᱚᱨᱭᱟ ᱨᱮ ᱰᱩᱵᱩᱡ ᱠᱟᱛᱮ ᱥᱟᱹᱨᱤ ᱢᱟᱹᱱᱤᱠ ᱮᱢ ᱧᱟᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ।",
         "textLatin": "Geyan dorya re dubuj kate sari manik em njam dareyag aa.",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_22/view?project=699495910038e39622c5",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_21/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_22/view?project=699495910038e39622c5",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_sentences_folk_2_21/view?project=699495910038e39622c5",
           "textBengali": "গেয়ান দরয়া রে ডুবুজ কাতে সারি মানিক এম ঞাম দাড়েয়াঃ আ।",
           "textHindi": "गेयान दरया रे डुबुज काते सारि मानिक एम ञाम दाड़ेयाग आ।",
           "textOdia": "ଗେୟାନ ଦରୟା ରେ ଡୁବୁଜ କାତେ ସାରି ମାନିକ ଏମ ଞାମ ଦାଡ଼େୟାଗଆ।",
@@ -17672,56 +17841,184 @@
   {
     "id": "lesson_alphabet_1",
     "categoryId": "cat_alphabets_1778594017948",
-    "titleOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ I",
-    "titleLatin": "Vowels I",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ I (ᱚ ᱟᱨ ᱟ ᱛᱷᱚᱠ)",
+    "titleLatin": "Consonants: Group 1 (Velar & Dental)",
     "level": "beginner",
     "orderIndex": 0,
     "isActive": true,
     "estimatedMinutes": 5,
-    "description": null,
+    "description": "",
     "thumbnailUrl": null,
     "isPremium": false,
     "audioUrl": null,
     "blocks": [
       {
+        "id": "blk_0",
+        "order": 0,
         "type": "text",
-        "textOlChiki": "ᱚ",
-        "textLatin": "Vowel \"a\" – open sound, as in \"father\"",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱛ (At) – as in ᱛᱤ (Ti: Hand)",
+        "textOlChiki": "ᱛ - ᱛᱤ",
+        "textLatin": "ᱛ (At) – as in ᱛᱤ (Ti: Hand)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250556e988268cbc4/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250556e988268cbc4/view?project=699495910038e39622c5",
+          "textBengali": "ত - তি (হাত)",
+          "textHindi": "त - ति (हाथ)",
+          "textOdia": "ତ - ତି (ହାତ)",
+          "pronunciation": "At – Ti",
+          "meaning": "Consonant ᱛ (At), as in ᱛᱤ (Ti: Hand)",
+          "meaning_en": "Consonant ᱛ (At), as in ᱛᱤ (Ti: Hand)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱛ (অৎ), যেমন ᱛᱤ (তি: হাত)",
+          "meaning_hi": "व्यंजन ᱛ (अत), जैसे ᱛᱤ (ति: हाथ)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱛ (ଅତ୍), ଯେପରି ᱛᱤ (ତି: ହାତ)"
+        }
       },
       {
+        "id": "blk_1",
+        "order": 1,
         "type": "text",
-        "textOlChiki": "ᱟ",
-        "textLatin": "Vowel \"aa\" – elongated open sound",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱜ (Ag) – as in ᱜᱟᱰᱟ (Gada: River)",
+        "textOlChiki": "ᱜ - ᱜᱟᱰᱟ",
+        "textLatin": "ᱜ (Ag) – as in ᱜᱟᱰᱟ (Gada: River)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250b4a4100e7defbd/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250b4a4100e7defbd/view?project=699495910038e39622c5",
+          "textBengali": "গ - গাডা (নদী)",
+          "textHindi": "ग - गाडा (नदी)",
+          "textOdia": "ଗ - ଗାଡ଼ା (ନଦୀ)",
+          "pronunciation": "Ag – Gada",
+          "meaning": "Consonant ᱜ (Ag), as in ᱜᱟᱰᱟ (Gada: River)",
+          "meaning_en": "Consonant ᱜ (Ag), as in ᱜᱟᱰᱟ (Gada: River)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱜ (অগ্), যেমন ᱜᱟᱰᱟ (গাডা: নদী)",
+          "meaning_hi": "व्यंजन ᱜ (अग), जैसे ᱜᱟᱰᱟ (गाडा: नदी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱜ (ଅଗ୍), ଯେପରି ᱜାଡ଼ା (ନଦୀ)"
+        }
       },
       {
+        "id": "blk_2",
+        "order": 2,
         "type": "text",
-        "textOlChiki": "ᱤ",
-        "textLatin": "Vowel \"i\" – short \"i\" sound as in \"sit\"",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+        "textOlChiki": "ᱝ - ᱥᱟᱥᱟᱝ",
+        "textLatin": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250d67b0c04c6801c/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250d67b0c04c6801c/view?project=699495910038e39622c5",
+          "textBengali": "ং - সাসাং",
+          "textHindi": "ङ - सासाङ",
+          "textOdia": "ଙ - ସାସାଙ",
+          "pronunciation": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+          "meaning": "Consonant ᱝ (Ang), as in ᱥᱟᱥᱟᱝ (Sasang: Yellow/turmeric)",
+          "meaning_en": "Consonant ᱝ (Ang), as in ᱥᱟᱥᱟᱝ (Sasang: Yellow/turmeric)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱝ (অঙ্), যেমন ᱥᱟᱥᱟᱝ (yellow/turmeric)",
+          "meaning_hi": "व्यंजन ᱝ (अंग), जैसे ᱥᱟᱝ (सांग: साथी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱝ (ଅଙ୍ଗ୍), ଯେପରି ସାଙ୍ଗ୍ (ସାଥୀ)"
+        }
       },
       {
+        "id": "blk_3",
+        "order": 3,
         "type": "text",
-        "textOlChiki": "ᱩ",
-        "textLatin": "Vowel \"u\" – sound as in \"put\"",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱞ (Al) – as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+        "textOlChiki": "ᱞ - ᱞᱟᱸᱫᱟ",
+        "textLatin": "ᱞ (Al) – as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250ee96258c657ea3/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250ee96258c657ea3/view?project=699495910038e39622c5",
+          "textBengali": "ল - লাঁদা (হাসি)",
+          "textHindi": "ल - लांदा (हंसी)",
+          "textOdia": "ଲ - ଲାନ୍ଦା (ହସ)",
+          "pronunciation": "Al – Landa",
+          "meaning": "Consonant ᱞ (Al), as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+          "meaning_en": "Consonant ᱞ (Al), as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱞ (অল্), যেমন ᱞᱟᱸᱫᱟ (লাঁদা: হাসি)",
+          "meaning_hi": "व्यंजन ᱞ (अल), जैसे ᱞᱟᱸᱫᱟ (लांदा: हंसी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱞ (ଅଲ୍), ଯେପରି ଲାନ୍ଦା (ହସ)"
+        }
       },
       {
+        "id": "blk_4",
+        "order": 4,
         "type": "text",
-        "textOlChiki": "ᱮ",
-        "textLatin": "Vowel \"e\" – short \"e\" sound as in \"bed\"",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱠ (Aak) – as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+        "textOlChiki": "ᱠ - ᱠᱟᱹᱢᱤ",
+        "textLatin": "ᱠ (Aak) – as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22514a3b9203095ee3/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22514a3b9203095ee3/view?project=699495910038e39622c5",
+          "textBengali": "ক - কামি (কাজ)",
+          "textHindi": "क - कामि (काम)",
+          "textOdia": "କ - କାମି (କାମ)",
+          "pronunciation": "Aak – Kami",
+          "meaning": "Consonant ᱠ (Aak), as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+          "meaning_en": "Consonant ᱠ (Aak), as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱠ (আক্), যেমন ᱠᱟᱹᱢᱤ (কামি: কাজ)",
+          "meaning_hi": "व्यंजन ᱠ (आक), जैसे ᱠᱟᱹᱢᱤ (कामि: काम)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱠ (ଆକ୍), ଯେପରି କାମି (କାମ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱡ (Aaj) – as in ᱡᱚ (Jo: Fruit)",
+        "textOlChiki": "ᱡ - ᱡᱚ",
+        "textLatin": "ᱡ (Aaj) – as in ᱡᱚ (Jo: Fruit)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22516063da850d046a/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22516063da850d046a/view?project=699495910038e39622c5",
+          "textBengali": "জ - জ (ফল)",
+          "textHindi": "ज - जो (फल)",
+          "textOdia": "ଜ - ଜୋ (ଫଳ)",
+          "pronunciation": "Aaj – Jo",
+          "meaning": "Consonant ᱡ (Aaj), as in ᱡᱚ (Jo: Fruit)",
+          "meaning_en": "Consonant ᱡ (Aaj), as in ᱡᱚ (Jo: Fruit)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱡ (আজ্), যেমন ᱡᱚ (জ: ফল)",
+          "meaning_hi": "व्यंजन ᱡ (आज), जैसे ᱡᱚ (जो: फल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱡ (ଆଜ୍), ଯେପରି ଜୋ (ଫଳ)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱢ (Aam) – as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+        "textOlChiki": "ᱢ - ᱢᱟᱹᱱᱢᱤ",
+        "textLatin": "ᱢ (Aam) – as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22517837e889fdb03b/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22517837e889fdb03b/view?project=699495910038e39622c5",
+          "textBengali": "ম - মানমি (মানুষ)",
+          "textHindi": "म - मानमि (इंसान / मनुष्य)",
+          "textOdia": "ମ - ମାନମି (ମଣିଷ)",
+          "pronunciation": "Aam – Manmi",
+          "meaning": "Consonant ᱢ (Aam), as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+          "meaning_en": "Consonant ᱢ (Aam), as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱢ (আম্), যেমন ᱢᱟᱹᱱᱢᱤ (মানমি: মানুষ)",
+          "meaning_hi": "व्यंजन ᱢ (आम), जैसे ᱢᱟᱹᱱᱢᱤ (मानमि: इंसान)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱢ (ଆମ୍), ଯେପରି ମାନମି (ମଣିଷ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱣ (Aaw) – as in ᱫᱟᱣ (Daw: Opportunity)",
+        "textOlChiki": "ᱣ - ᱫᱟᱣ",
+        "textLatin": "ᱣ (Aaw) – as in ᱫᱟᱣ (Daw: Opportunity)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225190700f8c03fa04/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225190700f8c03fa04/view?project=699495910038e39622c5",
+          "textBengali": "ওয় - দাও (সুযোগ)",
+          "textHindi": "व - दाव (अवसर)",
+          "textOdia": "ୱ - ଦାୱ (ସୁଯୋଗ)",
+          "pronunciation": "Aaw – Daw",
+          "meaning": "Consonant ᱣ (Aaw), as in ᱫᱟᱣ (Daw: Opportunity)",
+          "meaning_en": "Consonant ᱣ (Aaw), as in ᱫᱟᱣ (Daw: Opportunity)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱣ (আও), যেমন ᱫᱟᱣ (দাও: সুযোগ)",
+          "meaning_hi": "व्यंजन ᱣ (आव), जैसे ᱫᱟᱣ (दाव: अवसर / मौका)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱣ (ଆୱ), ଯେପରି ଦାୱ (ସୁଯୋଗ)"
+        }
       }
     ],
     "order": 1,
@@ -18155,56 +18452,184 @@
   {
     "id": "lesson_alphabet_2",
     "categoryId": "cat_alphabets_1778594017948",
-    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ I",
-    "titleLatin": "Consonants I",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ II (ᱤ ᱟᱨ ᱩ ᱛᱷᱚᱠ)",
+    "titleLatin": "Consonants: Group 2 (Palatal & Sibilant)",
     "level": "beginner",
     "orderIndex": 0,
     "isActive": true,
     "estimatedMinutes": 5,
-    "description": null,
+    "description": "",
     "thumbnailUrl": null,
     "isPremium": false,
     "audioUrl": null,
     "blocks": [
       {
+        "id": "blk_0",
+        "order": 0,
         "type": "text",
-        "textOlChiki": "ᱜ",
-        "textLatin": "Consonant \"ag\" – as in ᱜᱟᱰᱟ (river)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱥ (Is) – as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+        "textOlChiki": "ᱥ - ᱥᱟᱹᱨᱤ",
+        "textLatin": "ᱥ (Is) – as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_is/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_is/view?project=699495910038e39622c5",
+          "textBengali": "স - সারি (সত্য)",
+          "textHindi": "स - सारि (सत्य / सच)",
+          "textOdia": "ସ - ସାରି (ସତ୍ୟ)",
+          "pronunciation": "Is – Sari",
+          "meaning": "Consonant ᱥ (Is), as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+          "meaning_en": "Consonant ᱥ (Is), as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱥ (ইস্), যেমন ᱥᱟᱹᱨᱤ (সারি: সত্য)",
+          "meaning_hi": "व्यंजन ᱥ (इस), जैसे ᱥᱟᱹᱨᱤ (सारि: सच)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱥ (ଇସ୍), ଯେପରି ସାରି (ସତ୍ୟ)"
+        }
       },
       {
+        "id": "blk_1",
+        "order": 1,
         "type": "text",
-        "textOlChiki": "ᱝ",
-        "textLatin": "Consonant \"ang\" – nasal sound",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱦ (Ih) – as in ᱦᱚᱲ (Hor: Person / Santal)",
+        "textOlChiki": "ᱦ - ᱦᱚᱲ",
+        "textLatin": "ᱦ (Ih) – as in ᱦᱚᱲ (Hor: Person / Santal)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ih/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ih/view?project=699495910038e39622c5",
+          "textBengali": "হ - হড় (মানুষ)",
+          "textHindi": "ह - होड़ (इंसान / संताल)",
+          "textOdia": "ହ - ହୋଡ଼ (ମଣିଷ)",
+          "pronunciation": "Ih – Hor",
+          "meaning": "Consonant ᱦ (Ih), as in ᱦᱚᱲ (Hor: Person / Santal)",
+          "meaning_en": "Consonant ᱦ (Ih), as in ᱦᱚᱲ (Hor: Person / Santal)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱦ (ইহ্), যেমন ᱦᱚᱲ (হড়: মানুষ / সাঁওতাল)",
+          "meaning_hi": "व्यंजन ᱦ (इह), जैसे ᱦᱚᱲ (होड़: इंसान / संताल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱦ (ଇହ୍), ଯେପରି ହୋଡ଼ (ମଣିଷ / ସାନ୍ତାଳ)"
+        }
       },
       {
+        "id": "blk_2",
+        "order": 2,
         "type": "text",
-        "textOlChiki": "ᱞ",
-        "textLatin": "Consonant \"al\" – as in ᱞᱟᱹᱭ (to take)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱧ (Iny) – as in ᱧᱮᱞ (Nyel: To see / Look)",
+        "textOlChiki": "ᱧ - ᱧᱮᱞ",
+        "textLatin": "ᱧ (Iny) – as in ᱧᱮᱞ (Nyel: To see / Look)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_iny/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_iny/view?project=699495910038e39622c5",
+          "textBengali": "ঞ - ঞেল (দেখা)",
+          "textHindi": "ञ - ञेल (देखना)",
+          "textOdia": "ଞ - ଞେଲ୍ (ଦେଖିବା)",
+          "pronunciation": "Iny – Nyel",
+          "meaning": "Consonant ᱧ (Iny), as in ᱧᱮᱞ (Nyel: To see / Look)",
+          "meaning_en": "Consonant ᱧ (Iny), as in ᱧᱮᱞ (Nyel: To see / Look)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱧ (ইঞ্), যেমন ᱧᱮᱞ (ঞেল: দেখা)",
+          "meaning_hi": "व्यंजन ᱧ (इञ), जैसे ᱧᱮᱞ (ञेल: देखना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱧ (ଇଞ୍), ଯେପରି ଞେଲ୍ (ଦେଖିବା)"
+        }
       },
       {
+        "id": "blk_3",
+        "order": 3,
         "type": "text",
-        "textOlChiki": "ᱠ",
-        "textLatin": "Consonant \"ak\" – as in ᱠᱟᱹᱢᱤ (work)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱨ (Ir) – as in ᱨᱚᱲ (Ror: To speak / Speech)",
+        "textOlChiki": "ᱨ - ᱨᱚᱲ",
+        "textLatin": "ᱨ (Ir) – as in ᱨᱚᱲ (Ror: To speak / Speech)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ir/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ir/view?project=699495910038e39622c5",
+          "textBengali": "র - রড় (কথা বলা)",
+          "textHindi": "र - रोड़ (बोलना)",
+          "textOdia": "ର - ରୋଡ଼ (କଥା କହିବା)",
+          "pronunciation": "Ir – Ror",
+          "meaning": "Consonant ᱨ (Ir), as in ᱨᱚᱲ (Ror: To speak / Speech)",
+          "meaning_en": "Consonant ᱨ (Ir), as in ᱨᱚᱲ (Ror: To speak / Speech)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱨ (ইর্), যেমন ᱨᱚᱲ (রড়: কথা বলা)",
+          "meaning_hi": "व्यंजन ᱨ (इर), जैसे ᱨᱚᱲ (रोड़: बोलना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱨ (ଇର୍), ଯେପରି ରୋଡ଼ (କଥା କହିବା)"
+        }
       },
       {
+        "id": "blk_4",
+        "order": 4,
         "type": "text",
-        "textOlChiki": "ᱡ",
-        "textLatin": "Consonant \"aj\" – as in ᱡᱚᱦᱟᱨ (hello)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱪ (Uch) – as in ᱪᱮᱬᱮ (Chene: Bird)",
+        "textOlChiki": "ᱪ - ᱪᱮᱬᱮ",
+        "textLatin": "ᱪ (Uch) – as in ᱪᱮᱬᱮ (Chene: Bird)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uc/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uc/view?project=699495910038e39622c5",
+          "textBengali": "চ - চেঁড়ে (পাখি)",
+          "textHindi": "च - चेँड़े (चिड़िया)",
+          "textOdia": "ଚ - ଚେଁଡ଼େ (ପକ୍ଷୀ)",
+          "pronunciation": "Uch – Chene",
+          "meaning": "Consonant ᱪ (Uch), as in ᱪᱮᱬᱮ (Chene: Bird)",
+          "meaning_en": "Consonant ᱪ (Uch), as in ᱪᱮᱬᱮ (Chene: Bird)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱪ (উচ্), যেমন ᱪᱮᱬᱮ (চেঁড়ে: পাখি)",
+          "meaning_hi": "व्यंजन ᱪ (उच), जैसे ᱪᱮᱬᱮ (चेँड़े: चिड़िया / पक्षी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱪ (ଉଚ୍), ଯେପରି ଚେଁଡ଼େ (ପକ୍ଷୀ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱫ (Ud) – as in ᱫᱟᱜ (Dag: Water / Rain)",
+        "textOlChiki": "ᱫ - ᱫᱟᱜ",
+        "textLatin": "ᱫ (Ud) – as in ᱫᱟᱜ (Dag: Water / Rain)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ud/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ud/view?project=699495910038e39622c5",
+          "textBengali": "দ - দাঃ (জল / বৃষ্টি)",
+          "textHindi": "द - दाग (पानी / वर्षा)",
+          "textOdia": "ଦ - ଦାଗ୍ (ପାଣି / ବର୍ଷା)",
+          "pronunciation": "Ud – Dag",
+          "meaning": "Consonant ᱫ (Ud), as in ᱫᱟᱜ (Dag: Water / Rain)",
+          "meaning_en": "Consonant ᱫ (Ud), as in ᱫᱟᱜ (Dag: Water / Rain)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱫ (উদ্), যেমন ᱫᱟᱜ (দাঃ: জল / বৃষ্টি)",
+          "meaning_hi": "व्यंजन ᱫ (उद), जैसे ᱫᱟᱜ (दाग: पानी / वर्षा)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱫ (ଉଦ୍), ଯେପରି ଦାଗ୍ (ପାଣି / ବର୍ଷା)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+        "textOlChiki": "ᱬ - ᱩᱬ (ᱪᱮᱬᱮ)",
+        "textLatin": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_unn/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_unn/view?project=699495910038e39622c5",
+          "textBengali": "উঁড় - উঁড় (চেঁড়ে)",
+          "textHindi": "ण - उण (चेणे)",
+          "textOdia": "ଣ - ଉଣ (ଚେଣେ)",
+          "pronunciation": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+          "meaning": "Consonant ᱬ (Unrh), as in ᱪᱮᱬᱮ (bird)",
+          "meaning_en": "Consonant ᱬ (Unrh), as in ᱪᱮᱬᱮ (bird)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱬ (উঁড়), যেমন ᱪᱮᱬᱮ(পাখি)",
+          "meaning_hi": "व्यंजन ᱬ (उण), जैसे ᱪᱮᱬᱮ (चिड़िया / पक्षी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱬ (ଉଣ୍), ଯେପରି ᱪᱮᱬᱮ  (ପକ୍ଷୀ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱭ (Uy) – as in ᱠᱚᱭ (Koy: To ask / Request)",
+        "textOlChiki": "ᱭ - ᱠᱚᱭ",
+        "textLatin": "ᱭ (Uy) – as in ᱠᱚᱭ (Koy: To ask / Request)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uy/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uy/view?project=699495910038e39622c5",
+          "textBengali": "য় - কয় (চাওয়া / প্রার্থনা)",
+          "textHindi": "य - कोय (मांगना)",
+          "textOdia": "ୟ - କୟ (ମାଗିବା)",
+          "pronunciation": "Uy – Koy",
+          "meaning": "Consonant ᱭ (Uy), as in ᱠᱚᱭ (Koy: To ask / Request)",
+          "meaning_en": "Consonant ᱭ (Uy), as in ᱠᱚᱭ (Koy: To ask / Request)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱭ (উয়্), যেমন ᱠᱚᱭ (কয়: চাওয়া / প্রার্থনা)",
+          "meaning_hi": "व्यंजन ᱭ (उय), जैसे ᱠᱚᱭ (कोय: मांगना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ୟ (ଉୟ୍), ଯେପରି କୟ (ମାଗିବା)"
+        }
       }
     ],
     "order": 2,
@@ -18660,48 +19085,184 @@
   {
     "id": "lesson_alphabet_3",
     "categoryId": "cat_alphabets_1778594017948",
-    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ II",
-    "titleLatin": "Consonants II",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ III (ᱮ ᱟᱨ ᱳ ᱛᱷᱚᱠ)",
+    "titleLatin": "Consonants: Group 3 (Labial & Retroflex)",
     "level": "beginner",
     "orderIndex": 0,
     "isActive": true,
     "estimatedMinutes": 5,
-    "description": null,
+    "description": "",
     "thumbnailUrl": null,
     "isPremium": false,
     "audioUrl": null,
     "blocks": [
       {
+        "id": "blk_0",
+        "order": 0,
         "type": "text",
-        "textOlChiki": "ᱪ",
-        "textLatin": "Consonant \"ach\" – as in ᱪᱮᱛᱟᱱ (field)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱯ (Ep) – as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+        "textOlChiki": "ᱯ - ᱯᱚᱨᱚᱵ",
+        "textLatin": "ᱯ (Ep) – as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22533a8d9a0373fe0b/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22533a8d9a0373fe0b/view?project=699495910038e39622c5",
+          "textBengali": "প - পরব (উৎসব)",
+          "textHindi": "प - पोरोब (त्योहार)",
+          "textOdia": "ପ - ପୋରୋବ୍ (ପର୍ବ)",
+          "pronunciation": "Ep – Porob",
+          "meaning": "Consonant ᱯ (Ep), as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+          "meaning_en": "Consonant ᱯ (Ep), as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱯ (এপ্), যেমন ᱯᱚᱨᱚᱵ (পরব: উৎসব)",
+          "meaning_hi": "व्यंजन ᱯ (एप), जैसे ᱯᱚᱨᱚᱵ (पोरोब: त्योहार)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱯ (ଏପ୍), ଯେପରି ପୋରୋବ୍ (ପର୍ବ)"
+        }
       },
       {
+        "id": "blk_1",
+        "order": 1,
         "type": "text",
-        "textOlChiki": "ᱫ",
-        "textLatin": "Consonant \"ad\" – as in ᱫᱟᱠᱟ (food/rice)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱰ (Edd) – as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+        "textOlChiki": "ᱰ - ᱰᱟᱦᱟᱨ",
+        "textLatin": "ᱰ (Edd) – as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225355084d08dea4ca/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225355084d08dea4ca/view?project=699495910038e39622c5",
+          "textBengali": "ড - ডাহার (রাস্তা / পথ)",
+          "textHindi": "ड - डाहार (रास्ता / मार्ग)",
+          "textOdia": "ଡ - ଡାହାର (ରାସ୍ତା)",
+          "pronunciation": "Edd – Dahar",
+          "meaning": "Consonant ᱰ (Edd), as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+          "meaning_en": "Consonant ᱰ (Edd), as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱰ (এড্), যেমন ᱰᱟᱦᱟᱨ (ডাহার: রাস্তা)",
+          "meaning_hi": "व्यंजन ᱰ (एड), जैसे ᱰᱟᱦᱟᱨ (डाहार: रास्ता)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଡ (ଏଡ୍), ଯେପରି ଡାହାର (ରାସ୍ତା)"
+        }
       },
       {
+        "id": "blk_2",
+        "order": 2,
         "type": "text",
-        "textOlChiki": "ᱯ",
-        "textLatin": "Consonant \"ap\" – as in ᱯᱟᱱᱛᱮ (path)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱱ (En) – as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+        "textOlChiki": "ᱱ - ᱱᱟᱯᱟᱭ",
+        "textLatin": "ᱱ (En) – as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22537d416e01308ed2/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22537d416e01308ed2/view?project=699495910038e39622c5",
+          "textBengali": "ন - নাপায় (ভালো / সুন্দর)",
+          "textHindi": "न - नापाय (अच्छा / सुंदर)",
+          "textOdia": "ନ - ନାପାୟ (ଭଲ / ସୁନ୍ଦର)",
+          "pronunciation": "En – Napay",
+          "meaning": "Consonant ᱱ (En), as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+          "meaning_en": "Consonant ᱱ (En), as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱱ (এন্), যেমন ᱱᱟᱯᱟᱭ (নাপায়: ভালো)",
+          "meaning_hi": "व्यंजन ᱱ (एन), जैसे ᱱᱟᱯᱟᱭ (नापाय: अच्छा)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ନ (ଏନ୍), ଯେପରି ନାପାୟ (ଭଲ)"
+        }
       },
       {
+        "id": "blk_3",
+        "order": 3,
         "type": "text",
-        "textOlChiki": "ᱢ",
-        "textLatin": "Consonant \"am\" – as in ᱢᱟᱹᱡᱷᱤ (village head)",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱲ (Err) – as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+        "textOlChiki": "ᱲ - ᱫᱟᱲᱮ",
+        "textLatin": "ᱲ (Err) – as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225395372d07ecb0de/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225395372d07ecb0de/view?project=699495910038e39622c5",
+          "textBengali": "ড় - দাড়ে (শক্তি / বল)",
+          "textHindi": "ड़ - दाड़े (शक्ति / ताकत)",
+          "textOdia": "ଡ଼ - ଦାଡ଼େ (ଶକ୍ତି)",
+          "pronunciation": "Err – Dare",
+          "meaning": "Consonant ᱲ (Err), as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+          "meaning_en": "Consonant ᱲ (Err), as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱲ (এড়্), যেমন ᱫᱟᱲᱮ (দাড়ে: শক্তি)",
+          "meaning_hi": "व्यंजन ᱲ (एड़), जैसे ᱫᱟᱲᱮ (दाड़े: शक्ति)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଡ଼ (ଏଡ଼୍), ଯେପରି ଦାଡ଼େ (ଶକ୍ତି)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱴ (Ott) – as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+        "textOlChiki": "ᱴ - ᱴᱟᱠᱟ",
+        "textLatin": "ᱴ (Ott) – as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a094e200e7c1e99/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a094e200e7c1e99/view?project=699495910038e39622c5",
+          "textBengali": "ট - টাকা (টাকা / মুদ্রা)",
+          "textHindi": "ट - टाका (पैसा / रुपया)",
+          "textOdia": "ଟ - ଟାକା (ଟଙ୍କା)",
+          "pronunciation": "Ott – Taka",
+          "meaning": "Consonant ᱴ (Ott), as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+          "meaning_en": "Consonant ᱴ (Ott), as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱴ (অট্), যেমন ᱴᱟᱠᱟ (টাকা: টাকা)",
+          "meaning_hi": "व्यंजन ᱴ (ओट), जैसे ᱴᱟᱠᱟ (टाका: पैसा / रुपया)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଟ (ଅଟ୍), ଯେପରି ଟାକା (ଟଙ୍କା)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱵ (Ob) – as in ᱵᱟᱦᱟ (Baha: Flower)",
+        "textOlChiki": "ᱵ - ᱵᱟᱦᱟ",
+        "textLatin": "ᱵ (Ob) – as in ᱵᱟᱦᱟ (Baha: Flower)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a203f7a00d74225/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a203f7a00d74225/view?project=699495910038e39622c5",
+          "textBengali": "ব - বাহা (ফুল)",
+          "textHindi": "ब - बाहा (फूल)",
+          "textOdia": "ବ - ବାହା (ଫୁଲ)",
+          "pronunciation": "Ob – Baha",
+          "meaning": "Consonant ᱵ (Ob), as in ᱵᱟᱦᱟ (Baha: Flower)",
+          "meaning_en": "Consonant ᱵ (Ob), as in ᱵᱟᱦᱟ (Baha: Flower)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱵ (অব্), যেমন ᱵᱟᱦᱟ (বাহা: ফুল)",
+          "meaning_hi": "व्यंजन ᱵ (ओब), जैसे ᱵᱟᱦᱟ (बाहा: फूल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ବ (ଅବ୍), ଯେପରି ବାହା (ଫୁଲ)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱶ (Ov) – as in ᱥᱟᱶ (Saw: Together / With)",
+        "textOlChiki": "ᱶ - ᱥᱟᱶ",
+        "textLatin": "ᱶ (Ov) – as in ᱥᱟᱶ (Saw: Together / With)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a389c400594c3dd/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a389c400594c3dd/view?project=699495910038e39622c5",
+          "textBengali": "ওঁ - সাঁও (সাথে / সঙ্গে)",
+          "textHindi": "व् - सांव (साथ / संग)",
+          "textOdia": "ୱ - ସାୱ (ସାଥିରେ)",
+          "pronunciation": "Ov – Saw",
+          "meaning": "Consonant ᱶ (Ov), as in ᱥᱟᱶ (Saw: Together / With)",
+          "meaning_en": "Consonant ᱶ (Ov), as in ᱥᱟᱶ (Saw: Together / With)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱶ (ওঁভ), যেমন ᱥᱟᱶ (সাঁও: সঙ্গে / সাথে)",
+          "meaning_hi": "व्यंजन ᱶ (ओव), जैसे ᱥᱟᱶ (सांव: साथ)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ୱ (ଓୱ୍), ଯେପରି ସାୱ (ସାଥିରେ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱷ (Oh) – as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+        "textOlChiki": "ᱷ - ᱯᱷᱟᱹᱜᱩᱱ",
+        "textLatin": "ᱷ (Oh) – as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a4cf07a8a62fb2e/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a4cf07a8a62fb2e/view?project=699495910038e39622c5",
+          "textBengali": "হ - ফাগুন (ফাল্গুন মাস)",
+          "textHindi": "ह - फागुन (फाल्गुन मास)",
+          "textOdia": "ହ - ଫାଗୁନ (ଫାଲ୍ଗୁନ ମାସ)",
+          "pronunciation": "Oh – Phagun",
+          "meaning": "Consonant ᱷ (Oh), as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+          "meaning_en": "Consonant ᱷ (Oh), as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱷ (অহ্), যেমন ᱯᱷᱟᱹᱜᱩᱱ (ফাগুন: বসন্তকাল / ফাল্গুন)",
+          "meaning_hi": "व्यंजन ᱷ (ओह), जैसे ᱯᱷᱟᱹᱜᱩᱱ (फागुन: वसंत मास)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ହ (ଅହ୍), ଯେପରି ଫାଗୁନ (ଫାଲ୍ଗୁନ ମାସ)"
+        }
       }
     ],
     "order": 3,
@@ -19316,48 +19877,132 @@
   {
     "id": "lesson_alphabet_4",
     "categoryId": "cat_alphabets_1778594017948",
-    "titleOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ II",
-    "titleLatin": "Vowels II",
+    "titleOlChiki": "ᱡᱟᱯᱟᱜ ᱟᱲᱟᱝ ᱟᱨ ᱪᱤᱱᱦᱟᱹ",
+    "titleLatin": "Modifiers & Signs (Japag Arang)",
     "level": "beginner",
     "orderIndex": 0,
     "isActive": true,
     "estimatedMinutes": 5,
-    "description": null,
+    "description": "",
     "thumbnailUrl": null,
     "isPremium": false,
     "audioUrl": null,
     "blocks": [
       {
+        "id": "blk_0",
+        "order": 0,
         "type": "text",
-        "textOlChiki": "ᱳ",
-        "textLatin": "Vowel \"o\" – rounded sound as in \"go\"",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱹ (Gahla Tudag) – Baseline dot that deepens/opens vowel, as in ᱟᱹᱛᱩ (Atu: Village)",
+        "textOlChiki": "ᱹ - ᱜᱟᱹᱦᱞᱟᱹ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱹ (Gahla Tudag) – Baseline dot that deepens/opens vowel, as in ᱟᱹᱛᱩ (Atu: Village)",
+        "meta": {
+          "textBengali": "গাহলা টুডাগ (নিচের বিন্দু) – স্বর গভীর করে, যেমন ᱟᱹᱛᱩ (গ্রাম)",
+          "textHindi": "गाहला टुडाग (निचला बिंदु) – स्वर को गहरा करता है, जैसे ᱟᱹᱛᱩ (गाँव)",
+          "textOdia": "ଗାହଲା ଟୁଡାଗ (ତଳ ବିନ୍ଦୁ) – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)",
+          "pronunciation": "Gahla Tudag – Atu",
+          "meaning": "Baseline dot modifying vowel into deep/open variant (e.g. ᱟ -> ᱟᱹ as in ᱟᱹᱛᱩ)",
+          "meaning_en": "Baseline dot modifying vowel into deep/open variant (e.g. ᱟ -> ᱟᱹ as in ᱟᱹᱛᱩ)",
+          "meaning_bn": "গাহলা টুডাগ (নিচের বিন্দু) – স্বর গভীর করে, যেমন ᱟᱹᱛᱩ (গ্রাম)",
+          "meaning_hi": "गाहला टुडाग – स्वर को गहरा बनाता है, जैसे ᱟᱹᱛᱩ (गाँव)",
+          "meaning_or": "ଗାହଲା ଟୁଡାଗ – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)"
+        }
       },
       {
+        "id": "blk_1",
+        "order": 1,
         "type": "text",
-        "textOlChiki": "ᱚᱦ",
-        "textLatin": "Vowel combination \"ah\" – aspirated",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱸ (Mu Tudag) – Top dot for nasalization, as in ᱦᱮᱸ (Hẽ: Yes)",
+        "textOlChiki": "ᱸ - ᱢᱩ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱸ (Mu Tudag) – Top dot for nasalization, as in ᱦᱮᱸ (Hẽ: Yes)",
+        "meta": {
+          "textBengali": "মু টুডাগ (নাসিক্য বিন্দু) – স্বর অনুনাসিক করে, যেমন ᱦᱮᱸ (হ্যাঁ)",
+          "textHindi": "मु टुडाग (नासिक बिंदु) – अनुनासिक ध्वनि बनाता है, जैसे ᱦᱮᱸ (हाँ)",
+          "textOdia": "ମୁ ଟୁଡାଗ (ନାସିକ୍ୟ ବିନ୍ଦୁ) – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦᱮᱸ (ହଁ)",
+          "pronunciation": "Mu Tudag – Hẽ",
+          "meaning": "Top dot adding nasalization to vowel (e.g. ᱦᱮᱸ: Yes)",
+          "meaning_en": "Top dot adding nasalization to vowel (e.g. ᱦᱮᱸ: Yes)",
+          "meaning_bn": "মু টুডাগ (উপরের বিন্দু) – অনুনাসিক ধ্বনি তৈরি করে, যেমন ᱦᱮᱸ (হ্যাঁ)",
+          "meaning_hi": "मु टुडाग – स्वर को अनुनासिक करता है, जैसे ᱦᱮᱸ (हाँ)",
+          "meaning_or": "ମୁ ଟୁଡାଗ – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦେᱸ (ହଁ)"
+        }
       },
       {
+        "id": "blk_2",
+        "order": 2,
         "type": "text",
-        "textOlChiki": "ᱟᱹ",
-        "textLatin": "Modified vowel \"aa\" – checked vowel variant",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱺ (Mu-Gahla Tudag) – Double dot for deep nasalized vowel, as in ᱥᱟᱺᱜᱤᱧ (Sanginj: Far)",
+        "textOlChiki": "ᱺ - ᱢᱩ-ᱜᱟᱹᱦᱞᱟᱹ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱺ (Mu-Gahla Tudag) – Double dot for deep nasalized vowel, as in ᱥᱟᱺᱜᱤᱧ (Sanginj: Far)",
+        "meta": {
+          "textBengali": "মু-গাহলা টুডাগ – গভীর ও অনুনাসিক স্বর, যেমন ᱥᱟᱺᱜᱤᱧ (দূর)",
+          "textHindi": "मु-गाहला टुडाग – गहरा और अनुनासिक स्वर, जैसे ᱥᱟᱺᱜᱤᱧ (दूर)",
+          "textOdia": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟ ସ୍ୱର, ଯେପରି ᱥᱟᱺଗିᱧ (ଦୂର)",
+          "pronunciation": "Mu-Gahla Tudag – Sanginj",
+          "meaning": "Colon-like double dot combining deepening and nasalization together",
+          "meaning_en": "Colon-like double dot combining deepening and nasalization together",
+          "meaning_bn": "মু-গাহলা টুডাগ – গভীর ও অনুনাসিক যুগল ধ্বনি, যেমন ᱥᱟᱺᱜᱤᱧ (দূর)",
+          "meaning_hi": "मु-गाहला टुडाग – गहरा और अनुनासिक का संयुक्त रूप, जैसे ᱥᱟᱺᱜᱤᱧ (दूर)",
+          "meaning_or": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟର ସଂଯୁକ୍ତ ରୂପ"
+        }
       },
       {
+        "id": "blk_3",
+        "order": 3,
         "type": "text",
-        "textOlChiki": "ᱮᱹ",
-        "textLatin": "Modified vowel \"e\" – nasalized variant",
-        "imageUrl": null,
-        "data": null,
-        "meta": {}
+        "markdown": "ᱽ (Ohod) – Deglottalizer mark releasing checked stops, as in ᱢᱮᱫᱽ (Med:eye)",
+        "textOlChiki": "ᱽ - ᱚᱦᱚᱫᱽ",
+        "textLatin": "ᱽ (Ohod) – Deglottalizer mark releasing checked stops, as in ᱢᱮᱫᱽ (Med:eye)",
+        "meta": {
+          "textBengali": "অহদ",
+          "textHindi": "ओहद",
+          "textOdia": "ଅହଦ",
+          "pronunciation": "Ohod",
+          "meaning": "Deglottalizer releasing checked consonants ᱜ, ᱡ, ᱫ, ᱵ into continuous sounds",
+          "meaning_en": "Deglottalizer releasing checked consonants ᱜ, ᱡ, ᱫ, ᱵ into continuous sounds",
+          "meaning_bn": "অহদ – অবরুদ্ধ ব্যঞ্জনধ্বনিকে পূর্ণ কণ্ঠে প্রকাশ করে, যেমন ᱢᱮᱫᱽ ( চোখ)",
+          "meaning_hi": "ओहद – रुके हुए व्यंजन को मुक्त करता है, जैसे ᱢᱮᱫᱽ ( आँख )",
+          "meaning_or": "ଓହଦ୍ – ସ୍ୱର ପ୍ରବାହ ମୁକ୍ତ କରେ, ଯେପରି ᱢᱮᱫᱽ (ଆଖି)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+        "textOlChiki": "ᱻ - ᱨᱮᱞᱟ",
+        "textLatin": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+        "meta": {
+          "textBengali": "ᱻ - রেলা",
+          "textHindi": "ᱻ - रेला",
+          "textOdia": "ᱻ- ରେଲା",
+          "pronunciation": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-",
+          "meaning": "Vowel lengthener used for elongation in songs and chants -ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_en": "Vowel lengthener used for elongation in songs and chants -ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_bn": "রেলা– স্বরধ্বনি দীর্ঘায়িত করার চিহ্ন-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_hi": "आहद – स्वर को दीर्घ करने का चिह्न-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_or": "ଆହଦ୍ – ସ୍ୱରକୁ ଦୀର୍ଘ କରିବାର ଚିହ୍ନ-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "᱾ (Mucaad) – Full stop punctuation mark, as in ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (I am reading.)",
+        "textOlChiki": "᱾ - ᱢᱩᱪᱟᱹᱫ",
+        "textLatin": "᱾ (Mucaad) – Full stop punctuation mark, as in ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (I am reading.)",
+        "meta": {
+          "textBengali": "মুচাদ – পূর্ণচ্ছেদ (দাঁড়ি), যেমন ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (আমি পড়ছি।)",
+          "textHindi": "मुचाद – पूर्ण विराम (खड़ी पाई), जैसे ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (मैं पढ़ रहा हूँ।)",
+          "textOdia": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ, ଯେପରି ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (ମୁଁ ପଢ଼ୁଛି।)",
+          "pronunciation": "Mucaad",
+          "meaning": "Sentence terminal punctuation mark (full stop)",
+          "meaning_en": "Sentence terminal punctuation mark (full stop)",
+          "meaning_bn": "মুচাদ – পূর্ণচ্ছেদ (দাঁড়ি / ফুলস্টপ)",
+          "meaning_hi": "मुचाद – पूर्ण विराम (खड़ी पाई)",
+          "meaning_or": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ"
+        }
       }
     ],
     "order": 4,
@@ -20062,8 +20707,10 @@
           "meaning_en": "otherwise/else",
           "meaning_bn": "তা না হলে",
           "meaning_hi": "नहीं तो / वरना",
-          "meaning_or": "ନ ହେଲେ / ନଚେତ୍"
-        }
+          "meaning_or": "ନ ହେଲେ / ନଚେତ୍",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_4/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_4/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_4",
@@ -20081,8 +20728,10 @@
           "meaning_en": "or",
           "meaning_bn": "অথবা",
           "meaning_hi": "या",
-          "meaning_or": "କିମ୍ବା"
-        }
+          "meaning_or": "କିମ୍ବା",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_5/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_5/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_5",
@@ -20100,8 +20749,10 @@
           "meaning_en": "Rather",
           "meaning_bn": "বরং",
           "meaning_hi": "बल्कि",
-          "meaning_or": "ବରଂ"
-        }
+          "meaning_or": "ବରଂ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_6/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_6/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_6",
@@ -20119,8 +20770,10 @@
           "meaning_en": "Because",
           "meaning_bn": "কারণ",
           "meaning_hi": "क्योंकि",
-          "meaning_or": "କାରଣ"
-        }
+          "meaning_or": "କାରଣ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_7/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_7/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_7",
@@ -20138,8 +20791,10 @@
           "meaning_en": "Therefore",
           "meaning_bn": "অতএব",
           "meaning_hi": "इसलिए",
-          "meaning_or": "ତେଣୁ"
-        }
+          "meaning_or": "ତେଣୁ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_8/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_8/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_8",
@@ -20157,8 +20812,10 @@
           "meaning_en": "Even then / Still",
           "meaning_bn": "তা হলেও",
           "meaning_hi": "फिर भी / तब भी",
-          "meaning_or": "ତଥାପି"
-        }
+          "meaning_or": "ତଥାପି",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_9/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_9/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_text_9",
@@ -20176,8 +20833,10 @@
           "meaning_en": "Also/more",
           "meaning_bn": "আরও",
           "meaning_hi": "भी / और भी",
-          "meaning_or": "ଆହୁରି / ଆହୁରି ମଧ୍ୟ"
-        }
+          "meaning_or": "ଆହୁରି / ଆହୁରି ମଧ୍ୟ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_10/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_grammar_conjunctions_10/view?project=699495910038e39622c5"
       }
     ],
     "order": 19,

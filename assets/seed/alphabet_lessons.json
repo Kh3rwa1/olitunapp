@@ -1,0 +1,819 @@
+[
+  {
+    "id": "lesson_alphabet_0",
+    "titleLatin": "The 6 Vowels (Raha Arang)",
+    "titleOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ (ᱢᱩᱞ ᱖ ᱜᱚᱴᱟᱝ)",
+    "level": "beginner",
+    "blocks": [
+      {
+        "id": "blk_0",
+        "order": 0,
+        "type": "text",
+        "markdown": "Ol Chiki has 6 basic vowels called Raha Arang (ᱨᱟᱦᱟ ᱟᱲᱟᱝ).",
+        "textOlChiki": "ᱨᱟᱦᱟ ᱟᱲᱟᱝ ᱫᱚ ᱛᱩᱨᱩᱭ ᱜᱚᱴᱟᱝ ᱢᱮᱱᱟᱜᱼᱟ᱾",
+        "textLatin": "Ol Chiki has 6 basic vowels called Raha Arang (ᱨᱟᱦᱟ ᱟᱲᱟᱝ).",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_alphabet_0_intro/view?project=699495910038e39622c5",
+        "meta": {
+          "textBengali": "রাহা আড়াং দ তুরুয় গটাং মেনাঃ-আ।",
+          "textHindi": "राहा आड़ांग द तुरुय गोटांग मेनाग-आ।",
+          "textOdia": "ରାହା ଆଡ଼ାଙ୍ଗ ଦ ତୁରୁୟ ଗଟାଙ୍ଗ ମେନାଗ-ଆ।",
+          "pronunciation": "Raha arang do turuy gotang menag-a.",
+          "meaning": "There are 6 basic vowels in Ol Chiki.",
+          "meaning_en": "There are 6 basic vowels in Ol Chiki.",
+          "meaning_bn": "অল চিকিতে মূল ৬টি স্বরবর্ণ রয়েছে।",
+          "meaning_hi": "ओल चिकी में मूल ६ स्वर वर्ण हैं।",
+          "meaning_or": "ଅଲ ଚିକିରେ ମୂଳ ୬ଟି ସ୍ୱରବର୍ଣ୍ଣ ରହିଛି।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_alphabet_0_intro/view?project=699495910038e39622c5"
+        }
+      },
+      {
+        "id": "blk_1",
+        "order": 1,
+        "type": "text",
+        "markdown": "ᱚ (a)– as in ᱚᱞ",
+        "textOlChiki": "ᱚ - ᱚᱞ",
+        "textLatin": "ᱚ (a)– as in ᱚᱞ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250190a7f82535f27/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250190a7f82535f27/view?project=699495910038e39622c5",
+          "textBengali": "অ - অল (লেখা )",
+          "textHindi": "अ - अल",
+          "textOdia": "ଅ - ଅଲ",
+          "pronunciation": "ᱚ (a)– as in ᱚᱞ",
+          "meaning": "Vowel ᱚ (a), as in ᱚᱞ (Ol: To write)",
+          "meaning_en": "Vowel ᱚ (a), as in ᱚᱞ (Ol: To write)",
+          "meaning_bn": "স্বরবর্ণ ᱚ (ল), যেমন ᱚᱞ (অল: লেখা )",
+          "meaning_hi": "स्वर ᱚ (ल), जैसे ᱚᱞ (ओल: लिखना)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱚ (ଲ), ଯେପରି ᱚᱞ (ଅଲ୍: ଲେଖିବା )"
+        }
+      },
+      {
+        "id": "blk_2",
+        "order": 2,
+        "type": "text",
+        "markdown": "ᱟ (aa) – as in ᱟᱭᱳ",
+        "textOlChiki": "ᱟ - ᱟᱭᱳ",
+        "textLatin": "ᱟ (aa) – as in ᱟᱭᱳ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225105a16085db8931/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225105a16085db8931/view?project=699495910038e39622c5",
+          "textBengali": "আ - আয়ো",
+          "textHindi": "आ - आयो",
+          "textOdia": "ଆ - ଆୟୋ",
+          "pronunciation": "ᱟ (aa) – as in ᱟᱭᱳ",
+          "meaning": "Vowel ᱟ (aa), as in ᱟᱭᱳ (Ayo: Mother)",
+          "meaning_en": "Vowel ᱟ (aa), as in ᱟᱭᱳ (Ayo: Mother)",
+          "meaning_bn": "স্বরবর্ণ ᱟ (আ), যেমন ᱟᱭᱳ (আয়ো: মা)",
+          "meaning_hi": "स्वर ᱟ  जैसे ᱟᱭᱳ (आयो: माँ)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱟ,  ଯେପରି ᱟୟୋ (ଆୟୋ: ମାଆ)"
+        }
+      },
+      {
+        "id": "blk_3",
+        "order": 3,
+        "type": "text",
+        "markdown": "ᱤ (I) – as in ᱤᱧ",
+        "textOlChiki": "ᱤ - ᱤᱧ",
+        "textLatin": "ᱤ (I) – as in ᱤᱧ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251b5cfc383d059c4/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251b5cfc383d059c4/view?project=699495910038e39622c5",
+          "textBengali": "ই - ইঞ",
+          "textHindi": "इ - इञ",
+          "textOdia": "ଇ - ଇଞ",
+          "pronunciation": "ᱤ (I) – as in ᱤᱧ",
+          "meaning": "Vowel ᱤ (i), as in ᱤᱧ (Iny: I / Me)",
+          "meaning_en": "Vowel ᱤ (i), as in ᱤᱧ (Iny: I / Me)",
+          "meaning_bn": "স্বরবর্ণ ᱤ (ই), যেমন ᱤᱧ (ইঞ: আমি)",
+          "meaning_hi": "स्वर ᱤ (लि), जैसे ᱤᱧ (इञ: मैं)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱤ (ଲି), ଯେପରି ᱤଞ (ମୁଁ)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱩ (u) – as in ᱩᱞ",
+        "textOlChiki": "ᱩ - ᱩᱞ",
+        "textLatin": "ᱩ (u) – as in ᱩᱞ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22525a21ef8b1b0c78/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22525a21ef8b1b0c78/view?project=699495910038e39622c5",
+          "textBengali": "উ - উল",
+          "textHindi": "उ - उल",
+          "textOdia": "ଉ - ଉଲ",
+          "pronunciation": "ᱩ (u) – as in ᱩᱞ",
+          "meaning": "Vowel ᱩ (u), as in ᱩᱞ (Ul: Mango)",
+          "meaning_en": "Vowel ᱩ (u), as in ᱩᱞ (Ul: Mango)",
+          "meaning_bn": "স্বরবর্ণ ᱩ (লউ), যেমন ᱩᱞ (উল: আম)",
+          "meaning_hi": "स्वर ᱩ (लु), जैसे ᱩᱞ (उल: आम)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱩ (ଲୁ), ଯେପରି ଉଲ୍ (ଆମ୍ବ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱮ (E) – as in ᱮᱱᱮᱡ",
+        "textOlChiki": "ᱮ - ᱮᱱᱮᱡ",
+        "textLatin": "ᱮ (E) – as in ᱮᱱᱮᱡ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252dc708c86888ec6/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252dc708c86888ec6/view?project=699495910038e39622c5",
+          "textBengali": "এ - এনেজ",
+          "textHindi": "ए - एनेज",
+          "textOdia": "ଏ - ଏନେଜ",
+          "pronunciation": "ᱮ (e) – as in ᱮᱱᱮᱡ",
+          "meaning": "Vowel ᱮ (E) as in ᱮᱱᱮᱡ (Enej: Dance)",
+          "meaning_en": "Vowel ᱮ (E) as in ᱮᱱᱮᱡ (Enej: Dance)",
+          "meaning_bn": "স্বরবর্ণ ᱮ (এ), যেমন ᱮᱱᱮᱡ (এনেজ: নাচ)",
+          "meaning_hi": "स्वर ᱮ , जैसे ᱮᱱᱮᱡ (एनेज: नाचना / नृत्य)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ᱮ, ଯେପରି ଏନେଜ୍ (ନାଚିବା)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+        "textOlChiki": "ᱳ - ᱳᱲᱟᱜ",
+        "textLatin": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2259f209c40c851e46/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2259f209c40c851e46/view?project=699495910038e39622c5",
+          "textBengali": "ও - ওড়াঃ",
+          "textHindi": "ओ - ओड़ाग",
+          "textOdia": "ଓ - ଓଡ଼ାଗ",
+          "pronunciation": "ᱳ (O) – as in ᱳᱲᱟᱜ",
+          "meaning": "Vowel ᱳ (O), as in ᱳᱲᱟᱜ (Orag: House / Home)",
+          "meaning_en": "Vowel ᱳ (O), as in ᱳᱲᱟᱜ (Orag: House / Home)",
+          "meaning_bn": "স্বরবর্ণ ᱳ (ও), যেমন ᱳᱲᱟᱜ (ওড়াঃ: ঘর / বাড়ি)",
+          "meaning_hi": "स्वर ᱳ (O), जैसे ᱳᱲᱟᱜ (ओड़ाग: घर / मकान)",
+          "meaning_or": "ସ୍ୱରବର୍ଣ୍ଣ ଓ (O), ଯେପରି ଓଡ଼ାଗ୍ (ଘର)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_alphabet_1",
+    "titleLatin": "Consonants: Group 1 (Velar & Dental)",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ I (ᱚ ᱟᱨ ᱟ ᱛᱷᱚᱠ)",
+    "level": "beginner",
+    "blocks": [
+      {
+        "id": "blk_0",
+        "order": 0,
+        "type": "text",
+        "markdown": "ᱛ (At) – as in ᱛᱤ (Ti: Hand)",
+        "textOlChiki": "ᱛ - ᱛᱤ",
+        "textLatin": "ᱛ (At) – as in ᱛᱤ (Ti: Hand)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250556e988268cbc4/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250556e988268cbc4/view?project=699495910038e39622c5",
+          "textBengali": "ত - তি (হাত)",
+          "textHindi": "त - ति (हाथ)",
+          "textOdia": "ତ - ତି (ହାତ)",
+          "pronunciation": "At – Ti",
+          "meaning": "Consonant ᱛ (At), as in ᱛᱤ (Ti: Hand)",
+          "meaning_en": "Consonant ᱛ (At), as in ᱛᱤ (Ti: Hand)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱛ (অৎ), যেমন ᱛᱤ (তি: হাত)",
+          "meaning_hi": "व्यंजन ᱛ (अत), जैसे ᱛᱤ (ति: हाथ)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱛ (ଅତ୍), ଯେପରି ᱛᱤ (ତି: ହାତ)"
+        }
+      },
+      {
+        "id": "blk_1",
+        "order": 1,
+        "type": "text",
+        "markdown": "ᱜ (Ag) – as in ᱜᱟᱰᱟ (Gada: River)",
+        "textOlChiki": "ᱜ - ᱜᱟᱰᱟ",
+        "textLatin": "ᱜ (Ag) – as in ᱜᱟᱰᱟ (Gada: River)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250b4a4100e7defbd/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250b4a4100e7defbd/view?project=699495910038e39622c5",
+          "textBengali": "গ - গাডা (নদী)",
+          "textHindi": "ग - गाडा (नदी)",
+          "textOdia": "ଗ - ଗାଡ଼ା (ନଦୀ)",
+          "pronunciation": "Ag – Gada",
+          "meaning": "Consonant ᱜ (Ag), as in ᱜᱟᱰᱟ (Gada: River)",
+          "meaning_en": "Consonant ᱜ (Ag), as in ᱜᱟᱰᱟ (Gada: River)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱜ (অগ্), যেমন ᱜᱟᱰᱟ (গাডা: নদী)",
+          "meaning_hi": "व्यंजन ᱜ (अग), जैसे ᱜᱟᱰᱟ (गाडा: नदी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱜ (ଅଗ୍), ଯେପରି ᱜାଡ଼ା (ନଦୀ)"
+        }
+      },
+      {
+        "id": "blk_2",
+        "order": 2,
+        "type": "text",
+        "markdown": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+        "textOlChiki": "ᱝ - ᱥᱟᱥᱟᱝ",
+        "textLatin": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250d67b0c04c6801c/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250d67b0c04c6801c/view?project=699495910038e39622c5",
+          "textBengali": "ং - সাসাং",
+          "textHindi": "ङ - सासाङ",
+          "textOdia": "ଙ - ସାସାଙ",
+          "pronunciation": "ᱝ (Ang) – as in ᱥᱟᱥᱟᱝ (Sasang: yellow/turmeric)",
+          "meaning": "Consonant ᱝ (Ang), as in ᱥᱟᱥᱟᱝ (Sasang: Yellow/turmeric)",
+          "meaning_en": "Consonant ᱝ (Ang), as in ᱥᱟᱥᱟᱝ (Sasang: Yellow/turmeric)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱝ (অঙ্), যেমন ᱥᱟᱥᱟᱝ (yellow/turmeric)",
+          "meaning_hi": "व्यंजन ᱝ (अंग), जैसे ᱥᱟᱝ (सांग: साथी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱝ (ଅଙ୍ଗ୍), ଯେପରି ସାଙ୍ଗ୍ (ସାଥୀ)"
+        }
+      },
+      {
+        "id": "blk_3",
+        "order": 3,
+        "type": "text",
+        "markdown": "ᱞ (Al) – as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+        "textOlChiki": "ᱞ - ᱞᱟᱸᱫᱟ",
+        "textLatin": "ᱞ (Al) – as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250ee96258c657ea3/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250ee96258c657ea3/view?project=699495910038e39622c5",
+          "textBengali": "ল - লাঁদা (হাসি)",
+          "textHindi": "ल - लांदा (हंसी)",
+          "textOdia": "ଲ - ଲାନ୍ଦା (ହସ)",
+          "pronunciation": "Al – Landa",
+          "meaning": "Consonant ᱞ (Al), as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+          "meaning_en": "Consonant ᱞ (Al), as in ᱞᱟᱸᱫᱟ (Landa: Smile / Laugh)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱞ (অল্), যেমন ᱞᱟᱸᱫᱟ (লাঁদা: হাসি)",
+          "meaning_hi": "व्यंजन ᱞ (अल), जैसे ᱞᱟᱸᱫᱟ (लांदा: हंसी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱞ (ଅଲ୍), ଯେପରି ଲାନ୍ଦା (ହସ)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱠ (Aak) – as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+        "textOlChiki": "ᱠ - ᱠᱟᱹᱢᱤ",
+        "textLatin": "ᱠ (Aak) – as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22514a3b9203095ee3/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22514a3b9203095ee3/view?project=699495910038e39622c5",
+          "textBengali": "ক - কামি (কাজ)",
+          "textHindi": "क - कामि (काम)",
+          "textOdia": "କ - କାମି (କାମ)",
+          "pronunciation": "Aak – Kami",
+          "meaning": "Consonant ᱠ (Aak), as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+          "meaning_en": "Consonant ᱠ (Aak), as in ᱠᱟᱹᱢᱤ (Kami: Work / Deed)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱠ (আক্), যেমন ᱠᱟᱹᱢᱤ (কামি: কাজ)",
+          "meaning_hi": "व्यंजन ᱠ (आक), जैसे ᱠᱟᱹᱢᱤ (कामि: काम)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱠ (ଆକ୍), ଯେପରି କାମି (କାମ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱡ (Aaj) – as in ᱡᱚ (Jo: Fruit)",
+        "textOlChiki": "ᱡ - ᱡᱚ",
+        "textLatin": "ᱡ (Aaj) – as in ᱡᱚ (Jo: Fruit)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22516063da850d046a/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22516063da850d046a/view?project=699495910038e39622c5",
+          "textBengali": "জ - জ (ফল)",
+          "textHindi": "ज - जो (फल)",
+          "textOdia": "ଜ - ଜୋ (ଫଳ)",
+          "pronunciation": "Aaj – Jo",
+          "meaning": "Consonant ᱡ (Aaj), as in ᱡᱚ (Jo: Fruit)",
+          "meaning_en": "Consonant ᱡ (Aaj), as in ᱡᱚ (Jo: Fruit)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱡ (আজ্), যেমন ᱡᱚ (জ: ফল)",
+          "meaning_hi": "व्यंजन ᱡ (आज), जैसे ᱡᱚ (जो: फल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱡ (ଆଜ୍), ଯେପରି ଜୋ (ଫଳ)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱢ (Aam) – as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+        "textOlChiki": "ᱢ - ᱢᱟᱹᱱᱢᱤ",
+        "textLatin": "ᱢ (Aam) – as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22517837e889fdb03b/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22517837e889fdb03b/view?project=699495910038e39622c5",
+          "textBengali": "ম - মানমি (মানুষ)",
+          "textHindi": "म - मानमि (इंसान / मनुष्य)",
+          "textOdia": "ମ - ମାନମି (ମଣିଷ)",
+          "pronunciation": "Aam – Manmi",
+          "meaning": "Consonant ᱢ (Aam), as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+          "meaning_en": "Consonant ᱢ (Aam), as in ᱢᱟᱹᱱᱢᱤ (Manmi: Human / Person)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱢ (আম্), যেমন ᱢᱟᱹᱱᱢᱤ (মানমি: মানুষ)",
+          "meaning_hi": "व्यंजन ᱢ (आम), जैसे ᱢᱟᱹᱱᱢᱤ (मानमि: इंसान)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱢ (ଆମ୍), ଯେପରି ମାନମି (ମଣିଷ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱣ (Aaw) – as in ᱫᱟᱣ (Daw: Opportunity)",
+        "textOlChiki": "ᱣ - ᱫᱟᱣ",
+        "textLatin": "ᱣ (Aaw) – as in ᱫᱟᱣ (Daw: Opportunity)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225190700f8c03fa04/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225190700f8c03fa04/view?project=699495910038e39622c5",
+          "textBengali": "ওয় - দাও (সুযোগ)",
+          "textHindi": "व - दाव (अवसर)",
+          "textOdia": "ୱ - ଦାୱ (ସୁଯୋଗ)",
+          "pronunciation": "Aaw – Daw",
+          "meaning": "Consonant ᱣ (Aaw), as in ᱫᱟᱣ (Daw: Opportunity)",
+          "meaning_en": "Consonant ᱣ (Aaw), as in ᱫᱟᱣ (Daw: Opportunity)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱣ (আও), যেমন ᱫᱟᱣ (দাও: সুযোগ)",
+          "meaning_hi": "व्यंजन ᱣ (आव), जैसे ᱫᱟᱣ (दाव: अवसर / मौका)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱣ (ଆୱ), ଯେପରି ଦାୱ (ସୁଯୋଗ)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_alphabet_2",
+    "titleLatin": "Consonants: Group 2 (Palatal & Sibilant)",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ II (ᱤ ᱟᱨ ᱩ ᱛᱷᱚᱠ)",
+    "level": "beginner",
+    "blocks": [
+      {
+        "id": "blk_0",
+        "order": 0,
+        "type": "text",
+        "markdown": "ᱥ (Is) – as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+        "textOlChiki": "ᱥ - ᱥᱟᱹᱨᱤ",
+        "textLatin": "ᱥ (Is) – as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_is/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_is/view?project=699495910038e39622c5",
+          "textBengali": "স - সারি (সত্য)",
+          "textHindi": "स - सारि (सत्य / सच)",
+          "textOdia": "ସ - ସାରି (ସତ୍ୟ)",
+          "pronunciation": "Is – Sari",
+          "meaning": "Consonant ᱥ (Is), as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+          "meaning_en": "Consonant ᱥ (Is), as in ᱥᱟᱹᱨᱤ (Sari: Truth / Real)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱥ (ইস্), যেমন ᱥᱟᱹᱨᱤ (সারি: সত্য)",
+          "meaning_hi": "व्यंजन ᱥ (इस), जैसे ᱥᱟᱹᱨᱤ (सारि: सच)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱥ (ଇସ୍), ଯେପରି ସାରି (ସତ୍ୟ)"
+        }
+      },
+      {
+        "id": "blk_1",
+        "order": 1,
+        "type": "text",
+        "markdown": "ᱦ (Ih) – as in ᱦᱚᱲ (Hor: Person / Santal)",
+        "textOlChiki": "ᱦ - ᱦᱚᱲ",
+        "textLatin": "ᱦ (Ih) – as in ᱦᱚᱲ (Hor: Person / Santal)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ih/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ih/view?project=699495910038e39622c5",
+          "textBengali": "হ - হড় (মানুষ)",
+          "textHindi": "ह - होड़ (इंसान / संताल)",
+          "textOdia": "ହ - ହୋଡ଼ (ମଣିଷ)",
+          "pronunciation": "Ih – Hor",
+          "meaning": "Consonant ᱦ (Ih), as in ᱦᱚᱲ (Hor: Person / Santal)",
+          "meaning_en": "Consonant ᱦ (Ih), as in ᱦᱚᱲ (Hor: Person / Santal)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱦ (ইহ্), যেমন ᱦᱚᱲ (হড়: মানুষ / সাঁওতাল)",
+          "meaning_hi": "व्यंजन ᱦ (इह), जैसे ᱦᱚᱲ (होड़: इंसान / संताल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱦ (ଇହ୍), ଯେପରି ହୋଡ଼ (ମଣିଷ / ସାନ୍ତାଳ)"
+        }
+      },
+      {
+        "id": "blk_2",
+        "order": 2,
+        "type": "text",
+        "markdown": "ᱧ (Iny) – as in ᱧᱮᱞ (Nyel: To see / Look)",
+        "textOlChiki": "ᱧ - ᱧᱮᱞ",
+        "textLatin": "ᱧ (Iny) – as in ᱧᱮᱞ (Nyel: To see / Look)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_iny/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_iny/view?project=699495910038e39622c5",
+          "textBengali": "ঞ - ঞেল (দেখা)",
+          "textHindi": "ञ - ञेल (देखना)",
+          "textOdia": "ଞ - ଞେଲ୍ (ଦେଖିବା)",
+          "pronunciation": "Iny – Nyel",
+          "meaning": "Consonant ᱧ (Iny), as in ᱧᱮᱞ (Nyel: To see / Look)",
+          "meaning_en": "Consonant ᱧ (Iny), as in ᱧᱮᱞ (Nyel: To see / Look)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱧ (ইঞ্), যেমন ᱧᱮᱞ (ঞেল: দেখা)",
+          "meaning_hi": "व्यंजन ᱧ (इञ), जैसे ᱧᱮᱞ (ञेल: देखना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱧ (ଇଞ୍), ଯେପରି ଞେଲ୍ (ଦେଖିବା)"
+        }
+      },
+      {
+        "id": "blk_3",
+        "order": 3,
+        "type": "text",
+        "markdown": "ᱨ (Ir) – as in ᱨᱚᱲ (Ror: To speak / Speech)",
+        "textOlChiki": "ᱨ - ᱨᱚᱲ",
+        "textLatin": "ᱨ (Ir) – as in ᱨᱚᱲ (Ror: To speak / Speech)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ir/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ir/view?project=699495910038e39622c5",
+          "textBengali": "র - রড় (কথা বলা)",
+          "textHindi": "र - रोड़ (बोलना)",
+          "textOdia": "ର - ରୋଡ଼ (କଥା କହିବା)",
+          "pronunciation": "Ir – Ror",
+          "meaning": "Consonant ᱨ (Ir), as in ᱨᱚᱲ (Ror: To speak / Speech)",
+          "meaning_en": "Consonant ᱨ (Ir), as in ᱨᱚᱲ (Ror: To speak / Speech)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱨ (ইর্), যেমন ᱨᱚᱲ (রড়: কথা বলা)",
+          "meaning_hi": "व्यंजन ᱨ (इर), जैसे ᱨᱚᱲ (रोड़: बोलना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱨ (ଇର୍), ଯେପରି ରୋଡ଼ (କଥା କହିବା)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱪ (Uch) – as in ᱪᱮᱬᱮ (Chene: Bird)",
+        "textOlChiki": "ᱪ - ᱪᱮᱬᱮ",
+        "textLatin": "ᱪ (Uch) – as in ᱪᱮᱬᱮ (Chene: Bird)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uc/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uc/view?project=699495910038e39622c5",
+          "textBengali": "চ - চেঁড়ে (পাখি)",
+          "textHindi": "च - चेँड़े (चिड़िया)",
+          "textOdia": "ଚ - ଚେଁଡ଼େ (ପକ୍ଷୀ)",
+          "pronunciation": "Uch – Chene",
+          "meaning": "Consonant ᱪ (Uch), as in ᱪᱮᱬᱮ (Chene: Bird)",
+          "meaning_en": "Consonant ᱪ (Uch), as in ᱪᱮᱬᱮ (Chene: Bird)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱪ (উচ্), যেমন ᱪᱮᱬᱮ (চেঁড়ে: পাখি)",
+          "meaning_hi": "व्यंजन ᱪ (उच), जैसे ᱪᱮᱬᱮ (चेँड़े: चिड़िया / पक्षी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱪ (ଉଚ୍), ଯେପରି ଚେଁଡ଼େ (ପକ୍ଷୀ)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱫ (Ud) – as in ᱫᱟᱜ (Dag: Water / Rain)",
+        "textOlChiki": "ᱫ - ᱫᱟᱜ",
+        "textLatin": "ᱫ (Ud) – as in ᱫᱟᱜ (Dag: Water / Rain)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ud/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_ud/view?project=699495910038e39622c5",
+          "textBengali": "দ - দাঃ (জল / বৃষ্টি)",
+          "textHindi": "द - दाग (पानी / वर्षा)",
+          "textOdia": "ଦ - ଦାଗ୍ (ପାଣି / ବର୍ଷା)",
+          "pronunciation": "Ud – Dag",
+          "meaning": "Consonant ᱫ (Ud), as in ᱫᱟᱜ (Dag: Water / Rain)",
+          "meaning_en": "Consonant ᱫ (Ud), as in ᱫᱟᱜ (Dag: Water / Rain)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱫ (উদ্), যেমন ᱫᱟᱜ (দাঃ: জল / বৃষ্টি)",
+          "meaning_hi": "व्यंजन ᱫ (उद), जैसे ᱫᱟᱜ (दाग: पानी / वर्षा)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱫ (ଉଦ୍), ଯେପରି ଦାଗ୍ (ପାଣି / ବର୍ଷା)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+        "textOlChiki": "ᱬ - ᱩᱬ (ᱪᱮᱬᱮ)",
+        "textLatin": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_unn/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_unn/view?project=699495910038e39622c5",
+          "textBengali": "উঁড় - উঁড় (চেঁড়ে)",
+          "textHindi": "ण - उण (चेणे)",
+          "textOdia": "ଣ - ଉଣ (ଚେଣେ)",
+          "pronunciation": "ᱬ (Unrh) – as in  ᱪᱮᱬᱮ ( ᱪᱮᱬᱮ-Bird)",
+          "meaning": "Consonant ᱬ (Unrh), as in ᱪᱮᱬᱮ (bird)",
+          "meaning_en": "Consonant ᱬ (Unrh), as in ᱪᱮᱬᱮ (bird)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱬ (উঁড়), যেমন ᱪᱮᱬᱮ(পাখি)",
+          "meaning_hi": "व्यंजन ᱬ (उण), जैसे ᱪᱮᱬᱮ (चिड़िया / पक्षी)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱬ (ଉଣ୍), ଯେପରି ᱪᱮᱬᱮ  (ପକ୍ଷୀ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱭ (Uy) – as in ᱠᱚᱭ (Koy: To ask / Request)",
+        "textOlChiki": "ᱭ - ᱠᱚᱭ",
+        "textLatin": "ᱭ (Uy) – as in ᱠᱚᱭ (Koy: To ask / Request)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uy/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/ltr_l_uy/view?project=699495910038e39622c5",
+          "textBengali": "য় - কয় (চাওয়া / প্রার্থনা)",
+          "textHindi": "य - कोय (मांगना)",
+          "textOdia": "ୟ - କୟ (ମାଗିବା)",
+          "pronunciation": "Uy – Koy",
+          "meaning": "Consonant ᱭ (Uy), as in ᱠᱚᱭ (Koy: To ask / Request)",
+          "meaning_en": "Consonant ᱭ (Uy), as in ᱠᱚᱭ (Koy: To ask / Request)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱭ (উয়্), যেমন ᱠᱚᱭ (কয়: চাওয়া / প্রার্থনা)",
+          "meaning_hi": "व्यंजन ᱭ (उय), जैसे ᱠᱚᱭ (कोय: मांगना)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ୟ (ଉୟ୍), ଯେପରି କୟ (ମାଗିବା)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_alphabet_3",
+    "titleLatin": "Consonants: Group 3 (Labial & Retroflex)",
+    "titleOlChiki": "ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ III (ᱮ ᱟᱨ ᱳ ᱛᱷᱚᱠ)",
+    "level": "beginner",
+    "blocks": [
+      {
+        "id": "blk_0",
+        "order": 0,
+        "type": "text",
+        "markdown": "ᱯ (Ep) – as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+        "textOlChiki": "ᱯ - ᱯᱚᱨᱚᱵ",
+        "textLatin": "ᱯ (Ep) – as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22533a8d9a0373fe0b/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22533a8d9a0373fe0b/view?project=699495910038e39622c5",
+          "textBengali": "প - পরব (উৎসব)",
+          "textHindi": "प - पोरोब (त्योहार)",
+          "textOdia": "ପ - ପୋରୋବ୍ (ପର୍ବ)",
+          "pronunciation": "Ep – Porob",
+          "meaning": "Consonant ᱯ (Ep), as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+          "meaning_en": "Consonant ᱯ (Ep), as in ᱯᱚᱨᱚᱵ (Porob: Festival)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱯ (এপ্), যেমন ᱯᱚᱨᱚᱵ (পরব: উৎসব)",
+          "meaning_hi": "व्यंजन ᱯ (एप), जैसे ᱯᱚᱨᱚᱵ (पोरोब: त्योहार)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ᱯ (ଏପ୍), ଯେପରି ପୋରୋବ୍ (ପର୍ବ)"
+        }
+      },
+      {
+        "id": "blk_1",
+        "order": 1,
+        "type": "text",
+        "markdown": "ᱰ (Edd) – as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+        "textOlChiki": "ᱰ - ᱰᱟᱦᱟᱨ",
+        "textLatin": "ᱰ (Edd) – as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225355084d08dea4ca/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225355084d08dea4ca/view?project=699495910038e39622c5",
+          "textBengali": "ড - ডাহার (রাস্তা / পথ)",
+          "textHindi": "ड - डाहार (रास्ता / मार्ग)",
+          "textOdia": "ଡ - ଡାହାର (ରାସ୍ତା)",
+          "pronunciation": "Edd – Dahar",
+          "meaning": "Consonant ᱰ (Edd), as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+          "meaning_en": "Consonant ᱰ (Edd), as in ᱰᱟᱦᱟᱨ (Dahar: Way / Path)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱰ (এড্), যেমন ᱰᱟᱦᱟᱨ (ডাহার: রাস্তা)",
+          "meaning_hi": "व्यंजन ᱰ (एड), जैसे ᱰᱟᱦᱟᱨ (डाहार: रास्ता)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଡ (ଏଡ୍), ଯେପରି ଡାହାର (ରାସ୍ତା)"
+        }
+      },
+      {
+        "id": "blk_2",
+        "order": 2,
+        "type": "text",
+        "markdown": "ᱱ (En) – as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+        "textOlChiki": "ᱱ - ᱱᱟᱯᱟᱭ",
+        "textLatin": "ᱱ (En) – as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22537d416e01308ed2/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22537d416e01308ed2/view?project=699495910038e39622c5",
+          "textBengali": "ন - নাপায় (ভালো / সুন্দর)",
+          "textHindi": "न - नापाय (अच्छा / सुंदर)",
+          "textOdia": "ନ - ନାପାୟ (ଭଲ / ସୁନ୍ଦର)",
+          "pronunciation": "En – Napay",
+          "meaning": "Consonant ᱱ (En), as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+          "meaning_en": "Consonant ᱱ (En), as in ᱱᱟᱯᱟᱭ (Napay: Good / Fine)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱱ (এন্), যেমন ᱱᱟᱯᱟᱭ (নাপায়: ভালো)",
+          "meaning_hi": "व्यंजन ᱱ (एन), जैसे ᱱᱟᱯᱟᱭ (नापाय: अच्छा)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ନ (ଏନ୍), ଯେପରି ନାପାୟ (ଭଲ)"
+        }
+      },
+      {
+        "id": "blk_3",
+        "order": 3,
+        "type": "text",
+        "markdown": "ᱲ (Err) – as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+        "textOlChiki": "ᱲ - ᱫᱟᱲᱮ",
+        "textLatin": "ᱲ (Err) – as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225395372d07ecb0de/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225395372d07ecb0de/view?project=699495910038e39622c5",
+          "textBengali": "ড় - দাড়ে (শক্তি / বল)",
+          "textHindi": "ड़ - दाड़े (शक्ति / ताकत)",
+          "textOdia": "ଡ଼ - ଦାଡ଼େ (ଶକ୍ତି)",
+          "pronunciation": "Err – Dare",
+          "meaning": "Consonant ᱲ (Err), as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+          "meaning_en": "Consonant ᱲ (Err), as in ᱫᱟᱲᱮ (Dare: Strength / Power)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱲ (এড়্), যেমন ᱫᱟᱲᱮ (দাড়ে: শক্তি)",
+          "meaning_hi": "व्यंजन ᱲ (एड़), जैसे ᱫᱟᱲᱮ (दाड़े: शक्ति)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଡ଼ (ଏଡ଼୍), ଯେପରି ଦାଡ଼େ (ଶକ୍ତି)"
+        }
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱴ (Ott) – as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+        "textOlChiki": "ᱴ - ᱴᱟᱠᱟ",
+        "textLatin": "ᱴ (Ott) – as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a094e200e7c1e99/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a094e200e7c1e99/view?project=699495910038e39622c5",
+          "textBengali": "ট - টাকা (টাকা / মুদ্রা)",
+          "textHindi": "ट - टाका (पैसा / रुपया)",
+          "textOdia": "ଟ - ଟାକା (ଟଙ୍କା)",
+          "pronunciation": "Ott – Taka",
+          "meaning": "Consonant ᱴ (Ott), as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+          "meaning_en": "Consonant ᱴ (Ott), as in ᱴᱟᱠᱟ (Taka: Money / Rupee)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱴ (অট্), যেমন ᱴᱟᱠᱟ (টাকা: টাকা)",
+          "meaning_hi": "व्यंजन ᱴ (ओट), जैसे ᱴᱟᱠᱟ (टाका: पैसा / रुपया)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ଟ (ଅଟ୍), ଯେପରି ଟାକା (ଟଙ୍କା)"
+        }
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "ᱵ (Ob) – as in ᱵᱟᱦᱟ (Baha: Flower)",
+        "textOlChiki": "ᱵ - ᱵᱟᱦᱟ",
+        "textLatin": "ᱵ (Ob) – as in ᱵᱟᱦᱟ (Baha: Flower)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a203f7a00d74225/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a203f7a00d74225/view?project=699495910038e39622c5",
+          "textBengali": "ব - বাহা (ফুল)",
+          "textHindi": "ब - बाहा (फूल)",
+          "textOdia": "ବ - ବାହା (ଫୁଲ)",
+          "pronunciation": "Ob – Baha",
+          "meaning": "Consonant ᱵ (Ob), as in ᱵᱟᱦᱟ (Baha: Flower)",
+          "meaning_en": "Consonant ᱵ (Ob), as in ᱵᱟᱦᱟ (Baha: Flower)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱵ (অব্), যেমন ᱵᱟᱦᱟ (বাহা: ফুল)",
+          "meaning_hi": "व्यंजन ᱵ (ओब), जैसे ᱵᱟᱦᱟ (बाहा: फूल)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ବ (ଅବ୍), ଯେପରି ବାହା (ଫୁଲ)"
+        }
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "ᱶ (Ov) – as in ᱥᱟᱶ (Saw: Together / With)",
+        "textOlChiki": "ᱶ - ᱥᱟᱶ",
+        "textLatin": "ᱶ (Ov) – as in ᱥᱟᱶ (Saw: Together / With)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a389c400594c3dd/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a389c400594c3dd/view?project=699495910038e39622c5",
+          "textBengali": "ওঁ - সাঁও (সাথে / সঙ্গে)",
+          "textHindi": "व् - सांव (साथ / संग)",
+          "textOdia": "ୱ - ସାୱ (ସାଥିରେ)",
+          "pronunciation": "Ov – Saw",
+          "meaning": "Consonant ᱶ (Ov), as in ᱥᱟᱶ (Saw: Together / With)",
+          "meaning_en": "Consonant ᱶ (Ov), as in ᱥᱟᱶ (Saw: Together / With)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱶ (ওঁভ), যেমন ᱥᱟᱶ (সাঁও: সঙ্গে / সাথে)",
+          "meaning_hi": "व्यंजन ᱶ (ओव), जैसे ᱥᱟᱶ (सांव: साथ)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ୱ (ଓୱ୍), ଯେପରି ସାୱ (ସାଥିରେ)"
+        }
+      },
+      {
+        "id": "blk_7",
+        "order": 7,
+        "type": "text",
+        "markdown": "ᱷ (Oh) – as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+        "textOlChiki": "ᱷ - ᱯᱷᱟᱹᱜᱩᱱ",
+        "textLatin": "ᱷ (Oh) – as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a4cf07a8a62fb2e/view?project=699495910038e39622c5",
+        "meta": {
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a4cf07a8a62fb2e/view?project=699495910038e39622c5",
+          "textBengali": "হ - ফাগুন (ফাল্গুন মাস)",
+          "textHindi": "ह - फागुन (फाल्गुन मास)",
+          "textOdia": "ହ - ଫାଗୁନ (ଫାଲ୍ଗୁନ ମାସ)",
+          "pronunciation": "Oh – Phagun",
+          "meaning": "Consonant ᱷ (Oh), as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+          "meaning_en": "Consonant ᱷ (Oh), as in ᱯᱷᱟᱹᱜᱩᱱ (Phagun: Spring Month)",
+          "meaning_bn": "ব্যঞ্জনবর্ণ ᱷ (অহ্), যেমন ᱯᱷᱟᱹᱜᱩᱱ (ফাগুন: বসন্তকাল / ফাল্গুন)",
+          "meaning_hi": "व्यंजन ᱷ (ओह), जैसे ᱯᱷᱟᱹᱜᱩᱱ (फागुन: वसंत मास)",
+          "meaning_or": "ବ୍ୟଞ୍ଜନବର୍ଣ୍ଣ ହ (ଅହ୍), ଯେପରି ଫାଗୁନ (ଫାଲ୍ଗୁନ ମାସ)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_alphabet_4",
+    "titleLatin": "Modifiers & Signs (Japag Arang)",
+    "titleOlChiki": "ᱡᱟᱯᱟᱜ ᱟᱲᱟᱝ ᱟᱨ ᱪᱤᱱᱦᱟᱹ",
+    "level": "beginner",
+    "blocks": [
+      {
+        "id": "blk_0",
+        "order": 0,
+        "type": "text",
+        "markdown": "ᱹ (Gahla Tudag) – Baseline dot that deepens/opens vowel, as in ᱟᱹᱛᱩ (Atu: Village)",
+        "textOlChiki": "ᱹ - ᱜᱟᱹᱦᱞᱟᱹ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱹ (Gahla Tudag) – Baseline dot that deepens/opens vowel, as in ᱟᱹᱛᱩ (Atu: Village)",
+        "meta": {
+          "textBengali": "গাহলা টুডাগ (নিচের বিন্দু) – স্বর গভীর করে, যেমন ᱟᱹᱛᱩ (গ্রাম)",
+          "textHindi": "गाहला टुडाग (निचला बिंदु) – स्वर को गहरा करता है, जैसे ᱟᱹᱛᱩ (गाँव)",
+          "textOdia": "ଗାହଲା ଟୁଡାଗ (ତଳ ବିନ୍ଦୁ) – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)",
+          "pronunciation": "Gahla Tudag – Atu",
+          "meaning": "Baseline dot modifying vowel into deep/open variant (e.g. ᱟ -> ᱟᱹ as in ᱟᱹᱛᱩ)",
+          "meaning_en": "Baseline dot modifying vowel into deep/open variant (e.g. ᱟ -> ᱟᱹ as in ᱟᱹᱛᱩ)",
+          "meaning_bn": "গাহলা টুডাগ (নিচের বিন্দু) – স্বর গভীর করে, যেমন ᱟᱹᱛᱩ (গ্রাম)",
+          "meaning_hi": "गाहला टुडाग – स्वर को गहरा बनाता है, जैसे ᱟᱹᱛᱩ (गाँव)",
+          "meaning_or": "ଗାହଲା ଟୁଡାଗ – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_gahla_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_gahla_tudag/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_1",
+        "order": 1,
+        "type": "text",
+        "markdown": "ᱸ (Mu Tudag) – Top dot for nasalization, as in ᱦᱮᱸ (Hẽ: Yes)",
+        "textOlChiki": "ᱸ - ᱢᱩ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱸ (Mu Tudag) – Top dot for nasalization, as in ᱦᱮᱸ (Hẽ: Yes)",
+        "meta": {
+          "textBengali": "মু টুডাগ (নাসিক্য বিন্দু) – স্বর অনুনাসিক করে, যেমন ᱦᱮᱸ (হ্যাঁ)",
+          "textHindi": "मु टुडाग (नासिक बिंदु) – अनुनासिक ध्वनि बनाता है, जैसे ᱦᱮᱸ (हाँ)",
+          "textOdia": "ମୁ ଟୁଡାଗ (ନାସିକ୍ୟ ବିନ୍ଦୁ) – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦᱮᱸ (ହଁ)",
+          "pronunciation": "Mu Tudag – Hẽ",
+          "meaning": "Top dot adding nasalization to vowel (e.g. ᱦᱮᱸ: Yes)",
+          "meaning_en": "Top dot adding nasalization to vowel (e.g. ᱦᱮᱸ: Yes)",
+          "meaning_bn": "মু টুডাগ (উপরের বিন্দু) – অনুনাসিক ধ্বনি তৈরি করে, যেমন ᱦᱮᱸ (হ্যাঁ)",
+          "meaning_hi": "मु टुडाग – स्वर को अनुनासिक करता है, जैसे ᱦᱮᱸ (हाँ)",
+          "meaning_or": "ମୁ ଟୁଡାଗ – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦେᱸ (ହଁ)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_tudag/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_2",
+        "order": 2,
+        "type": "text",
+        "markdown": "ᱺ (Mu-Gahla Tudag) – Double dot for deep nasalized vowel, as in ᱥᱟᱺᱜᱤᱧ (Sanginj: Far)",
+        "textOlChiki": "ᱺ - ᱢᱩ-ᱜᱟᱹᱦᱞᱟᱹ ᱴᱩᱰᱟᱹᱜ",
+        "textLatin": "ᱺ (Mu-Gahla Tudag) – Double dot for deep nasalized vowel, as in ᱥᱟᱺᱜᱤᱧ (Sanginj: Far)",
+        "meta": {
+          "textBengali": "মু-গাহলা টুডাগ – গভীর ও অনুনাসিক স্বর, যেমন ᱥᱟᱺᱜᱤᱧ (দূর)",
+          "textHindi": "मु-गाहला टुडाग – गहरा और अनुनासिक स्वर, जैसे ᱥᱟᱺᱜᱤᱧ (दूर)",
+          "textOdia": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟ ସ୍ୱର, ଯେପରି ᱥᱟᱺଗିᱧ (ଦୂର)",
+          "pronunciation": "Mu-Gahla Tudag – Sanginj",
+          "meaning": "Colon-like double dot combining deepening and nasalization together",
+          "meaning_en": "Colon-like double dot combining deepening and nasalization together",
+          "meaning_bn": "মু-গাহলা টুডাগ – গভীর ও অনুনাসিক যুগল ধ্বনি, যেমন ᱥᱟᱺᱜᱤᱧ (দূর)",
+          "meaning_hi": "मु-गाहला टुडाग – गहरा और अनुनासिक का संयुक्त रूप, जैसे ᱥᱟᱺᱜᱤᱧ (दूर)",
+          "meaning_or": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟର ସଂଯୁକ୍ତ ରୂପ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_gahla_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_gahla_tudag/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_3",
+        "order": 3,
+        "type": "text",
+        "markdown": "ᱽ (Ohod) – Deglottalizer mark releasing checked stops, as in ᱢᱟᱹᱡᱷᱤ (Majhi: Headman)",
+        "textOlChiki": "ᱽ - ᱚᱦᱚᱫ",
+        "textLatin": "ᱽ (Ohod) – Deglottalizer mark releasing checked stops, as in ᱢᱟᱹᱡᱷᱤ (Majhi: Headman)",
+        "meta": {
+          "textBengali": "অহদ – অবরুদ্ধ ধ্বনি মুক্ত করে, যেমন ᱢᱟᱹᱡᱷᱤ (গ্রামপ্রধান)",
+          "textHindi": "ओहद – रुके हुए व्यंजन को मुक्त करता है, जैसे ᱢᱟᱹᱡᱷᱤ (मुखिया)",
+          "textOdia": "ଓହଦ୍ – ସ୍ୱର ପ୍ରବାହ ମୁକ୍ତ କରେ, ଯେପରି ᱢᱟᱹᱡᱷᱤ (ଗ୍ରାମ ମୁଖ୍ୟ)",
+          "pronunciation": "Ohod – Majhi",
+          "meaning": "Deglottalizer releasing checked consonants ᱜ, ᱡ, ᱫ, ᱵ into continuous sounds",
+          "meaning_en": "Deglottalizer releasing checked consonants ᱜ, ᱡ, ᱫ, ᱵ into continuous sounds",
+          "meaning_bn": "অহদ – অবরুদ্ধ ব্যঞ্জনধ্বনিকে পূর্ণ কণ্ঠে প্রকাশ করে, যেমন ᱢᱟᱹᱡᱷᱤ (গ্রামপ্রধান)",
+          "meaning_hi": "ओहद – रुके हुए व्यंजन को मुक्त करता है, जैसे ᱢᱟᱹᱡᱷᱤ (ग्राम प्रधान)",
+          "meaning_or": "ଓହଦ୍ – ସ୍ୱର ପ୍ରବାହ ମୁକ୍ତ କରେ, ଯେପରି ᱢᱟᱹᱡᱷᱤ (ଗ୍ରାମ ମୁଖ୍ୟ)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ohod/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ohod/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_4",
+        "order": 4,
+        "type": "text",
+        "markdown": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+        "textOlChiki": "ᱻ - ᱨᱮᱞᱟ",
+        "textLatin": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+        "meta": {
+          "textBengali": "ᱻ - রেলা",
+          "textHindi": "ᱻ - रेला",
+          "textOdia": "ᱻ- ରେଲା",
+          "pronunciation": "ᱻ (rela) – Lengthens preceding vowel for melodic or poetic emphasis-",
+          "meaning": "Vowel lengthener used for elongation in songs and chants -ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_en": "Vowel lengthener used for elongation in songs and chants -ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_bn": "রেলা– স্বরধ্বনি দীর্ঘায়িত করার চিহ্ন-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_hi": "आहद – स्वर को दीर्घ करने का चिह्न-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "meaning_or": "ଆହଦ୍ – ସ୍ୱରକୁ ଦୀର୍ଘ କରିବାର ଚିହ୍ନ-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_5",
+        "order": 5,
+        "type": "text",
+        "markdown": "᱾ (Mucaad) – Full stop punctuation mark, as in ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (I am reading.)",
+        "textOlChiki": "᱾ - ᱢᱩᱪᱟᱹᱫ",
+        "textLatin": "᱾ (Mucaad) – Full stop punctuation mark, as in ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (I am reading.)",
+        "meta": {
+          "textBengali": "মুচাদ – পূর্ণচ্ছেদ (দাঁড়ি), যেমন ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (আমি পড়ছি।)",
+          "textHindi": "मुचाद – पूर्ण विराम (खड़ी पाई), जैसे ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (मैं पढ़ रहा हूँ।)",
+          "textOdia": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ, ଯେପରି ᱤᱧ ᱚᱞᱚᱜ ᱠᱟᱱᱟᱹᱧ᱾ (ମୁଁ ପଢ଼ୁଛି।)",
+          "pronunciation": "Mucaad",
+          "meaning": "Sentence terminal punctuation mark (full stop)",
+          "meaning_en": "Sentence terminal punctuation mark (full stop)",
+          "meaning_bn": "মুচাদ – পূর্ণচ্ছেদ (দাঁড়ি / ফুলস্টপ)",
+          "meaning_hi": "मुचाद – पूर्ण विराम (खड़ी पाई)",
+          "meaning_or": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mucaad/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mucaad/view?project=699495910038e39622c5"
+      }
+    ]
+  }
+]

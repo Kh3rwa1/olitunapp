@@ -42,7 +42,7 @@
   {
     "id": "l_laa",
     "charOlChiki": "ᱟ",
-    "transliterationLatin": "aa (aa)",
+    "transliterationLatin": "Laa (aa)",
     "order": 5,
     "isActive": true,
     "exampleWord": "Aa"
@@ -82,7 +82,7 @@
   {
     "id": "l_li",
     "charOlChiki": "ᱤ",
-    "transliterationLatin": "i (i)",
+    "transliterationLatin": "Li (i)",
     "order": 10,
     "isActive": true,
     "exampleWord": "Ir"
@@ -106,7 +106,7 @@
   {
     "id": "l_iny",
     "charOlChiki": "ᱧ",
-    "transliterationLatin": "ing(ng)",
+    "transliterationLatin": "Iny (ny)",
     "order": 13,
     "isActive": true,
     "exampleWord": "Ny"
@@ -122,7 +122,7 @@
   {
     "id": "l_lu",
     "charOlChiki": "ᱩ",
-    "transliterationLatin": "u (u)",
+    "transliterationLatin": "Lu (u)",
     "order": 15,
     "isActive": true,
     "exampleWord": "Ul"
@@ -162,7 +162,7 @@
   {
     "id": "l_le",
     "charOlChiki": "ᱮ",
-    "transliterationLatin": "e (e)",
+    "transliterationLatin": "Le (e)",
     "order": 20,
     "isActive": true,
     "exampleWord": "En"
@@ -202,7 +202,7 @@
   {
     "id": "l_lo",
     "charOlChiki": "ᱳ",
-    "transliterationLatin": "o (o)",
+    "transliterationLatin": "Lo (o)",
     "order": 25,
     "isActive": true,
     "exampleWord": "Ol"
@@ -238,5 +238,45 @@
     "order": 29,
     "isActive": true,
     "exampleWord": "Ha"
+  },
+  {
+    "id": "l_mu_tudag",
+    "charOlChiki": "ᱸ",
+    "transliterationLatin": "Mu Tudag",
+    "order": 30,
+    "isActive": true,
+    "exampleWord": "ᱦᱮᱸ"
+  },
+  {
+    "id": "l_gahla_tudag",
+    "charOlChiki": "ᱹ",
+    "transliterationLatin": "Gahla Tudag",
+    "order": 31,
+    "isActive": true,
+    "exampleWord": "ᱟᱹᱛᱩ"
+  },
+  {
+    "id": "l_mu_gahla_tudag",
+    "charOlChiki": "ᱺ",
+    "transliterationLatin": "Mu-Gahla Tudag",
+    "order": 32,
+    "isActive": true,
+    "exampleWord": "ᱥᱟᱺᱜᱤᱧ"
+  },
+  {
+    "id": "l_ohod",
+    "charOlChiki": "ᱽ",
+    "transliterationLatin": "Ohod",
+    "order": 33,
+    "isActive": true,
+    "exampleWord": "ᱢᱟᱹᱡᱷᱤ"
+  },
+  {
+    "id": "l_ahd",
+    "charOlChiki": "ᱻ",
+    "transliterationLatin": "Ahd",
+    "order": 34,
+    "isActive": true,
+    "exampleWord": "ᱮᱻ"
   }
 ]

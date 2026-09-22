@@ -7,6 +7,14 @@ const manifest = JSON.parse(fs.readFileSync('appwrite.json', 'utf8'));
 const functions = manifest.functions;
 assert.ok(Array.isArray(functions) && functions.length > 0, 'appwrite.json must define functions');
 
+function readJson(filePath) {
+  try {
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (err) {
+    throw new Error(`${path.basename(filePath)} must exist and be valid JSON: ${err.message}`);
+  }
+}
+
 const failures = [];
 
 for (const fn of functions) {
@@ -20,9 +28,7 @@ for (const fn of functions) {
     assert.ok(fs.statSync(sourcePath).isDirectory(), 'source path must be a directory');
     assert.ok(fs.statSync(entrypointPath).isFile(), 'entrypoint must exist');
 
-    const pkgPath = path.join(sourcePath, 'package.json');
-    assert.ok(fs.statSync(pkgPath).isFile(), 'package.json must exist');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const pkg = readJson(path.join(sourcePath, 'package.json'));
     assert.equal(typeof pkg.name, 'string', 'package.json must declare name');
     assert.ok(pkg.name.length > 0, 'package.json name must be non-empty');
     assert.equal(typeof pkg.type, 'string', 'package.json must declare type');
@@ -40,9 +46,7 @@ for (const fn of functions) {
       );
     }
 
-    const lockPath = path.join(sourcePath, 'package-lock.json');
-    assert.ok(fs.statSync(lockPath).isFile(), 'package-lock.json must exist for reproducible deploys');
-    const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
+    const lock = readJson(path.join(sourcePath, 'package-lock.json'));
     assert.equal(lock.name, pkg.name, 'package-lock.json name must match package.json');
     const lockPackages = lock.packages || {};
     const rootLock = lockPackages[''];

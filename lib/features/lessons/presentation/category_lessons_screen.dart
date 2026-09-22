@@ -210,12 +210,12 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                     decoration: BoxDecoration(
                       color: isDark
                           ? AppColors.darkSurfaceElevated
-                          : const Color(0xFFEFF4FF),
+                          : AppColors.studioNoticeInfoLight,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
                         color: isDark
                             ? Colors.white12
-                            : const Color(0xFFD6E4FF),
+                            : AppColors.brandBlue.withValues(alpha: 0.25),
                       ),
                     ),
                     child: Row(

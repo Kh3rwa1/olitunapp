@@ -61,14 +61,27 @@ class NumberGridContent extends ConsumerWidget {
       itemCount: numbers.length,
       itemBuilder: (context, index) {
         final number = numbers[index];
-        final localizedName = SantaliNumbers.teachingLanguageName(
+        final teachingName = SantaliNumbers.teachingLanguageName(
           number.value,
           teachingLanguage,
         );
-        final pronunciation = SantaliNumbers.pronunciation(
-          number.value,
-          teachingLanguage,
-        );
+        final localizedName = teachingName.isNotEmpty
+            ? teachingName
+            : '${number.value}';
+        final String pronunciation;
+        if (teachingLanguage == 'en' && number.nameLatin.isNotEmpty) {
+          pronunciation = number.nameLatin;
+        } else {
+          final localizedPron = SantaliNumbers.pronunciation(
+            number.value,
+            teachingLanguage,
+          );
+          pronunciation = localizedPron.isNotEmpty
+              ? localizedPron
+              : (number.nameLatin.isNotEmpty
+                    ? number.nameLatin
+                    : '${number.value}');
+        }
         return ScaleButton(
           onPressed: () {
             HapticFeedback.lightImpact();

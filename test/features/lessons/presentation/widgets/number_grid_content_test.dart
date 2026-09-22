@@ -6,6 +6,7 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/lesson_content/empty_content_placeholder.dart';
 import 'package:itun/features/lessons/presentation/widgets/lesson_content/number_grid_content.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 
 final allNumbers = [
@@ -71,6 +72,7 @@ Future<void> pumpNumbers(
           AsyncValue.data(numbers ?? allNumbers),
         ),
         learnerLessonsProvider.overrideWithValue(AsyncValue.data([lesson])),
+        effectiveTeachingLanguageProvider.overrideWithValue('en'),
       ],
       child: MaterialApp.router(routerConfig: router),
     ),
@@ -180,6 +182,7 @@ void main() {
           learnerLessonsProvider.overrideWithValue(
             const AsyncValue.data(<LessonEntity>[]),
           ),
+          effectiveTeachingLanguageProvider.overrideWithValue('en'),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),

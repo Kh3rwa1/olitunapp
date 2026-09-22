@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
@@ -58,6 +59,7 @@ class LessonBlockCardContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final manifest = ref.watch(activeLanguageManifestProvider);
     final isDesktop = MediaQuery.sizeOf(context).width >= 1100;
 
     final display = OlChikiMultilingualHelper.resolveBlockDisplay(
@@ -185,8 +187,10 @@ class LessonBlockCardContent extends ConsumerWidget {
                             fontSize: _resolveFontSize(targetScriptText),
                             fontWeight: FontWeight.w900,
                             color: isDark ? Colors.white : accentColor,
-                            fontFamily: cleanOlChiki.isNotEmpty
-                                ? 'OlChiki'
+                            fontFamily:
+                                (cleanOlChiki.isNotEmpty ||
+                                    manifest.code != 'sat')
+                                ? manifest.primaryFontFamily
                                 : null,
                             height: 1.3,
                             shadows: [

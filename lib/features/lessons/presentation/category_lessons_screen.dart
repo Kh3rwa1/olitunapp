@@ -5,11 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
 import '../../../shared/providers/content_providers.dart';
+import '../../../shared/providers/language_settings_providers.dart';
+import '../../../shared/providers/learner_content_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../categories/domain/entities/category_entity.dart';
@@ -42,6 +45,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       contentListProvider((ContentKind.lesson, widget.categoryId)),
     );
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+    ref.invalidate(learnerLessonsProvider);
   }
 
   void _backToLearningPaths() {
@@ -170,6 +174,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final completedLessonIds = ref.watch(completedLessonIdsProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final manifest = ref.watch(activeLanguageManifestProvider);
+    ref.watch(effectiveTeachingLanguageProvider);
     final brandGradient = _getGradient(category.gradientPreset);
     final themeColor = brandGradient.colors.first;
 
@@ -190,7 +196,52 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               brandGradient: brandGradient,
               scriptMode: scriptMode,
               isDark: isDark,
+              manifest: manifest,
             ),
+            if (!manifest.offlineLessonsSupported)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppColors.darkSurfaceElevated
+                          : AppColors.studioNoticeInfoLight,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white12
+                            : AppColors.brandBlue.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          color: isDark ? Colors.white70 : AppColors.brandBlue,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            '${manifest.name} (${manifest.scriptName}) course packs are in preview. Foundational learning content is active.',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : AppColors.webInk,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -245,9 +296,28 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       if (hasBrowseAll && index == 0) {
+                        final browseLabel = isAlphabet
+                            ? (manifest.code == 'sat'
+                                  ? 'Ol Chiki'
+                                  : manifest.scriptName)
+                            : (manifest.code == 'sat' ? 'Lekha' : 'Numbers');
+                        final browseScriptLabel = isAlphabet
+                            ? (manifest.code == 'sat'
+                                  ? 'ᱚᱞ ᱪᱤᱠᱤ'
+                                  : (manifest
+                                            .scriptMetadata
+                                            .nativeScriptName
+                                            .isNotEmpty
+                                        ? manifest
+                                              .scriptMetadata
+                                              .nativeScriptName
+                                        : manifest.nativeName))
+                            : (manifest.code == 'sat' ? 'ᱞᱮᱠᱷᱟ' : '1 2 3');
+
                         final cardWidget = CategoryBrowseAllCard(
-                          label: isAlphabet ? 'Ol Chiki' : 'Lekha',
-                          olChikiLabel: isAlphabet ? 'ᱚᱞ ᱪᱤᱠᱤ' : 'ᱞᱮᱠᱷᱟ',
+                          label: browseLabel,
+                          olChikiLabel: browseScriptLabel,
+                          scriptFontFamily: manifest.primaryFontFamily,
                           description: isAlphabet
                               ? 'Explore the complete grid dictionary of all letters'
                               : 'Explore the complete grid dictionary of all numbers',
@@ -328,6 +398,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         lesson: lesson,
                         primaryTitle: primaryTitle,
                         secondaryTitle: secondaryTitle ?? '',
+                        scriptFontFamily: manifest.primaryFontFamily,
                         scriptMode: scriptMode,
                         isDark: isDark,
                         index: lessonIndex,

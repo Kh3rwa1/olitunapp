@@ -2,6 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/storage/hive_service.dart';
+import 'content_providers.dart';
+import 'learner_content_providers.dart';
+import '../../features/categories/presentation/providers/category_notifier.dart';
 
 // Language, proficiency, goal, and audio-mode preferences for the
 // multilingual audio-first learning experience.
@@ -200,6 +203,9 @@ void updateTeachingLanguage(WidgetRef ref, String languageCode) {
   prefs.setString(teachingLanguageKey, normalized);
   prefs.setBool(teachingLanguageCustomizedKey, true);
   ref.read(teachingLanguageProvider.notifier).state = normalized;
+  ref.invalidate(contentListProvider);
+  ref.invalidate(learnerLessonsProvider);
+  ref.invalidate(categoryNotifierProvider);
 }
 
 /// Keeps the teaching language aligned with the interface language until the
@@ -214,6 +220,9 @@ void cascadeTeachingLanguageForInterface(WidgetRef ref, String interfaceCode) {
       : 'en';
   prefs.setString(teachingLanguageKey, teaching);
   ref.read(teachingLanguageProvider.notifier).state = teaching;
+  ref.invalidate(contentListProvider);
+  ref.invalidate(learnerLessonsProvider);
+  ref.invalidate(categoryNotifierProvider);
 }
 
 void updateSantaliProficiency(WidgetRef ref, SantaliProficiency value) {

@@ -1,11 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/languages/providers/target_language_provider.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/lessons/data/di/lesson_di.dart';
 import '../../features/lessons/domain/entities/lesson_entity.dart';
 import '../../features/lessons/domain/entities/scoped_lesson_media.dart';
 import '../models/content_models.dart';
 import '../repositories/content_repository.dart';
+import 'language_settings_providers.dart';
 
 final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
   return ref
@@ -22,6 +24,8 @@ final learnerLessonsProvider = Provider<AsyncValue<List<LessonEntity>>>((ref) {
 final learnerLessonDetailProvider = FutureProvider.autoDispose
     .family<LessonEntity, String>((ref, lessonId) async {
       await ref.watch(currentUserProvider.future);
+      ref.watch(targetLanguageCodeProvider);
+      ref.watch(effectiveTeachingLanguageProvider);
       final result = await ref
           .watch(lessonRepositoryProvider)
           .getLessonById(lessonId);

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/config/feature_flags.dart';
+import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
@@ -134,6 +135,7 @@ class _LessonBlockDetailScreenState
       _playingId = id;
     });
 
+    final activeLanguageCode = ref.read(targetLanguageCodeProvider);
     await ref
         .read(playbackControllerProvider)
         .playSingle(
@@ -141,7 +143,7 @@ class _LessonBlockDetailScreenState
           contentKind: 'lesson',
           contentId: id,
           trackType: 'targetNormal',
-          languageCode: 'sat',
+          languageCode: activeLanguageCode,
         );
 
     await Future.delayed(const Duration(milliseconds: 1500));
@@ -197,6 +199,8 @@ class _LessonBlockDetailScreenState
   Widget build(BuildContext context) {
     final lessonsAsync = ref.watch(learnerLessonsProvider);
     final completedLessonIds = ref.watch(completedLessonIdsProvider);
+    ref.watch(activeLanguageManifestProvider);
+    ref.watch(effectiveTeachingLanguageProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return lessonsAsync.when(

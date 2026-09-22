@@ -11,6 +11,9 @@ import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/script_typography_registry.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../shared/providers/content_providers.dart';
+import '../../../../shared/providers/learner_content_providers.dart';
+import '../../../categories/presentation/providers/category_notifier.dart';
 
 class IndigenousLanguagesSheet extends ConsumerWidget {
   const IndigenousLanguagesSheet({super.key});
@@ -105,6 +108,9 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
                     ref
                         .read(targetLanguageCodeProvider.notifier)
                         .selectLanguage(manifest.code);
+                    ref.invalidate(contentListProvider);
+                    ref.invalidate(learnerLessonsProvider);
+                    ref.invalidate(categoryNotifierProvider);
                     Navigator.pop(context);
 
                     ScaffoldMessenger.of(context).showSnackBar(

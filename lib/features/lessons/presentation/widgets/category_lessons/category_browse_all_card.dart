@@ -5,6 +5,7 @@ import '../../../../../l10n/generated/app_localizations.dart';
 class CategoryBrowseAllCard extends StatelessWidget {
   final String label;
   final String olChikiLabel;
+  final String? scriptFontFamily;
   final String description;
   final VoidCallback onTap;
   final bool isDark;
@@ -15,6 +16,7 @@ class CategoryBrowseAllCard extends StatelessWidget {
     super.key,
     required this.label,
     required this.olChikiLabel,
+    this.scriptFontFamily,
     required this.description,
     required this.onTap,
     required this.isDark,
@@ -112,7 +114,7 @@ class CategoryBrowseAllCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        fontFamily: 'OlChiki',
+                        fontFamily: scriptFontFamily ?? 'OlChiki',
                         color: isDark ? Colors.white54 : Colors.black45,
                       ),
                     ),

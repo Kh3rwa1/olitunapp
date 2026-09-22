@@ -80,11 +80,12 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
-    final isWordOrSentence =
+    final isWordSentenceOrNumber =
         widget.item.kind == ContentKind.word ||
-        widget.item.kind == ContentKind.sentence;
+        widget.item.kind == ContentKind.sentence ||
+        widget.item.kind == ContentKind.number;
 
-    final display = isWordOrSentence
+    final display = isWordSentenceOrNumber
         ? OlChikiMultilingualHelper.resolveBlockDisplay(
             textOlChiki: widget.item.olChiki ?? widget.item.titleOlChiki,
             textLatin: widget.item.title,

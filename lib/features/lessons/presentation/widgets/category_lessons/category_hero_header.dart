@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/languages/models/language_manifest.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../shared/utils/localized_content.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
@@ -12,6 +13,7 @@ class CategoryHeroHeader extends StatelessWidget {
   final LinearGradient brandGradient;
   final String scriptMode;
   final bool isDark;
+  final LanguageManifest? manifest;
 
   const CategoryHeroHeader({
     super.key,
@@ -19,6 +21,7 @@ class CategoryHeroHeader extends StatelessWidget {
     required this.brandGradient,
     required this.scriptMode,
     required this.isDark,
+    this.manifest,
   });
 
   @override
@@ -99,25 +102,42 @@ class CategoryHeroHeader extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Giant Ol Chiki watermark — the $10B signature.
+                  // Watermark signature dynamically adapting to active language.
                   Positioned(
                     right: isDesktop ? 48 : 16,
                     bottom: 8,
                     child: IgnorePointer(
-                      child: Text(
-                        category.titleOlChiki.isNotEmpty
-                            ? category.titleOlChiki.characters
-                                  .take(3)
-                                  .toString()
-                            : 'ᱚᱞ',
-                        style: TextStyle(
-                          fontFamily: 'OlChiki',
-                          fontSize: isDesktop ? 150 : 110,
-                          fontWeight: FontWeight.w900,
-                          height: 1,
-                          color: Colors.white.withValues(alpha: 0.12),
-                        ),
-                      ),
+                      child: () {
+                        final isNotSantali =
+                            manifest != null && manifest!.code != 'sat';
+                        final watermarkText = isNotSantali
+                            ? (manifest!.sampleGlyphs.isNotEmpty
+                                  ? manifest!.sampleGlyphs.take(2).join()
+                                  : (manifest!.nativeName.isNotEmpty
+                                        ? manifest!.nativeName.characters
+                                              .take(2)
+                                              .toString()
+                                        : ''))
+                            : (category.titleOlChiki.isNotEmpty
+                                  ? category.titleOlChiki.characters
+                                        .take(3)
+                                        .toString()
+                                  : 'ᱚᱞ');
+                        final watermarkFont = isNotSantali
+                            ? manifest!.primaryFontFamily
+                            : 'OlChiki';
+
+                        return Text(
+                          watermarkText,
+                          style: TextStyle(
+                            fontFamily: watermarkFont,
+                            fontSize: isDesktop ? 150 : 110,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                            color: Colors.white.withValues(alpha: 0.12),
+                          ),
+                        );
+                      }(),
                     ),
                   ),
                   // Bottom fade into page canvas
@@ -200,19 +220,40 @@ class CategoryHeroHeader extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 10),
-                            if (category.titleOlChiki.isNotEmpty) ...[
-                              Text(
-                                category.titleOlChiki,
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  letterSpacing: 1.2,
-                                  fontFamily: 'OlChiki',
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                            ],
+                            () {
+                              final isNotSantali =
+                                  manifest != null && manifest!.code != 'sat';
+                              final subtitleText = isNotSantali
+                                  ? manifest!.nativeName
+                                  : category.titleOlChiki;
+                              final subtitleFont = isNotSantali
+                                  ? manifest!.primaryFontFamily
+                                  : 'OlChiki';
+
+                              if (subtitleText.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+
+                              return Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    subtitleText,
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      letterSpacing: 1.2,
+                                      fontFamily: subtitleFont,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                ],
+                              );
+                            }(),
                             Text(
                               category.titleLatin,
                               style: TextStyle(

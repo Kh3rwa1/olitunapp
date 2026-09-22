@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../../shared/utils/santali_numbers.dart';
 import 'indic_translations_dictionary.dart';
 import 'ol_chiki_char_maps.dart';
 import 'translation_override_service.dart';
@@ -292,6 +293,63 @@ class OlChikiMultilingualHelper {
     final rawOlChiki = (textOlChiki ?? '').trim();
     final olChiki = sanitizeOlChiki(rawOlChiki);
     final latin = (textLatin ?? '').trim();
+
+    // 0. Special Handling for Numbers (0-100):
+    // Resolves complete Santali pronunciation across Bengali ('মিৎ'), Hindi ('मित'),
+    // Odia ('ମିତ୍'), Latin ('Mit'), Santali ('ᱢᱤᱫ'), as well as full teaching language
+    // number names ('এক (১)', 'दो (२)', 'ଏକ (୧)', 'One (1)', 'ᱢᱤᱫ (᱑)').
+    final numberValue = SantaliNumbers.tryParseValue(rawOlChiki, latin);
+    if (numberValue != null) {
+      final scriptText = olChiki.isNotEmpty
+          ? olChiki
+          : SantaliNumbers.toOlChikiNumeral(numberValue);
+      final transliteration = SantaliNumbers.pronunciation(
+        numberValue,
+        teachingLanguage,
+      );
+      final localizedMeaning = SantaliNumbers.teachingLanguageName(
+        numberValue,
+        teachingLanguage,
+      );
+
+      final String subtitle;
+      if (scriptMode == 'olchiki' && teachingLanguage != 'sat') {
+        subtitle = '';
+      } else {
+        subtitle = transliteration;
+      }
+
+      final String title = localizedMeaning;
+
+      final String ctaText;
+      switch (teachingLanguage) {
+        case 'bn':
+          ctaText = 'শুনুন';
+          break;
+        case 'hi':
+          ctaText = 'सुनें';
+          break;
+        case 'or':
+          ctaText = 'ଶୁଣନ୍ତୁ';
+          break;
+        case 'sat':
+          ctaText = 'ᱟᱸᱡᱚᱢ';
+          break;
+        case 'en':
+        default:
+          ctaText = 'LISTEN';
+          break;
+      }
+
+      return LocalizedItemDisplay(
+        scriptText: scriptText,
+        transliteration: transliteration,
+        meaning: localizedMeaning,
+        subtitle: subtitle,
+        title: title,
+        ctaText: ctaText,
+      );
+    }
 
     // 1. Separate Romanized Santali and English Meaning from composite textLatin
     final parsed = parseCompositeLatin(latin);

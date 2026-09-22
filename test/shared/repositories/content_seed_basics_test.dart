@@ -37,7 +37,7 @@ void main() {
     await directory.delete(recursive: true);
   });
 
-  const counts = {ContentKind.letter: 30, ContentKind.number: 101};
+  const counts = {ContentKind.letter: 35, ContentKind.number: 101};
   for (final entry in counts.entries) {
     test(
       'fresh ${entry.key.name} catalog needs neither cache nor network',

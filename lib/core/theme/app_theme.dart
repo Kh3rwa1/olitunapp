@@ -15,6 +15,22 @@ class AppTheme {
     },
   );
 
+  static const _lightOverlayStyle = SystemUiOverlayStyle(
+    statusBarBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+    systemStatusBarContrastEnforced: false,
+  );
+
+  static const _darkOverlayStyle = SystemUiOverlayStyle(
+    statusBarBrightness: Brightness.dark,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarContrastEnforced: false,
+    systemStatusBarContrastEnforced: false,
+  );
+
   // ============== LIGHT THEME ==============
   static ThemeData get lightTheme {
     return _buildTheme(
@@ -35,7 +51,7 @@ class AppTheme {
       textPrimary: AppColors.textPrimaryLight,
       textSecondary: AppColors.textSecondaryLight,
       textTertiary: AppColors.textTertiaryLight,
-      overlayStyle: SystemUiOverlayStyle.dark,
+      overlayStyle: _lightOverlayStyle,
       elevatedButtonFg: const Color(0xFF00391C), // WCAG AA: 7.2:1 on #1EE088
       snackBarBg: AppColors.charcoal,
       disabledText: AppColors.textDisabledLight,
@@ -64,7 +80,7 @@ class AppTheme {
       textPrimary: AppColors.textPrimaryDark,
       textSecondary: AppColors.textSecondaryDark,
       textTertiary: AppColors.textTertiaryDark,
-      overlayStyle: SystemUiOverlayStyle.light,
+      overlayStyle: _darkOverlayStyle,
       elevatedButtonFg: Colors.black, // High contrast on Mint Green
       snackBarBg: AppColors.softBlack,
       disabledText: AppColors.textDisabledDark,

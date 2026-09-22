@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../media/authorized_media.dart';
 import '../media/authorized_media_provider.dart';
+import 'notification_artwork_uri.dart';
 import 'private_audio_playback.dart';
 import 'audio_service_stub.dart'
     if (dart.library.js_interop) 'audio_service_web.dart';
@@ -159,10 +160,18 @@ class AudioService {
       if (_player.playing) {
         await _player.pause();
       }
+      final boundedArtUri = artUri != null
+          ? (notificationArtworkUri(artUri.toString()) ?? artUri)
+          : null;
       await _player.setAudioSource(
         AudioSource.uri(
           Uri.parse(url),
-          tag: MediaItem(id: url, album: album, title: title, artUri: artUri),
+          tag: MediaItem(
+            id: url,
+            album: album,
+            title: title,
+            artUri: boundedArtUri,
+          ),
         ),
       );
       await _player.setVolume(1.0);

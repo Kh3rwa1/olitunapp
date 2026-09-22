@@ -112,24 +112,7 @@ Future<void> _startApplication() async {
             systemNavigationBarIconBrightness: Brightness.dark,
           ),
         );
-        final firstView =
-            WidgetsBinding.instance.platformDispatcher.views.firstOrNull;
-        final physicalWidth = firstView?.physicalSize.width ?? 0;
-        final pixelRatio = firstView?.devicePixelRatio ?? 1.0;
-        final isLargeScreen = (physicalWidth / pixelRatio) >= 600;
-        if (isLargeScreen) {
-          await SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-            DeviceOrientation.landscapeLeft,
-            DeviceOrientation.landscapeRight,
-          ]);
-        } else {
-          await SystemChrome.setPreferredOrientations([
-            DeviceOrientation.portraitUp,
-            DeviceOrientation.portraitDown,
-          ]);
-        }
+        await SystemChrome.setPreferredOrientations(DeviceOrientation.values);
       },
       'crash-reporting': CrashReporting.init,
       'ads': () async {

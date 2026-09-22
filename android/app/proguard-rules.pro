@@ -34,6 +34,14 @@
 -keep class com.google.gson.** { *; }
 -dontwarn com.google.gson.**
 
+# Preserve BitmapFactory Options and downsampling fields for R8
+-keepclassmembers class android.graphics.BitmapFactory$Options {
+    public int inSampleSize;
+    public boolean inJustDecodeBounds;
+    public <fields>;
+}
+-dontwarn android.graphics.BitmapFactory
+
 # Allow obfuscation of most things, but keep some essentials
 -keepattributes Signature
 -keepattributes *Annotation*

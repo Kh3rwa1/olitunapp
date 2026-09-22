@@ -59,10 +59,20 @@ void main() {
     expect(result.queryParameters.length, 3);
   });
 
-  test('non-view artwork and unrelated query text are left unchanged', () {
+  test('existing preview URLs are also bounded to 300x300 webp', () {
+    const previewUrl =
+        'https://example.test/v1/storage/buckets/covers/files/cover/preview?project=demo';
+    final result = notificationArtworkUri(previewUrl)!;
+    expect(result.path, '/v1/storage/buckets/covers/files/cover/preview');
+    expect(result.queryParameters['width'], '300');
+    expect(result.queryParameters['height'], '300');
+    expect(result.queryParameters['output'], 'webp');
+    expect(result.queryParameters['project'], 'demo');
+  });
+
+  test('non-storage artwork and unrelated query text are left unchanged', () {
     for (final url in [
       '$view/extra?project=demo',
-      view.replaceFirst('/view', '/preview?project=demo'),
       'https://example.test/image.png?next=/view',
       'https://example.test/view?project=demo',
       'file:///storage/buckets/covers/files/cover/view',

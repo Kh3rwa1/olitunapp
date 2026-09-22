@@ -9,6 +9,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/utils/text_match.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../../../../shared/utils/santali_numbers.dart';
 import '../../../../../shared/widgets/bento_grid.dart';
 import '../../../domain/entities/lesson_entity.dart';
 import 'empty_content_placeholder.dart';
@@ -24,6 +25,7 @@ class NumberGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final contentAsync = ref.watch(learnerNumbersProvider);
     final lessonsAsync = ref.watch(learnerLessonsProvider);
     final loadState = buildContentLoadGuard(
@@ -59,13 +61,21 @@ class NumberGridContent extends ConsumerWidget {
       itemCount: numbers.length,
       itemBuilder: (context, index) {
         final number = numbers[index];
+        final localizedName = SantaliNumbers.teachingLanguageName(
+          number.value,
+          teachingLanguage,
+        );
+        final pronunciation = SantaliNumbers.pronunciation(
+          number.value,
+          teachingLanguage,
+        );
         return ScaleButton(
           onPressed: () {
             HapticFeedback.lightImpact();
             context.push('/number/$lessonId/${number.id}');
           },
           child: BentoCell(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(12),
             borderRadius: 20,
             border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.15),
@@ -80,29 +90,49 @@ class NumberGridContent extends ConsumerWidget {
                       Text(
                         number.numeral,
                         style: const TextStyle(
-                          fontSize: 36,
+                          fontSize: 32,
                           fontWeight: FontWeight.w900,
                           color: AppColors.primary,
+                          fontFamily: 'OlChiki',
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '${number.value}',
+                        localizedName,
                         style: TextStyle(
-                          fontSize: 20,
+                          fontSize: 14,
                           fontWeight: FontWeight.w800,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
-                      ),
-                      Text(
-                        number.nameLatin,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white54 : Colors.black45,
-                        ),
+                        textAlign: TextAlign.center,
                         overflow: TextOverflow.ellipsis,
                       ),
+                      const SizedBox(height: 2),
+                      Text(
+                        pronunciation,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (teachingLanguage != 'sat' &&
+                          number.nameOlChiki.isNotEmpty) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          number.nameOlChiki,
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white54 : Colors.black45,
+                            fontFamily: 'OlChiki',
+                          ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ],
                   ),
                 ),

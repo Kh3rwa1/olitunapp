@@ -11,6 +11,19 @@ class NumberSeeder {
       type: 'text',
       textOlChiki: SantaliNumbers.toOlChikiNumeral(value),
       textLatin: '$value – ${SantaliNumbers.englishName(value)}',
+      data: {
+        'pronunciation': SantaliNumbers.nameLatin(value),
+        'meaning': SantaliNumbers.englishName(value),
+        'meaning_en': SantaliNumbers.teachingLanguageName(value, 'en'),
+        'meaning_bn': SantaliNumbers.teachingLanguageName(value, 'bn'),
+        'meaning_hi': SantaliNumbers.teachingLanguageName(value, 'hi'),
+        'meaning_or': SantaliNumbers.teachingLanguageName(value, 'or'),
+        'pronunciation_bn': SantaliNumbers.pronunciation(value, 'bn'),
+        'pronunciation_hi': SantaliNumbers.pronunciation(value, 'hi'),
+        'pronunciation_or': SantaliNumbers.pronunciation(value, 'or'),
+        'pronunciation_en': SantaliNumbers.pronunciation(value, 'en'),
+        'pronunciation_sat': SantaliNumbers.pronunciation(value, 'sat'),
+      },
     );
   }
 

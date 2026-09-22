@@ -18,12 +18,14 @@ class CategoryLessonCard extends StatefulWidget {
   final Color themeColor;
   final bool isLocked;
   final bool isCompleted;
+  final String? scriptFontFamily;
 
   const CategoryLessonCard({
     super.key,
     required this.lesson,
     required this.primaryTitle,
     required this.secondaryTitle,
+    this.scriptFontFamily,
     required this.scriptMode,
     required this.isDark,
     required this.index,
@@ -183,7 +185,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                               style: TextStyle(
                                 fontSize: 13.5,
                                 fontWeight: FontWeight.w600,
-                                fontFamily: 'OlChiki',
+                                fontFamily: widget.scriptFontFamily ?? 'OlChiki',
                                 color: isDark
                                     ? Colors.white54
                                     : AppColors.webSlate,

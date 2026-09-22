@@ -10,6 +10,9 @@ import '../../domain/repositories/lesson_repository.dart';
 import '../datasources/lesson_local_datasource.dart';
 import '../datasources/lesson_remote_datasource.dart';
 import '../models/lesson_model.dart';
+import '../../../../shared/models/content_item.dart';
+import '../../../../shared/models/content_item_extensions.dart';
+import '../../../../shared/repositories/content_seed_loader.dart';
 
 class LessonRepositoryImpl implements LessonRepository {
   final LessonRemoteDataSource remoteDataSource;
@@ -383,7 +386,16 @@ class LessonRepositoryImpl implements LessonRepository {
           }
         } catch (_) {}
 
-        // Fallback to static seed lessons if applicable
+        // Fallback to bundled seed lessons first, then static seed lessons
+        try {
+          final bundled = await ContentSeedLoader.loadBundledSeedItems(
+            ContentKind.lesson,
+            null,
+          );
+          final found = bundled.where((l) => l.id == id).firstOrNull;
+          if (found != null) return Right(found.toLessonEntity());
+        } catch (_) {}
+
         try {
           final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
           return Right(seed);
@@ -433,7 +445,16 @@ class LessonRepositoryImpl implements LessonRepository {
       // Cache unreadable or missing
     }
 
-    // Offline seed fallback (free intro lessons only)
+    // Offline seed fallback: check bundled multilingual seed lessons first
+    try {
+      final bundled = await ContentSeedLoader.loadBundledSeedItems(
+        ContentKind.lesson,
+        null,
+      );
+      final found = bundled.where((l) => l.id == id).firstOrNull;
+      if (found != null) return Right(found.toLessonEntity());
+    } catch (_) {}
+
     try {
       final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
       return Right(seed);

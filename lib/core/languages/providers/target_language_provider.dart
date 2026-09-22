@@ -19,7 +19,7 @@ final activeLanguageManifestProvider = Provider<LanguageManifest>((ref) {
 });
 
 class TargetLanguageNotifier extends StateNotifier<String> {
-  TargetLanguageNotifier() : super(kDefaultTargetLanguage) {
+  TargetLanguageNotifier([super.initial = kDefaultTargetLanguage]) {
     _loadFromStorage();
   }
 

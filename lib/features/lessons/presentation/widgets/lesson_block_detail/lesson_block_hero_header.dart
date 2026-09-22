@@ -18,6 +18,7 @@ class LessonBlockHeroHeader extends StatelessWidget {
     required this.glyph,
     required this.isLongText,
     required this.animationUrl,
+    this.fontFamily,
   });
 
   final LessonBlockEntity block;
@@ -29,6 +30,7 @@ class LessonBlockHeroHeader extends StatelessWidget {
   final String glyph;
   final bool isLongText;
   final String? animationUrl;
+  final String? fontFamily;
 
   static bool isLottieMedia(String url) {
     return MediaTypeResolver.resolve(url) == MediaKind.lottie;
@@ -67,6 +69,7 @@ class LessonBlockHeroHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 240,
                       fontWeight: FontWeight.w900,
+                      fontFamily: fontFamily,
                       color: animationUrl != null
                           ? Colors.white
                           : (isDark ? Colors.white : accentColor),

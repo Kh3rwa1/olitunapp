@@ -12,6 +12,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../core/languages/providers/target_language_provider.dart';
 
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {
   final remoteDataSource = ref.watch(contentRemoteDataSourceProvider);
@@ -58,6 +59,7 @@ final contentListProvider =
       arg,
     ) async {
       ref.watch(isAuthenticatedProvider);
+      ref.watch(targetLanguageCodeProvider);
       final kind = arg.$1;
       final categoryId = arg.$2;
       final repo = ref.watch(contentRepositoryProvider);

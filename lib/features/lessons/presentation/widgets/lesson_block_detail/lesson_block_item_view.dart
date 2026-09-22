@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/presentation/layout/responsive_layout.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
@@ -179,6 +180,7 @@ class LessonBlockItemView extends ConsumerWidget {
 
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final manifest = ref.watch(activeLanguageManifestProvider);
 
     final display = OlChikiMultilingualHelper.resolveBlockDisplay(
       textOlChiki: block.textOlChiki,
@@ -257,6 +259,7 @@ class LessonBlockItemView extends ConsumerWidget {
                     glyph: glyph,
                     isLongText: isLongText,
                     animationUrl: visualMediaUrl,
+                    fontFamily: manifest.primaryFontFamily,
                   ),
                   LessonBlockCardContent(
                     block: block,

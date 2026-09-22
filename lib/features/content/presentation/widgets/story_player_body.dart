@@ -20,6 +20,7 @@ import '../providers/audio_download_providers.dart';
 import '../providers/audio_playback_providers.dart';
 import '../providers/story_segment_providers.dart';
 import 'premium_bakhed_body.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 part 'story_player_body_views.dart';
 

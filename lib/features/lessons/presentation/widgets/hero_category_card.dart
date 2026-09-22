@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class HeroCategoryCard extends StatelessWidget {
   final dynamic category;
@@ -68,7 +69,7 @@ class HeroCategoryCard extends StatelessWidget {
           SizedBox(width: 8),
           Flexible(
             child: Text(
-              'START LEARNING',
+              AppLocalizations.of(context)!.startLearning,
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w900,
@@ -118,7 +119,7 @@ class HeroCategoryCard extends StatelessWidget {
                     SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        'RECOMMENDED',
+                        AppLocalizations.of(context)!.recommendedLabel,
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w900,

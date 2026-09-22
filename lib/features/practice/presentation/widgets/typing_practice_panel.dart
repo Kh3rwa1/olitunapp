@@ -9,6 +9,7 @@ import '../providers/typing_practice_controller.dart';
 import 'ol_chiki_keyboard.dart';
 import 'typing_complete_celebration.dart';
 import 'typing_practice_done_card.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class TypingPracticePanel extends ConsumerStatefulWidget {
   final TypingPracticeArgs args;
@@ -264,8 +265,8 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                     size: 16,
                     color: AppColors.primary,
                   ),
-                  label: const Text(
-                    'REVEAL & CONTINUE',
+                  label: Text(
+                    AppLocalizations.of(context)!.revealAndContinue,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
@@ -339,8 +340,8 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'PRACTICE TYPING',
+                        Text(
+                          AppLocalizations.of(context)!.practiceTyping,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,

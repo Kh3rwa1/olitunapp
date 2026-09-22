@@ -12,6 +12,7 @@ import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import 'widgets/quiz_list_cards.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class QuizListScreen extends ConsumerWidget {
   const QuizListScreen({super.key});
@@ -104,7 +105,7 @@ class QuizListScreen extends ConsumerWidget {
                             const SizedBox(height: 24),
 
                             Text(
-                                  'MORE QUIZZES',
+                                  AppLocalizations.of(context)!.moreQuizzes,
                                   style: AppTypography.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
@@ -195,7 +196,7 @@ class QuizListScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'CHALLENGE YOURSELF',
+                  AppLocalizations.of(context)!.challengeYourself,
                   style: AppTypography.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
@@ -207,7 +208,7 @@ class QuizListScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Choose a Quiz',
+                  AppLocalizations.of(context)!.chooseAQuiz,
                   style: AppTypography.inter(
                     fontSize: 26,
                     fontWeight: FontWeight.w900,
@@ -271,7 +272,7 @@ class QuizListScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
           Text(
-            'No quizzes yet!',
+            AppLocalizations.of(context)!.noQuizzesYet,
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
@@ -280,7 +281,7 @@ class QuizListScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Complete some lessons first',
+            AppLocalizations.of(context)!.completeLessonsFirst,
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white38 : Colors.black38,
@@ -331,7 +332,7 @@ class _QuizListErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Check your connection and try again.',
+              AppLocalizations.of(context)!.checkConnectionPeriod,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

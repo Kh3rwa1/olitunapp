@@ -13,6 +13,7 @@ import '../../../../../shared/widgets/bento_grid.dart';
 import '../../../domain/entities/lesson_entity.dart';
 import 'empty_content_placeholder.dart';
 import 'lesson_content_helpers.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 /// List of sentence cards for the lesson detail screen.
 /// Scoped: only shows sentences that appear in the lesson's blocks.
@@ -226,7 +227,7 @@ class SentenceListContent extends ConsumerWidget {
                               ),
                             ),
                             child: Text(
-                              'Pronunciation: ${sentence.pronunciation}',
+                              AppLocalizations.of(context)!.sentencePronunciation(pronunciation: sentence.pronunciation),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,

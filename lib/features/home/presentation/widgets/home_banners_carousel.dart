@@ -9,6 +9,7 @@ import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class HomeBannersCarousel extends ConsumerStatefulWidget {
   final bool isDark;
@@ -275,7 +276,7 @@ class _BannerSlide extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Learn more',
+                            AppLocalizations.of(context)!.learnMore,
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w800,

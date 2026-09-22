@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../providers/profile_providers.dart';
 import '../../domain/entities/user_stats_entity.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class NextMilestoneCard extends ConsumerWidget {
   const NextMilestoneCard({super.key});
@@ -250,7 +251,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'NEXT MILESTONE',
+                                      AppLocalizations.of(context)!.nextMilestone,
                                       style: AppTypography.inter(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
@@ -260,7 +261,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
-                                      'Road to $nextLevelName',
+                                      AppLocalizations.of(context)!.roadToLevel(level: nextLevelName),
                                       style: AppTypography.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
@@ -397,7 +398,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'To unlock the ${badge.name} badge: ${badge.targetText}',
+                                      AppLocalizations.of(context)!.badgeUnlockHint(name: badge.name, target: badge.targetText),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -450,7 +451,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Closest Badge Achievement',
+                                            AppLocalizations.of(context)!.closestBadge,
                                             style: AppTypography.inter(
                                               fontSize: 9,
                                               fontWeight: FontWeight.w800,
@@ -462,7 +463,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                           ),
                                           const SizedBox(height: 2),
                                           Text(
-                                            'Unlock the ${badge.name} Badge',
+                                            AppLocalizations.of(context)!.unlockBadge(name: badge.name),
                                             style: AppTypography.inter(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,

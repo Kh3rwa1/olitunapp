@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/quiz_session_notifier.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class QuizCountPill extends StatelessWidget {
   const QuizCountPill({super.key, required this.current, required this.total});
@@ -22,7 +23,7 @@ class QuizCountPill extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
-            '$current/$total',
+            AppLocalizations.of(context)!.currentOfTotal(current: current, total: total),
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,

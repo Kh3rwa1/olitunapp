@@ -672,5 +672,518 @@
         }
     },
     "aiStudioPassageToSend": "Passage to send",
-    "aiStudioPassageLimitError": "Shorten the passage to continue. Nothing is truncated."
+    "aiStudioPassageLimitError": "Shorten the passage to continue. Nothing is truncated.",
+    "aiStudioUploadPrompt": "Upload document or capture page",
+    "aiStudioUploadFormats": "PDF, PNG or JPG · up to 10 MB",
+    "aiStudioJobId": "Job: {id}",
+    "@aiStudioJobId": {
+        "placeholders": {
+            "id": {
+                "type": "String"
+            }
+        }
+    },
+    "aiStudioCheckStatus": "Check status",
+    "aiStudioReplaceWithScan": "Replace my edits with latest scan text",
+    "aiStudioEditSource": "Edit source input",
+    "olitun": "Olitun",
+    "welcomeTagline": "Learn Ol Chiki Script",
+    "errorLoadingContent": "Error loading content: {error}",
+    "@errorLoadingContent": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "startQuiz2": "Start Quiz",
+    "practiceTyping": "Practice Typing",
+    "mediaDuration": "Duration: {seconds}s",
+    "@mediaDuration": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "noLearningContent": "No learning content available.",
+    "errorLoadingDetails": "Error loading details: {error}",
+    "@errorLoadingDetails": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "culturalNotesPreparing": "Cultural notes are being prepared.",
+    "culturalNoteSource": "Source: {source}",
+    "@culturalNoteSource": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "noVocabularyItems": "No vocabulary items defined.",
+    "lyricsBeingAdded": "Lyrics are being added.",
+    "bakhedLabel": "BAKHED",
+    "wordLabel": "word",
+    "cancelLower": "cancel",
+    "greetingDayPart": "ᱡᱚᱦᱟᱨ • {part}",
+    "@greetingDayPart": {
+        "placeholders": {
+            "part": {
+                "type": "String"
+            }
+        }
+    },
+    "homePickupSubtitle": "Pick up where you left off — small steps, every day.",
+    "aiTranslatorTitle": "AI Translator",
+    "voiceSpeakWithConfidence": "Speak With\nConfidence",
+    "aiStudioPromoBadge": "NEW • AI STUDIO",
+    "aiStudioPromoSubtitle": "Scan or speak — get Santali text.",
+    "learnMore": "Learn more",
+    "instantTranslate": "Instant Translate",
+    "anyLanguageToOlChiki": "Any Language → Ol Chiki",
+    "aiBadge": "AI",
+    "yourLearningPath": "YOUR LEARNING PATH",
+    "stepOfPath": "Step {step} of {total}: ",
+    "@stepOfPath": {
+        "placeholders": {
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "learningPathSubtitle": "A guided path matched to your Santali level.",
+    "santaliOlChikiLabel": "SANTALI (OL CHIKI)",
+    "magicTranslatePrivacyNote": "Translations are processed securely, cached via privacy hashes, and never linked to your profile.",
+    "close": "CLOSE",
+    "aiVoicePromoBadge": "NEW • AI VOICE",
+    "aiVoiceTitle": "AI Voice",
+    "aiVoicePromoSubtitle": "Type anything — hear it in Santali.",
+    "tryNow": "Try now",
+    "k15Styles": "ᱟᱲᱟᱝ • 15 styles",
+    "backToLearningPaths": "Back to learning paths",
+    "learningPathsHeader": "LEARNING PATHS",
+    "chooseYourJourney": "Choose Your Journey",
+    "morePaths": "MORE PATHS",
+    "plusTenXp": "+10 XP",
+    "strokeOrderHint": "Watch the stroke flow and then switch to Tracing mode to replicate it.",
+    "traceAccuracy": "{feedback}  Accuracy: {percent}%",
+    "@traceAccuracy": {
+        "placeholders": {
+            "feedback": {
+                "type": "String"
+            },
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "niceWork": "Nice!",
+    "youScoredOutOf": "You scored {score} out of {total}",
+    "@youScoredOutOf": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "percentFormat": "{percent}%",
+    "@percentFormat": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "backLabel": "Back",
+    "quizKeyboardHint": "Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit",
+    "scoreOnly": "{score}",
+    "@scoreOnly": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            }
+        }
+    },
+    "pressEnter": "Enter ↵",
+    "readyToTestYourself": "Ready to test yourself?",
+    "takeTheQuiz": "TAKE THE QUIZ",
+    "skipForNow": "Skip for now",
+    "browseView": "BROWSE VIEW",
+    "openDictionary": "Open Dictionary",
+    "learnLabel": "LEARN",
+    "doneLabel": "DONE",
+    "lockedForNowTitle": "HOLD ON • LOCKED FOR NOW",
+    "completeBlockerFirst": "Complete “{blocker}” first to crack it open.",
+    "@completeBlockerFirst": {
+        "placeholders": {
+            "blocker": {
+                "type": "String"
+            }
+        }
+    },
+    "interactiveHtmlTitle": "Interactive HTML Content",
+    "interactiveHtmlBody": "This lesson contains an interactive HTML experience. Tap below to launch it.",
+    "openInteractiveContent": "Open Interactive Content",
+    "recommendedLabel": "RECOMMENDED",
+    "audioPlaybackHint": "Press Space to play audio • ← → to navigate",
+    "finishReviewing": "FINISH REVIEWING",
+    "takeQuizNow": "Take Quiz Now",
+    "stepOfTotal": "STEP {step} OF {total}",
+    "@stepOfTotal": {
+        "placeholders": {
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "checkConnectionPeriod": "Check your connection and try again.",
+    "sentencePronunciation": "Pronunciation: {pronunciation}",
+    "@sentencePronunciation": {
+        "placeholders": {
+            "pronunciation": {
+                "type": "String"
+            }
+        }
+    },
+    "santaliLearner": "SANTALI LEARNER",
+    "streakTip": "Finish 3 lessons to keep your streak alive.",
+    "continueLearningArrow": "Continue learning →",
+    "olitun2": "Olitun",
+    "santaliOlChikiTag": "SANTALI • OL CHIKI",
+    "menuLabel": "MENU",
+    "olitunPwaVersion": "Olitun PWA • v2.4",
+    "onboardingCounter": "{current} · {total}",
+    "@onboardingCounter": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "goalsTitle": "What are your learning goals?",
+    "goalsSubtitle": "Select all that apply to personalize your learning experience.",
+    "requiredLabel": "REQUIRED",
+    "stepOneOfFive": "Step 1 of 5",
+    "languageSubtitle": "Select your mother tongue. We will use this language to explain Ol Chiki letters, word meanings, and audio lessons.",
+    "prefsSaveFailed": "Could not save your preferences. Please try again.",
+    "selectMotherTongueToast": "Please select your mother tongue / teaching language to continue.",
+    "onboardingHeadline": "Learn Ol Chiki,\\none step at a time",
+    "familiarityTitle": "How familiar are you with Ol Chiki?",
+    "familiaritySubtitle": "We will tailor your learning path accordingly.",
+    "displayTitle": "How do you want to see content?",
+    "displaySubtitle": "Choose your preferred script display. You can change this anytime.",
+    "practiceGoalTitle": "How much do you want to practice?",
+    "practiceGoalSubtitle": "Setting a small daily goal helps build a continuous learning streak.",
+    "olitunWordmark": "OLITUN",
+    "learnOlChiki": "LEARN OL CHIKI",
+    "spaceKey": "SPACE",
+    "practicedSuccessfully": "Practiced Successfully",
+    "revealAndContinue": "REVEAL & CONTINUE",
+    "systemDiagnosticsTitle": "System Diagnostics & Health",
+    "systemDiagnosticsSubtitle": "Anonymized runtime performance & diagnostic telemetry",
+    "diagnosticPayloadPreview": "Diagnostic Payload Preview",
+    "diagnosticPayloadCopied": "Diagnostic payload copied to clipboard!",
+    "diagnosticsTileSubtitle": "View runtime health, memory state & anonymized telemetry",
+    "deleteAllDownloadsTitle": "Delete all downloads?",
+    "deleteAllDownloadsBody": "This removes every offline story audio clip from this device. Stories will stream again when you are back online.",
+    "editYourName": "Edit Your Name",
+    "save": "Save",
+    "indigenousLanguagesTitle": "Indigenous Languages Platform",
+    "indigenousLanguagesSubtitle": "Explore native scripts & tribal languages of eastern India",
+    "packsComingSoon": "{name} content & audio packs are coming soon!",
+    "@packsComingSoon": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "learningLanguageSetTo": "Learning language set to {name} ({script})",
+    "@learningLanguageSetTo": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "script": {
+                "type": "String"
+            }
+        }
+    },
+    "audioPack": "Audio Pack",
+    "offlineLessons": "Offline Lessons",
+    "lettersCount": "{count} letters",
+    "@lettersCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "demoLabel": "DEMO",
+    "masteryAccuracy": "Accuracy: {percent}%",
+    "@masteryAccuracy": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "masteryProgression": "Mastery Progression",
+    "nextMilestone": "NEXT MILESTONE",
+    "roadToLevel": "Road to {level}",
+    "@roadToLevel": {
+        "placeholders": {
+            "level": {
+                "type": "String"
+            }
+        }
+    },
+    "badgeUnlockHint": "To unlock the {name} badge: {target}",
+    "@badgeUnlockHint": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "closestBadge": "Closest Badge Achievement",
+    "unlockBadge": "Unlock the {name} Badge",
+    "@unlockBadge": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "reminderFrequency": "Reminder Frequency",
+    "reminderFrequencySubtitle": "Choose how often you would like to be reminded to practice Ol Chiki.",
+    "dailySchedulePreview": "Daily Schedule Preview",
+    "sendTestNotification": "Send Test Notification",
+    "chooseYourAvatarLower": "Choose your avatar",
+    "avatarAnimationsFailed": "Could not load avatar animations.",
+    "tryAgainLower": "Try again",
+    "avatarSaveFailed": "Could not save avatar. Please try again.",
+    "since": "Since {date}",
+    "@since": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "overallProgress": "Overall Progress",
+    "noBookingsFound": "No bookings found",
+    "bookingsEmptyHint": "Book verified reciters for your ceremonies under the Bakhed tab.",
+    "waitlistBookingsFailed": "Failed to load waitlist bookings.",
+    "assessmentScore": "Assessment Score",
+    "avgLabel": "Avg",
+    "adPrivacyRegionNote": "Ad privacy settings are not required for your region.",
+    "signOutConfirmBody": "Are you sure you want to sign out of your account on this device?",
+    "learningLanguageScript": "Learning Language & Script",
+    "mistakeReview": "Mistake Review",
+    "allCaughtUp": "All caught up!",
+    "noMistakesToReview": "No mistakes need review. Your Santali roots are strong!",
+    "mistakesMastered": "Mistakes Mastered!",
+    "moreQuizzes": "MORE QUIZZES",
+    "challengeYourself": "CHALLENGE YOURSELF",
+    "chooseAQuiz": "Choose a Quiz",
+    "noQuizzesYet": "No quizzes yet!",
+    "completeLessonsFirst": "Complete some lessons first",
+    "quizUnavailable": "Quiz unavailable",
+    "quizUnavailableDetail": "Quiz unavailable — this lesson does not contain enough questions for a quiz.",
+    "quizLoadFailed": "Could not load the quiz.",
+    "translation": "Translation: \"{text}\"",
+    "@translation": {
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "audioNotAvailable": "Audio is not available for this question.",
+    "mistakeReviewBadge": "MISTAKE REVIEW",
+    "takesTwoMin": "Takes 2 min",
+    "mistakesQuote": "“Mistakes are just lessons asking for a second chance.”",
+    "quizKeyboardHintAlt": "↑ / ↓ Navigate  •  1-4 Choose  •  Enter ↵ Submit",
+    "watchAdBonusStars": "Watch Ad for +50 Bonus Stars",
+    "shareAchievement": "Share Achievement",
+    "bonusStarsEarned": "Bonus 50 Stars Earned! ⭐",
+    "rewardedAdCooldown": "Rewarded ad is cooling down. Try again later.",
+    "scoreLabel": "Score",
+    "accuracyLabel": "Accuracy",
+    "starsEarned": "Stars Earned",
+    "maxCombo": "Max Combo",
+    "reviewMistakes": "Review Mistakes",
+    "reviewMistakesSubtitle": "Review what you got incorrect to build your mastery! Laha se!",
+    "correctColon": "Correct:",
+    "correctAnswerColon": "Correct Answer:",
+    "insightGuidance": "Insight & Guidance:",
+    "selectMissingWord": "Select the missing word:",
+    "questionsWithLevel": "{count} questions • {level}",
+    "@questionsWithLevel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "level": {
+                "type": "String"
+            }
+        }
+    },
+    "startQuiz": "START QUIZ",
+    "questionsCount": "{count} questions",
+    "@questionsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "outOfHearts": "Out of Hearts!",
+    "outOfHeartsSummary": "You answered {score}/{total} correctly and earned {stars} stars so far. Keep practicing to build your strength!",
+    "@outOfHeartsSummary": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            },
+            "stars": {
+                "type": "int"
+            }
+        }
+    },
+    "watchAdRefillHearts": "Watch Ad to Refill Hearts (Free)",
+    "backToQuizzes": "Back to Quizzes",
+    "heartsRefilled": "Hearts Refilled! ❤️❤️❤️",
+    "rewardedAdCooldownReset": "Rewarded ad is cooling down. Please try regular reset.",
+    "currentOfTotal": "{current}/{total}",
+    "@currentOfTotal": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "rhymesEndNote": "That's everything here — new Bakhed coming soon!",
+    "rhymesLoadFailed": "Could not load the rhymes list.",
+    "bakhedPreparing": "Bakhed are being prepared",
+    "bakhedPreparingSubtitle": "New listening stories will appear here after publishing.",
+    "failedToJoinWaitlist": "Failed to join waitlist: {error}",
+    "@failedToJoinWaitlist": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "waitlistJoined": "Waitlist Joined! 🎉",
+    "waitlistJoinedBody": "Thank you for submitting your details. Our cultural coordination team will contact you shortly via phone/WhatsApp to match you with a certified Binti Guru.",
+    "great": "Great",
+    "joinBintiGuruWaitlist": "Join Binti Guru Waitlist",
+    "bintiGuruFormSubtitle": "Tell us about your ceremony. We will search for available certified reciters.",
+    "submitWaitlistEntry": "Submit Waitlist Entry",
+    "bookVerifiedBintiGuru": "Book a Verified Binti Guru",
+    "bintiGuruLandingBody": "Binti is the sacred act of Santali recitation. Whether for Karam, Sohrai, Baha, weddings, or naming ceremonies, connect with certified, premium Binti reciters who preserve our cultural heritage.",
+    "joinWaitlistNow": "Join waitlist now",
+    "howItWorks": "HOW IT WORKS",
+    "newBadge": "NEW",
+    "ctrlEnterCreate": "Ctrl+Enter ↵ to create",
+    "charCount": "{current} / {max}",
+    "@charCount": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "svgLoadFailed": "Failed to load SVG animation",
+    "signIn": "Sign In",
+    "shareCardTagline": "OLITUN • ᱚᱞ ᱪᱤᱠᱤ",
+    "shareCardFooter": "Learn Santali (Ol Chiki) • olitun.app",
+    "shareTextCopied": "Share text copied to clipboard! 📋",
+    "tracingPracticeGlyph": "Tracing practice — {glyph}",
+    "@tracingPracticeGlyph": {
+        "placeholders": {
+            "glyph": {
+                "type": "String"
+            }
+        }
+    },
+    "mastery": "Mastery: {current}/{required}",
+    "@mastery": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "required": {
+                "type": "int"
+            }
+        }
+    },
+    "onboardingStepsBody": "Start with letters, build words, practice with quizzes, and keep your Santali learning journey alive.",
+    "practiceModeLabel": "Practice • {mode}",
+    "@practiceModeLabel": {
+        "placeholders": {
+            "mode": {
+                "type": "String"
+            }
+        }
+    },
+    "greatJobTakeQuiz": "Great job! Take “{title}” now to test your knowledge.",
+    "@greatJobTakeQuiz": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "wordsNeedPractice": "{count} word(s) need(s) practice",
+    "@wordsNeedPractice": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "voiceClipMeta": "{voice} • {style}{instant}",
+    "@voiceClipMeta": {
+        "placeholders": {
+            "voice": {
+                "type": "String"
+            },
+            "style": {
+                "type": "String"
+            },
+            "instant": {
+                "type": "String"
+            }
+        }
+    }
 }

@@ -64,7 +64,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
             onPressed: () => context.pop(),
           ),
           title: Text(
-            'Mistake Review',
+            AppLocalizations.of(context)!.mistakeReview,
             style: TextStyle(
               color: isDark ? Colors.white : Colors.black,
               fontWeight: FontWeight.bold,
@@ -90,7 +90,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                 ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
                 const SizedBox(height: 24),
                 Text(
-                  'All caught up!',
+                  AppLocalizations.of(context)!.allCaughtUp,
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
@@ -99,7 +99,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'No mistakes need review. Your Santali roots are strong!',
+                  AppLocalizations.of(context)!.noMistakesToReview,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
@@ -125,8 +125,8 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                       ),
                       elevation: 0,
                     ),
-                    child: const Text(
-                      'Back to Home',
+                    child: Text(
+                      AppLocalizations.of(context)!.reviewBackHome,
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -174,7 +174,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                   ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
                   const SizedBox(height: 32),
                   Text(
-                    'Mistakes Mastered!',
+                    AppLocalizations.of(context)!.mistakesMastered,
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
@@ -234,8 +234,8 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: const Text(
-                        'Back to Home',
+                      child: Text(
+                        AppLocalizations.of(context)!.reviewBackHome,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -268,8 +268,8 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
           tooltip: 'Close review',
           onPressed: () => context.pop(),
         ),
-        title: const Text(
-          'Mistake Review',
+        title: Text(
+          AppLocalizations.of(context)!.mistakeReview,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [

@@ -4,6 +4,7 @@ import '../../../../core/notifications/notification_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/notification_providers.dart';
 import 'settings_widgets.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Card allowing learners to configure daily streak and habit reminder notifications.
 class NotificationsSettingsCard extends ConsumerWidget {
@@ -42,7 +43,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Reminder Frequency',
+                  AppLocalizations.of(context)!.reminderFrequency,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -51,7 +52,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Choose how often you would like to be reminded to practice Ol Chiki.',
+                  AppLocalizations.of(context)!.reminderFrequencySubtitle,
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark ? Colors.white60 : Colors.black54,
@@ -155,7 +156,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
           const SizedBox(height: 10),
           SettingTile(
             icon: Icons.repeat_rounded,
-            title: 'Reminder Frequency',
+            title: AppLocalizations.of(context)!.reminderFrequency,
             subtitle: frequency.label,
             isDark: isDark,
             onTap: () => _showFrequencyPicker(context, ref, frequency),
@@ -205,7 +206,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      'Daily Schedule Preview',
+                      AppLocalizations.of(context)!.dailySchedulePreview,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
@@ -258,7 +259,7 @@ class NotificationsSettingsCard extends ConsumerWidget {
                 );
               },
               icon: const Icon(Icons.send_rounded, size: 16),
-              label: const Text('Send Test Notification'),
+              label: Text(AppLocalizations.of(context)!.sendTestNotification),
               style: OutlinedButton.styleFrom(
                 foregroundColor: isDark
                     ? AppColors.primaryLight

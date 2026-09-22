@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Load-error surface for the lesson block detail screen.
 class DetailLoadErrorBlock extends StatelessWidget {
@@ -42,7 +43,7 @@ class DetailLoadErrorBlock extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Check your connection and try again.',
+              AppLocalizations.of(context)!.checkConnectionPeriod,
               textAlign: TextAlign.center,
               style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
             ),
@@ -50,7 +51,7 @@ class DetailLoadErrorBlock extends StatelessWidget {
             TextButton.icon(
               onPressed: onBack,
               icon: const Icon(Icons.arrow_back_rounded),
-              label: const Text('Go back'),
+              label: Text(AppLocalizations.of(context)!.goBack),
             ),
           ],
         ),

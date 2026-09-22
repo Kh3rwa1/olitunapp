@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Quiz CTA block that navigates to the quiz screen.
 class DynamicQuizBlock extends StatelessWidget {
@@ -56,8 +57,8 @@ class DynamicQuizBlock extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Take a Quiz',
+                  Text(
+                    AppLocalizations.of(context)!.takeAQuiz,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -66,7 +67,7 @@ class DynamicQuizBlock extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Test your knowledge now!',
+                    AppLocalizations.of(context)!.testYourKnowledge,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.8),

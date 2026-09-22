@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
 import '../../data/ol_chiki_strokes.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class TracingView extends StatefulWidget {
   final String letterChar;
@@ -341,7 +342,7 @@ class _TracingViewState extends State<TracingView>
               ),
               const SizedBox(height: 8),
               Text(
-                '${_feedbackText()}  Accuracy: ${(_progress * 100).round()}%',
+                AppLocalizations.of(context)!.traceAccuracy(feedback: _feedbackText(), percent: (_progress * 100).round()),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -378,7 +379,7 @@ class _TracingViewState extends State<TracingView>
                       child: FilledButton.icon(
                         onPressed: _undoLastStroke,
                         icon: const Icon(Icons.undo_rounded, size: 18),
-                        label: const Text('Undo'),
+                        label: Text(AppLocalizations.of(context)!.undo),
                         style: FilledButton.styleFrom(
                           backgroundColor: isDark
                               ? AppColors.darkSurfaceElevated
@@ -461,8 +462,8 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
               children: [
                 const Text('🌟', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 12),
-                const Text(
-                  'Nice!',
+                Text(
+                  AppLocalizations.of(context)!.niceWork,
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
@@ -471,7 +472,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '+10 XP',
+                  AppLocalizations.of(context)!.plusTenXp,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

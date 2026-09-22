@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Bottom-of-home promo for the AI Voice studio.
 ///
@@ -86,7 +87,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                           ),
                           SizedBox(width: 5),
                           Text(
-                            'NEW • AI VOICE',
+                            AppLocalizations.of(context)!.aiVoicePromoBadge,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 10,
@@ -106,7 +107,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'AI Voice',
+                        AppLocalizations.of(context)!.aiVoiceTitle,
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
@@ -120,7 +121,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Type anything — hear it in Santali.',
+                  AppLocalizations.of(context)!.aiVoicePromoSubtitle,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,
@@ -151,7 +152,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Try now',
+                            AppLocalizations.of(context)!.tryNow,
                             style: TextStyle(
                               color: AppColors.indigoVivid,
                               fontWeight: FontWeight.w900,
@@ -169,7 +170,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'ᱟᱲᱟᱝ • 15 styles',
+                      AppLocalizations.of(context)!.k15Styles,
                       style: TextStyle(
                         color: Colors.white.withValues(
                           alpha: isDark ? 0.75 : 0.9,

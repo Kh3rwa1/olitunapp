@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/local_settings_provider.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 /// Shared ambient canvas for the onboarding flow: a deep gradient mesh,
 /// a top glow orb, and large faint Ol Chiki glyphs drifting almost
@@ -129,7 +130,7 @@ class OnboardingEyebrow extends StatelessWidget {
     final current = (step + 1).toString().padLeft(2, '0');
     final total = stepCount.toString().padLeft(2, '0');
     return Text(
-      '$current · $total',
+      AppLocalizations.of(context)!.onboardingCounter(current: current, total: total),
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w800,

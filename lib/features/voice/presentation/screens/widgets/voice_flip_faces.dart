@@ -157,7 +157,7 @@ class VoiceInputFace extends StatelessWidget {
                     defaultTargetPlatform == TargetPlatform.windows ||
                     defaultTargetPlatform == TargetPlatform.linux) ...[
                   Text(
-                    'Ctrl+Enter ↵ to create',
+                    AppLocalizations.of(context)!.ctrlEnterCreate,
                     style: AppTypography.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
@@ -171,7 +171,7 @@ class VoiceInputFace extends StatelessWidget {
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: controller,
                   builder: (context, value, _) => Text(
-                    '${value.text.trim().length} / $maxChars',
+                    AppLocalizations.of(context)!.charCount(current: value.text.trim().length, max: maxChars),
                     style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -305,7 +305,7 @@ class VoicePlayerFace extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${activeClip.voice} • $styleLabel${activeClip.cached ? ' • instant' : ''}',
+                  AppLocalizations.of(context)!.voiceClipMeta(voice: activeClip.voice, style: styleLabel, instant: activeClip.cached ? ' • instant' : '') • instant' : ''}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(

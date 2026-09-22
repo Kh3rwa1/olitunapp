@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class QuizFeedbackPanel extends StatefulWidget {
   final bool isCorrect;
@@ -201,7 +202,7 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                   if (!widget.isCorrect) ...[
                     const SizedBox(height: 10),
                     Text(
-                      'Correct Answer:',
+                      AppLocalizations.of(context)!.correctAnswerColon,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -276,7 +277,7 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              'Insight & Guidance:',
+                              AppLocalizations.of(context)!.insightGuidance,
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -318,8 +319,8 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Continue',
+                          Text(
+                            AppLocalizations.of(context)!.continueButton,
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w800,
@@ -342,7 +343,7 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                'Enter ↵',
+                                AppLocalizations.of(context)!.pressEnter,
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,

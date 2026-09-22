@@ -329,7 +329,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        'Failed to delete account: ${failure.message}',
+                        AppLocalizations.of(context)!.failedToDeleteAccount,
                       ),
                       backgroundColor: AppColors.error,
                     ),
@@ -342,7 +342,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 Navigator.pop(context); // Close loading
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Failed to delete account: ${e.toString()}'),
+                    content: Text(AppLocalizations.of(context)!.failedToDeleteAccount),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -379,16 +379,16 @@ void showSignOutDialog(BuildContext context, WidgetRef ref) {
             child: const Icon(Icons.logout_rounded, color: AppColors.brandBlue),
           ),
           const SizedBox(width: 14),
-          const Text('Sign Out'),
+          Text(AppLocalizations.of(context)!.signOut),
         ],
       ),
-      content: const Text(
-        'Are you sure you want to sign out of your account on this device?',
+      content: Text(
+        AppLocalizations.of(context)!.signOutConfirmBody,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context)!.cancel),
         ),
         ElevatedButton(
           onPressed: () async {
@@ -417,7 +417,7 @@ void showSignOutDialog(BuildContext context, WidgetRef ref) {
             backgroundColor: AppColors.brandBlue,
             foregroundColor: Colors.white,
           ),
-          child: const Text('Sign Out'),
+          child: Text(AppLocalizations.of(context)!.signOut),
         ),
       ],
     ),

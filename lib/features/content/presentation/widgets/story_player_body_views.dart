@@ -133,7 +133,7 @@ extension _StoryPlayerBodyViews on _StoryPlayerBodyState {
                         color: AppColors.primaryLight,
                       ),
                       label: Text(
-                        'word',
+                        AppLocalizations.of(context)!.wordLabel,
                         style: AppTypography.inter(
                           fontSize: 12,
                           color: AppColors.primaryLight,
@@ -259,7 +259,7 @@ extension _StoryPlayerBodyViews on _StoryPlayerBodyState {
                   .read(audioDownloadProvider.notifier)
                   .cancelStoryDownload(widget.item.id),
               child: Text(
-                'cancel',
+                AppLocalizations.of(context)!.cancelLower,
                 style: AppTypography.inter(fontSize: 10, color: Colors.white38),
               ),
             ),

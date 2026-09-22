@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import '../../features/lessons/presentation/widgets/platform_view_stub.dart'
+import '../../l10n/generated/app_localizations.dart';
     if (dart.library.js_interop) '../../features/lessons/presentation/widgets/platform_view_web.dart';
 
 class AnimatedSvgDisplay extends StatefulWidget {
@@ -153,7 +154,7 @@ class _AnimatedSvgDisplayState extends State<AnimatedSvgDisplay> {
             Icon(Icons.broken_image_rounded, color: Colors.grey, size: 36),
             SizedBox(height: 6),
             Text(
-              'Failed to load SVG animation',
+              AppLocalizations.of(context)!.svgLoadFailed,
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],

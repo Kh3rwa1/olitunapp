@@ -25,6 +25,7 @@ import 'widgets/rhyme_segmented_control.dart';
 import 'widgets/bakhed_preparing_animation.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -375,7 +376,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     return Row(
       children: [
         Text(
-          'DISCOVER MORE',
+          AppLocalizations.of(context)!.discoverMore,
           style: AppTypography.inter(
             fontSize: 12,
             fontWeight: FontWeight.w700,
@@ -453,7 +454,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                   ? BakhedPreparingAnimation(isDark: isDark)
                   : Center(
                       child: Text(
-                        "That's everything here — new Bakhed coming soon!",
+                        AppLocalizations.of(context)!.rhymesEndNote,
                         textAlign: TextAlign.center,
                         style: AppTypography.inter(
                           fontSize: 15,
@@ -514,7 +515,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: AppErrorState(
-            message: 'Could not load the rhymes list.',
+            message: AppLocalizations.of(context)!.rhymesLoadFailed,
             onRetry: () =>
                 ref.refresh(contentListProvider((ContentKind.rhyme, null))),
           ),

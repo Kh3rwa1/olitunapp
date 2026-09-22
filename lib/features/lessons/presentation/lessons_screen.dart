@@ -83,7 +83,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'LEARNING PATHS',
+                  AppLocalizations.of(context)!.learningPathsHeader,
                   style: AppTypography.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
@@ -94,7 +94,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Choose Your Journey',
+                  AppLocalizations.of(context)!.chooseYourJourney,
                   style: AppTypography.inter(
                     fontSize: 26,
                     fontWeight: FontWeight.w900,
@@ -220,7 +220,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           child: Semantics(
                             header: true,
                             child: Text(
-                              'MORE PATHS',
+                              AppLocalizations.of(context)!.morePaths,
                               style: AppTypography.inter(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,

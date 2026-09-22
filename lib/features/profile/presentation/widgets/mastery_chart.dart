@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class ChartDataPoint {
   final String dayName;
@@ -222,8 +223,8 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                     ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: const Text(
-                                    'DEMO',
+                                  child: Text(
+                                    AppLocalizations.of(context)!.demoLabel,
                                     style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 7,
@@ -236,7 +237,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Accuracy: ${(pt.accuracy * 100).round()}%',
+                            AppLocalizations.of(context)!.masteryAccuracy(percent: (pt.accuracy * 100).round()),
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 11,
@@ -296,8 +297,8 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Mastery Progression',
+                            Text(
+                              AppLocalizations.of(context)!.masteryProgression,
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 16,

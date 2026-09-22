@@ -11,6 +11,7 @@ import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../../../shared/widgets/state_widgets.dart';
 import '../../../../quiz/domain/quiz_scoring_rules.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 part 'quiz_screen_sections.dart';
 
@@ -245,7 +246,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
               ),
               const SizedBox(height: 12),
               Text(
-                'You scored $_score out of ${_questions.length}',
+                AppLocalizations.of(context)!.youScoredOutOf(score: _score, total: _questions.length),
                 style: TextStyle(fontSize: 18, color: Colors.grey[700]),
               ),
               const SizedBox(height: 8),
@@ -262,7 +263,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  '$percentage%',
+                  AppLocalizations.of(context)!.percentFormat(percent: percentage),
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -288,8 +289,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                         ),
                         side: BorderSide(color: Colors.grey[400]!),
                       ),
-                      child: const Text(
-                        'Back',
+                      child: Text(
+                        AppLocalizations.of(context)!.backLabel,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -331,8 +332,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                             borderRadius: BorderRadius.circular(14),
                           ),
                         ),
-                        child: const Text(
-                          'Retry',
+                        child: Text(
+                          AppLocalizations.of(context)!.retry,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -495,8 +496,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                                     color: Colors.black.withValues(alpha: 0.06),
                                   ),
                                 ),
-                                child: const Text(
-                                  'Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit',
+                                child: Text(
+                                  AppLocalizations.of(context)!.quizKeyboardHint,
                                   style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,

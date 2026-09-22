@@ -7,6 +7,7 @@ import '../../../../shared/widgets/bento_grid.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 // ═══════════════════════════════════════════════════════════
 // BENTO CONTENT GRID — AI Translate + Category cards
@@ -94,8 +95,8 @@ class HomeContentGrid extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text(
-                          'Instant Translate',
+                        Text(
+                          AppLocalizations.of(context)!.instantTranslate,
                           style: TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
@@ -108,7 +109,7 @@ class HomeContentGrid extends StatelessWidget {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          'Any Language → Ol Chiki',
+                          AppLocalizations.of(context)!.anyLanguageToOlChiki,
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.78),
                             fontWeight: FontWeight.w600,
@@ -129,8 +130,8 @@ class HomeContentGrid extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: const Text(
-                      'AI',
+                    child: Text(
+                      AppLocalizations.of(context)!.aiBadge,
                       style: TextStyle(
                         color: AppColors.indigoVivid,
                         fontWeight: FontWeight.w900,

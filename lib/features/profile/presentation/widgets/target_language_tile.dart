@@ -7,6 +7,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'indigenous_languages_sheet.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class TargetLanguageTile extends ConsumerWidget {
   const TargetLanguageTile({super.key});
@@ -48,7 +49,7 @@ class TargetLanguageTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Learning Language & Script',
+                    AppLocalizations.of(context)!.learningLanguageScript,
                     style: AppTypography.titleSmall.copyWith(
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : Colors.black87,

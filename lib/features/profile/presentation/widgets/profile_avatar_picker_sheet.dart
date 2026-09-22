@@ -8,6 +8,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../domain/entities/profile_avatar.dart';
 import '../providers/profile_account_providers.dart';
 import 'avatar_lottie.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Stateful bottom-sheet body for choosing a real bundled animation or a name
 /// initial. Selection state lives for the sheet's whole lifetime and every
@@ -104,7 +105,7 @@ class _ProfileAvatarPickerSheetState
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Could not save avatar. Please try again.'),
+          content: Text(AppLocalizations.of(context)!.avatarSaveFailed),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(
             16,
@@ -152,7 +153,7 @@ class _ProfileAvatarPickerSheetState
                 children: [
                   Expanded(
                     child: Text(
-                      'Choose your avatar',
+                      AppLocalizations.of(context)!.chooseYourAvatarLower,
                       style: AppTypography.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
@@ -420,12 +421,12 @@ class _AvatarLoadError extends StatelessWidget {
     padding: const EdgeInsets.symmetric(vertical: 20),
     child: Column(
       children: [
-        const Text('Could not load avatar animations.'),
+        Text(AppLocalizations.of(context)!.avatarAnimationsFailed),
         const SizedBox(height: 8),
         TextButton.icon(
           onPressed: onRetry,
           icon: const Icon(Icons.refresh_rounded),
-          label: const Text('Try again'),
+          label: Text(AppLocalizations.of(context)!.tryAgainLower),
         ),
       ],
     ),

@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class ChartDataPoint {
   final String dayName;
@@ -222,9 +223,9 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                     ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: const Text(
-                                    'DEMO',
-                                    style: TextStyle(
+                                  child: Text(
+                                    AppLocalizations.of(context)!.demoLabel,
+                                    style: const TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 7,
                                       fontWeight: FontWeight.w800,
@@ -236,7 +237,9 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Accuracy: ${(pt.accuracy * 100).round()}%',
+                            AppLocalizations.of(
+                              context,
+                            )!.masteryAccuracy((pt.accuracy * 100).round()),
                             style: const TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 11,
@@ -296,9 +299,9 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Mastery Progression',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context)!.masteryProgression,
+                              style: const TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,

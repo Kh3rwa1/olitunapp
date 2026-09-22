@@ -6,6 +6,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/presentation/widgets/notifications_settings_card.dart';
 import 'package:itun/shared/providers/notification_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   Future<void> pumpCard(
@@ -16,6 +17,8 @@ void main() {
       ProviderScope(
         overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: SingleChildScrollView(
               child: NotificationsSettingsCard(isDark: false),

@@ -6,6 +6,7 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/waitlist_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 WaitlistModel _booking({
   String id = 'w1',
@@ -31,7 +32,11 @@ Future<void> pumpSection(WidgetTester tester, Widget child) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-      child: MaterialApp(home: Scaffold(body: child)),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(body: child),
+      ),
     ),
   );
   await tester.pumpAndSettle();
@@ -62,6 +67,8 @@ void main() {
             userWaitlistProvider.overrideWith((ref) async => const []),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: BintiGuruBookingsSection(isDark: false)),
           ),
         ),
@@ -94,6 +101,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: BintiGuruBookingsSection(isDark: false)),
           ),
         ),
@@ -118,6 +127,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: BintiGuruBookingsSection(isDark: false)),
           ),
         ),

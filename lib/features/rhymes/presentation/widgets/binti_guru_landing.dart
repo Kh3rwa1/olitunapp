@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
 import 'binti_guru_form_sheet.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class BintiGuruLanding extends StatelessWidget {
   const BintiGuruLanding({super.key});
@@ -62,9 +63,9 @@ class BintiGuruLanding extends StatelessWidget {
                 ),
               ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
               const SizedBox(height: 20),
-              const Text(
-                'Book a Verified Binti Guru',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.bookVerifiedBintiGuru,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
@@ -72,7 +73,7 @@ class BintiGuruLanding extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Binti is the sacred act of Santali recitation. Whether for Karam, Sohrai, Baha, weddings, or naming ceremonies, connect with certified, premium Binti reciters who preserve our cultural heritage.',
+                AppLocalizations.of(context)!.bintiGuruLandingBody,
                 style: TextStyle(
                   fontSize: 14,
                   height: 1.5,
@@ -100,9 +101,12 @@ class BintiGuruLanding extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Join waitlist now',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  child: Text(
+                    AppLocalizations.of(context)!.joinWaitlistNow,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ).animate().shimmer(
@@ -120,11 +124,11 @@ class BintiGuruLanding extends StatelessWidget {
         ),
         const SizedBox(height: 24),
 
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
-            'HOW IT WORKS',
-            style: TextStyle(
+            AppLocalizations.of(context)!.howItWorks,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w900,
               letterSpacing: 2.0,

@@ -35,6 +35,10 @@ jobs:
         run: node scripts/check_color_literals.mjs
       - name: Enforce Appwrite Deployability Gate
         run: node scripts/check_appwrite_deployable.mjs
+      - name: Enforce Appwrite Manifest Parity Gate
+        run: node scripts/verify_function_deployment.mjs
+      - name: Enforce Function Packaging Smoke Gate
+        run: node scripts/smoke_package_functions.mjs
       - name: Enforce Sheets-Above-Nav Gate
         run: node scripts/check_sheets_above_nav.mjs
       - name: Enforce Architecture Boundaries Gate
@@ -57,6 +61,8 @@ jobs:
         run: node --test scripts/verify_android_signing_certificate.test.mjs
       - name: Unit Test Release Gate
         run: node --test scripts/check_release_gate.test.mjs
+      - name: Unit Test Function Packaging Smoke
+        run: node --test scripts/smoke_package_functions.test.mjs
       - name: Analyze
         run: flutter analyze --fatal-infos
       - name: Run custom_lint (riverpod_lint)

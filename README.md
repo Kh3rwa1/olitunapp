@@ -278,6 +278,29 @@ lib/
 
 ---
 
+## ✅ Quality Gates
+
+Pull requests must pass automated gates (see `.github/workflows/flutter-ci.yml`):
+
+- **Format + analyze** — `dart format`, `flutter analyze --fatal-infos`
+- **Localization parity** — all five ARB locales share keys and placeholders
+- **Hardcoded strings** — user-facing copy goes through `AppLocalizations`
+- **File length** — hand-written Dart files stay ≤ 600 lines
+- **Architecture boundaries** — presentation layers never import `package:appwrite`
+- **Appwrite manifests** — `appwrite.json` and `appwrite.config.json` stay in lockstep (functions + buckets), and every function package is smoke-checked for a lockfile and valid entrypoint
+
+```bash
+node scripts/check_hardcoded_strings.mjs
+node scripts/check_l10n_parity.mjs
+node scripts/check_file_length.mjs
+node scripts/verify_function_deployment.mjs
+node scripts/smoke_package_functions.mjs
+```
+
+Details live in [ARCHITECTURE.md](ARCHITECTURE.md#quality-gates).
+
+---
+
 ## 🤝 Contributing
 
 We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

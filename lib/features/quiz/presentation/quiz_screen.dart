@@ -19,6 +19,7 @@ import 'providers/quiz_session_notifier.dart';
 import 'widgets/quiz_active_view.dart';
 import 'widgets/quiz_complete_screen.dart';
 import 'widgets/quiz_out_of_hearts_screen.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
@@ -246,7 +247,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       ),
       error: (error, stack) => Scaffold(
         body: AppErrorState(
-          message: 'Could not load the quiz.',
+          message: AppLocalizations.of(context)!.quizLoadFailed,
           onRetry: () => ref.invalidate(quizResultProvider(widget.quizId)),
         ),
       ),
@@ -340,15 +341,17 @@ class _QuizUnavailableView extends StatelessWidget {
             children: [
               const Icon(Icons.quiz_outlined, size: 56),
               const SizedBox(height: 16),
-              const Text(
-                'Quiz unavailable',
+              Text(
+                AppLocalizations.of(context)!.quizUnavailable,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Quiz unavailable — this lesson does not contain enough '
-                'valid questions yet.',
+              Text(
+                AppLocalizations.of(context)!.quizUnavailableDetail,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -357,7 +360,7 @@ class _QuizUnavailableView extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () =>
                       context.canPop() ? context.pop() : context.go('/'),
-                  child: const Text('Back'),
+                  child: Text(AppLocalizations.of(context)!.backLabel),
                 ),
               ),
               const SizedBox(height: 8),
@@ -366,7 +369,7 @@ class _QuizUnavailableView extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () => context.go('/lesson/${lessonId!.trim()}'),
-                    child: const Text('Finish Lesson'),
+                    child: Text(AppLocalizations.of(context)!.finishLesson),
                   ),
                 ),
             ],

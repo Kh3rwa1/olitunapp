@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/features/lessons/presentation/category_lessons_screen.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _Categories extends CategoryNotifier {
   final AsyncValue<List<CategoryEntity>> Function() load;
@@ -47,6 +48,8 @@ Future<void> _pump(
           ).copyWith(textScaler: TextScaler.linear(textScale)),
           child: child!,
         ),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
   );

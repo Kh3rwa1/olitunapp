@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/audio_playback_providers.dart';
 import '../../../../shared/models/content_item.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Inline video playback embedded inside content detail pages.
 class InlineVideoPlayer extends StatefulWidget {
@@ -189,7 +190,9 @@ class InlineAudioPlayerState extends State<InlineAudioPlayer> {
                         if (widget.media.durationSeconds != null) ...[
                           const SizedBox(height: 2),
                           Text(
-                            'Duration: ${widget.media.durationSeconds}s',
+                            AppLocalizations.of(
+                              context,
+                            )!.mediaDuration(widget.media.durationSeconds!),
                             style: const TextStyle(
                               color: Colors.grey,
                               fontSize: 12,

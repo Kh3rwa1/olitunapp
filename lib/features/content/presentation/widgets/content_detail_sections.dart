@@ -135,22 +135,25 @@ class _ContentBlockRenderer extends ConsumerWidget {
                   child: const Icon(Icons.quiz_rounded, color: Colors.white),
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Take a Quiz',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.takeAQuiz,
+                        style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
-                        'Test your knowledge now!',
-                        style: TextStyle(fontSize: 13, color: Colors.white70),
+                        AppLocalizations.of(context)!.testYourKnowledge,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -408,9 +411,9 @@ class _ContentDetailFooter extends ConsumerWidget {
                             Icons.keyboard_outlined,
                             color: Colors.black,
                           ),
-                          label: const Text(
-                            'Practice Typing',
-                            style: TextStyle(
+                          label: Text(
+                            AppLocalizations.of(context)!.practiceTyping,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                             ),

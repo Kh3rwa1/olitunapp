@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Bottom-of-home promo for the AI Voice studio.
 ///
@@ -76,18 +77,18 @@ class SantaliVoicePromoCard extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.3),
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.auto_awesome_rounded,
                             color: Colors.white,
                             size: 12,
                           ),
-                          SizedBox(width: 5),
+                          const SizedBox(width: 5),
                           Text(
-                            'NEW • AI VOICE',
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.aiVoicePromoBadge,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
@@ -100,14 +101,18 @@ class SantaliVoicePromoCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 14),
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.mic_rounded, color: Colors.white, size: 26),
-                    SizedBox(width: 10),
+                    const Icon(
+                      Icons.mic_rounded,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'AI Voice',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.aiVoiceTitle,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
                           fontSize: 22,
@@ -120,7 +125,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Type anything — hear it in Santali.',
+                  AppLocalizations.of(context)!.aiVoicePromoSubtitle,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,
@@ -147,19 +152,19 @@ class SantaliVoicePromoCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Try now',
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.tryNow,
+                            style: const TextStyle(
                               color: AppColors.indigoVivid,
                               fontWeight: FontWeight.w900,
                               fontSize: 14,
                             ),
                           ),
-                          SizedBox(width: 6),
-                          Icon(
+                          const SizedBox(width: 6),
+                          const Icon(
                             Icons.arrow_forward_rounded,
                             color: AppColors.indigoVivid,
                             size: 17,
@@ -169,7 +174,7 @@ class SantaliVoicePromoCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'ᱟᱲᱟᱝ • 15 styles',
+                      AppLocalizations.of(context)!.k15Styles,
                       style: TextStyle(
                         color: Colors.white.withValues(
                           alpha: isDark ? 0.75 : 0.9,

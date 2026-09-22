@@ -12,6 +12,7 @@ import 'package:itun/shared/providers/bakhed_content_provider.dart';
 import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _MockAudioService extends AudioService {
   final List<String> playedUrls = [];
@@ -108,6 +109,8 @@ void main() {
           ).overrideWith((ref) async => content),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: PremiumBakhedBody(item: item, accentColor: Colors.teal),
           ),
@@ -189,6 +192,8 @@ void main() {
             ).overrideWith((ref) async => const BakhedLearningContent()),
           ],
           child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: PremiumBakhedBody(item: item, accentColor: Colors.teal),
             ),

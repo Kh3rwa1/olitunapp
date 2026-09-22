@@ -42,6 +42,7 @@ lib/
 │   └── theme/                   # AppTheme, AppColors, AdminTokens
 ├── features/
 │   ├── admin/                   # CMS dashboard (presentation-heavy)
+│   ├── ai_studio/               # AI workspace (data/presentation; screen split across part files)
 │   ├── auth/                    # data/domain/presentation layers
 │   ├── categories/              # data/domain/presentation layers
 │   ├── content/                 # Content detail surfaces (data/domain/presentation)
@@ -95,6 +96,48 @@ This check verifies that:
 Providers for cross-feature data live in `shared/providers/` (documented in
 the directory table above); the content repository and mutation outbox are
 documented in the Data Flow section below.
+
+## Quality Gates
+
+CI (`.github/workflows/flutter-ci.yml`) enforces repository standards on every PR:
+
+| Gate | Command | Enforces |
+| --- | --- | --- |
+| File length | `node scripts/check_file_length.mjs` | Hand-written Dart files ≤ 600 lines (no grandfathered files) |
+| Localization parity | `node scripts/check_l10n_parity.mjs` | All ARB locales share the same keys and placeholder signatures |
+| Hardcoded strings | `node scripts/check_hardcoded_strings.mjs` | No user-facing `Text`/`Toast` literals outside `lib/features/admin/**` (grandfathered baseline in `scripts/hardcoded_strings_baseline.json`) |
+| Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | No `package:appwrite` imports from presentation/domain layers |
+| Appwrite deployability | `node scripts/check_appwrite_deployable.mjs` | Sites use `scripts/build_web.sh` and do not ignore `scripts/` |
+| Appwrite manifest parity | `node scripts/verify_function_deployment.mjs` | `appwrite.json` and `appwrite.config.json` agree on functions, buckets, sites, and projectId; least-privilege scope checks |
+| Function packaging smoke | `node scripts/smoke_package_functions.mjs` | Each function has `package.json`, lockfile, entrypoint, and a syntax-valid entry |
+| Format + analyze | `dart format`, `flutter analyze --fatal-infos` | Style and static analysis clean |
+
+Regenerate the hardcoded-string baseline only after intentional localized changes:
+
+```bash
+node scripts/check_hardcoded_strings.mjs --json > scripts/hardcoded_strings_baseline.json
+```
+
+### Localization
+
+- Source of truth: `lib/l10n/arb/app_en.arb` (template) with `sat` (Ol Chiki), `hi`, `bn`, `or`.
+- Generated bindings: `lib/l10n/generated/` via `flutter gen-l10n` (`l10n.yaml`).
+- UI always resolves strings with `AppLocalizations.of(context)!`; tests must provide
+  `AppLocalizations.localizationsDelegates` in their `MaterialApp`.
+- Where a screen needs uppercase UI chrome but ARB keeps title/sentence case for other
+  call sites, apply `.toUpperCase()` at the call site (non-Latin scripts are unaffected).
+
+### AI Studio presentation layout
+
+`lib/features/ai_studio/presentation/ai_studio_screen.dart` is the library entry and holds
+the state class, core session logic, and `build`. UI sections live in same-library part
+files exposed as extensions on `_AiStudioScreenState` so private state stays shared while
+each file stays under the 600-line cap:
+
+- `ai_studio_status.dart` — live status, pulse, waveform, auto pill
+- `ai_studio_layout.dart` — atmosphere, app bar, tool switcher, viewport bodies, notice
+- `ai_studio_input.dart` / `ai_studio_input_tools.dart` — input panel and tool forms
+- `ai_studio_result.dart` — result panel and editor
 
 ## Data Flow
 

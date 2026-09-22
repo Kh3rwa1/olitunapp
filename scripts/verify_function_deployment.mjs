@@ -3,11 +3,42 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const read = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8'));
-const canonical = read('appwrite.json').functions;
-const secondary = read('appwrite.config.json').functions;
+const appwriteManifest = read('appwrite.json');
+const configManifest = read('appwrite.config.json');
+const canonical = appwriteManifest.functions;
+const secondary = configManifest.functions;
 
 assert.ok(Array.isArray(canonical) && canonical.length > 0, 'appwrite.json must define functions');
 assert.deepEqual(secondary, canonical, 'Function deployment manifests have drifted');
+assert.ok(Array.isArray(appwriteManifest.buckets), 'appwrite.json must define buckets');
+assert.ok(appwriteManifest.buckets.length > 0, 'appwrite.json must define at least one bucket');
+assert.deepEqual(
+  configManifest.buckets,
+  appwriteManifest.buckets,
+  'Storage bucket manifests have drifted',
+);
+
+const bucketIds = new Set();
+for (const bucket of appwriteManifest.buckets) {
+  assert.equal(typeof bucket.$id, 'string', 'Every bucket must have a string $id');
+  assert.ok(bucket.$id.length > 0 && bucket.$id.length <= 36, `Invalid bucket ID: ${bucket.$id}`);
+  assert.ok(!bucketIds.has(bucket.$id), `Duplicate bucket ID: ${bucket.$id}`);
+  bucketIds.add(bucket.$id);
+  assert.equal(typeof bucket.name, 'string', `${bucket.$id} must have a name`);
+  assert.ok(bucket.name.length > 0, `${bucket.$id} must have a non-empty name`);
+  assert.equal(typeof bucket.enabled, 'boolean', `${bucket.$id} must declare enabled`);
+  assert.equal(typeof bucket.fileSecurity, 'boolean', `${bucket.$id} must declare fileSecurity`);
+  assert.ok(Array.isArray(bucket.$permissions), `${bucket.$id} must declare permissions`);
+  assert.ok(
+    Number.isInteger(bucket.maximumFileSize) && bucket.maximumFileSize > 0,
+    `${bucket.$id} must have a positive maximumFileSize`,
+  );
+  assert.ok(Array.isArray(bucket.allowedFileExtensions), `${bucket.$id} must allow file extensions`);
+}
+
+assert.ok(appwriteManifest.projectId, 'appwrite.json must declare projectId');
+assert.equal(configManifest.projectId, appwriteManifest.projectId, 'projectId has drifted');
+assert.deepEqual(configManifest.sites, appwriteManifest.sites, 'Site manifests have drifted');
 
 const ids = new Set();
 const names = new Set();
@@ -104,5 +135,5 @@ assertExactScopes(getAuthorizedLesson, [
 ]);
 
 console.log(
-  `Verified ${canonical.length} function manifests, source paths, execution roles, schedules, and least-privilege scopes.`,
+  `Verified ${canonical.length} function manifests and ${appwriteManifest.buckets.length} buckets: source paths, roles, schedules, scopes, and cross-manifest parity.`,
 );

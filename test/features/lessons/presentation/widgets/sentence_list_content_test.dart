@@ -10,6 +10,7 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 const _lesson = LessonEntity(
   id: 'lesson_1',
@@ -52,7 +53,11 @@ Future<void> pumpSentences(
         effectiveScriptModeProvider.overrideWithValue('both'),
         lessonLayoutModeProvider.overrideWith((ref) => layoutMode),
       ],
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
   await tester.pumpAndSettle();

@@ -56,8 +56,10 @@ class QuizCompleteActions extends ConsumerWidget {
                             onRewardGranted: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: const Text(
-                                    'Bonus 50 Stars Earned! ⭐',
+                                  content: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.bonusStarsEarned,
                                   ),
                                   backgroundColor: AppColors.success,
                                   behavior: SnackBarBehavior.floating,
@@ -71,8 +73,10 @@ class QuizCompleteActions extends ConsumerWidget {
                           if (!shown && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
-                                content: const Text(
-                                  'Rewarded ad is cooling down. Try again later.',
+                                content: Text(
+                                  AppLocalizations.of(
+                                    context,
+                                  )!.rewardedAdCooldown,
                                 ),
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(
@@ -87,11 +91,11 @@ class QuizCompleteActions extends ConsumerWidget {
                           color: AppColors.accentGoldDark,
                           size: 22,
                         ),
-                        label: const FittedBox(
+                        label: FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            'Watch Ad for +50 Bonus Stars',
-                            style: TextStyle(
+                            AppLocalizations.of(context)!.watchAdBonusStars,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               color: AppColors.accentGoldDark,
@@ -139,9 +143,9 @@ class QuizCompleteActions extends ConsumerWidget {
                         color: AppColors.primary,
                         size: 18,
                       ),
-                      label: const Text(
-                        'Share Achievement',
-                        style: TextStyle(
+                      label: Text(
+                        AppLocalizations.of(context)!.shareAchievement,
+                        style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -204,9 +208,9 @@ class QuizCompleteActions extends ConsumerWidget {
                             color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
-                            'Enter ↵',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.pressEnter,
+                            style: const TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,

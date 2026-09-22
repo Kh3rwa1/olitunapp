@@ -7,6 +7,7 @@ import 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.
 import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/features/profile/presentation/providers/weekly_leaderboard_provider.dart';
 import 'package:itun/features/profile/presentation/widgets/profile_hero_card.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 WeeklyLeaderboardEntity _leaderboard({int? rank = 2, int points = 75}) {
   return WeeklyLeaderboardEntity(
@@ -53,6 +54,8 @@ Widget _wrap({
       ),
     ],
     child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SingleChildScrollView(
           child: cardWidth == null
@@ -95,6 +98,8 @@ void main() {
           ),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ProfileHeroCard(
               userName: 'Learner',

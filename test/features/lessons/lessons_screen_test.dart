@@ -10,6 +10,7 @@ import 'package:itun/features/lessons/presentation/lessons_screen.dart';
 import 'package:itun/features/lessons/presentation/widgets/bento_category_card.dart';
 import 'package:itun/features/lessons/presentation/widgets/hero_category_card.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
   final List<CategoryEntity> _initial;
@@ -87,7 +88,11 @@ Future<void> pumpScreen(
             () => MockCategoryNotifier(categories),
           ),
       ],
-      child: MaterialApp.router(routerConfig: _router()),
+      child: MaterialApp.router(
+        routerConfig: _router(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
   await tester.pumpAndSettle();

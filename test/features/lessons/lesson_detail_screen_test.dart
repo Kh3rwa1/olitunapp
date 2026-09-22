@@ -10,6 +10,7 @@ import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Empty stream overrides keep the central PlaybackController idle without
 /// leaking just_audio's periodic position timer into the test binding.
@@ -94,6 +95,8 @@ void main() {
           )).overrideWith((ref) => Completer<ContentItem>().future),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentDetailScreen(
             kind: ContentKind.lesson,
             id: 'test_lesson_1',
@@ -123,6 +126,8 @@ void main() {
           )).overrideWith((ref) => mockLessonItem),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentDetailScreen(
             kind: ContentKind.lesson,
             id: 'test_lesson_1',
@@ -155,6 +160,8 @@ void main() {
           )).overrideWith((ref) => throw Exception('Network failure')),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: ContentDetailScreen(
             kind: ContentKind.lesson,
             id: 'test_lesson_1',

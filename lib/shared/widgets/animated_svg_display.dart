@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
 import '../../features/lessons/presentation/widgets/platform_view_stub.dart'
     if (dart.library.js_interop) '../../features/lessons/presentation/widgets/platform_view_web.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class AnimatedSvgDisplay extends StatefulWidget {
   final String url;
@@ -146,15 +147,19 @@ class _AnimatedSvgDisplayState extends State<AnimatedSvgDisplay> {
     return SizedBox(
       width: widget.width ?? double.infinity,
       height: widget.height ?? 140,
-      child: const Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.broken_image_rounded, color: Colors.grey, size: 36),
-            SizedBox(height: 6),
+            const Icon(
+              Icons.broken_image_rounded,
+              color: Colors.grey,
+              size: 36,
+            ),
+            const SizedBox(height: 6),
             Text(
-              'Failed to load SVG animation',
-              style: TextStyle(color: Colors.grey, fontSize: 12),
+              AppLocalizations.of(context)!.svgLoadFailed,
+              style: const TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
         ),

@@ -10,6 +10,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class MockAudioService extends Mock implements AudioService {
   @override
@@ -92,6 +93,8 @@ void main() {
           reduceVisualEffectsProvider.overrideWithValue(false),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: LessonBlockDetailScreen(
             lessonId: 'lesson_vocab_metadata',
             initialBlockIndex: 0,

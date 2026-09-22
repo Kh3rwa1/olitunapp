@@ -147,6 +147,8 @@ void main() {
     var continued = false;
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: QuizFeedbackPanel(
             isCorrect: true,

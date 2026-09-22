@@ -12,6 +12,7 @@ import 'package:itun/features/lessons/presentation/providers/lesson_progression_
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _CategoryNotifier extends CategoryNotifier {
   @override
@@ -99,7 +100,11 @@ Future<void> _pumpPath(
         purchasedCategoriesProvider.overrideWith((ref) => {'category_1'}),
         effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
       ],
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
   await tester.pumpAndSettle();

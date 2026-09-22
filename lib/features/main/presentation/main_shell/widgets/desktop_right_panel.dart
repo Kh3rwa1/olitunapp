@@ -5,6 +5,7 @@ import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class DesktopRightPanel extends ConsumerWidget {
   final bool isDark;
@@ -150,9 +151,11 @@ class DesktopRightPanel extends ConsumerWidget {
                                       ),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'SANTALI LEARNER',
-                                    style: TextStyle(
+                                  child: Text(
+                                    AppLocalizations.of(
+                                      context,
+                                    )!.santaliLearner,
+                                    style: const TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 9,
                                       fontWeight: FontWeight.w800,
@@ -208,7 +211,7 @@ class DesktopRightPanel extends ConsumerWidget {
             const SizedBox(height: 22),
 
             Text(
-              'YOUR STATS',
+              AppLocalizations.of(context)!.yourStats,
               style: AppTypography.inter(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w800,
@@ -315,7 +318,7 @@ class DesktopRightPanel extends ConsumerWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        'Daily goal',
+                        AppLocalizations.of(context)!.dailyGoalLabel,
                         style: AppTypography.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
@@ -352,7 +355,7 @@ class DesktopRightPanel extends ConsumerWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Finish 3 lessons to keep your streak alive.',
+                    AppLocalizations.of(context)!.streakTip,
                     style: AppTypography.inter(
                       fontSize: 12,
                       height: 1.45,
@@ -377,7 +380,9 @@ class DesktopRightPanel extends ConsumerWidget {
                           fontSize: 13.5,
                         ),
                       ),
-                      child: const Text('Continue learning →'),
+                      child: Text(
+                        AppLocalizations.of(context)!.continueLearningArrow,
+                      ),
                     ),
                   ),
                 ],

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/theme/app_colors.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Floating circular icon button with blur effect.
 class LessonBlockFloatingButton extends StatelessWidget {
@@ -138,7 +139,9 @@ class LessonBlockTopNavBar extends ConsumerWidget {
                     Row(
                       children: [
                         Text(
-                          'STEP ${currentStep + 1} OF $totalSteps',
+                          AppLocalizations.of(
+                            context,
+                          )!.stepOfTotal(currentStep + 1, totalSteps),
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 10,

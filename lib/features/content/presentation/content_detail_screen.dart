@@ -31,6 +31,7 @@ import 'providers/audio_playback_providers.dart';
 import 'widgets/audio_controls_bar.dart';
 import 'widgets/inline_media_players.dart';
 import 'widgets/story_player_body.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 part 'widgets/content_detail_sections.dart';
 
@@ -121,7 +122,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Error loading content: $err',
+                  AppLocalizations.of(
+                    context,
+                  )!.errorLoadingContent(err.toString()),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? Colors.white70 : Colors.black87,
@@ -132,7 +135,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                   onPressed: () => ref.invalidate(
                     contentDetailProvider((widget.kind, widget.id)),
                   ),
-                  child: const Text('Retry'),
+                  child: Text(AppLocalizations.of(context)!.retry),
                 ),
               ],
             ),
@@ -482,9 +485,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       ),
                     ),
                     icon: const Icon(Icons.quiz_rounded),
-                    label: const Text(
-                      'Start Quiz',
-                      style: TextStyle(
+                    label: Text(
+                      AppLocalizations.of(context)!.startQuiz2,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

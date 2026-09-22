@@ -57,7 +57,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
         if (content == null) {
           return Center(
             child: Text(
-              'No learning content available.',
+              AppLocalizations.of(context)!.noLearningContent,
               style: AppTypography.inter(color: Colors.white38, fontSize: 14),
             ),
           );
@@ -83,7 +83,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Text(
-            'Error loading details: $err',
+            AppLocalizations.of(context)!.errorLoadingDetails(err.toString()),
             style: const TextStyle(color: Colors.white70),
           ),
         ),
@@ -96,7 +96,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     if (publishedNotes.isEmpty) {
       return Center(
         child: Text(
-          'Cultural notes are being prepared.',
+          AppLocalizations.of(context)!.culturalNotesPreparing,
           style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
@@ -155,7 +155,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                 const Divider(color: Colors.white10),
                 const SizedBox(height: 4),
                 Text(
-                  'Source: ${note.source}',
+                  AppLocalizations.of(context)!.culturalNoteSource(note.source),
                   style: AppTypography.inter(
                     fontSize: 11,
                     color: Colors.white38,
@@ -177,7 +177,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     if (vocabulary.isEmpty) {
       return Center(
         child: Text(
-          'No vocabulary items defined.',
+          AppLocalizations.of(context)!.noVocabularyItems,
           style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
@@ -287,7 +287,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
       if (textBlocks.isEmpty) {
         return Center(
           child: Text(
-            'Lyrics are being added.',
+            AppLocalizations.of(context)!.lyricsBeingAdded,
             style: AppTypography.inter(color: Colors.white38, fontSize: 15),
           ),
         );

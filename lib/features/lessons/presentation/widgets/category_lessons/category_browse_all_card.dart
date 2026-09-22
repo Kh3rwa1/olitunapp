@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/motion/motion.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryBrowseAllCard extends StatelessWidget {
   final String label;
@@ -83,7 +84,7 @@ class CategoryBrowseAllCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'BROWSE VIEW',
+                          AppLocalizations.of(context)!.browseView,
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w800,

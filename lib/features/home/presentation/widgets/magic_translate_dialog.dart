@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/api/ai_service.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class MagicTranslateDialog extends ConsumerStatefulWidget {
   const MagicTranslateDialog({super.key});
@@ -74,9 +75,12 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                const Text(
-                  'AI Translator',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+                Text(
+                  AppLocalizations.of(context)!.aiTranslatorTitle,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ],
             ),
@@ -105,9 +109,9 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             ),
             const SizedBox(height: 24),
             if (_result.isNotEmpty) ...[
-              const Text(
-                'SANTALI (OL CHIKI)',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.santaliOlChikiLabel,
+                style: const TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 1.2,
@@ -145,7 +149,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             const SizedBox(height: 12),
             Center(
               child: Text(
-                'Translations are processed securely, cached via privacy hashes, and never linked to your profile.',
+                AppLocalizations.of(context)!.magicTranslatePrivacyNote,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
@@ -158,7 +162,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  'CLOSE',
+                  AppLocalizations.of(context)!.close,
                   style: TextStyle(
                     color: isDark ? Colors.white38 : Colors.black38,
                     fontWeight: FontWeight.w900,

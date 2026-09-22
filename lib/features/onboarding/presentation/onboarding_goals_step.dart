@@ -22,7 +22,7 @@ class _GoalsStep extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'What are your learning goals?',
+            AppLocalizations.of(context)!.goalsTitle,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -31,7 +31,7 @@ class _GoalsStep extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Select all that apply to personalize your learning experience.',
+            AppLocalizations.of(context)!.goalsSubtitle,
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white60 : AppColors.textTertiaryLight,

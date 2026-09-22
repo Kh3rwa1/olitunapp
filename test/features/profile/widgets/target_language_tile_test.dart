@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/profile/presentation/widgets/target_language_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +18,11 @@ void main() {
     ) async {
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: TargetLanguageTile())),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: TargetLanguageTile()),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -36,7 +41,11 @@ void main() {
 
       await tester.pumpWidget(
         const ProviderScope(
-          child: MaterialApp(home: Scaffold(body: TargetLanguageTile())),
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: TargetLanguageTile()),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -69,7 +78,11 @@ void main() {
 
         await tester.pumpWidget(
           const ProviderScope(
-            child: MaterialApp(home: Scaffold(body: TargetLanguageTile())),
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(body: TargetLanguageTile()),
+            ),
           ),
         );
         await tester.pumpAndSettle();

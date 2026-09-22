@@ -6,6 +6,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import 'diagnostics_sheet.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class DiagnosticsTile extends ConsumerWidget {
   const DiagnosticsTile({super.key});
@@ -46,7 +47,7 @@ class DiagnosticsTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'System Diagnostics & Health',
+                    AppLocalizations.of(context)!.systemDiagnosticsTitle,
                     style: AppTypography.titleSmall.copyWith(
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : Colors.black87,
@@ -54,7 +55,7 @@ class DiagnosticsTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'View runtime health, memory state & anonymized telemetry',
+                    AppLocalizations.of(context)!.diagnosticsTileSubtitle,
                     style: AppTypography.bodySmall.copyWith(
                       color: isDark ? Colors.white60 : Colors.black54,
                     ),

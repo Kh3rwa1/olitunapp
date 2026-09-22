@@ -6,6 +6,7 @@ import 'package:itun/features/lessons/presentation/widgets/hero_category_card.da
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 Future<void> pumpCard(
   WidgetTester tester,
@@ -21,6 +22,8 @@ Future<void> pumpCard(
         reduceVisualEffectsProvider.overrideWithValue(reduceEffects),
       ],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SizedBox(
             width: 400,

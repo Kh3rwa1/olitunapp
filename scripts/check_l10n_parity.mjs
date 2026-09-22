@@ -8,9 +8,31 @@ const CANONICAL_FILE = 'app_en.arb';
 
 function extractPlaceholders(text) {
   if (typeof text !== 'string') return [];
-  const matches = text.match(/\{([^}]+)\}/g);
-  if (!matches) return [];
-  return matches.map(m => m.slice(1, -1).trim()).sort();
+  const result = [];
+  let i = 0;
+  while (i < text.length) {
+    if (text[i] === '{') {
+      let j = i + 1;
+      let ident = '';
+      while (j < text.length && /[A-Za-z0-9_]/.test(text[j])) {
+        ident += text[j];
+        j++;
+      }
+      if (ident) {
+        result.push(ident);
+        let depth = 1;
+        while (j < text.length && depth > 0) {
+          if (text[j] === '{') depth++;
+          else if (text[j] === '}') depth--;
+          j++;
+        }
+        i = j;
+        continue;
+      }
+    }
+    i++;
+  }
+  return [...new Set(result)].sort();
 }
 
 function checkL10nParity() {

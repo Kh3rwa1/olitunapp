@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/typing_practice_controller.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Celebratory card displayed when a user successfully completes a typing practice session.
 class TypingPracticeDoneCard extends StatelessWidget {
@@ -52,19 +53,19 @@ class TypingPracticeDoneCard extends StatelessWidget {
         child: Column(
           children: [
             // Celebratory check icon and title
-            const Wrap(
+            Wrap(
               alignment: WrapAlignment.center,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.check_circle_rounded,
                   color: AppColors.primary,
                   size: 24,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
-                  'Practiced Successfully',
-                  style: TextStyle(
+                  AppLocalizations.of(context)!.practicedSuccessfully,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
@@ -113,9 +114,9 @@ class TypingPracticeDoneCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    'Try Again',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.tryAgain,
+                    style: const TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                       decoration: TextDecoration.underline,
@@ -133,9 +134,9 @@ class TypingPracticeDoneCard extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text(
-                        'Enter ↵',
-                        style: TextStyle(
+                      child: Text(
+                        AppLocalizations.of(context)!.pressEnter,
+                        style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,

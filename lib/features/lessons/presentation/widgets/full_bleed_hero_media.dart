@@ -11,6 +11,7 @@ import 'platform_view_stub.dart'
     if (dart.library.js_interop) 'platform_view_web.dart';
 import '../../../../shared/widgets/lottie_display.dart';
 import '../../../../shared/widgets/animated_svg_display.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -541,19 +542,19 @@ class _HtmlHeroMediaState extends State<_HtmlHeroMedia> {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Interactive HTML Content',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.interactiveHtmlTitle,
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'This lesson contains an interactive HTML experience. Tap below to launch it.',
+            Text(
+              AppLocalizations.of(context)!.interactiveHtmlBody,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.white70),
+              style: const TextStyle(fontSize: 14, color: Colors.white70),
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
@@ -564,7 +565,7 @@ class _HtmlHeroMediaState extends State<_HtmlHeroMedia> {
                 }
               },
               icon: const Icon(Icons.open_in_browser_rounded),
-              label: const Text('Open Interactive Content'),
+              label: Text(AppLocalizations.of(context)!.openInteractiveContent),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,

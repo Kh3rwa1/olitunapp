@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 void showQuizMistakesSheet({
   required BuildContext context,
@@ -46,7 +47,7 @@ void showQuizMistakesSheet({
               children: [
                 Expanded(
                   child: Text(
-                    'Review Mistakes',
+                    AppLocalizations.of(context)!.reviewMistakes,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: TextStyle(
@@ -65,7 +66,7 @@ void showQuizMistakesSheet({
             ),
             const SizedBox(height: 8),
             Text(
-              'Review what you got incorrect to build your mastery! Laha se!',
+              AppLocalizations.of(context)!.reviewMistakesSubtitle,
               style: TextStyle(
                 fontSize: 14,
                 color: isDark ? Colors.white60 : Colors.black54,
@@ -173,7 +174,7 @@ void showQuizMistakesSheet({
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Correct:',
+                                    AppLocalizations.of(context)!.correctColon,
                                     style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,

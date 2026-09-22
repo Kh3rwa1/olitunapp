@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/lessons/presentation/widgets/category_lessons/locked_lesson_overlay.dart';
 import 'package:lottie/lottie.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   Widget host({String? title, required VoidCallback onStart}) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SingleChildScrollView(
           child: LockedLessonOverlay(

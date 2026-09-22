@@ -6,6 +6,7 @@ import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/widgets/sharing/share_card_payload.dart';
 import 'package:itun/shared/widgets/sharing/social_share_card.dart';
 import 'package:itun/shared/widgets/sharing/social_share_modal.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +35,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: SocialShareCard(payload: payload)),
           ),
@@ -59,6 +62,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: SocialShareCard(payload: payload)),
           ),
@@ -78,6 +83,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: SocialShareCard(payload: payload)),
           ),
@@ -115,6 +122,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: SocialShareCard(payload: payload)),
           ),
@@ -134,6 +143,8 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Builder(
               builder: (context) {

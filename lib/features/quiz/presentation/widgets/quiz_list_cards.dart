@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 // ═══════════════ HERO QUIZ CARD ═══════════════
 
@@ -125,7 +126,9 @@ class HeroQuizCard extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                '${quiz.questions.length} questions • ${quiz.level}',
+                AppLocalizations.of(
+                  context,
+                )!.questionsWithLevel(quiz.questions.length, quiz.level),
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w600,
@@ -149,18 +152,18 @@ class HeroQuizCard extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.play_arrow_rounded,
                           color: AppColors.accentOchreDark,
                           size: 20,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
-                          'START QUIZ',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.startQuiz,
+                          style: const TextStyle(
                             color: AppColors.accentOchreDark,
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
@@ -280,7 +283,9 @@ class BentoQuizCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              '${quiz.questions.length} questions',
+              AppLocalizations.of(
+                context,
+              )!.questionsCount(quiz.questions.length),
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,

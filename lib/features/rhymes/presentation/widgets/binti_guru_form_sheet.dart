@@ -8,6 +8,7 @@ import '../../../../core/logging/app_logger.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/waitlist_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class BintiGuruFormSheet extends ConsumerStatefulWidget {
   const BintiGuruFormSheet({super.key});
@@ -124,7 +125,9 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to join waitlist: $e'),
+            content: Text(
+              AppLocalizations.of(context)!.failedToJoinWaitlist(e.toString()),
+            ),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -137,16 +140,14 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text('Waitlist Joined! 🎉'),
-        content: const Text(
-          'Thank you for submitting your details. Our cultural coordination team will contact you shortly via phone/WhatsApp to match you with a certified Binti Guru.',
-        ),
+        title: Text(AppLocalizations.of(context)!.waitlistJoined),
+        content: Text(AppLocalizations.of(context)!.waitlistJoinedBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text(
-              'Great',
-              style: TextStyle(
+            child: Text(
+              AppLocalizations.of(context)!.great,
+              style: const TextStyle(
                 color: AppColors.primary,
                 fontWeight: FontWeight.bold,
               ),
@@ -191,9 +192,9 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
                 ),
               ),
 
-              const Text(
-                'Join Binti Guru Waitlist',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.joinBintiGuruWaitlist,
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
@@ -201,7 +202,7 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Tell us about your ceremony. We will search for available certified reciters.',
+                AppLocalizations.of(context)!.bintiGuruFormSubtitle,
                 style: TextStyle(
                   fontSize: 12,
                   color: isDark ? Colors.white38 : Colors.black45,
@@ -401,9 +402,9 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
                       ? const CircularProgressIndicator(
                           color: AppColors.elevatedButtonFg,
                         )
-                      : const Text(
-                          'Submit Waitlist Entry',
-                          style: TextStyle(
+                      : Text(
+                          AppLocalizations.of(context)!.submitWaitlistEntry,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),

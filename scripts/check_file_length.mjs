@@ -16,10 +16,6 @@ const PERMANENT_EXEMPTIONS = new Set([
 const GRANDFATHERED_FILES = new Set([
   // Empty as of the 2026-09 god-file refactor: every hand-written file is
   // under the 600-line cap. Add entries only with a dated removal plan.
-
-  // Dated removal plan: extract the result panel into its own widget by
-  // 2026-10-15 alongside the in-app mic recording increment.
-  'lib/features/ai_studio/presentation/ai_studio_screen.dart',
 ]);
 
 function getAllDartFiles(dir, fileList = []) {

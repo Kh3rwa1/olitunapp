@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_session_hud.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   group('QuizCountPill', () {
@@ -10,7 +11,11 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(home: QuizCountPill(current: 2, total: 5)),
+        const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: QuizCountPill(current: 2, total: 5),
+        ),
       );
 
       expect(find.text('2/5'), findsOneWidget);
@@ -24,6 +29,8 @@ void main() {
     QuizSessionState stateOf(QuizSessionState base) => base;
 
     Widget hud(QuizSessionState state, {bool isDark = false}) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: QuizSessionHud(state: state, isDark: isDark),
       ),

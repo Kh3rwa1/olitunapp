@@ -390,7 +390,9 @@ class _QuizActiveViewState extends ConsumerState<QuizActiveView> {
                                       ),
                                     ),
                                     child: Text(
-                                      '↑ / ↓ Navigate  •  1-4 Choose  •  Enter ↵ Submit',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.quizKeyboardHintAlt,
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,

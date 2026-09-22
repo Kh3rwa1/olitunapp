@@ -1246,4 +1246,823 @@ class AppLocalizationsSat extends AppLocalizations {
   @override
   String get aiStudioPassageLimitError =>
       'ᱞᱟᱦᱟᱜ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱴᱤᱧ ᱠᱷᱟᱴᱚᱭ ᱢᱮ᱾ ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱜᱮᱫ ᱟᱠᱟᱱᱟ᱾';
+
+  @override
+  String get aiStudioUploadPrompt => 'ᱠᱟᱦᱚᱨ ᱠᱟᱨᱢ ᱥᱟᱯᱟᱱᱫᱤᱛ ᱠᱟᱨᱢ ᱤᱱ ᱪᱟᱯᱛᱟᱨ ᱠᱟᱨᱢ';
+
+  @override
+  String get aiStudioUploadFormats => 'PDF, PNG ᱠᱟᱨᱢ JPG · 10 MB ᱠᱷᱚᱱ ᱠᱟᱹᱰᱟᱨ';
+
+  @override
+  String aiStudioJobId(String id) {
+    return 'Job: $id';
+  }
+
+  @override
+  String get aiStudioCheckStatus => 'ᱡᱟᱦᱚᱨ ᱧᱮᱞ ᱠᱩᱞᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get aiStudioReplaceWithScan => 'ᱠᱟᱨᱢ ᱥᱟᱯᱟᱱᱫᱤᱛ ᱫᱮᱠᱟᱨᱮᱭᱟᱨ ᱫᱩᱦᱲᱟᱹ';
+
+  @override
+  String get aiStudioEditSource => 'ᱟᱸᱠᱟ ᱤᱚᱱᱯᱩᱛ ᱥᱟᱯᱟᱱᱫᱤᱛ';
+
+  @override
+  String get olitun => 'Olitun';
+
+  @override
+  String get welcomeTagline => 'ᱧᱤᱛᱚᱠᱤ ᱚᱞ ᱥᱤᱦᱟᱨᱟᱨ';
+
+  @override
+  String errorLoadingContent(String error) {
+    return 'Error loading content: $error';
+  }
+
+  @override
+  String get startQuiz2 => 'ᱠᱩᱤᱡᱟᱱ ᱢᱮᱮᱜᱟᱣ ᱢᱮ';
+
+  @override
+  String get practiceTyping => 'ᱛᱤᱯᱤᱱ ᱯᱨᱟᱠᱴᱤᱥ';
+
+  @override
+  String mediaDuration(int seconds) {
+    return 'Duration: ${seconds}s';
+  }
+
+  @override
+  String get noLearningContent => 'ᱱᱟᱶᱟ ᱥᱤᱦᱟᱨ ᱧᱮᱞ ᱞᱟᱜᱟᱨ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String errorLoadingDetails(String error) {
+    return 'Error loading details: $error';
+  }
+
+  @override
+  String get culturalNotesPreparing => 'ᱛᱟᱦᱲᱟᱠᱟᱨ ᱧᱮᱞ ᱠᱟᱨᱢ ᱞᱟᱦᱟᱨ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String culturalNoteSource(String source) {
+    return 'Source: $source';
+  }
+
+  @override
+  String get noVocabularyItems => 'ᱞᱟᱜᱟᱨ ᱜᱟᱞᱟᱱ ᱠᱚ ᱵᱟᱪᱷᱟᱣ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String get lyricsBeingAdded => 'ᱜᱤᱱᱤᱠ ᱠᱟᱨᱩᱛ ᱠᱟᱨᱢ ᱠᱟᱱᱟᱱ';
+
+  @override
+  String get bakhedLabel => 'BAKHED';
+
+  @override
+  String get wordLabel => 'ᱜᱟᱞ';
+
+  @override
+  String get cancelLower => 'ᱛᱟᱨᱢ';
+
+  @override
+  String greetingDayPart(String part) {
+    return 'ᱡᱚᱦᱟᱨ • $part';
+  }
+
+  @override
+  String get homePickupSubtitle =>
+      'ᱡᱥᱟᱱᱟᱛ ᱠᱷᱚᱱ ᱡᱟᱦᱚᱨ ᱢᱮ — ᱠᱩᱞᱟᱹᱨ ᱠᱚ, ᱫᱩᱭᱟᱹ ᱫᱩᱭᱟᱹ.';
+
+  @override
+  String get aiTranslatorTitle => 'AI Translator';
+
+  @override
+  String get voiceSpeakWithConfidence => 'ᱜᱟᱨᱢ ᱥᱟᱨ᱑ᱟᱴ ᱛᱮ ᱠᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get aiStudioPromoBadge => 'NEW • AI STUDIO';
+
+  @override
+  String get aiStudioPromoSubtitle => 'ᱥᱠᱟᱱ ᱥᱟᱞ ᱟᱹᱨᱤᱭᱟᱹ ᱵᱟᱭᱟᱨᱮᱢ ᱢᱮ.';
+
+  @override
+  String get learnMore => 'ᱠᱟᱹᱰᱟᱨ ᱥᱤᱦᱟᱨᱟᱨ';
+
+  @override
+  String get instantTranslate => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱛᱟᱲᱮᱫ';
+
+  @override
+  String get anyLanguageToOlChiki => 'ᱡᱤᱭᱟᱢ ᱵᱷᱟᱥᱟ ᱠᱷᱚᱱ ᱧᱤᱛᱚᱠᱤ ᱠᱷᱚᱱ';
+
+  @override
+  String get aiBadge => 'AI';
+
+  @override
+  String get yourLearningPath => 'ᱟᱢᱟᱫ ᱥᱤᱦᱟᱨ ᱫᱤᱥᱛᱟᱨ';
+
+  @override
+  String stepOfPath(int step, int total) {
+    return 'Step $step of $total: ';
+  }
+
+  @override
+  String get learningPathSubtitle => 'ᱟᱢᱟᱫ ᱥᱟᱱᱛᱟᱞᱤ ᱡᱟᱦᱚᱨ ᱠᱩᱞᱟᱹᱨ ᱠᱟᱱ ᱫᱤᱥᱛᱟᱨ.';
+
+  @override
+  String get santaliOlChikiLabel => 'ᱥᱟᱱᱛᱟᱞᱤ (ᱧᱤᱛᱚᱠᱤ)';
+
+  @override
+  String get magicTranslatePrivacyNote =>
+      'ᱢᱟᱡᱤᱠ ᱛᱟᱲᱮᱫᱟᱨ ᱜᱟᱞᱟᱱᱟᱱᱠᱟᱱ ᱠᱟᱱᱟᱱ ᱟᱨ ᱫᱤᱲᱟᱣ ᱱᱚᱛᱟᱨ ᱧᱮᱞᱟᱨ ᱥᱟᱯᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱫᱮᱞᱟᱨ ᱟᱭ.';
+
+  @override
+  String get close => 'ᱵᱤᱰᱮᱢ';
+
+  @override
+  String get aiVoicePromoBadge => 'NEW • AI VOICE';
+
+  @override
+  String get aiVoiceTitle => 'AI Voice';
+
+  @override
+  String get aiVoicePromoSubtitle =>
+      'ᱡᱤᱭᱟᱢ ᱞᱟᱦᱟᱨ ᱛᱤᱯᱤᱱ ᱢᱮ — ᱥᱟᱱᱛᱟᱞᱤ ᱛᱮ ᱧᱮᱞᱟᱨ ᱢᱮ.';
+
+  @override
+  String get tryNow => 'ᱠᱟᱱᱟᱱ ᱞᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get k15Styles => 'ᱟᱲᱟᱝ • 15 styles';
+
+  @override
+  String get backToLearningPaths => 'ᱥᱤᱦᱟᱨ ᱫᱤᱥᱛᱟᱨ ᱛᱟᱦᱮᱞ';
+
+  @override
+  String get learningPathsHeader => 'ᱥᱤᱦᱟᱨ ᱫᱤᱥᱛᱟᱨ';
+
+  @override
+  String get chooseYourJourney => 'ᱟᱢᱟᱫ ᱠᱟᱨᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get morePaths => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱫᱤᱥᱛᱟᱨ ᱠᱚ';
+
+  @override
+  String get plusTenXp => '+10 XP';
+
+  @override
+  String get strokeOrderHint => 'ᱥᱴᱨᱚᱠ ᱠᱷᱟᱨᱤ ᱡᱟᱦᱚᱨ ᱠᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String traceAccuracy(String feedback, int percent) {
+    return '$feedback  Accuracy: $percent%';
+  }
+
+  @override
+  String get niceWork => 'ᱵᱟᱦᱟᱨ!';
+
+  @override
+  String youScoredOutOf(int score, int total) {
+    return 'You scored $score out of $total';
+  }
+
+  @override
+  String percentFormat(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get backLabel => 'ᱜᱟᱞᱟᱨ';
+
+  @override
+  String get quizKeyboardHint =>
+      'ᱡᱟᱦᱚᱨ ᱠᱩᱞᱟᱹᱨ ᱛᱮ ᱡᱟᱦᱚᱨᱟᱨ  •  1-4 ᱛᱮ ᱵᱟᱪᱷᱟᱣ  •  ᱤᱱᱴᱟᱨ ᱞᱟᱛᱟᱨ ᱨᱮᱭᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String scoreOnly(int score) {
+    return '$score';
+  }
+
+  @override
+  String get pressEnter => 'Enter ↵';
+
+  @override
+  String get readyToTestYourself => 'ᱟᱢ ᱠᱩᱤᱡᱟᱨ ᱡᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱤᱱᱟ ᱮᱱᱟᱱᱟᱢᱚᱱ';
+
+  @override
+  String get takeTheQuiz => 'ᱠᱩᱤᱡᱟᱨ ᱫᱮᱠᱟᱨᱮᱭᱟᱨ ᱢᱮ';
+
+  @override
+  String get skipForNow => 'ᱠᱟᱱᱟᱱ ᱠᱷᱟᱴᱟ ᱛᱟᱦᱮᱞ';
+
+  @override
+  String get browseView => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱛᱟᱦᱲᱟ';
+
+  @override
+  String get openDictionary => 'ᱥᱟᱦᱟᱨᱡᱤᱱ ᱨᱩᱠᱤᱠᱤ ᱨᱮᱭᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get learnLabel => 'ᱥᱤᱦᱟᱨᱟᱨ';
+
+  @override
+  String get doneLabel => 'ᱦᱩᱞᱟᱹᱱᱟᱱ';
+
+  @override
+  String get lockedForNowTitle => 'ᱠᱟᱨᱢ ᱢᱮᱭᱟᱨ • ᱠᱟᱱᱟᱱ ᱠᱷᱚᱱ ᱵᱤᱰᱮᱟᱹᱨᱟᱱ';
+
+  @override
+  String completeBlockerFirst(String blocker) {
+    return 'Complete “$blocker” first to crack it open.';
+  }
+
+  @override
+  String get interactiveHtmlTitle => 'ᱠᱟᱨᱢ ᱯᱟᱴ ᱛᱟᱦᱲᱟ ᱡᱟᱭᱜᱟ ᱛᱮ';
+
+  @override
+  String get interactiveHtmlBody =>
+      'ᱱᱤᱛᱚ ᱯᱟᱴ ᱛᱮ ᱛᱟᱦᱲᱟᱠᱟᱨ ᱛᱟᱦᱲᱟ ᱧᱮᱞ ᱠᱟᱱᱟᱱ. ᱠᱟᱨᱢ ᱫᱮᱠᱟᱨᱮᱭᱟᱨ ᱫᱩᱦᱲᱟᱹ ᱠᱟᱨᱢ.';
+
+  @override
+  String get openInteractiveContent => 'ᱠᱟᱨᱢ ᱯᱟᱴ ᱧᱮᱞ ᱨᱮᱭᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get recommendedLabel => 'ᱡᱟᱦᱚᱨᱟᱨ';
+
+  @override
+  String get audioPlaybackHint => 'ᱟᱶᱩᱰᱤᱭᱚ ᱞᱟᱛᱟᱨ ᱠᱩᱞᱟᱹᱨ ᱛᱮ ᱠᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get finishReviewing => 'ᱡᱟᱨᱤᱦ ᱢᱟᱲᱤᱭᱟᱨ ᱠᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get takeQuizNow => 'ᱠᱩᱤᱡᱟᱱ ᱫᱮᱠᱟᱨᱮᱭᱟᱨ ᱢᱮ';
+
+  @override
+  String stepOfTotal(int step, int total) {
+    return 'STEP $step OF $total';
+  }
+
+  @override
+  String get checkConnectionPeriod =>
+      'ᱠᱟᱱᱨᱠᱤ ᱠᱩᱞᱟᱹᱨ ᱠᱩᱞᱟᱹᱨ ᱟᱨ ᱞᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String sentencePronunciation(String pronunciation) {
+    return 'Pronunciation: $pronunciation';
+  }
+
+  @override
+  String get santaliLearner => 'ᱥᱟᱱᱛᱟᱞᱤ ᱥᱤᱦᱟᱨᱟᱨ';
+
+  @override
+  String get streakTip => 'ᱥᱴᱨᱤᱠ ᱵᱟᱦᱟᱨ ᱫᱤᱰᱟᱣ ᱠᱟᱦᱟᱨᱮᱱ 3 ᱯᱟᱴ ᱠᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String get continueLearningArrow => 'ᱥᱤᱦᱟᱨ ᱡᱟᱦᱚᱨ ᱢᱮ →';
+
+  @override
+  String get olitun2 => 'Olitun';
+
+  @override
+  String get santaliOlChikiTag => 'SANTALI • OL CHIKI';
+
+  @override
+  String get menuLabel => 'ᱛᱟᱨᱢᱟᱹ';
+
+  @override
+  String get olitunPwaVersion => 'Olitun PWA • v2.4';
+
+  @override
+  String onboardingCounter(String current, String total) {
+    return '$current · $total';
+  }
+
+  @override
+  String get goalsTitle => 'ᱡᱟᱭᱜᱟ ᱠᱚ';
+
+  @override
+  String get goalsSubtitle => 'ᱟᱢᱟᱫ ᱥᱤᱦᱟᱨ ᱠᱷᱚᱱ ᱵᱤᱲᱟᱹᱣ ᱠᱟᱦᱟᱨᱮᱱ ᱠᱚᱢ ᱡᱟᱭᱜᱟ ᱢᱮ.';
+
+  @override
+  String get requiredLabel => 'ᱡᱟᱦᱚᱨᱟᱨ';
+
+  @override
+  String get stepOneOfFive => 'ᱛᱩᱱᱟᱹ 5 ᱠᱷᱚᱱ ᱛᱩᱱᱟᱹ 1';
+
+  @override
+  String get languageSubtitle => 'ᱵᱷᱟᱥᱟ ᱫᱤᱥᱛᱟᱨ ᱛᱟᱦᱲᱟ ᱵᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get prefsSaveFailed => 'ᱟᱢᱟᱫ ᱠᱟᱛᱟᱨ ᱥᱟᱵᱟᱫᱟᱹᱠᱟᱱ. ᱞᱟᱹᱛᱤ ᱫᱩᱦᱲᱟᱹ ᱠᱟᱨᱢ.';
+
+  @override
+  String get selectMotherTongueToast =>
+      'ᱡᱟᱦᱚᱨ ᱞᱟᱦᱟᱨ ᱫᱤᱱᱟᱹᱨ ᱠᱷᱚᱱ ᱟᱨ ᱛᱟᱦᱲᱟᱠᱟᱨ ᱵᱷᱟᱥᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ ᱠᱟᱨᱢ ᱡᱟᱭᱜᱟ ᱢᱮ.';
+
+  @override
+  String get onboardingHeadline => 'ᱧᱤᱛᱚᱠᱤ ᱥᱤᱦᱟᱨᱟᱨ,\nᱠᱟᱱᱟᱱ ᱠᱚᱛᱮ ᱠᱷᱚᱱ ᱢᱮ';
+
+  @override
+  String get familiarityTitle => 'ᱠᱟᱹᱰᱤᱭᱟᱹ ᱡᱟᱦᱚᱨ';
+
+  @override
+  String get familiaritySubtitle =>
+      'ᱢᱟᱲᱤᱭᱟᱹ ᱫᱮᱞ ᱛᱮ ᱟᱢᱟᱫ ᱥᱤᱦᱟᱨ ᱫᱤᱥᱛᱟᱨ ᱵᱟᱦᱟᱨ ᱠᱟᱹᱰᱤᱭᱟᱹ.';
+
+  @override
+  String get displayTitle => 'ᱟᱢ ᱧᱮᱞ ᱛᱟᱦᱲᱟ ᱠᱚ ᱠᱩᱞᱟᱹᱨ ᱢᱤᱫᱟᱱᱟᱢᱚᱱ?';
+
+  @override
+  String get displaySubtitle =>
+      'ᱟᱢᱟᱫ ᱠᱩᱞᱟᱹᱨ ᱛᱟᱦᱲᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ. ᱟᱢ ᱡᱤᱭᱟᱢ ᱛᱟᱦᱮᱞ ᱠᱷᱚᱱ ᱵᱟᱦᱟᱨ ᱛᱟᱦᱲᱟ ᱛᱟᱦᱮᱟᱱ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String get practiceGoalTitle => 'ᱯᱨᱟᱠᱟᱛᱤᱥ ᱡᱟᱭᱜᱟ';
+
+  @override
+  String get practiceGoalSubtitle =>
+      'ᱫᱤᱱᱟᱹᱢ ᱥᱟᱞ ᱠᱟᱛᱟᱨ ᱠᱟᱨᱢ ᱫᱮᱠᱟᱨᱮᱭᱟᱨ ᱠᱟᱱᱟᱱ ᱛᱟᱦᱲᱟᱠᱟᱨ ᱥᱤᱦᱟᱨ ᱥᱴᱨᱤᱠ ᱵᱟᱦᱟᱨ ᱠᱟᱱᱟᱱ ᱠᱟᱹᱰᱤᱭᱟᱹ.';
+
+  @override
+  String get olitunWordmark => 'OLITUN';
+
+  @override
+  String get learnOlChiki => 'ᱧᱤᱛᱚᱠᱤ ᱥᱤᱦᱟᱨᱟᱨ';
+
+  @override
+  String get spaceKey => 'SPACE';
+
+  @override
+  String get practicedSuccessfully => 'ᱯᱨᱟᱠᱟᱛᱤᱥ ᱦᱩᱞᱟᱹᱱᱟᱱᱠᱟᱱ';
+
+  @override
+  String get revealAndContinue => 'ᱡᱟᱨᱩᱢ ᱟᱨ ᱡᱟᱦᱚᱨ ᱢᱮ';
+
+  @override
+  String get systemDiagnosticsTitle => 'ᱥᱤᱥᱴᱢ ᱡᱤᱠᱞᱟᱞᱟᱨ ᱟᱨ ᱫᱩᱦᱟᱹᱱᱮᱛᱟ';
+
+  @override
+  String get systemDiagnosticsSubtitle =>
+      'ᱜᱟᱨᱢ ᱱᱚᱛᱟᱨ ᱯᱨᱟᱠᱞᱤ ᱯᱟᱰᱟᱭᱟᱨᱠᱟᱨ ᱡᱤᱠᱞᱟᱞᱚᱨ ᱫᱩᱦᱟᱹᱱᱮᱛᱟ';
+
+  @override
+  String get diagnosticPayloadPreview => 'ᱡᱤᱠᱞᱟᱞᱟᱨ ᱯᱟᱴᱩᱞ ᱠᱩᱞᱟᱹᱨ ᱡᱟᱨᱤᱦ';
+
+  @override
+  String get diagnosticPayloadCopied =>
+      'ᱡᱤᱠᱞᱟᱞᱟᱨ ᱯᱟᱴᱩᱞ ᱪᱤᱯᱷᱟ ᱥᱟᱯᱭᱟᱨᱟᱨᱮᱱ ᱧᱮᱦᱟᱣᱟᱹᱱᱟᱱᱠᱟᱱ! 📋';
+
+  @override
+  String get diagnosticsTileSubtitle =>
+      'ᱨᱟᱫᱮᱥᱴ ᱫᱩᱦᱟᱹᱱᱮᱛᱟ, ᱢᱮᱢᱚᱨᱤ ᱠᱩᱞᱟᱹᱨ ᱟᱨ ᱠᱤᱨᱷᱤᱭᱟᱹ ᱡᱤᱠᱞᱟᱞᱟᱨ ᱞᱟᱜᱟᱨ ᱢᱮ';
+
+  @override
+  String get deleteAllDownloadsTitle => 'ᱡᱟᱦᱸᱤ ᱰᱟᱣᱱᱟᱹᱞᱟᱣᱱᱟᱨ ᱠᱚ ᱠᱚᱛᱮᱨᱟᱨᱮᱭᱟᱨ?';
+
+  @override
+  String get deleteAllDownloadsBody =>
+      'ᱱᱟᱶᱟ ᱰᱟᱣᱱᱟᱹᱞᱟᱣᱱᱟᱨ ᱫᱷᱤᱠ ᱫᱤᱲᱟᱣ ᱜᱤᱱᱤᱠ ᱟᱶᱩᱰᱤᱭᱚ ᱛᱟᱦᱲᱟᱠᱚ ᱡᱟᱭᱜᱟ ᱫᱟᱭᱟᱨᱟᱨ ᱠᱚᱛᱮᱟᱹᱱᱟᱱ. ᱜᱤᱱᱤᱠ ᱠᱚ ᱞᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱫᱩᱦᱲᱟᱹ ᱞᱟᱛᱟᱨ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String get editYourName => 'ᱟᱢᱟᱫ ᱧᱮᱞ ᱟᱸᱠᱟ ᱢᱮ';
+
+  @override
+  String get save => 'ᱥᱟᱯᱟᱨᱦᱚᱢ';
+
+  @override
+  String get indigenousLanguagesTitle => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱵᱷᱟᱥᱟ ᱯᱞᱟᱴᱯᱟᱹᱨᱢ';
+
+  @override
+  String get indigenousLanguagesSubtitle =>
+      'ᱛᱟᱦᱲᱟ ᱧᱤᱛᱚᱠᱤ ᱟᱨ ᱫᱟᱣᱟᱭᱟᱭ ᱵᱷᱟᱥᱟ ᱠᱚ ᱠᱩᱞᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String packsComingSoon(String name) {
+    return '$name content & audio packs are coming soon!';
+  }
+
+  @override
+  String learningLanguageSetTo(String name, String script) {
+    return 'Learning language set to $name ($script)';
+  }
+
+  @override
+  String get audioPack => 'ᱟᱶᱩᱰᱤᱭᱚ ᱯᱟᱠᱟᱛ';
+
+  @override
+  String get offlineLessons => 'ᱫᱤᱲᱟᱣ ᱯᱟᱴ';
+
+  @override
+  String lettersCount(int count) {
+    return '$count letters';
+  }
+
+  @override
+  String get demoLabel => 'DEMO';
+
+  @override
+  String masteryAccuracy(int percent) {
+    return 'Accuracy: $percent%';
+  }
+
+  @override
+  String get masteryProgression => 'ᱵᱟᱦᱟᱨ ᱯᱨᱟᱜᱟᱛ';
+
+  @override
+  String get nextMilestone => 'ᱜᱟᱞᱟᱨ ᱠᱩᱞᱟᱹᱨ';
+
+  @override
+  String roadToLevel(String level) {
+    return 'Road to $level';
+  }
+
+  @override
+  String badgeUnlockHint(String name, String target) {
+    return 'To unlock the $name badge: $target';
+  }
+
+  @override
+  String get closestBadge => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱠᱩᱞᱟᱹᱨ ᱠᱷᱚᱱ ᱠᱟᱹᱰᱟᱨ ᱵᱮᱡᱟᱢ';
+
+  @override
+  String unlockBadge(String name) {
+    return 'Unlock the $name Badge';
+  }
+
+  @override
+  String get reminderFrequency => 'ᱡᱟᱦᱚᱨᱟᱨ ᱠᱟᱨᱛᱟᱨ';
+
+  @override
+  String get reminderFrequencySubtitle =>
+      'ᱟᱢ ᱡᱟᱭᱜᱟ ᱧᱟᱧᱟᱢ ᱛᱮ ᱧᱮᱞ ᱨᱮᱭᱟᱹᱨᱟᱱ ᱵᱟᱦᱟᱨ ᱠᱟᱦᱟᱨᱟᱱ ᱠᱚᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ.';
+
+  @override
+  String get dailySchedulePreview => 'ᱫᱩᱭᱟᱹᱛᱷᱤ ᱠᱷᱟᱰᱩ ᱡᱟᱨᱤᱦ';
+
+  @override
+  String get sendTestNotification => 'ᱡᱟᱦᱚᱨ ᱧᱮᱞ ᱠᱟᱨᱢ ᱯᱩᱠᱟᱨ ᱢᱮ';
+
+  @override
+  String get chooseYourAvatarLower => 'ᱟᱢᱟᱫ ᱟᱣᱟᱛᱟᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get avatarAnimationsFailed => 'ᱟᱣᱟᱛᱟᱨ ᱜᱟᱲᱤ ᱞᱩᱰ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ.';
+
+  @override
+  String get tryAgainLower => 'ᱞᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get avatarSaveFailed => 'ᱟᱣᱟᱛᱟᱨ ᱥᱟᱯᱟᱨᱦᱚᱠᱚᱱᱟᱱ. ᱞᱟᱹᱛᱤ ᱫᱩᱦᱲᱟᱹ ᱠᱟᱨᱢ.';
+
+  @override
+  String since(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get overallProgress => 'ᱡᱟᱦᱸᱤ ᱯᱨᱟᱜᱟᱛ';
+
+  @override
+  String get noBookingsFound => 'ᱞᱟᱜᱟᱨ ᱠᱟᱱᱟᱱ ᱵᱩᱠᱤᱝ ᱱᱟᱶᱟ ᱠᱟᱱᱟᱱ';
+
+  @override
+  String get bookingsEmptyHint =>
+      'ᱠᱟᱨᱢ ᱵᱟᱭᱟᱨᱮᱢ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱷᱚᱱ ᱟᱢᱟᱫ ᱥᱩᱨᱠᱟᱨ ᱠᱷᱚᱱ ᱵᱩᱠᱤᱝ ᱢᱮ.';
+
+  @override
+  String get waitlistBookingsFailed => 'ᱞᱟᱦᱟᱨ ᱫᱤᱱᱟᱹᱨ ᱵᱩᱠᱤᱝ ᱞᱩᱰ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ.';
+
+  @override
+  String get assessmentScore => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱥᱠᱷᱩᱨ';
+
+  @override
+  String get avgLabel => 'ᱟᱚᱞᱢ';
+
+  @override
+  String get adPrivacyRegionNote =>
+      'ᱜᱟᱲᱤ ᱜᱟᱨᱢ ᱥᱟᱯᱟᱱᱫᱤᱛ ᱟᱢᱟᱫ ᱠᱷᱟᱰᱟᱨ ᱠᱷᱚᱱ ᱡᱟᱦᱚᱨ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String get signOutConfirmBody =>
+      'ᱟᱢ ᱩᱥᱤᱠᱟᱱ ᱫᱟᱭᱟᱹᱨᱟᱱ ᱱᱟᱶᱟ ᱡᱤᱠᱟᱹᱠ ᱡᱟᱭᱜᱟ ᱠᱷᱚᱱ ᱱᱟᱶᱟ ᱠᱩᱞᱟᱹᱨ ᱫᱟᱭᱟᱹᱨ ᱠᱟᱱᱟᱱ ᱛᱟᱦᱲᱟᱠᱟᱨ ᱫᱮᱞᱟᱨ ᱠᱟᱹᱰᱟᱨ ᱢᱤᱫᱟᱱᱟᱢᱚᱱ?';
+
+  @override
+  String get learningLanguageScript => 'ᱥᱤᱦᱟᱨ ᱵᱷᱟᱥᱟ ᱟᱨ ᱚᱞ';
+
+  @override
+  String get mistakeReview => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱡᱟᱨᱤᱦ';
+
+  @override
+  String get allCaughtUp => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱡᱚᱴᱟᱷᱟᱹᱱᱟᱱ!';
+
+  @override
+  String get noMistakesToReview =>
+      'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱠᱚ ᱡᱟᱨᱤᱦ ᱡᱟᱦᱚᱨ ᱠᱟᱱᱟᱱ. ᱟᱢᱟᱫ ᱥᱟᱱᱛᱟᱞᱤ ᱠᱩᱞᱟᱹᱨ ᱠᱚ ᱵᱟᱦᱟᱨ ᱮᱱᱟᱱ!';
+
+  @override
+  String get mistakesMastered => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱠᱚ ᱵᱟᱦᱟᱨ ᱢᱮᱱᱟᱜᱼᱟ!';
+
+  @override
+  String get moreQuizzes => 'ᱠᱟᱹᱰᱟᱨᱤᱠ ᱠᱩᱤᱡᱟᱱ ᱠᱚ';
+
+  @override
+  String get challengeYourself => 'ᱟᱢ ᱠᱩᱤᱡᱟᱨ ᱡᱟᱦᱚᱨ ᱢᱮ';
+
+  @override
+  String get chooseAQuiz => 'ᱠᱩᱤᱡᱱ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get noQuizzesYet => 'ᱞᱟᱜᱟᱨ ᱠᱟᱱᱟᱱ ᱠᱩᱤᱡᱟᱱ ᱱᱟᱶᱟ ᱠᱟᱱᱟᱱ!';
+
+  @override
+  String get completeLessonsFirst => 'ᱛᱟᱦᱲᱟᱠᱟᱨ ᱠᱚ ᱛᱟᱦᱲᱟ ᱢᱮ ᱛᱟᱦᱮᱞ ᱢᱮ';
+
+  @override
+  String get quizUnavailable => 'ᱠᱩᱤᱡᱱ ᱨᱮᱭᱟᱹᱨ ᱠᱟᱱᱟᱱ';
+
+  @override
+  String get quizUnavailableDetail =>
+      'ᱠᱩᱤᱡᱱ ᱨᱮᱭᱟᱹᱨ ᱠᱟᱱᱟᱱ — ᱱᱟᱶᱟ ᱯᱟᱴ ᱠᱷᱚᱱ ᱠᱩᱤᱡᱟᱨ ᱡᱟᱦᱚᱨ ᱠᱚ ᱥᱟᱯᱟᱱᱫᱟᱹᱱᱟᱱ.';
+
+  @override
+  String get quizLoadFailed => 'ᱠᱩᱤᱡᱟᱱ ᱞᱩᱰ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ.';
+
+  @override
+  String translation(String text) {
+    return 'Translation: \"$text\"';
+  }
+
+  @override
+  String get audioNotAvailable => 'ᱱᱟᱶᱟ ᱠᱟᱨᱢ ᱠᱷᱚᱱ ᱟᱶᱩᱰᱤᱭᱚ ᱨᱮᱭᱟᱹᱨ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String get mistakeReviewBadge => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱡᱟᱨᱤᱦ';
+
+  @override
+  String get takesTwoMin => '2 ᱛᱟᱨ ᱠᱚ ᱠᱟᱹᱰᱟᱨ ᱠᱚᱛᱟᱹᱱᱟᱱ';
+
+  @override
+  String get mistakesQuote =>
+      '“ᱡᱟᱦᱸᱤᱭᱟᱹ ᱠᱚ ᱠᱟᱢ ᱥᱟᱞ ᱠᱟᱱᱟᱱ ᱰᱩᱦᱤᱠᱟᱢᱟᱱᱟᱢᱟᱱ ᱛᱟᱦᱤᱠᱟᱢᱟᱱᱠᱟᱢᱟᱱ ᱥᱟᱞᱟᱢ ᱠᱟᱹᱰᱟᱢ ᱠᱟᱱᱟᱱ ᱵᱟᱨᱟᱱᱟᱨᱟᱱ.”';
+
+  @override
+  String get quizKeyboardHintAlt =>
+      '↑ / ᱡᱟᱦᱚᱨ ᱡᱟᱦᱚᱨᱟᱨ  •  1-4 ᱵᱟᱪᱷᱟᱣ  •  ᱤᱱᱴᱟᱨ ᱞᱟᱛᱟᱨ ᱨᱮᱭᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get watchAdBonusStars => 'ᱵᱩᱱᱟᱥ 50 ᱴᱟᱨᱟ ᱠᱷᱚᱱ ᱜᱟᱲᱤ ᱠᱩᱞᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get shareAchievement => 'ᱠᱩᱞᱟᱹᱨ ᱠᱚ ᱠᱟᱨᱢ ᱠᱟᱨᱢ ᱢᱮ';
+
+  @override
+  String get bonusStarsEarned => 'ᱵᱩᱱᱟᱥ 50 ᱴᱟᱨᱟ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ! ⭐';
+
+  @override
+  String get rewardedAdCooldown =>
+      'ᱞᱟᱦᱟᱨ ᱜᱟᱲᱤ ᱠᱟᱱᱟᱱ ᱜᱟᱲᱟᱹᱨ ᱠᱟᱱᱟᱱ. ᱠᱟᱹᱰᱟᱨ ᱛᱟᱦᱮᱞ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String get scoreLabel => 'ᱥᱠᱷᱩᱨ';
+
+  @override
+  String get accuracyLabel => 'ᱥᱟᱦᱟᱨᱟᱨ';
+
+  @override
+  String get starsEarned => 'ᱦᱩᱞᱟᱹᱱᱟᱹ ᱴᱟᱨᱟᱠᱚ';
+
+  @override
+  String get maxCombo => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱠᱚᱢᱵᱚ';
+
+  @override
+  String get reviewMistakes => 'ᱡᱟᱦᱸᱤᱭᱟᱹ ᱠᱚ ᱡᱟᱨᱤᱦ ᱢᱮ';
+
+  @override
+  String get reviewMistakesSubtitle =>
+      'ᱟᱢ ᱱᱚᱛᱟᱨ ᱡᱟᱦᱚᱨ ᱠᱚ ᱡᱟᱨᱤᱦ ᱢᱮ ᱠᱟᱹᱰᱟᱨ ᱵᱟᱦᱟᱨ ᱠᱷᱚᱱ! ᱞᱟᱦᱟᱨ ᱢᱮ ᱞᱟᱦᱟᱨ ᱢᱮ ᱞᱟᱦᱟᱨ ᱢᱮ!';
+
+  @override
+  String get correctColon => 'ᱥᱟᱦᱟᱨᱟᱨ:';
+
+  @override
+  String get correctAnswerColon => 'ᱥᱟᱦᱟᱨᱟᱨ ᱡᱟᱦᱚᱨ:';
+
+  @override
+  String get insightGuidance => 'ᱧᱮᱞ ᱟᱨ ᱦᱟᱨᱦᱟᱨᱟᱨ:';
+
+  @override
+  String get selectMissingWord => 'ᱱᱚᱛᱟᱨ ᱜᱟᱞ ᱵᱟᱪᱷᱟᱣ ᱢᱮ:';
+
+  @override
+  String questionsWithLevel(int count, String level) {
+    return '$count questions • $level';
+  }
+
+  @override
+  String get startQuiz => 'ᱠᱩᱤᱡᱟᱱ ᱢᱮᱮᱜᱟᱣ ᱢᱮ';
+
+  @override
+  String questionsCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String get outOfHearts => 'ᱦᱟᱨᱛᱟᱹ ᱡᱟᱦᱟᱨᱟᱨᱱ ᱡᱟᱨᱟᱱᱠᱟᱱᱤᱱ!';
+
+  @override
+  String outOfHeartsSummary(int score, int total, int stars) {
+    return 'ᱟᱢ $score/$total ᱥᱟᱦᱟᱨᱟᱨᱮᱱ ᱡᱟᱦᱚᱨ ᱠᱟᱱᱟᱱ ᱟᱨ $stars ᱴᱟᱨᱟ ᱦᱩᱞᱟᱹᱱᱟᱱ. ᱵᱟᱦᱟᱨ ᱠᱟᱦᱟᱨᱮᱱ ᱡᱟᱭᱜᱟ ᱡᱚᱴᱟᱷᱟᱹᱱᱟᱱ ᱢᱮ ᱠᱟᱹᱰᱟᱨᱟᱨ ᱵᱟᱦᱟᱨ ᱢᱮ ᱠᱟᱹᱰᱟᱨᱟᱨ ᱵᱟᱦᱟᱨ ᱢᱮ.';
+  }
+
+  @override
+  String get watchAdRefillHearts =>
+      'ᱦᱟᱨᱛᱟᱹ ᱥᱟᱯᱟᱱᱫᱟᱹᱨᱟᱱ ᱜᱟᱲᱤ ᱠᱩᱞᱟᱹᱨ ᱢᱮ (ᱯᱟᱴᱟᱨᱟᱨ)';
+
+  @override
+  String get backToQuizzes => 'ᱠᱩᱤᱡᱟᱱ ᱛᱟᱦᱮᱞ';
+
+  @override
+  String get heartsRefilled => 'ᱦᱟᱨᱛᱟᱹ ᱥᱟᱯᱟᱱᱫᱟᱹᱱᱟᱱ! ❤️❤️❤️';
+
+  @override
+  String get rewardedAdCooldownReset =>
+      'ᱞᱟᱦᱟᱨ ᱜᱟᱲᱤ ᱠᱟᱱᱟᱱ ᱜᱟᱲᱟᱹᱨ ᱠᱟᱱᱟᱱ. ᱞᱟᱹᱛᱤ ᱥᱟᱦᱟᱨ ᱥᱮᱴ ᱛᱟᱦᱮᱞ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String currentOfTotal(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get rhymesEndNote =>
+      'ᱱᱟᱶᱟ ᱡᱟᱦᱚᱨ ᱠᱚ ᱥᱟᱯᱟᱱᱫᱟᱹᱱᱟᱱ — ᱱᱟᱶᱟ ᱠᱟᱨᱢ ᱜᱤᱱᱤᱠ ᱠᱚ ᱞᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱠᱟᱱᱟᱱ!';
+
+  @override
+  String get rhymesLoadFailed => 'ᱠᱩᱤᱟᱨᱟ ᱞᱩᱰ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ.';
+
+  @override
+  String get bakhedPreparing => 'ᱠᱟᱨᱢ ᱠᱟᱨᱩᱛ ᱞᱟᱦᱟᱨ ᱠᱟᱱᱟᱱ';
+
+  @override
+  String get bakhedPreparingSubtitle =>
+      'ᱠᱟᱨᱩᱛ ᱞᱟᱦᱟᱨ ᱜᱤᱱᱤᱠ ᱠᱚ ᱨᱮᱭᱟᱹᱨ ᱞᱟᱦᱟᱨ ᱠᱷᱚᱱ ᱱᱟᱶᱟ ᱧᱮᱞ ᱠᱟᱱᱟᱱ.';
+
+  @override
+  String failedToJoinWaitlist(String error) {
+    return 'Failed to join waitlist: $error';
+  }
+
+  @override
+  String get waitlistJoined => 'ᱞᱟᱦᱟᱨ ᱫᱤᱱᱟᱹᱨ ᱠᱟᱦᱟᱨ ᱞᱟᱦᱟᱨ ᱞᱟᱦᱟᱨ! 🎉';
+
+  @override
+  String get waitlistJoinedBody =>
+      'ᱟᱢᱟᱫ ᱧᱮᱞ ᱥᱟᱯᱟᱱᱫᱟᱹᱢ ᱞᱟᱦᱟᱨ ᱠᱟᱦᱟᱨ ᱞᱟᱹᱛᱤ ᱥᱟᱧᱤᱠ ᱥᱟᱯᱨᱤᱭᱟ ᱵᱟᱨ ᱡᱟᱭᱜᱟ ᱢᱮᱱᱟᱜᱼᱟ ᱠᱟᱱᱟᱱ ᱛᱟᱦᱲᱟᱠᱟᱨ ᱵᱟᱦᱟᱨ ᱫᱮᱞᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱟᱨᱢ.';
+
+  @override
+  String get great => 'ᱡᱟᱦᱸᱤᱭᱟᱹ';
+
+  @override
+  String get joinBintiGuruWaitlist => 'ᱤᱫᱤᱠ ᱫᱤᱱᱟᱹᱨ ᱞᱟᱦᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱟᱨ ᱢᱮ';
+
+  @override
+  String get bintiGuruFormSubtitle =>
+      'ᱟᱢᱟᱫ ᱥᱩᱨᱠᱟᱨ ᱠᱷᱚᱱ ᱧᱮᱞ ᱠᱟᱨᱢ. ᱫᱩᱦᱲᱟᱹ ᱠᱟᱹᱰᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱷᱚᱱ ᱠᱩᱞᱟᱹᱨ ᱢᱮ ᱠᱟᱹᱰᱟᱨ ᱫᱤᱱᱟᱹᱨ ᱠᱚ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ ᱠᱟᱹᱰᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String get submitWaitlistEntry => 'ᱠᱟᱨᱢ ᱠᱟᱛᱮ ᱯᱟᱦᱟᱨ ᱢᱮ';
+
+  @override
+  String get bookVerifiedBintiGuru =>
+      'ᱡᱟᱦᱟᱨ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱹ ᱫᱤᱱᱟᱹᱨᱠᱟᱨ ᱠᱚᱛᱮᱨᱟᱨᱮᱭᱟᱨ ᱢᱮ';
+
+  @override
+  String get bintiGuruLandingBody =>
+      'ᱤᱫᱤᱠ ᱥᱟᱱᱛᱟᱞᱤ ᱫᱤᱱᱟᱹᱨ ᱠᱟᱨᱩᱛ ᱛᱟᱦᱲᱟᱠᱚ ᱠᱷᱚᱱ ᱵᱟᱦᱟᱨ ᱫᱮᱞᱟᱨ ᱢᱟᱱᱟᱱᱠᱟᱨ ᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱷᱚᱱ ᱠᱟᱹᱰᱟᱨ ᱢᱮ. ᱢᱟᱱᱟᱱᱠᱟᱨ ᱟᱨ ᱫᱤᱱᱟᱹᱨᱠᱚ ᱠᱷᱚᱱ ᱠᱟᱹᱰᱟᱨ ᱢᱮ ᱠᱟᱨᱢ ᱠᱚ ᱛᱟᱦᱲᱟᱠᱚ ᱠᱷᱚᱱ ᱵᱟᱦᱟᱨ ᱢᱮ.';
+
+  @override
+  String get joinWaitlistNow => 'ᱠᱟᱱᱟᱱ ᱞᱟᱦᱟᱨ ᱫᱤᱱᱟᱹᱨ ᱫᱤᱱᱟᱹᱨ ᱫᱤᱱᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get howItWorks => 'ᱞᱟᱜᱟᱨ ᱞᱟᱦᱟᱨ ᱛᱟᱦᱲᱟᱠᱟᱨ';
+
+  @override
+  String get newBadge => 'ᱱᱟᱶᱟ';
+
+  @override
+  String get ctrlEnterCreate => 'Ctrl+Enter ↵ to create';
+
+  @override
+  String charCount(int current, int max) {
+    return '$current / $max';
+  }
+
+  @override
+  String get svgLoadFailed => 'ᱜᱟᱲᱤ ᱜᱟᱲᱤ ᱞᱩᱰ ᱦᱩᱞᱟᱹᱱᱟᱹᱠᱟᱱ.';
+
+  @override
+  String get signIn => 'ᱫᱮᱞᱟᱨ ᱢᱮ';
+
+  @override
+  String get shareCardTagline => 'OLITUN • ᱚᱞ ᱪᱤᱠᱤ';
+
+  @override
+  String get shareCardFooter => 'Learn Santali (Ol Chiki) • olitun.app';
+
+  @override
+  String get shareTextCopied => 'ᱠᱟᱨᱢ ᱧᱮᱞ ᱪᱤᱯᱷᱟ ᱥᱟᱯᱭᱟᱨᱟᱨᱮᱱ ᱧᱮᱦᱟᱣᱟᱹᱱᱟᱱᱠᱟᱱ. 📋';
+
+  @override
+  String tracingPracticeGlyph(String glyph) {
+    return 'Tracing practice — $glyph';
+  }
+
+  @override
+  String mastery(int current, int required) {
+    return 'Mastery: $current/$required';
+  }
+
+  @override
+  String get onboardingStepsBody =>
+      'ᱠᱤᱛᱚᱠᱟᱹᱨ ᱛᱟᱦᱮᱞ ᱠᱟᱦᱟᱨ ᱢᱮ, ᱜᱟᱞ ᱵᱟᱦᱟᱨ ᱢᱮ, ᱠᱩᱤᱡᱟᱱ ᱛᱮ ᱯᱨᱟᱠᱟᱛᱤᱥ ᱢᱮ, ᱟᱨ ᱟᱢᱟᱫ ᱥᱟᱱᱛᱟᱞᱤ ᱥᱤᱦᱟᱨ ᱠᱟᱨᱢ ᱡᱟᱦᱚᱨ ᱢᱮ.';
+
+  @override
+  String practiceModeLabel(String mode) {
+    return 'Practice • $mode';
+  }
+
+  @override
+  String greatJobTakeQuiz(String title) {
+    return 'Great job! Take “$title” now to test your knowledge.';
+  }
+
+  @override
+  String wordsNeedPractice(int count) {
+    return '$count word(s) need(s) practice';
+  }
+
+  @override
+  String voiceClipMeta(String voice, String style, String instant) {
+    return '$voice • $style$instant';
+  }
+
+  @override
+  String get continueWithEmail => 'ᱤᱢᱮᱞ ᱨᱮᱱ ᱡᱚᱜᱟᱣ ᱢᱮ';
+
+  @override
+  String get exploreAsGuest => 'ᱜᱟᱞᱟᱜ ᱛᱮ ᱡᱷᱚᱰᱟᱨ ᱢᱮ';
+
+  @override
+  String get continueWithGoogle => 'ᱜᱩᱝᱜᱩᱞ ᱨᱮᱱ ᱡᱚᱜᱟᱣ ᱢᱮ';
+
+  @override
+  String get guestSessionFailed =>
+      'ᱜᱟᱞᱟᱜ ᱥᱩᱡᱟᱱ ᱠᱩᱨᱩ ᱛᱮ ᱠᱟᱨᱛᱤ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ. ᱠᱷᱚᱱ ᱫᱩᱦᱲᱟᱹ ᱠᱷᱚᱱ ᱩᱦᱸᱡ ᱢᱮ.';
+
+  @override
+  String get couldNotLoadLessons => 'ᱯᱟᱨᱟᱢ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ';
+
+  @override
+  String get shareMessageCopied =>
+      'ᱟᱫᱤᱠ ᱠᱟᱱᱰᱤ ᱠᱞᱤᱯᱴᱟᱡ ᱠᱷᱚᱱ ᱡᱤᱠᱟᱭᱟᱨ ᱠᱷᱚᱱ ᱡᱚᱨᱟᱢᱟᱱᱟᱭ! 📋';
+
+  @override
+  String get shareMilestoneTitle => 'ᱟᱢᱟᱜ ᱢᱤᱫᱯᱟᱛᱷᱟᱨ ᱟᱫᱤᱠ ᱢᱮ';
+
+  @override
+  String get shareMilestoneSubtitle =>
+      'ᱥᱟᱱᱛᱟᱞᱤ ᱟᱹᱨᱤᱠᱩᱨᱤ ᱫᱩᱦᱲᱟᱹ ᱧᱩᱦᱟᱹᱨ ᱠᱷᱚᱱ ᱛᱮ ᱜᱟᱲᱟᱨ ᱢᱮ';
+
+  @override
+  String get copyTextSummary => 'ᱚᱞ ᱥᱟᱞᱟᱞ ᱠᱟᱯᱤ ᱢᱮ';
+
+  @override
+  String get traceGuidelines => 'ᱠᱟᱨᱠᱟᱨ ᱜᱟᱤᱞᱟᱨᱰᱟᱭ ᱠᱷᱟᱹᱨ ᱥᱟᱯᱟᱱᱫᱤᱛ ᱢᱮ';
+
+  @override
+  String get showExample => 'ᱩᱫᱩᱜ ᱫᱩᱦᱟᱹᱨ ᱢᱮ';
+
+  @override
+  String get signOut => 'ᱥᱟᱭᱤᱱ ᱟᱹᱨᱟᱨ ᱢᱮ';
+
+  @override
+  String get delete => 'ᱡᱟᱦᱟᱸ ᱢᱮ';
+
+  @override
+  String get finishLesson => 'ᱯᱟᱨᱟᱢ ᱛᱮᱦᱮᱧ ᱢᱮ';
+
+  @override
+  String get couldNotOpenShareSheet => 'ᱥᱟᱨᱵᱟᱨ ᱥᱟᱧᱤᱟᱹᱞ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ';
+
+  @override
+  String get couldNotClearDownloads => 'ᱫਾਊਨਲੋਡ ᱛᱮᱦᱮᱧ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ';
+
+  @override
+  String get progressLoadFailed =>
+      'ᱟᱢᱟᱜ ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱞᱮᱱᱠᱷᱟᱱ ᱥᱟᱯᱟᱱ ᱟᱠᱟᱱᱟᱭ. ᱱᱟᱶᱟ ᱣᱤᱭᱯᱟ ᱫᱩᱦᱲᱟᱹ ᱠᱷᱚᱱ ᱩᱦᱸᱡ ᱢᱮ.';
+
+  @override
+  String get couldNotLoadProgress => 'ᱯᱨᱚᱜᱟᱛᱤ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ';
+
+  @override
+  String get couldNotLoadQuizzes => 'ᱠᱩᱞᱤᱠ ᱠᱷᱚᱱ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ';
+
+  @override
+  String get contentLoadFailed =>
+      'ᱠᱟᱱᱰᱤ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ. ᱠᱷᱚᱱ ᱫᱩᱦᱲᱟᱹ ᱠᱷᱚᱱ ᱩᱦᱸᱡ ᱢᱮ.';
 }

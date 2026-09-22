@@ -7,6 +7,7 @@ import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.da
 import 'package:itun/features/lessons/presentation/providers/lesson_progression_provider.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   testWidgets('a deep link cannot bypass a locked lesson', (tester) async {
@@ -43,6 +44,8 @@ void main() {
           completedLessonIdsProvider.overrideWith((ref) => const {}),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: LessonBlockDetailScreen(
             lessonId: 'lesson_2',
             initialBlockIndex: 0,

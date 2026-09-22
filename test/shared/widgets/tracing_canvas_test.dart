@@ -6,6 +6,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Empty stream overrides keep the central PlaybackController idle without
 /// leaking just_audio's periodic position timer into the test binding.
@@ -87,6 +88,8 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(body: TracingCanvas(config: config)),
           ),
         ),
@@ -136,6 +139,8 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: TracingCanvas(config: config)),
         ),
       ),
@@ -186,6 +191,8 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(body: TracingCanvas(config: config)),
         ),
       ),

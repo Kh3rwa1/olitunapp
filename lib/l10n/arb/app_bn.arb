@@ -672,5 +672,538 @@
         }
     },
     "aiStudioPassageToSend": "পাঠানোর অংশ",
-    "aiStudioPassageLimitError": "এগিয়ে যেতে অংশটি ছোট করুন। কোনো কিছুই নিজে থেকে কাটা হয়নি।"
+    "aiStudioPassageLimitError": "এগিয়ে যেতে অংশটি ছোট করুন। কোনো কিছুই নিজে থেকে কাটা হয়নি।",
+    "aiStudioUploadPrompt": "আপনার ছবি আপলোড করুন বা ক্যামেরা দিয়ে স্ক্যান করুন",
+    "aiStudioUploadFormats": "PDF, PNG বা JPG · সর্বোচ্চ ১০ MB",
+    "aiStudioJobId": "Job: {id}",
+    "aiStudioCheckStatus": "অবস্থা যাচাই করুন",
+    "aiStudioReplaceWithScan": "স্ক্যান দিয়ে প্রতিস্থাপন করুন",
+    "aiStudioEditSource": "উৎস সম্পাদনা করুন",
+    "olitun": "Olitun",
+    "welcomeTagline": "ওল চিকি লিপি শিখুন",
+    "errorLoadingContent": "Error loading content: {error}",
+    "startQuiz2": "কুইজ শুরু করুন",
+    "practiceTyping": "টাইপিং অভ্যাস করুন",
+    "mediaDuration": "Duration: {seconds}s",
+    "noLearningContent": "এখনো কোনো শেখার উপাদান নেই।",
+    "errorLoadingDetails": "Error loading details: {error}",
+    "culturalNotesPreparing": "সাংস্কৃতিক নোট প্রস্তুত করা হচ্ছে।",
+    "culturalNoteSource": "Source: {source}",
+    "noVocabularyItems": "কোনো শব্দভাণ্ডার আইটেম সংজ্ঞায়িত নেই।",
+    "lyricsBeingAdded": "গানের কথা যোগ করা হচ্ছে",
+    "bakhedLabel": "BAKHED",
+    "wordLabel": "শব্দ",
+    "cancelLower": "বাতিল করুন",
+    "greetingDayPart": "ᱡᱚᱦᱟᱨ • {part}",
+    "homePickupSubtitle": "যেখানে থেমেছিলেন সেখান থেকে শুরু — ছোট পা, প্রতিদিন।",
+    "aiTranslatorTitle": "AI Translator",
+    "voiceSpeakWithConfidence": "আত্মবিশ্বাসের সাথে কথা বলুন",
+    "aiStudioPromoBadge": "NEW • AI STUDIO",
+    "aiStudioPromoSubtitle": "আপনার স্বপ্নের ভাষা তৈরি করুন।",
+    "learnMore": "আরও জানুন",
+    "instantTranslate": "তাৎক্ষণিক অনুবাদ",
+    "anyLanguageToOlChiki": "যেকোনো ভাষা থেকে ওল চিকি",
+    "aiBadge": "AI",
+    "yourLearningPath": "আপনার শেখার পথ",
+    "stepOfPath": "Step {step} of {total}: ",
+    "learningPathSubtitle": "আপনার সাঁওতালি স্তরের সাথে মিলে একটি নির্দেশিত পথ।",
+    "santaliOlChikiLabel": "সাঁওতালি (ওল চিকি)",
+    "magicTranslatePrivacyNote": "ম্যাজিক ট্রান্সলেট আপনার ছগুলি ডিভাইসেই প্রসেস করে এবং আপনার গোপনীয়তার সম্মান করে।",
+    "close": "বন্ধ করুন",
+    "aiVoicePromoBadge": "NEW • AI VOICE",
+    "aiVoiceTitle": "AI Voice",
+    "aiVoicePromoSubtitle": "যা খুশি টাইপ করুন — সাঁওতালিতে শুনুন।",
+    "tryNow": "এখনই চেষ্টা করুন",
+    "k15Styles": "ᱟᱲᱟᱝ • 15 styles",
+    "backToLearningPaths": "শেখার পথে ফিরে যান",
+    "learningPathsHeader": "শেখার পথ",
+    "chooseYourJourney": "আপনার যাত্রা বেছে নিন",
+    "morePaths": "আরও পথ",
+    "plusTenXp": "+10 XP",
+    "strokeOrderHint": "স্ট্রোক ক্রম মনে রাখার চেষ্টা করুন",
+    "traceAccuracy": "{feedback}  Accuracy: {percent}%",
+    "niceWork": "চমৎকার!",
+    "youScoredOutOf": "You scored {score} out of {total}",
+    "percentFormat": "{percent}%",
+    "backLabel": "পিছনে",
+    "quizKeyboardHint": "তীর কী দিয়ে নেভিগেট করুন  •  1-4 দিয়ে বেছে নিন  •  Enter ↵ দিয়ে জমা দিন",
+    "scoreOnly": "{score}",
+    "pressEnter": "Enter ↵",
+    "readyToTestYourself": "আপনি নিজেকে পরীক্ষা দিতে প্রস্তুত?",
+    "takeTheQuiz": "কুইজ নিন",
+    "skipForNow": "এখন বাদ দিন",
+    "browseView": "ব্রাউজ দৃশ্য",
+    "openDictionary": "অভিধান খুলুন",
+    "learnLabel": "শিখুন",
+    "doneLabel": "হয়ে গেছে",
+    "lockedForNowTitle": "অপেক্ষা করুন • এখনের জন্য লক",
+    "completeBlockerFirst": "Complete “{blocker}” first to crack it open.",
+    "interactiveHtmlTitle": "ইন্টারঅ্যাক্টিভ পাঠ অভিজ্ঞতা",
+    "interactiveHtmlBody": "এই পাঠটি ইন্টারঅ্যাক্টিভ উপাদান সহ আসে। দেখতে নিচে স্ক্রল করুন।",
+    "openInteractiveContent": "ইন্টারঅ্যাক্টিভ উপাদান খুলুন",
+    "recommendedLabel": "সুপারিশকৃত",
+    "audioPlaybackHint": "অডিও চালাতে ট্যাপ করুন",
+    "finishReviewing": "পর্যালোচনা শেষ করুন",
+    "takeQuizNow": "এখনই কুইজ নিন",
+    "stepOfTotal": "STEP {step} OF {total}",
+    "checkConnectionPeriod": "আপনার সংযোগ যাচাই করুন এবং আবার চেষ্টা করুন।",
+    "sentencePronunciation": "Pronunciation: {pronunciation}",
+    "santaliLearner": "সাঁওতালি শিক্ষার্থী",
+    "streakTip": "স্ট্রিক বজায় রাখতে প্রতিদিন ৩টি পাঠ সম্পন্ন করুন।",
+    "continueLearningArrow": "শেখা চালিয়ে যান →",
+    "olitun2": "Olitun",
+    "santaliOlChikiTag": "SANTALI • OL CHIKI",
+    "menuLabel": "মেনু",
+    "olitunPwaVersion": "Olitun PWA • v2.4",
+    "onboardingCounter": "{current} · {total}",
+    "goalsTitle": "লক্ষ্য",
+    "goalsSubtitle": "শেখার আগে লক্ষ্য নির্ধারণ করুন।",
+    "requiredLabel": "আবশ্যক",
+    "stepOneOfFive": "ধাপ ৫-এর ১",
+    "languageSubtitle": "ভাষা বেছে নিন এবং আপনার পছন্দ পরিবর্তন করুন",
+    "prefsSaveFailed": "আপনার সেটিংস সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।",
+    "selectMotherTongueToast": "চালিয়ে যেতে অনুগ্রহ করে আপনার মাতৃভাষা / শিক্ষণ ভাষা নির্বাচন করুন।",
+    "onboardingHeadline": "ওল চিকি শিখুন,\nএকসাথে এক ধাপ",
+    "familiarityTitle": "পরিচিতির স্তর",
+    "familiaritySubtitle": "আপনার পরিচিতির ভিত্তিতে শেখা অনুকূলন করুন।",
+    "displayTitle": "আপনি উপাদান কীভাবে দেখতে চান?",
+    "displaySubtitle": "আপনার পছন্দের লিপি প্রদর্শন বেছে নিন। আপনি যেকোনো সময় এটি পরিবর্তন করতে পারেন।",
+    "practiceGoalTitle": "অভ্যাসের লক্ষ্য",
+    "practiceGoalSubtitle": "অভ্যাসের লক্ষ্য নির্ধারণ করুন — প্রতিদিন কতগুলি পাঠ সম্পন্ন করতে হবে স্ট্রিক বজায় রাখতে।",
+    "olitunWordmark": "OLITUN",
+    "learnOlChiki": "ওল চিকি শিখুন",
+    "spaceKey": "SPACE",
+    "practicedSuccessfully": "সফলভাবে অভ্যাস করা হয়েছে",
+    "revealAndContinue": "দেখান এবং চালিয়ে যান",
+    "systemDiagnosticsTitle": "সিস্টেম ডায়াগনস্টিক ও রানটাইম",
+    "systemDiagnosticsSubtitle": "বেনামী রানটাইম পারফরম্যান্স ও ডায়াগনস্টিক টেলিমেট্রি",
+    "diagnosticPayloadPreview": "ডায়াগনস্টিক পেলোড প্রিভিউ",
+    "diagnosticPayloadCopied": "ডায়াগনস্টিক পেলোড ক্লিপবোর্ডে কপি হয়েছে!",
+    "diagnosticsTileSubtitle": "রানটাইম ডেটা, মেমরি ব্যবহার ও ক্র্যাশ ডায়াগনস্টিক দেখুন",
+    "deleteAllDownloadsTitle": "সব ডাউনলোড মুছবেন?",
+    "deleteAllDownloadsBody": "এটি এই ডিভাইস থেকে প্রতিটি অফলাইন গল্পের অডিও ক্লিপ মুছে ফেলে। আপনি যখন সেগুলি খুলবেন, গল্পগুলি আবার স্ট্রিম হবে।",
+    "editYourName": "আপনার নাম সম্পাদনা করুন",
+    "save": "সংরক্ষণ করুন",
+    "indigenousLanguagesTitle": "স্বদেশী ভাষা প্ল্যাটফর্ম",
+    "indigenousLanguagesSubtitle": "পূর্ব ভারতের স্বদেশী লিপি ও উপজাতীয় ভাষা অন্বেষণ করুন",
+    "packsComingSoon": "{name} content & audio packs are coming soon!",
+    "learningLanguageSetTo": "Learning language set to {name} ({script})",
+    "audioPack": "অডিও প্যাক",
+    "offlineLessons": "অফলাইন পাঠ",
+    "lettersCount": "{count} letters",
+    "demoLabel": "DEMO",
+    "masteryAccuracy": "Accuracy: {percent}%",
+    "masteryProgression": "আয়ত্তের অগ্রগতি",
+    "nextMilestone": "পরবর্তী মাইলফলক",
+    "roadToLevel": "Road to {level}",
+    "badgeUnlockHint": "To unlock the {name} badge: {target}",
+    "closestBadge": "নিকটতম ব্যাজ অর্জন",
+    "unlockBadge": "Unlock the {name} Badge",
+    "reminderFrequency": "রিমাইন্ডার পুনরাবৃত্তি",
+    "reminderFrequencySubtitle": "ওল চিকি অভ্যাস করতে কতবার রিমাইন্ডার চান, বেছে নিন।",
+    "dailySchedulePreview": "দৈনিক সূচি প্রিভিউ",
+    "sendTestNotification": "পরীক্ষামূলক বিজ্ঞপ্তি পাঠান",
+    "chooseYourAvatarLower": "আপনার অবতার বেছে নিন",
+    "avatarAnimationsFailed": "অবতার অ্যানিমেশন লোড করা যায়নি।",
+    "tryAgainLower": "আবার চেষ্টা করুন",
+    "avatarSaveFailed": "অবতার সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।",
+    "since": "Since {date}",
+    "overallProgress": "সামগ্রিক অগ্রগতি",
+    "noBookingsFound": "কোনো বুকিং পাওয়া যায়নি",
+    "bookingsEmptyHint": "বখেদ ট্যাবের অধীনে আপনার অনুষ্ঠানের জন্য যাচাইকৃত আবৃত্তিকারী বুক করুন।",
+    "waitlistBookingsFailed": "ওয়েটলিস্ট বুকিং লোড করা যায়নি।",
+    "assessmentScore": "মূল্যায়ন স্কোর",
+    "avgLabel": "গড়",
+    "adPrivacyRegionNote": "আপনার অঞ্চলের জন্য বিজ্ঞাপন গোপনীয়তা সেটিংস প্রয়োজন নেই।",
+    "signOutConfirmBody": "আপনি কি সত্যিই এই ডিভাইসে আপনার অ্যাকাউন্ট থেকে সাইন আউট করতে চান?",
+    "learningLanguageScript": "শেখার ভাষা ও লিপি",
+    "mistakeReview": "ভুল পর্যালোচনা",
+    "allCaughtUp": "সব হয়ে গেছে!",
+    "noMistakesToReview": "কোনো ভুল পর্যালোচনার প্রয়োজন নেই। আপনার সাঁওতালি শিকড় শক্ত!",
+    "mistakesMastered": "ভুলগুলি আয়ত্ত হয়েছে!",
+    "moreQuizzes": "আরও কুইজ",
+    "challengeYourself": "নিজেকে চ্যালেঞ্জ করুন",
+    "chooseAQuiz": "একটি কুইজ বেছে নিন",
+    "noQuizzesYet": "এখনো কোনো কুইজ নেই!",
+    "completeLessonsFirst": "আগে কয়েকটি পাঠ সম্পন্ন করুন",
+    "quizUnavailable": "কুইজ অনুপলব্ধ",
+    "quizUnavailableDetail": "কুইজ অনুপলব্ধ — এই পাঠে কুইজের জন্য পর্যাপ্ত প্রশ্ন নেই।",
+    "quizLoadFailed": "কুইজ লোড করা যায়নি।",
+    "translation": "Translation: \"{text}\"",
+    "audioNotAvailable": "এই প্রশ্নের জন্য অডিও উপলব্ধ নেই।",
+    "mistakeReviewBadge": "ভুল পর্যালোচনা",
+    "takesTwoMin": "২ মিনিট লাগে",
+    "mistakesQuote": "“ভুলগুলি শেখার একটি অংশ — গুলি পুনরাবৃত্তি এড়িয়ে চলুন।”",
+    "quizKeyboardHintAlt": "↑ / ↓ নেভিগেট  •  1-4 বেছে নিন  •  Enter ↵ জমা দিন",
+    "watchAdBonusStars": "+৫০ বোনাস তারার জন্য বিজ্ঞাপন দেখুন",
+    "shareAchievement": "অর্জন শেয়ার করুন",
+    "bonusStarsEarned": "৫০ বোনাস তারা অর্জিত! ⭐",
+    "rewardedAdCooldown": "রিওয়ার্ডেড বিজ্ঞাপন ঠান্ডা হচ্ছে। পরে আবার চেষ্টা করুন।",
+    "scoreLabel": "স্কোর",
+    "accuracyLabel": "নির্ভুলতা",
+    "starsEarned": "অর্জিত তারা",
+    "maxCombo": "সর্বোচ্চ কম্বো",
+    "reviewMistakes": "ভুলগুলি পর্যালোচনা করুন",
+    "reviewMistakesSubtitle": "আপনার আয়ত্ত গড়তে যা ভুল হয়েছে তা পর্যালোচনা করুন! লহা সে!",
+    "correctColon": "সঠিক উত্তর:",
+    "correctAnswerColon": "সঠিক উত্তর:",
+    "insightGuidance": "অন্তর্দৃষ্টি ও নির্দেশনা:",
+    "selectMissingWord": "হারানো শব্দ নির্বাচন করুন:",
+    "questionsWithLevel": "{count} questions • {level}",
+    "startQuiz": "কুইজ শুরু করুন",
+    "questionsCount": "{count} questions",
+    "outOfHearts": "হৃদয় শেষ!",
+    "outOfHeartsSummary": "আপনি {score}/{total} সঠিক উত্তর দিয়েছেন এবং এ পর্যন্ত {stars} তারা অর্জন করেছেন। অভ্যাস চালিয়ে যান।",
+    "watchAdRefillHearts": "হৃদয় পূরণ করতে বিজ্ঞাপন দেখুন (বিনামূল্যে)",
+    "backToQuizzes": "কুইজে ফিরে যান",
+    "heartsRefilled": "হৃদয় পূর্ণ হয়েছে! ❤️❤️❤️",
+    "rewardedAdCooldownReset": "রিওয়ার্ডেড বিজ্ঞাপন ঠান্ডা হচ্ছে। অনুগ্রহ করে নিয়মিত রিসেট চেষ্টা করুন।",
+    "currentOfTotal": "{current}/{total}",
+    "rhymesEndNote": "এখানে বাকি সব — নতুন বখেদ শীঘ্রই আসছে!",
+    "rhymesLoadFailed": "সুরকথা লোড করা যায়নি।",
+    "bakhedPreparing": "বখেদ প্রস্তুত করা হচ্ছে",
+    "bakhedPreparingSubtitle": "প্রকাশের পরে নতুন শ্রব্য গল্প এখানে দেখা যাবে।",
+    "failedToJoinWaitlist": "Failed to join waitlist: {error}",
+    "waitlistJoined": "ওয়েটলিস্টে যোগ দিয়েছেন! 🎉",
+    "waitlistJoinedBody": "আপনি তালিকায় যোগ দিয়েছেন! পাওয়া গেলে আমরা আপনাকে জানাব।",
+    "great": "দারুণ",
+    "joinBintiGuruWaitlist": "বিন্দি গুরু ওয়েটলিস্টে যোগ দিন",
+    "bintiGuruFormSubtitle": "আপনার অনুষ্ঠান সম্পর্কে আমাদের জানান। আমরা উপলব্ধ প্রমাণিত আবৃত্তিকারী খুঁজব।",
+    "submitWaitlistEntry": "এন্ট্রি জমা দিন",
+    "bookVerifiedBintiGuru": "যাচাইকৃত বিন্দি গুরু বুক করুন",
+    "bintiGuruLandingBody": "বিন্দি সাঁওতালি আবৃত্তির পবিত্র কাজ। করম, সোহরাই, বাহা, বিয়ে, শ্রাদ্ধ বা অন্য যে কোনো অনুষ্ঠানের জন্য — প্রমাণিত আবৃত্তিকারী খুঁজুন।",
+    "joinWaitlistNow": "এখনই ওয়েটলিস্টে যোগ দিন",
+    "howItWorks": "এটি যেভাবে কাজ করে",
+    "newBadge": "নতুন",
+    "ctrlEnterCreate": "Ctrl+Enter ↵ to create",
+    "charCount": "{current} / {max}",
+    "svgLoadFailed": "SVG অ্যানিমেশন লোড করা যায়নি",
+    "signIn": "সাইন ইন",
+    "shareCardTagline": "OLITUN • ᱚᱞ ᱪᱤᱠᱤ",
+    "shareCardFooter": "Learn Santali (Ol Chiki) • olitun.app",
+    "shareTextCopied": "শেয়ারের টেক্সট ক্লিপবোর্ডে কপি হয়েছে। 📋",
+    "tracingPracticeGlyph": "Tracing practice — {glyph}",
+    "mastery": "Mastery: {current}/{required}",
+    "onboardingStepsBody": "অক্ষর দিয়ে শুরু করুন, শব্দ গড়ুন, কুইজ দিয়ে অভ্যাস করুন, এবং আপনার সাঁওতালি শেখার যাত্রা চালিয়ে যান।",
+    "practiceModeLabel": "Practice • {mode}",
+    "greatJobTakeQuiz": "Great job! Take “{title}” now to test your knowledge.",
+    "wordsNeedPractice": "{count} word(s) need(s) practice",
+    "voiceClipMeta": "{voice} • {style}{instant}",
+    "continueWithEmail": "ইমেল দিয়ে চালিয়ে যান",
+    "exploreAsGuest": "অতিথি হিসেবে দেখুন",
+    "continueWithGoogle": "Google দিয়ে চালিয়ে যান",
+    "guestSessionFailed": "অতিথি সেশন শুরু করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "couldNotLoadLessons": "পাঠ লোড করা যায়নি",
+    "shareMessageCopied": "শেয়ার বার্তা ক্লিপবোর্ডে কপি হয়েছে! 📋",
+    "shareMilestoneTitle": "আপনার মাইলফলক শেয়ার করুন",
+    "shareMilestoneSubtitle": "সাঁওতালি ও ওল চিকি শেখার জন্য অন্যদের অনুপ্রাণিত করুন",
+    "copyTextSummary": "লেখার সারাংশ কপি করুন",
+    "traceGuidelines": "অক্ষরের নির্দেশিকা নির্ভুলভাবে ট্রেস করুন",
+    "showExample": "উদাহরণ দেখান",
+    "signOut": "সাইন আউট করুন",
+    "delete": "মুছুন",
+    "finishLesson": "পাঠ শেষ করুন",
+    "couldNotOpenShareSheet": "শেয়ার শিট খোলা যায়নি",
+    "couldNotClearDownloads": "ডাউনলোড পরিষ্কার করা যায়নি",
+    "progressLoadFailed": "আপনার সংরক্ষিত অগ্রগতি এখনো নিরাপদে আছে। অনুগ্রহ করে এই দৃশ্য রিফ্রেশ করুন।",
+    "couldNotLoadProgress": "অগ্রগতি লোড করা যায়নি",
+    "couldNotLoadQuizzes": "কুইজ লোড করা যায়নি",
+    "contentLoadFailed": "কন্টেন্ট লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।",
+    "@aiStudioJobId": {
+        "placeholders": {
+            "id": {
+                "type": "String"
+            }
+        }
+    },
+    "@errorLoadingContent": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "@mediaDuration": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "@errorLoadingDetails": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "@culturalNoteSource": {
+        "placeholders": {
+            "source": {
+                "type": "String"
+            }
+        }
+    },
+    "@greetingDayPart": {
+        "placeholders": {
+            "part": {
+                "type": "String"
+            }
+        }
+    },
+    "@stepOfPath": {
+        "placeholders": {
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@traceAccuracy": {
+        "placeholders": {
+            "feedback": {
+                "type": "String"
+            },
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "@youScoredOutOf": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@percentFormat": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "@scoreOnly": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            }
+        }
+    },
+    "@completeBlockerFirst": {
+        "placeholders": {
+            "blocker": {
+                "type": "String"
+            }
+        }
+    },
+    "@stepOfTotal": {
+        "placeholders": {
+            "step": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@sentencePronunciation": {
+        "placeholders": {
+            "pronunciation": {
+                "type": "String"
+            }
+        }
+    },
+    "@onboardingCounter": {
+        "placeholders": {
+            "current": {
+                "type": "String"
+            },
+            "total": {
+                "type": "String"
+            }
+        }
+    },
+    "@packsComingSoon": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "@learningLanguageSetTo": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "script": {
+                "type": "String"
+            }
+        }
+    },
+    "@lettersCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "@masteryAccuracy": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "@roadToLevel": {
+        "placeholders": {
+            "level": {
+                "type": "String"
+            }
+        }
+    },
+    "@badgeUnlockHint": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "target": {
+                "type": "String"
+            }
+        }
+    },
+    "@unlockBadge": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            }
+        }
+    },
+    "@since": {
+        "placeholders": {
+            "date": {
+                "type": "String"
+            }
+        }
+    },
+    "@translation": {
+        "placeholders": {
+            "text": {
+                "type": "String"
+            }
+        }
+    },
+    "@questionsWithLevel": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            },
+            "level": {
+                "type": "String"
+            }
+        }
+    },
+    "@questionsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "@outOfHeartsSummary": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            },
+            "stars": {
+                "type": "int"
+            }
+        }
+    },
+    "@currentOfTotal": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "@failedToJoinWaitlist": {
+        "placeholders": {
+            "error": {
+                "type": "String"
+            }
+        }
+    },
+    "@charCount": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "max": {
+                "type": "int"
+            }
+        }
+    },
+    "@tracingPracticeGlyph": {
+        "placeholders": {
+            "glyph": {
+                "type": "String"
+            }
+        }
+    },
+    "@mastery": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "required": {
+                "type": "int"
+            }
+        }
+    },
+    "@practiceModeLabel": {
+        "placeholders": {
+            "mode": {
+                "type": "String"
+            }
+        }
+    },
+    "@greatJobTakeQuiz": {
+        "placeholders": {
+            "title": {
+                "type": "String"
+            }
+        }
+    },
+    "@wordsNeedPractice": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "@voiceClipMeta": {
+        "placeholders": {
+            "voice": {
+                "type": "String"
+            },
+            "style": {
+                "type": "String"
+            },
+            "instant": {
+                "type": "String"
+            }
+        }
+    }
 }

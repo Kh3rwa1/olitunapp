@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/rhymes/presentation/widgets/bakhed_preparing_animation.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   Widget host({bool isDark = false}) => ProviderScope(
@@ -12,6 +13,8 @@ void main() {
       reduceVisualEffectsProvider.overrideWithValue(true),
     ],
     child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: isDark ? ThemeData.dark() : ThemeData.light(),
       home: Scaffold(body: BakhedPreparingAnimation(isDark: isDark)),
     ),

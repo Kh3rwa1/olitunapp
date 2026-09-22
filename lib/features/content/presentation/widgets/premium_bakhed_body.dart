@@ -15,6 +15,7 @@ import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
 import '../../../rhymes/presentation/widgets/cover_hero.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../providers/audio_playback_providers.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 part 'premium_bakhed_body_content.dart';
 part 'premium_bakhed_body_fullscreen.dart';

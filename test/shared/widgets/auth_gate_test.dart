@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/widgets/auth_gate.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 Widget _host({required AsyncValue<bool> authState}) {
   final router = GoRouter(
@@ -22,7 +23,11 @@ Widget _host({required AsyncValue<bool> authState}) {
     ],
   );
 
-  return MaterialApp.router(routerConfig: router);
+  return MaterialApp.router(
+    routerConfig: router,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+  );
 }
 
 Future<void> _pumpAuthed(
@@ -71,6 +76,8 @@ void main() {
       ProviderScope(
         overrides: [isAuthenticatedProvider.overrideWith((ref) async => false)],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: AuthGate(
             title: 'Members only',
             subtitle: 'Create an account to continue.',

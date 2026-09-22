@@ -10,6 +10,7 @@ import 'package:itun/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -59,7 +60,11 @@ void main() {
           // Deterministic layout: no ambient visualizer timers.
           reduceVisualEffectsProvider.overrideWithValue(true),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
     );
     await tester.pumpAndSettle();

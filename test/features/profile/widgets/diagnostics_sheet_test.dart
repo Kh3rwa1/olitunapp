@@ -6,6 +6,7 @@ import 'package:itun/core/observability/app_observability.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/presentation/widgets/diagnostics_tile.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +36,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-          child: const MaterialApp(home: Scaffold(body: DiagnosticsTile())),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: DiagnosticsTile()),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -54,7 +59,11 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-          child: const MaterialApp(home: Scaffold(body: DiagnosticsTile())),
+          child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(body: DiagnosticsTile()),
+          ),
         ),
       );
       await tester.pumpAndSettle();

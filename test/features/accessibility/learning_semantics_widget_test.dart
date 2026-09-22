@@ -4,9 +4,12 @@ import 'package:itun/features/lessons/presentation/practice/stroke_order_view.da
 import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_question_card.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(body: SizedBox(width: 420, height: 720, child: child)),
   );
 

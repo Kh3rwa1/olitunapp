@@ -99,7 +99,7 @@ class DesktopSidebar extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Olitun',
+                        AppLocalizations.of(context)!.olitun2,
                         style: AppTypography.inter(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
@@ -109,7 +109,7 @@ class DesktopSidebar extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'SANTALI • OL CHIKI',
+                        AppLocalizations.of(context)!.santaliOlChikiTag,
                         style: AppTypography.inter(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
@@ -132,7 +132,7 @@ class DesktopSidebar extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'MENU',
+              AppLocalizations.of(context)!.menuLabel,
               style: AppTypography.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
@@ -226,7 +226,10 @@ class DesktopSidebar extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '$streak day streak',
+                          [
+                            streak.toString(),
+                            AppLocalizations.of(context)!.dayStreak,
+                          ].join(' '),
                           style: AppTypography.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -268,7 +271,7 @@ class DesktopSidebar extends ConsumerWidget {
           const SizedBox(height: 14),
           Center(
             child: Text(
-              'Olitun PWA • v2.4',
+              AppLocalizations.of(context)!.olitunPwaVersion,
               style: AppTypography.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_complete_bento_stats.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 Widget _wrap({required bool isDark}) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
   theme: isDark ? ThemeData.dark() : ThemeData.light(),
   home: Scaffold(
     body: SingleChildScrollView(

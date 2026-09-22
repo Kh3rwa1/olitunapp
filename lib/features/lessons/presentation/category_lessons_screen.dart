@@ -23,6 +23,7 @@ import 'widgets/category_lessons/category_hero_header.dart';
 import 'widgets/category_lessons/locked_lesson_overlay.dart';
 import 'widgets/category_lessons/category_lesson_card.dart';
 import 'widgets/category_lessons/category_lessons_timeline.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -150,11 +151,13 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         TextButton.icon(
                           onPressed: _onRefresh,
                           icon: const Icon(Icons.refresh_rounded),
-                          label: const Text('Retry'),
+                          label: Text(AppLocalizations.of(context)!.retry),
                         ),
                         TextButton(
                           onPressed: _backToLearningPaths,
-                          child: const Text('Back to learning paths'),
+                          child: Text(
+                            AppLocalizations.of(context)!.backToLearningPaths,
+                          ),
                         ),
                       ],
                     ),
@@ -417,7 +420,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Could not load lessons',
+                        AppLocalizations.of(context)!.couldNotLoadLessons,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -426,7 +429,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Check your connection and try again',
+                        AppLocalizations.of(context)!.checkConnection,
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? Colors.white38 : Colors.black38,
@@ -446,7 +449,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           );
                         },
                         icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Retry'),
+                        label: Text(AppLocalizations.of(context)!.retry),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.primary,
                         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/home/presentation/widgets/santali_voice_promo_card.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   group('SantaliVoicePromoCard', () {
@@ -30,7 +31,13 @@ void main() {
       addTearDown(() => tester.view.resetPhysicalSize());
 
       await tester.pumpWidget(
-        ProviderScope(child: MaterialApp.router(routerConfig: router)),
+        ProviderScope(
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
       );
       await tester.pump(const Duration(milliseconds: 800));
 

@@ -9,6 +9,7 @@ import 'package:itun/core/accessibility/learning_semantics.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 part 'tracing_canvas_painters.dart';
 
@@ -138,7 +139,9 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Tracing practice — ${widget.config.glyph}',
+                              AppLocalizations.of(
+                                context,
+                              )!.tracingPracticeGlyph(widget.config.glyph),
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -149,7 +152,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Trace the character guidelines accurately',
+                              AppLocalizations.of(context)!.traceGuidelines,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
@@ -170,7 +173,10 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          'Mastery: $_currentCompletions/${widget.config.requiredCompletions}',
+                          AppLocalizations.of(context)!.mastery(
+                            _currentCompletions,
+                            widget.config.requiredCompletions,
+                          ),
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -255,7 +261,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                           Icons.play_circle_outline_rounded,
                           size: 20,
                         ),
-                        label: const Text('Show example'),
+                        label: Text(AppLocalizations.of(context)!.showExample),
                         style: TextButton.styleFrom(
                           foregroundColor: widget.accentColor,
                         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class FillBlankQuestionCard extends StatelessWidget {
   final QuizQuestion question;
@@ -216,7 +217,9 @@ class FillBlankQuestionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Translation: "${question.blankSentenceLatin}"',
+                AppLocalizations.of(
+                  context,
+                )!.translation(question.blankSentenceLatin ?? ''),
                 style: TextStyle(
                   fontSize: 14,
                   fontStyle: FontStyle.italic,

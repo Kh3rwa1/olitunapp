@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/lessons/presentation/widgets/blocks/quiz_block_cta_widget.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 Widget _glassCard({
   required Color themeColor,
@@ -59,7 +60,13 @@ Future<void> pumpCta(
   );
 
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp.router(routerConfig: router)),
+    ProviderScope(
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
+    ),
   );
   await tester.pumpAndSettle();
 }

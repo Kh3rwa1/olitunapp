@@ -10,6 +10,7 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class DiagnosticsSheet extends ConsumerStatefulWidget {
   const DiagnosticsSheet({super.key});
@@ -89,7 +90,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    'System Diagnostics & Health',
+                    AppLocalizations.of(context)!.systemDiagnosticsTitle,
                     style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.w900,
                       color: isDark ? Colors.white : Colors.black87,
@@ -99,7 +100,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Anonymized runtime performance & diagnostic telemetry',
+                AppLocalizations.of(context)!.systemDiagnosticsSubtitle,
                 style: AppTypography.bodySmall.copyWith(
                   color: isDark ? Colors.white54 : Colors.black54,
                 ),
@@ -143,7 +144,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
 
               // Logs Preview Box
               Text(
-                'Diagnostic Payload Preview',
+                AppLocalizations.of(context)!.diagnosticPayloadPreview,
                 style: AppTypography.labelLarge.copyWith(
                   fontWeight: FontWeight.w700,
                   color: isDark ? Colors.white70 : Colors.black87,
@@ -189,9 +190,11 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
                     setState(() => _copied = true);
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text(
-                            'Diagnostic payload copied to clipboard!',
+                            AppLocalizations.of(
+                              context,
+                            )!.diagnosticPayloadCopied,
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),

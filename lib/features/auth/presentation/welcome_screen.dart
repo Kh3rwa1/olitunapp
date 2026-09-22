@@ -10,6 +10,7 @@ import '../presentation/controllers/auth_controller.dart';
 import '../presentation/providers/auth_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import 'widgets/oauth_failure_notice.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -53,9 +54,9 @@ class WelcomeScreen extends ConsumerWidget {
                     shaderCallback: (bounds) => const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryLight],
                     ).createShader(bounds),
-                    child: const Text(
-                      'Olitun',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocalizations.of(context)!.olitun,
+                      style: const TextStyle(
                         fontSize: 44,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -2,
@@ -67,7 +68,7 @@ class WelcomeScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    'Learn Ol Chiki Script',
+                    AppLocalizations.of(context)!.welcomeTagline,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -308,10 +309,10 @@ class WelcomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'Continue with Email',
-                style: TextStyle(
+                AppLocalizations.of(context)!.continueWithEmail,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: Colors.white,
@@ -344,9 +345,9 @@ class WelcomeScreen extends ConsumerWidget {
             if (!context.mounted) return;
             if (!authed) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text(
-                    'Could not start a guest session. Please try again.',
+                    AppLocalizations.of(context)!.guestSessionFailed,
                   ),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -368,7 +369,7 @@ class WelcomeScreen extends ConsumerWidget {
             color: isDark ? Colors.white70 : Colors.black54,
           ),
           label: Text(
-            'Explore as Guest',
+            AppLocalizations.of(context)!.exploreAsGuest,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -507,9 +508,9 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
                     .round(),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'Continue with Google',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context)!.continueWithGoogle,
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textSecondaryLight,

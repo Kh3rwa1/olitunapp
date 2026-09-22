@@ -6,6 +6,7 @@ import 'package:itun/core/theme/app_theme.dart';
 import 'package:itun/features/home/presentation/widgets/magic_translate_dialog.dart';
 import 'package:itun/shared/widgets/animated_buttons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   group('Accessibility: Dynamic Type 200% Text Scaling', () {
@@ -14,6 +15,8 @@ void main() {
       (tester) async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: AppTheme.lightTheme,
             home: MediaQuery(
               data: const MediaQueryData(
@@ -39,6 +42,8 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           theme: AppTheme.lightTheme,
           home: MediaQuery(
             data: const MediaQueryData(
@@ -64,6 +69,8 @@ void main() {
         await tester.pumpWidget(
           ProviderScope(
             child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
               theme: AppTheme.lightTheme,
               home: const MediaQuery(
                 data: MediaQueryData(
@@ -92,6 +99,8 @@ void main() {
         var tapped = false;
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: AppTheme.lightTheme,
             home: Scaffold(
               body: PrimaryButton(

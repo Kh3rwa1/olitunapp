@@ -11,6 +11,7 @@ import 'package:itun/features/categories/presentation/providers/category_notifie
 import 'package:itun/features/lessons/presentation/lessons_screen.dart';
 import 'package:itun/features/lessons/presentation/widgets/bento_category_card.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 List<CategoryEntity> _categories(int count) => List.generate(
   count,
@@ -84,6 +85,8 @@ Future<void> _pump(
           ),
           child: child!,
         ),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
     ),
   );

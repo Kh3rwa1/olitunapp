@@ -2341,6 +2341,1422 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Shorten the passage to continue. Nothing is truncated.'**
   String get aiStudioPassageLimitError;
+
+  /// No description provided for @aiStudioUploadPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload document or capture page'**
+  String get aiStudioUploadPrompt;
+
+  /// No description provided for @aiStudioUploadFormats.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF, PNG or JPG · up to 10 MB'**
+  String get aiStudioUploadFormats;
+
+  /// No description provided for @aiStudioJobId.
+  ///
+  /// In en, this message translates to:
+  /// **'Job: {id}'**
+  String aiStudioJobId(String id);
+
+  /// No description provided for @aiStudioCheckStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Check status'**
+  String get aiStudioCheckStatus;
+
+  /// No description provided for @aiStudioReplaceWithScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace my edits with latest scan text'**
+  String get aiStudioReplaceWithScan;
+
+  /// No description provided for @aiStudioEditSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit source input'**
+  String get aiStudioEditSource;
+
+  /// No description provided for @olitun.
+  ///
+  /// In en, this message translates to:
+  /// **'Olitun'**
+  String get olitun;
+
+  /// No description provided for @welcomeTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Ol Chiki Script'**
+  String get welcomeTagline;
+
+  /// No description provided for @errorLoadingContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading content: {error}'**
+  String errorLoadingContent(String error);
+
+  /// No description provided for @startQuiz2.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Quiz'**
+  String get startQuiz2;
+
+  /// No description provided for @practiceTyping.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Typing'**
+  String get practiceTyping;
+
+  /// No description provided for @mediaDuration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration: {seconds}s'**
+  String mediaDuration(int seconds);
+
+  /// No description provided for @noLearningContent.
+  ///
+  /// In en, this message translates to:
+  /// **'No learning content available.'**
+  String get noLearningContent;
+
+  /// No description provided for @errorLoadingDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading details: {error}'**
+  String errorLoadingDetails(String error);
+
+  /// No description provided for @culturalNotesPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Cultural notes are being prepared.'**
+  String get culturalNotesPreparing;
+
+  /// No description provided for @culturalNoteSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: {source}'**
+  String culturalNoteSource(String source);
+
+  /// No description provided for @noVocabularyItems.
+  ///
+  /// In en, this message translates to:
+  /// **'No vocabulary items defined.'**
+  String get noVocabularyItems;
+
+  /// No description provided for @lyricsBeingAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics are being added.'**
+  String get lyricsBeingAdded;
+
+  /// No description provided for @bakhedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'BAKHED'**
+  String get bakhedLabel;
+
+  /// No description provided for @wordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'word'**
+  String get wordLabel;
+
+  /// No description provided for @cancelLower.
+  ///
+  /// In en, this message translates to:
+  /// **'cancel'**
+  String get cancelLower;
+
+  /// No description provided for @greetingDayPart.
+  ///
+  /// In en, this message translates to:
+  /// **'ᱡᱚᱦᱟᱨ • {part}'**
+  String greetingDayPart(String part);
+
+  /// No description provided for @homePickupSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick up where you left off — small steps, every day.'**
+  String get homePickupSubtitle;
+
+  /// No description provided for @aiTranslatorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Translator'**
+  String get aiTranslatorTitle;
+
+  /// No description provided for @voiceSpeakWithConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak With\nConfidence'**
+  String get voiceSpeakWithConfidence;
+
+  /// No description provided for @aiStudioPromoBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW • AI STUDIO'**
+  String get aiStudioPromoBadge;
+
+  /// No description provided for @aiStudioPromoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan or speak — get Santali text.'**
+  String get aiStudioPromoSubtitle;
+
+  /// No description provided for @learnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more'**
+  String get learnMore;
+
+  /// No description provided for @instantTranslate.
+  ///
+  /// In en, this message translates to:
+  /// **'Instant Translate'**
+  String get instantTranslate;
+
+  /// No description provided for @anyLanguageToOlChiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Any Language → Ol Chiki'**
+  String get anyLanguageToOlChiki;
+
+  /// No description provided for @aiBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get aiBadge;
+
+  /// No description provided for @yourLearningPath.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR LEARNING PATH'**
+  String get yourLearningPath;
+
+  /// No description provided for @stepOfPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}: '**
+  String stepOfPath(int step, int total);
+
+  /// No description provided for @learningPathSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A guided path matched to your Santali level.'**
+  String get learningPathSubtitle;
+
+  /// No description provided for @santaliOlChikiLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'SANTALI (OL CHIKI)'**
+  String get santaliOlChikiLabel;
+
+  /// No description provided for @magicTranslatePrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Translations are processed securely, cached via privacy hashes, and never linked to your profile.'**
+  String get magicTranslatePrivacyNote;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'CLOSE'**
+  String get close;
+
+  /// No description provided for @aiVoicePromoBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW • AI VOICE'**
+  String get aiVoicePromoBadge;
+
+  /// No description provided for @aiVoiceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI Voice'**
+  String get aiVoiceTitle;
+
+  /// No description provided for @aiVoicePromoSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Type anything — hear it in Santali.'**
+  String get aiVoicePromoSubtitle;
+
+  /// No description provided for @tryNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Try now'**
+  String get tryNow;
+
+  /// No description provided for @k15Styles.
+  ///
+  /// In en, this message translates to:
+  /// **'ᱟᱲᱟᱝ • 15 styles'**
+  String get k15Styles;
+
+  /// No description provided for @backToLearningPaths.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to learning paths'**
+  String get backToLearningPaths;
+
+  /// No description provided for @learningPathsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'LEARNING PATHS'**
+  String get learningPathsHeader;
+
+  /// No description provided for @chooseYourJourney.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Your Journey'**
+  String get chooseYourJourney;
+
+  /// No description provided for @morePaths.
+  ///
+  /// In en, this message translates to:
+  /// **'MORE PATHS'**
+  String get morePaths;
+
+  /// No description provided for @plusTenXp.
+  ///
+  /// In en, this message translates to:
+  /// **'+10 XP'**
+  String get plusTenXp;
+
+  /// No description provided for @strokeOrderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the stroke flow and then switch to Tracing mode to replicate it.'**
+  String get strokeOrderHint;
+
+  /// No description provided for @traceAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'{feedback}  Accuracy: {percent}%'**
+  String traceAccuracy(String feedback, int percent);
+
+  /// No description provided for @niceWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Nice!'**
+  String get niceWork;
+
+  /// No description provided for @youScoredOutOf.
+  ///
+  /// In en, this message translates to:
+  /// **'You scored {score} out of {total}'**
+  String youScoredOutOf(int score, int total);
+
+  /// No description provided for @percentFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}%'**
+  String percentFormat(int percent);
+
+  /// No description provided for @backLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backLabel;
+
+  /// No description provided for @quizKeyboardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit'**
+  String get quizKeyboardHint;
+
+  /// No description provided for @scoreOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'{score}'**
+  String scoreOnly(int score);
+
+  /// No description provided for @pressEnter.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter ↵'**
+  String get pressEnter;
+
+  /// No description provided for @readyToTestYourself.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to test yourself?'**
+  String get readyToTestYourself;
+
+  /// No description provided for @takeTheQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'TAKE THE QUIZ'**
+  String get takeTheQuiz;
+
+  /// No description provided for @skipForNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for now'**
+  String get skipForNow;
+
+  /// No description provided for @browseView.
+  ///
+  /// In en, this message translates to:
+  /// **'BROWSE VIEW'**
+  String get browseView;
+
+  /// No description provided for @openDictionary.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Dictionary'**
+  String get openDictionary;
+
+  /// No description provided for @learnLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'LEARN'**
+  String get learnLabel;
+
+  /// No description provided for @doneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DONE'**
+  String get doneLabel;
+
+  /// No description provided for @lockedForNowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'HOLD ON • LOCKED FOR NOW'**
+  String get lockedForNowTitle;
+
+  /// No description provided for @completeBlockerFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete “{blocker}” first to crack it open.'**
+  String completeBlockerFirst(String blocker);
+
+  /// No description provided for @interactiveHtmlTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive HTML Content'**
+  String get interactiveHtmlTitle;
+
+  /// No description provided for @interactiveHtmlBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson contains an interactive HTML experience. Tap below to launch it.'**
+  String get interactiveHtmlBody;
+
+  /// No description provided for @openInteractiveContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Interactive Content'**
+  String get openInteractiveContent;
+
+  /// No description provided for @recommendedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'RECOMMENDED'**
+  String get recommendedLabel;
+
+  /// No description provided for @audioPlaybackHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Press Space to play audio • ← → to navigate'**
+  String get audioPlaybackHint;
+
+  /// No description provided for @finishReviewing.
+  ///
+  /// In en, this message translates to:
+  /// **'FINISH REVIEWING'**
+  String get finishReviewing;
+
+  /// No description provided for @takeQuizNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Take Quiz Now'**
+  String get takeQuizNow;
+
+  /// No description provided for @stepOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'STEP {step} OF {total}'**
+  String stepOfTotal(int step, int total);
+
+  /// No description provided for @checkConnectionPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Check your connection and try again.'**
+  String get checkConnectionPeriod;
+
+  /// No description provided for @sentencePronunciation.
+  ///
+  /// In en, this message translates to:
+  /// **'Pronunciation: {pronunciation}'**
+  String sentencePronunciation(String pronunciation);
+
+  /// No description provided for @santaliLearner.
+  ///
+  /// In en, this message translates to:
+  /// **'SANTALI LEARNER'**
+  String get santaliLearner;
+
+  /// No description provided for @streakTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish 3 lessons to keep your streak alive.'**
+  String get streakTip;
+
+  /// No description provided for @continueLearningArrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue learning →'**
+  String get continueLearningArrow;
+
+  /// No description provided for @olitun2.
+  ///
+  /// In en, this message translates to:
+  /// **'Olitun'**
+  String get olitun2;
+
+  /// No description provided for @santaliOlChikiTag.
+  ///
+  /// In en, this message translates to:
+  /// **'SANTALI • OL CHIKI'**
+  String get santaliOlChikiTag;
+
+  /// No description provided for @menuLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'MENU'**
+  String get menuLabel;
+
+  /// No description provided for @olitunPwaVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Olitun PWA • v2.4'**
+  String get olitunPwaVersion;
+
+  /// No description provided for @onboardingCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} · {total}'**
+  String onboardingCounter(String current, String total);
+
+  /// No description provided for @goalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What are your learning goals?'**
+  String get goalsTitle;
+
+  /// No description provided for @goalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all that apply to personalize your learning experience.'**
+  String get goalsSubtitle;
+
+  /// No description provided for @requiredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'REQUIRED'**
+  String get requiredLabel;
+
+  /// No description provided for @stepOneOfFive.
+  ///
+  /// In en, this message translates to:
+  /// **'Step 1 of 5'**
+  String get stepOneOfFive;
+
+  /// No description provided for @languageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your mother tongue. We will use this language to explain Ol Chiki letters, word meanings, and audio lessons.'**
+  String get languageSubtitle;
+
+  /// No description provided for @prefsSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your preferences. Please try again.'**
+  String get prefsSaveFailed;
+
+  /// No description provided for @selectMotherTongueToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select your mother tongue / teaching language to continue.'**
+  String get selectMotherTongueToast;
+
+  /// No description provided for @onboardingHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Ol Chiki,\\none step at a time'**
+  String get onboardingHeadline;
+
+  /// No description provided for @familiarityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How familiar are you with Ol Chiki?'**
+  String get familiarityTitle;
+
+  /// No description provided for @familiaritySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We will tailor your learning path accordingly.'**
+  String get familiaritySubtitle;
+
+  /// No description provided for @displayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How do you want to see content?'**
+  String get displayTitle;
+
+  /// No description provided for @displaySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your preferred script display. You can change this anytime.'**
+  String get displaySubtitle;
+
+  /// No description provided for @practiceGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How much do you want to practice?'**
+  String get practiceGoalTitle;
+
+  /// No description provided for @practiceGoalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Setting a small daily goal helps build a continuous learning streak.'**
+  String get practiceGoalSubtitle;
+
+  /// No description provided for @olitunWordmark.
+  ///
+  /// In en, this message translates to:
+  /// **'OLITUN'**
+  String get olitunWordmark;
+
+  /// No description provided for @learnOlChiki.
+  ///
+  /// In en, this message translates to:
+  /// **'LEARN OL CHIKI'**
+  String get learnOlChiki;
+
+  /// No description provided for @spaceKey.
+  ///
+  /// In en, this message translates to:
+  /// **'SPACE'**
+  String get spaceKey;
+
+  /// No description provided for @practicedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Practiced Successfully'**
+  String get practicedSuccessfully;
+
+  /// No description provided for @revealAndContinue.
+  ///
+  /// In en, this message translates to:
+  /// **'REVEAL & CONTINUE'**
+  String get revealAndContinue;
+
+  /// No description provided for @systemDiagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'System Diagnostics & Health'**
+  String get systemDiagnosticsTitle;
+
+  /// No description provided for @systemDiagnosticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Anonymized runtime performance & diagnostic telemetry'**
+  String get systemDiagnosticsSubtitle;
+
+  /// No description provided for @diagnosticPayloadPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic Payload Preview'**
+  String get diagnosticPayloadPreview;
+
+  /// No description provided for @diagnosticPayloadCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Diagnostic payload copied to clipboard!'**
+  String get diagnosticPayloadCopied;
+
+  /// No description provided for @diagnosticsTileSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'View runtime health, memory state & anonymized telemetry'**
+  String get diagnosticsTileSubtitle;
+
+  /// No description provided for @deleteAllDownloadsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all downloads?'**
+  String get deleteAllDownloadsTitle;
+
+  /// No description provided for @deleteAllDownloadsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every offline story audio clip from this device. Stories will stream again when you are back online.'**
+  String get deleteAllDownloadsBody;
+
+  /// No description provided for @editYourName.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Your Name'**
+  String get editYourName;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @indigenousLanguagesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigenous Languages Platform'**
+  String get indigenousLanguagesTitle;
+
+  /// No description provided for @indigenousLanguagesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore native scripts & tribal languages of eastern India'**
+  String get indigenousLanguagesSubtitle;
+
+  /// No description provided for @packsComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} content & audio packs are coming soon!'**
+  String packsComingSoon(String name);
+
+  /// No description provided for @learningLanguageSetTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning language set to {name} ({script})'**
+  String learningLanguageSetTo(String name, String script);
+
+  /// No description provided for @audioPack.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio Pack'**
+  String get audioPack;
+
+  /// No description provided for @offlineLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Lessons'**
+  String get offlineLessons;
+
+  /// No description provided for @lettersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} letters'**
+  String lettersCount(int count);
+
+  /// No description provided for @demoLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DEMO'**
+  String get demoLabel;
+
+  /// No description provided for @masteryAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy: {percent}%'**
+  String masteryAccuracy(int percent);
+
+  /// No description provided for @masteryProgression.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery Progression'**
+  String get masteryProgression;
+
+  /// No description provided for @nextMilestone.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT MILESTONE'**
+  String get nextMilestone;
+
+  /// No description provided for @roadToLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Road to {level}'**
+  String roadToLevel(String level);
+
+  /// No description provided for @badgeUnlockHint.
+  ///
+  /// In en, this message translates to:
+  /// **'To unlock the {name} badge: {target}'**
+  String badgeUnlockHint(String name, String target);
+
+  /// No description provided for @closestBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Closest Badge Achievement'**
+  String get closestBadge;
+
+  /// No description provided for @unlockBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock the {name} Badge'**
+  String unlockBadge(String name);
+
+  /// No description provided for @reminderFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder Frequency'**
+  String get reminderFrequency;
+
+  /// No description provided for @reminderFrequencySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how often you would like to be reminded to practice Ol Chiki.'**
+  String get reminderFrequencySubtitle;
+
+  /// No description provided for @dailySchedulePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Schedule Preview'**
+  String get dailySchedulePreview;
+
+  /// No description provided for @sendTestNotification.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Test Notification'**
+  String get sendTestNotification;
+
+  /// No description provided for @chooseYourAvatarLower.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your avatar'**
+  String get chooseYourAvatarLower;
+
+  /// No description provided for @avatarAnimationsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load avatar animations.'**
+  String get avatarAnimationsFailed;
+
+  /// No description provided for @tryAgainLower.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgainLower;
+
+  /// No description provided for @avatarSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save avatar. Please try again.'**
+  String get avatarSaveFailed;
+
+  /// No description provided for @since.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String since(String date);
+
+  /// No description provided for @overallProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall Progress'**
+  String get overallProgress;
+
+  /// No description provided for @noBookingsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookings found'**
+  String get noBookingsFound;
+
+  /// No description provided for @bookingsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Book verified reciters for your ceremonies under the Bakhed tab.'**
+  String get bookingsEmptyHint;
+
+  /// No description provided for @waitlistBookingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load waitlist bookings.'**
+  String get waitlistBookingsFailed;
+
+  /// No description provided for @assessmentScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Assessment Score'**
+  String get assessmentScore;
+
+  /// No description provided for @avgLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg'**
+  String get avgLabel;
+
+  /// No description provided for @adPrivacyRegionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad privacy settings are not required for your region.'**
+  String get adPrivacyRegionNote;
+
+  /// No description provided for @signOutConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out of your account on this device?'**
+  String get signOutConfirmBody;
+
+  /// No description provided for @learningLanguageScript.
+  ///
+  /// In en, this message translates to:
+  /// **'Learning Language & Script'**
+  String get learningLanguageScript;
+
+  /// No description provided for @mistakeReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Mistake Review'**
+  String get mistakeReview;
+
+  /// No description provided for @allCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up!'**
+  String get allCaughtUp;
+
+  /// No description provided for @noMistakesToReview.
+  ///
+  /// In en, this message translates to:
+  /// **'No mistakes need review. Your Santali roots are strong!'**
+  String get noMistakesToReview;
+
+  /// No description provided for @mistakesMastered.
+  ///
+  /// In en, this message translates to:
+  /// **'Mistakes Mastered!'**
+  String get mistakesMastered;
+
+  /// No description provided for @moreQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'MORE QUIZZES'**
+  String get moreQuizzes;
+
+  /// No description provided for @challengeYourself.
+  ///
+  /// In en, this message translates to:
+  /// **'CHALLENGE YOURSELF'**
+  String get challengeYourself;
+
+  /// No description provided for @chooseAQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a Quiz'**
+  String get chooseAQuiz;
+
+  /// No description provided for @noQuizzesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No quizzes yet!'**
+  String get noQuizzesYet;
+
+  /// No description provided for @completeLessonsFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete some lessons first'**
+  String get completeLessonsFirst;
+
+  /// No description provided for @quizUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz unavailable'**
+  String get quizUnavailable;
+
+  /// No description provided for @quizUnavailableDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz unavailable — this lesson does not contain enough valid questions yet.'**
+  String get quizUnavailableDetail;
+
+  /// No description provided for @quizLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the quiz.'**
+  String get quizLoadFailed;
+
+  /// No description provided for @translation.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation: \"{text}\"'**
+  String translation(String text);
+
+  /// No description provided for @audioNotAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Audio is not available for this question.'**
+  String get audioNotAvailable;
+
+  /// No description provided for @mistakeReviewBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'MISTAKE REVIEW'**
+  String get mistakeReviewBadge;
+
+  /// No description provided for @takesTwoMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Takes 2 min'**
+  String get takesTwoMin;
+
+  /// No description provided for @mistakesQuote.
+  ///
+  /// In en, this message translates to:
+  /// **'“Mistakes are just lessons asking for a second chance.”'**
+  String get mistakesQuote;
+
+  /// No description provided for @quizKeyboardHintAlt.
+  ///
+  /// In en, this message translates to:
+  /// **'↑ / ↓ Navigate  •  1-4 Choose  •  Enter ↵ Submit'**
+  String get quizKeyboardHintAlt;
+
+  /// No description provided for @watchAdBonusStars.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Ad for +50 Bonus Stars'**
+  String get watchAdBonusStars;
+
+  /// No description provided for @shareAchievement.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Achievement'**
+  String get shareAchievement;
+
+  /// No description provided for @bonusStarsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Bonus 50 Stars Earned! ⭐'**
+  String get bonusStarsEarned;
+
+  /// No description provided for @rewardedAdCooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewarded ad is cooling down. Try again later.'**
+  String get rewardedAdCooldown;
+
+  /// No description provided for @scoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get scoreLabel;
+
+  /// No description provided for @accuracyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy'**
+  String get accuracyLabel;
+
+  /// No description provided for @starsEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'Stars Earned'**
+  String get starsEarned;
+
+  /// No description provided for @maxCombo.
+  ///
+  /// In en, this message translates to:
+  /// **'Max Combo'**
+  String get maxCombo;
+
+  /// No description provided for @reviewMistakes.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Mistakes'**
+  String get reviewMistakes;
+
+  /// No description provided for @reviewMistakesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Review what you got incorrect to build your mastery! Laha se!'**
+  String get reviewMistakesSubtitle;
+
+  /// No description provided for @correctColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct:'**
+  String get correctColon;
+
+  /// No description provided for @correctAnswerColon.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct Answer:'**
+  String get correctAnswerColon;
+
+  /// No description provided for @insightGuidance.
+  ///
+  /// In en, this message translates to:
+  /// **'Insight & Guidance:'**
+  String get insightGuidance;
+
+  /// No description provided for @selectMissingWord.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the missing word:'**
+  String get selectMissingWord;
+
+  /// No description provided for @questionsWithLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions • {level}'**
+  String questionsWithLevel(int count, String level);
+
+  /// No description provided for @startQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'START QUIZ'**
+  String get startQuiz;
+
+  /// No description provided for @questionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} questions'**
+  String questionsCount(int count);
+
+  /// No description provided for @outOfHearts.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Hearts!'**
+  String get outOfHearts;
+
+  /// No description provided for @outOfHeartsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'You answered {score}/{total} correctly and earned {stars} stars so far. Keep practicing to build your strength!'**
+  String outOfHeartsSummary(int score, int total, int stars);
+
+  /// No description provided for @watchAdRefillHearts.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Ad to Refill Hearts (Free)'**
+  String get watchAdRefillHearts;
+
+  /// No description provided for @backToQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Quizzes'**
+  String get backToQuizzes;
+
+  /// No description provided for @heartsRefilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Hearts Refilled! ❤️❤️❤️'**
+  String get heartsRefilled;
+
+  /// No description provided for @rewardedAdCooldownReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewarded ad is cooling down. Please try regular reset.'**
+  String get rewardedAdCooldownReset;
+
+  /// No description provided for @currentOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{total}'**
+  String currentOfTotal(int current, int total);
+
+  /// No description provided for @rhymesEndNote.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s everything here — new Bakhed coming soon!'**
+  String get rhymesEndNote;
+
+  /// No description provided for @rhymesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the rhymes list.'**
+  String get rhymesLoadFailed;
+
+  /// No description provided for @bakhedPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Bakhed are being prepared'**
+  String get bakhedPreparing;
+
+  /// No description provided for @bakhedPreparingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New listening stories will appear here after publishing.'**
+  String get bakhedPreparingSubtitle;
+
+  /// No description provided for @failedToJoinWaitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to join waitlist: {error}'**
+  String failedToJoinWaitlist(String error);
+
+  /// No description provided for @waitlistJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Waitlist Joined! 🎉'**
+  String get waitlistJoined;
+
+  /// No description provided for @waitlistJoinedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for submitting your details. Our cultural coordination team will contact you shortly via phone/WhatsApp to match you with a certified Binti Guru.'**
+  String get waitlistJoinedBody;
+
+  /// No description provided for @great.
+  ///
+  /// In en, this message translates to:
+  /// **'Great'**
+  String get great;
+
+  /// No description provided for @joinBintiGuruWaitlist.
+  ///
+  /// In en, this message translates to:
+  /// **'Join Binti Guru Waitlist'**
+  String get joinBintiGuruWaitlist;
+
+  /// No description provided for @bintiGuruFormSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us about your ceremony. We will search for available certified reciters.'**
+  String get bintiGuruFormSubtitle;
+
+  /// No description provided for @submitWaitlistEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Waitlist Entry'**
+  String get submitWaitlistEntry;
+
+  /// No description provided for @bookVerifiedBintiGuru.
+  ///
+  /// In en, this message translates to:
+  /// **'Book a Verified Binti Guru'**
+  String get bookVerifiedBintiGuru;
+
+  /// No description provided for @bintiGuruLandingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Binti is the sacred act of Santali recitation. Whether for Karam, Sohrai, Baha, weddings, or naming ceremonies, connect with certified, premium Binti reciters who preserve our cultural heritage.'**
+  String get bintiGuruLandingBody;
+
+  /// No description provided for @joinWaitlistNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Join waitlist now'**
+  String get joinWaitlistNow;
+
+  /// No description provided for @howItWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'HOW IT WORKS'**
+  String get howItWorks;
+
+  /// No description provided for @newBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'NEW'**
+  String get newBadge;
+
+  /// No description provided for @ctrlEnterCreate.
+  ///
+  /// In en, this message translates to:
+  /// **'Ctrl+Enter ↵ to create'**
+  String get ctrlEnterCreate;
+
+  /// No description provided for @charCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {max}'**
+  String charCount(int current, int max);
+
+  /// No description provided for @svgLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load SVG animation'**
+  String get svgLoadFailed;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @shareCardTagline.
+  ///
+  /// In en, this message translates to:
+  /// **'OLITUN • ᱚᱞ ᱪᱤᱠᱤ'**
+  String get shareCardTagline;
+
+  /// No description provided for @shareCardFooter.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn Santali (Ol Chiki) • olitun.app'**
+  String get shareCardFooter;
+
+  /// No description provided for @shareTextCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Share text copied to clipboard! 📋'**
+  String get shareTextCopied;
+
+  /// No description provided for @tracingPracticeGlyph.
+  ///
+  /// In en, this message translates to:
+  /// **'Tracing practice — {glyph}'**
+  String tracingPracticeGlyph(String glyph);
+
+  /// No description provided for @mastery.
+  ///
+  /// In en, this message translates to:
+  /// **'Mastery: {current}/{required}'**
+  String mastery(int current, int required);
+
+  /// No description provided for @onboardingStepsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with letters, build words, practice with quizzes, and keep your Santali learning journey alive.'**
+  String get onboardingStepsBody;
+
+  /// No description provided for @practiceModeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice • {mode}'**
+  String practiceModeLabel(String mode);
+
+  /// No description provided for @greatJobTakeQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Great job! Take \"{title}\" now to test your knowledge.'**
+  String greatJobTakeQuiz(String title);
+
+  /// No description provided for @wordsNeedPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{count} word needs practice} other{{count} words need practice}}'**
+  String wordsNeedPractice(int count);
+
+  /// No description provided for @voiceClipMeta.
+  ///
+  /// In en, this message translates to:
+  /// **'{voice} • {style}{instant}'**
+  String voiceClipMeta(String voice, String style, String instant);
+
+  /// No description provided for @continueWithEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Email'**
+  String get continueWithEmail;
+
+  /// No description provided for @exploreAsGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore as Guest'**
+  String get exploreAsGuest;
+
+  /// No description provided for @continueWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue with Google'**
+  String get continueWithGoogle;
+
+  /// No description provided for @guestSessionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start a guest session. Please try again.'**
+  String get guestSessionFailed;
+
+  /// No description provided for @couldNotLoadLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load lessons'**
+  String get couldNotLoadLessons;
+
+  /// No description provided for @shareMessageCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Share message copied to clipboard! 📋'**
+  String get shareMessageCopied;
+
+  /// No description provided for @shareMilestoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Share Your Milestone'**
+  String get shareMilestoneTitle;
+
+  /// No description provided for @shareMilestoneSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inspire others to learn Santali & Ol Chiki'**
+  String get shareMilestoneSubtitle;
+
+  /// No description provided for @copyTextSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Text Summary'**
+  String get copyTextSummary;
+
+  /// No description provided for @traceGuidelines.
+  ///
+  /// In en, this message translates to:
+  /// **'Trace the character guidelines accurately'**
+  String get traceGuidelines;
+
+  /// No description provided for @showExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Show example'**
+  String get showExample;
+
+  /// No description provided for @signOut.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOut;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @finishLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish Lesson'**
+  String get finishLesson;
+
+  /// No description provided for @couldNotOpenShareSheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open share sheet'**
+  String get couldNotOpenShareSheet;
+
+  /// No description provided for @couldNotClearDownloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not clear downloads'**
+  String get couldNotClearDownloads;
+
+  /// No description provided for @progressLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Your saved progress is still safe. Try refreshing this view.'**
+  String get progressLoadFailed;
+
+  /// No description provided for @couldNotLoadProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load progress'**
+  String get couldNotLoadProgress;
+
+  /// No description provided for @couldNotLoadQuizzes.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load quizzes'**
+  String get couldNotLoadQuizzes;
+
+  /// No description provided for @contentLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Content could not be loaded. Please try again.'**
+  String get contentLoadFailed;
 }
 
 class _AppLocalizationsDelegate

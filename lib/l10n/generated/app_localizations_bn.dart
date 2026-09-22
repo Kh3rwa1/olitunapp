@@ -1246,4 +1246,822 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get aiStudioPassageLimitError =>
       'এগিয়ে যেতে অংশটি ছোট করুন। কোনো কিছুই নিজে থেকে কাটা হয়নি।';
+
+  @override
+  String get aiStudioUploadPrompt =>
+      'আপনার ছবি আপলোড করুন বা ক্যামেরা দিয়ে স্ক্যান করুন';
+
+  @override
+  String get aiStudioUploadFormats => 'PDF, PNG বা JPG · সর্বোচ্চ ১০ MB';
+
+  @override
+  String aiStudioJobId(String id) {
+    return 'Job: $id';
+  }
+
+  @override
+  String get aiStudioCheckStatus => 'অবস্থা যাচাই করুন';
+
+  @override
+  String get aiStudioReplaceWithScan => 'স্ক্যান দিয়ে প্রতিস্থাপন করুন';
+
+  @override
+  String get aiStudioEditSource => 'উৎস সম্পাদনা করুন';
+
+  @override
+  String get olitun => 'Olitun';
+
+  @override
+  String get welcomeTagline => 'ওল চিকি লিপি শিখুন';
+
+  @override
+  String errorLoadingContent(String error) {
+    return 'Error loading content: $error';
+  }
+
+  @override
+  String get startQuiz2 => 'কুইজ শুরু করুন';
+
+  @override
+  String get practiceTyping => 'টাইপিং অভ্যাস করুন';
+
+  @override
+  String mediaDuration(int seconds) {
+    return 'Duration: ${seconds}s';
+  }
+
+  @override
+  String get noLearningContent => 'এখনো কোনো শেখার উপাদান নেই।';
+
+  @override
+  String errorLoadingDetails(String error) {
+    return 'Error loading details: $error';
+  }
+
+  @override
+  String get culturalNotesPreparing => 'সাংস্কৃতিক নোট প্রস্তুত করা হচ্ছে।';
+
+  @override
+  String culturalNoteSource(String source) {
+    return 'Source: $source';
+  }
+
+  @override
+  String get noVocabularyItems => 'কোনো শব্দভাণ্ডার আইটেম সংজ্ঞায়িত নেই।';
+
+  @override
+  String get lyricsBeingAdded => 'গানের কথা যোগ করা হচ্ছে';
+
+  @override
+  String get bakhedLabel => 'BAKHED';
+
+  @override
+  String get wordLabel => 'শব্দ';
+
+  @override
+  String get cancelLower => 'বাতিল করুন';
+
+  @override
+  String greetingDayPart(String part) {
+    return 'ᱡᱚᱦᱟᱨ • $part';
+  }
+
+  @override
+  String get homePickupSubtitle =>
+      'যেখানে থেমেছিলেন সেখান থেকে শুরু — ছোট পা, প্রতিদিন।';
+
+  @override
+  String get aiTranslatorTitle => 'AI Translator';
+
+  @override
+  String get voiceSpeakWithConfidence => 'আত্মবিশ্বাসের সাথে কথা বলুন';
+
+  @override
+  String get aiStudioPromoBadge => 'NEW • AI STUDIO';
+
+  @override
+  String get aiStudioPromoSubtitle => 'আপনার স্বপ্নের ভাষা তৈরি করুন।';
+
+  @override
+  String get learnMore => 'আরও জানুন';
+
+  @override
+  String get instantTranslate => 'তাৎক্ষণিক অনুবাদ';
+
+  @override
+  String get anyLanguageToOlChiki => 'যেকোনো ভাষা থেকে ওল চিকি';
+
+  @override
+  String get aiBadge => 'AI';
+
+  @override
+  String get yourLearningPath => 'আপনার শেখার পথ';
+
+  @override
+  String stepOfPath(int step, int total) {
+    return 'Step $step of $total: ';
+  }
+
+  @override
+  String get learningPathSubtitle =>
+      'আপনার সাঁওতালি স্তরের সাথে মিলে একটি নির্দেশিত পথ।';
+
+  @override
+  String get santaliOlChikiLabel => 'সাঁওতালি (ওল চিকি)';
+
+  @override
+  String get magicTranslatePrivacyNote =>
+      'ম্যাজিক ট্রান্সলেট আপনার ছগুলি ডিভাইসেই প্রসেস করে এবং আপনার গোপনীয়তার সম্মান করে।';
+
+  @override
+  String get close => 'বন্ধ করুন';
+
+  @override
+  String get aiVoicePromoBadge => 'NEW • AI VOICE';
+
+  @override
+  String get aiVoiceTitle => 'AI Voice';
+
+  @override
+  String get aiVoicePromoSubtitle => 'যা খুশি টাইপ করুন — সাঁওতালিতে শুনুন।';
+
+  @override
+  String get tryNow => 'এখনই চেষ্টা করুন';
+
+  @override
+  String get k15Styles => 'ᱟᱲᱟᱝ • 15 styles';
+
+  @override
+  String get backToLearningPaths => 'শেখার পথে ফিরে যান';
+
+  @override
+  String get learningPathsHeader => 'শেখার পথ';
+
+  @override
+  String get chooseYourJourney => 'আপনার যাত্রা বেছে নিন';
+
+  @override
+  String get morePaths => 'আরও পথ';
+
+  @override
+  String get plusTenXp => '+10 XP';
+
+  @override
+  String get strokeOrderHint => 'স্ট্রোক ক্রম মনে রাখার চেষ্টা করুন';
+
+  @override
+  String traceAccuracy(String feedback, int percent) {
+    return '$feedback  Accuracy: $percent%';
+  }
+
+  @override
+  String get niceWork => 'চমৎকার!';
+
+  @override
+  String youScoredOutOf(int score, int total) {
+    return 'You scored $score out of $total';
+  }
+
+  @override
+  String percentFormat(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get backLabel => 'পিছনে';
+
+  @override
+  String get quizKeyboardHint =>
+      'তীর কী দিয়ে নেভিগেট করুন  •  1-4 দিয়ে বেছে নিন  •  Enter ↵ দিয়ে জমা দিন';
+
+  @override
+  String scoreOnly(int score) {
+    return '$score';
+  }
+
+  @override
+  String get pressEnter => 'Enter ↵';
+
+  @override
+  String get readyToTestYourself => 'আপনি নিজেকে পরীক্ষা দিতে প্রস্তুত?';
+
+  @override
+  String get takeTheQuiz => 'কুইজ নিন';
+
+  @override
+  String get skipForNow => 'এখন বাদ দিন';
+
+  @override
+  String get browseView => 'ব্রাউজ দৃশ্য';
+
+  @override
+  String get openDictionary => 'অভিধান খুলুন';
+
+  @override
+  String get learnLabel => 'শিখুন';
+
+  @override
+  String get doneLabel => 'হয়ে গেছে';
+
+  @override
+  String get lockedForNowTitle => 'অপেক্ষা করুন • এখনের জন্য লক';
+
+  @override
+  String completeBlockerFirst(String blocker) {
+    return 'Complete “$blocker” first to crack it open.';
+  }
+
+  @override
+  String get interactiveHtmlTitle => 'ইন্টারঅ্যাক্টিভ পাঠ অভিজ্ঞতা';
+
+  @override
+  String get interactiveHtmlBody =>
+      'এই পাঠটি ইন্টারঅ্যাক্টিভ উপাদান সহ আসে। দেখতে নিচে স্ক্রল করুন।';
+
+  @override
+  String get openInteractiveContent => 'ইন্টারঅ্যাক্টিভ উপাদান খুলুন';
+
+  @override
+  String get recommendedLabel => 'সুপারিশকৃত';
+
+  @override
+  String get audioPlaybackHint => 'অডিও চালাতে ট্যাপ করুন';
+
+  @override
+  String get finishReviewing => 'পর্যালোচনা শেষ করুন';
+
+  @override
+  String get takeQuizNow => 'এখনই কুইজ নিন';
+
+  @override
+  String stepOfTotal(int step, int total) {
+    return 'STEP $step OF $total';
+  }
+
+  @override
+  String get checkConnectionPeriod =>
+      'আপনার সংযোগ যাচাই করুন এবং আবার চেষ্টা করুন।';
+
+  @override
+  String sentencePronunciation(String pronunciation) {
+    return 'Pronunciation: $pronunciation';
+  }
+
+  @override
+  String get santaliLearner => 'সাঁওতালি শিক্ষার্থী';
+
+  @override
+  String get streakTip => 'স্ট্রিক বজায় রাখতে প্রতিদিন ৩টি পাঠ সম্পন্ন করুন।';
+
+  @override
+  String get continueLearningArrow => 'শেখা চালিয়ে যান →';
+
+  @override
+  String get olitun2 => 'Olitun';
+
+  @override
+  String get santaliOlChikiTag => 'SANTALI • OL CHIKI';
+
+  @override
+  String get menuLabel => 'মেনু';
+
+  @override
+  String get olitunPwaVersion => 'Olitun PWA • v2.4';
+
+  @override
+  String onboardingCounter(String current, String total) {
+    return '$current · $total';
+  }
+
+  @override
+  String get goalsTitle => 'লক্ষ্য';
+
+  @override
+  String get goalsSubtitle => 'শেখার আগে লক্ষ্য নির্ধারণ করুন।';
+
+  @override
+  String get requiredLabel => 'আবশ্যক';
+
+  @override
+  String get stepOneOfFive => 'ধাপ ৫-এর ১';
+
+  @override
+  String get languageSubtitle => 'ভাষা বেছে নিন এবং আপনার পছন্দ পরিবর্তন করুন';
+
+  @override
+  String get prefsSaveFailed =>
+      'আপনার সেটিংস সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String get selectMotherTongueToast =>
+      'চালিয়ে যেতে অনুগ্রহ করে আপনার মাতৃভাষা / শিক্ষণ ভাষা নির্বাচন করুন।';
+
+  @override
+  String get onboardingHeadline => 'ওল চিকি শিখুন,\nএকসাথে এক ধাপ';
+
+  @override
+  String get familiarityTitle => 'পরিচিতির স্তর';
+
+  @override
+  String get familiaritySubtitle =>
+      'আপনার পরিচিতির ভিত্তিতে শেখা অনুকূলন করুন।';
+
+  @override
+  String get displayTitle => 'আপনি উপাদান কীভাবে দেখতে চান?';
+
+  @override
+  String get displaySubtitle =>
+      'আপনার পছন্দের লিপি প্রদর্শন বেছে নিন। আপনি যেকোনো সময় এটি পরিবর্তন করতে পারেন।';
+
+  @override
+  String get practiceGoalTitle => 'অভ্যাসের লক্ষ্য';
+
+  @override
+  String get practiceGoalSubtitle =>
+      'অভ্যাসের লক্ষ্য নির্ধারণ করুন — প্রতিদিন কতগুলি পাঠ সম্পন্ন করতে হবে স্ট্রিক বজায় রাখতে।';
+
+  @override
+  String get olitunWordmark => 'OLITUN';
+
+  @override
+  String get learnOlChiki => 'ওল চিকি শিখুন';
+
+  @override
+  String get spaceKey => 'SPACE';
+
+  @override
+  String get practicedSuccessfully => 'সফলভাবে অভ্যাস করা হয়েছে';
+
+  @override
+  String get revealAndContinue => 'দেখান এবং চালিয়ে যান';
+
+  @override
+  String get systemDiagnosticsTitle => 'সিস্টেম ডায়াগনস্টিক ও রানটাইম';
+
+  @override
+  String get systemDiagnosticsSubtitle =>
+      'বেনামী রানটাইম পারফরম্যান্স ও ডায়াগনস্টিক টেলিমেট্রি';
+
+  @override
+  String get diagnosticPayloadPreview => 'ডায়াগনস্টিক পেলোড প্রিভিউ';
+
+  @override
+  String get diagnosticPayloadCopied =>
+      'ডায়াগনস্টিক পেলোড ক্লিপবোর্ডে কপি হয়েছে!';
+
+  @override
+  String get diagnosticsTileSubtitle =>
+      'রানটাইম ডেটা, মেমরি ব্যবহার ও ক্র্যাশ ডায়াগনস্টিক দেখুন';
+
+  @override
+  String get deleteAllDownloadsTitle => 'সব ডাউনলোড মুছবেন?';
+
+  @override
+  String get deleteAllDownloadsBody =>
+      'এটি এই ডিভাইস থেকে প্রতিটি অফলাইন গল্পের অডিও ক্লিপ মুছে ফেলে। আপনি যখন সেগুলি খুলবেন, গল্পগুলি আবার স্ট্রিম হবে।';
+
+  @override
+  String get editYourName => 'আপনার নাম সম্পাদনা করুন';
+
+  @override
+  String get save => 'সংরক্ষণ করুন';
+
+  @override
+  String get indigenousLanguagesTitle => 'স্বদেশী ভাষা প্ল্যাটফর্ম';
+
+  @override
+  String get indigenousLanguagesSubtitle =>
+      'পূর্ব ভারতের স্বদেশী লিপি ও উপজাতীয় ভাষা অন্বেষণ করুন';
+
+  @override
+  String packsComingSoon(String name) {
+    return '$name content & audio packs are coming soon!';
+  }
+
+  @override
+  String learningLanguageSetTo(String name, String script) {
+    return 'Learning language set to $name ($script)';
+  }
+
+  @override
+  String get audioPack => 'অডিও প্যাক';
+
+  @override
+  String get offlineLessons => 'অফলাইন পাঠ';
+
+  @override
+  String lettersCount(int count) {
+    return '$count letters';
+  }
+
+  @override
+  String get demoLabel => 'DEMO';
+
+  @override
+  String masteryAccuracy(int percent) {
+    return 'Accuracy: $percent%';
+  }
+
+  @override
+  String get masteryProgression => 'আয়ত্তের অগ্রগতি';
+
+  @override
+  String get nextMilestone => 'পরবর্তী মাইলফলক';
+
+  @override
+  String roadToLevel(String level) {
+    return 'Road to $level';
+  }
+
+  @override
+  String badgeUnlockHint(String name, String target) {
+    return 'To unlock the $name badge: $target';
+  }
+
+  @override
+  String get closestBadge => 'নিকটতম ব্যাজ অর্জন';
+
+  @override
+  String unlockBadge(String name) {
+    return 'Unlock the $name Badge';
+  }
+
+  @override
+  String get reminderFrequency => 'রিমাইন্ডার পুনরাবৃত্তি';
+
+  @override
+  String get reminderFrequencySubtitle =>
+      'ওল চিকি অভ্যাস করতে কতবার রিমাইন্ডার চান, বেছে নিন।';
+
+  @override
+  String get dailySchedulePreview => 'দৈনিক সূচি প্রিভিউ';
+
+  @override
+  String get sendTestNotification => 'পরীক্ষামূলক বিজ্ঞপ্তি পাঠান';
+
+  @override
+  String get chooseYourAvatarLower => 'আপনার অবতার বেছে নিন';
+
+  @override
+  String get avatarAnimationsFailed => 'অবতার অ্যানিমেশন লোড করা যায়নি।';
+
+  @override
+  String get tryAgainLower => 'আবার চেষ্টা করুন';
+
+  @override
+  String get avatarSaveFailed => 'অবতার সংরক্ষণ করা যায়নি। আবার চেষ্টা করুন।';
+
+  @override
+  String since(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get overallProgress => 'সামগ্রিক অগ্রগতি';
+
+  @override
+  String get noBookingsFound => 'কোনো বুকিং পাওয়া যায়নি';
+
+  @override
+  String get bookingsEmptyHint =>
+      'বখেদ ট্যাবের অধীনে আপনার অনুষ্ঠানের জন্য যাচাইকৃত আবৃত্তিকারী বুক করুন।';
+
+  @override
+  String get waitlistBookingsFailed => 'ওয়েটলিস্ট বুকিং লোড করা যায়নি।';
+
+  @override
+  String get assessmentScore => 'মূল্যায়ন স্কোর';
+
+  @override
+  String get avgLabel => 'গড়';
+
+  @override
+  String get adPrivacyRegionNote =>
+      'আপনার অঞ্চলের জন্য বিজ্ঞাপন গোপনীয়তা সেটিংস প্রয়োজন নেই।';
+
+  @override
+  String get signOutConfirmBody =>
+      'আপনি কি সত্যিই এই ডিভাইসে আপনার অ্যাকাউন্ট থেকে সাইন আউট করতে চান?';
+
+  @override
+  String get learningLanguageScript => 'শেখার ভাষা ও লিপি';
+
+  @override
+  String get mistakeReview => 'ভুল পর্যালোচনা';
+
+  @override
+  String get allCaughtUp => 'সব হয়ে গেছে!';
+
+  @override
+  String get noMistakesToReview =>
+      'কোনো ভুল পর্যালোচনার প্রয়োজন নেই। আপনার সাঁওতালি শিকড় শক্ত!';
+
+  @override
+  String get mistakesMastered => 'ভুলগুলি আয়ত্ত হয়েছে!';
+
+  @override
+  String get moreQuizzes => 'আরও কুইজ';
+
+  @override
+  String get challengeYourself => 'নিজেকে চ্যালেঞ্জ করুন';
+
+  @override
+  String get chooseAQuiz => 'একটি কুইজ বেছে নিন';
+
+  @override
+  String get noQuizzesYet => 'এখনো কোনো কুইজ নেই!';
+
+  @override
+  String get completeLessonsFirst => 'আগে কয়েকটি পাঠ সম্পন্ন করুন';
+
+  @override
+  String get quizUnavailable => 'কুইজ অনুপলব্ধ';
+
+  @override
+  String get quizUnavailableDetail =>
+      'কুইজ অনুপলব্ধ — এই পাঠে কুইজের জন্য পর্যাপ্ত প্রশ্ন নেই।';
+
+  @override
+  String get quizLoadFailed => 'কুইজ লোড করা যায়নি।';
+
+  @override
+  String translation(String text) {
+    return 'Translation: \"$text\"';
+  }
+
+  @override
+  String get audioNotAvailable => 'এই প্রশ্নের জন্য অডিও উপলব্ধ নেই।';
+
+  @override
+  String get mistakeReviewBadge => 'ভুল পর্যালোচনা';
+
+  @override
+  String get takesTwoMin => '২ মিনিট লাগে';
+
+  @override
+  String get mistakesQuote =>
+      '“ভুলগুলি শেখার একটি অংশ — গুলি পুনরাবৃত্তি এড়িয়ে চলুন।”';
+
+  @override
+  String get quizKeyboardHintAlt =>
+      '↑ / ↓ নেভিগেট  •  1-4 বেছে নিন  •  Enter ↵ জমা দিন';
+
+  @override
+  String get watchAdBonusStars => '+৫০ বোনাস তারার জন্য বিজ্ঞাপন দেখুন';
+
+  @override
+  String get shareAchievement => 'অর্জন শেয়ার করুন';
+
+  @override
+  String get bonusStarsEarned => '৫০ বোনাস তারা অর্জিত! ⭐';
+
+  @override
+  String get rewardedAdCooldown =>
+      'রিওয়ার্ডেড বিজ্ঞাপন ঠান্ডা হচ্ছে। পরে আবার চেষ্টা করুন।';
+
+  @override
+  String get scoreLabel => 'স্কোর';
+
+  @override
+  String get accuracyLabel => 'নির্ভুলতা';
+
+  @override
+  String get starsEarned => 'অর্জিত তারা';
+
+  @override
+  String get maxCombo => 'সর্বোচ্চ কম্বো';
+
+  @override
+  String get reviewMistakes => 'ভুলগুলি পর্যালোচনা করুন';
+
+  @override
+  String get reviewMistakesSubtitle =>
+      'আপনার আয়ত্ত গড়তে যা ভুল হয়েছে তা পর্যালোচনা করুন! লহা সে!';
+
+  @override
+  String get correctColon => 'সঠিক উত্তর:';
+
+  @override
+  String get correctAnswerColon => 'সঠিক উত্তর:';
+
+  @override
+  String get insightGuidance => 'অন্তর্দৃষ্টি ও নির্দেশনা:';
+
+  @override
+  String get selectMissingWord => 'হারানো শব্দ নির্বাচন করুন:';
+
+  @override
+  String questionsWithLevel(int count, String level) {
+    return '$count questions • $level';
+  }
+
+  @override
+  String get startQuiz => 'কুইজ শুরু করুন';
+
+  @override
+  String questionsCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String get outOfHearts => 'হৃদয় শেষ!';
+
+  @override
+  String outOfHeartsSummary(int score, int total, int stars) {
+    return 'আপনি $score/$total সঠিক উত্তর দিয়েছেন এবং এ পর্যন্ত $stars তারা অর্জন করেছেন। অভ্যাস চালিয়ে যান।';
+  }
+
+  @override
+  String get watchAdRefillHearts =>
+      'হৃদয় পূরণ করতে বিজ্ঞাপন দেখুন (বিনামূল্যে)';
+
+  @override
+  String get backToQuizzes => 'কুইজে ফিরে যান';
+
+  @override
+  String get heartsRefilled => 'হৃদয় পূর্ণ হয়েছে! ❤️❤️❤️';
+
+  @override
+  String get rewardedAdCooldownReset =>
+      'রিওয়ার্ডেড বিজ্ঞাপন ঠান্ডা হচ্ছে। অনুগ্রহ করে নিয়মিত রিসেট চেষ্টা করুন।';
+
+  @override
+  String currentOfTotal(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get rhymesEndNote => 'এখানে বাকি সব — নতুন বখেদ শীঘ্রই আসছে!';
+
+  @override
+  String get rhymesLoadFailed => 'সুরকথা লোড করা যায়নি।';
+
+  @override
+  String get bakhedPreparing => 'বখেদ প্রস্তুত করা হচ্ছে';
+
+  @override
+  String get bakhedPreparingSubtitle =>
+      'প্রকাশের পরে নতুন শ্রব্য গল্প এখানে দেখা যাবে।';
+
+  @override
+  String failedToJoinWaitlist(String error) {
+    return 'Failed to join waitlist: $error';
+  }
+
+  @override
+  String get waitlistJoined => 'ওয়েটলিস্টে যোগ দিয়েছেন! 🎉';
+
+  @override
+  String get waitlistJoinedBody =>
+      'আপনি তালিকায় যোগ দিয়েছেন! পাওয়া গেলে আমরা আপনাকে জানাব।';
+
+  @override
+  String get great => 'দারুণ';
+
+  @override
+  String get joinBintiGuruWaitlist => 'বিন্দি গুরু ওয়েটলিস্টে যোগ দিন';
+
+  @override
+  String get bintiGuruFormSubtitle =>
+      'আপনার অনুষ্ঠান সম্পর্কে আমাদের জানান। আমরা উপলব্ধ প্রমাণিত আবৃত্তিকারী খুঁজব।';
+
+  @override
+  String get submitWaitlistEntry => 'এন্ট্রি জমা দিন';
+
+  @override
+  String get bookVerifiedBintiGuru => 'যাচাইকৃত বিন্দি গুরু বুক করুন';
+
+  @override
+  String get bintiGuruLandingBody =>
+      'বিন্দি সাঁওতালি আবৃত্তির পবিত্র কাজ। করম, সোহরাই, বাহা, বিয়ে, শ্রাদ্ধ বা অন্য যে কোনো অনুষ্ঠানের জন্য — প্রমাণিত আবৃত্তিকারী খুঁজুন।';
+
+  @override
+  String get joinWaitlistNow => 'এখনই ওয়েটলিস্টে যোগ দিন';
+
+  @override
+  String get howItWorks => 'এটি যেভাবে কাজ করে';
+
+  @override
+  String get newBadge => 'নতুন';
+
+  @override
+  String get ctrlEnterCreate => 'Ctrl+Enter ↵ to create';
+
+  @override
+  String charCount(int current, int max) {
+    return '$current / $max';
+  }
+
+  @override
+  String get svgLoadFailed => 'SVG অ্যানিমেশন লোড করা যায়নি';
+
+  @override
+  String get signIn => 'সাইন ইন';
+
+  @override
+  String get shareCardTagline => 'OLITUN • ᱚᱞ ᱪᱤᱠᱤ';
+
+  @override
+  String get shareCardFooter => 'Learn Santali (Ol Chiki) • olitun.app';
+
+  @override
+  String get shareTextCopied => 'শেয়ারের টেক্সট ক্লিপবোর্ডে কপি হয়েছে। 📋';
+
+  @override
+  String tracingPracticeGlyph(String glyph) {
+    return 'Tracing practice — $glyph';
+  }
+
+  @override
+  String mastery(int current, int required) {
+    return 'Mastery: $current/$required';
+  }
+
+  @override
+  String get onboardingStepsBody =>
+      'অক্ষর দিয়ে শুরু করুন, শব্দ গড়ুন, কুইজ দিয়ে অভ্যাস করুন, এবং আপনার সাঁওতালি শেখার যাত্রা চালিয়ে যান।';
+
+  @override
+  String practiceModeLabel(String mode) {
+    return 'Practice • $mode';
+  }
+
+  @override
+  String greatJobTakeQuiz(String title) {
+    return 'Great job! Take “$title” now to test your knowledge.';
+  }
+
+  @override
+  String wordsNeedPractice(int count) {
+    return '$count word(s) need(s) practice';
+  }
+
+  @override
+  String voiceClipMeta(String voice, String style, String instant) {
+    return '$voice • $style$instant';
+  }
+
+  @override
+  String get continueWithEmail => 'ইমেল দিয়ে চালিয়ে যান';
+
+  @override
+  String get exploreAsGuest => 'অতিথি হিসেবে দেখুন';
+
+  @override
+  String get continueWithGoogle => 'Google দিয়ে চালিয়ে যান';
+
+  @override
+  String get guestSessionFailed =>
+      'অতিথি সেশন শুরু করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get couldNotLoadLessons => 'পাঠ লোড করা যায়নি';
+
+  @override
+  String get shareMessageCopied => 'শেয়ার বার্তা ক্লিপবোর্ডে কপি হয়েছে! 📋';
+
+  @override
+  String get shareMilestoneTitle => 'আপনার মাইলফলক শেয়ার করুন';
+
+  @override
+  String get shareMilestoneSubtitle =>
+      'সাঁওতালি ও ওল চিকি শেখার জন্য অন্যদের অনুপ্রাণিত করুন';
+
+  @override
+  String get copyTextSummary => 'লেখার সারাংশ কপি করুন';
+
+  @override
+  String get traceGuidelines => 'অক্ষরের নির্দেশিকা নির্ভুলভাবে ট্রেস করুন';
+
+  @override
+  String get showExample => 'উদাহরণ দেখান';
+
+  @override
+  String get signOut => 'সাইন আউট করুন';
+
+  @override
+  String get delete => 'মুছুন';
+
+  @override
+  String get finishLesson => 'পাঠ শেষ করুন';
+
+  @override
+  String get couldNotOpenShareSheet => 'শেয়ার শিট খোলা যায়নি';
+
+  @override
+  String get couldNotClearDownloads => 'ডাউনলোড পরিষ্কার করা যায়নি';
+
+  @override
+  String get progressLoadFailed =>
+      'আপনার সংরক্ষিত অগ্রগতি এখনো নিরাপদে আছে। অনুগ্রহ করে এই দৃশ্য রিফ্রেশ করুন।';
+
+  @override
+  String get couldNotLoadProgress => 'অগ্রগতি লোড করা যায়নি';
+
+  @override
+  String get couldNotLoadQuizzes => 'কুইজ লোড করা যায়নি';
+
+  @override
+  String get contentLoadFailed =>
+      'কন্টেন্ট লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
 }

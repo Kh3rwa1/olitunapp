@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class QuizBlockCTAWidget extends StatelessWidget {
   final String quizId;
@@ -78,7 +79,7 @@ class QuizBlockCTAWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Ready to test yourself?',
+                    AppLocalizations.of(context)!.readyToTestYourself,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -89,7 +90,9 @@ class QuizBlockCTAWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Great job! Take "${quiz.title ?? 'the quiz'}" now to test your knowledge.',
+                    AppLocalizations.of(
+                      context,
+                    )!.greatJobTakeQuiz(quiz.title ?? 'the quiz'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -104,7 +107,7 @@ class QuizBlockCTAWidget extends StatelessWidget {
                       context.push('/quiz/$quizId');
                     },
                     child: Text(
-                      'TAKE THE QUIZ',
+                      AppLocalizations.of(context)!.takeTheQuiz,
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
@@ -125,9 +128,9 @@ class QuizBlockCTAWidget extends StatelessWidget {
                           ? Colors.white60
                           : const Color(0xFF64748B),
                     ),
-                    child: const Text(
-                      'Skip for now',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                    child: Text(
+                      AppLocalizations.of(context)!.skipForNow,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ],

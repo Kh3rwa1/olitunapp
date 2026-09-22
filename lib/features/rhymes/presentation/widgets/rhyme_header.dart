@@ -73,7 +73,7 @@ class RhymeHeader extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         Text(
-              'Unlock the magic of stories & songs',
+              AppLocalizations.of(context)!.unlockMagic,
               style: AppTypography.inter(
                 fontSize: 16,
                 color: isDark ? Colors.white54 : Colors.black45,

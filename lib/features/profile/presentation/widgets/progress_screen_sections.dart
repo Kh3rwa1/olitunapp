@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/waitlist_provider.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class ProgressErrorState extends StatelessWidget {
   const ProgressErrorState({
@@ -40,7 +41,7 @@ class ProgressErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Could not load progress',
+              AppLocalizations.of(context)!.couldNotLoadProgress,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 22,
@@ -50,7 +51,7 @@ class ProgressErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Your saved progress is still safe. Try refreshing this view.',
+              AppLocalizations.of(context)!.progressLoadFailed,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -62,7 +63,7 @@ class ProgressErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context)!.retry),
               style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             ),
           ],
@@ -108,7 +109,7 @@ class BintiGuruBookingsSection extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'No bookings found',
+                  AppLocalizations.of(context)!.noBookingsFound,
                   style: AppTypography.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -117,7 +118,7 @@ class BintiGuruBookingsSection extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Book verified reciters for your ceremonies under the Bakhed tab.',
+                  AppLocalizations.of(context)!.bookingsEmptyHint,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,
@@ -307,9 +308,9 @@ class BintiGuruBookingsSection extends ConsumerWidget {
           color: Colors.redAccent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: const Text(
-          'Failed to load waitlist bookings.',
-          style: TextStyle(color: Colors.redAccent),
+        child: Text(
+          AppLocalizations.of(context)!.waitlistBookingsFailed,
+          style: const TextStyle(color: Colors.redAccent),
         ),
       ),
     );

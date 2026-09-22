@@ -14,6 +14,7 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/features/lessons/presentation/widgets/full_bleed_hero_media.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Concrete overrides are required (not mocktail stubs) because the central
 /// PlaybackController subscribes to these streams in its constructor — an
@@ -206,6 +207,8 @@ void main() {
           learnerLessonsProvider.overrideWithValue(const AsyncValue.loading()),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: LessonBlockDetailScreen(
             lessonId: 'lesson_1',
             initialBlockIndex: 0,
@@ -227,6 +230,8 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: LessonBlockDetailScreen(
             lessonId: 'lesson_1',
             initialBlockIndex: 0,
@@ -247,6 +252,8 @@ void main() {
           learnerLessonsProvider.overrideWithValue(const AsyncValue.data([])),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: LessonBlockDetailScreen(
             lessonId: 'lesson_1',
             initialBlockIndex: 0,
@@ -278,6 +285,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
@@ -351,6 +360,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_2',
               initialBlockIndex: 0,
@@ -441,6 +452,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_vocab_basics',
               initialBlockIndex: 0,
@@ -493,6 +506,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_vocab_test',
               initialBlockIndex: 0,
@@ -533,6 +548,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,
@@ -609,6 +626,8 @@ void main() {
             reduceVisualEffectsProvider.overrideWithValue(false),
           ],
           child: const MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: LessonBlockDetailScreen(
               lessonId: 'lesson_1',
               initialBlockIndex: 0,

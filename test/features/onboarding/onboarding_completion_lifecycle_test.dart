@@ -12,6 +12,7 @@ import 'package:itun/features/auth/presentation/controllers/auth_controller.dart
 import 'package:itun/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:itun/features/onboarding/providers/onboarding_draft.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _DelayedAuthController extends Fake implements AuthController {
   final completion = Completer<void>();
@@ -83,7 +84,11 @@ void main() {
           if (targetLanguage != null)
             targetLanguageCodeProvider.overrideWith((ref) => targetLanguage),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
     );
     await flush(tester);

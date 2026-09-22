@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class QuizCompleteBentoStats extends StatelessWidget {
   const QuizCompleteBentoStats({
@@ -75,7 +76,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Score',
+                AppLocalizations.of(context)!.scoreLabel,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -113,7 +114,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Accuracy',
+                AppLocalizations.of(context)!.accuracyLabel,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -149,7 +150,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Stars Earned',
+                AppLocalizations.of(context)!.starsEarned,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
@@ -185,7 +186,7 @@ class QuizCompleteBentoStats extends StatelessWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                'Max Combo',
+                AppLocalizations.of(context)!.maxCombo,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,

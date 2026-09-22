@@ -6,6 +6,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class MockUserStatsNotifier extends UserStatsNotifier {
   @override
@@ -103,6 +104,8 @@ Future<void> pumpPracticeWidget(
         themeMode: themeMode,
         theme: ThemeData.light(),
         darkTheme: ThemeData.dark(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: widget),
       ),
     ),

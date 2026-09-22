@@ -4,6 +4,7 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/utils/localized_content.dart';
 import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryLessonCard extends StatefulWidget {
   final LessonEntity lesson;
@@ -137,18 +138,18 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                     ),
                                     borderRadius: BorderRadius.circular(999),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
+                                      const Icon(
                                         Icons.check_rounded,
                                         size: 11,
                                         color: AppColors.emeraldDeep,
                                       ),
-                                      SizedBox(width: 4),
+                                      const SizedBox(width: 4),
                                       Text(
-                                        'DONE',
-                                        style: TextStyle(
+                                        AppLocalizations.of(context)!.doneLabel,
+                                        style: const TextStyle(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w800,
                                           letterSpacing: 0.8,

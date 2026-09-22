@@ -3,6 +3,7 @@ import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 // ═══════════════ EDIT NAME SHEET ═══════════════
 
@@ -71,7 +72,7 @@ class _EditNameSheetState extends State<EditNameSheet> {
           ),
           const SizedBox(height: 24),
           Text(
-            'Edit Your Name',
+            AppLocalizations.of(context)!.editYourName,
             style: AppTypography.inter(
               fontSize: 20,
               fontWeight: FontWeight.w800,
@@ -128,7 +129,7 @@ class _EditNameSheetState extends State<EditNameSheet> {
                 elevation: 0,
               ),
               child: Text(
-                'Save',
+                AppLocalizations.of(context)!.save,
                 style: AppTypography.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,

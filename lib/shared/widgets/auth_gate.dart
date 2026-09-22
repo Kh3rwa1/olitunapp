@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../providers/providers.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Wraps a child widget with auth protection.
 /// Shows a login prompt if the user is not authenticated.
@@ -113,14 +114,18 @@ class AuthGate extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: AppColors.glowShadow(AppColors.primary),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.login_rounded, color: Colors.white, size: 20),
-                    SizedBox(width: 10),
+                    const Icon(
+                      Icons.login_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
                     Text(
-                      'Sign In',
-                      style: TextStyle(
+                      AppLocalizations.of(context)!.signIn,
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: Colors.white,

@@ -1248,4 +1248,830 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get aiStudioPassageLimitError =>
       'Shorten the passage to continue. Nothing is truncated.';
+
+  @override
+  String get aiStudioUploadPrompt => 'Upload document or capture page';
+
+  @override
+  String get aiStudioUploadFormats => 'PDF, PNG or JPG · up to 10 MB';
+
+  @override
+  String aiStudioJobId(String id) {
+    return 'Job: $id';
+  }
+
+  @override
+  String get aiStudioCheckStatus => 'Check status';
+
+  @override
+  String get aiStudioReplaceWithScan =>
+      'Replace my edits with latest scan text';
+
+  @override
+  String get aiStudioEditSource => 'Edit source input';
+
+  @override
+  String get olitun => 'Olitun';
+
+  @override
+  String get welcomeTagline => 'Learn Ol Chiki Script';
+
+  @override
+  String errorLoadingContent(String error) {
+    return 'Error loading content: $error';
+  }
+
+  @override
+  String get startQuiz2 => 'Start Quiz';
+
+  @override
+  String get practiceTyping => 'Practice Typing';
+
+  @override
+  String mediaDuration(int seconds) {
+    return 'Duration: ${seconds}s';
+  }
+
+  @override
+  String get noLearningContent => 'No learning content available.';
+
+  @override
+  String errorLoadingDetails(String error) {
+    return 'Error loading details: $error';
+  }
+
+  @override
+  String get culturalNotesPreparing => 'Cultural notes are being prepared.';
+
+  @override
+  String culturalNoteSource(String source) {
+    return 'Source: $source';
+  }
+
+  @override
+  String get noVocabularyItems => 'No vocabulary items defined.';
+
+  @override
+  String get lyricsBeingAdded => 'Lyrics are being added.';
+
+  @override
+  String get bakhedLabel => 'BAKHED';
+
+  @override
+  String get wordLabel => 'word';
+
+  @override
+  String get cancelLower => 'cancel';
+
+  @override
+  String greetingDayPart(String part) {
+    return 'ᱡᱚᱦᱟᱨ • $part';
+  }
+
+  @override
+  String get homePickupSubtitle =>
+      'Pick up where you left off — small steps, every day.';
+
+  @override
+  String get aiTranslatorTitle => 'AI Translator';
+
+  @override
+  String get voiceSpeakWithConfidence => 'Speak With\nConfidence';
+
+  @override
+  String get aiStudioPromoBadge => 'NEW • AI STUDIO';
+
+  @override
+  String get aiStudioPromoSubtitle => 'Scan or speak — get Santali text.';
+
+  @override
+  String get learnMore => 'Learn more';
+
+  @override
+  String get instantTranslate => 'Instant Translate';
+
+  @override
+  String get anyLanguageToOlChiki => 'Any Language → Ol Chiki';
+
+  @override
+  String get aiBadge => 'AI';
+
+  @override
+  String get yourLearningPath => 'YOUR LEARNING PATH';
+
+  @override
+  String stepOfPath(int step, int total) {
+    return 'Step $step of $total: ';
+  }
+
+  @override
+  String get learningPathSubtitle =>
+      'A guided path matched to your Santali level.';
+
+  @override
+  String get santaliOlChikiLabel => 'SANTALI (OL CHIKI)';
+
+  @override
+  String get magicTranslatePrivacyNote =>
+      'Translations are processed securely, cached via privacy hashes, and never linked to your profile.';
+
+  @override
+  String get close => 'CLOSE';
+
+  @override
+  String get aiVoicePromoBadge => 'NEW • AI VOICE';
+
+  @override
+  String get aiVoiceTitle => 'AI Voice';
+
+  @override
+  String get aiVoicePromoSubtitle => 'Type anything — hear it in Santali.';
+
+  @override
+  String get tryNow => 'Try now';
+
+  @override
+  String get k15Styles => 'ᱟᱲᱟᱝ • 15 styles';
+
+  @override
+  String get backToLearningPaths => 'Back to learning paths';
+
+  @override
+  String get learningPathsHeader => 'LEARNING PATHS';
+
+  @override
+  String get chooseYourJourney => 'Choose Your Journey';
+
+  @override
+  String get morePaths => 'MORE PATHS';
+
+  @override
+  String get plusTenXp => '+10 XP';
+
+  @override
+  String get strokeOrderHint =>
+      'Watch the stroke flow and then switch to Tracing mode to replicate it.';
+
+  @override
+  String traceAccuracy(String feedback, int percent) {
+    return '$feedback  Accuracy: $percent%';
+  }
+
+  @override
+  String get niceWork => 'Nice!';
+
+  @override
+  String youScoredOutOf(int score, int total) {
+    return 'You scored $score out of $total';
+  }
+
+  @override
+  String percentFormat(int percent) {
+    return '$percent%';
+  }
+
+  @override
+  String get backLabel => 'Back';
+
+  @override
+  String get quizKeyboardHint =>
+      'Arrow keys to navigate  •  1-4 to select  •  Enter ↵ to submit';
+
+  @override
+  String scoreOnly(int score) {
+    return '$score';
+  }
+
+  @override
+  String get pressEnter => 'Enter ↵';
+
+  @override
+  String get readyToTestYourself => 'Ready to test yourself?';
+
+  @override
+  String get takeTheQuiz => 'TAKE THE QUIZ';
+
+  @override
+  String get skipForNow => 'Skip for now';
+
+  @override
+  String get browseView => 'BROWSE VIEW';
+
+  @override
+  String get openDictionary => 'Open Dictionary';
+
+  @override
+  String get learnLabel => 'LEARN';
+
+  @override
+  String get doneLabel => 'DONE';
+
+  @override
+  String get lockedForNowTitle => 'HOLD ON • LOCKED FOR NOW';
+
+  @override
+  String completeBlockerFirst(String blocker) {
+    return 'Complete “$blocker” first to crack it open.';
+  }
+
+  @override
+  String get interactiveHtmlTitle => 'Interactive HTML Content';
+
+  @override
+  String get interactiveHtmlBody =>
+      'This lesson contains an interactive HTML experience. Tap below to launch it.';
+
+  @override
+  String get openInteractiveContent => 'Open Interactive Content';
+
+  @override
+  String get recommendedLabel => 'RECOMMENDED';
+
+  @override
+  String get audioPlaybackHint => 'Press Space to play audio • ← → to navigate';
+
+  @override
+  String get finishReviewing => 'FINISH REVIEWING';
+
+  @override
+  String get takeQuizNow => 'Take Quiz Now';
+
+  @override
+  String stepOfTotal(int step, int total) {
+    return 'STEP $step OF $total';
+  }
+
+  @override
+  String get checkConnectionPeriod => 'Check your connection and try again.';
+
+  @override
+  String sentencePronunciation(String pronunciation) {
+    return 'Pronunciation: $pronunciation';
+  }
+
+  @override
+  String get santaliLearner => 'SANTALI LEARNER';
+
+  @override
+  String get streakTip => 'Finish 3 lessons to keep your streak alive.';
+
+  @override
+  String get continueLearningArrow => 'Continue learning →';
+
+  @override
+  String get olitun2 => 'Olitun';
+
+  @override
+  String get santaliOlChikiTag => 'SANTALI • OL CHIKI';
+
+  @override
+  String get menuLabel => 'MENU';
+
+  @override
+  String get olitunPwaVersion => 'Olitun PWA • v2.4';
+
+  @override
+  String onboardingCounter(String current, String total) {
+    return '$current · $total';
+  }
+
+  @override
+  String get goalsTitle => 'What are your learning goals?';
+
+  @override
+  String get goalsSubtitle =>
+      'Select all that apply to personalize your learning experience.';
+
+  @override
+  String get requiredLabel => 'REQUIRED';
+
+  @override
+  String get stepOneOfFive => 'Step 1 of 5';
+
+  @override
+  String get languageSubtitle =>
+      'Select your mother tongue. We will use this language to explain Ol Chiki letters, word meanings, and audio lessons.';
+
+  @override
+  String get prefsSaveFailed =>
+      'Could not save your preferences. Please try again.';
+
+  @override
+  String get selectMotherTongueToast =>
+      'Please select your mother tongue / teaching language to continue.';
+
+  @override
+  String get onboardingHeadline => 'Learn Ol Chiki,\\none step at a time';
+
+  @override
+  String get familiarityTitle => 'How familiar are you with Ol Chiki?';
+
+  @override
+  String get familiaritySubtitle =>
+      'We will tailor your learning path accordingly.';
+
+  @override
+  String get displayTitle => 'How do you want to see content?';
+
+  @override
+  String get displaySubtitle =>
+      'Choose your preferred script display. You can change this anytime.';
+
+  @override
+  String get practiceGoalTitle => 'How much do you want to practice?';
+
+  @override
+  String get practiceGoalSubtitle =>
+      'Setting a small daily goal helps build a continuous learning streak.';
+
+  @override
+  String get olitunWordmark => 'OLITUN';
+
+  @override
+  String get learnOlChiki => 'LEARN OL CHIKI';
+
+  @override
+  String get spaceKey => 'SPACE';
+
+  @override
+  String get practicedSuccessfully => 'Practiced Successfully';
+
+  @override
+  String get revealAndContinue => 'REVEAL & CONTINUE';
+
+  @override
+  String get systemDiagnosticsTitle => 'System Diagnostics & Health';
+
+  @override
+  String get systemDiagnosticsSubtitle =>
+      'Anonymized runtime performance & diagnostic telemetry';
+
+  @override
+  String get diagnosticPayloadPreview => 'Diagnostic Payload Preview';
+
+  @override
+  String get diagnosticPayloadCopied =>
+      'Diagnostic payload copied to clipboard!';
+
+  @override
+  String get diagnosticsTileSubtitle =>
+      'View runtime health, memory state & anonymized telemetry';
+
+  @override
+  String get deleteAllDownloadsTitle => 'Delete all downloads?';
+
+  @override
+  String get deleteAllDownloadsBody =>
+      'This removes every offline story audio clip from this device. Stories will stream again when you are back online.';
+
+  @override
+  String get editYourName => 'Edit Your Name';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get indigenousLanguagesTitle => 'Indigenous Languages Platform';
+
+  @override
+  String get indigenousLanguagesSubtitle =>
+      'Explore native scripts & tribal languages of eastern India';
+
+  @override
+  String packsComingSoon(String name) {
+    return '$name content & audio packs are coming soon!';
+  }
+
+  @override
+  String learningLanguageSetTo(String name, String script) {
+    return 'Learning language set to $name ($script)';
+  }
+
+  @override
+  String get audioPack => 'Audio Pack';
+
+  @override
+  String get offlineLessons => 'Offline Lessons';
+
+  @override
+  String lettersCount(int count) {
+    return '$count letters';
+  }
+
+  @override
+  String get demoLabel => 'DEMO';
+
+  @override
+  String masteryAccuracy(int percent) {
+    return 'Accuracy: $percent%';
+  }
+
+  @override
+  String get masteryProgression => 'Mastery Progression';
+
+  @override
+  String get nextMilestone => 'NEXT MILESTONE';
+
+  @override
+  String roadToLevel(String level) {
+    return 'Road to $level';
+  }
+
+  @override
+  String badgeUnlockHint(String name, String target) {
+    return 'To unlock the $name badge: $target';
+  }
+
+  @override
+  String get closestBadge => 'Closest Badge Achievement';
+
+  @override
+  String unlockBadge(String name) {
+    return 'Unlock the $name Badge';
+  }
+
+  @override
+  String get reminderFrequency => 'Reminder Frequency';
+
+  @override
+  String get reminderFrequencySubtitle =>
+      'Choose how often you would like to be reminded to practice Ol Chiki.';
+
+  @override
+  String get dailySchedulePreview => 'Daily Schedule Preview';
+
+  @override
+  String get sendTestNotification => 'Send Test Notification';
+
+  @override
+  String get chooseYourAvatarLower => 'Choose your avatar';
+
+  @override
+  String get avatarAnimationsFailed => 'Could not load avatar animations.';
+
+  @override
+  String get tryAgainLower => 'Try again';
+
+  @override
+  String get avatarSaveFailed => 'Could not save avatar. Please try again.';
+
+  @override
+  String since(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get overallProgress => 'Overall Progress';
+
+  @override
+  String get noBookingsFound => 'No bookings found';
+
+  @override
+  String get bookingsEmptyHint =>
+      'Book verified reciters for your ceremonies under the Bakhed tab.';
+
+  @override
+  String get waitlistBookingsFailed => 'Failed to load waitlist bookings.';
+
+  @override
+  String get assessmentScore => 'Assessment Score';
+
+  @override
+  String get avgLabel => 'Avg';
+
+  @override
+  String get adPrivacyRegionNote =>
+      'Ad privacy settings are not required for your region.';
+
+  @override
+  String get signOutConfirmBody =>
+      'Are you sure you want to sign out of your account on this device?';
+
+  @override
+  String get learningLanguageScript => 'Learning Language & Script';
+
+  @override
+  String get mistakeReview => 'Mistake Review';
+
+  @override
+  String get allCaughtUp => 'All caught up!';
+
+  @override
+  String get noMistakesToReview =>
+      'No mistakes need review. Your Santali roots are strong!';
+
+  @override
+  String get mistakesMastered => 'Mistakes Mastered!';
+
+  @override
+  String get moreQuizzes => 'MORE QUIZZES';
+
+  @override
+  String get challengeYourself => 'CHALLENGE YOURSELF';
+
+  @override
+  String get chooseAQuiz => 'Choose a Quiz';
+
+  @override
+  String get noQuizzesYet => 'No quizzes yet!';
+
+  @override
+  String get completeLessonsFirst => 'Complete some lessons first';
+
+  @override
+  String get quizUnavailable => 'Quiz unavailable';
+
+  @override
+  String get quizUnavailableDetail =>
+      'Quiz unavailable — this lesson does not contain enough valid questions yet.';
+
+  @override
+  String get quizLoadFailed => 'Could not load the quiz.';
+
+  @override
+  String translation(String text) {
+    return 'Translation: \"$text\"';
+  }
+
+  @override
+  String get audioNotAvailable => 'Audio is not available for this question.';
+
+  @override
+  String get mistakeReviewBadge => 'MISTAKE REVIEW';
+
+  @override
+  String get takesTwoMin => 'Takes 2 min';
+
+  @override
+  String get mistakesQuote =>
+      '“Mistakes are just lessons asking for a second chance.”';
+
+  @override
+  String get quizKeyboardHintAlt =>
+      '↑ / ↓ Navigate  •  1-4 Choose  •  Enter ↵ Submit';
+
+  @override
+  String get watchAdBonusStars => 'Watch Ad for +50 Bonus Stars';
+
+  @override
+  String get shareAchievement => 'Share Achievement';
+
+  @override
+  String get bonusStarsEarned => 'Bonus 50 Stars Earned! ⭐';
+
+  @override
+  String get rewardedAdCooldown =>
+      'Rewarded ad is cooling down. Try again later.';
+
+  @override
+  String get scoreLabel => 'Score';
+
+  @override
+  String get accuracyLabel => 'Accuracy';
+
+  @override
+  String get starsEarned => 'Stars Earned';
+
+  @override
+  String get maxCombo => 'Max Combo';
+
+  @override
+  String get reviewMistakes => 'Review Mistakes';
+
+  @override
+  String get reviewMistakesSubtitle =>
+      'Review what you got incorrect to build your mastery! Laha se!';
+
+  @override
+  String get correctColon => 'Correct:';
+
+  @override
+  String get correctAnswerColon => 'Correct Answer:';
+
+  @override
+  String get insightGuidance => 'Insight & Guidance:';
+
+  @override
+  String get selectMissingWord => 'Select the missing word:';
+
+  @override
+  String questionsWithLevel(int count, String level) {
+    return '$count questions • $level';
+  }
+
+  @override
+  String get startQuiz => 'START QUIZ';
+
+  @override
+  String questionsCount(int count) {
+    return '$count questions';
+  }
+
+  @override
+  String get outOfHearts => 'Out of Hearts!';
+
+  @override
+  String outOfHeartsSummary(int score, int total, int stars) {
+    return 'You answered $score/$total correctly and earned $stars stars so far. Keep practicing to build your strength!';
+  }
+
+  @override
+  String get watchAdRefillHearts => 'Watch Ad to Refill Hearts (Free)';
+
+  @override
+  String get backToQuizzes => 'Back to Quizzes';
+
+  @override
+  String get heartsRefilled => 'Hearts Refilled! ❤️❤️❤️';
+
+  @override
+  String get rewardedAdCooldownReset =>
+      'Rewarded ad is cooling down. Please try regular reset.';
+
+  @override
+  String currentOfTotal(int current, int total) {
+    return '$current/$total';
+  }
+
+  @override
+  String get rhymesEndNote =>
+      'That\'s everything here — new Bakhed coming soon!';
+
+  @override
+  String get rhymesLoadFailed => 'Could not load the rhymes list.';
+
+  @override
+  String get bakhedPreparing => 'Bakhed are being prepared';
+
+  @override
+  String get bakhedPreparingSubtitle =>
+      'New listening stories will appear here after publishing.';
+
+  @override
+  String failedToJoinWaitlist(String error) {
+    return 'Failed to join waitlist: $error';
+  }
+
+  @override
+  String get waitlistJoined => 'Waitlist Joined! 🎉';
+
+  @override
+  String get waitlistJoinedBody =>
+      'Thank you for submitting your details. Our cultural coordination team will contact you shortly via phone/WhatsApp to match you with a certified Binti Guru.';
+
+  @override
+  String get great => 'Great';
+
+  @override
+  String get joinBintiGuruWaitlist => 'Join Binti Guru Waitlist';
+
+  @override
+  String get bintiGuruFormSubtitle =>
+      'Tell us about your ceremony. We will search for available certified reciters.';
+
+  @override
+  String get submitWaitlistEntry => 'Submit Waitlist Entry';
+
+  @override
+  String get bookVerifiedBintiGuru => 'Book a Verified Binti Guru';
+
+  @override
+  String get bintiGuruLandingBody =>
+      'Binti is the sacred act of Santali recitation. Whether for Karam, Sohrai, Baha, weddings, or naming ceremonies, connect with certified, premium Binti reciters who preserve our cultural heritage.';
+
+  @override
+  String get joinWaitlistNow => 'Join waitlist now';
+
+  @override
+  String get howItWorks => 'HOW IT WORKS';
+
+  @override
+  String get newBadge => 'NEW';
+
+  @override
+  String get ctrlEnterCreate => 'Ctrl+Enter ↵ to create';
+
+  @override
+  String charCount(int current, int max) {
+    return '$current / $max';
+  }
+
+  @override
+  String get svgLoadFailed => 'Failed to load SVG animation';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get shareCardTagline => 'OLITUN • ᱚᱞ ᱪᱤᱠᱤ';
+
+  @override
+  String get shareCardFooter => 'Learn Santali (Ol Chiki) • olitun.app';
+
+  @override
+  String get shareTextCopied => 'Share text copied to clipboard! 📋';
+
+  @override
+  String tracingPracticeGlyph(String glyph) {
+    return 'Tracing practice — $glyph';
+  }
+
+  @override
+  String mastery(int current, int required) {
+    return 'Mastery: $current/$required';
+  }
+
+  @override
+  String get onboardingStepsBody =>
+      'Start with letters, build words, practice with quizzes, and keep your Santali learning journey alive.';
+
+  @override
+  String practiceModeLabel(String mode) {
+    return 'Practice • $mode';
+  }
+
+  @override
+  String greatJobTakeQuiz(String title) {
+    return 'Great job! Take \"$title\" now to test your knowledge.';
+  }
+
+  @override
+  String wordsNeedPractice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count words need practice',
+      one: '$count word needs practice',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String voiceClipMeta(String voice, String style, String instant) {
+    return '$voice • $style$instant';
+  }
+
+  @override
+  String get continueWithEmail => 'Continue with Email';
+
+  @override
+  String get exploreAsGuest => 'Explore as Guest';
+
+  @override
+  String get continueWithGoogle => 'Continue with Google';
+
+  @override
+  String get guestSessionFailed =>
+      'Could not start a guest session. Please try again.';
+
+  @override
+  String get couldNotLoadLessons => 'Could not load lessons';
+
+  @override
+  String get shareMessageCopied => 'Share message copied to clipboard! 📋';
+
+  @override
+  String get shareMilestoneTitle => 'Share Your Milestone';
+
+  @override
+  String get shareMilestoneSubtitle =>
+      'Inspire others to learn Santali & Ol Chiki';
+
+  @override
+  String get copyTextSummary => 'Copy Text Summary';
+
+  @override
+  String get traceGuidelines => 'Trace the character guidelines accurately';
+
+  @override
+  String get showExample => 'Show example';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get finishLesson => 'Finish Lesson';
+
+  @override
+  String get couldNotOpenShareSheet => 'Could not open share sheet';
+
+  @override
+  String get couldNotClearDownloads => 'Could not clear downloads';
+
+  @override
+  String get progressLoadFailed =>
+      'Your saved progress is still safe. Try refreshing this view.';
+
+  @override
+  String get couldNotLoadProgress => 'Could not load progress';
+
+  @override
+  String get couldNotLoadQuizzes => 'Could not load quizzes';
+
+  @override
+  String get contentLoadFailed =>
+      'Content could not be loaded. Please try again.';
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// Home promo for the AI Studio: scan or speak, get Santali text.
 /// Tapping opens `/studio`. Sits next to the AI Voice promo.
@@ -71,18 +72,18 @@ class AiStudioPromoCard extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.auto_awesome_rounded,
                         color: Colors.white,
                         size: 12,
                       ),
-                      SizedBox(width: 5),
+                      const SizedBox(width: 5),
                       Text(
-                        'NEW • AI STUDIO',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.aiStudioPromoBadge,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.w900,
@@ -93,18 +94,18 @@ class AiStudioPromoCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Row(
+                Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.graphic_eq_rounded,
                       color: Colors.white,
                       size: 26,
                     ),
-                    SizedBox(width: 10),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'AI Studio',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.aiStudioTitle,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
                           fontSize: 22,
@@ -117,7 +118,7 @@ class AiStudioPromoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Scan or speak — get Santali text.',
+                  AppLocalizations.of(context)!.aiStudioPromoSubtitle,
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,

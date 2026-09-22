@@ -11,6 +11,7 @@ import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dar
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class MockCategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>>
     implements CategoryNotifier {
@@ -120,7 +121,11 @@ void main() {
             ),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       );
 
@@ -184,7 +189,11 @@ void main() {
             purchasedCategoriesProvider.overrideWith((ref) => {'cat_numbers'}),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       );
 
@@ -255,7 +264,11 @@ void main() {
             ),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
-          child: MaterialApp.router(routerConfig: router),
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
         ),
       );
 

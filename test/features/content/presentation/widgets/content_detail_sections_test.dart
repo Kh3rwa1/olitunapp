@@ -12,6 +12,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/content_providers.dart';
 import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// AudioService double: records played URLs and never touches real audio
 /// (story_player_body_test.dart precedent).
@@ -124,7 +125,11 @@ Future<void> _pumpDetail(
           'lesson_blocks',
         )).overrideWith((ref) => item),
       ],
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
   await tester.pumpAndSettle();

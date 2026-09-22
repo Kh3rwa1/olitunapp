@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_list_cards.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 QuizModel _quiz({String level = 'beginner'}) => QuizModel(
   id: 'quiz-1',
@@ -28,7 +29,11 @@ QuizModel _quiz({String level = 'beginner'}) => QuizModel(
 
 Widget _wrap(Widget child, {bool reduceEffects = true}) => ProviderScope(
   overrides: [reduceVisualEffectsProvider.overrideWithValue(reduceEffects)],
-  child: MaterialApp(home: Scaffold(body: child)),
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(body: child),
+  ),
 );
 
 void main() {

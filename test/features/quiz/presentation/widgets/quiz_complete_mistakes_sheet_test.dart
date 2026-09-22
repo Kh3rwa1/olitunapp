@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_complete_mistakes_sheet.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 QuizQuestion _question({required String prompt, required String answer}) =>
     QuizQuestion(
@@ -24,6 +25,8 @@ void main() {
   Future<void> openSheet(WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Builder(
           builder: (context) => Scaffold(
             body: Center(

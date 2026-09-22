@@ -38,9 +38,9 @@ class _TeachingLanguageStep extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'REQUIRED',
-                  style: TextStyle(
+                child: Text(
+                  AppLocalizations.of(context)!.requiredLabel,
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0.8,
@@ -50,7 +50,7 @@ class _TeachingLanguageStep extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Step 1 of 5',
+                AppLocalizations.of(context)!.stepOneOfFive,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -61,7 +61,7 @@ class _TeachingLanguageStep extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            'Which language do you understand best?',
+            AppLocalizations.of(context)!.onboardingStepLanguageTitle,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -70,7 +70,7 @@ class _TeachingLanguageStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Select your mother tongue. We will use this language to explain Ol Chiki letters, word meanings, and audio lessons.',
+            AppLocalizations.of(context)!.languageSubtitle,
             style: TextStyle(
               fontSize: 14,
               height: 1.4,

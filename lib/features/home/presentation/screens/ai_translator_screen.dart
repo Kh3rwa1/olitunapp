@@ -10,6 +10,7 @@ import '../../../../core/motion/motion.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class AiTranslatorScreen extends ConsumerStatefulWidget {
   const AiTranslatorScreen({super.key});
@@ -94,7 +95,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
           ),
         ),
         title: Text(
-          'AI Translator',
+          AppLocalizations.of(context)!.aiTranslatorTitle,
           style: AppTypography.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
@@ -117,7 +118,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    'Speak With\nConfidence',
+                    AppLocalizations.of(context)!.voiceSpeakWithConfidence,
                     style: AppTypography.inter(
                       fontSize: 44,
                       fontWeight: FontWeight.w900,

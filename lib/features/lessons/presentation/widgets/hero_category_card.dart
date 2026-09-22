@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class HeroCategoryCard extends StatelessWidget {
   final dynamic category;
@@ -59,17 +60,17 @@ class HeroCategoryCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ExcludeSemantics(
+          const ExcludeSemantics(
             child: Icon(Icons.play_arrow_rounded, color: Colors.black),
           ),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           Flexible(
             child: Text(
-              'START LEARNING',
-              style: TextStyle(
+              AppLocalizations.of(context)!.startLearning.toUpperCase(),
+              style: const TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w900,
                 fontSize: 14,
@@ -105,21 +106,21 @@ class HeroCategoryCard extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    ExcludeSemantics(
+                    const ExcludeSemantics(
                       child: Icon(
                         Icons.star_rounded,
                         size: 16,
                         color: Colors.black,
                       ),
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Flexible(
                       child: Text(
-                        'RECOMMENDED',
-                        style: TextStyle(
+                        AppLocalizations.of(context)!.recommendedLabel,
+                        style: const TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w900,
                           fontSize: 12,

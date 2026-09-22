@@ -421,8 +421,8 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
             if (context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text(
-                    'Ad privacy settings are not required for your region.',
+                  content: Text(
+                    AppLocalizations.of(context)!.adPrivacyRegionNote,
                   ),
                   behavior: SnackBarBehavior.floating,
                   margin: EdgeInsets.fromLTRB(

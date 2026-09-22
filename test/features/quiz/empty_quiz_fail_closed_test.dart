@@ -19,6 +19,7 @@ import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 class MockPlaybackController extends Mock implements PlaybackController {}
 
@@ -179,7 +180,11 @@ Future<void> _pumpUnavailableQuiz(
         ).overrideWith((_) => Future.value(_emptyLesson)),
         ...extraOverrides,
       ],
-      child: MaterialApp.router(routerConfig: router),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
     ),
   );
   await tester.pump();

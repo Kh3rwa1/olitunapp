@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_fill_blank_options.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 QuizQuestion _fillBlank() => QuizQuestion(
   promptOlChiki: 'ᱤᱧ ᱫᱟᱜ __',
@@ -16,6 +17,8 @@ Widget _host({
   required QuizSessionState state,
   required ValueChanged<int> onSelect,
 }) => MaterialApp(
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
   home: Scaffold(
     body: Center(
       child: QuizFillBlankOptions(

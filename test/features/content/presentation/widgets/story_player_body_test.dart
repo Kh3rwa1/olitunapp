@@ -31,6 +31,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:hive/hive.dart';
 import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// AudioService test double: records played URLs, never touches real
 /// audio, and exposes empty streams so the PlaybackController stays idle
@@ -267,7 +268,11 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MaterialApp(home: Scaffold(body: _StoryHost())),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: _StoryHost()),
+        ),
       ),
     );
     // Let the post-frame initState callbacks (listener attach, resume

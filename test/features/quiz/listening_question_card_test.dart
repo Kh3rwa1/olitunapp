@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/quiz/presentation/widgets/listening_question_card.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   final question = QuizQuestion(
@@ -15,6 +16,8 @@ void main() {
 
   Widget wrap(Widget child) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: Center(child: child)),
     );
   }

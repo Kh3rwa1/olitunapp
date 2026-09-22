@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryEmptyState extends StatelessWidget {
   final bool isDark;
@@ -97,7 +98,7 @@ class CategoryEmptyState extends StatelessWidget {
                   context.push('/letter/standalone/all');
                 },
                 icon: const Icon(Icons.menu_book_rounded),
-                label: const Text('Open Dictionary'),
+                label: Text(AppLocalizations.of(context)!.openDictionary),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(

@@ -213,6 +213,7 @@ async function main() {
         blocks: l.blocks,
       })),
     ...existingStories,
+  ];
   // Sentence lessons are preserved from curated offline seed to retain multi-language quiz translations
   if (!existsSync(join(seedDir, 'sentence_lessons.json'))) {
     writeFileSync(join(seedDir, 'sentence_lessons.json'), JSON.stringify(sentenceLessons, null, 2) + '\n');

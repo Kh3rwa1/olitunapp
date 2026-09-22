@@ -5,7 +5,6 @@ import '../../../../core/logging/app_logger.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../content/presentation/providers/audio_download_providers.dart';
 import 'settings_widgets.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 /// Phase 6 "Cache management" UI (spec line 1034): shows offline audio
 /// storage usage and clip count, and lets the learner delete all
@@ -74,21 +73,22 @@ class DownloadsManagementCard extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.deleteAllDownloadsTitle),
-        content: Text(
-          AppLocalizations.of(context)!.deleteAllDownloadsBody,
+        title: const Text('Delete all downloads?'),
+        content: const Text(
+          'This removes every offline story audio clip from this device. '
+          'Stories will stream again when you are back online.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: const Text('Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: AppColors.accentTerracotta,
             ),
-            child: Text(AppLocalizations.of(context)!.delete),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -103,7 +103,7 @@ class DownloadsManagementCard extends ConsumerWidget {
       AppLogger.warning('DownloadsManagementCard: delete all failed: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppLocalizations.of(context)!.couldNotClearDownloads)),
+          const SnackBar(content: Text('Could not clear downloads')),
         );
       }
     }

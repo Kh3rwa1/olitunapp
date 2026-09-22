@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/accessibility/learning_semantics.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 /// Phase 7 listening-quiz question card (spec §14, `listen_meaning` type).
 ///
@@ -89,7 +88,7 @@ class ListeningQuestionCard extends StatelessWidget {
               if (!hasAudio) ...[
                 const SizedBox(height: 12),
                 Text(
-                  AppLocalizations.of(context)!.audioNotAvailable,
+                  'Audio is not available for this question.',
                   key: const ValueKey('listening-no-audio-hint'),
                   style: TextStyle(
                     fontSize: 12,

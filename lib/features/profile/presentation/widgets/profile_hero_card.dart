@@ -8,7 +8,6 @@ import 'avatar_lottie.dart';
 
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class ProfileHeroCard extends ConsumerWidget {
   final String userName;
@@ -266,7 +265,7 @@ class ProfileHeroCard extends ConsumerWidget {
                             ),
                             if (memberSince != null)
                               Text(
-                                AppLocalizations.of(context)!.since(date: _formatDate(memberSince!)),
+                                'Since ${_formatDate(memberSince!)}',
                                 style: AppTypography.inter(
                                   fontSize: 12,
                                   color: isDark
@@ -292,7 +291,7 @@ class ProfileHeroCard extends ConsumerWidget {
                 children: [
                   Flexible(
                     child: Text(
-                      AppLocalizations.of(context)!.overallProgress,
+                      'Overall Progress',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                       style: AppTypography.inter(

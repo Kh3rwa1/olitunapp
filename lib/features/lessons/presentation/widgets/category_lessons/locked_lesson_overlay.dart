@@ -7,7 +7,6 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/providers/local_settings_provider.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Playful full-screen takeover for locked lessons: an oversized peeking
 /// Eyes animation, big friendly typography, and a direct CTA into the
@@ -183,7 +182,7 @@ class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.lockedForNowTitle,
+                      'HOLD ON • LOCKED FOR NOW',
                       style: AppTypography.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w900,
@@ -193,7 +192,7 @@ class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      AppLocalizations.of(context)!.completeBlockerFirst(blocker: blocker),
+                      'Complete “$blocker” first to crack it open.',
                       textAlign: TextAlign.center,
                       style: AppTypography.inter(
                         fontSize: 17,

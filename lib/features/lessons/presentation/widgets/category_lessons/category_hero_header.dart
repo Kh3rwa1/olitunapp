@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../shared/utils/localized_content.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryHeroHeader extends StatelessWidget {
   final CategoryEntity category;
@@ -166,7 +165,7 @@ class CategoryHeroHeader extends StatelessWidget {
                                   child: MouseRegion(
                                     cursor: SystemMouseCursors.click,
                                     child: Text(
-                                      AppLocalizations.of(context)!.learnLabel,
+                                      'LEARN',
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,

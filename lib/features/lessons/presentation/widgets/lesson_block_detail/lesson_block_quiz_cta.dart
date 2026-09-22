@@ -6,7 +6,6 @@ import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import '../lesson_block_widgets.dart';
 import 'lesson_block_glass_card.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Call-to-action view for embedded inline quiz blocks inside a lesson.
 class LessonBlockQuizCTA extends StatelessWidget {
@@ -117,7 +116,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                         }
                       },
                       child: Text(
-                        AppLocalizations.of(context)!.finishReviewing,
+                        'FINISH REVIEWING',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
@@ -139,7 +138,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        AppLocalizations.of(context)!.takeQuizNow,
+                        'Take Quiz Now',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -154,7 +153,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                       color: accentColor,
                       onPressed: () => context.push(_quizLocation),
                       child: Text(
-                        AppLocalizations.of(context)!.takeTheQuiz,
+                        'TAKE THE QUIZ',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w900,
@@ -176,7 +175,7 @@ class LessonBlockQuizCTA extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        AppLocalizations.of(context)!.skipForNow,
+                        'Skip for now',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

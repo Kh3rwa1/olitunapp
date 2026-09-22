@@ -6,7 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import 'enchanted_visualizer.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class BakhedPreparingAnimation extends ConsumerWidget {
   const BakhedPreparingAnimation({super.key, required this.isDark});
@@ -89,7 +88,7 @@ class BakhedPreparingAnimation extends ConsumerWidget {
               ),
               const SizedBox(height: 18),
               Text(
-                AppLocalizations.of(context)!.bakhedPreparing,
+                'Bakhed are being prepared',
                 textAlign: TextAlign.center,
                 style: AppTypography.inter(
                   fontSize: 22,
@@ -99,7 +98,7 @@ class BakhedPreparingAnimation extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                AppLocalizations.of(context)!.bakhedPreparingSubtitle,
+                'New listening stories will appear here after publishing.',
                 textAlign: TextAlign.center,
                 style: AppTypography.inter(
                   fontSize: 15,

@@ -5,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../providers/quiz_session_notifier.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class QuizFillBlankOptions extends StatelessWidget {
   const QuizFillBlankOptions({
@@ -30,7 +29,7 @@ class QuizFillBlankOptions extends StatelessWidget {
       children: [
         const SizedBox(height: 12),
         Text(
-          AppLocalizations.of(context)!.selectMissingWord,
+          'Select the missing word:',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,

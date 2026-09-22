@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/typing_practice_controller.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 /// Celebratory card displayed when a user successfully completes a typing practice session.
 class TypingPracticeDoneCard extends StatelessWidget {
@@ -64,7 +63,7 @@ class TypingPracticeDoneCard extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  AppLocalizations.of(context)!.practicedSuccessfully,
+                  'Practiced Successfully',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -114,8 +113,8 @@ class TypingPracticeDoneCard extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    AppLocalizations.of(context)!.tryAgain,
+                  const Text(
+                    'Try Again',
                     style: TextStyle(
                       color: AppColors.primary,
                       fontWeight: FontWeight.bold,
@@ -134,8 +133,8 @@ class TypingPracticeDoneCard extends StatelessWidget {
                         color: AppColors.primary.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: Text(
-                        AppLocalizations.of(context)!.pressEnter,
+                      child: const Text(
+                        'Enter ↵',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,

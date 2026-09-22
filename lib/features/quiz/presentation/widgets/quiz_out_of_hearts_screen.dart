@@ -13,7 +13,6 @@ import '../providers/quiz_session_notifier.dart';
 import '../../../../core/ads/rewarded_ad_manager.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class QuizOutOfHeartsScreen extends ConsumerWidget {
   final int score;
@@ -178,7 +177,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                       const SizedBox(height: 28),
 
                       Text(
-                        AppLocalizations.of(context)!.outOfHearts,
+                        'Out of Hearts!',
                         style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
@@ -189,7 +188,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
 
                       Text(
-                        AppLocalizations.of(context)!.outOfHeartsSummary(score: score, total: totalQuestions, stars: totalStars),
+                        'You answered $score/$totalQuestions correctly and earned $totalStars stars so far. Keep practicing to build your strength!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 15,
@@ -231,8 +230,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                                     .reset();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(
-                                      AppLocalizations.of(context)!.heartsRefilled,
+                                    content: const Text(
+                                      'Hearts Refilled! ❤️❤️❤️',
                                     ),
                                     backgroundColor: AppColors.success,
                                     behavior: SnackBarBehavior.floating,
@@ -246,8 +245,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                             if (!shown && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    AppLocalizations.of(context)!.rewardedAdCooldownReset,
+                                  content: const Text(
+                                    'Rewarded ad is cooling down. Please try regular reset.',
                                   ),
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(
@@ -262,8 +261,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                             color: AppColors.error,
                             size: 20,
                           ),
-                          label: Text(
-                            AppLocalizations.of(context)!.watchAdRefillHearts,
+                          label: const Text(
+                            'Watch Ad to Refill Hearts (Free)',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
@@ -302,8 +301,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                           label: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                AppLocalizations.of(context)!.tryAgain,
+                              const Text(
+                                'Try Again',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
@@ -321,8 +320,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                                     color: Colors.white.withValues(alpha: 0.2),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.pressEnter,
+                                  child: const Text(
+                                    'Enter ↵',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w700,
@@ -358,7 +357,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                               color: isDark ? Colors.white70 : Colors.black87,
                             ),
                             label: Text(
-                              AppLocalizations.of(context)!.reviewMistakes,
+                              'Review Mistakes',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
@@ -398,8 +397,8 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(16),
                             ),
                           ),
-                          child: Text(
-                            AppLocalizations.of(context)!.backToQuizzes,
+                          child: const Text(
+                            'Back to Quizzes',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,

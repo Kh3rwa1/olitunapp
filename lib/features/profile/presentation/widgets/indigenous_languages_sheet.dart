@@ -10,7 +10,6 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/theme/script_typography_registry.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class IndigenousLanguagesSheet extends ConsumerWidget {
   const IndigenousLanguagesSheet({super.key});
@@ -64,7 +63,7 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
 
               // Sheet Header
               Text(
-                AppLocalizations.of(context)!.indigenousLanguagesTitle,
+                'Indigenous Languages Platform',
                 style: AppTypography.titleLarge.copyWith(
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.white : Colors.black87,
@@ -72,7 +71,7 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                AppLocalizations.of(context)!.indigenousLanguagesSubtitle,
+                'Explore native scripts & tribal languages of eastern India',
                 style: AppTypography.bodySmall.copyWith(
                   color: isDark ? Colors.white54 : Colors.black54,
                 ),
@@ -92,7 +91,7 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            AppLocalizations.of(context)!.packsComingSoon(name: manifest.name),
+                            '${manifest.name} content & audio packs are coming soon!',
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),
@@ -108,7 +107,7 @@ class IndigenousLanguagesSheet extends ConsumerWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          AppLocalizations.of(context)!.learningLanguageSetTo(name: manifest.name, script: manifest.scriptName),
+                          'Learning language set to ${manifest.name} (${manifest.scriptName})',
                         ),
                         behavior: SnackBarBehavior.floating,
                       ),
@@ -297,7 +296,7 @@ class _LanguageManifestCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    AppLocalizations.of(context)!.audioPack,
+                    'Audio Pack',
                     style: AppTypography.labelSmall.copyWith(
                       fontSize: 10,
                       color: isDark ? Colors.white60 : Colors.black54,
@@ -313,7 +312,7 @@ class _LanguageManifestCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   Text(
-                    AppLocalizations.of(context)!.offlineLessons,
+                    'Offline Lessons',
                     style: AppTypography.labelSmall.copyWith(
                       fontSize: 10,
                       color: isDark ? Colors.white60 : Colors.black54,
@@ -322,7 +321,7 @@ class _LanguageManifestCard extends StatelessWidget {
                   const SizedBox(width: 12),
                 ],
                 Text(
-                  AppLocalizations.of(context)!.lettersCount(count: manifest.alphabetLetterCount),
+                  '${manifest.alphabetLetterCount} letters',
                   style: AppTypography.labelSmall.copyWith(
                     fontSize: 10,
                     color: isDark ? Colors.white38 : Colors.black38,

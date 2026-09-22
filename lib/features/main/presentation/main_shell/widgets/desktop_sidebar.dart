@@ -99,7 +99,7 @@ class DesktopSidebar extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.olitun2,
+                        'Olitun',
                         style: AppTypography.inter(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
@@ -109,7 +109,7 @@ class DesktopSidebar extends ConsumerWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        AppLocalizations.of(context)!.santaliOlChikiTag,
+                        'SANTALI • OL CHIKI',
                         style: AppTypography.inter(
                           fontSize: 9,
                           fontWeight: FontWeight.w800,
@@ -132,7 +132,7 @@ class DesktopSidebar extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              AppLocalizations.of(context)!.menuLabel,
+              'MENU',
               style: AppTypography.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w800,
@@ -226,7 +226,7 @@ class DesktopSidebar extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${streak} ${AppLocalizations.of(context)!.dayStreak}',
+                          '$streak day streak',
                           style: AppTypography.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
@@ -268,7 +268,7 @@ class DesktopSidebar extends ConsumerWidget {
           const SizedBox(height: 14),
           Center(
             child: Text(
-              AppLocalizations.of(context)!.olitunPwaVersion,
+              'Olitun PWA • v2.4',
               style: AppTypography.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,

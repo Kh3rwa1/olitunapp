@@ -4,7 +4,6 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/utils/localized_content.dart';
 import '../../../domain/entities/lesson_entity.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryLessonCard extends StatefulWidget {
   final LessonEntity lesson;
@@ -148,7 +147,7 @@ class _CategoryLessonCardState extends State<CategoryLessonCard> {
                                       ),
                                       SizedBox(width: 4),
                                       Text(
-                                        AppLocalizations.of(context)!.doneLabel,
+                                        'DONE',
                                         style: TextStyle(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.w800,

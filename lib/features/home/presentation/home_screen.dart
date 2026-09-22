@@ -415,7 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(width: 7),
                   Text(
-                    AppLocalizations.of(context)!.greetingDayPart(part: dayPart).toUpperCase(),
+                    'ᱡᱚᱦᱟᱨ • $dayPart'.toUpperCase(),
                     style: const TextStyle(
                       fontSize: 10.5,
                       fontWeight: FontWeight.w800,
@@ -463,7 +463,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)!.homePickupSubtitle,
+                    'Pick up where you left off — small steps, every day.',
                     style: TextStyle(
                       fontSize: isDesktop ? 15 : 14,
                       height: 1.5,

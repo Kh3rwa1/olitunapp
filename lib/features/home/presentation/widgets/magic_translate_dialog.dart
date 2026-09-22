@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/api/ai_service.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class MagicTranslateDialog extends ConsumerStatefulWidget {
   const MagicTranslateDialog({super.key});
@@ -75,8 +74,8 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
                   ),
                 ),
                 const SizedBox(width: 16),
-                Text(
-                  AppLocalizations.of(context)!.aiTranslatorTitle,
+                const Text(
+                  'AI Translator',
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
                 ),
               ],
@@ -106,8 +105,8 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             ),
             const SizedBox(height: 24),
             if (_result.isNotEmpty) ...[
-              Text(
-                AppLocalizations.of(context)!.santaliOlChikiLabel,
+              const Text(
+                'SANTALI (OL CHIKI)',
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -146,7 +145,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             const SizedBox(height: 12),
             Center(
               child: Text(
-                AppLocalizations.of(context)!.magicTranslatePrivacyNote,
+                'Translations are processed securely, cached via privacy hashes, and never linked to your profile.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 11,
@@ -159,7 +158,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(
-                  AppLocalizations.of(context)!.close,
+                  'CLOSE',
                   style: TextStyle(
                     color: isDark ? Colors.white38 : Colors.black38,
                     fontWeight: FontWeight.w900,

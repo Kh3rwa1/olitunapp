@@ -6,7 +6,6 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../../shared/providers/providers.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 // ═══════════════ HERO QUIZ CARD ═══════════════
 
@@ -126,7 +125,7 @@ class HeroQuizCard extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                AppLocalizations.of(context)!.questionsWithLevel(count: quiz.questions.length, level: quiz.level),
+                '${quiz.questions.length} questions • ${quiz.level}',
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.8),
                   fontWeight: FontWeight.w600,
@@ -160,7 +159,7 @@ class HeroQuizCard extends ConsumerWidget {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          AppLocalizations.of(context)!.startQuiz,
+                          'START QUIZ',
                           style: TextStyle(
                             color: AppColors.accentOchreDark,
                             fontWeight: FontWeight.w900,
@@ -281,7 +280,7 @@ class BentoQuizCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              AppLocalizations.of(context)!.questionsCount(count: quiz.questions.length),
+              '${quiz.questions.length} questions',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w700,

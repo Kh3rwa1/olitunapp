@@ -57,7 +57,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
         if (content == null) {
           return Center(
             child: Text(
-              AppLocalizations.of(context)!.noLearningContent,
+              'No learning content available.',
               style: AppTypography.inter(color: Colors.white38, fontSize: 14),
             ),
           );
@@ -83,7 +83,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Text(
-            AppLocalizations.of(context)!.errorLoadingDetails(error: err.toString()),
+            'Error loading details: $err',
             style: const TextStyle(color: Colors.white70),
           ),
         ),
@@ -96,7 +96,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     if (publishedNotes.isEmpty) {
       return Center(
         child: Text(
-          AppLocalizations.of(context)!.culturalNotesPreparing,
+          'Cultural notes are being prepared.',
           style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
@@ -155,7 +155,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                 const Divider(color: Colors.white10),
                 const SizedBox(height: 4),
                 Text(
-                  AppLocalizations.of(context)!.culturalNoteSource(source: note.source),
+                  'Source: ${note.source}',
                   style: AppTypography.inter(
                     fontSize: 11,
                     color: Colors.white38,
@@ -177,7 +177,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     if (vocabulary.isEmpty) {
       return Center(
         child: Text(
-          AppLocalizations.of(context)!.noVocabularyItems,
+          'No vocabulary items defined.',
           style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
@@ -287,7 +287,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
       if (textBlocks.isEmpty) {
         return Center(
           child: Text(
-            AppLocalizations.of(context)!.lyricsBeingAdded,
+            'Lyrics are being added.',
             style: AppTypography.inter(color: Colors.white38, fontSize: 15),
           ),
         );

@@ -46,7 +46,7 @@ class _ValuePropStep extends StatelessWidget {
           ),
           const SizedBox(height: 48),
           Text(
-            AppLocalizations.of(context)!.onboardingHeadline,
+            'Learn Ol Chiki,\none step at a time',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 28,
@@ -57,7 +57,7 @@ class _ValuePropStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            AppLocalizations.of(context)!.onboardingStepsBody,
+            'Start with letters, build words, practice with quizzes, and keep your Santali learning journey alive.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
@@ -119,7 +119,7 @@ class _LevelStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.familiarityTitle,
+            'How familiar are you with Ol Chiki?',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -128,7 +128,7 @@ class _LevelStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!.familiaritySubtitle,
+            'We will tailor your learning path accordingly.',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
@@ -270,7 +270,7 @@ class _ScriptStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.displayTitle,
+            'How do you want to see content?',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -279,7 +279,7 @@ class _ScriptStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!.displaySubtitle,
+            'Choose your preferred script display. You can change this anytime.',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
@@ -427,7 +427,7 @@ class _DailyGoalStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.practiceGoalTitle,
+            'How much do you want to practice?',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
@@ -436,7 +436,7 @@ class _DailyGoalStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            AppLocalizations.of(context)!.practiceGoalSubtitle,
+            'Setting a small daily goal helps build a continuous learning streak.',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white60 : AppColors.textTertiaryLight,

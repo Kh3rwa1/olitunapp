@@ -10,7 +10,6 @@ import '../../../../core/theme/app_radius.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class DiagnosticsSheet extends ConsumerStatefulWidget {
   const DiagnosticsSheet({super.key});
@@ -90,7 +89,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
-                    AppLocalizations.of(context)!.systemDiagnosticsTitle,
+                    'System Diagnostics & Health',
                     style: AppTypography.titleMedium.copyWith(
                       fontWeight: FontWeight.w900,
                       color: isDark ? Colors.white : Colors.black87,
@@ -100,7 +99,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                AppLocalizations.of(context)!.systemDiagnosticsSubtitle,
+                'Anonymized runtime performance & diagnostic telemetry',
                 style: AppTypography.bodySmall.copyWith(
                   color: isDark ? Colors.white54 : Colors.black54,
                 ),
@@ -144,7 +143,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
 
               // Logs Preview Box
               Text(
-                AppLocalizations.of(context)!.diagnosticPayloadPreview,
+                'Diagnostic Payload Preview',
                 style: AppTypography.labelLarge.copyWith(
                   fontWeight: FontWeight.w700,
                   color: isDark ? Colors.white70 : Colors.black87,
@@ -192,7 +191,7 @@ class _DiagnosticsSheetState extends ConsumerState<DiagnosticsSheet> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            AppLocalizations.of(context)!.diagnosticPayloadCopied,
+                            'Diagnostic payload copied to clipboard!',
                           ),
                           behavior: SnackBarBehavior.floating,
                         ),

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../../core/theme/app_colors.dart';
 import 'controllers/splash_controller.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -256,8 +255,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ).createShader(bounds),
-                            child: Text(
-                              AppLocalizations.of(context)!.olitunWordmark,
+                            child: const Text(
+                              'OLITUN',
                               style: TextStyle(
                                 fontSize: 38,
                                 fontWeight: FontWeight.w900,
@@ -279,7 +278,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
                       // Premium Subtitle
                       Text(
-                            AppLocalizations.of(context)!.learnOlChiki,
+                            'LEARN OL CHIKI',
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w800,

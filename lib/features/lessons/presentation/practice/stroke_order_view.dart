@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/accessibility/learning_semantics.dart';
 import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class StrokeOrderView extends StatefulWidget {
   final String letterChar;
@@ -105,7 +104,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
               ),
               const SizedBox(height: 8),
               Text(
-                AppLocalizations.of(context)!.strokeOrderHint,
+                'Watch the stroke flow and then switch to Tracing mode to replicate it.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -121,7 +120,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                     ..forward();
                 },
                 icon: const Icon(Icons.replay_rounded),
-                label: Text(AppLocalizations.of(context)!.replayAnimation),
+                label: const Text('Replay Animation'),
               ),
             ],
           ),

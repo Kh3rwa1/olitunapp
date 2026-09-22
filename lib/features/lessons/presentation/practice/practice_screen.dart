@@ -12,7 +12,6 @@ import 'stroke_order_view.dart';
 import 'practice_guide.dart';
 import 'tracing_view.dart';
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class PracticeScreen extends ConsumerStatefulWidget {
   final String letterChar;
@@ -180,7 +179,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.practiceModeLabel(mode: _selectedIndex == 0 ? 'Watch' : 'Trace')Watch' : 'Trace'}',
+                            'Practice • ${_selectedIndex == 0 ? 'Watch' : 'Trace'}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -355,7 +354,7 @@ class _XpBadge extends StatelessWidget {
           Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 16),
           SizedBox(width: 6),
           Text(
-            AppLocalizations.of(context)!.plusTenXp,
+            '+10 XP',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w800,

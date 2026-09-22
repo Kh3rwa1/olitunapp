@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class MistakeReviewCard extends ConsumerWidget {
   final int? mistakeCount;
@@ -92,7 +91,7 @@ class MistakeReviewCard extends ConsumerWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    AppLocalizations.of(context)!.mistakeReviewBadge,
+                    'MISTAKE REVIEW',
                     style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
@@ -115,7 +114,7 @@ class MistakeReviewCard extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      AppLocalizations.of(context)!.takesTwoMin,
+                      'Takes 2 min',
                       style: AppTypography.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
@@ -129,7 +128,7 @@ class MistakeReviewCard extends ConsumerWidget {
               ),
               const SizedBox(height: 14),
               Text(
-                AppLocalizations.of(context)!.wordsNeedPractice(count: count)s' : ''} need${count > 1 ? '' : 's'} practice',
+                '$count word${count > 1 ? 's' : ''} need${count > 1 ? '' : 's'} practice',
                 style: AppTypography.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
@@ -138,7 +137,7 @@ class MistakeReviewCard extends ConsumerWidget {
               ),
               const SizedBox(height: 6),
               Text(
-                AppLocalizations.of(context)!.mistakesQuote,
+                '“Mistakes are just lessons asking for a second chance.”',
                 style: AppTypography.inter(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,

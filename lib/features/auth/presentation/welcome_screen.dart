@@ -10,7 +10,6 @@ import '../presentation/controllers/auth_controller.dart';
 import '../presentation/providers/auth_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import 'widgets/oauth_failure_notice.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -54,8 +53,8 @@ class WelcomeScreen extends ConsumerWidget {
                     shaderCallback: (bounds) => const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryLight],
                     ).createShader(bounds),
-                    child: Text(
-                      AppLocalizations.of(context)!.olitun,
+                    child: const Text(
+                      'Olitun',
                       style: TextStyle(
                         fontSize: 44,
                         fontWeight: FontWeight.w900,
@@ -68,7 +67,7 @@ class WelcomeScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
 
                   Text(
-                    AppLocalizations.of(context)!.welcomeTagline,
+                    'Learn Ol Chiki Script',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -311,7 +310,7 @@ class WelcomeScreen extends ConsumerWidget {
             ),
             child: const Center(
               child: Text(
-                AppLocalizations.of(context)!.continueWithEmail,
+                'Continue with Email',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -347,7 +346,7 @@ class WelcomeScreen extends ConsumerWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text(
-                    AppLocalizations.of(context)!.guestSessionFailed,
+                    'Could not start a guest session. Please try again.',
                   ),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -369,7 +368,7 @@ class WelcomeScreen extends ConsumerWidget {
             color: isDark ? Colors.white70 : Colors.black54,
           ),
           label: Text(
-            AppLocalizations.of(context)!.exploreAsGuest,
+            'Explore as Guest',
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w700,
@@ -508,8 +507,8 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
                     .round(),
               ),
               const SizedBox(width: 12),
-              Text(
-                AppLocalizations.of(context)!.continueWithGoogle,
+              const Text(
+                'Continue with Google',
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,

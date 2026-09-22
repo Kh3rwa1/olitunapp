@@ -72,7 +72,7 @@ extension _QuizScreenSections on _QuizScreenState {
               const Icon(Icons.star_rounded, color: Colors.white, size: 18),
               const SizedBox(width: 4),
               Text(
-                AppLocalizations.of(context)!.scoreOnly(score: _score),
+                '$_score',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
@@ -425,8 +425,8 @@ extension _QuizScreenSections on _QuizScreenState {
                   color: Colors.white.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(
-                  AppLocalizations.of(context)!.pressEnter,
+                child: const Text(
+                  'Enter ↵',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,

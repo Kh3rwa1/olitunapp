@@ -15,7 +15,6 @@ import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../providers/onboarding_draft.dart';
 import '../providers/onboarding_provider.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 part 'onboarding_steps.dart';
 part 'onboarding_goals_step.dart';
@@ -131,7 +130,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(AppLocalizations.of(context)!.prefsSaveFailed),
+            content: Text('Could not save your preferences. Please try again.'),
           ),
         );
       }
@@ -147,8 +146,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       HapticFeedback.mediumImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.selectMotherTongueToast,
+          content: const Text(
+            'Please select your mother tongue / teaching language to continue.',
           ),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
@@ -339,7 +338,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                   vertical: 4,
                                 ),
                                 child: Text(
-                                  AppLocalizations.of(context)!.skip,
+                                  'Skip',
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,

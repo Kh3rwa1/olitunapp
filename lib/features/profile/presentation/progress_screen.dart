@@ -25,7 +25,6 @@ import 'widgets/next_milestone_card.dart';
 import 'widgets/progress_screen_sections.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -82,7 +81,7 @@ class ProgressScreen extends ConsumerWidget {
                   elevation: 0,
                   automaticallyImplyLeading: false,
                   title: Text(
-                    AppLocalizations.of(context)!.navProfile,
+                    'Profile',
                     style: AppTypography.inter(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
@@ -254,7 +253,7 @@ class ProgressScreen extends ConsumerWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.couldNotOpenShareSheet),
+          content: const Text('Could not open share sheet'),
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.fromLTRB(
             16,

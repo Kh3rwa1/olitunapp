@@ -1331,7 +1331,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
               builder: (_, _) {
                 final dots = '.' * (1 + ((_pulse.value * 3).floor() % 3));
                 return Text(
-                  '${l10n.aiStudioThinking}${dots}',
+                  '${l10n.aiStudioThinking}$dots',
                   style: const TextStyle(
                     color: AppColors.amberEmber,
                     fontSize: 11,
@@ -1740,7 +1740,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
               ),
               const SizedBox(height: 10),
               Text(
-                AppLocalizations.of(context)!.aiStudioUploadPrompt,
+                'Upload document or capture page',
                 style: TextStyle(
                   color: isDark ? Colors.white70 : Colors.black87,
                   fontSize: 12.5,
@@ -1749,7 +1749,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
               ),
               const SizedBox(height: 3),
               Text(
-                AppLocalizations.of(context)!.aiStudioUploadFormats,
+                'PDF, PNG or JPG · up to 10 MB',
                 style: TextStyle(
                   color: isDark ? Colors.white38 : Colors.black38,
                   fontSize: 10.5,
@@ -1926,7 +1926,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
           ),
           const SizedBox(height: 6),
           SelectableText(
-            AppLocalizations.of(context)!.aiStudioJobId(id: job.id),
+            'Job: ${job.id}',
             style: TextStyle(
               fontSize: 11,
               color: isDark ? Colors.white54 : Colors.black45,
@@ -1941,8 +1941,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                   ? null
                   : () => _process(checkStatus: true),
               icon: const Icon(Icons.refresh_rounded, size: 15),
-              label: Text(
-                AppLocalizations.of(context)!.aiStudioCheckStatus,
+              label: const Text(
+                'Check status',
                 style: TextStyle(fontSize: 11.5),
               ),
             ),
@@ -1954,8 +1954,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                 draft.result.text = job.text;
                 draft.edited = false;
               }),
-              child: Text(
-                AppLocalizations.of(context)!.aiStudioReplaceWithScan,
+              child: const Text(
+                'Replace my edits with latest scan text',
                 style: TextStyle(fontSize: 11),
               ),
             ),
@@ -2149,8 +2149,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                 ),
                 onPressed: () => unawaited(_flipTo(showResult: false)),
                 icon: const Icon(Icons.arrow_back_rounded, size: 13),
-                label: Text(
-                  AppLocalizations.of(context)!.aiStudioEditSource,
+                label: const Text(
+                  'Edit source input',
                   style: TextStyle(fontSize: 11.5),
                 ),
               ),

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 /// Home promo for the AI Studio: scan or speak, get Santali text.
 /// Tapping opens `/studio`. Sits next to the AI Voice promo.
@@ -82,7 +81,7 @@ class AiStudioPromoCard extends StatelessWidget {
                       ),
                       SizedBox(width: 5),
                       Text(
-                        AppLocalizations.of(context)!.aiStudioPromoBadge,
+                        'NEW • AI STUDIO',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -104,7 +103,7 @@ class AiStudioPromoCard extends StatelessWidget {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        AppLocalizations.of(context)!.aiStudioTitle,
+                        'AI Studio',
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
@@ -118,7 +117,7 @@ class AiStudioPromoCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  AppLocalizations.of(context)!.aiStudioPromoSubtitle,
+                  'Scan or speak — get Santali text.',
                   style: TextStyle(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontWeight: FontWeight.w600,

@@ -5,7 +5,6 @@ import '../../../core/theme/app_radius.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import 'share_card_payload.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class SocialShareCard extends StatelessWidget {
   final ShareCardPayload payload;
@@ -53,7 +52,7 @@ class SocialShareCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                AppLocalizations.of(context)!.shareCardTagline,
+                'OLITUN • ᱚᱞ ᱪᱤᱠᱤ',
                 style: AppTypography.labelLarge.copyWith(
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -195,7 +194,7 @@ class SocialShareCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                AppLocalizations.of(context)!.shareCardFooter,
+                'Learn Santali (Ol Chiki) • olitun.app',
                 style: AppTypography.labelSmall.copyWith(
                   color: Colors.white60,
                   fontSize: 10,

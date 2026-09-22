@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 class QuizBlockCTAWidget extends StatelessWidget {
   final String quizId;
@@ -79,7 +78,7 @@ class QuizBlockCTAWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    AppLocalizations.of(context)!.readyToTestYourself,
+                    'Ready to test yourself?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,
@@ -90,7 +89,7 @@ class QuizBlockCTAWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)!.greatJobTakeQuiz(title: quiz.title ?? 'the quiz')the quiz'}" now to test your knowledge.',
+                    'Great job! Take "${quiz.title ?? 'the quiz'}" now to test your knowledge.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
@@ -105,7 +104,7 @@ class QuizBlockCTAWidget extends StatelessWidget {
                       context.push('/quiz/$quizId');
                     },
                     child: Text(
-                      AppLocalizations.of(context)!.takeTheQuiz,
+                      'TAKE THE QUIZ',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w900,
@@ -126,8 +125,8 @@ class QuizBlockCTAWidget extends StatelessWidget {
                           ? Colors.white60
                           : const Color(0xFF64748B),
                     ),
-                    child: Text(
-                      AppLocalizations.of(context)!.skipForNow,
+                    child: const Text(
+                      'Skip for now',
                       style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),

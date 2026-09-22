@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 class EmailAuthMessages extends StatelessWidget {
   final String? errorMessage;
@@ -42,7 +41,7 @@ class EmailAuthMessages extends StatelessWidget {
                     Clipboard.setData(ClipboardData(text: errorMessage!));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text(AppLocalizations.of(context)!.errorCopiedToClipboard),
+                        content: Text('Error copied to clipboard'),
                         duration: Duration(seconds: 2),
                       ),
                     );

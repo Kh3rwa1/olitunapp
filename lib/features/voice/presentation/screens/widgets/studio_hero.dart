@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Studio playback phase driving the hero orb.
 enum StudioPhase { idle, working, ready }
@@ -40,7 +39,7 @@ class StudioHeroStrip extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      AppLocalizations.of(context)!.santaliAiVoice,
+                      'ᱥᱟᱱᱛᱟᱲᱤ AI Voice',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -65,8 +64,8 @@ class StudioHeroStrip extends StatelessWidget {
                       ),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Text(
-                      AppLocalizations.of(context)!.newBadge,
+                    child: const Text(
+                      'NEW',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 9,

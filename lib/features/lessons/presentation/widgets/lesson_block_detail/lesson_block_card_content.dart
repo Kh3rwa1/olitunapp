@@ -12,7 +12,6 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/shared/providers/providers.dart';
 import '../lesson_block_widgets.dart';
-import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Interactive content card section displaying target Ol Chiki characters,
 /// centered pronunciation transliteration guide, audio playback,
@@ -323,7 +322,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                             const SizedBox(width: 12),
                             Flexible(
                               child: Text(
-                                AppLocalizations.of(context)!.practiceTyping,
+                                'PRACTICE TYPING',
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                                 style: TextStyle(
@@ -379,7 +378,7 @@ class LessonBlockCardContent extends ConsumerWidget {
               const SizedBox(height: 20),
               if (isDesktop)
                 Text(
-                  AppLocalizations.of(context)!.audioPlaybackHint,
+                  'Press Space to play audio • ← → to navigate',
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 11.5,

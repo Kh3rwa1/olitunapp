@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/typing_practice_controller.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class OlChikiKeyboard extends ConsumerWidget {
   final TypingPracticeArgs args;
@@ -365,7 +364,7 @@ class OlChikiKeyboard extends ConsumerWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      AppLocalizations.of(context)!.spaceKey,
+                      'SPACE',
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
@@ -451,8 +450,8 @@ class OlChikiKeyboard extends ConsumerWidget {
                       boxShadow: AppColors.glowShadow(AppColors.primary),
                     ),
                     alignment: Alignment.center,
-                    child: Text(
-                      AppLocalizations.of(context)!.doneLabel,
+                    child: const Text(
+                      'DONE',
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w900,

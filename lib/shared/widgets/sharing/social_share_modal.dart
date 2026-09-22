@@ -9,7 +9,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import 'share_card_payload.dart';
 import 'social_share_card.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class SocialShareModal extends StatefulWidget {
   final ShareCardPayload payload;
@@ -66,7 +65,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
           if (outcome == ShareOutcome.copiedToClipboard) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text(AppLocalizations.of(context)!.shareTextCopied),
+                content: Text('Share text copied to clipboard! 📋'),
                 behavior: SnackBarBehavior.floating,
               ),
             );
@@ -98,7 +97,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
       if (outcome == ShareOutcome.copiedToClipboard) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(AppLocalizations.of(context)!.shareMessageCopied),
+            content: Text('Share message copied to clipboard! 📋'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -138,7 +137,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
 
               // Title
               Text(
-                AppLocalizations.of(context)!.shareMilestoneTitle,
+                'Share Your Milestone',
                 style: AppTypography.titleLarge.copyWith(
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.white : Colors.black87,
@@ -146,7 +145,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                AppLocalizations.of(context)!.shareMilestoneSubtitle,
+                'Inspire others to learn Santali & Ol Chiki',
                 style: AppTypography.bodySmall.copyWith(
                   color: isDark ? Colors.white54 : Colors.black54,
                 ),
@@ -218,7 +217,7 @@ class _SocialShareModalState extends State<SocialShareModal> {
                     color: isDark ? Colors.white70 : Colors.black87,
                   ),
                   label: Text(
-                    AppLocalizations.of(context)!.copyTextSummary,
+                    'Copy Text Summary',
                     style: AppTypography.labelMedium.copyWith(
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white70 : Colors.black87,

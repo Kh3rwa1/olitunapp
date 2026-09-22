@@ -23,7 +23,6 @@ import 'widgets/category_lessons/category_hero_header.dart';
 import 'widgets/category_lessons/locked_lesson_overlay.dart';
 import 'widgets/category_lessons/category_lesson_card.dart';
 import 'widgets/category_lessons/category_lessons_timeline.dart';
-import '../../../l10n/generated/app_localizations.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -142,7 +141,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         const SizedBox(height: 16),
                         Text(
                           categories.hasError
-                              ? AppLocalizations.of(context)!.couldNotLoadLessons
+                              ? 'Could not load lessons'
                               : 'Learning path not found',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.titleLarge,
@@ -151,11 +150,11 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         TextButton.icon(
                           onPressed: _onRefresh,
                           icon: const Icon(Icons.refresh_rounded),
-                          label: Text(AppLocalizations.of(context)!.retry),
+                          label: const Text('Retry'),
                         ),
                         TextButton(
                           onPressed: _backToLearningPaths,
-                          child: Text(AppLocalizations.of(context)!.backToLearningPaths),
+                          child: const Text('Back to learning paths'),
                         ),
                       ],
                     ),
@@ -418,7 +417,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        AppLocalizations.of(context)!.couldNotLoadLessons,
+                        'Could not load lessons',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -427,7 +426,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        AppLocalizations.of(context)!.checkConnection,
+                        'Check your connection and try again',
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? Colors.white38 : Colors.black38,
@@ -447,7 +446,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           );
                         },
                         icon: const Icon(Icons.refresh_rounded),
-                        label: Text(AppLocalizations.of(context)!.retry),
+                        label: const Text('Retry'),
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.primary,
                         ),

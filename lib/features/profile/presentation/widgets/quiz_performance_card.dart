@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 // ═══════════════ QUIZ PERFORMANCE CARD ═══════════════
 
@@ -47,7 +46,7 @@ class QuizPerformanceCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      AppLocalizations.of(context)!.assessmentScore,
+                      'Assessment Score',
                       style: AppTypography.inter(
                         color: Colors.white70,
                         fontWeight: FontWeight.w600,
@@ -59,7 +58,7 @@ class QuizPerformanceCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.percentFormat(percent: accuracy),
+                          '$accuracy%',
                           style: AppTypography.inter(
                             color: Colors.white,
                             fontSize: 30,
@@ -69,7 +68,7 @@ class QuizPerformanceCard extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 5, left: 4),
                           child: Text(
-                            AppLocalizations.of(context)!.avgLabel,
+                            'Avg',
                             style: AppTypography.inter(
                               color: Colors.white60,
                               fontSize: 11,

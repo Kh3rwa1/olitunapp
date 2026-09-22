@@ -140,7 +140,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        AppLocalizations.of(context)!.takeAQuiz,
+                        'Take a Quiz',
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -149,7 +149,7 @@ class _ContentBlockRenderer extends ConsumerWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        AppLocalizations.of(context)!.testYourKnowledge,
+                        'Test your knowledge now!',
                         style: TextStyle(fontSize: 13, color: Colors.white70),
                       ),
                     ],
@@ -408,8 +408,8 @@ class _ContentDetailFooter extends ConsumerWidget {
                             Icons.keyboard_outlined,
                             color: Colors.black,
                           ),
-                          label: Text(
-                            AppLocalizations.of(context)!.practiceTyping,
+                          label: const Text(
+                            'Practice Typing',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w900,

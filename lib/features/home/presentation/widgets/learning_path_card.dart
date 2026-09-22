@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/language_settings_providers.dart';
 import '../../../quiz/domain/learning_path_catalog.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 /// Phase 7: proficiency-based learning-path card (spec §15).
 ///
@@ -62,8 +61,8 @@ class LearningPathCard extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          AppLocalizations.of(context)!.yourLearningPath,
+                        const Text(
+                          'YOUR LEARNING PATH',
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w800,
@@ -73,7 +72,7 @@ class LearningPathCard extends ConsumerWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          AppLocalizations.of(context)!.stepOfPath(step: stepNumber, total: path.steps.length)
+                          'Step $stepNumber of ${path.steps.length}: '
                           '${nextStep.id.replaceAll('_', ' ')}',
                           style: TextStyle(
                             fontSize: 15,
@@ -83,7 +82,7 @@ class LearningPathCard extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          AppLocalizations.of(context)!.learningPathSubtitle,
+                          'A guided path matched to your Santali level.',
                           style: TextStyle(
                             fontSize: 12,
                             color: isDark ? Colors.white60 : Colors.black45,

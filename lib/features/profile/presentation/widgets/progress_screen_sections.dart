@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/waitlist_provider.dart';
 import '../../../../shared/widgets/bento_grid.dart';
-import '../../../../l10n/generated/app_localizations.dart';
 
 class ProgressErrorState extends StatelessWidget {
   const ProgressErrorState({
@@ -51,7 +50,7 @@ class ProgressErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.progressLoadFailed,
+              'Your saved progress is still safe. Try refreshing this view.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -109,7 +108,7 @@ class BintiGuruBookingsSection extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  AppLocalizations.of(context)!.noBookingsFound,
+                  'No bookings found',
                   style: AppTypography.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -118,7 +117,7 @@ class BintiGuruBookingsSection extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  AppLocalizations.of(context)!.bookingsEmptyHint,
+                  'Book verified reciters for your ceremonies under the Bakhed tab.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,
@@ -308,8 +307,8 @@ class BintiGuruBookingsSection extends ConsumerWidget {
           color: Colors.redAccent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
-        child: Text(
-          AppLocalizations.of(context)!.waitlistBookingsFailed,
+        child: const Text(
+          'Failed to load waitlist bookings.',
           style: TextStyle(color: Colors.redAccent),
         ),
       ),

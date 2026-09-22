@@ -57,7 +57,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
                       ),
                     ),
                     child: Text(
-                      AppLocalizations.of(context)!.bakhedLabel,
+                      'BAKHED',
                       style: AppTypography.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,

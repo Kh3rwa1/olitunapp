@@ -329,7 +329,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        AppLocalizations.of(context)!.failedToDeleteAccount,
+                        'Failed to delete account: ${failure.message}',
                       ),
                       backgroundColor: AppColors.error,
                     ),
@@ -342,7 +342,7 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 Navigator.pop(context); // Close loading
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(AppLocalizations.of(context)!.failedToDeleteAccount),
+                    content: Text('Failed to delete account: ${e.toString()}'),
                     backgroundColor: AppColors.error,
                   ),
                 );
@@ -379,16 +379,16 @@ void showSignOutDialog(BuildContext context, WidgetRef ref) {
             child: const Icon(Icons.logout_rounded, color: AppColors.brandBlue),
           ),
           const SizedBox(width: 14),
-          Text(AppLocalizations.of(context)!.signOut),
+          const Text('Sign Out'),
         ],
       ),
-      content: Text(
-        AppLocalizations.of(context)!.signOutConfirmBody,
+      content: const Text(
+        'Are you sure you want to sign out of your account on this device?',
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(AppLocalizations.of(context)!.cancel),
+          child: const Text('Cancel'),
         ),
         ElevatedButton(
           onPressed: () async {
@@ -417,7 +417,7 @@ void showSignOutDialog(BuildContext context, WidgetRef ref) {
             backgroundColor: AppColors.brandBlue,
             foregroundColor: Colors.white,
           ),
-          child: Text(AppLocalizations.of(context)!.signOut),
+          child: const Text('Sign Out'),
         ),
       ],
     ),

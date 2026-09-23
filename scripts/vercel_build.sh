@@ -17,7 +17,7 @@ flutter --version
 flutter config --enable-web
 flutter pub get
 
-flutter build web --release \
+flutter build web --release --no-web-resources-cdn \
   --dart-define=APP_ENV=production \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
   --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
@@ -28,4 +28,7 @@ flutter build web --release \
   --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
   --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}"
 
+dart run scripts/patch_service_worker.dart
+dart run scripts/verify_service_worker_patch.dart
+dart run scripts/verify_pwa_offline.dart
 node scripts/verify_pwa_offline.mjs

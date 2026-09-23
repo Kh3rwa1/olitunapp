@@ -107,6 +107,19 @@ void main() {
       expect(script, contains('safe-area-inset-bottom'));
       expect(script, contains('pwa-installable'));
     });
+
+    test('service worker precaches offline shell and handles CanvasKit', () {
+      final sw = File('web/sw.js').readAsStringSync();
+
+      expect(sw, contains("'/pwa_runtime.js'"));
+      expect(sw, contains("'/pwa_install.js'"));
+      expect(sw, contains("'/canvaskit/canvaskit.js'"));
+      expect(sw, contains("'/canvaskit/canvaskit.wasm'"));
+      expect(sw, contains('isCanvaskitCdn'));
+      expect(sw, contains('ignoreSearch: true'));
+      expect(sw, contains('olitun-media-v1'));
+      expect(sw, contains('isCacheableAppwriteMedia'));
+    });
   });
 }
 

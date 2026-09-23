@@ -9,18 +9,22 @@ void main() {
   final buildDir = '$root/build/web';
   final failures = <String>[];
 
-  String? check(String file, String label) {
+  String? check(String file, String label, {bool read = false}) {
     final f = File(file);
     if (!f.existsSync()) {
       failures.add('$label missing: ${f.path}');
       return null;
     }
-    return f.readAsStringSync();
+    return read ? f.readAsStringSync() : '';
   }
 
   check('$webDir/sw.js', 'Custom service worker');
   check('$webDir/offline.html', 'Offline fallback page');
-  final manifestSrc = check('$webDir/manifest.json', 'Web manifest');
+  final manifestSrc = check(
+    '$webDir/manifest.json',
+    'Web manifest',
+    read: true,
+  );
   check('$webDir/pwa_runtime.js', 'PWA runtime');
   check('$webDir/pwa_install.js', 'PWA install handler');
 
@@ -51,10 +55,24 @@ void main() {
       !swSrc.contains('isCacheableAppwriteMedia')) {
     failures.add('sw.js must cache Appwrite artwork in the olitun-media cache');
   }
+  if (!swSrc.contains('/pwa_runtime.js') ||
+      !swSrc.contains('/pwa_install.js')) {
+    failures.add(
+      'sw.js must precache pwa_runtime.js and pwa_install.js in APP_SHELL',
+    );
+  }
+  if (!swSrc.contains('/canvaskit/canvaskit.js') ||
+      !swSrc.contains('/canvaskit/canvaskit.wasm')) {
+    failures.add('sw.js must precache canvaskit in APP_SHELL');
+  }
 
   if (Directory(buildDir).existsSync()) {
     check('$buildDir/sw.js', 'Built service worker');
     check('$buildDir/offline.html', 'Built offline fallback');
+    check('$buildDir/pwa_runtime.js', 'Built PWA runtime');
+    check('$buildDir/pwa_install.js', 'Built PWA install handler');
+    check('$buildDir/canvaskit/canvaskit.js', 'Built CanvasKit JS');
+    check('$buildDir/canvaskit/canvaskit.wasm', 'Built CanvasKit WASM');
   }
 
   if (failures.isNotEmpty) {

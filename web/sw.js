@@ -22,7 +22,7 @@
 
 'use strict';
 
-const SW_VERSION = '1.3.1-30';
+const SW_VERSION = '1.3.1-31';
 const STATIC_CACHE = `olitun-static-${SW_VERSION}`;
 const RUNTIME_CACHE = `olitun-runtime-${SW_VERSION}`;
 // Unversioned on purpose: artwork must survive app updates, otherwise every
@@ -37,15 +37,44 @@ const APP_SHELL = [
   '/index.html',
   '/offline.html',
   '/manifest.json',
+  '/favicon.png',
   '/flutter_bootstrap.js',
   '/flutter.js',
   '/main.dart.js',
-  '/favicon.png',
+  '/pwa_runtime.js',
+  '/pwa_install.js',
+  '/canvaskit/canvaskit.js',
+  '/canvaskit/canvaskit.wasm',
+  '/canvaskit/chromium/canvaskit.js',
+  '/canvaskit/chromium/canvaskit.wasm',
+  '/canvaskit/webparagraph/canvaskit.js',
+  '/canvaskit/webparagraph/canvaskit.wasm',
+  '/assets/FontManifest.json',
+  '/assets/AssetManifest.bin',
+  '/assets/AssetManifest.bin.json',
+  '/assets/fonts/MaterialIcons-Regular.otf',
+  '/assets/fonts/fallback/Roboto-Regular.ttf',
+  '/assets/assets/fonts/Inter-Variable.ttf',
+  '/assets/assets/fonts/OlChiki.ttf',
+  '/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
+  '/assets/assets/seed/lessons.json',
+  '/assets/assets/seed/categories.json',
+  '/assets/assets/seed/vocab_lessons.json',
+  '/assets/assets/seed/alphabet_lessons.json',
+  '/assets/assets/seed/numbers.json',
+  '/assets/assets/seed/sentences.json',
+  '/assets/assets/seed/sentence_lessons.json',
+  '/assets/assets/seed/words.json',
+  '/assets/assets/seed/letters.json',
+  '/assets/assets/seed/rhymes.json',
   '/icons/Icon-192.png',
   '/icons/Icon-512.png',
   '/icons/Icon-maskable-192.png',
   '/icons/Icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
+  '/assets/assets/icons/app_icon.png',
+  '/assets/assets/icons/olitun_logo.png',
+  '/assets/assets/images/olitun_mascot.png',
 ];
 
 // Prefixes that are safe to cache long-term (immutable-ish build output).
@@ -107,7 +136,15 @@ const NETWORK_ONLY_HOSTS = [
   'gstatic.com',
 ];
 
+function isCanvaskitCdn(url) {
+  return (
+    (url.hostname === 'www.gstatic.com' || url.hostname === 'gstatic.com') &&
+    url.pathname.includes('flutter-canvaskit')
+  );
+}
+
 function isNetworkOnly(url) {
+  if (isCanvaskitCdn(url)) return false;
   if (url.origin !== self.location.origin) {
     // Allow caching same-origin only; third-party goes to network, except
     // the immutable CDN prefixes handled above (fonts use browser cache).
@@ -131,7 +168,9 @@ function isAppShellScript(pathname) {
   return (
     pathname === '/flutter_bootstrap.js' ||
     pathname === '/main.dart.js' ||
-    pathname === '/flutter.js'
+    pathname === '/flutter.js' ||
+    pathname === '/pwa_runtime.js' ||
+    pathname === '/pwa_install.js'
   );
 }
 
@@ -198,17 +237,22 @@ async function networkFirstNavigation(request) {
     return network;
   } catch (_) {
     // Offline — try the cached shell in order of preference.
+    // ignoreSearch: true ensures launched shortcuts and queries (e.g. /?source=pwa) resolve.
     const cached =
-      (await cache.match('/index.html')) ||
-      (await cache.match('/')) ||
-      (await cache.match('/offline.html'));
+      (await cache.match(request, { ignoreSearch: true })) ||
+      (await cache.match('/index.html', { ignoreSearch: true })) ||
+      (await cache.match('/', { ignoreSearch: true }));
     if (cached) return cached;
-    // Last resort: any cached runtime document.
+
+    // Next resort: runtime cache
     const runtime = await caches.open(RUNTIME_CACHE);
-    return (
-      (await runtime.match('/index.html')) ||
-      Response.error()
-    );
+    const runtimeCached =
+      (await runtime.match(request, { ignoreSearch: true })) ||
+      (await runtime.match('/index.html', { ignoreSearch: true })) ||
+      (await runtime.match('/', { ignoreSearch: true }));
+    if (runtimeCached) return runtimeCached;
+
+    return (await cache.match('/offline.html')) || Response.error();
   }
 }
 
@@ -221,11 +265,21 @@ async function networkFirstWithCacheFallback(request, cacheName) {
     }
     return network;
   } catch (_) {
-    const cached = await cache.match(request);
+    let pathname = '';
+    try {
+      pathname = new URL(request.url).pathname;
+    } catch (_) {}
+    const cached =
+      (await cache.match(request, { ignoreSearch: true })) ||
+      (pathname && (await cache.match(pathname, { ignoreSearch: true })));
     if (cached) return cached;
     // Bootstrap / engine must never 404 offline if the precache missed.
     const shell = await caches.open(STATIC_CACHE);
-    return (await shell.match(request)) || Response.error();
+    return (
+      (await shell.match(request, { ignoreSearch: true })) ||
+      (pathname && (await shell.match(pathname, { ignoreSearch: true }))) ||
+      Response.error()
+    );
   }
 }
 
@@ -312,6 +366,37 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // CanvasKit CDN fallback: if Flutter was loaded from gstatic, intercept it,
+  // serve cache-first, and fall back to the bundled local CanvasKit offline.
+  if (isCanvaskitCdn(url)) {
+    event.respondWith(
+      (async () => {
+        const runtime = await caches.open(RUNTIME_CACHE);
+        const cached = await runtime.match(request);
+        if (cached) return cached;
+        try {
+          const network = await fetch(request);
+          if (network && (network.ok || network.type === 'opaque')) {
+            runtime.put(request, network.clone()).catch(() => {});
+          }
+          return network;
+        } catch (_) {
+          const staticCache = await caches.open(STATIC_CACHE);
+          const filename = url.pathname.split('/').pop();
+          if (filename) {
+            const localFallback =
+              (await staticCache.match(`/canvaskit/${filename}`)) ||
+              (await staticCache.match(`/canvaskit/chromium/${filename}`)) ||
+              (await staticCache.match(`/canvaskit/webparagraph/${filename}`));
+            if (localFallback) return localFallback;
+          }
+          return Response.error();
+        }
+      })(),
+    );
+    return;
+  }
+
   if (isNetworkOnly(url)) return;
 
   // Navigations: includes "/", "/?source=pwa", "/?shortcut=learn",
@@ -331,13 +416,17 @@ self.addEventListener('fetch', (event) => {
   if (isCacheFirstAsset(pathname)) {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(RUNTIME_CACHE);
-        const cached = await cache.match(request);
+        const staticCache = await caches.open(STATIC_CACHE);
+        const runtimeCache = await caches.open(RUNTIME_CACHE);
+        const cached =
+          (await runtimeCache.match(request, { ignoreSearch: true })) ||
+          (await staticCache.match(request, { ignoreSearch: true })) ||
+          (await staticCache.match(pathname, { ignoreSearch: true }));
         if (cached) {
           event.waitUntil(
             fetch(request)
               .then((res) => {
-                if (res && res.ok) cache.put(request, res).catch(() => {});
+                if (res && res.ok) runtimeCache.put(request, res).catch(() => {});
               })
               .catch(() => {}),
           );
@@ -346,13 +435,16 @@ self.addEventListener('fetch', (event) => {
         try {
           const network = await fetch(request);
           if (network && network.ok) {
-            cache.put(request, network.clone()).catch(() => {});
+            runtimeCache.put(request, network.clone()).catch(() => {});
           }
           return network;
         } catch (_) {
           // Assets missing offline: fall back to the static precache copy.
-          const shell = await caches.open(STATIC_CACHE);
-          return (await shell.match(request)) || Response.error();
+          return (
+            (await staticCache.match(request, { ignoreSearch: true })) ||
+            (await staticCache.match(pathname, { ignoreSearch: true })) ||
+            Response.error()
+          );
         }
       })(),
     );

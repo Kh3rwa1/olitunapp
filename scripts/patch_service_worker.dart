@@ -84,7 +84,7 @@ void patchBootstrapLoader() {
   }
 
   final loaderCall = RegExp(
-    r'serviceWorkerSettings\s*:\s*\{\s*serviceWorkerVersion\s*:\s*"[^"]*"\s*\}',
+    r'serviceWorkerSettings\s*:\s*\{\s*serviceWorkerVersion\s*:\s*"[^"]*"[^}]*\}',
   );
   if (!loaderCall.hasMatch(content)) {
     print(

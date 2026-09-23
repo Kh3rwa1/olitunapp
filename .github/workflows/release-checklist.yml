@@ -128,7 +128,7 @@ jobs:
 
       - name: Build Web
         run: |
-          flutter build web --release \
+          flutter build web --release --no-web-resources-cdn \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"

@@ -20,7 +20,7 @@ echo "  environment: $APP_ENV"
 echo "  revision:    $BUILD_SHA"
 echo "  built at:    $BUILT_AT"
 
-flutter build web --release --no-wasm-dry-run \
+flutter build web --release --no-wasm-dry-run --no-web-resources-cdn \
   --dart-define=APP_ENV="$APP_ENV" \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
   --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \

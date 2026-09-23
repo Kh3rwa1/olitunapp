@@ -6,18 +6,18 @@ const webDir = path.resolve(root, 'web');
 const buildDir = path.resolve(root, 'build/web');
 const failures = [];
 
-function check(file, label) {
+function check(file, label, read = false) {
   if (!fs.existsSync(file)) {
     failures.push(`${label} missing: ${path.relative(root, file)}`);
     return null;
   }
-  return fs.readFileSync(file, 'utf8');
+  return read ? fs.readFileSync(file, 'utf8') : '';
 }
 
 // 1. Source files must exist.
 check(path.join(webDir, 'sw.js'), 'Custom service worker');
 check(path.join(webDir, 'offline.html'), 'Offline fallback page');
-const manifestSrc = check(path.join(webDir, 'manifest.json'), 'Web manifest');
+const manifestSrc = check(path.join(webDir, 'manifest.json'), 'Web manifest', true);
 check(path.join(webDir, 'pwa_runtime.js'), 'PWA runtime');
 check(path.join(webDir, 'pwa_install.js'), 'PWA install handler');
 
@@ -63,11 +63,21 @@ const swSrc = fs.existsSync(path.join(webDir, 'sw.js'))
 if (!swSrc.includes('olitun-media-v1') || !swSrc.includes('isCacheableAppwriteMedia')) {
   failures.push('sw.js must cache Appwrite artwork in the olitun-media cache');
 }
+if (!swSrc.includes('/pwa_runtime.js') || !swSrc.includes('/pwa_install.js')) {
+  failures.push('sw.js must precache pwa_runtime.js and pwa_install.js in APP_SHELL');
+}
+if (!swSrc.includes('/canvaskit/canvaskit.js') || !swSrc.includes('/canvaskit/canvaskit.wasm')) {
+  failures.push('sw.js must precache canvaskit in APP_SHELL');
+}
 
-// 5. If a build exists, the output must contain the worker + fallback.
+// 5. If a build exists, the output must contain the worker + fallback + CanvasKit.
 if (fs.existsSync(buildDir)) {
   check(path.join(buildDir, 'sw.js'), 'Built service worker');
   check(path.join(buildDir, 'offline.html'), 'Built offline fallback');
+  check(path.join(buildDir, 'pwa_runtime.js'), 'Built PWA runtime');
+  check(path.join(buildDir, 'pwa_install.js'), 'Built PWA install handler');
+  check(path.join(buildDir, 'canvaskit/canvaskit.js'), 'Built CanvasKit JS');
+  check(path.join(buildDir, 'canvaskit/canvaskit.wasm'), 'Built CanvasKit WASM');
 }
 
 if (failures.length > 0) {

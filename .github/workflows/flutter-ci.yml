@@ -293,7 +293,7 @@ jobs:
         run: |
           BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-          flutter build web --release \
+          flutter build web --release --no-web-resources-cdn \
             --dart-define=APP_ENV=ci \
             --dart-define=APPWRITE_ENDPOINT=https://example.invalid/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci-project \

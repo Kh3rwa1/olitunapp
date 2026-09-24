@@ -78,16 +78,18 @@ class TranslationEngineCard extends ConsumerWidget {
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: (isIndicTrans
-                                    ? AppColors.indigoVivid
-                                    : AppColors.primary)
-                                .withValues(alpha: 0.15),
+                            color:
+                                (isIndicTrans
+                                        ? AppColors.indigoVivid
+                                        : AppColors.primary)
+                                    .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: (isIndicTrans
-                                      ? AppColors.indigoVivid
-                                      : AppColors.primary)
-                                  .withValues(alpha: 0.3),
+                              color:
+                                  (isIndicTrans
+                                          ? AppColors.indigoVivid
+                                          : AppColors.primary)
+                                      .withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -168,10 +170,7 @@ class TranslationEngineCard extends ConsumerWidget {
                     }
                   },
                 ),
-                SizedBox(
-                  width: isNarrow ? 0 : 16,
-                  height: isNarrow ? 12 : 0,
-                ),
+                SizedBox(width: isNarrow ? 0 : 16, height: isNarrow ? 12 : 0),
                 _EngineChoiceTile(
                   isDark: isDark,
                   isSelected: !isIndicTrans,
@@ -259,9 +258,7 @@ class _EngineChoiceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isSelected
-        ? badgeColor
-        : AdminTokens.border(isDark);
+    final borderColor = isSelected ? badgeColor : AdminTokens.border(isDark);
 
     return InkWell(
       onTap: isDisabled ? null : onTap,
@@ -273,13 +270,10 @@ class _EngineChoiceTile extends StatelessWidget {
           color: isSelected
               ? badgeColor.withValues(alpha: isDark ? 0.12 : 0.06)
               : (isDark
-                  ? Colors.white.withValues(alpha: 0.02)
-                  : Colors.black.withValues(alpha: 0.02)),
+                    ? Colors.white.withValues(alpha: 0.02)
+                    : Colors.black.withValues(alpha: 0.02)),
           borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-          border: Border.all(
-            color: borderColor,
-            width: isSelected ? 2 : 1,
-          ),
+          border: Border.all(color: borderColor, width: isSelected ? 2 : 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

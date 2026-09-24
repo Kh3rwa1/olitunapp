@@ -315,8 +315,5 @@ class TranslateResult {
 final aiServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
   final engine = ref.watch(translationEngineProvider);
-  return AiService(
-    functions: Functions(auth.client),
-    defaultEngine: engine,
-  );
+  return AiService(functions: Functions(auth.client), defaultEngine: engine);
 });

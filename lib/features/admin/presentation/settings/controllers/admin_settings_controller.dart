@@ -268,7 +268,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         adMobRewardedCooldownMinutes: rewardedCooldown,
         translationEngine:
             (settings['translation_engine'] as String?)?.toLowerCase().trim() ??
-                'cloudflare',
+            'cloudflare',
       );
 
       if (seq != _loadSeq) return;

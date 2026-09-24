@@ -114,7 +114,7 @@
     {
       "$id": "6a007db60024418c0997",
       "name": "translator",
-      "runtime": "node-22.0",
+      "runtime": "node-22",
       "execute": [
         "any"
       ],

@@ -58,10 +58,17 @@ Successful response:
      --dart-define=TRANSLATE_URL=<exec-url>
    ```
 
-## Required environment variables (set in Appwrite Console)
+## Translation Providers & Environment Variables (set in Appwrite Console)
 
 - `APPWRITE_FUNCTION_PROJECT_ID` — provided automatically by Appwrite
 - `APPWRITE_API_KEY` — server key with database read/write
+- `TRANSLATION_PROVIDER` — provider engine:
+  - `cloudflare` / `indictrans2` / `hybrid` — uses Cloudflare Workers AI IndicTrans2 (`@cf/ai4bharat/indictrans2-en-indic-1B`) for English $\rightarrow$ Indic (e.g. Santali Ol Chiki `sat_Olck`), with automatic fallback to Google Translate for reverse or non-English translations.
+  - `google-cloud` / `gcp` — uses official Google Cloud Translation API v2.
+  - `vitalets` (default) — uses Google Translate.
+- `CLOUDFLARE_ACCOUNT_ID` — required when using Cloudflare provider.
+- `CLOUDFLARE_API_TOKEN` — required when using Cloudflare provider (Workers AI permission).
+- `GOOGLE_TRANSLATE_API_KEY` — required when `TRANSLATION_PROVIDER=google-cloud`.
 - `RATE_LIMIT_PER_HOUR` — optional, defaults to `20`
 - `MAX_TRANSLATION_CHARS` — optional, defaults to `5000`
 

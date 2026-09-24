@@ -7,6 +7,7 @@ import '../widgets/admin_page_header.dart';
 import 'models/translation_entry.dart';
 import 'providers/translation_entries_provider.dart';
 import 'widgets/translation_edit_dialog.dart';
+import 'widgets/translation_engine_card.dart';
 import 'widgets/translation_stats_card.dart';
 
 class AdminTranslationsScreen extends ConsumerStatefulWidget {
@@ -63,6 +64,10 @@ class _AdminTranslationsScreenState
                     'Manage Bengali, Hindi, Odia, English and Santali dictionary meanings, pronunciations, and transliterations',
                 eyebrow: 'CONTENT · MULTILINGUAL CMS',
               ),
+              const SizedBox(height: 20),
+
+              // AI Translation Engine Switcher Card
+              TranslationEngineCard(isDark: isDark),
               const SizedBox(height: 20),
 
               // Language Selector Tabs

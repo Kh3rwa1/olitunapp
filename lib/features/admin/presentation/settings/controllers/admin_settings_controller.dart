@@ -36,6 +36,7 @@ class AdminSettingsState {
     this.adMobNativeIdOverride = '',
     this.adMobInterstitialCapMinutes = 3,
     this.adMobRewardedCooldownMinutes = 10,
+    this.translationEngine = 'cloudflare',
     this.savingKey,
     this.failure,
     this.isDirty = false,
@@ -57,6 +58,7 @@ class AdminSettingsState {
   final String adMobNativeIdOverride;
   final int adMobInterstitialCapMinutes;
   final int adMobRewardedCooldownMinutes;
+  final String translationEngine;
   final String? savingKey;
   final AdminFailure? failure;
   final bool isDirty;
@@ -67,6 +69,9 @@ class AdminSettingsState {
   bool get hasLoadFailure => status == AdminSettingsStatus.loadFailure;
   bool get isSavingAny => status == AdminSettingsStatus.saving;
   bool isSaving(String key) => isSavingAny && savingKey == key;
+  bool get isIndicTrans2Engine =>
+      translationEngine.toLowerCase().trim() == 'cloudflare' ||
+      translationEngine.toLowerCase().trim() == 'indictrans2';
 
   AdminSettingsState copyWith({
     AdminSettingsStatus? status,
@@ -84,6 +89,7 @@ class AdminSettingsState {
     String? adMobNativeIdOverride,
     int? adMobInterstitialCapMinutes,
     int? adMobRewardedCooldownMinutes,
+    String? translationEngine,
     String? savingKey,
     AdminFailure? failure,
     bool? isDirty,
@@ -115,6 +121,7 @@ class AdminSettingsState {
           adMobInterstitialCapMinutes ?? this.adMobInterstitialCapMinutes,
       adMobRewardedCooldownMinutes:
           adMobRewardedCooldownMinutes ?? this.adMobRewardedCooldownMinutes,
+      translationEngine: translationEngine ?? this.translationEngine,
       savingKey: clearSavingKey ? null : (savingKey ?? this.savingKey),
       failure: clearFailure ? null : (failure ?? this.failure),
       isDirty: isDirty ?? this.isDirty,
@@ -259,6 +266,9 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         adMobNativeIdOverride: nativeIdOverride,
         adMobInterstitialCapMinutes: interstitialCap,
         adMobRewardedCooldownMinutes: rewardedCooldown,
+        translationEngine:
+            (settings['translation_engine'] as String?)?.toLowerCase().trim() ??
+                'cloudflare',
       );
 
       if (seq != _loadSeq) return;
@@ -359,6 +369,8 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         final cd = int.tryParse(value) ?? 10;
         updated = updated.copyWith(adMobRewardedCooldownMinutes: cd);
         ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(cd);
+      } else if (key == 'translation_engine') {
+        updated = updated.copyWith(translationEngine: value);
       }
 
       state = updated.copyWith(lastConfirmedState: updated);

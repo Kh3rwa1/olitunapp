@@ -83,6 +83,16 @@ final onboardingGoalsProvider = Provider<List<OnboardingGoal>>((ref) {
   );
 });
 
+final translationEngineProvider = Provider<String>((ref) {
+  final settingsAsync = ref.watch(appSettingsProvider);
+  return settingsAsync.maybeWhen(
+    data: (settings) =>
+        (settings['translation_engine'] as String?)?.toLowerCase().trim() ??
+        'cloudflare',
+    orElse: () => 'cloudflare',
+  );
+});
+
 final List<OnboardingGoal> _defaultGoals = [
   OnboardingGoal(
     id: 'read_ol_chiki',

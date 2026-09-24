@@ -23,6 +23,58 @@ const err = (message, code = 'TRANSLATION_ERROR', retryAfter = undefined) => ({
   ...(retryAfter ? { retryAfterSeconds: retryAfter } : {}),
 });
 
+let cachedEngineSetting = null;
+let engineSettingExpiry = 0;
+
+let cachedCfCreds = null;
+let cfCredsExpiry = 0;
+
+async function resolveCloudflareCredentials(db) {
+  if (process.env.CLOUDFLARE_ACCOUNT_ID && process.env.CLOUDFLARE_API_TOKEN) {
+    return {
+      accountId: process.env.CLOUDFLARE_ACCOUNT_ID,
+      apiToken: process.env.CLOUDFLARE_API_TOKEN,
+    };
+  }
+  const now = Date.now();
+  if (cachedCfCreds && now < cfCredsExpiry) {
+    return cachedCfCreds;
+  }
+  let accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  let apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  try {
+    const accDoc = await db.getDocument(DB_ID, 'app_settings', 'cloudflare_account_id').catch(() => null);
+    const tokDoc = await db.getDocument(DB_ID, 'app_settings', 'cloudflare_api_token').catch(() => null);
+    if (accDoc?.settingValue) accountId = accDoc.settingValue.trim();
+    if (tokDoc?.settingValue) apiToken = tokDoc.settingValue.trim();
+  } catch (_) {}
+  cachedCfCreds = { accountId, apiToken };
+  cfCredsExpiry = now + 30000;
+  return cachedCfCreds;
+}
+
+async function resolveActiveEngine(db, requestedEngine) {
+  if (requestedEngine && typeof requestedEngine === 'string' && requestedEngine.trim().length > 0) {
+    return requestedEngine.trim().toLowerCase();
+  }
+  const now = Date.now();
+  if (cachedEngineSetting && now < engineSettingExpiry) {
+    return cachedEngineSetting;
+  }
+  try {
+    const doc = await db.getDocument(DB_ID, 'app_settings', 'translation_engine');
+    const val = (doc?.settingValue || '').trim().toLowerCase();
+    if (val) {
+      cachedEngineSetting = val;
+      engineSettingExpiry = now + 30000;
+      return val;
+    }
+  } catch (_) {
+    // collection or doc not found, fallback safely
+  }
+  return (process.env.TRANSLATION_PROVIDER || 'cloudflare').trim().toLowerCase();
+}
+
 export default async ({ req, res, log, error }) => {
   const startTime = Date.now();
   if (process.env.TRANSLATION_ENABLED === 'false') {
@@ -81,8 +133,19 @@ export default async ({ req, res, log, error }) => {
     return res.json(err('Translation is busy. Please try again shortly.', 'RESOURCE_LIMIT', requestBudget.retryAfterSeconds || 60), unavailable ? 503 : 429);
   }
 
-  // ---- Cache Lookup (SHA-256 hashed cacheKey) ----
-  const cacheKey = createCacheKey({ from, to, text });
+  // ---- Resolve Active Translation Provider ----
+  const requestedEngine = (body?.engine || body?.provider || '').toString().trim();
+  const activeEngine = await resolveActiveEngine(db, requestedEngine);
+  const cfCreds = await resolveCloudflareCredentials(db);
+  const effectiveEnv = {
+    ...process.env,
+    CLOUDFLARE_ACCOUNT_ID: cfCreds.accountId || process.env.CLOUDFLARE_ACCOUNT_ID,
+    CLOUDFLARE_API_TOKEN: cfCreds.apiToken || process.env.CLOUDFLARE_API_TOKEN,
+  };
+  const provider = getTranslationProvider({ engine: activeEngine, env: effectiveEnv });
+
+  // ---- Cache Lookup (SHA-256 hashed cacheKey scoped to engine) ----
+  const cacheKey = createCacheKey({ from, to, text, engine: provider.name });
   try {
     const cached = await db.listDocuments(DB_ID, CACHE_COLLECTION, [
       Query.equal('cacheKey', cacheKey),
@@ -90,19 +153,16 @@ export default async ({ req, res, log, error }) => {
     ]);
     if (cached.documents && cached.documents.length > 0) {
       const c = cached.documents[0];
-      // Legacy rows may predate the `translatedText` field name (older
-      // deployments stored `translation`) or be empty — returning them
-      // produced translations that vanished in the app. Treat a stale or
-      // empty row as a miss: self-heal by deleting it and re-translating.
       const cachedText = String(c.translatedText || c.translation || '').trim();
       if (cachedText.length > 0) {
         log(JSON.stringify({
           event: 'cache_hit',
+          provider: provider.name,
           from: c.from,
           to: c.to,
           durationMs: Date.now() - startTime,
         }));
-        return res.json(ok(translationPayload(cachedText, c.from || from, to, true)));
+        return res.json(ok(translationPayload(cachedText, c.from || from, to, true, provider.name)));
       }
       log(JSON.stringify({ event: 'cache_stale_discarded', cacheKey: cacheKey.slice(0, 12) }));
       db.deleteDocument(DB_ID, CACHE_COLLECTION, c.$id).catch((delErr) => {
@@ -122,12 +182,13 @@ export default async ({ req, res, log, error }) => {
   if (upstreamBudget.remaining <= 5) {
     log(JSON.stringify({ event: 'translation_budget_low', remaining: upstreamBudget.remaining }));
   }
-  const provider = getTranslationProvider();
+
   try {
     const translationResult = await provider.translate({ text, from, to, timeoutMs: 8000 });
     resourceBudget.succeeded();
     const translatedText = translationResult.text;
     const detectedFrom = translationResult.from || from;
+    const effectiveProvider = translationResult.provider || provider.name;
 
     // Asynchronously update cache without blocking client response
     db.createDocument(DB_ID, CACHE_COLLECTION, ID.unique(), {
@@ -142,17 +203,18 @@ export default async ({ req, res, log, error }) => {
 
     log(JSON.stringify({
       event: 'translation_success',
-      provider: translationResult.provider,
+      provider: effectiveProvider,
       from: detectedFrom,
       to,
       durationMs: Date.now() - startTime,
     }));
 
-    return res.json(ok(translationPayload(translatedText, detectedFrom, to, false)));
+    return res.json(ok(translationPayload(translatedText, detectedFrom, to, false, effectiveProvider)));
   } catch (upstreamErr) {
     resourceBudget.failed();
     error(JSON.stringify({
       event: 'upstream_translation_failed',
+      provider: provider.name,
       error: upstreamErr?.message,
       durationMs: Date.now() - startTime,
     }));
@@ -168,7 +230,7 @@ export default async ({ req, res, log, error }) => {
  * (lib/core/api/ai_service.dart); `translatedText`/`from`/`to`/`cached` are
  * kept for older clients and the content pipelines.
  */
-function translationPayload(translatedText, detectedLanguage, to, cached) {
+function translationPayload(translatedText, detectedLanguage, to, cached, providerName) {
   return {
     translation: translatedText,
     detectedLanguage,
@@ -177,6 +239,7 @@ function translationPayload(translatedText, detectedLanguage, to, cached) {
     from: detectedLanguage,
     to,
     cached,
+    provider: providerName,
   };
 }
 

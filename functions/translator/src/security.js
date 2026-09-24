@@ -31,12 +31,13 @@ export const SUPPORTED_LANGUAGES = Object.freeze(new Set([
 
 const LANGUAGE_TAG_PATTERN = /^[a-z]{2,5}(-[a-z0-9]{2,8})?$/i;
 
-export const createCacheKey = ({ from, to, text }) =>
+export const createCacheKey = ({ from, to, text, engine = '' }) =>
   createHash('sha256')
     .update(JSON.stringify({
       from: String(from || 'auto').toLowerCase(),
       to: String(to || 'sat').toLowerCase(),
       text: String(text || '').trim(),
+      ...(engine ? { engine: String(engine).toLowerCase().trim() } : {}),
     }))
     .digest('hex');
 

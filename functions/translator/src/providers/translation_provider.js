@@ -1,10 +1,7 @@
 import { translate as vitaletsTranslate } from '@vitalets/google-translate-api';
 
-export class BaseTranslationProvider {
-  async translate({ text, from, to, timeoutMs = 8000 }) {
-    throw new Error('translate() must be implemented');
-  }
-}
+import { BaseTranslationProvider } from './base_provider.js';
+export { BaseTranslationProvider };
 
 export class VitaletsTranslationProvider extends BaseTranslationProvider {
   get name() {
@@ -81,10 +78,56 @@ export class GoogleCloudTranslationProvider extends BaseTranslationProvider {
   }
 }
 
-export function getTranslationProvider(env = process.env) {
-  const providerType = (env.TRANSLATION_PROVIDER || 'vitalets').toLowerCase().trim();
+import {
+  CloudflareIndicTrans2Provider,
+  resolveIndicTrans2Target,
+  INDICTRANS2_TARGET_LANGUAGES,
+} from './cloudflare_provider.js';
+
+export {
+  CloudflareIndicTrans2Provider,
+  resolveIndicTrans2Target,
+  INDICTRANS2_TARGET_LANGUAGES,
+};
+
+export function getTranslationProvider(options = process.env) {
+  let env = process.env;
+  let engine = null;
+
+  if (options && typeof options === 'object') {
+    if ('engine' in options || 'env' in options) {
+      engine = options.engine;
+      env = options.env || process.env;
+    } else {
+      env = options;
+    }
+  }
+
+  const providerType = (engine || env.TRANSLATION_PROVIDER || 'vitalets').toLowerCase().trim();
+
   if (providerType === 'google-cloud' || providerType === 'gcp') {
     return new GoogleCloudTranslationProvider(env.GOOGLE_TRANSLATE_API_KEY);
+  }
+  if (providerType === 'google' || providerType === 'vitalets') {
+    if (env.GOOGLE_TRANSLATE_API_KEY) {
+      return new GoogleCloudTranslationProvider(env.GOOGLE_TRANSLATE_API_KEY);
+    }
+    return new VitaletsTranslationProvider();
+  }
+  if (
+    providerType === 'cloudflare' ||
+    providerType === 'indictrans2' ||
+    providerType === 'ai4bharat' ||
+    providerType === 'hybrid'
+  ) {
+    const fallback = env.GOOGLE_TRANSLATE_API_KEY
+      ? new GoogleCloudTranslationProvider(env.GOOGLE_TRANSLATE_API_KEY)
+      : new VitaletsTranslationProvider();
+    return new CloudflareIndicTrans2Provider({
+      accountId: env.CLOUDFLARE_ACCOUNT_ID,
+      apiToken: env.CLOUDFLARE_API_TOKEN,
+      fallbackProvider: fallback,
+    });
   }
   return new VitaletsTranslationProvider();
 }

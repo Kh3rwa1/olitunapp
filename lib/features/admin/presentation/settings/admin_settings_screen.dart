@@ -17,6 +17,7 @@ import 'sections/admin_desktop_behavior_section.dart';
 import 'sections/admin_onboarding_video_section.dart';
 import 'widgets/admin_settings_section_card.dart';
 import 'widgets/admin_restore_dialog.dart';
+import '../translations/widgets/translation_engine_card.dart';
 part 'widgets/admin_settings_sections.dart';
 
 class AdminSettingsScreen extends ConsumerStatefulWidget {
@@ -401,6 +402,10 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                           'Onboarding video is automatically skipped on desktop screens (width > 900px). Users are redirected directly to the welcome or home screen.',
                       child: AdminDesktopBehaviorSection(),
                     ),
+                    const SizedBox(height: 24),
+
+                    // AI Translation Engine Section
+                    TranslationEngineCard(isDark: isDark),
                     const SizedBox(height: 24),
 
                     // Traditional Mastery Badges Section

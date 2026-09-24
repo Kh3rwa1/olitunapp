@@ -180,4 +180,156 @@ test('Providers: Provider factory correctly instantiates configured provider', (
 
   const gcloudProvider = new GoogleCloudTranslationProvider({ apiKey: 'fake_key' });
   assert.equal(gcloudProvider.name, 'google_cloud');
+
+  const cfProvider = getTranslationProvider({
+    TRANSLATION_PROVIDER: 'cloudflare',
+    CLOUDFLARE_ACCOUNT_ID: 'acc_123',
+    CLOUDFLARE_API_TOKEN: 'tok_abc',
+  });
+  assert.equal(cfProvider.name, 'cloudflare_indictrans2');
+
+  // Dynamic engine parameter selection
+  const dynamicGoogle = getTranslationProvider({ engine: 'google' });
+  assert.equal(dynamicGoogle.name, 'vitalets');
+
+  const dynamicCloudflare = getTranslationProvider({
+    engine: 'cloudflare',
+    env: { CLOUDFLARE_ACCOUNT_ID: 'acc_123', CLOUDFLARE_API_TOKEN: 'tok_abc' },
+  });
+  assert.equal(dynamicCloudflare.name, 'cloudflare_indictrans2');
 });
+
+test('Security: Cache keys are correctly isolated by engine', () => {
+  const keyGoogle = createCacheKey({ from: 'en', to: 'sat', text: 'Hello', engine: 'vitalets' });
+  const keyIndicTrans = createCacheKey({ from: 'en', to: 'sat', text: 'Hello', engine: 'cloudflare_indictrans2' });
+  const keyNoEngine = createCacheKey({ from: 'en', to: 'sat', text: 'Hello' });
+
+  assert.notEqual(keyGoogle, keyIndicTrans);
+  assert.notEqual(keyGoogle, keyNoEngine);
+  assert.match(keyGoogle, /^[a-f0-9]{64}$/);
+  assert.match(keyIndicTrans, /^[a-f0-9]{64}$/);
+});
+
+test('Cloudflare IndicTrans2: Language code mapping resolves correctly', async () => {
+  const { resolveIndicTrans2Target } = await import('../src/providers/cloudflare_provider.js');
+  assert.equal(resolveIndicTrans2Target('sat'), 'sat_Olck');
+  assert.equal(resolveIndicTrans2Target('santali'), 'sat_Olck');
+  assert.equal(resolveIndicTrans2Target('hi'), 'hin_Deva');
+  assert.equal(resolveIndicTrans2Target('bn'), 'ben_Beng');
+  assert.equal(resolveIndicTrans2Target('or'), 'ory_Orya');
+  assert.equal(resolveIndicTrans2Target('en'), null); // English is source, not target
+  assert.equal(resolveIndicTrans2Target('xyz'), null);
+});
+
+test('Cloudflare IndicTrans2: Successfully translates English to Santali Ol Chiki', async () => {
+  const { CloudflareIndicTrans2Provider } = await import('../src/providers/cloudflare_provider.js');
+
+  let interceptedUrl = null;
+  let interceptedBody = null;
+  let interceptedHeaders = null;
+
+  const mockFetch = async (url, options) => {
+    interceptedUrl = url;
+    interceptedHeaders = options.headers;
+    interceptedBody = JSON.parse(options.body);
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        success: true,
+        result: {
+          translations: ['ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ'],
+        },
+      }),
+    };
+  };
+
+  const provider = new CloudflareIndicTrans2Provider({
+    accountId: 'test_account_id',
+    apiToken: 'test_api_token',
+    fetchFn: mockFetch,
+  });
+
+  const res = await provider.translate({
+    text: 'Good morning',
+    from: 'en',
+    to: 'sat',
+  });
+
+  assert.equal(res.text, 'ᱥᱟᱹᱜᱩᱱ ᱡᱚᱦᱟᱨ');
+  assert.equal(res.from, 'en');
+  assert.equal(res.provider, 'cloudflare-indictrans2-1b');
+
+  assert.ok(interceptedUrl.includes('test_account_id'));
+  assert.ok(interceptedUrl.includes('@cf/ai4bharat/indictrans2-en-indic-1B'));
+  assert.equal(interceptedHeaders['Authorization'], 'Bearer test_api_token');
+  assert.equal(interceptedBody.text, 'Good morning');
+  assert.equal(interceptedBody.target_language, 'sat_Olck');
+});
+
+test('Cloudflare IndicTrans2: Gracefully delegates reverse translation (Ol Chiki to English) to fallback provider', async () => {
+  const { CloudflareIndicTrans2Provider } = await import('../src/providers/cloudflare_provider.js');
+
+  const mockFallback = {
+    async translate({ text, from, to }) {
+      return {
+        text: 'Hello world',
+        from: 'sat',
+        provider: 'mock-fallback',
+      };
+    },
+  };
+
+  const provider = new CloudflareIndicTrans2Provider({
+    accountId: 'test_account_id',
+    apiToken: 'test_api_token',
+    fallbackProvider: mockFallback,
+  });
+
+  const res = await provider.translate({
+    text: 'ᱚᱞ ᱪᱤᱠᱤ',
+    from: 'sat',
+    to: 'en',
+  });
+
+  assert.equal(res.text, 'Hello world');
+  assert.equal(res.provider, 'mock-fallback');
+});
+
+test('Cloudflare IndicTrans2: Falls back to fallbackProvider if Cloudflare returns an upstream error', async () => {
+  const { CloudflareIndicTrans2Provider } = await import('../src/providers/cloudflare_provider.js');
+
+  const mockFetch = async () => ({
+    ok: false,
+    status: 500,
+    text: async () => 'Internal server error',
+  });
+
+  const mockFallback = {
+    async translate({ text, from, to }) {
+      return {
+        text: 'Fallback translation',
+        from: 'en',
+        provider: 'mock-fallback',
+      };
+    },
+  };
+
+  const provider = new CloudflareIndicTrans2Provider({
+    accountId: 'test_account_id',
+    apiToken: 'test_api_token',
+    fetchFn: mockFetch,
+    fallbackProvider: mockFallback,
+  });
+
+  const res = await provider.translate({
+    text: 'Hello',
+    from: 'en',
+    to: 'sat',
+  });
+
+  assert.equal(res.text, 'Fallback translation');
+  assert.equal(res.provider, 'mock-fallback');
+});
+

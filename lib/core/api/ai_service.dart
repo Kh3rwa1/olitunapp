@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/config/appwrite_config.dart';
+import '../../shared/providers/app_settings_provider.dart';
 import '../auth/appwrite_auth_service.dart';
 
 /// Translation API configuration.
@@ -52,10 +53,10 @@ class AiConfig {
 }
 
 /// Translation service — talks to the Appwrite Function deployed under
-/// `functions/translator/`. The function wraps Google Translate with
-/// caching + rate limiting (see that directory's README).
+/// `functions/translator/`. The function wraps Google Translate and Cloudflare
+/// IndicTrans2 with caching + rate limiting (see that directory's README).
 class AiService {
-  AiService({http.Client? client, this.functions})
+  AiService({http.Client? client, this.functions, this.defaultEngine})
     : _client = client ?? http.Client();
 
   final http.Client _client;
@@ -65,23 +66,39 @@ class AiService {
   /// permission). Raw-HTTP fallback remains for web-cookie contexts.
   final Functions? functions;
 
+  /// The default translation engine ('cloudflare' | 'google') configured in
+  /// the app settings.
+  final String? defaultEngine;
+
   Future<TranslateResult?> translate(
     String text, {
     String from = 'auto',
     String to = 'sat',
-  }) => _post(AiConfig.translateUrl, {
-    'text': text,
-    'from': from,
-    'to': to,
-  }, endpointName: 'translate');
+    String? engine,
+  }) {
+    final effectiveEngine = engine ?? defaultEngine;
+    return _post(AiConfig.translateUrl, {
+      'text': text,
+      'from': from,
+      'to': to,
+      if (effectiveEngine != null && effectiveEngine.isNotEmpty)
+        'engine': effectiveEngine,
+    }, endpointName: 'translate');
+  }
 
   Future<TranslateResult?> translateFromOlChiki(
     String text, {
     String to = 'en',
-  }) => _post(AiConfig.reverseTranslateUrl, {
-    'text': text,
-    'to': to,
-  }, endpointName: 'reverseTranslate');
+    String? engine,
+  }) {
+    final effectiveEngine = engine ?? defaultEngine;
+    return _post(AiConfig.reverseTranslateUrl, {
+      'text': text,
+      'to': to,
+      if (effectiveEngine != null && effectiveEngine.isNotEmpty)
+        'engine': effectiveEngine,
+    }, endpointName: 'reverseTranslate');
+  }
 
   @visibleForTesting
   Future<TranslateResult?> translateFromUrlForTest(
@@ -179,6 +196,7 @@ class AiService {
         translation: (d['translation'] as String?) ?? '',
         detectedLanguage: d['detectedLanguage'] as String?,
         cached: d['cached'] == true,
+        provider: d['provider'] as String?,
       );
     } catch (e) {
       AppLogger.debug('AiService error: $e');
@@ -227,6 +245,7 @@ class AiService {
       translation: (d['translation'] as String?) ?? '',
       detectedLanguage: d['detectedLanguage'] as String?,
       cached: d['cached'] == true,
+      provider: d['provider'] as String?,
     );
   }
 
@@ -282,16 +301,19 @@ class TranslateResult {
   final String? detectedLanguage;
   final bool cached;
   final bool isError;
+  final String? provider;
 
   TranslateResult({
     required this.translation,
     this.detectedLanguage,
     this.cached = false,
     this.isError = false,
+    this.provider,
   });
 }
 
 final aiServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
-  return AiService(functions: Functions(auth.client));
+  final engine = ref.watch(translationEngineProvider);
+  return AiService(functions: Functions(auth.client), defaultEngine: engine);
 });

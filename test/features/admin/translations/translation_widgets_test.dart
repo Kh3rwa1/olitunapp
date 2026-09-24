@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/admin/presentation/translations/models/translation_entry.dart';
 import 'package:itun/features/admin/presentation/translations/widgets/translation_edit_dialog.dart';
+import 'package:itun/features/admin/presentation/translations/widgets/translation_engine_card.dart';
 import 'package:itun/features/admin/presentation/translations/widgets/translation_stats_card.dart';
 
 TranslationEntry _entry({Map<String, String>? translations}) =>
@@ -136,6 +138,30 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
 
       expect(find.text('Multilingual Translation Detail'), findsNothing);
+    });
+  });
+
+  group('TranslationEngineCard', () {
+    testWidgets('renders both IndicTrans2 and Google Translate choices', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const ProviderScope(
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: TranslationEngineCard(isDark: false),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('AI Translation Engine'), findsOneWidget);
+      expect(find.text('IndicTrans2 (AI4Bharat)'), findsOneWidget);
+      expect(find.text('Google Translate'), findsOneWidget);
+      expect(find.text('IndicTrans2 (Cloudflare)'), findsOneWidget);
     });
   });
 }

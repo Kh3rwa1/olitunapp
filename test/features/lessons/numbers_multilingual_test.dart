@@ -193,6 +193,67 @@ void main() {
       expect(display.subtitle, 'ইসি মিৎ');
       expect(display.ctaText, 'শুনুন');
     });
+
+    test(
+      'respects explicit pronunciation and meaning overrides on number blocks across languages',
+      () {
+        // Bengali override for 20 (Bar gel / 20)
+        final displayBn = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textBengali: '২০',
+          explicitMeaning: 'বার গেল',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+        expect(displayBn.title, 'বার গেল');
+        expect(displayBn.scriptText, '᱒᱐');
+        expect(displayBn.subtitle, '২০');
+        expect(displayBn.ctaText, 'শুনুন');
+
+        // Hindi override for 20 (Bar gel / 20)
+        final displayHi = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textHindi: '२०',
+          explicitMeaning: 'बार गेल',
+          teachingLanguage: 'hi',
+          scriptMode: 'both',
+        );
+        expect(displayHi.title, 'बार गेल');
+        expect(displayHi.scriptText, '᱒᱐');
+        expect(displayHi.subtitle, '२०');
+        expect(displayHi.ctaText, 'सुनें');
+
+        // Odia override for 20 (Bar gel / 20)
+        final displayOr = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textOdia: '୨୦',
+          explicitMeaning: 'ବାର ଗେଲ୍',
+          teachingLanguage: 'or',
+          scriptMode: 'both',
+        );
+        expect(displayOr.title, 'ବାର ଗେଲ୍');
+        expect(displayOr.scriptText, '᱒᱐');
+        expect(displayOr.subtitle, '୨୦');
+        expect(displayOr.ctaText, 'ଶୁଣନ୍ତୁ');
+
+        // English override for 20 (Bar gel)
+        final displayEn = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          explicitPronunciation: 'Bar gel',
+          explicitMeaning: 'Twenty',
+          teachingLanguage: 'en',
+          scriptMode: 'both',
+        );
+        expect(displayEn.title, 'Twenty');
+        expect(displayEn.scriptText, '᱒᱐');
+        expect(displayEn.subtitle, 'Bar gel');
+        expect(displayEn.ctaText, 'LISTEN');
+      },
+    );
   });
 
   group('LessonBlockDetailScreen Number Rendering Widget Tests', () {
@@ -204,6 +265,62 @@ void main() {
       blocks: [
         LessonBlockEntity(type: 'text', textOlChiki: '᱑', textLatin: '1 – One'),
       ],
+    );
+
+    const overriddenNumberLesson = LessonEntity(
+      id: 'lesson_num_override_test',
+      categoryId: 'cat_numbers',
+      titleOlChiki: '᱑᱐-᱒᱐ ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers 10-20',
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textBengali: '২০',
+          data: {'meaning_bn': 'বার গেল'},
+        ),
+      ],
+    );
+
+    testWidgets(
+      'renders explicit pronunciation and meaning overrides in LessonBlockDetailScreen',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWithValue(prefs),
+              learnerLessonsProvider.overrideWith(
+                (ref) => const AsyncValue.data([overriddenNumberLesson]),
+              ),
+              learnerLessonDetailProvider(
+                'lesson_num_override_test',
+              ).overrideWith((ref) => Future.value(overriddenNumberLesson)),
+              effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
+              targetLanguageCodeProvider.overrideWith(
+                (ref) => TargetLanguageNotifier(),
+              ),
+              effectiveScriptModeProvider.overrideWith((ref) => 'both'),
+            ],
+            child: const MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: LessonBlockDetailScreen(
+                lessonId: 'lesson_num_override_test',
+                initialBlockIndex: 0,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Top title in teaching language uses explicit override
+        expect(find.text('বার গেল'), findsOneWidget);
+        // Main numeral card
+        expect(find.text('᱒᱐'), findsWidgets);
+        // Subtitle pronunciation in Bengali script uses explicit override
+        expect(find.text('২০'), findsOneWidget);
+      },
     );
 
     testWidgets(

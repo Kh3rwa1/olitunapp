@@ -96,14 +96,29 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
           }
 
           final customTransliterations = <String, String>{};
-          if (b.textBengali != null && b.textBengali!.trim().isNotEmpty) {
-            customTransliterations['bn'] = b.textBengali!.trim();
+          final bn =
+              b.textBengali ??
+              (b.data?['textBengali'] as String?) ??
+              (b.data?['pronunciation_bn'] as String?) ??
+              (b.data?['transliteration_bn'] as String?);
+          if (bn != null && bn.trim().isNotEmpty) {
+            customTransliterations['bn'] = bn.trim();
           }
-          if (b.textHindi != null && b.textHindi!.trim().isNotEmpty) {
-            customTransliterations['hi'] = b.textHindi!.trim();
+          final hi =
+              b.textHindi ??
+              (b.data?['textHindi'] as String?) ??
+              (b.data?['pronunciation_hi'] as String?) ??
+              (b.data?['transliteration_hi'] as String?);
+          if (hi != null && hi.trim().isNotEmpty) {
+            customTransliterations['hi'] = hi.trim();
           }
-          if (b.textOdia != null && b.textOdia!.trim().isNotEmpty) {
-            customTransliterations['or'] = b.textOdia!.trim();
+          final or =
+              b.textOdia ??
+              (b.data?['textOdia'] as String?) ??
+              (b.data?['pronunciation_or'] as String?) ??
+              (b.data?['transliteration_or'] as String?);
+          if (or != null && or.trim().isNotEmpty) {
+            customTransliterations['or'] = or.trim();
           }
 
           entries.add(

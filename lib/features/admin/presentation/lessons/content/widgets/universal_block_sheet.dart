@@ -107,9 +107,23 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       _meaningOrCtrl.text = (data['meaning_or'] as String?) ?? '';
 
       _textBengaliCtrl.text =
-          b.textBengali ?? (data['textBengali'] as String?) ?? '';
-      _textHindiCtrl.text = b.textHindi ?? (data['textHindi'] as String?) ?? '';
-      _textOdiaCtrl.text = b.textOdia ?? (data['textOdia'] as String?) ?? '';
+          b.textBengali ??
+          (data['textBengali'] as String?) ??
+          (data['pronunciation_bn'] as String?) ??
+          (data['transliteration_bn'] as String?) ??
+          '';
+      _textHindiCtrl.text =
+          b.textHindi ??
+          (data['textHindi'] as String?) ??
+          (data['pronunciation_hi'] as String?) ??
+          (data['transliteration_hi'] as String?) ??
+          '';
+      _textOdiaCtrl.text =
+          b.textOdia ??
+          (data['textOdia'] as String?) ??
+          (data['pronunciation_or'] as String?) ??
+          (data['transliteration_or'] as String?) ??
+          '';
 
       _quizRefCtrl.text =
           (data['quizId'] as String?) ?? (data['quizRefId'] as String?) ?? '';
@@ -196,29 +210,80 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       if (media.isNotEmpty) 'media': media,
       if (_mediaIsVideo && (_posterUrl?.isNotEmpty ?? false))
         'posterUrl': _posterUrl,
-      if (_pronCtrl.text.trim().isNotEmpty)
-        'pronunciation': _pronCtrl.text.trim(),
-      if (_meaningEnCtrl.text.trim().isNotEmpty) ...{
-        'meaning': _meaningEnCtrl.text.trim(),
-        'meaning_en': _meaningEnCtrl.text.trim(),
-      },
-      if (_meaningBnCtrl.text.trim().isNotEmpty)
-        'meaning_bn': _meaningBnCtrl.text.trim(),
-      if (_meaningHiCtrl.text.trim().isNotEmpty)
-        'meaning_hi': _meaningHiCtrl.text.trim(),
-      if (_meaningOrCtrl.text.trim().isNotEmpty)
-        'meaning_or': _meaningOrCtrl.text.trim(),
-      if (_textBengaliCtrl.text.trim().isNotEmpty)
-        'textBengali': _textBengaliCtrl.text.trim(),
-      if (_textHindiCtrl.text.trim().isNotEmpty)
-        'textHindi': _textHindiCtrl.text.trim(),
-      if (_textOdiaCtrl.text.trim().isNotEmpty)
-        'textOdia': _textOdiaCtrl.text.trim(),
-      if (_quizRefCtrl.text.trim().isNotEmpty)
-        'quizId': _quizRefCtrl.text.trim(),
       if (_calloutVariant != null) 'calloutVariant': _calloutVariant,
       if (_themeColor != null) 'themeColor': _themeColor,
     };
+
+    if (_pronCtrl.text.trim().isNotEmpty) {
+      data['pronunciation'] = _pronCtrl.text.trim();
+    } else {
+      data.remove('pronunciation');
+    }
+
+    if (_meaningEnCtrl.text.trim().isNotEmpty) {
+      data['meaning'] = _meaningEnCtrl.text.trim();
+      data['meaning_en'] = _meaningEnCtrl.text.trim();
+    } else {
+      data.remove('meaning');
+      data.remove('meaning_en');
+    }
+
+    if (_meaningBnCtrl.text.trim().isNotEmpty) {
+      data['meaning_bn'] = _meaningBnCtrl.text.trim();
+    } else {
+      data.remove('meaning_bn');
+    }
+
+    if (_meaningHiCtrl.text.trim().isNotEmpty) {
+      data['meaning_hi'] = _meaningHiCtrl.text.trim();
+    } else {
+      data.remove('meaning_hi');
+    }
+
+    if (_meaningOrCtrl.text.trim().isNotEmpty) {
+      data['meaning_or'] = _meaningOrCtrl.text.trim();
+    } else {
+      data.remove('meaning_or');
+    }
+
+    if (_textBengaliCtrl.text.trim().isNotEmpty) {
+      final val = _textBengaliCtrl.text.trim();
+      data['textBengali'] = val;
+      data['pronunciation_bn'] = val;
+      data['transliteration_bn'] = val;
+    } else {
+      data.remove('textBengali');
+      data.remove('pronunciation_bn');
+      data.remove('transliteration_bn');
+    }
+
+    if (_textHindiCtrl.text.trim().isNotEmpty) {
+      final val = _textHindiCtrl.text.trim();
+      data['textHindi'] = val;
+      data['pronunciation_hi'] = val;
+      data['transliteration_hi'] = val;
+    } else {
+      data.remove('textHindi');
+      data.remove('pronunciation_hi');
+      data.remove('transliteration_hi');
+    }
+
+    if (_textOdiaCtrl.text.trim().isNotEmpty) {
+      final val = _textOdiaCtrl.text.trim();
+      data['textOdia'] = val;
+      data['pronunciation_or'] = val;
+      data['transliteration_or'] = val;
+    } else {
+      data.remove('textOdia');
+      data.remove('pronunciation_or');
+      data.remove('transliteration_or');
+    }
+
+    if (_quizRefCtrl.text.trim().isNotEmpty) {
+      data['quizId'] = _quizRefCtrl.text.trim();
+    } else {
+      data.remove('quizId');
+    }
     if (_audioUrl != null && _audioUrl!.isNotEmpty && type != 'audio') {
       data['audioUrl'] = _audioUrl;
     } else {

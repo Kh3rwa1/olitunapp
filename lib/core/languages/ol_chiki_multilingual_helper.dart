@@ -298,48 +298,83 @@ class OlChikiMultilingualHelper {
     // Resolves complete Santali pronunciation across Bengali ('মিৎ'), Hindi ('मित'),
     // Odia ('ମିତ୍'), Latin ('Mit'), Santali ('ᱢᱤᱫ'), as well as full teaching language
     // number names ('এক (১)', 'दो (२)', 'ଏକ (୧)', 'One (1)', 'ᱢᱤᱫ (᱑)').
+    // Explicit admin overrides take priority over automated defaults.
     final numberValue = SantaliNumbers.tryParseValue(rawOlChiki, latin);
     if (numberValue != null) {
       final scriptText = olChiki.isNotEmpty
           ? olChiki
           : SantaliNumbers.toOlChikiNumeral(numberValue);
-      final transliteration = SantaliNumbers.pronunciation(
-        numberValue,
-        teachingLanguage,
-      );
-      final localizedMeaning = SantaliNumbers.teachingLanguageName(
-        numberValue,
-        teachingLanguage,
-      );
 
-      final String subtitle;
-      if (scriptMode == 'olchiki' && teachingLanguage != 'sat') {
-        subtitle = '';
+      final String transliteration = switch (teachingLanguage) {
+        'bn' =>
+          (textBengali?.trim().isNotEmpty == true)
+              ? textBengali!.trim()
+              : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                        _isMatchingScript(explicitPronunciation!.trim(), 'bn'))
+                    ? explicitPronunciation.trim()
+                    : SantaliNumbers.pronunciation(numberValue, 'bn')),
+        'hi' =>
+          (textHindi?.trim().isNotEmpty == true)
+              ? textHindi!.trim()
+              : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                        _isMatchingScript(explicitPronunciation!.trim(), 'hi'))
+                    ? explicitPronunciation.trim()
+                    : SantaliNumbers.pronunciation(numberValue, 'hi')),
+        'or' =>
+          (textOdia?.trim().isNotEmpty == true)
+              ? textOdia!.trim()
+              : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                        _isMatchingScript(explicitPronunciation!.trim(), 'or'))
+                    ? explicitPronunciation.trim()
+                    : SantaliNumbers.pronunciation(numberValue, 'or')),
+        'sat' => '',
+        _ =>
+          (explicitPronunciation?.trim().isNotEmpty == true)
+              ? explicitPronunciation!.trim()
+              : SantaliNumbers.pronunciation(numberValue, 'en'),
+      };
+
+      final String localizedMeaning;
+      if (teachingLanguage == 'sat') {
+        localizedMeaning = '';
+      } else if (explicitMeaning != null && explicitMeaning.trim().isNotEmpty) {
+        final exp = explicitMeaning.trim();
+        if (teachingLanguage == 'en') {
+          localizedMeaning = exp;
+        } else if (_isMatchingScript(exp, teachingLanguage)) {
+          localizedMeaning = exp;
+        } else {
+          final translated = translateMeaning(exp, teachingLanguage);
+          localizedMeaning = translated.isNotEmpty
+              ? translated
+              : SantaliNumbers.teachingLanguageName(
+                  numberValue,
+                  teachingLanguage,
+                );
+        }
       } else {
-        subtitle = transliteration;
+        localizedMeaning = SantaliNumbers.teachingLanguageName(
+          numberValue,
+          teachingLanguage,
+        );
       }
 
-      final String title = localizedMeaning;
+      final String subtitle =
+          (scriptMode == 'olchiki' || teachingLanguage == 'sat')
+          ? ''
+          : transliteration;
 
-      final String ctaText;
-      switch (teachingLanguage) {
-        case 'bn':
-          ctaText = 'শুনুন';
-          break;
-        case 'hi':
-          ctaText = 'सुनें';
-          break;
-        case 'or':
-          ctaText = 'ଶୁଣନ୍ତୁ';
-          break;
-        case 'sat':
-          ctaText = 'ᱟᱸᱡᱚᱢ';
-          break;
-        case 'en':
-        default:
-          ctaText = 'LISTEN';
-          break;
-      }
+      final String title = localizedMeaning.isNotEmpty
+          ? localizedMeaning
+          : (transliteration.isNotEmpty ? transliteration : scriptText);
+
+      final String ctaText = switch (teachingLanguage) {
+        'bn' => 'শুনুন',
+        'hi' => 'सुनें',
+        'or' => 'ଶୁଣନ୍ତୁ',
+        'sat' => 'ᱟᱸᱡᱚᱢ',
+        _ => 'LISTEN',
+      };
 
       return LocalizedItemDisplay(
         scriptText: scriptText,
@@ -381,37 +416,40 @@ class OlChikiMultilingualHelper {
     }
 
     // 2. Resolve Transliteration (Pronunciation Guide in learner's script)
-    String transliteration;
-    switch (teachingLanguage) {
-      case 'bn':
-        transliteration = (textBengali != null && textBengali.trim().isNotEmpty)
-            ? textBengali.trim()
-            : (olChiki.isNotEmpty
-                  ? transliterateOlChiki(olChiki, 'bn')
-                  : romanizedSantali);
-        break;
-      case 'hi':
-        transliteration = (textHindi != null && textHindi.trim().isNotEmpty)
-            ? textHindi.trim()
-            : (olChiki.isNotEmpty
-                  ? transliterateOlChiki(olChiki, 'hi')
-                  : romanizedSantali);
-        break;
-      case 'or':
-        transliteration = (textOdia != null && textOdia.trim().isNotEmpty)
-            ? textOdia.trim()
-            : (olChiki.isNotEmpty
-                  ? transliterateOlChiki(olChiki, 'or')
-                  : romanizedSantali);
-        break;
-      case 'sat':
-        transliteration = '';
-        break;
-      case 'en':
-      default:
-        transliteration = romanizedSantali;
-        break;
-    }
+    final transliteration = switch (teachingLanguage) {
+      'bn' =>
+        (textBengali?.trim().isNotEmpty == true)
+            ? textBengali!.trim()
+            : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                      _isMatchingScript(explicitPronunciation!.trim(), 'bn'))
+                  ? explicitPronunciation.trim()
+                  : (olChiki.isNotEmpty
+                        ? transliterateOlChiki(olChiki, 'bn')
+                        : romanizedSantali)),
+      'hi' =>
+        (textHindi?.trim().isNotEmpty == true)
+            ? textHindi!.trim()
+            : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                      _isMatchingScript(explicitPronunciation!.trim(), 'hi'))
+                  ? explicitPronunciation.trim()
+                  : (olChiki.isNotEmpty
+                        ? transliterateOlChiki(olChiki, 'hi')
+                        : romanizedSantali)),
+      'or' =>
+        (textOdia?.trim().isNotEmpty == true)
+            ? textOdia!.trim()
+            : ((explicitPronunciation?.trim().isNotEmpty == true &&
+                      _isMatchingScript(explicitPronunciation!.trim(), 'or'))
+                  ? explicitPronunciation.trim()
+                  : (olChiki.isNotEmpty
+                        ? transliterateOlChiki(olChiki, 'or')
+                        : romanizedSantali)),
+      'sat' => '',
+      _ =>
+        (explicitPronunciation?.trim().isNotEmpty == true)
+            ? explicitPronunciation!.trim()
+            : romanizedSantali,
+    };
 
     // 3. Resolve Localized Meaning (User's language definition)
     String localizedMeaning;

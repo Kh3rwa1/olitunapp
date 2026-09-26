@@ -293,7 +293,7 @@ class _BlockActiveTranslationInputs extends StatelessWidget {
         meaningHiCtrl,
         textHindiCtrl,
         'Translated Meaning (हिन्दी अर्थ)',
-        'Pronunciation Guide / Transliteration (हिन्दी উচ্চারণ)',
+        'Pronunciation Guide / Transliteration (हिन्दी उच्चारण)',
         OlChikiMultilingualHelper.translateMeaning(baseEnglish, 'hi'),
         OlChikiMultilingualHelper.transliterateOlChiki(olChiki, 'hi'),
       ),

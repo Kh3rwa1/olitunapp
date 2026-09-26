@@ -299,6 +299,36 @@ Future<void> _saveTranslationEntry({
           blockData['meaning'] = enMeaning;
         }
 
+        if (bnPron.isNotEmpty) {
+          blockData['textBengali'] = bnPron;
+          blockData['pronunciation_bn'] = bnPron;
+          blockData['transliteration_bn'] = bnPron;
+        } else {
+          blockData.remove('textBengali');
+          blockData.remove('pronunciation_bn');
+          blockData.remove('transliteration_bn');
+        }
+
+        if (hiPron.isNotEmpty) {
+          blockData['textHindi'] = hiPron;
+          blockData['pronunciation_hi'] = hiPron;
+          blockData['transliteration_hi'] = hiPron;
+        } else {
+          blockData.remove('textHindi');
+          blockData.remove('pronunciation_hi');
+          blockData.remove('transliteration_hi');
+        }
+
+        if (orPron.isNotEmpty) {
+          blockData['textOdia'] = orPron;
+          blockData['pronunciation_or'] = orPron;
+          blockData['transliteration_or'] = orPron;
+        } else {
+          blockData.remove('textOdia');
+          blockData.remove('pronunciation_or');
+          blockData.remove('transliteration_or');
+        }
+
         blocks[blockIdx] = LessonBlockEntity(
           type: currentBlock.type,
           textOlChiki: currentBlock.textOlChiki,

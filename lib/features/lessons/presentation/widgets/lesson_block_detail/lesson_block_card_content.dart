@@ -65,13 +65,28 @@ class LessonBlockCardContent extends ConsumerWidget {
     final display = OlChikiMultilingualHelper.resolveBlockDisplay(
       textOlChiki: block.textOlChiki,
       textLatin: block.textLatin,
-      textBengali: block.textBengali,
-      textHindi: block.textHindi,
-      textOdia: block.textOdia,
+      textBengali:
+          block.textBengali ??
+          (block.data?['textBengali'] as String?) ??
+          (block.data?['pronunciation_bn'] as String?) ??
+          (block.data?['transliteration_bn'] as String?),
+      textHindi:
+          block.textHindi ??
+          (block.data?['textHindi'] as String?) ??
+          (block.data?['pronunciation_hi'] as String?) ??
+          (block.data?['transliteration_hi'] as String?),
+      textOdia:
+          block.textOdia ??
+          (block.data?['textOdia'] as String?) ??
+          (block.data?['pronunciation_or'] as String?) ??
+          (block.data?['transliteration_or'] as String?),
       explicitMeaning:
           block.data?['meaning_$teachingLanguage'] as String? ??
           block.data?['meaning'] as String?,
-      explicitPronunciation: block.data?['pronunciation'] as String?,
+      explicitPronunciation:
+          block.data?['pronunciation_$teachingLanguage'] as String? ??
+          block.data?['transliteration_$teachingLanguage'] as String? ??
+          block.data?['pronunciation'] as String?,
       teachingLanguage: teachingLanguage,
       scriptMode: scriptMode,
     );

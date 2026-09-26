@@ -9,6 +9,7 @@ import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_states.dart';
 import 'utils/content_list_actions.dart';
+import 'widgets/alphabet_discovery_banner.dart';
 import 'widgets/content_bulk_action_bar.dart';
 import 'widgets/content_filter_bar.dart';
 import 'widgets/content_form_sheet.dart';
@@ -83,7 +84,7 @@ class _AdminContentListScreenState
   String get _title {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'Ol Chiki Letters';
+        return '35 Alphabets';
       case ContentKind.number:
         return 'Ol Chiki Numbers';
       case ContentKind.word:
@@ -100,7 +101,7 @@ class _AdminContentListScreenState
   String get _eyebrow {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'CONTENT · LETTERS';
+        return 'CONTENT · 35 ALPHABETS';
       case ContentKind.number:
         return 'CONTENT · NUMBERS';
       case ContentKind.word:
@@ -117,7 +118,7 @@ class _AdminContentListScreenState
   String get _subtitle {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'Manage alphabet characters';
+        return 'Manage the 35 Ol Chiki alphabet characters, pronunciation, audio, and tracing';
       case ContentKind.number:
         return 'Manage numerals and counting';
       case ContentKind.word:
@@ -345,6 +346,17 @@ class _AdminContentListScreenState
               ),
             ),
             const SizedBox(height: 16),
+            if (widget.kind == ContentKind.lesson &&
+                AlphabetDiscoveryBanner.isAlphabetCategory(
+                  _selectedCategoryId,
+                  categories,
+                )) ...[
+              AlphabetDiscoveryBanner(
+                isDark: isDark,
+                isWideScreen: isWideScreen,
+              ),
+              const SizedBox(height: 12),
+            ],
             Expanded(
               child: listAsync.when(
                 data: (items) {
@@ -355,7 +367,9 @@ class _AdminContentListScreenState
                       title: 'No items found',
                       message:
                           'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
-                      actionLabel: 'Add $_title',
+                      actionLabel: widget.kind == ContentKind.letter
+                          ? 'Add Alphabet'
+                          : 'Add $_title',
                       onAction: () => _openFormSheet(null),
                     );
                   }
@@ -524,7 +538,7 @@ class _AdminContentListScreenState
         foregroundColor: AppColors.elevatedButtonFg,
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          'Add $_title',
+          widget.kind == ContentKind.letter ? 'Add Alphabet' : 'Add $_title',
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),

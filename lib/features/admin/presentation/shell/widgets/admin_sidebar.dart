@@ -68,7 +68,9 @@ class AdminSidebar extends ConsumerWidget {
                       location == '/admin/translations' ||
                       location == '/admin/categories' ||
                       location == '/admin/banners' ||
-                      location == '/admin/lessons',
+                      location == '/admin/lessons' ||
+                      location == '/admin/letters' ||
+                      location == '/admin/alphabets',
                   children: [
                     AdminNavItem(
                       icon: Icons.translate_rounded,
@@ -103,7 +105,15 @@ class AdminSidebar extends ConsumerWidget {
                           children: sortedCategories.map((category) {
                             final id = category.id;
                             final iconName = category.iconName?.toLowerCase();
-                            final route = '/admin/lessons?categoryId=$id';
+                            final isAlphabet =
+                                iconName == 'alphabet' ||
+                                id.contains('alphabet') ||
+                                category.titleLatin.toLowerCase().contains(
+                                  'alphabet',
+                                );
+                            final route = isAlphabet
+                                ? '/admin/letters'
+                                : '/admin/lessons?categoryId=$id';
                             IconData icon;
 
                             switch (iconName) {
@@ -131,9 +141,11 @@ class AdminSidebar extends ConsumerWidget {
 
                             final currentId =
                                 currentUri.queryParameters['categoryId'];
-                            final isSelected =
-                                currentUri.path == '/admin/lessons' &&
-                                currentId == id;
+                            final isSelected = isAlphabet
+                                ? (currentUri.path == '/admin/letters' ||
+                                      currentUri.path == '/admin/alphabets')
+                                : (currentUri.path == '/admin/lessons' &&
+                                      currentId == id);
 
                             return AdminNavItem(
                               icon: icon,
@@ -167,6 +179,7 @@ class AdminSidebar extends ConsumerWidget {
                   isCompact: isCompact,
                   hasActiveChild:
                       location == '/admin/letters' ||
+                      location == '/admin/alphabets' ||
                       location == '/admin/numbers' ||
                       location == '/admin/words' ||
                       location == '/admin/sentences' ||
@@ -174,9 +187,11 @@ class AdminSidebar extends ConsumerWidget {
                       location == '/admin/quizzes',
                   children: [
                     AdminNavItem(
-                      icon: Icons.text_fields_rounded,
-                      label: 'Letters Database',
-                      isSelected: location == '/admin/letters',
+                      icon: Icons.abc_rounded,
+                      label: '35 Alphabets Database',
+                      isSelected:
+                          location == '/admin/letters' ||
+                          location == '/admin/alphabets',
                       onTap: () => _navigate(context, '/admin/letters'),
                       isCompact: isCompact,
                     ),

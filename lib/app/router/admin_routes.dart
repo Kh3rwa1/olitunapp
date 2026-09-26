@@ -72,6 +72,12 @@ List<RouteBase> buildAdminRoutes({
           ),
         ),
         adminRoute(
+          path: '/admin/alphabets',
+          builder: (context, state) => AdminLettersScreen(
+            categoryId: state.uri.queryParameters['categoryId'],
+          ),
+        ),
+        adminRoute(
           path: '/admin/lessons',
           builder: (context, state) => AdminLessonsScreen(
             categoryId: state.uri.queryParameters['categoryId'],

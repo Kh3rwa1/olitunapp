@@ -83,12 +83,18 @@ class ContentFormIdentitySection extends StatelessWidget {
             children: [
               TextFormField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title / Romanized Santali (Latin)*',
-                  hintText: 'e.g. Baba, Johar, In do kamiyedanj',
+                decoration: InputDecoration(
+                  labelText: kind == ContentKind.letter
+                      ? 'Transliteration Latin (e.g. La (a))*'
+                      : 'Title / Romanized Santali (Latin)*',
+                  hintText: kind == ContentKind.letter
+                      ? 'e.g. La (a), At (t), Ag (g)'
+                      : 'e.g. Baba, Johar, In do kamiyedanj',
                 ),
                 validator: (val) => val == null || val.trim().isEmpty
-                    ? 'Latin title is required'
+                    ? (kind == ContentKind.letter
+                          ? 'Latin transliteration is required'
+                          : 'Latin title is required')
                     : null,
               ),
               const SizedBox(height: 12),
@@ -119,17 +125,29 @@ class ContentFormIdentitySection extends StatelessWidget {
               ] else ...[
                 TextFormField(
                   controller: titleOlChikiController,
-                  decoration: const InputDecoration(
-                    labelText: 'Title (Ol Chiki)',
-                    hintText: 'e.g. ᱵᱟᱵᱟ, ᱡᱚᱦᱟᱨ',
+                  decoration: InputDecoration(
+                    labelText: kind == ContentKind.letter
+                        ? 'Alphabet Name / Title (Ol Chiki)'
+                        : 'Title (Ol Chiki)',
+                    hintText: kind == ContentKind.letter
+                        ? 'e.g. ᱚ, ᱛ, ᱜ'
+                        : 'e.g. ᱵᱟᱵᱟ, ᱡᱚᱦᱟᱨ',
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: olChikiController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ol Chiki Text / Glyph (e.g. ᱵᱟᱵᱟ, ᱚ)',
+                  decoration: InputDecoration(
+                    labelText: kind == ContentKind.letter
+                        ? 'Ol Chiki Character Glyph (e.g. ᱚ)*'
+                        : 'Ol Chiki Text / Glyph (e.g. ᱵᱟᱵᱟ, ᱚ)',
+                    hintText: kind == ContentKind.letter ? 'e.g. ᱚ' : null,
                   ),
+                  validator: kind == ContentKind.letter
+                      ? (val) => val == null || val.trim().isEmpty
+                            ? 'Ol Chiki character is required'
+                            : null
+                      : null,
                 ),
               ],
 
@@ -137,11 +155,15 @@ class ContentFormIdentitySection extends StatelessWidget {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: subtitleController,
-                  decoration: const InputDecoration(
-                    labelText: 'English Meaning / Base Summary',
-                    hintText: 'e.g. Father, Hello, I am working',
+                  decoration: InputDecoration(
+                    labelText: kind == ContentKind.letter
+                        ? 'Example Word (e.g. Ol)'
+                        : 'English Meaning / Base Summary',
+                    hintText: kind == ContentKind.letter
+                        ? 'e.g. Ol, At, Ag, Al'
+                        : 'e.g. Father, Hello, I am working',
                   ),
-                  maxLines: 2,
+                  maxLines: kind == ContentKind.letter ? 1 : 2,
                 ),
                 const SizedBox(height: 16),
               ],
@@ -254,8 +276,11 @@ class ContentFormIdentitySection extends StatelessWidget {
               if (_supportsOrder) ...[
                 TextFormField(
                   controller: orderController,
-                  decoration: const InputDecoration(
-                    labelText: 'Sort Order Index',
+                  decoration: InputDecoration(
+                    labelText: kind == ContentKind.letter
+                        ? 'Alphabet Index (1-35)*'
+                        : 'Sort Order Index',
+                    hintText: kind == ContentKind.letter ? 'e.g. 1' : '0',
                   ),
                   keyboardType: TextInputType.number,
                 ),

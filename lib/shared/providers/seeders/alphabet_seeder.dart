@@ -1,5 +1,7 @@
-// IDEMPOTENT: safe to re-run, will not create duplicates.
+import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/logging/app_logger.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
 import '../../models/content_models.dart' hide CategoryModel, LessonModel;
@@ -28,23 +30,54 @@ class AlphabetSeeder {
         .read(appwriteDbServiceProvider)
         .listDocuments('letters');
     if (lettersRows.isEmpty) {
-      // Seed letters using verified ground-truth canonical IDs and transliterations
-      final letters = [
-        ['ᱚ', 'l_la', 'La (a)'],
-        ['ᱛ', 'l_at', 'At (t)'],
-        ['ᱜ', 'l_ag', 'Ag (g)'],
-        ['ᱝ', 'l_ang', 'Ang (ng)'],
-        ['ᱞ', 'l_al', 'Al (l)'],
-      ];
-      for (int i = 0; i < letters.length; i++) {
-        await lettersNotifier.addLetter(
-          LetterModel(
-            id: letters[i][1], // Ground-truth canonical ID (e.g. l_la)
-            charOlChiki: letters[i][0],
-            transliterationLatin: letters[i][2],
-            order: i,
-          ),
+      try {
+        final jsonString = await rootBundle.loadString(
+          'assets/seed/letters.json',
         );
+        final rawList = jsonDecode(jsonString) as List<dynamic>;
+        for (int i = 0; i < rawList.length; i++) {
+          final item = rawList[i] as Map<String, dynamic>;
+          final letterId = item['id'] as String? ?? 'l_$i';
+          final charOlChiki = item['charOlChiki'] as String? ?? '';
+          final transliterationLatin =
+              item['transliterationLatin'] as String? ?? '';
+          final exampleWord = item['exampleWord'] as String?;
+          final order = item['order'] as int? ?? i;
+          final isActive = item['isActive'] as bool? ?? true;
+
+          await lettersNotifier.addLetter(
+            LetterModel(
+              id: letterId,
+              charOlChiki: charOlChiki,
+              transliterationLatin: transliterationLatin,
+              exampleWordLatin: exampleWord,
+              order: order,
+              isActive: isActive,
+            ),
+          );
+        }
+      } catch (e) {
+        AppLogger.warning(
+          'AlphabetSeeder: failed to load assets/seed/letters.json, falling back: $e',
+          name: 'AlphabetSeeder',
+        );
+        final fallbackLetters = [
+          ['ᱚ', 'l_la', 'La (a)'],
+          ['ᱛ', 'l_at', 'At (t)'],
+          ['ᱜ', 'l_ag', 'Ag (g)'],
+          ['ᱝ', 'l_ang', 'Ang (ng)'],
+          ['ᱞ', 'l_al', 'Al (l)'],
+        ];
+        for (int i = 0; i < fallbackLetters.length; i++) {
+          await lettersNotifier.addLetter(
+            LetterModel(
+              id: fallbackLetters[i][1],
+              charOlChiki: fallbackLetters[i][0],
+              transliterationLatin: fallbackLetters[i][2],
+              order: i,
+            ),
+          );
+        }
       }
     }
 

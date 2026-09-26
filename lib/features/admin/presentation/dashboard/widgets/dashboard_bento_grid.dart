@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../widgets/dashboard_kpi_widgets.dart';
@@ -17,7 +18,9 @@ class DashboardBentoGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoryNotifierProvider);
-    final lettersAsync = ref.watch(lettersProvider);
+    final lettersAsync = ref.watch(
+      contentListProvider((ContentKind.letter, null)),
+    );
     final lessonsAsync = ref.watch(lessonNotifierProvider);
     final wordsAsync = ref.watch(wordsProvider);
     final numbersAsync = ref.watch(numbersProvider);
@@ -43,36 +46,42 @@ class DashboardBentoGrid extends ConsumerWidget {
         value: _txt(categoriesAsync),
         icon: Icons.category_rounded,
         accent: AppColors.accentForest,
+        onTap: () => context.go('/admin/categories'),
       ),
       _Kpi(
         label: 'Lessons',
         value: _txt(lessonsAsync),
         icon: Icons.school_rounded,
         accent: AppColors.brandBlue,
+        onTap: () => context.go('/admin/lessons'),
       ),
       _Kpi(
         label: 'Vocabulary',
         value: _txt(wordsAsync),
         icon: Icons.menu_book_rounded,
         accent: AppColors.accentGold,
+        onTap: () => context.go('/admin/words'),
       ),
       _Kpi(
         label: 'Quizzes',
         value: _txt(quizzesAsync),
         icon: Icons.quiz_rounded,
         accent: AppColors.accentPurple,
+        onTap: () => context.go('/admin/quizzes'),
       ),
       _Kpi(
-        label: 'Letters',
+        label: '35 Alphabets',
         value: _txt(lettersAsync),
-        icon: Icons.text_fields_rounded,
+        icon: Icons.abc_rounded,
         accent: AppColors.accentOchre,
+        onTap: () => context.go('/admin/letters'),
       ),
       _Kpi(
         label: 'Numerals',
         value: _txt(numbersAsync),
         icon: Icons.format_list_numbered_rounded,
         accent: AppColors.accentCyan,
+        onTap: () => context.go('/admin/numbers'),
       ),
     ];
 
@@ -117,6 +126,7 @@ class DashboardBentoGrid extends ConsumerWidget {
                     icon: k.icon,
                     accent: k.accent,
                     isDark: isDark,
+                    onTap: k.onTap,
                   ),
                 )
                 .toList(),
@@ -153,6 +163,7 @@ class DashboardBentoGrid extends ConsumerWidget {
                   icon: k.icon,
                   accent: k.accent,
                   isDark: isDark,
+                  onTap: k.onTap,
                 ),
               )
               .toList(),
@@ -173,10 +184,12 @@ class _Kpi {
   final String value;
   final IconData icon;
   final Color accent;
+  final VoidCallback? onTap;
   _Kpi({
     required this.label,
     required this.value,
     required this.icon,
     required this.accent,
+    this.onTap,
   });
 }

@@ -59,7 +59,15 @@ class CategoryCard extends StatelessWidget {
   }
 
   void _navigateToCategory(BuildContext context, CategoryEntity category) {
-    context.go('/admin/lessons?categoryId=${category.id}');
+    final isAlphabet =
+        category.iconName?.toLowerCase() == 'alphabet' ||
+        category.id.contains('alphabet') ||
+        category.titleLatin.toLowerCase().contains('alphabet');
+    if (isAlphabet) {
+      context.go('/admin/letters');
+    } else {
+      context.go('/admin/lessons?categoryId=${category.id}');
+    }
   }
 
   @override

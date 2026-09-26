@@ -80,7 +80,10 @@ class _ContentFormState extends ConsumerState<ContentForm> {
         (widget.initial != null && widget.initial!.categoryId.isNotEmpty)
         ? widget.initial!.categoryId
         : (widget.categoryId?.isNotEmpty == true ? widget.categoryId : null);
-    _isPublished = widget.initial?.isPublished ?? false;
+    _isPublished =
+        widget.initial?.isPublished ??
+        (widget.kind == ContentKind.letter ||
+            widget.kind == ContentKind.number);
     _isPremium = widget.initial?.isPremium ?? false;
     if (widget.initial?.tags != null) {
       _tags.addAll(widget.initial!.tags);
@@ -217,20 +220,25 @@ class _ContentFormState extends ConsumerState<ContentForm> {
       return;
     }
 
+    final rawOlChiki = _olChikiController.text.trim();
+    final rawTitleOlChiki = _titleOlChikiController.text.trim();
+    final effectiveOlChiki = rawOlChiki.isNotEmpty
+        ? rawOlChiki
+        : (rawTitleOlChiki.isNotEmpty ? rawTitleOlChiki : null);
+    final effectiveTitleOlChiki = rawTitleOlChiki.isNotEmpty
+        ? rawTitleOlChiki
+        : effectiveOlChiki;
+
     final item = ContentItem(
       id: widget.initial?.id ?? const Uuid().v4(),
       kind: widget.kind,
       categoryId: resolvedCategoryId ?? widget.kind.name,
       title: _titleController.text.trim(),
-      titleOlChiki: _titleOlChikiController.text.trim().isNotEmpty
-          ? _titleOlChikiController.text.trim()
-          : null,
+      titleOlChiki: effectiveTitleOlChiki,
       subtitle: _subtitleController.text.trim().isNotEmpty
           ? _subtitleController.text.trim()
           : null,
-      olChiki: _olChikiController.text.trim().isNotEmpty
-          ? _olChikiController.text.trim()
-          : null,
+      olChiki: effectiveOlChiki,
       heroMedia: _heroMedia,
       blocks: List.unmodifiable(_blocks),
       tracing: _tracingConfig,

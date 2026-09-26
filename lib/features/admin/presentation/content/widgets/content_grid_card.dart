@@ -31,10 +31,27 @@ class ContentGridCard extends StatelessWidget {
     required this.onDelete,
   });
 
+  static String formatDisplayGlyph(String rawGlyph) {
+    if (rawGlyph.isEmpty) return '';
+    final runes = rawGlyph.runes.toList();
+    if (runes.length == 1) {
+      final r = runes.first;
+      // Combining diacritics in Ol Chiki: Mu Tudag (ᱸ U+1C78), Gahla Tudag (ᱹ U+1C79), Mu-Gahla Tudag (ᱺ U+1C7A)
+      if (r == 0x1C78 || r == 0x1C79 || r == 0x1C7A) {
+        return '\u25CC$rawGlyph';
+      }
+    }
+    return rawGlyph;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final glyphText = item.olChiki ?? item.titleOlChiki ?? item.title;
-    final isShort = glyphText.length <= 3;
+    final rawGlyph = item.olChiki ?? item.titleOlChiki ?? item.title;
+    final glyphText = formatDisplayGlyph(rawGlyph);
+    final hasOlChiki = glyphText.runes.any(
+      (r) => (r >= 0x1C50 && r <= 0x1C7F) || r == 0x25CC,
+    );
+    final isShort = glyphText.length <= 4;
 
     return InkWell(
           onTap: onTap,
@@ -147,7 +164,7 @@ class ContentGridCard extends StatelessWidget {
                       Text(
                         glyphText,
                         style: TextStyle(
-                          fontFamily: 'OlChiki',
+                          fontFamily: hasOlChiki ? 'OlChiki' : 'Inter',
                           fontSize: isShort ? 32 : 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -155,27 +172,39 @@ class ContentGridCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        item.title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white70 : Colors.black87,
+                      const SizedBox(height: 6),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          item.title,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                // Delete Button at bottom
+                // Delete Button at bottom right
                 Positioned(
                   bottom: 2,
                   right: 2,
                   child: IconButton(
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(
+                      minWidth: 26,
+                      minHeight: 26,
+                    ),
                     icon: const Icon(
                       Icons.delete_outline_rounded,
-                      size: 18,
+                      size: 16,
                       color: Colors.redAccent,
                     ),
                     tooltip: 'Delete content',

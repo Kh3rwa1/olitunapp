@@ -55,87 +55,121 @@ class _AdminGamificationScreenState
     final isWide = MediaQuery.of(context).size.width > 860;
     final future = _loadRows(section, _reload);
 
-    return Padding(
-      padding: EdgeInsets.all(isWide ? 32 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AdminPageHeader(
-            title: section.title,
-            subtitle: section.subtitle,
-            eyebrow: 'GAMIFICATION',
-            actions: [
-              if (!section.readOnly)
-                ElevatedButton.icon(
-                  onPressed: () => _createDraft(section),
-                  icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Create'),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildFilters(context),
-          const SizedBox(height: 16),
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: future,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: SelectableText(
-                      'Could not load ${section.title}: ${snapshot.error}',
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: future,
+      builder: (context, snapshot) {
+        return CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(
+                isWide ? 32 : 16,
+                isWide ? 32 : 16,
+                isWide ? 32 : 16,
+                0,
+              ),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AdminPageHeader(
+                      title: section.title,
+                      subtitle: section.subtitle,
+                      eyebrow: 'GAMIFICATION',
+                      actions: [
+                        if (!section.readOnly)
+                          ElevatedButton.icon(
+                            onPressed: () => _createDraft(section),
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('Create'),
+                          ),
+                      ],
                     ),
-                  );
-                }
+                    const SizedBox(height: 20),
+                    _buildFilters(context),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+            if (snapshot.connectionState == ConnectionState.waiting)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (snapshot.hasError)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: SelectableText(
+                    'Could not load ${section.title}: ${snapshot.error}',
+                  ),
+                ),
+              )
+            else
+              ...() {
                 final rows = _filterRows(snapshot.data ?? const []);
                 if (rows.isEmpty) {
                   final hasFilters =
                       _search.trim().isNotEmpty || _status != 'all';
-                  return AdminEmptyState(
-                    icon: section.icon,
-                    title: hasFilters
-                        ? 'No matching content'
-                        : section.readOnly
-                        ? 'No activity yet'
-                        : 'No ${section.title.toLowerCase()} yet',
-                    message: hasFilters
-                        ? 'Clear search or filters to view all records.'
-                        : section.readOnly
-                        ? 'Records will appear here after real learner or backend activity.'
-                        : 'Create the first admin-managed record for this section.',
-                    actionLabel: !section.readOnly && !hasFilters
-                        ? 'Create'
-                        : null,
-                    onAction: !section.readOnly && !hasFilters
-                        ? () => _createDraft(section)
-                        : null,
-                  );
+                  return [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: AdminEmptyState(
+                        icon: section.icon,
+                        title: hasFilters
+                            ? 'No matching content'
+                            : section.readOnly
+                            ? 'No activity yet'
+                            : 'No ${section.title.toLowerCase()} yet',
+                        message: hasFilters
+                            ? 'Clear search or filters to view all records.'
+                            : section.readOnly
+                            ? 'Records will appear here after real learner or backend activity.'
+                            : 'Create the first admin-managed record for this section.',
+                        actionLabel: !section.readOnly && !hasFilters
+                            ? 'Create'
+                            : null,
+                        onAction: !section.readOnly && !hasFilters
+                            ? () => _createDraft(section)
+                            : null,
+                      ),
+                    ),
+                  ];
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.only(bottom: 120),
-                  itemCount: rows.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final row = rows[index];
-                    return GamificationRowCard(
-                      section: section,
-                      row: row,
-                      onPreview: () => _showPreview(section, row),
-                      onEdit: () => _editRow(section, row),
-                      onPublish: () => _updateStatus(section, row, 'published'),
-                      onUnpublish: () => _updateStatus(section, row, 'draft'),
-                      onArchive: () => _updateStatus(section, row, 'archived'),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
+                return [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      isWide ? 32 : 16,
+                      0,
+                      isWide ? 32 : 16,
+                      120,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final row = rows[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: GamificationRowCard(
+                            section: section,
+                            row: row,
+                            onPreview: () => _showPreview(section, row),
+                            onEdit: () => _editRow(section, row),
+                            onPublish: () =>
+                                _updateStatus(section, row, 'published'),
+                            onUnpublish: () =>
+                                _updateStatus(section, row, 'draft'),
+                            onArchive: () =>
+                                _updateStatus(section, row, 'archived'),
+                          ),
+                        );
+                      }, childCount: rows.length),
+                    ),
+                  ),
+                ];
+              }(),
+          ],
+        );
+      },
     );
   }
 

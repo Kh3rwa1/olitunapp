@@ -37,82 +37,121 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
         children: [
           _buildBackground(isDark),
           SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                  child: _buildHeader(context, isDark, isWideScreen),
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(isWideScreen ? 32 : 20),
+                    child: _buildHeader(context, isDark, isWideScreen),
+                  ),
                 ),
 
                 // Category Filter
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWideScreen ? 32 : 20,
-                  ),
-                  child: categoriesAsync.when(
-                    data: (categories) => SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          AdminFilterChip(
-                            label: 'All Quizzes',
-                            selected: _selectedCategoryId == null,
-                            onTap: () =>
-                                setState(() => _selectedCategoryId = null),
-                          ),
-                          ...categories.map(
-                            (img) => Padding(
-                              padding: const EdgeInsets.only(left: 12),
-                              child: AdminFilterChip(
-                                label: img.titleLatin,
-                                selected: _selectedCategoryId == img.id,
-                                onTap: () => setState(
-                                  () => _selectedCategoryId = img.id,
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWideScreen ? 32 : 20,
+                    ),
+                    child: categoriesAsync.when(
+                      data: (categories) => SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            AdminFilterChip(
+                              label: 'All Quizzes',
+                              selected: _selectedCategoryId == null,
+                              onTap: () =>
+                                  setState(() => _selectedCategoryId = null),
+                            ),
+                            ...categories.map(
+                              (img) => Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: AdminFilterChip(
+                                  label: img.titleLatin,
+                                  selected: _selectedCategoryId == img.id,
+                                  onTap: () => setState(
+                                    () => _selectedCategoryId = img.id,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      loading: () => const SizedBox(
+                        height: 40,
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                      error: (_, _) => const SizedBox(),
                     ),
-                    loading: () => const SizedBox(
-                      height: 40,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (_, _) => const SizedBox(),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
-                Expanded(
-                  child: quizzesAsync.when(
-                    data: (quizzes) {
-                      final filteredQuizzes = _selectedCategoryId == null
-                          ? quizzes
-                          : quizzes
-                                .where(
-                                  (q) => q.categoryId == _selectedCategoryId,
+                ...quizzesAsync.when(
+                  data: (quizzes) {
+                    final filteredQuizzes = _selectedCategoryId == null
+                        ? quizzes
+                        : quizzes
+                              .where((q) => q.categoryId == _selectedCategoryId)
+                              .toList();
+
+                    if (filteredQuizzes.isEmpty) {
+                      return [
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: _buildEmptyState(context, isDark),
+                        ),
+                      ];
+                    }
+
+                    return [
+                      SliverPadding(
+                        padding: EdgeInsets.fromLTRB(
+                          isWideScreen ? 32 : 20,
+                          0,
+                          isWideScreen ? 32 : 20,
+                          100,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final quiz = filteredQuizzes[index];
+                            return QuizCard(
+                                  quiz: quiz,
+                                  isDark: isDark,
+                                  onEdit: () =>
+                                      QuizFormSheet.show(context, ref, quiz),
+                                  onDelete: () =>
+                                      _showDeleteDialog(context, quiz),
                                 )
-                                .toList();
-
-                      return filteredQuizzes.isEmpty
-                          ? _buildEmptyState(context, isDark)
-                          : _buildQuizzesList(
-                              filteredQuizzes,
-                              isDark,
-                              isWideScreen,
-                            );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => Center(
-                      child: Text(
-                        'Error: $error',
-                        style: const TextStyle(color: Colors.red),
+                                .animate()
+                                .fadeIn(delay: (index * 50).ms)
+                                .slideY(begin: 0.1);
+                          }, childCount: filteredQuizzes.length),
+                        ),
+                      ),
+                    ];
+                  },
+                  loading: () => [
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ],
+                  error: (error, _) => [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: Text(
+                          'Error: $error',
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -247,31 +286,6 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
         .scale(begin: const Offset(0.96, 0.96));
-  }
-
-  Widget _buildQuizzesList(
-    List<QuizModel> quizzes,
-    bool isDark,
-    bool isWideScreen,
-  ) {
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        isWideScreen ? 32 : 20,
-        0,
-        isWideScreen ? 32 : 20,
-        100,
-      ),
-      itemCount: quizzes.length,
-      itemBuilder: (context, index) {
-        final quiz = quizzes[index];
-        return QuizCard(
-          quiz: quiz,
-          isDark: isDark,
-          onEdit: () => QuizFormSheet.show(context, ref, quiz),
-          onDelete: () => _showDeleteDialog(context, quiz),
-        ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
-      },
-    );
   }
 
   Future<void> _showDeleteDialog(BuildContext context, QuizModel quiz) async {

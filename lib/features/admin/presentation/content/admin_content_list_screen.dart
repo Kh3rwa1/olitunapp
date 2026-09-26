@@ -276,110 +276,125 @@ class _AdminContentListScreenState
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-              child: Row(
-                children: [
-                  if (!isWideScreen) ...[
-                    GestureDetector(
-                      onTap: () => context.go('/admin'),
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: AdminTokens.sunken(isDark),
-                          borderRadius: BorderRadius.circular(
-                            AdminTokens.radiusSm,
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(isWideScreen ? 32 : 20),
+                child: Row(
+                  children: [
+                    if (!isWideScreen) ...[
+                      GestureDetector(
+                        onTap: () => context.go('/admin'),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AdminTokens.sunken(isDark),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusSm,
+                            ),
+                            border: Border.all(
+                              color: AdminTokens.border(isDark),
+                            ),
                           ),
-                          border: Border.all(color: AdminTokens.border(isDark)),
-                        ),
-                        child: Icon(
-                          Icons.arrow_back_rounded,
-                          color: AdminTokens.textPrimary(isDark),
-                          size: 18,
+                          child: Icon(
+                            Icons.arrow_back_rounded,
+                            color: AdminTokens.textPrimary(isDark),
+                            size: 18,
+                          ),
                         ),
                       ),
+                      const SizedBox(width: 12),
+                    ],
+                    Expanded(
+                      child: AdminPageHeader(
+                        title: _title,
+                        subtitle: _subtitle,
+                        eyebrow: _eyebrow,
+                        actions: headerActions,
+                      ),
                     ),
-                    const SizedBox(width: 12),
                   ],
-                  Expanded(
-                    child: AdminPageHeader(
-                      title: _title,
-                      subtitle: _subtitle,
-                      eyebrow: _eyebrow,
-                      actions: headerActions,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: isWideScreen ? 32 : 20),
-              child: ContentFilterBar(
-                title: _title,
-                isDark: isDark,
-                supportsCategory: _supportsCategory,
-                supportsPublished: _supportsPublished,
-                supportsPremium: _supportsPremium,
-                categories: categories,
-                selectedCategoryId: _selectedCategoryId,
-                publishFilter: _publishFilter,
-                premiumFilter: _premiumFilter,
-                onSearchChanged: (q) => setState(() {
-                  _searchQuery = q;
-                  _selectedIds.clear();
-                }),
-                onCategoryChanged: (catId) => setState(() {
-                  _selectedCategoryId = catId;
-                  _selectedIds.clear();
-                }),
-                onPublishFilterChanged: (pub) => setState(() {
-                  _publishFilter = pub;
-                  _selectedIds.clear();
-                }),
-                onPremiumFilterChanged: (prem) => setState(() {
-                  _premiumFilter = prem;
-                  _selectedIds.clear();
-                }),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? 32 : 20,
+                ),
+                child: ContentFilterBar(
+                  title: _title,
+                  isDark: isDark,
+                  supportsCategory: _supportsCategory,
+                  supportsPublished: _supportsPublished,
+                  supportsPremium: _supportsPremium,
+                  categories: categories,
+                  selectedCategoryId: _selectedCategoryId,
+                  publishFilter: _publishFilter,
+                  premiumFilter: _premiumFilter,
+                  onSearchChanged: (q) => setState(() {
+                    _searchQuery = q;
+                    _selectedIds.clear();
+                  }),
+                  onCategoryChanged: (catId) => setState(() {
+                    _selectedCategoryId = catId;
+                    _selectedIds.clear();
+                  }),
+                  onPublishFilterChanged: (pub) => setState(() {
+                    _publishFilter = pub;
+                    _selectedIds.clear();
+                  }),
+                  onPremiumFilterChanged: (prem) => setState(() {
+                    _premiumFilter = prem;
+                    _selectedIds.clear();
+                  }),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
             if (widget.kind == ContentKind.lesson &&
                 AlphabetDiscoveryBanner.isAlphabetCategory(
                   _selectedCategoryId,
                   categories,
                 )) ...[
-              AlphabetDiscoveryBanner(
-                isDark: isDark,
-                isWideScreen: isWideScreen,
+              SliverToBoxAdapter(
+                child: AlphabetDiscoveryBanner(
+                  isDark: isDark,
+                  isWideScreen: isWideScreen,
+                ),
               ),
-              const SizedBox(height: 12),
+              const SliverToBoxAdapter(child: SizedBox(height: 12)),
             ],
-            Expanded(
-              child: listAsync.when(
-                data: (items) {
-                  final filtered = _getFilteredItems(items);
-                  if (filtered.isEmpty) {
-                    return AdminEmptyState(
-                      icon: _icon,
-                      title: 'No items found',
-                      message:
-                          'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
-                      actionLabel: widget.kind == ContentKind.letter
-                          ? 'Add Alphabet'
-                          : 'Add $_title',
-                      onAction: () => _openFormSheet(null),
-                    );
-                  }
+            ...listAsync.when(
+              data: (items) {
+                final filtered = _getFilteredItems(items);
+                if (filtered.isEmpty) {
+                  return [
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: AdminEmptyState(
+                        icon: _icon,
+                        title: 'No items found',
+                        message:
+                            'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
+                        actionLabel: widget.kind == ContentKind.letter
+                            ? 'Add Alphabet'
+                            : 'Add $_title',
+                        onAction: () => _openFormSheet(null),
+                      ),
+                    ),
+                  ];
+                }
 
-                  final isGrid =
-                      widget.kind == ContentKind.letter ||
-                      widget.kind == ContentKind.number;
-                  if (isGrid) {
-                    return ContentGridSection(
-                      scrollController: _scrollController,
+                final isGrid =
+                    widget.kind == ContentKind.letter ||
+                    widget.kind == ContentKind.number;
+
+                if (isGrid) {
+                  return [
+                    ContentGridSection(
                       items: filtered,
                       selectedIds: _selectedIds,
                       categories: categories,
@@ -416,11 +431,12 @@ class _AdminContentListScreenState
                           }
                         });
                       },
-                    );
-                  }
+                    ).buildSliver(context),
+                  ];
+                }
 
-                  return ContentListSection(
-                    scrollController: _scrollController,
+                return [
+                  ContentListSection(
                     items: filtered,
                     selectedIds: _selectedIds,
                     categories: categories,
@@ -462,19 +478,29 @@ class _AdminContentListScreenState
                         }
                       });
                     },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, st) => Center(
-                  child: AdminErrorState(
-                    message: '$e',
-                    onRetry: () => ContentListActions.invalidateAllProviders(
-                      ref,
-                      widget.kind,
+                  ).buildSliver(context),
+                ];
+              },
+              loading: () => [
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ],
+              error: (e, st) => [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: AdminErrorState(
+                      message: '$e',
+                      onRetry: () => ContentListActions.invalidateAllProviders(
+                        ref,
+                        widget.kind,
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),

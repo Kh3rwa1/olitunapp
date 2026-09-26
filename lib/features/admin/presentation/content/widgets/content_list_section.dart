@@ -6,7 +6,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'content_list_tile.dart';
 
 class ContentListSection extends StatelessWidget {
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
   final List<ContentItem> items;
   final Set<String> selectedIds;
   final List<CategoryEntity> categories;
@@ -24,7 +24,7 @@ class ContentListSection extends StatelessWidget {
 
   const ContentListSection({
     super.key,
-    required this.scrollController,
+    this.scrollController,
     required this.items,
     required this.selectedIds,
     required this.categories,
@@ -57,6 +57,43 @@ class ContentListSection extends StatelessWidget {
       kind: item.kind,
       categoryId: effectiveCategoryId,
       categorySlug: category?.titleLatin,
+    );
+  }
+
+  Widget buildSliver(BuildContext context) {
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = items[index];
+          final isSelected = selectedIds.contains(item.id);
+          final badgeType = _resolveBadge(item);
+
+          return ContentListTile(
+            item: item,
+            index: index,
+            isSelected: isSelected,
+            isDark: isDark,
+            supportsPublished: supportsPublished,
+            supportsPremium: supportsPremium,
+            supportsTags: supportsTags,
+            badgeType: badgeType,
+            fallbackIcon: icon,
+            onSelectChanged: (val) => onToggleSelect(item.id, val == true),
+            onTap: () => onEditItem(item),
+            onEditMetadata: () => onEditItem(item),
+            onDelete: () => onDeleteItem(item),
+            onEditBlocks: onEditBlocks != null
+                ? () => onEditBlocks!(item)
+                : null,
+          );
+        }, childCount: items.length),
+      ),
     );
   }
 

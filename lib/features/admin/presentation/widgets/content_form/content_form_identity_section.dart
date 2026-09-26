@@ -6,6 +6,7 @@ import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/shared/models/content_item.dart';
 import '../multilingual_preview_box.dart';
 import 'content_form_card.dart';
+import 'ol_chiki_quick_picker.dart';
 
 class ContentFormIdentitySection extends StatelessWidget {
   final bool isDark;
@@ -81,6 +82,27 @@ class ContentFormIdentitySection extends StatelessWidget {
           title: 'Identity Details',
           child: Column(
             children: [
+              if (kind == ContentKind.letter) ...[
+                OlChikiQuickPicker(
+                  isDark: isDark,
+                  selectedChar: olChikiController.text.isNotEmpty
+                      ? olChikiController.text
+                      : titleOlChikiController.text,
+                  onSelect: (preset) {
+                    olChikiController.text = preset.char;
+                    titleOlChikiController.text = preset.char;
+                    if (titleController.text.trim().isEmpty) {
+                      titleController.text = preset.latin;
+                    }
+                    if (subtitleController.text.trim().isEmpty &&
+                        preset.exampleWord.isNotEmpty) {
+                      subtitleController.text = preset.exampleWord;
+                    }
+                    orderController.text = preset.order.toString();
+                  },
+                ),
+                const SizedBox(height: 14),
+              ],
               TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
@@ -133,6 +155,12 @@ class ContentFormIdentitySection extends StatelessWidget {
                         ? 'e.g. ᱚ, ᱛ, ᱜ'
                         : 'e.g. ᱵᱟᱵᱟ, ᱡᱚᱦᱟᱨ',
                   ),
+                  onChanged: (val) {
+                    if (kind == ContentKind.letter &&
+                        olChikiController.text.trim().isEmpty) {
+                      olChikiController.text = val;
+                    }
+                  },
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -143,6 +171,12 @@ class ContentFormIdentitySection extends StatelessWidget {
                         : 'Ol Chiki Text / Glyph (e.g. ᱵᱟᱵᱟ, ᱚ)',
                     hintText: kind == ContentKind.letter ? 'e.g. ᱚ' : null,
                   ),
+                  onChanged: (val) {
+                    if (kind == ContentKind.letter &&
+                        titleOlChikiController.text.trim().isEmpty) {
+                      titleOlChikiController.text = val;
+                    }
+                  },
                   validator: kind == ContentKind.letter
                       ? (val) => val == null || val.trim().isEmpty
                             ? 'Ol Chiki character is required'

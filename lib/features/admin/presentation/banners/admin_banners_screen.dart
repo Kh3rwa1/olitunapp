@@ -20,80 +20,97 @@ class AdminBannersScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isWideScreen ? 32 : 16,
-        vertical: isWideScreen ? 32 : 16,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          AdminSectionHeader(
-            title: 'Featured Banners',
-            subtitle: 'Home screen promotional banners',
-            icon: Icons.featured_play_list_rounded,
-            eyebrow: 'CONTENT · BANNERS',
-            actions: [
-              ElevatedButton.icon(
-                onPressed: () => BannerFormSheet.show(context, ref, null),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            isWideScreen ? 32 : 16,
+            isWideScreen ? 32 : 16,
+            isWideScreen ? 32 : 16,
+            0,
+          ),
+          sliver: SliverToBoxAdapter(
+            child: AdminSectionHeader(
+              title: 'Featured Banners',
+              subtitle: 'Home screen promotional banners',
+              icon: Icons.featured_play_list_rounded,
+              eyebrow: 'CONTENT · BANNERS',
+              actions: [
+                ElevatedButton.icon(
+                  onPressed: () => BannerFormSheet.show(context, ref, null),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text(
+                    'Add Banner',
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                 ),
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text(
-                  'Add Banner',
-                  style: TextStyle(fontWeight: FontWeight.w700),
+              ],
+            ),
+          ),
+        ),
+        ...bannersAsync.when(
+          data: (banners) {
+            if (banners.isEmpty) {
+              return [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(context, ref, isDark),
+                ),
+              ];
+            }
+            return [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  isWideScreen ? 32 : 20,
+                  16,
+                  isWideScreen ? 32 : 20,
+                  100,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final banner = banners[index];
+                    return BannerCard(
+                      banner: banner,
+                      isDark: isDark,
+                      index: index,
+                      onEdit: () => BannerFormSheet.show(context, ref, banner),
+                      onDelete: () => _showDeleteDialog(context, ref, banner),
+                    );
+                  }, childCount: banners.length),
                 ),
               ),
-            ],
-          ),
-
-          // Banners List
-          Expanded(
-            child: bannersAsync.when(
-              data: (banners) => banners.isEmpty
-                  ? _buildEmptyState(context, ref, isDark)
-                  : ListView.builder(
-                      padding: EdgeInsets.fromLTRB(
-                        isWideScreen ? 32 : 20,
-                        0,
-                        isWideScreen ? 32 : 20,
-                        100,
-                      ),
-                      itemCount: banners.length,
-                      itemBuilder: (context, index) {
-                        final banner = banners[index];
-                        return BannerCard(
-                          banner: banner,
-                          isDark: isDark,
-                          index: index,
-                          onEdit: () =>
-                              BannerFormSheet.show(context, ref, banner),
-                          onDelete: () =>
-                              _showDeleteDialog(context, ref, banner),
-                        );
-                      },
-                    ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
+            ];
+          },
+          loading: () => [
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+          error: (error, _) => [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
                 child: SelectableText(
                   'Error loading banners: $error',
                   style: const TextStyle(color: AppColors.error),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 

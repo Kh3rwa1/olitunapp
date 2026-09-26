@@ -446,9 +446,11 @@ class OlChikiMultilingualHelper {
                         : romanizedSantali)),
       'sat' => '',
       _ =>
-        (explicitPronunciation?.trim().isNotEmpty == true)
-            ? explicitPronunciation!.trim()
-            : romanizedSantali,
+        romanizedSantali.isNotEmpty
+            ? romanizedSantali
+            : ((explicitPronunciation?.trim().isNotEmpty == true)
+                  ? explicitPronunciation!.trim()
+                  : ''),
     };
 
     // 3. Resolve Localized Meaning (User's language definition)

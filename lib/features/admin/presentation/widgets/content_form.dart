@@ -88,6 +88,15 @@ class _ContentFormState extends ConsumerState<ContentForm> {
 
     _heroMedia = widget.initial?.heroMedia;
     _tracingConfig = widget.initial?.tracing;
+    if (_tracingConfig == null &&
+        (widget.kind == ContentKind.letter ||
+            widget.kind == ContentKind.number)) {
+      final glyph =
+          widget.initial?.olChiki ??
+          widget.initial?.titleOlChiki ??
+          (widget.kind == ContentKind.number ? '᱐' : 'ᱚ');
+      _tracingConfig = tracingTemplates[glyph] ?? getFallbackTemplate(glyph);
+    }
     if (widget.initial?.blocks != null) {
       _blocks.addAll(widget.initial!.blocks);
     }
@@ -307,6 +316,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                 });
                 Navigator.pop(context);
                 _notifyTemplateSaved();
+                _saveForm();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF10B981),
@@ -326,7 +336,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Preset Tracing template pre-filled for $glyphValue! Click save again to finalize.',
+          'Preset Tracing template pre-filled for $glyphValue and saved!',
         ),
         backgroundColor: const Color(0xFF10B981),
       ),

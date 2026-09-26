@@ -106,6 +106,15 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         color: AppColors.accentOchre,
       ),
       CommandItem(
+        title: '35 Alphabets Database',
+        subtitle:
+            'Manage all 35 Ol Chiki letters, pronunciations, audio, and tracing',
+        category: 'Navigation',
+        icon: Icons.abc_rounded,
+        path: '/admin/letters',
+        color: AppColors.accentOchre,
+      ),
+      CommandItem(
         title: 'Access Management',
         subtitle: 'Role assignments, invites, user logs',
         category: 'Navigation',
@@ -119,6 +128,11 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
     final lessons = ref.watch(lessonNotifierProvider).valueOrNull ?? [];
     final words = ref.watch(wordsProvider).valueOrNull ?? [];
     final quizzes = ref.watch(quizzesProvider).valueOrNull ?? [];
+    final letterItems =
+        ref
+            .watch(contentListProvider((ContentKind.letter, null)))
+            .valueOrNull ??
+        [];
     final letters = ref.watch(lettersProvider).valueOrNull ?? [];
     final categories = ref.watch(categoryNotifierProvider).valueOrNull ?? [];
 
@@ -177,19 +191,39 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
       );
     }
 
-    for (final letter in letters) {
-      dynamicItems.add(
-        CommandItem(
-          title: '${letter.charOlChiki} [${letter.transliterationLatin}]',
-          subtitle: letter.exampleWordLatin != null
-              ? 'Example: ${letter.exampleWordOlChiki} (${letter.exampleWordLatin})'
-              : 'Alphabet Letter',
-          category: 'Alphabet',
-          icon: Icons.text_fields_rounded,
-          path: '/admin/letters',
-          color: AppColors.accentOchre,
-        ),
-      );
+    if (letterItems.isNotEmpty) {
+      for (final item in letterItems) {
+        final glyph = item.olChiki ?? item.titleOlChiki ?? '';
+        final title = glyph.isNotEmpty ? '$glyph [${item.title}]' : item.title;
+        final example = item.subtitle != null && item.subtitle!.isNotEmpty
+            ? 'Example: ${item.subtitle}'
+            : '35 Alphabet Character';
+        dynamicItems.add(
+          CommandItem(
+            title: title,
+            subtitle: example,
+            category: 'Alphabet',
+            icon: Icons.abc_rounded,
+            path: '/admin/letters',
+            color: AppColors.accentOchre,
+          ),
+        );
+      }
+    } else {
+      for (final letter in letters) {
+        dynamicItems.add(
+          CommandItem(
+            title: '${letter.charOlChiki} [${letter.transliterationLatin}]',
+            subtitle: letter.exampleWordLatin != null
+                ? 'Example: ${letter.exampleWordOlChiki} (${letter.exampleWordLatin})'
+                : 'Alphabet Letter',
+            category: 'Alphabet',
+            icon: Icons.abc_rounded,
+            path: '/admin/letters',
+            color: AppColors.accentOchre,
+          ),
+        );
+      }
     }
 
     return [...staticRoutes, ...dynamicItems];

@@ -147,6 +147,7 @@ class DashboardKpiCard extends StatelessWidget {
   final IconData icon;
   final Color accent;
   final bool isDark;
+  final VoidCallback? onTap;
   const DashboardKpiCard({
     super.key,
     required this.label,
@@ -154,11 +155,12 @@ class DashboardKpiCard extends StatelessWidget {
     required this.icon,
     required this.accent,
     required this.isDark,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return AdminGlassCard(
+    final card = AdminGlassCard(
       padding: const EdgeInsets.all(18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,6 +203,14 @@ class DashboardKpiCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (onTap == null) return card;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+      child: card,
     );
   }
 }

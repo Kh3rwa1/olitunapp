@@ -83,7 +83,7 @@ class _AdminContentListScreenState
   String get _title {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'Ol Chiki Letters';
+        return '35 Alphabets';
       case ContentKind.number:
         return 'Ol Chiki Numbers';
       case ContentKind.word:
@@ -100,7 +100,7 @@ class _AdminContentListScreenState
   String get _eyebrow {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'CONTENT · LETTERS';
+        return 'CONTENT · 35 ALPHABETS';
       case ContentKind.number:
         return 'CONTENT · NUMBERS';
       case ContentKind.word:
@@ -117,7 +117,7 @@ class _AdminContentListScreenState
   String get _subtitle {
     switch (widget.kind) {
       case ContentKind.letter:
-        return 'Manage alphabet characters';
+        return 'Manage the 35 Ol Chiki alphabet characters, pronunciation, audio, and tracing';
       case ContentKind.number:
         return 'Manage numerals and counting';
       case ContentKind.word:
@@ -193,6 +193,23 @@ class _AdminContentListScreenState
       onSaved: () =>
           ContentListActions.invalidateAllProviders(ref, widget.kind),
     );
+  }
+
+  bool _isAlphabetCategory(List<dynamic> categories) {
+    if (_selectedCategoryId == null) return false;
+    for (final c in categories) {
+      if (c.id == _selectedCategoryId) {
+        final iconName = c.iconName?.toString().toLowerCase();
+        final title = c.titleLatin.toString().toLowerCase();
+        final id = c.id.toString();
+        if (iconName == 'alphabet' ||
+            id.contains('alphabet') ||
+            title.contains('alphabet')) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -345,6 +362,73 @@ class _AdminContentListScreenState
               ),
             ),
             const SizedBox(height: 16),
+            if (widget.kind == ContentKind.lesson &&
+                _isAlphabetCategory(categories)) ...[
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? 32 : 20,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        color: AppColors.primary,
+                        size: 22,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Looking for the 35 Ol Chiki Alphabets? Alphabets with audio, pronunciation, and stroke tracing are managed in the 35 Alphabets Database.',
+                          style: TextStyle(
+                            color: isDark ? Colors.white : Colors.black87,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/admin/letters'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 8,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusSm,
+                            ),
+                          ),
+                        ),
+                        icon: const Icon(Icons.abc_rounded, size: 18),
+                        label: const Text(
+                          'Manage 35 Alphabets',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
             Expanded(
               child: listAsync.when(
                 data: (items) {
@@ -355,7 +439,9 @@ class _AdminContentListScreenState
                       title: 'No items found',
                       message:
                           'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
-                      actionLabel: 'Add $_title',
+                      actionLabel: widget.kind == ContentKind.letter
+                          ? 'Add Alphabet'
+                          : 'Add $_title',
                       onAction: () => _openFormSheet(null),
                     );
                   }
@@ -524,7 +610,7 @@ class _AdminContentListScreenState
         foregroundColor: AppColors.elevatedButtonFg,
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          'Add $_title',
+          widget.kind == ContentKind.letter ? 'Add Alphabet' : 'Add $_title',
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),

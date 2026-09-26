@@ -231,6 +231,7 @@ class ContentItemSerialization {
         resolvedSubtitle =
             firstString([
               json['subtitle'],
+              json['exampleWord'],
               json['exampleWordLatin'],
               json['exampleWordOlChiki'],
             ]) ??

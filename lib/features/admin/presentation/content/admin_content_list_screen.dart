@@ -9,6 +9,7 @@ import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_states.dart';
 import 'utils/content_list_actions.dart';
+import 'widgets/alphabet_discovery_banner.dart';
 import 'widgets/content_bulk_action_bar.dart';
 import 'widgets/content_filter_bar.dart';
 import 'widgets/content_form_sheet.dart';
@@ -195,23 +196,6 @@ class _AdminContentListScreenState
     );
   }
 
-  bool _isAlphabetCategory(List<dynamic> categories) {
-    if (_selectedCategoryId == null) return false;
-    for (final c in categories) {
-      if (c.id == _selectedCategoryId) {
-        final iconName = c.iconName?.toString().toLowerCase();
-        final title = c.titleLatin.toString().toLowerCase();
-        final id = c.id.toString();
-        if (iconName == 'alphabet' ||
-            id.contains('alphabet') ||
-            title.contains('alphabet')) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     final routeCategoryId = widget.categoryId;
@@ -363,69 +347,13 @@ class _AdminContentListScreenState
             ),
             const SizedBox(height: 16),
             if (widget.kind == ContentKind.lesson &&
-                _isAlphabetCategory(categories)) ...[
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWideScreen ? 32 : 20,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.info_outline_rounded,
-                        color: AppColors.primary,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Looking for the 35 Ol Chiki Alphabets? Alphabets with audio, pronunciation, and stroke tracing are managed in the 35 Alphabets Database.',
-                          style: TextStyle(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => context.go('/admin/letters'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AdminTokens.radiusSm,
-                            ),
-                          ),
-                        ),
-                        icon: const Icon(Icons.abc_rounded, size: 18),
-                        label: const Text(
-                          'Manage 35 Alphabets',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                AlphabetDiscoveryBanner.isAlphabetCategory(
+                  _selectedCategoryId,
+                  categories,
+                )) ...[
+              AlphabetDiscoveryBanner(
+                isDark: isDark,
+                isWideScreen: isWideScreen,
               ),
               const SizedBox(height: 12),
             ],

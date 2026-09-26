@@ -381,9 +381,11 @@ class ContentItemSerialization {
     }
 
     final resolvedTitleOlChiki =
-        (item.titleOlChiki == null || item.titleOlChiki!.trim().isEmpty)
-        ? item.title
-        : item.titleOlChiki!;
+        (item.titleOlChiki != null && item.titleOlChiki!.trim().isNotEmpty)
+        ? item.titleOlChiki!
+        : (item.olChiki != null && item.olChiki!.trim().isNotEmpty)
+        ? item.olChiki!
+        : item.title;
     final encodedHeroMedia = item.heroMedia == null
         ? null
         : jsonEncode(item.heroMedia!.toJson());
@@ -438,8 +440,14 @@ class ContentItemSerialization {
         };
 
       case ContentKind.letter:
+        final char = (item.olChiki != null && item.olChiki!.trim().isNotEmpty)
+            ? item.olChiki!
+            : (item.titleOlChiki != null &&
+                  item.titleOlChiki!.trim().isNotEmpty)
+            ? item.titleOlChiki!
+            : resolvedTitleOlChiki;
         return {
-          'charOlChiki': item.olChiki ?? resolvedTitleOlChiki,
+          'charOlChiki': char,
           'transliterationLatin': item.title,
           'order': item.order,
           'isActive': item.isPublished,

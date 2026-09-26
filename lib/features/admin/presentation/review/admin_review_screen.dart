@@ -129,30 +129,38 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width > 800;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isWide ? 32 : 16,
-        vertical: isWide ? 32 : 16,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AdminSectionHeader(
-            title: 'Content Review',
-            subtitle:
-                'Approve Sarvam audio and localized translations before they '
-                'become visible to learners',
-            icon: Icons.fact_check_rounded,
-            eyebrow: 'CONTENT · REVIEW',
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            isWide ? 32 : 16,
+            isWide ? 32 : 16,
+            isWide ? 32 : 16,
+            0,
           ),
-          const SizedBox(height: 16),
-          _buildTabs(isDark),
-          const SizedBox(height: 16),
-          _buildToolbar(isDark),
-          const SizedBox(height: 16),
-          Expanded(child: _buildQueueBody()),
-        ],
-      ),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const AdminSectionHeader(
+                  title: 'Content Review',
+                  subtitle:
+                      'Approve Sarvam audio and localized translations before they '
+                      'become visible to learners',
+                  icon: Icons.fact_check_rounded,
+                  eyebrow: 'CONTENT · REVIEW',
+                ),
+                const SizedBox(height: 16),
+                _buildTabs(isDark),
+                const SizedBox(height: 16),
+                _buildToolbar(isDark),
+                const SizedBox(height: 16),
+              ],
+            ),
+          ),
+        ),
+        ..._buildQueueSlivers(isDark, isWide),
+      ],
     );
   }
 
@@ -335,25 +343,66 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
     );
   }
 
-  Widget _buildQueueBody() {
+  List<Widget> _buildQueueSlivers(bool isDark, bool isWide) {
     final queueAsync = ref.watch(_reviewQueueProvider((_tab, _statusParam)));
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return queueAsync.when(
-      data: (queue) => queue.rows.isEmpty
-          ? AdminEmptyState(
-              icon: _tab == AdminReviewTab.audio
-                  ? Icons.graphic_eq_outlined
-                  : Icons.translate_rounded,
-              title: 'Queue is empty',
-              message:
-                  'No ${_tab == AdminReviewTab.audio ? 'audio tracks' : 'translations'} '
-                  'with status "$_statusParam". Generate audio or sync '
-                  'translations first, then review them here.',
-            )
-          : _buildQueueList(queue, isDark),
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => _buildError(isDark, error),
+      data: (queue) {
+        if (queue.rows.isEmpty) {
+          return [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: AdminEmptyState(
+                icon: _tab == AdminReviewTab.audio
+                    ? Icons.graphic_eq_outlined
+                    : Icons.translate_rounded,
+                title: 'Queue is empty',
+                message:
+                    'No ${_tab == AdminReviewTab.audio ? 'audio tracks' : 'translations'} '
+                    'with status "$_statusParam". Generate audio or sync '
+                    'translations first, then review them here.',
+              ),
+            ),
+          ];
+        }
+
+        final count = _tab == AdminReviewTab.audio
+            ? queue.audio.length
+            : queue.localized.length;
+
+        return [
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              isWide ? 32 : 16,
+              0,
+              isWide ? 32 : 16,
+              100,
+            ),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                if (index.isOdd) return const SizedBox(height: 10);
+                final itemIndex = index ~/ 2;
+                if (_tab == AdminReviewTab.audio) {
+                  return _buildAudioCard(queue.audio[itemIndex], isDark);
+                }
+                return _buildLocalizedCard(queue.localized[itemIndex], isDark);
+              }, childCount: count == 0 ? 0 : count * 2 - 1),
+            ),
+          ),
+        ];
+      },
+      loading: () => [
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      ],
+      error: (error, _) => [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildError(isDark, error),
+        ),
+      ],
     );
   }
 
@@ -375,23 +424,6 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildQueueList(AdminReviewQueue queue, bool isDark) {
-    if (_tab == AdminReviewTab.audio) {
-      return ListView.separated(
-        itemCount: queue.audio.length,
-        separatorBuilder: (_, _) => const SizedBox(height: 10),
-        itemBuilder: (context, index) =>
-            _buildAudioCard(queue.audio[index], isDark),
-      );
-    }
-    return ListView.separated(
-      itemCount: queue.localized.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
-      itemBuilder: (context, index) =>
-          _buildLocalizedCard(queue.localized[index], isDark),
     );
   }
 

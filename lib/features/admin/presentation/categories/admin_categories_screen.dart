@@ -26,80 +26,132 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: isWideScreen ? 32 : 16,
-        vertical: isWideScreen ? 32 : 16,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          AdminSectionHeader(
-            title: 'Categories',
-            subtitle: 'Organize your learning modules',
-            icon: Icons.category_rounded,
-            eyebrow: 'CONTENT · CATEGORIES',
-            actions: [
-              OutlinedButton.icon(
-                onPressed: () => _handleSeedData(context),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-                  ),
-                ),
-                icon: const Icon(Icons.cloud_download_rounded, size: 18),
-                label: const Text(
-                  'Seed Default Data',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: () => CategoryFormSheet.show(context, ref, null),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-                  ),
-                ),
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text(
-                  'Add Category',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
+    return CustomScrollView(
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            isWideScreen ? 32 : 16,
+            isWideScreen ? 32 : 16,
+            isWideScreen ? 32 : 16,
+            0,
           ),
-
-          // Categories List
-          Expanded(
-            child: categoriesAsync.when(
-              data: (categories) => categories.isEmpty
-                  ? _buildEmptyState(context, isDark)
-                  : _buildCategoriesList(categories, isDark, isWideScreen),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
+          sliver: SliverToBoxAdapter(
+            child: AdminSectionHeader(
+              title: 'Categories',
+              subtitle: 'Organize your learning modules',
+              icon: Icons.category_rounded,
+              eyebrow: 'CONTENT · CATEGORIES',
+              actions: [
+                OutlinedButton.icon(
+                  onPressed: () => _handleSeedData(context),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                    ),
+                  ),
+                  icon: const Icon(Icons.cloud_download_rounded, size: 18),
+                  label: const Text(
+                    'Seed Default Data',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => CategoryFormSheet.show(context, ref, null),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                    ),
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 18),
+                  label: const Text(
+                    'Add Category',
+                    style: TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        ...categoriesAsync.when(
+          data: (categories) {
+            if (categories.isEmpty) {
+              return [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _buildEmptyState(context, isDark),
+                ),
+              ];
+            }
+            return [
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  isWideScreen ? 32 : 16,
+                  16,
+                  isWideScreen ? 32 : 16,
+                  100,
+                ),
+                sliver: SliverReorderableList(
+                  itemCount: categories.length,
+                  // ignore: deprecated_member_use
+                  onReorder: (oldIndex, newIndex) async {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    await ref
+                        .read(categoryNotifierProvider.notifier)
+                        .reorderCategories(oldIndex, newIndex);
+                  },
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return ReorderableDelayedDragStartListener(
+                      key: ValueKey(category.id),
+                      index: index,
+                      child: CategoryCard(
+                        category: category,
+                        isDark: isDark,
+                        index: index,
+                        onEdit: () =>
+                            CategoryFormSheet.show(context, ref, category),
+                        onDelete: () => _showDeleteDialog(context, category),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ];
+          },
+          loading: () => [
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          ],
+          error: (error, _) => [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(
                 child: SelectableText(
                   'Error loading categories: $error',
                   style: const TextStyle(color: AppColors.error),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -115,37 +167,6 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
         .scale(begin: const Offset(0.96, 0.96));
-  }
-
-  Widget _buildCategoriesList(
-    List<CategoryEntity> categories,
-    bool isDark,
-    bool isWideScreen,
-  ) {
-    return ReorderableListView.builder(
-      padding: const EdgeInsets.only(bottom: 100),
-      itemCount: categories.length,
-      // ignore: deprecated_member_use
-      onReorder: (oldIndex, newIndex) async {
-        if (oldIndex < newIndex) {
-          newIndex -= 1;
-        }
-        await ref
-            .read(categoryNotifierProvider.notifier)
-            .reorderCategories(oldIndex, newIndex);
-      },
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return CategoryCard(
-          key: ValueKey(category.id),
-          category: category,
-          isDark: isDark,
-          index: index,
-          onEdit: () => CategoryFormSheet.show(context, ref, category),
-          onDelete: () => _showDeleteDialog(context, category),
-        );
-      },
-    );
   }
 
   Future<void> _showDeleteDialog(

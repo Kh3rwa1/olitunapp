@@ -157,115 +157,120 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        child: CustomScrollView(
+          slivers: [
             // Header
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AdminPageHeader(
-                    title: 'Media Library',
-                    subtitle:
-                        'Upload and manage images, audio, and video files',
-                    eyebrow: 'MEDIA · LIBRARY',
-                    actions: [_buildUploadButton(isDark)],
-                  ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AdminPageHeader(
+                      title: 'Media Library',
+                      subtitle:
+                          'Upload and manage images, audio, and video files',
+                      eyebrow: 'MEDIA · LIBRARY',
+                      actions: [_buildUploadButton(isDark)],
+                    ),
 
-                  const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-                  // Filter tabs
-                  MediaFilterBar(
-                    selectedType: selectedType,
-                    onTypeSelected: (t) =>
-                        ref.read(selectedMediaTypeProvider.notifier).state = t,
-                  ),
-                ],
+                    // Filter tabs
+                    MediaFilterBar(
+                      selectedType: selectedType,
+                      onTypeSelected: (t) =>
+                          ref.read(selectedMediaTypeProvider.notifier).state =
+                              t,
+                    ),
+                  ],
+                ),
               ),
             ),
 
             // Upload progress
             if (_isUploading)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AdminTokens.accent,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AdminTokens.accent,
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Uploading… ${(_uploadProgress * 100).toInt()}%',
-                          style: AdminTokens.bodyStrong(isDark),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    LinearProgressIndicator(
-                      value: _uploadProgress,
-                      backgroundColor: AdminTokens.accentSoft(isDark),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AdminTokens.accent,
+                          const SizedBox(width: 12),
+                          Text(
+                            'Uploading… ${(_uploadProgress * 100).toInt()}%',
+                            style: AdminTokens.bodyStrong(isDark),
+                          ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      const SizedBox(height: 10),
+                      LinearProgressIndicator(
+                        value: _uploadProgress,
+                        backgroundColor: AdminTokens.accentSoft(isDark),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          AdminTokens.accent,
+                        ),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
                 ),
               ),
 
             // Media grid
-            Expanded(
-              child: filteredItems.isEmpty
-                  ? _buildEmptyState(isDark)
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(24),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: isWideScreen ? 4 : 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
-                      itemCount: filteredItems.length,
-                      itemBuilder: (context, index) {
-                        return MediaCard(
-                          item: filteredItems[index],
-                          isDark: isDark,
-                          onDelete: () {
-                            ref
-                                .read(mediaItemsProvider.notifier)
-                                .update(
-                                  (state) => state
-                                      .where(
-                                        (i) => i.id != filteredItems[index].id,
-                                      )
-                                      .toList(),
-                                );
-                          },
-                          onCopyUrl: () {
-                            Clipboard.setData(
-                              ClipboardData(text: filteredItems[index].url),
+            if (filteredItems.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: _buildEmptyState(isDark),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 100),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: isWideScreen ? 4 : 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                  ),
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    return MediaCard(
+                      item: filteredItems[index],
+                      isDark: isDark,
+                      onDelete: () {
+                        ref
+                            .read(mediaItemsProvider.notifier)
+                            .update(
+                              (state) => state
+                                  .where((i) => i.id != filteredItems[index].id)
+                                  .toList(),
                             );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('URL copied to clipboard!'),
-                              ),
-                            );
-                          },
+                      },
+                      onCopyUrl: () {
+                        Clipboard.setData(
+                          ClipboardData(text: filteredItems[index].url),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('URL copied to clipboard!'),
+                          ),
                         );
                       },
-                    ),
-            ),
+                    );
+                  }, childCount: filteredItems.length),
+                ),
+              ),
           ],
         ),
       ),

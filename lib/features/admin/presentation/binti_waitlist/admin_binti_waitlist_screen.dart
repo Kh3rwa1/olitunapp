@@ -33,7 +33,7 @@ class _AdminBintiWaitlistScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
-    return Padding(
+    return SingleChildScrollView(
       padding: EdgeInsets.symmetric(
         horizontal: isWideScreen ? 32 : 16,
         vertical: isWideScreen ? 32 : 16,
@@ -78,76 +78,76 @@ class _AdminBintiWaitlistScreenState
           const SizedBox(height: 24),
 
           // Main content
-          Expanded(
-            child: waitlistAsync.when(
-              data: (items) {
-                if (items.isEmpty) {
-                  return AdminEmptyState(
-                    icon: Icons.event_note_outlined,
-                    title: 'Waitlist is empty',
-                    message:
-                        'Once users book Binti Guru services from the app, their requests will appear here.',
-                    actionLabel: 'Refresh',
-                    onAction: () =>
-                        ref.read(adminWaitlistProvider.notifier).loadWaitlist(),
-                  );
-                }
-
-                // Compute metrics
-                final totalBookings = items.length;
-                final newCount = items.where((p) => p.status == 'new').length;
-                final contactedCount = items
-                    .where((p) => p.status == 'contacted')
-                    .length;
-                final convertedCount = items
-                    .where((p) => p.status == 'converted')
-                    .length;
-
-                // Filter list
-                final filtered = items.where((p) {
-                  if (_selectedFilter == 'new') {
-                    return p.status == 'new';
-                  }
-                  if (_selectedFilter == 'contacted') {
-                    return p.status == 'contacted';
-                  }
-                  if (_selectedFilter == 'converted') {
-                    return p.status == 'converted';
-                  }
-                  if (_selectedFilter == 'closed') {
-                    return p.status == 'closed';
-                  }
-                  return true;
-                }).toList();
-
-                return Column(
-                  children: [
-                    // KPI Row
-                    _BintiWaitlistKpiRow(
-                      isDark: isDark,
-                      isWide: isWideScreen,
-                      total: totalBookings,
-                      newCount: newCount,
-                      contacted: contactedCount,
-                      converted: convertedCount,
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Filter chips row
-                    _buildFilterChips(isDark),
-                    const SizedBox(height: 16),
-
-                    // Data Table
-                    Expanded(child: _buildDataTable(filtered, isDark)),
-                  ],
+          waitlistAsync.when(
+            data: (items) {
+              if (items.isEmpty) {
+                return AdminEmptyState(
+                  icon: Icons.event_note_outlined,
+                  title: 'Waitlist is empty',
+                  message:
+                      'Once users book Binti Guru services from the app, their requests will appear here.',
+                  actionLabel: 'Refresh',
+                  onAction: () =>
+                      ref.read(adminWaitlistProvider.notifier).loadWaitlist(),
                 );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(
-                child: SelectableText(
-                  'Error loading waitlist: $error',
-                  style: const TextStyle(color: AppColors.error),
-                ),
+              }
+
+              // Compute metrics
+              final totalBookings = items.length;
+              final newCount = items.where((p) => p.status == 'new').length;
+              final contactedCount = items
+                  .where((p) => p.status == 'contacted')
+                  .length;
+              final convertedCount = items
+                  .where((p) => p.status == 'converted')
+                  .length;
+
+              // Filter list
+              final filtered = items.where((p) {
+                if (_selectedFilter == 'new') {
+                  return p.status == 'new';
+                }
+                if (_selectedFilter == 'contacted') {
+                  return p.status == 'contacted';
+                }
+                if (_selectedFilter == 'converted') {
+                  return p.status == 'converted';
+                }
+                if (_selectedFilter == 'closed') {
+                  return p.status == 'closed';
+                }
+                return true;
+              }).toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // KPI Row
+                  _BintiWaitlistKpiRow(
+                    isDark: isDark,
+                    isWide: isWideScreen,
+                    total: totalBookings,
+                    newCount: newCount,
+                    contacted: contactedCount,
+                    converted: convertedCount,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Filter chips row
+                  _buildFilterChips(isDark),
+                  const SizedBox(height: 16),
+
+                  // Data Table
+                  _buildDataTable(filtered, isDark),
+                  const SizedBox(height: 100),
+                ],
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => Center(
+              child: SelectableText(
+                'Error loading waitlist: $error',
+                style: const TextStyle(color: AppColors.error),
               ),
             ),
           ),

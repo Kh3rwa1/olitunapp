@@ -6,7 +6,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'content_grid_card.dart';
 
 class ContentGridSection extends StatelessWidget {
-  final ScrollController scrollController;
+  final ScrollController? scrollController;
   final List<ContentItem> items;
   final Set<String> selectedIds;
   final List<CategoryEntity> categories;
@@ -20,7 +20,7 @@ class ContentGridSection extends StatelessWidget {
 
   const ContentGridSection({
     super.key,
-    required this.scrollController,
+    this.scrollController,
     required this.items,
     required this.selectedIds,
     required this.categories,
@@ -49,6 +49,42 @@ class ContentGridSection extends StatelessWidget {
       kind: item.kind,
       categoryId: effectiveCategoryId,
       categorySlug: category?.titleLatin,
+    );
+  }
+
+  Widget buildSliver(BuildContext context) {
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: isWideScreen ? 6 : 3,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          childAspectRatio: 0.85,
+        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = items[index];
+          final isSelected = selectedIds.contains(item.id);
+          final badgeType = _resolveBadge(item);
+
+          return ContentGridCard(
+            item: item,
+            index: index,
+            isSelected: isSelected,
+            isDark: isDark,
+            supportsPremium: supportsPremium,
+            badgeType: badgeType,
+            onSelectChanged: (val) => onToggleSelect(item.id, val == true),
+            onTap: () => onEditItem(item),
+            onDelete: () => onDeleteItem(item),
+          );
+        }, childCount: items.length),
+      ),
     );
   }
 

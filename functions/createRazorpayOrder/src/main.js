@@ -3,6 +3,9 @@ import { Client, Databases } from 'node-appwrite';
 import { publishPendingPurchase, isPayablePurchase } from './purchase_ledger.js';
 import { enforceWindowRateLimit, WINDOW_HOUR_MS } from './shared/rate_limiter.js';
 
+export const LEASE_DURATION_MS = 30000; // 30s active reservation lease window
+export const STALE_RESERVATION_TIMEOUT_MS = 30000; // 30s threshold (2x 12s gateway timeout) to recover abandoned attempts
+
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
 }
@@ -181,7 +184,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       // 3. Concurrency & Idempotency Reservation via payment_attempts
       let attemptRecord = null;
       try {
-        const leaseExpiresAt = new Date(Date.now() + 30000).toISOString();
+        const leaseExpiresAt = new Date(Date.now() + LEASE_DURATION_MS).toISOString();
         attemptRecord = await databases.createDocument(
           databaseId,
           'payment_attempts',
@@ -227,7 +230,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           }
 
           const leaseExpires = new Date(attemptRecord.leaseExpiresAt || 0).getTime();
-          if (attemptRecord.status === 'in_progress' && leaseExpires > Date.now()) {
+          const nowMs = Date.now();
+          if (attemptRecord.status === 'in_progress' && leaseExpires > nowMs) {
             return res.json({
               ok: false,
               code: 'in_progress',
@@ -235,11 +239,83 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             }, 409);
           }
 
-          return res.json({
-            ok: false,
-            code: 'reservation_conflict',
-            message: 'Order creation attempt reservation conflict. Please retry.',
-          }, 409);
+          // Allow re-reservation if the existing attempt failed or is a stale in_progress attempt
+          // without a providerOrderId. An attempt with an active lease or with a providerOrderId
+          // is never re-reserved.
+          const isStaleInProgress =
+            attemptRecord.status === 'in_progress' &&
+            !attemptRecord.providerOrderId &&
+            (leaseExpires <= nowMs || (nowMs - new Date(attemptRecord.updatedAt || attemptRecord.createdAt || 0).getTime()) >= STALE_RESERVATION_TIMEOUT_MS);
+
+          const isFailedWithoutOrder =
+            attemptRecord.status === 'failed' &&
+            !attemptRecord.providerOrderId;
+
+          if (isFailedWithoutOrder || isStaleInProgress) {
+            log(`[${attemptDocId}] Re-reserving attempt (status=${attemptRecord.status}, stale=${isStaleInProgress})`);
+
+            // Re-check right before updating to catch any concurrent worker that won the lease
+            const preAttempt = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
+            if (preAttempt.providerOrderId) {
+              return await finishCheckout(preAttempt, true);
+            }
+            const preLeaseExpires = new Date(preAttempt.leaseExpiresAt || 0).getTime();
+            if (preAttempt.status === 'in_progress' && preLeaseExpires > Date.now()) {
+              return res.json({
+                ok: false,
+                code: 'in_progress',
+                message: 'Order creation is in progress by another request. Please retry shortly.',
+              }, 409);
+            }
+
+            const candidateLeaseOwner = `${process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder'}:${nowMs}:${Math.random().toString(36).slice(2, 10)}`;
+            const newLeaseExpiresAt = new Date(nowMs + LEASE_DURATION_MS).toISOString();
+
+            try {
+              attemptRecord = await databases.updateDocument(
+                databaseId,
+                'payment_attempts',
+                attemptDocId,
+                {
+                  status: 'in_progress',
+                  providerOrderId: null,
+                  leaseOwner: candidateLeaseOwner,
+                  leaseExpiresAt: newLeaseExpiresAt,
+                  reconciliationStatus: 'none',
+                  updatedAt: new Date().toISOString(),
+                }
+              );
+            } catch (updateErr) {
+              error(`[${attemptDocId}] Failed to update lease during re-reservation: ${updateErr?.message}`);
+              return res.json({
+                ok: false,
+                code: 'reservation_conflict',
+                message: 'Order creation attempt reservation conflict. Please retry.',
+              }, 409);
+            }
+
+            // Brief settling delay to allow any concurrent election contenders to complete their write
+            await new Promise(r => setTimeout(r, 10));
+
+            // Verify lease election to guarantee exactly one concurrent worker proceeds
+            const verifiedAttempt = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
+            if (verifiedAttempt.providerOrderId) {
+              return await finishCheckout(verifiedAttempt, true);
+            }
+            if (verifiedAttempt.leaseOwner !== candidateLeaseOwner) {
+              return res.json({
+                ok: false,
+                code: 'in_progress',
+                message: 'Order creation is in progress by another request. Please retry shortly.',
+              }, 409);
+            }
+          } else {
+            return res.json({
+              ok: false,
+              code: 'reservation_conflict',
+              message: 'Order creation attempt reservation conflict. Please retry.',
+            }, 409);
+          }
         } else {
           throw createErr;
         }
@@ -262,6 +338,12 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           limit: parseInt(process.env.PAYMENT_ORDERS_PER_HOUR || '10', 10),
         });
         if (!limitResult.allowed) {
+          try {
+            await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+              status: 'failed',
+              updatedAt: new Date().toISOString(),
+            });
+          } catch (_) {}
           return res.json(
             { ok: false, message: 'Too many checkout attempts. Please try again later.' },
             429,

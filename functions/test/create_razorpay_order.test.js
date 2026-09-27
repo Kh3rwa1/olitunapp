@@ -374,5 +374,317 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.ok(![...db.collections.get('course_purchases').keys()].some(k => k.startsWith('purch_')),
       'no orphaned purch_user_category docs created');
   });
+
+  test('8a. Razorpay 5xx failure -> retry succeeds (200 OK)', async () => {
+    const db = new InMemDb();
+    const userId = 'u_lockout_user_a';
+    const categoryId = 'cat_lockout_test_a';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Lockout Course A', priceInr: 399, unlockMode: 'paid_only' }]
+    ]));
+
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      if (rzpCalls === 1) {
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({ error: { description: 'Razorpay 500 internal error' } })
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_rzp_retry_5xx_ok', amount: 39900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    // 1st request fails at Razorpay
+    const req1 = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId })
+    };
+    const res1 = createMockRes();
+    await handler({ req: req1, res: res1, error: createMockErrorLogger() });
+    assert.equal(res1.statusCode, 502);
+
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${stableId(`${userId}:${categoryId}:checkout_default`)}`)}`;
+    const attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.ok(attemptInDb);
+    assert.equal(attemptInDb.status, 'failed');
+    assert.equal(attemptInDb.providerOrderId, null);
+
+    // 2nd request (retry) succeeds with 200 OK
+    const req2 = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId })
+    };
+    const res2 = createMockRes();
+    await handler({ req: req2, res: res2, error: createMockErrorLogger() });
+    assert.equal(res2.statusCode, 200, `Expected 200 on retry, got ${res2.statusCode}: ${JSON.stringify(res2.body)}`);
+    assert.equal(res2.body.ok, true);
+    assert.equal(res2.body.orderId, 'order_rzp_retry_5xx_ok');
+    assert.equal(rzpCalls, 2);
+  });
+
+  test('8b. Stale in_progress attempt (>30s) -> retry succeeds (200 OK)', async () => {
+    const db = new InMemDb();
+    const userId = 'u_stale_user_b';
+    const categoryId = 'cat_stale_test_b';
+    const idempotencyKey = 'stale_attempt_key_b';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Stale Course B', priceInr: 499, unlockMode: 'paid_only' }]
+    ]));
+
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const staleTime = new Date(Date.now() - 35000).toISOString();
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: 499,
+        currency: 'INR',
+        status: 'in_progress',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: 'rec_stale_123',
+        leaseOwner: 'crashed_worker_1',
+        leaseExpiresAt: staleTime,
+        reconciliationStatus: 'none',
+        createdAt: staleTime,
+        updatedAt: staleTime,
+      }]
+    ]));
+
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_rzp_stale_recovery', amount: 49900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+    const res = createMockRes();
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200, `Expected 200 but got ${res.statusCode}: ${JSON.stringify(res.body)}`);
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.orderId, 'order_rzp_stale_recovery');
+    assert.equal(rzpCalls, 1);
+
+    const updated = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.equal(updated.providerOrderId, 'order_rzp_stale_recovery');
+  });
+
+  test('8c. Fresh in_progress attempt (<30s) -> retry returns 409 in_progress', async () => {
+    const db = new InMemDb();
+    const userId = 'u_fresh_user_c';
+    const categoryId = 'cat_fresh_test_c';
+    const idempotencyKey = 'fresh_attempt_key_c';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Fresh Course C', priceInr: 299, unlockMode: 'paid_only' }]
+    ]));
+
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const freshExpiry = new Date(Date.now() + 25000).toISOString();
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: 299,
+        currency: 'INR',
+        status: 'in_progress',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: 'rec_fresh_123',
+        leaseOwner: 'active_worker_2',
+        leaseExpiresAt: freshExpiry,
+        reconciliationStatus: 'none',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      }]
+    ]));
+
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      return { ok: true, json: async () => ({ id: 'order_fresh_not_expected' }) };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+    const res = createMockRes();
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 409);
+    assert.equal(res.body.ok, false);
+    assert.equal(res.body.code, 'in_progress');
+    assert.equal(rzpCalls, 0, 'Razorpay must not be called when an active lease exists');
+  });
+
+  test('8d. Rate-limited retry -> attempt marked failed -> retry succeeds once rate limit resets', async () => {
+    const db = new InMemDb();
+    const userId = 'u_rate_limit_user_d';
+    const categoryId = 'cat_rate_limit_test_d';
+    const idempotencyKey = 'rate_limited_attempt_key_d';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Rate Limited Course D', priceInr: 199, unlockMode: 'paid_only' }]
+    ]));
+
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      return {
+        ok: true,
+        json: async () => ({ id: `order_rl_${rzpCalls}`, amount: 19900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    // Exhaust the rate limit (10 per hour) by filling slots in rate_limits
+    for (let i = 0; i < 10; i++) {
+      const dummyCat = `cat_dummy_${i}`;
+      db.collections.get('categories').set(dummyCat, { name: 'Dummy', priceInr: 199, unlockMode: 'paid_only' });
+      const req = {
+        method: 'POST',
+        headers: { 'x-appwrite-user-id': userId },
+        body: JSON.stringify({ categoryId: dummyCat, idempotencyKey: `dummy_key_${i}` })
+      };
+      const res = createMockRes();
+      await handler({ req, res, error: createMockErrorLogger() });
+      assert.equal(res.statusCode, 200);
+    }
+    assert.equal(rzpCalls, 10);
+
+    // The 11th request with categoryId and idempotencyKey will exceed the limit and get 429
+    const reqExceeded = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+    const resExceeded = createMockRes();
+    await handler({ req: reqExceeded, res: resExceeded, error: createMockErrorLogger() });
+    assert.equal(resExceeded.statusCode, 429);
+
+    // Verify attempt record was marked failed, not stuck in_progress!
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.ok(attemptInDb);
+    assert.equal(attemptInDb.status, 'failed');
+    assert.equal(attemptInDb.providerOrderId, null);
+
+    // Now clear/reset the rate_limits table (simulating time window elapsed)
+    db.collections.set('rate_limits', new Map());
+
+    // Retry the same request
+    const reqRetry = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+    const resRetry = createMockRes();
+    await handler({ req: reqRetry, res: resRetry, error: createMockErrorLogger() });
+
+    assert.equal(resRetry.statusCode, 200, `Expected 200 after rate limit reset, but got ${resRetry.statusCode}: ${JSON.stringify(resRetry.body)}`);
+    assert.equal(resRetry.body.ok, true);
+    assert.equal(resRetry.body.orderId, 'order_rl_11');
+    assert.equal(rzpCalls, 11);
+  });
+
+  test('8e. Concurrent retries (20 simultaneous calls to re-reserve a failed attempt) -> Razorpay called exactly ONCE, order returned to all or yields 409 in_progress', async () => {
+    const db = new InMemDb();
+    const userId = 'u_concurrent_retry_user';
+    const categoryId = 'cat_concurrent_retry';
+    const idempotencyKey = 'concurrent_retry_blast_20';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Concurrent Retry Course', priceInr: 599, unlockMode: 'paid_only' }]
+    ]));
+
+    // Seed a previously failed attempt document
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const nowIso = new Date().toISOString();
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: 599,
+        currency: 'INR',
+        status: 'failed',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: 'rec_initial_failed',
+        leaseOwner: 'worker_crashed',
+        leaseExpiresAt: nowIso,
+        reconciliationStatus: 'none',
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      }]
+    ]));
+
+    let rzpCallCount = 0;
+    const mockFetch = async () => {
+      rzpCallCount++;
+      await new Promise(r => setTimeout(r, 15));
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_concurrent_retry_winner', amount: 59900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    const promises = Array.from({ length: 20 }, () => {
+      const req = {
+        method: 'POST',
+        headers: { 'x-appwrite-user-id': userId },
+        body: JSON.stringify({ categoryId, idempotencyKey })
+      };
+      const res = createMockRes();
+      return handler({ req, res, error: createMockErrorLogger() }).then(() => res);
+    });
+
+    const results = await Promise.all(promises);
+
+    // CRITICAL ASSERTION: Razorpay API was called EXACTLY ONCE!
+    assert.equal(rzpCallCount, 1, `Razorpay API was called ${rzpCallCount} times instead of 1`);
+
+    const okCount = results.filter(r => r.statusCode === 200).length;
+    const conflictCount = results.filter(r => r.statusCode === 409).length;
+
+    assert.equal(okCount + conflictCount, 20);
+    assert.equal(okCount >= 1, true, 'At least 1 request succeeded');
+
+    const okResults = results.filter(r => r.statusCode === 200);
+    for (const r of okResults) {
+      assert.equal(r.body.orderId, 'order_concurrent_retry_winner');
+    }
+  });
 });
 

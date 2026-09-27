@@ -53,6 +53,8 @@ android/upload-keystore.jks
 android/app/upload_certificate.pem
 .keys/
 .premium-content-rollback/
+docs/maintainability/PROD_ENV_AUDIT.md
+.audit/
 
 # `node_modules/` matches at any depth, so the nested overrides are redundant.
 node_modules/

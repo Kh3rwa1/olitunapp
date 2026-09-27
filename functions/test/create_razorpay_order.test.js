@@ -1,7 +1,9 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'crypto';
-import { createOrderHandler } from '../createRazorpayOrder/src/main.js';
+import { createHash, createHmac } from 'crypto';
+import { createOrderHandler, STALE_RESERVATION_TIMEOUT_MS, LEASE_DURATION_MS } from '../createRazorpayOrder/src/main.js';
+import { createVerifyCoursePurchaseHandler } from '../verifyCoursePurchase/src/main.js';
+import { createRazorpayWebhookHandler } from '../razorpayWebhook/src/main.js';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -431,7 +433,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(rzpCalls, 2);
   });
 
-  test('8b. Stale in_progress attempt (>30s) -> retry succeeds (200 OK)', async () => {
+  test('8b. Stale in_progress attempt (>60s) -> retry succeeds (200 OK)', async () => {
     const db = new InMemDb();
     const userId = 'u_stale_user_b';
     const categoryId = 'cat_stale_test_b';
@@ -441,7 +443,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     ]));
 
     const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
-    const staleTime = new Date(Date.now() - 35000).toISOString();
+    const staleTime = new Date(Date.now() - 65000).toISOString();
     db.collections.set('payment_attempts', new Map([
       [attemptDocId, {
         $id: attemptDocId,
@@ -491,7 +493,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(updated.providerOrderId, 'order_rzp_stale_recovery');
   });
 
-  test('8c. Fresh in_progress attempt (<30s) -> retry returns 409 in_progress', async () => {
+  test('8c. Fresh in_progress attempt (<60s) -> retry returns 409 in_progress', async () => {
     const db = new InMemDb();
     const userId = 'u_fresh_user_c';
     const categoryId = 'cat_fresh_test_c';
@@ -500,6 +502,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
       [categoryId, { name: 'Fresh Course C', priceInr: 299, unlockMode: 'paid_only' }]
     ]));
 
+    // Subcase 1: Active lease in future (+25s)
     const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
     const freshExpiry = new Date(Date.now() + 25000).toISOString();
     db.collections.set('payment_attempts', new Map([
@@ -543,6 +546,34 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(res.body.ok, false);
     assert.equal(res.body.code, 'in_progress');
     assert.equal(rzpCalls, 0, 'Razorpay must not be called when an active lease exists');
+
+    // Subcase 2: Attempt created 45s ago (< 60s stale threshold) with expired lease
+    const time45sAgo = new Date(Date.now() - 45000).toISOString();
+    db.collections.get('payment_attempts').set(attemptDocId, {
+      $id: attemptDocId,
+      userId,
+      categoryId,
+      idempotencyKey,
+      attemptId: attemptDocId,
+      expectedAmount: 299,
+      currency: 'INR',
+      status: 'in_progress',
+      provider: 'razorpay',
+      providerOrderId: null,
+      providerReceipt: 'rec_fresh_123',
+      leaseOwner: 'active_worker_2',
+      leaseExpiresAt: time45sAgo,
+      reconciliationStatus: 'none',
+      createdAt: time45sAgo,
+      updatedAt: time45sAgo,
+    });
+
+    const res2 = createMockRes();
+    await handler({ req, res: res2, error: createMockErrorLogger() });
+    assert.equal(res2.statusCode, 409);
+    assert.equal(res2.body.ok, false);
+    assert.equal(res2.body.code, 'in_progress');
+    assert.equal(rzpCalls, 0, 'Razorpay must not be called when attempt age is < 60s');
   });
 
   test('8d. Rate-limited retry -> attempt marked failed -> retry succeeds once rate limit resets', async () => {
@@ -685,6 +716,322 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     for (const r of okResults) {
       assert.equal(r.body.orderId, 'order_concurrent_retry_winner');
     }
+  });
+
+  test('8f. Adversarial interleaving: two concurrent contenders race on a failed/stale attempt -> contender 1 wins atomic election lock, contender 2 receives 409 conflict, Razorpay called exactly ONCE, retry returns canonical order', async () => {
+    const db = new InMemDb();
+    const userId = 'u_adversarial_user';
+    const categoryId = 'cat_adversarial_test';
+    const idempotencyKey = 'adversarial_key_123';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Adversarial Course', priceInr: 399, unlockMode: 'paid_only' }]
+    ]));
+
+    // Seed a previously failed attempt
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const pastTime = new Date(Date.now() - 70000).toISOString();
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: 399,
+        currency: 'INR',
+        status: 'failed',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: 'rec_adv_1',
+        leaseOwner: 'crashed_worker',
+        leaseExpiresAt: pastTime,
+        reconciliationStatus: 'none',
+        createdAt: pastTime,
+        updatedAt: pastTime,
+      }]
+    ]));
+
+    let rzpCalls = 0;
+    let rzpFetchResolve;
+    const rzpGatePromise = new Promise(resolve => { rzpFetchResolve = resolve; });
+
+    const mockFetch = async () => {
+      rzpCalls++;
+      // Pause worker 1 while holding the lease election lock to simulate network latency
+      await rzpGatePromise;
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_rzp_adversarial_winner', amount: 39900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+
+    // Contender 1 initiates re-reservation and enters Razorpay fetch (paused on rzpGatePromise)
+    const res1 = createMockRes();
+    const contender1Promise = handler({ req, res: res1, error: createMockErrorLogger() });
+
+    // Yield execution to allow contender 1 to win the atomic election lock and enter mockFetch
+    await new Promise(r => setTimeout(r, 20));
+
+    // Verify election lock document exists in DB
+    const electionLocks = [...db.collections.get('payment_attempts').keys()].filter(k => k.startsWith('elc_'));
+    assert.equal(electionLocks.length, 1, 'Exactly one election lock document created');
+
+    // Contender 2 arrives concurrently while contender 1 is awaiting Razorpay gateway response
+    const res2 = createMockRes();
+    await handler({ req, res: res2, error: createMockErrorLogger() });
+
+    // Contender 2 must receive 409 conflict with code 'in_progress'
+    assert.equal(res2.statusCode, 409);
+    assert.equal(res2.body.ok, false);
+    assert.equal(res2.body.code, 'in_progress');
+
+    // Razorpay has only been called by Contender 1 so far
+    assert.equal(rzpCalls, 1);
+
+    // Contender 1 finishes gateway call and saves order
+    rzpFetchResolve();
+    await contender1Promise;
+
+    // Contender 1 must succeed with 200 OK
+    assert.equal(res1.statusCode, 200);
+    assert.equal(res1.body.ok, true);
+    assert.equal(res1.body.orderId, 'order_rzp_adversarial_winner');
+
+    // Contender 2 now retries (or client retry) after contender 1 finished
+    const res3 = createMockRes();
+    await handler({ req, res: res3, error: createMockErrorLogger() });
+
+    // Retry must succeed with 200 OK and return the exact canonical order without calling Razorpay again
+    assert.equal(res3.statusCode, 200);
+    assert.equal(res3.body.ok, true);
+    assert.equal(res3.body.orderId, 'order_rzp_adversarial_winner');
+    assert.equal(res3.body.isDuplicateRetry, true);
+
+    // CRITICAL: Razorpay API was called EXACTLY ONCE
+    assert.equal(rzpCalls, 1, 'Razorpay must be called exactly once across both contenders and retries');
+  });
+
+  test('8g. Unsaved second order / recovery: payment for newly elected order is granted and committed by verifyCoursePurchase and razorpayWebhook', async () => {
+    const db = new InMemDb();
+    const userId = 'u_recovery_payer_g';
+    const categoryId = 'cat_recovery_test_g';
+    const idempotencyKey = 'recovery_attempt_key_g';
+    const priceInr = 499;
+
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Recovery Course G', priceInr, unlockMode: 'paid_only' }]
+    ]));
+
+    // Step 1: Simulate worker 1 crashing after creating an order at the gateway, leaving the attempt
+    // stale without providerOrderId in payment_attempts and with no course_purchases row.
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const staleTime = new Date(Date.now() - 75000).toISOString();
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: priceInr,
+        currency: 'INR',
+        status: 'in_progress',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: stableId(`${userId}:${categoryId}`),
+        leaseOwner: 'crashed_worker_1',
+        leaseExpiresAt: staleTime,
+        reconciliationStatus: 'none',
+        createdAt: staleTime,
+        updatedAt: staleTime,
+      }]
+    ]));
+
+    // Step 2: User retries after stale timeout. Worker 2 creates second order 'order_rzp_rec_2'
+    let rzpCalls = 0;
+    const mockOrderFetch = async () => {
+      rzpCalls++;
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_rzp_rec_2', amount: priceInr * 100, currency: 'INR' })
+      };
+    };
+
+    const orderHandler = createOrderHandler({ databases: db, fetchImpl: mockOrderFetch });
+    const req = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+    const res = createMockRes();
+    await orderHandler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.orderId, 'order_rzp_rec_2');
+
+    // Confirm course_purchases has the newly elected order 'order_rzp_rec_2' in status 'created'
+    const purchaseDocId = stableId(`${userId}:${categoryId}`);
+    const pendingPurchase = db.collections.get('course_purchases')?.get(purchaseDocId);
+    assert.ok(pendingPurchase);
+    assert.equal(pendingPurchase.status, 'created');
+    assert.equal(pendingPurchase.providerOrderId, 'order_rzp_rec_2');
+
+    // Step 3: User pays 'order_rzp_rec_2' and client calls verifyCoursePurchase
+    const paymentId = 'pay_rzp_rec_captured_2';
+    const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+    const signature = createHmac('sha256', razorpaySecret)
+      .update(`order_rzp_rec_2|${paymentId}`)
+      .digest('hex');
+
+    const mockVerifyFetch = async (url) => {
+      assert.ok(url.includes(paymentId));
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          id: paymentId,
+          order_id: 'order_rzp_rec_2',
+          status: 'captured',
+          amount: priceInr * 100,
+          currency: 'INR',
+        })
+      };
+    };
+
+    const verifyHandler = createVerifyCoursePurchaseHandler({ databases: db, fetchImpl: mockVerifyFetch });
+    const verifyReq = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({
+        categoryId,
+        unlockMethod: 'razorpay',
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: 'order_rzp_rec_2',
+        razorpaySignature: signature,
+      })
+    };
+    const verifyRes = createMockRes();
+    await verifyHandler({ req: verifyReq, res: verifyRes, error: createMockErrorLogger() });
+
+    // Entitlement must be granted with 200 OK!
+    assert.equal(verifyRes.statusCode, 200, `Verify failed: ${JSON.stringify(verifyRes.body)}`);
+    assert.equal(verifyRes.body.ok, true);
+
+    const verifiedPurchase = db.collections.get('course_purchases').get(purchaseDocId);
+    assert.equal(verifiedPurchase.status, 'verified');
+    assert.equal(verifiedPurchase.providerOrderId, 'order_rzp_rec_2');
+    assert.equal(verifiedPurchase.providerPaymentId, paymentId);
+    assert.equal(verifiedPurchase.paidAmount, priceInr);
+
+    // Payment claim must be committed
+    const claimDocId = stableId(`claim:${paymentId}`);
+    const claim = db.collections.get('payment_claims').get(claimDocId);
+    assert.ok(claim);
+    assert.equal(claim.status, 'committed');
+
+    // Step 4: Idempotent verify retry on already verified purchase succeeds
+    const verifyRes2 = createMockRes();
+    await verifyHandler({ req: verifyReq, res: verifyRes2, error: createMockErrorLogger() });
+    assert.equal(verifyRes2.statusCode, 200);
+    assert.equal(verifyRes2.body.ok, true);
+    assert.equal(verifyRes2.body.message, 'Purchase already verified');
+
+    // Step 5: Verify that razorpayWebhook also handles order_rzp_rec_2 safely
+    const webhookSecret = 'whsec_test_secret_123';
+    process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;
+    const webhookPayload = JSON.stringify({
+      event: 'payment.captured',
+      payload: {
+        payment: {
+          entity: {
+            id: paymentId,
+            order_id: 'order_rzp_rec_2',
+            amount: priceInr * 100,
+            currency: 'INR',
+            notes: { userId, categoryId }
+          }
+        }
+      }
+    });
+    const webhookSig = createHmac('sha256', webhookSecret).update(webhookPayload).digest('hex');
+    const webhookHandler = createRazorpayWebhookHandler({ databases: db });
+    const webhookReq = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': webhookSig },
+      body: webhookPayload,
+      bodyRaw: webhookPayload,
+    };
+    const webhookRes = createMockRes();
+    await webhookHandler({ req: webhookReq, res: webhookRes, error: createMockErrorLogger() });
+    assert.equal(webhookRes.statusCode, 200);
+  });
+
+  test('8h. Backward compatibility: clients omitting idempotencyKey default to deterministic per-user-category key and can recover from failure', async () => {
+    const db = new InMemDb();
+    const userId = 'u_legacy_client_user';
+    const categoryId = 'cat_legacy_course';
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Legacy Course', priceInr: 299, unlockMode: 'paid_only' }]
+    ]));
+
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      if (rzpCalls === 1) {
+        return {
+          ok: false,
+          status: 502,
+          json: async () => ({ error: { description: 'Gateway error' } })
+        };
+      }
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_legacy_recovery', amount: 29900, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    // Client sends NO idempotencyKey in body
+    const req1 = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId })
+    };
+    const res1 = createMockRes();
+    await handler({ req: req1, res: res1, error: createMockErrorLogger() });
+    assert.equal(res1.statusCode, 502);
+
+    // Verify the attempt document was keyed using the deterministic default
+    const expectedDefaultKey = stableId(`${userId}:${categoryId}:checkout_default`);
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${expectedDefaultKey}`)}`;
+    const attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.ok(attemptInDb, 'Attempt document should exist with deterministic default key');
+    assert.equal(attemptInDb.idempotencyKey, expectedDefaultKey);
+    assert.equal(attemptInDb.status, 'failed');
+
+    // Second request with no idempotencyKey recovers the failed attempt
+    const req2 = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId })
+    };
+    const res2 = createMockRes();
+    await handler({ req: req2, res: res2, error: createMockErrorLogger() });
+
+    assert.equal(res2.statusCode, 200);
+    assert.equal(res2.body.ok, true);
+    assert.equal(res2.body.orderId, 'order_legacy_recovery');
+    assert.equal(rzpCalls, 2);
   });
 });
 

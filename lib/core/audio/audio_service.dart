@@ -10,12 +10,14 @@ import '../media/authorized_media.dart';
 import '../media/authorized_media_provider.dart';
 import 'notification_artwork_uri.dart';
 import 'private_audio_playback.dart';
+import 'audio_cache_manager.dart';
 import 'audio_service_stub.dart'
     if (dart.library.js_interop) 'audio_service_web.dart';
 
 final audioServiceProvider = Provider((ref) {
   final service = AudioService(
     mediaService: ref.watch(authorizedMediaServiceProvider),
+    cacheManager: ref.watch(audioCacheManagerProvider),
   );
   ref.onDispose(service.dispose);
   return service;
@@ -24,6 +26,7 @@ final audioServiceProvider = Provider((ref) {
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
   late final PrivateAudioPlayback? _privatePlayback;
+  final AudioCacheManager _cacheManager;
 
   /// URL most recently loaded into the shared player via [tryPlayUrl] or
   /// [playAsset], or null after [stop]/[dispose].
@@ -58,7 +61,10 @@ class AudioService {
       StreamController<void>.broadcast();
   Stream<void> get webPlaybackEndedStream => _webEndedController.stream;
 
-  AudioService({AuthorizedMediaService? mediaService}) {
+  AudioService({
+    AuthorizedMediaService? mediaService,
+    AudioCacheManager? cacheManager,
+  }) : _cacheManager = cacheManager ?? DefaultAudioCacheManager() {
     _privatePlayback = mediaService == null
         ? null
         : PrivateAudioPlayback(_player, mediaService);
@@ -155,17 +161,24 @@ class AudioService {
       return started;
     }
     _privatePlayback?.cancel();
+    _currentUrl = url;
     try {
       _initWebCrossOrigin();
       if (_player.playing) {
         await _player.pause();
       }
+      if (_currentUrl != url) return false;
+
       final boundedArtUri = artUri != null
           ? (notificationArtworkUri(artUri.toString()) ?? artUri)
           : null;
+
+      final playableUri = await _cacheManager.getPlayableUri(url);
+      if (_currentUrl != url) return false;
+
       await _player.setAudioSource(
         AudioSource.uri(
-          Uri.parse(url),
+          playableUri,
           tag: MediaItem(
             id: url,
             album: album,
@@ -174,15 +187,16 @@ class AudioService {
           ),
         ),
       );
+      if (_currentUrl != url) return false;
+
       await _player.setVolume(1.0);
       await _player.play();
-      _currentUrl = url;
       return true;
     } catch (e) {
+      if (_currentUrl != url) return false;
       AppLogger.warning('AudioService playUrl failed: $e');
       if (kIsWeb) {
         try {
-          _currentUrl = url;
           playNativeWebAudio(
             url,
             onEnded: () {
@@ -198,10 +212,11 @@ class AudioService {
         }
       } else {
         try {
+          if (_currentUrl != url) return false;
           await _player.setUrl(url);
+          if (_currentUrl != url) return false;
           await _player.setVolume(1.0);
           await _player.play();
-          _currentUrl = url;
           return true;
         } catch (retryErr) {
           AppLogger.warning('AudioService native retry failed: $retryErr');
@@ -225,19 +240,21 @@ class AudioService {
   }) async {
     if (assetPath.isEmpty) return false;
     _privatePlayback?.cancel();
+    _currentUrl = assetPath;
     try {
       if (_player.playing) {
         await _player.pause();
       }
+      if (_currentUrl != assetPath) return false;
       await _player.setAudioSource(
         AudioSource.asset(
           assetPath,
           tag: MediaItem(id: assetPath, album: album, title: title),
         ),
       );
+      if (_currentUrl != assetPath) return false;
       await _player.setVolume(1.0);
       await _player.play();
-      _currentUrl = assetPath;
       return true;
     } catch (e) {
       AppLogger.warning('AudioService playAsset failed: $e');

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/audio/audio_cache_manager.dart';
 import '../../../../core/audio/playback_controller.dart';
 import '../../../../shared/providers/language_settings_providers.dart';
 import '../../domain/entities/audio_track_entity.dart';
@@ -44,6 +45,14 @@ class _AudioControlsBarState extends ConsumerState<AudioControlsBar> {
       _controller = controller;
       controller.addListener(_onPlaybackChanged);
     }
+
+    final urls = [
+      widget.bundle.santaliAudioUrl,
+      widget.bundle.slowAudioUrl,
+      widget.bundle.explanationAudioUrl,
+      widget.bundle.translationAudioUrl,
+    ].whereType<String>();
+    ref.read(audioCacheManagerProvider).precache(urls);
   }
 
   @override

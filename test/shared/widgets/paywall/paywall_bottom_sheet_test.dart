@@ -292,34 +292,30 @@ void main() {
         final fakeRepo = FakePurchaseRepository();
 
         Widget buildHarness({Key? key}) => ProviderScope(
-              overrides: [
-                currentUserProvider.overrideWith(
-                  (ref) => Future.value(
-                    const UserEntity(
-                      id: 'user_idem_test',
-                      email: 'idem@olitun.com',
-                      name: 'Idem Student',
-                    ),
-                  ),
-                ),
-                appSettingsProvider.overrideWith(
-                  (ref) =>
-                      Future.value({'global_review_unlock_enabled': 'true'}),
-                ),
-                purchasedCategoriesProvider.overrideWith(
-                  (ref) => Future.value(<String>{}),
-                ),
-                purchaseRepositoryProvider.overrideWithValue(fakeRepo),
-              ],
-              child: l10nApp(
-                child: Scaffold(
-                  body: PaywallBottomSheet(
-                    key: key,
-                    category: testCategory,
-                  ),
+          overrides: [
+            currentUserProvider.overrideWith(
+              (ref) => Future.value(
+                const UserEntity(
+                  id: 'user_idem_test',
+                  email: 'idem@olitun.com',
+                  name: 'Idem Student',
                 ),
               ),
-            );
+            ),
+            appSettingsProvider.overrideWith(
+              (ref) => Future.value({'global_review_unlock_enabled': 'true'}),
+            ),
+            purchasedCategoriesProvider.overrideWith(
+              (ref) => Future.value(<String>{}),
+            ),
+            purchaseRepositoryProvider.overrideWithValue(fakeRepo),
+          ],
+          child: l10nApp(
+            child: Scaffold(
+              body: PaywallBottomSheet(key: key, category: testCategory),
+            ),
+          ),
+        );
 
         // 1. Initial attempt on sheet
         await tester.pumpWidget(buildHarness(key: const ValueKey('sheet_1')));
@@ -377,4 +373,3 @@ class FakePurchaseRepository extends Fake implements PurchaseRepository {
     return {'ok': false, 'message': 'Simulated network timeout'};
   }
 }
-

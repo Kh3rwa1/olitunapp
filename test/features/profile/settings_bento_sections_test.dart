@@ -58,6 +58,7 @@ void main() {
     expect(find.text('LEGAL'), findsOneWidget);
     expect(find.text('Reset Progress'), findsOneWidget);
     expect(find.text('Delete Account'), findsOneWidget);
+    expect(find.text('Admin Portal'), findsNothing);
   });
 
   testWidgets('desktop bento renders the grouped cards on a wide surface', (

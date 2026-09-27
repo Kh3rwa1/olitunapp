@@ -4,7 +4,8 @@ const String adminHostName = 'admin.olitun.in';
 /// before any URL strategy or routing initialization can modify or strip it.
 String? initialWebHash;
 
-String? adminHostRedirectFor(String host, String path) {
+String? adminHostRedirectFor(String host, String path, {bool isWeb = true}) {
+  if (!isWeb) return null;
   if (host.toLowerCase() != adminHostName) return null;
   if (path == '/admin' || path.startsWith('/admin/')) return null;
   return '/admin';
@@ -31,8 +32,14 @@ String? fragmentRedirectFor({
   return null;
 }
 
-String? adminAccessRedirectFor({required bool isAdmin, required String path}) {
-  if (!path.startsWith('/admin') || path == '/admin/login') return null;
+String? adminAccessRedirectFor({
+  required bool isAdmin,
+  required String path,
+  bool isWeb = true,
+}) {
+  if (!path.startsWith('/admin')) return null;
+  if (!isWeb) return '/';
+  if (path == '/admin/login') return null;
   return isAdmin ? null : '/admin/login';
 }
 
@@ -42,14 +49,20 @@ String? authAndOnboardingRedirectFor({
   required String path,
   required bool? isAuth,
   required bool showOnboarding,
+  bool isWeb = true,
 }) {
+  // On non-web (mobile) devices, the admin portal is completely disabled.
+  if (!isWeb && (path == '/admin' || path.startsWith('/admin/'))) {
+    return '/';
+  }
+
   final isPublicAuthPath =
       path == '/welcome' ||
       path == '/splash' ||
       path == '/login' ||
       path == '/privacy' ||
       path == '/terms' ||
-      path.startsWith('/admin');
+      (isWeb && path.startsWith('/admin'));
 
   // Authenticated users should not stay on login or welcome screens
   if (isAuth == true && (path == '/welcome' || path == '/login')) {

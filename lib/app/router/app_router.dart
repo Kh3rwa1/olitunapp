@@ -86,10 +86,12 @@ final routerProvider = Provider<GoRouter>((ref) {
     GoRouterState state,
   ) async {
     final path = state.uri.path;
-    if (!path.startsWith('/admin') || path == '/admin/login') return null;
+    if (!path.startsWith('/admin')) return null;
+    if (!kIsWeb) return '/';
+    if (path == '/admin/login') return null;
 
     final isAdmin = await ref.read(adminAuthProvider.future);
-    return adminAccessRedirectFor(isAdmin: isAdmin, path: path);
+    return adminAccessRedirectFor(isAdmin: isAdmin, path: path, isWeb: kIsWeb);
   }
 
   GoRoute adminRoute({
@@ -113,7 +115,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
-      final hostRedirect = adminHostRedirectFor(Uri.base.host, state.uri.path);
+      final hostRedirect = adminHostRedirectFor(
+        Uri.base.host,
+        state.uri.path,
+        isWeb: kIsWeb,
+      );
       if (hostRedirect != null) return hostRedirect;
 
       final fragRedirect = fragmentRedirectFor(
@@ -143,6 +149,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: state.uri.path,
         isAuth: ref.read(isAuthenticatedProvider).asData?.value,
         showOnboarding: ref.read(onboardingProvider),
+        isWeb: kIsWeb,
       );
     },
     routes: [

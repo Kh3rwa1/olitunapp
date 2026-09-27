@@ -145,10 +145,55 @@ void main() {
       );
     });
 
-    test('lets admins through to admin routes', () {
+    test('lets admins through to admin routes on web', () {
       expect(adminAccessRedirectFor(isAdmin: true, path: '/admin'), isNull);
       expect(
         adminAccessRedirectFor(isAdmin: true, path: '/admin/review'),
+        isNull,
+      );
+    });
+
+    test('blocks all admin routes on mobile (isWeb: false)', () {
+      expect(
+        adminAccessRedirectFor(isAdmin: true, path: '/admin', isWeb: false),
+        '/',
+      );
+      expect(
+        adminAccessRedirectFor(
+          isAdmin: false,
+          path: '/admin/login',
+          isWeb: false,
+        ),
+        '/',
+      );
+      expect(
+        adminAccessRedirectFor(
+          isAdmin: false,
+          path: '/admin/review',
+          isWeb: false,
+        ),
+        '/',
+      );
+      expect(
+        authAndOnboardingRedirectFor(
+          path: '/admin',
+          isAuth: true,
+          showOnboarding: false,
+          isWeb: false,
+        ),
+        '/',
+      );
+      expect(
+        authAndOnboardingRedirectFor(
+          path: '/admin/login',
+          isAuth: false,
+          showOnboarding: false,
+          isWeb: false,
+        ),
+        '/',
+      );
+      expect(
+        adminHostRedirectFor('admin.olitun.in', '/', isWeb: false),
         isNull,
       );
     });

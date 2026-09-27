@@ -403,14 +403,6 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
       ),
       const SizedBox(height: 10),
       SettingTile(
-        icon: Icons.admin_panel_settings_rounded,
-        title: 'Admin Portal',
-        subtitle: 'Manage lesson contents and authored quizzes',
-        isDark: isDark,
-        onTap: () => context.go('/admin'),
-      ),
-      const SizedBox(height: 10),
-      SettingTile(
         icon: Icons.ads_click_rounded,
         title: 'Ad Privacy Choices',
         subtitle: 'Manage personalized ads and privacy preferences',

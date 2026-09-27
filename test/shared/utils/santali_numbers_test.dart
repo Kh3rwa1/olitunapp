@@ -20,14 +20,14 @@ void main() {
     }
   });
 
-  test('Santali names follow Gel/Isi/Pe Gel/Say counting', () {
+  test('Santali names follow Gel/Bar Gel/Pe Gel/Say counting', () {
     expect(SantaliNumbers.nameLatin(0), 'Sunya');
     expect(SantaliNumbers.nameLatin(1), 'Mit');
     expect(SantaliNumbers.nameLatin(10), 'Gel');
     expect(SantaliNumbers.nameLatin(11), 'Gel Mit');
     expect(SantaliNumbers.nameLatin(19), 'Gel Are');
-    expect(SantaliNumbers.nameLatin(20), 'Isi');
-    expect(SantaliNumbers.nameLatin(21), 'Isi Mit');
+    expect(SantaliNumbers.nameLatin(20), 'Bar Gel');
+    expect(SantaliNumbers.nameLatin(21), 'Bar Gel Mit');
     expect(SantaliNumbers.nameLatin(30), 'Pe Gel');
     expect(SantaliNumbers.nameLatin(42), 'Pun Gel Bar');
     expect(SantaliNumbers.nameLatin(99), 'Are Gel Are');
@@ -35,7 +35,8 @@ void main() {
 
     expect(SantaliNumbers.nameOlChiki(10), 'ᱜᱮᱞ');
     expect(SantaliNumbers.nameOlChiki(11), 'ᱜᱮᱞ ᱢᱤᱫ');
-    expect(SantaliNumbers.nameOlChiki(20), 'ᱤᱥᱤ');
+    expect(SantaliNumbers.nameOlChiki(20), 'ᱵᱟᱨ ᱜᱮᱞ');
+    expect(SantaliNumbers.nameOlChiki(21), 'ᱵᱟᱨ ᱜᱮᱞ ᱢᱤᱫ');
     expect(SantaliNumbers.nameOlChiki(30), 'ᱯᱮ ᱜᱮᱞ');
     expect(SantaliNumbers.nameOlChiki(100), 'ᱥᱟᱭ');
   });

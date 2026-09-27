@@ -6,6 +6,7 @@ import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/shared/models/content_item.dart';
 import '../multilingual_preview_box.dart';
 import 'content_form_card.dart';
+import 'ol_chiki_number_helper.dart';
 import 'ol_chiki_quick_picker.dart';
 
 class ContentFormIdentitySection extends StatelessWidget {
@@ -53,7 +54,7 @@ class ContentFormIdentitySection extends StatelessWidget {
   bool get _supportsPublished => kind != ContentKind.rhyme;
   bool get _supportsPremium =>
       kind == ContentKind.lesson || kind == ContentKind.rhyme;
-  bool get _supportsSubtitle => kind != ContentKind.number;
+  bool get _supportsSubtitle => true;
   bool get _supportsOrder => kind != ContentKind.rhyme;
   bool get _supportsTags => kind == ContentKind.rhyme;
 
@@ -103,19 +104,36 @@ class ContentFormIdentitySection extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
               ],
+              if (kind == ContentKind.number) ...[
+                OlChikiNumberHelper(
+                  isDark: isDark,
+                  titleController: titleController,
+                  titleOlChikiController: titleOlChikiController,
+                  subtitleController: subtitleController,
+                  olChikiController: olChikiController,
+                  orderController: orderController,
+                ),
+                const SizedBox(height: 14),
+              ],
               TextFormField(
                 controller: titleController,
                 decoration: InputDecoration(
                   labelText: kind == ContentKind.letter
                       ? 'Transliteration Latin (e.g. La (a))*'
+                      : kind == ContentKind.number
+                      ? 'Number Name in Latin (e.g. Bar Gel)*'
                       : 'Title / Romanized Santali (Latin)*',
                   hintText: kind == ContentKind.letter
                       ? 'e.g. La (a), At (t), Ag (g)'
+                      : kind == ContentKind.number
+                      ? 'e.g. Bar Gel, Mit, Gel Mit'
                       : 'e.g. Baba, Johar, In do kamiyedanj',
                 ),
                 validator: (val) => val == null || val.trim().isEmpty
                     ? (kind == ContentKind.letter
                           ? 'Latin transliteration is required'
+                          : kind == ContentKind.number
+                          ? 'Number name in Latin is required'
                           : 'Latin title is required')
                     : null,
               ),
@@ -150,9 +168,13 @@ class ContentFormIdentitySection extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: kind == ContentKind.letter
                         ? 'Alphabet Name / Title (Ol Chiki)'
+                        : kind == ContentKind.number
+                        ? 'Number Name in Ol Chiki (e.g. ᱵᱟᱨ ᱜᱮᱞ)'
                         : 'Title (Ol Chiki)',
                     hintText: kind == ContentKind.letter
                         ? 'e.g. ᱚ, ᱛ, ᱜ'
+                        : kind == ContentKind.number
+                        ? 'e.g. ᱵᱟᱨ ᱜᱮᱞ, ᱢᱤᱫ, ᱜᱮᱞ'
                         : 'e.g. ᱵᱟᱵᱟ, ᱡᱚᱦᱟᱨ',
                   ),
                   onChanged: (val) {
@@ -168,8 +190,14 @@ class ContentFormIdentitySection extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: kind == ContentKind.letter
                         ? 'Ol Chiki Character Glyph (e.g. ᱚ)*'
+                        : kind == ContentKind.number
+                        ? 'Ol Chiki Numeral (e.g. ᱒᱐)*'
                         : 'Ol Chiki Text / Glyph (e.g. ᱵᱟᱵᱟ, ᱚ)',
-                    hintText: kind == ContentKind.letter ? 'e.g. ᱚ' : null,
+                    hintText: kind == ContentKind.letter
+                        ? 'e.g. ᱚ'
+                        : kind == ContentKind.number
+                        ? 'e.g. ᱒᱐, ᱑, ᱑᱐'
+                        : null,
                   ),
                   onChanged: (val) {
                     if (kind == ContentKind.letter &&
@@ -177,11 +205,17 @@ class ContentFormIdentitySection extends StatelessWidget {
                       titleOlChikiController.text = val;
                     }
                   },
-                  validator: kind == ContentKind.letter
-                      ? (val) => val == null || val.trim().isEmpty
-                            ? 'Ol Chiki character is required'
-                            : null
-                      : null,
+                  validator: (val) {
+                    if (kind == ContentKind.letter &&
+                        (val == null || val.trim().isEmpty)) {
+                      return 'Ol Chiki character is required';
+                    }
+                    if (kind == ContentKind.number &&
+                        (val == null || val.trim().isEmpty)) {
+                      return 'Ol Chiki numeral is required';
+                    }
+                    return null;
+                  },
                 ),
               ],
 
@@ -192,12 +226,19 @@ class ContentFormIdentitySection extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: kind == ContentKind.letter
                         ? 'Example Word (e.g. Ol)'
+                        : kind == ContentKind.number
+                        ? 'English Meaning (e.g. Twenty)'
                         : 'English Meaning / Base Summary',
                     hintText: kind == ContentKind.letter
                         ? 'e.g. Ol, At, Ag, Al'
+                        : kind == ContentKind.number
+                        ? 'e.g. Twenty, Twenty-One, Zero'
                         : 'e.g. Father, Hello, I am working',
                   ),
-                  maxLines: kind == ContentKind.letter ? 1 : 2,
+                  maxLines:
+                      (kind == ContentKind.letter || kind == ContentKind.number)
+                      ? 1
+                      : 2,
                 ),
                 const SizedBox(height: 16),
               ],
@@ -313,10 +354,28 @@ class ContentFormIdentitySection extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: kind == ContentKind.letter
                         ? 'Alphabet Index (1-35)*'
+                        : kind == ContentKind.number
+                        ? 'Number Value / Decimal (0-100)*'
                         : 'Sort Order Index',
-                    hintText: kind == ContentKind.letter ? 'e.g. 1' : '0',
+                    hintText: kind == ContentKind.letter
+                        ? 'e.g. 1'
+                        : kind == ContentKind.number
+                        ? 'e.g. 20'
+                        : '0',
                   ),
                   keyboardType: TextInputType.number,
+                  validator: kind == ContentKind.number
+                      ? (val) {
+                          if (val == null || val.trim().isEmpty) {
+                            return 'Decimal value is required';
+                          }
+                          final n = int.tryParse(val.trim());
+                          if (n == null || n < 0 || n > 100) {
+                            return 'Must be between 0 and 100';
+                          }
+                          return null;
+                        }
+                      : null,
                 ),
                 const SizedBox(height: 16),
               ],

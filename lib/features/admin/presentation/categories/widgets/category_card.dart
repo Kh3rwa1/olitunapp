@@ -63,8 +63,14 @@ class CategoryCard extends StatelessWidget {
         category.iconName?.toLowerCase() == 'alphabet' ||
         category.id.contains('alphabet') ||
         category.titleLatin.toLowerCase().contains('alphabet');
+    final isNumber =
+        category.iconName?.toLowerCase() == 'numbers' ||
+        category.id.contains('number') ||
+        category.titleLatin.toLowerCase().contains('number');
     if (isAlphabet) {
       context.go('/admin/letters');
+    } else if (isNumber) {
+      context.go('/admin/numbers');
     } else {
       context.go('/admin/lessons?categoryId=${category.id}');
     }

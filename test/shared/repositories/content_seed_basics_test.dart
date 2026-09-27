@@ -114,7 +114,7 @@ void main() {
     }
     // Spot-check Santali counting names.
     expect(items[10].toNumberModel().nameLatin, 'Gel');
-    expect(items[20].toNumberModel().nameLatin, 'Isi');
+    expect(items[20].toNumberModel().nameLatin, 'Bar Gel');
     expect(items[100].toNumberModel().nameLatin, 'Say');
     expect(items[100].toNumberModel().numeral, '᱑᱐᱐');
   });

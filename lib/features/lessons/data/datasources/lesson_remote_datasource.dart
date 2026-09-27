@@ -204,8 +204,15 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     }
   }
 
-  List<String> _readPermissions(PublicationDecision decision) =>
-      decision.allowAnonymousRead ? [Permission.read(Role.any())] : const [];
+  List<String> _readPermissions(PublicationDecision decision) => [
+    Permission.update(Role.team(AppwriteConfig.adminTeamId)),
+    Permission.delete(Role.team(AppwriteConfig.adminTeamId)),
+    Permission.read(Role.team(AppwriteConfig.adminTeamId)),
+    if (decision.allowAnonymousRead)
+      Permission.read(Role.any())
+    else
+      Permission.read(Role.users()),
+  ];
 
   @override
   Future<void> createLesson(LessonModel lesson) async {

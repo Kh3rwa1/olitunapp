@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:itun/core/logging/app_logger.dart';
 
+import '../../utils/santali_numbers.dart';
 import 'content_block.dart';
 import 'content_enums.dart';
 import 'content_item_model.dart';
@@ -331,7 +332,7 @@ class ContentItemSerialization {
       coverMediaType: coverMediaType,
       blocks: parsedBlocks,
       tracing: parsedTracing,
-      order: json['order'] as int? ?? 0,
+      order: json['order'] as int? ?? json['value'] as int? ?? 0,
       isPublished:
           json['is_published'] as bool? ??
           json['isPublished'] as bool? ??
@@ -463,12 +464,16 @@ class ContentItemSerialization {
         };
 
       case ContentKind.number:
+        final resolvedVal =
+            SantaliNumbers.tryParseValue(item.olChiki, item.title) ??
+            int.tryParse(item.title) ??
+            item.order;
         return {
           'numeral': item.olChiki ?? resolvedTitleOlChiki,
-          'value': int.tryParse(item.title) ?? item.order,
+          'value': resolvedVal,
           'nameOlChiki': resolvedTitleOlChiki,
           'nameLatin': item.title,
-          'order': item.order,
+          'order': item.order != 0 ? item.order : resolvedVal,
           'isActive': item.isPublished,
           'audioUrl': legacyAudioUrl,
           'imageUrl': imageUrl,

@@ -307,30 +307,37 @@ class OlChikiMultilingualHelper {
 
       final String transliteration = switch (teachingLanguage) {
         'bn' =>
-          (textBengali?.trim().isNotEmpty == true)
+          _isValidNumberPronunciationOverride(textBengali, 'bn')
               ? textBengali!.trim()
-              : ((explicitPronunciation?.trim().isNotEmpty == true &&
-                        _isMatchingScript(explicitPronunciation!.trim(), 'bn'))
-                    ? explicitPronunciation.trim()
+              : (_isValidNumberPronunciationOverride(
+                      explicitPronunciation,
+                      'bn',
+                    )
+                    ? explicitPronunciation!.trim()
                     : SantaliNumbers.pronunciation(numberValue, 'bn')),
         'hi' =>
-          (textHindi?.trim().isNotEmpty == true)
+          _isValidNumberPronunciationOverride(textHindi, 'hi')
               ? textHindi!.trim()
-              : ((explicitPronunciation?.trim().isNotEmpty == true &&
-                        _isMatchingScript(explicitPronunciation!.trim(), 'hi'))
-                    ? explicitPronunciation.trim()
+              : (_isValidNumberPronunciationOverride(
+                      explicitPronunciation,
+                      'hi',
+                    )
+                    ? explicitPronunciation!.trim()
                     : SantaliNumbers.pronunciation(numberValue, 'hi')),
         'or' =>
-          (textOdia?.trim().isNotEmpty == true)
+          _isValidNumberPronunciationOverride(textOdia, 'or')
               ? textOdia!.trim()
-              : ((explicitPronunciation?.trim().isNotEmpty == true &&
-                        _isMatchingScript(explicitPronunciation!.trim(), 'or'))
-                    ? explicitPronunciation.trim()
+              : (_isValidNumberPronunciationOverride(
+                      explicitPronunciation,
+                      'or',
+                    )
+                    ? explicitPronunciation!.trim()
                     : SantaliNumbers.pronunciation(numberValue, 'or')),
         'sat' => '',
         _ =>
-          (explicitPronunciation?.trim().isNotEmpty == true)
-              ? explicitPronunciation!.trim()
+          (explicitPronunciation?.trim().isNotEmpty == true &&
+                  !explicitPronunciation!.toLowerCase().contains('isi'))
+              ? explicitPronunciation.trim()
               : SantaliNumbers.pronunciation(numberValue, 'en'),
       };
 
@@ -339,7 +346,12 @@ class OlChikiMultilingualHelper {
         localizedMeaning = '';
       } else if (explicitMeaning != null && explicitMeaning.trim().isNotEmpty) {
         final exp = explicitMeaning.trim();
-        if (teachingLanguage == 'en') {
+        if (RegExp(r'^[\d০-৯०-९୦-୯\s–—\-]+$').hasMatch(exp)) {
+          localizedMeaning = SantaliNumbers.teachingLanguageName(
+            numberValue,
+            teachingLanguage,
+          );
+        } else if (teachingLanguage == 'en') {
           localizedMeaning = exp;
         } else if (_isMatchingScript(exp, teachingLanguage)) {
           localizedMeaning = exp;
@@ -531,6 +543,24 @@ class OlChikiMultilingualHelper {
       title: title,
       ctaText: ctaText,
     );
+  }
+
+  static bool _isValidNumberPronunciationOverride(
+    String? text,
+    String targetLang,
+  ) {
+    if (text == null) return false;
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return false;
+    if (RegExp(r'^[\d০-৯०-९୦-୯\s–—\-]+$').hasMatch(trimmed)) return false;
+    final lower = trimmed.toLowerCase();
+    if (lower.contains('isi') ||
+        trimmed.contains('ইসি') ||
+        trimmed.contains('इसी') ||
+        trimmed.contains('ଇସି')) {
+      return false;
+    }
+    return _isMatchingScript(trimmed, targetLang);
   }
 
   static bool _isMatchingScript(String text, String lang) {

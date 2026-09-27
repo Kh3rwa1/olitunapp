@@ -55,4 +55,25 @@ Running log of work completed, verified findings, architectural decisions, skipp
 - [x] Repository and git history bloat identified
 - [x] 13 CI gate scripts and `custom_lint` verified
 - [x] `BASELINE.md` committed and verified
+- [x] PR #410 merged to `main`
+
+---
+
+## Phase 1 — Quick Wins & Critical Fixes
+
+### 1. Checkout Lockout Hotfix (`PROTECTED`)
+- **Server Fix (`PR #411`, branch `fix/checkout-lockout-server-hotfix`)**:
+  - Implemented recovery logic for payment attempts stuck in `status: 'failed'` or stale `in_progress` (>30s) with `providerOrderId: null`.
+  - Named constants defined: `LEASE_DURATION_MS = 30000` and `STALE_RESERVATION_TIMEOUT_MS = 30000` (derived from 2x 12s gateway network timeout and 15s function budget).
+  - Concurrency safe: pre-check on document state, candidate lease owner election, 10ms settling delay, and verification read before proceeding to Razorpay API.
+  - Marked attempt as `failed` on rate-limit ceiling (429) to prevent permanent lockout after window reset.
+  - Expanded test suite `functions/test/create_razorpay_order.test.js` with tests 8a–8e covering 5xx retry, stale recovery, active lease 409 rejection, rate limit recovery, and 20 simultaneous concurrent retries creating exactly one Razorpay order.
+  - Deployment note included with Appwrite CLI deploy command and query to audit stuck attempts in production.
+- **Client Fix (`fix/client-checkout-idempotency`)**:
+  - In `lib/shared/widgets/paywall_bottom_sheet.dart`, generate a UUID v4 `_idempotencyKey` on sheet mount.
+  - Pass `idempotencyKey: _idempotencyKey` to `createRazorpayOrder`.
+  - Transient retries of the same intent (tapping button again on same sheet) reuse the same `_idempotencyKey`.
+  - Opening a fresh bottom sheet generates a new UUID.
+  - Added comprehensive `functions/createRazorpayOrder/README.md` documenting the idempotency contract, state machine, and concurrency rules.
+  - Added widget tests in `test/shared/widgets/paywall/paywall_bottom_sheet_test.dart` verifying intent-scoped key lifecycle.
 

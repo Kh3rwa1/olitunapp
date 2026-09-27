@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
@@ -279,5 +280,101 @@ void main() {
         expect(find.text('Rate & Share Feedback'), findsNothing);
       },
     );
+
+    testWidgets(
+      'PaywallBottomSheet sends intent-scoped idempotencyKey and preserves it across transient retries',
+      (tester) async {
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        final fakeRepo = FakePurchaseRepository();
+
+        Widget buildHarness({Key? key}) => ProviderScope(
+              overrides: [
+                currentUserProvider.overrideWith(
+                  (ref) => Future.value(
+                    const UserEntity(
+                      id: 'user_idem_test',
+                      email: 'idem@olitun.com',
+                      name: 'Idem Student',
+                    ),
+                  ),
+                ),
+                appSettingsProvider.overrideWith(
+                  (ref) =>
+                      Future.value({'global_review_unlock_enabled': 'true'}),
+                ),
+                purchasedCategoriesProvider.overrideWith(
+                  (ref) => Future.value(<String>{}),
+                ),
+                purchaseRepositoryProvider.overrideWithValue(fakeRepo),
+              ],
+              child: l10nApp(
+                child: Scaffold(
+                  body: PaywallBottomSheet(
+                    key: key,
+                    category: testCategory,
+                  ),
+                ),
+              ),
+            );
+
+        // 1. Initial attempt on sheet
+        await tester.pumpWidget(buildHarness(key: const ValueKey('sheet_1')));
+        await tester.pumpAndSettle();
+
+        await tester.ensureVisible(find.text('Unlock Course (₹299)'));
+        await tester.tap(find.text('Unlock Course (₹299)'));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.capturedIdempotencyKeys.length, 1);
+        final firstKey = fakeRepo.capturedIdempotencyKeys.first;
+        expect(firstKey, isNotNull);
+        expect(firstKey!.isNotEmpty, isTrue);
+
+        // 2. Retry of the same intent on transient failure (tapping button again on same sheet)
+        await tester.tap(find.text('Unlock Course (₹299)'));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.capturedIdempotencyKeys.length, 2);
+        expect(
+          fakeRepo.capturedIdempotencyKeys[1],
+          equals(firstKey),
+          reason: 'Transient retry MUST reuse the exact same idempotencyKey',
+        );
+
+        // 3. New sheet open generates a new idempotencyKey
+        await tester.pumpWidget(buildHarness(key: const ValueKey('sheet_2')));
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.text('Unlock Course (₹299)'));
+        await tester.pumpAndSettle();
+
+        expect(fakeRepo.capturedIdempotencyKeys.length, 3);
+        final newSheetKey = fakeRepo.capturedIdempotencyKeys[2];
+        expect(newSheetKey, isNotNull);
+        expect(
+          newSheetKey,
+          isNot(equals(firstKey)),
+          reason: 'A fresh sheet open MUST generate a fresh idempotencyKey',
+        );
+      },
+    );
   });
 }
+
+class FakePurchaseRepository extends Fake implements PurchaseRepository {
+  final List<String?> capturedIdempotencyKeys = [];
+
+  @override
+  Future<Map<String, dynamic>> createRazorpayOrder(
+    String categoryId, {
+    String? idempotencyKey,
+  }) async {
+    capturedIdempotencyKeys.add(idempotencyKey);
+    return {'ok': false, 'message': 'Simulated network timeout'};
+  }
+}
+

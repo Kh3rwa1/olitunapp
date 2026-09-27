@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/ads/widgets/native_ad_widget.dart';
 import '../../core/logging/app_logger.dart';
@@ -22,8 +23,13 @@ import 'paywall/paywall_value_props.dart';
 
 class PaywallBottomSheet extends ConsumerStatefulWidget {
   final CategoryEntity category;
+  final String? initialIdempotencyKey;
 
-  const PaywallBottomSheet({super.key, required this.category});
+  const PaywallBottomSheet({
+    super.key,
+    required this.category,
+    this.initialIdempotencyKey,
+  });
 
   @override
   ConsumerState<PaywallBottomSheet> createState() => _PaywallBottomSheetState();
@@ -31,8 +37,15 @@ class PaywallBottomSheet extends ConsumerStatefulWidget {
 
 class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
   final RazorpayService _razorpayService = RazorpayService();
+  late final String _idempotencyKey;
   bool _isLoading = false;
   String? _statusMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _idempotencyKey = widget.initialIdempotencyKey ?? const Uuid().v4();
+  }
 
   @override
   void dispose() {
@@ -60,7 +73,10 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
     try {
       // 1. Create Razorpay order on server based on official category price
-      final orderResult = await repo.createRazorpayOrder(widget.category.id);
+      final orderResult = await repo.createRazorpayOrder(
+        widget.category.id,
+        idempotencyKey: _idempotencyKey,
+      );
       if (orderResult['ok'] != true) {
         _showError(orderResult['message'] ?? l10n.failedToCreateOrder);
         return;
@@ -166,6 +182,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(currentUserProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenHeight = MediaQuery.of(context).size.height;
 

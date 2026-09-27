@@ -159,7 +159,8 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
   }
 
   void _onMouseEnter(PointerEnterEvent _) {
-    if (!kIsWeb && Theme.of(context).platform != TargetPlatform.macOS &&
+    if (!kIsWeb &&
+        Theme.of(context).platform != TargetPlatform.macOS &&
         Theme.of(context).platform != TargetPlatform.windows &&
         Theme.of(context).platform != TargetPlatform.linux) {
       return;
@@ -214,7 +215,9 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
                     colors: [
                       (widget.light ? Colors.white : AppColors.primary)
                           .withValues(alpha: isDark ? 0.25 : 0.16),
-                      (widget.light ? AppColors.voiceTeal : AppColors.bakhedGlowBlue)
+                      (widget.light
+                              ? AppColors.voiceTeal
+                              : AppColors.bakhedGlowBlue)
                           .withValues(alpha: isDark ? 0.12 : 0.08),
                       Colors.transparent,
                     ],
@@ -275,10 +278,7 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
                     widget.subheadText!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: secondaryTextColor,
-                    ),
+                    style: TextStyle(fontSize: 11, color: secondaryTextColor),
                   ),
                 ],
               ],
@@ -307,7 +307,9 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 250),
           child: Text(
-            _tapCount > 0 ? _sparkTips[_tipIndex] : (widget.subheadText ?? 'Tap the AI Spark while you wait ✨'),
+            _tapCount > 0
+                ? _sparkTips[_tipIndex]
+                : (widget.subheadText ?? 'Tap the AI Spark while you wait ✨'),
             key: ValueKey('spark-tip-$_tapCount-$_tipIndex'),
             textAlign: TextAlign.center,
             style: TextStyle(

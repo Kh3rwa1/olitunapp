@@ -29,14 +29,13 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('AiSparkAssistant compact mode renders inline row', (tester) async {
+  testWidgets('AiSparkAssistant compact mode renders inline row', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       const MaterialApp(
         home: Scaffold(
-          body: AiSparkAssistant(
-            statusText: 'Transcribing…',
-            compact: true,
-          ),
+          body: AiSparkAssistant(statusText: 'Transcribing…', compact: true),
         ),
       ),
     );

@@ -250,7 +250,8 @@ class VoicePlayerFace extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: AiSparkAssistant(
                     statusText: l10n.voiceCreatingBack,
-                    subheadText: 'Giving your words a Santali voice… Tap spark ✨',
+                    subheadText:
+                        'Giving your words a Santali voice… Tap spark ✨',
                     size: 80,
                     light: true,
                   ),

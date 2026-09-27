@@ -33,8 +33,12 @@ extension _AiStudioResult on _AiStudioScreenState {
       ],
     );
 
-    final isProcessing = draft.busy ||
-        (_tool == _Tool.scan && job != null && !job.isTerminal && job.text.isEmpty);
+    final isProcessing =
+        draft.busy ||
+        (_tool == _Tool.scan &&
+            job != null &&
+            !job.isTerminal &&
+            job.text.isEmpty);
 
     Widget body;
     if (isProcessing) {
@@ -46,9 +50,10 @@ extension _AiStudioResult on _AiStudioScreenState {
       final subhead = switch (_tool) {
         _Tool.transcribe => 'Transcribing speech to text… Tap spark ✨',
         _Tool.translate => 'Translating text into Santali… Tap spark ✨',
-        _Tool.scan => job != null
-            ? 'Scan status: ${job.status} • Job: ${job.id}'
-            : 'Extracting text from document… Tap spark ✨',
+        _Tool.scan =>
+          job != null
+              ? 'Scan status: ${job.status} • Job: ${job.id}'
+              : 'Extracting text from document… Tap spark ✨',
       };
       body = Center(
         child: Padding(
@@ -61,11 +66,16 @@ extension _AiStudioResult on _AiStudioScreenState {
                 subheadText: subhead,
                 size: isMobile ? 116 : 140,
               ),
-              if (_tool == _Tool.scan && job != null && !job.isTerminal && !draft.auto) ...[
+              if (_tool == _Tool.scan &&
+                  job != null &&
+                  !job.isTerminal &&
+                  !draft.auto) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   key: const Key('studio-check-status'),
-                  onPressed: draft.busy || !ref.watch(aiStudioServiceProvider).configured
+                  onPressed:
+                      draft.busy ||
+                          !ref.watch(aiStudioServiceProvider).configured
                       ? null
                       : () => _process(checkStatus: true),
                   icon: const Icon(Icons.refresh_rounded, size: 15),

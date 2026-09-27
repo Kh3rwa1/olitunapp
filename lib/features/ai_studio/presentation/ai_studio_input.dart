@@ -169,7 +169,9 @@ extension _AiStudioInput on _AiStudioScreenState {
               subheadText: isMobile ? 'Tap to view animated spark ➔' : null,
               compact: true,
               size: 28,
-              onTap: isMobile ? () => unawaited(_flipTo(showResult: true)) : null,
+              onTap: isMobile
+                  ? () => unawaited(_flipTo(showResult: true))
+                  : null,
             ),
           ),
           const SizedBox(height: 8),

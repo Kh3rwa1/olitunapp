@@ -200,46 +200,46 @@ void main() {
     test(
       'respects explicit pronunciation and meaning overrides on number blocks across languages',
       () {
-        // Bengali override for 20 (Bar gel / 20)
+        // Bengali override for 20 (Bar gel)
         final displayBn = OlChikiMultilingualHelper.resolveBlockDisplay(
           textOlChiki: '᱒᱐',
           textLatin: '20 - Bar gel',
-          textBengali: '২০',
-          explicitMeaning: 'বার গেল',
+          textBengali: 'বার গেল',
+          explicitMeaning: 'বিশ (২০)',
           teachingLanguage: 'bn',
           scriptMode: 'both',
         );
-        expect(displayBn.title, 'বার গেল');
+        expect(displayBn.title, 'বিশ (২০)');
         expect(displayBn.scriptText, '᱒᱐');
-        expect(displayBn.subtitle, '২০');
+        expect(displayBn.subtitle, 'বার গেল');
         expect(displayBn.ctaText, 'শুনুন');
 
-        // Hindi override for 20 (Bar gel / 20)
+        // Hindi override for 20 (Bar gel)
         final displayHi = OlChikiMultilingualHelper.resolveBlockDisplay(
           textOlChiki: '᱒᱐',
           textLatin: '20 - Bar gel',
-          textHindi: '२०',
-          explicitMeaning: 'बार गेल',
+          textHindi: 'बार गेल',
+          explicitMeaning: 'बीस (२०)',
           teachingLanguage: 'hi',
           scriptMode: 'both',
         );
-        expect(displayHi.title, 'बार गेल');
+        expect(displayHi.title, 'बीस (२०)');
         expect(displayHi.scriptText, '᱒᱐');
-        expect(displayHi.subtitle, '२०');
+        expect(displayHi.subtitle, 'बार गेल');
         expect(displayHi.ctaText, 'सुनें');
 
-        // Odia override for 20 (Bar gel / 20)
+        // Odia override for 20 (Bar gel)
         final displayOr = OlChikiMultilingualHelper.resolveBlockDisplay(
           textOlChiki: '᱒᱐',
           textLatin: '20 - Bar gel',
-          textOdia: '୨୦',
-          explicitMeaning: 'ବାର ଗେଲ୍',
+          textOdia: 'ବାର୍ ଗେଲ୍',
+          explicitMeaning: 'କୋଡ଼ିଏ (୨୦)',
           teachingLanguage: 'or',
           scriptMode: 'both',
         );
-        expect(displayOr.title, 'ବାର ଗେଲ୍');
+        expect(displayOr.title, 'କୋଡ଼ିଏ (୨୦)');
         expect(displayOr.scriptText, '᱒᱐');
-        expect(displayOr.subtitle, '୨୦');
+        expect(displayOr.subtitle, 'ବାର୍ ଗେଲ୍');
         expect(displayOr.ctaText, 'ଶୁଣନ୍ତୁ');
 
         // English override for 20 (Bar gel)
@@ -255,6 +255,51 @@ void main() {
         expect(displayEn.scriptText, '᱒᱐');
         expect(displayEn.subtitle, 'Bar gel');
         expect(displayEn.ctaText, 'LISTEN');
+      },
+    );
+
+    test(
+      'rejects pure numerals and obsolete Isi counting from pronunciation overrides and falls back to Bar Gel',
+      () {
+        // Bengali pure digits '২০'
+        final displayBnDigits = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textBengali: '২০',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+        expect(displayBnDigits.subtitle, 'বার গেল');
+
+        // Bengali obsolete Isi 'ইসি মিৎ' on 21
+        final displayBnIsi = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱑',
+          textLatin: '21 - Twenty-One',
+          textBengali: 'ইসি মিৎ',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+        expect(displayBnIsi.subtitle, 'বার গেল মিৎ');
+
+        // Hindi obsolete Isi 'इसी' on 20
+        final displayHiIsi = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Twenty',
+          textHindi: 'इसी',
+          teachingLanguage: 'hi',
+          scriptMode: 'both',
+        );
+        expect(displayHiIsi.subtitle, 'बार गेल');
+
+        // Odia pure digits '୨୦'
+        final displayOrDigits = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: '᱒᱐',
+          textLatin: '20 - Bar gel',
+          textOdia: '୨୦',
+          teachingLanguage: 'or',
+          scriptMode: 'both',
+        );
+        expect(displayOrDigits.subtitle, 'ବାର୍ ଗେଲ୍');
       },
     );
   });
@@ -280,8 +325,8 @@ void main() {
           type: 'text',
           textOlChiki: '᱒᱐',
           textLatin: '20 - Bar gel',
-          textBengali: '২০',
-          data: {'meaning_bn': 'বার গেল'},
+          textBengali: 'বার গেল',
+          data: {'meaning_bn': 'বিশ (২০)'},
         ),
       ],
     );
@@ -318,11 +363,11 @@ void main() {
         await tester.pumpAndSettle();
 
         // Top title in teaching language uses explicit override
-        expect(find.text('বার গেল'), findsOneWidget);
+        expect(find.text('বিশ (২০)'), findsOneWidget);
         // Main numeral card
         expect(find.text('᱒᱐'), findsWidgets);
         // Subtitle pronunciation in Bengali script uses explicit override
-        expect(find.text('২০'), findsOneWidget);
+        expect(find.text('বার গেল'), findsOneWidget);
       },
     );
 

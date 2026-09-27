@@ -18105,11 +18105,19 @@
         "order": 4,
         "type": "text",
         "markdown": "14 – Fourteen",
-        "textOlChiki": "᱑૪",
+        "textOlChiki": "᱑᱔",
         "textLatin": "14 – Fourteen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e844c2c09d9f17c/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e844c2c09d9f17c/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e844c2c09d9f17c/view?project=699495910038e39622c5",
+          "textBengali": "১৪",
+          "textHindi": "१४",
+          "textOdia": "୧୪",
+          "meaning": "Fourteen",
+          "meaning_en": "Fourteen",
+          "meaning_bn": "১৪",
+          "meaning_hi": "१४",
+          "meaning_or": "୧୪"
         }
       },
       {
@@ -18117,11 +18125,17 @@
         "order": 5,
         "type": "text",
         "markdown": "15 – Fifteen",
-        "textOlChiki": "᱑૫",
+        "textOlChiki": "᱑᱕",
         "textLatin": "15 – Fifteen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e961b198dfe71e4/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e961b198dfe71e4/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225e961b198dfe71e4/view?project=699495910038e39622c5",
+          "textBengali": "১৫",
+          "textHindi": "१५",
+          "textOdia": "୧୫",
+          "pronunciation": "15 – Fifteen",
+          "meaning": "Fifteen",
+          "meaning_en": "Fifteen"
         }
       },
       {
@@ -18129,11 +18143,17 @@
         "order": 6,
         "type": "text",
         "markdown": "16 – Sixteen",
-        "textOlChiki": "᱑૬",
+        "textOlChiki": "᱑᱖",
         "textLatin": "16 – Sixteen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22604b6e5a0aedd3bb/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22604b6e5a0aedd3bb/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22604b6e5a0aedd3bb/view?project=699495910038e39622c5",
+          "textBengali": "১৬",
+          "textHindi": "१६",
+          "textOdia": "୧୬",
+          "pronunciation": "16 – Sixteen",
+          "meaning": "Sixteen",
+          "meaning_en": "Sixteen"
         }
       },
       {
@@ -18141,11 +18161,17 @@
         "order": 7,
         "type": "text",
         "markdown": "17 – Seventeen",
-        "textOlChiki": "᱑૭",
+        "textOlChiki": "᱑᱗",
         "textLatin": "17 – Seventeen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225f8f88f68d1dc703/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225f8f88f68d1dc703/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225f8f88f68d1dc703/view?project=699495910038e39622c5",
+          "textBengali": "১৭",
+          "textHindi": "१७",
+          "textOdia": "୧୭",
+          "pronunciation": "17 – Seventeen",
+          "meaning": "Seventeen",
+          "meaning_en": "Seventeen"
         }
       },
       {
@@ -18153,11 +18179,17 @@
         "order": 8,
         "type": "text",
         "markdown": "18 – Eighteen",
-        "textOlChiki": "᱑૮",
+        "textOlChiki": "᱑᱘",
         "textLatin": "18 – Eighteen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22603679d385c9af5c/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22603679d385c9af5c/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22603679d385c9af5c/view?project=699495910038e39622c5",
+          "textBengali": "১৮",
+          "textHindi": "१८",
+          "textOdia": "୧୮",
+          "pronunciation": "18 – Eighteen",
+          "meaning": "Eighteen",
+          "meaning_en": "Eighteen"
         }
       },
       {
@@ -18165,23 +18197,41 @@
         "order": 9,
         "type": "text",
         "markdown": "19 – Nineteen",
-        "textOlChiki": "᱑૯",
+        "textOlChiki": "᱑᱙",
         "textLatin": "19 – Nineteen",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225fd54ca903e4f635/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225fd54ca903e4f635/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225fd54ca903e4f635/view?project=699495910038e39622c5",
+          "textBengali": "১৯",
+          "textHindi": "१९",
+          "textOdia": "୧୯",
+          "pronunciation": "19 – Nineteen",
+          "meaning": "Nineteen",
+          "meaning_en": "Nineteen"
         }
       },
       {
         "id": "",
         "order": 10,
         "type": "text",
-        "markdown": "20 – Twenty",
+        "markdown": "20 – Bar Gel",
         "textOlChiki": "᱒᱐",
-        "textLatin": "20 – Twenty",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225ef14bed8faddd31/view?project=699495910038e39622c5",
+        "textLatin": "20 – Bar Gel",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_20/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225ef14bed8faddd31/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_20/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল",
+          "textHindi": "बार गेल",
+          "textOdia": "ବାର୍ ଗେଲ୍",
+          "pronunciation": "20 – Bar Gel",
+          "pronunciation_bn": "বার গেল",
+          "pronunciation_hi": "बार गेल",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍",
+          "meaning": "Twenty",
+          "meaning_en": "Twenty (20)",
+          "meaning_bn": "বিশ (২০)",
+          "meaning_hi": "बीस (२०)",
+          "meaning_or": "କୋଡ଼ିଏ (୨୦)"
         }
       }
     ],
@@ -18804,115 +18854,289 @@
     "audioUrl": null,
     "blocks": [
       {
+        "id": "",
+        "order": 0,
         "type": "text",
+        "markdown": "21 – Bar Gel Mit",
         "textOlChiki": "᱒᱑",
-        "textLatin": "21 – Twenty-One",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_0/view?project=699495910038e39622c5",
+        "textLatin": "21 – Bar Gel Mit",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_21/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_0/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_21/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল মিৎ",
+          "textHindi": "बार गेल मित",
+          "textOdia": "ବାର୍ ଗେଲ୍ ମିତ୍",
+          "pronunciation": "21 – Bar Gel Mit",
+          "pronunciation_bn": "বার গেল মিৎ",
+          "pronunciation_hi": "बार गेल मित",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ମିତ୍",
+          "meaning": "Twenty-One",
+          "meaning_en": "Twenty-One (21)",
+          "meaning_bn": "একুশ (২১)",
+          "meaning_hi": "इक्कीस (२१)",
+          "meaning_or": "ଏକୋଇଶ (୨୧)"
         }
       },
       {
+        "id": "",
+        "order": 1,
         "type": "text",
+        "markdown": "22 – Bar Gel Bar",
         "textOlChiki": "᱒᱒",
-        "textLatin": "22 – Twenty-Two",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_1/view?project=699495910038e39622c5",
+        "textLatin": "22 – Bar Gel Bar",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_22/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_1/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_22/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল বার",
+          "textHindi": "बार गेल बार",
+          "textOdia": "ବାର୍ ଗେଲ୍ ବାର୍",
+          "pronunciation": "22 – Bar Gel Bar",
+          "pronunciation_bn": "বার গেল বার",
+          "pronunciation_hi": "बार गेल बार",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ବାର୍",
+          "meaning": "Twenty-Two",
+          "meaning_en": "Twenty-Two (22)",
+          "meaning_bn": "বাইশ (২২)",
+          "meaning_hi": "बाईस (२२)",
+          "meaning_or": "ବାଇଶ (୨୨)"
         }
       },
       {
+        "id": "",
+        "order": 2,
         "type": "text",
+        "markdown": "23 – Bar Gel Pe",
         "textOlChiki": "᱒᱓",
-        "textLatin": "23 – Twenty-Three",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_2/view?project=699495910038e39622c5",
+        "textLatin": "23 – Bar Gel Pe",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_23/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_2/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_23/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল পে",
+          "textHindi": "बार गेल पे",
+          "textOdia": "ବାର୍ ଗେଲ୍ ପେ",
+          "pronunciation": "23 – Bar Gel Pe",
+          "pronunciation_bn": "বার গেল পে",
+          "pronunciation_hi": "बार गेल पे",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ପେ",
+          "meaning": "Twenty-Three",
+          "meaning_en": "Twenty-Three (23)",
+          "meaning_bn": "তেইশ (২৩)",
+          "meaning_hi": "तेईस (२३)",
+          "meaning_or": "ତେଇଶ (୨୩)"
         }
       },
       {
+        "id": "",
+        "order": 3,
         "type": "text",
+        "markdown": "24 – Bar Gel Pun",
         "textOlChiki": "᱒᱔",
-        "textLatin": "24 – Twenty-Four",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_3/view?project=699495910038e39622c5",
+        "textLatin": "24 – Bar Gel Pun",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_24/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_3/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_24/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল পুন",
+          "textHindi": "बार गेल पुन",
+          "textOdia": "ବାର୍ ଗେଲ୍ ପୁନ୍",
+          "pronunciation": "24 – Bar Gel Pun",
+          "pronunciation_bn": "বার গেল পুন",
+          "pronunciation_hi": "बार गेल पुन",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ପୁନ୍",
+          "meaning": "Twenty-Four",
+          "meaning_en": "Twenty-Four (24)",
+          "meaning_bn": "চব্বিশ (২৪)",
+          "meaning_hi": "चौबीस (२४)",
+          "meaning_or": "ଚବିଶ (୨୪)"
         }
       },
       {
+        "id": "",
+        "order": 4,
         "type": "text",
+        "markdown": "25 – Bar Gel Mone",
         "textOlChiki": "᱒᱕",
-        "textLatin": "25 – Twenty-Five",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_4/view?project=699495910038e39622c5",
+        "textLatin": "25 – Bar Gel Mone",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_25/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_4/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_25/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল মণে",
+          "textHindi": "बार गेल मणे",
+          "textOdia": "ବାର୍ ଗେଲ୍ ମଣେ",
+          "pronunciation": "25 – Bar Gel Mone",
+          "pronunciation_bn": "বার গেল মণে",
+          "pronunciation_hi": "बार गेल मणे",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ମଣେ",
+          "meaning": "Twenty-Five",
+          "meaning_en": "Twenty-Five (25)",
+          "meaning_bn": "পঁচিশ (২৫)",
+          "meaning_hi": "पच्चीस (२५)",
+          "meaning_or": "ପଚିଶ (୨୫)"
         }
       },
       {
+        "id": "",
+        "order": 5,
         "type": "text",
+        "markdown": "26 – Bar Gel Turui",
         "textOlChiki": "᱒᱖",
-        "textLatin": "26 – Twenty-Six",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_5/view?project=699495910038e39622c5",
+        "textLatin": "26 – Bar Gel Turui",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_26/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_5/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_26/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল তুরুয়",
+          "textHindi": "बार गेल तुरुय",
+          "textOdia": "ବାର୍ ଗେଲ୍ ତୁରୁୟ",
+          "pronunciation": "26 – Bar Gel Turui",
+          "pronunciation_bn": "বার গেল তুরুয়",
+          "pronunciation_hi": "बार गेल तुरुय",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ତୁରୁୟ",
+          "meaning": "Twenty-Six",
+          "meaning_en": "Twenty-Six (26)",
+          "meaning_bn": "ছাব্বিশ (২৬)",
+          "meaning_hi": "छब्बीस (२६)",
+          "meaning_or": "ଛବିଶ (୨୬)"
         }
       },
       {
+        "id": "",
+        "order": 6,
         "type": "text",
+        "markdown": "27 – Bar Gel Eae",
         "textOlChiki": "᱒᱗",
-        "textLatin": "27 – Twenty-Seven",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_6/view?project=699495910038e39622c5",
+        "textLatin": "27 – Bar Gel Eae",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_27/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_6/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_27/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল এয়ায়",
+          "textHindi": "बार गेल एयाय",
+          "textOdia": "ବାର୍ ଗେଲ୍ ଏୟାୟ",
+          "pronunciation": "27 – Bar Gel Eae",
+          "pronunciation_bn": "বার গেল এয়ায়",
+          "pronunciation_hi": "बार गेल एयाय",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ଏୟାୟ",
+          "meaning": "Twenty-Seven",
+          "meaning_en": "Twenty-Seven (27)",
+          "meaning_bn": "সাতাশ (২৭)",
+          "meaning_hi": "सत्ताईस (२७)",
+          "meaning_or": "ସତାଇଶ (୨୭)"
         }
       },
       {
+        "id": "",
+        "order": 7,
         "type": "text",
+        "markdown": "28 – Bar Gel Iral",
         "textOlChiki": "᱒᱘",
-        "textLatin": "28 – Twenty-Eight",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_7/view?project=699495910038e39622c5",
+        "textLatin": "28 – Bar Gel Iral",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_28/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_7/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_28/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল ইরল",
+          "textHindi": "बार गेल इरल",
+          "textOdia": "ବାର୍ ଗେଲ୍ ଇରଲ୍",
+          "pronunciation": "28 – Bar Gel Iral",
+          "pronunciation_bn": "বার গেল ইরল",
+          "pronunciation_hi": "बार गेल इरल",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ଇରଲ୍",
+          "meaning": "Twenty-Eight",
+          "meaning_en": "Twenty-Eight (28)",
+          "meaning_bn": "আঠাশ (২৮)",
+          "meaning_hi": "अट्ठाईस (२८)",
+          "meaning_or": "ଅଠାଇଶ (୨୮)"
         }
       },
       {
+        "id": "",
+        "order": 8,
         "type": "text",
+        "markdown": "29 – Bar Gel Are",
         "textOlChiki": "᱒᱙",
-        "textLatin": "29 – Twenty-Nine",
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_8/view?project=699495910038e39622c5",
+        "textLatin": "29 – Bar Gel Are",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_29/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_8/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/num_n_29/view?project=699495910038e39622c5",
+          "textBengali": "বার গেল আরে",
+          "textHindi": "बार गेल आरे",
+          "textOdia": "ବାର୍ ଗେଲ୍ ଆରେ",
+          "pronunciation": "29 – Bar Gel Are",
+          "pronunciation_bn": "বার গেল আরে",
+          "pronunciation_hi": "बार गेल आरे",
+          "pronunciation_or": "ବାର୍ ଗେଲ୍ ଆରେ",
+          "meaning": "Twenty-Nine",
+          "meaning_en": "Twenty-Nine (29)",
+          "meaning_bn": "উনত্রিশ (২৯)",
+          "meaning_hi": "उनतीस (२९)",
+          "meaning_or": "ଅଣତିରିଶ (୨୯)"
         }
       },
       {
+        "id": "",
+        "order": 9,
         "type": "text",
+        "markdown": "30 –Pe gel",
         "textOlChiki": "᱓᱐",
-        "textLatin": "30 – Thirty",
+        "textLatin": "30 –Pe gel",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_9/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_9/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_9/view?project=699495910038e39622c5",
+          "textBengali": "৩০",
+          "textHindi": "३०",
+          "textOdia": "୩୦",
+          "meaning": "Thirty",
+          "meaning_en": "Thirty",
+          "meaning_bn": "পে গেল",
+          "pronunciation": "30 –Pe gel",
+          "meaning_hi": "पे गेल",
+          "meaning_or": "ପେ ଗେଲ"
         }
       },
       {
+        "id": "",
+        "order": 10,
         "type": "text",
+        "markdown": "31 – pe gel mid",
         "textOlChiki": "᱓᱑",
-        "textLatin": "31 – Thirty-One",
+        "textLatin": "31 – pe gel mid",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_10/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_10/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_10/view?project=699495910038e39622c5",
+          "textBengali": "৩১",
+          "textHindi": "३१",
+          "textOdia": "୩୧",
+          "pronunciation": "31 – Thirty-One",
+          "meaning": "Thirty-One",
+          "meaning_en": "Thirty-One",
+          "meaning_bn": "পে গেল মিদ",
+          "meaning_hi": "*पे गेल मिद्",
+          "meaning_or": "ପେ ଗେଲ ମିଦ୍"
         }
       },
       {
+        "id": "",
+        "order": 11,
         "type": "text",
+        "markdown": "32 – pe gel bar",
         "textOlChiki": "᱓᱒",
-        "textLatin": "32 – Thirty-Two",
+        "textLatin": "32 – pe gel bar",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_11/view?project=699495910038e39622c5",
         "meta": {
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_11/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_11/view?project=699495910038e39622c5",
+          "textBengali": "৩২",
+          "textHindi": "३२",
+          "textOdia": "୩୨",
+          "pronunciation": "32 – pe gel bar",
+          "meaning": "Thirty-Two",
+          "meaning_en": "Thirty-Two",
+          "meaning_bn": "পে গেল বার",
+          "meaning_hi": "पे गेल बार",
+          "meaning_or": "ପେ ଗେଲ ବାର"
         }
       },
       {
+        "id": "",
+        "order": 12,
         "type": "text",
+        "markdown": "33 – Thirty-Three",
         "textOlChiki": "᱓᱓",
         "textLatin": "33 – Thirty-Three",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_12/view?project=699495910038e39622c5",
@@ -18921,7 +19145,10 @@
         }
       },
       {
+        "id": "",
+        "order": 13,
         "type": "text",
+        "markdown": "34 – Thirty-Four",
         "textOlChiki": "᱓᱔",
         "textLatin": "34 – Thirty-Four",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_13/view?project=699495910038e39622c5",
@@ -18930,7 +19157,10 @@
         }
       },
       {
+        "id": "",
+        "order": 14,
         "type": "text",
+        "markdown": "35 – Thirty-Five",
         "textOlChiki": "᱓᱕",
         "textLatin": "35 – Thirty-Five",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_14/view?project=699495910038e39622c5",
@@ -18939,7 +19169,10 @@
         }
       },
       {
+        "id": "",
+        "order": 15,
         "type": "text",
+        "markdown": "36 – Thirty-Six",
         "textOlChiki": "᱓᱖",
         "textLatin": "36 – Thirty-Six",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_15/view?project=699495910038e39622c5",
@@ -18948,7 +19181,10 @@
         }
       },
       {
+        "id": "",
+        "order": 16,
         "type": "text",
+        "markdown": "37 – Thirty-Seven",
         "textOlChiki": "᱓᱗",
         "textLatin": "37 – Thirty-Seven",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_16/view?project=699495910038e39622c5",
@@ -18957,7 +19193,10 @@
         }
       },
       {
+        "id": "",
+        "order": 17,
         "type": "text",
+        "markdown": "38 – Thirty-Eight",
         "textOlChiki": "᱓᱘",
         "textLatin": "38 – Thirty-Eight",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_17/view?project=699495910038e39622c5",
@@ -18966,7 +19205,10 @@
         }
       },
       {
+        "id": "",
+        "order": 18,
         "type": "text",
+        "markdown": "39 – Thirty-Nine",
         "textOlChiki": "᱓᱙",
         "textLatin": "39 – Thirty-Nine",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_18/view?project=699495910038e39622c5",
@@ -18975,7 +19217,10 @@
         }
       },
       {
+        "id": "",
+        "order": 19,
         "type": "text",
+        "markdown": "40 – Forty",
         "textOlChiki": "᱔᱐",
         "textLatin": "40 – Forty",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_19/view?project=699495910038e39622c5",
@@ -18984,7 +19229,10 @@
         }
       },
       {
+        "id": "",
+        "order": 20,
         "type": "text",
+        "markdown": "41 – Forty-One",
         "textOlChiki": "᱔᱑",
         "textLatin": "41 – Forty-One",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_20/view?project=699495910038e39622c5",
@@ -18993,7 +19241,10 @@
         }
       },
       {
+        "id": "",
+        "order": 21,
         "type": "text",
+        "markdown": "42 – Forty-Two",
         "textOlChiki": "᱔᱒",
         "textLatin": "42 – Forty-Two",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_21/view?project=699495910038e39622c5",
@@ -19002,7 +19253,10 @@
         }
       },
       {
+        "id": "",
+        "order": 22,
         "type": "text",
+        "markdown": "43 – Forty-Three",
         "textOlChiki": "᱔᱓",
         "textLatin": "43 – Forty-Three",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_22/view?project=699495910038e39622c5",
@@ -19011,7 +19265,10 @@
         }
       },
       {
+        "id": "",
+        "order": 23,
         "type": "text",
+        "markdown": "44 – Forty-Four",
         "textOlChiki": "᱔᱔",
         "textLatin": "44 – Forty-Four",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_23/view?project=699495910038e39622c5",
@@ -19020,7 +19277,10 @@
         }
       },
       {
+        "id": "",
+        "order": 24,
         "type": "text",
+        "markdown": "45 – Forty-Five",
         "textOlChiki": "᱔᱕",
         "textLatin": "45 – Forty-Five",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_24/view?project=699495910038e39622c5",
@@ -19029,7 +19289,10 @@
         }
       },
       {
+        "id": "",
+        "order": 25,
         "type": "text",
+        "markdown": "46 – Forty-Six",
         "textOlChiki": "᱔᱖",
         "textLatin": "46 – Forty-Six",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_25/view?project=699495910038e39622c5",
@@ -19038,7 +19301,10 @@
         }
       },
       {
+        "id": "",
+        "order": 26,
         "type": "text",
+        "markdown": "47 – Forty-Seven",
         "textOlChiki": "᱔᱗",
         "textLatin": "47 – Forty-Seven",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_26/view?project=699495910038e39622c5",
@@ -19047,7 +19313,10 @@
         }
       },
       {
+        "id": "",
+        "order": 27,
         "type": "text",
+        "markdown": "48 – Forty-Eight",
         "textOlChiki": "᱔᱘",
         "textLatin": "48 – Forty-Eight",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_27/view?project=699495910038e39622c5",
@@ -19056,7 +19325,10 @@
         }
       },
       {
+        "id": "",
+        "order": 28,
         "type": "text",
+        "markdown": "49 – Forty-Nine",
         "textOlChiki": "᱔᱙",
         "textLatin": "49 – Forty-Nine",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_28/view?project=699495910038e39622c5",
@@ -19065,7 +19337,10 @@
         }
       },
       {
+        "id": "",
+        "order": 29,
         "type": "text",
+        "markdown": "50 – Fifty",
         "textOlChiki": "᱕᱐",
         "textLatin": "50 – Fifty",
         "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_numbers_21_50_29/view?project=699495910038e39622c5",

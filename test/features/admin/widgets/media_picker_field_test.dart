@@ -144,4 +144,46 @@ void main() {
       verifyNever(() => mockMediaUploader.delete(any()));
     },
   );
+
+  testWidgets('Renders AudioPickerPreview for ContentMediaKind.audio', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          mediaUploaderProvider.overrideWithValue(mockMediaUploader),
+          buildVersionStatusProvider.overrideWith(
+            (ref) => Stream.value(const BuildVersionMatch()),
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: MediaPickerField(
+              label: 'Pronunciation Audio',
+              kind: ContentMediaKind.audio,
+              value: const ContentMedia(
+                url: 'https://example.com/audio/num_n_20.wav',
+                fileId: 'num_n_20',
+                kind: ContentMediaKind.audio,
+              ),
+              onChanged: (_) {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pronunciation Audio'), findsOneWidget);
+    expect(find.text('num_n_20'), findsOneWidget);
+    expect(
+      find.text('Audio track ready · Tap to test playback'),
+      findsOneWidget,
+    );
+    expect(find.text('AUDIO'), findsOneWidget);
+    expect(find.byIcon(Icons.play_arrow_rounded), findsOneWidget);
+    expect(find.text('Change'), findsOneWidget);
+    expect(find.text('Remove'), findsOneWidget);
+  });
 }

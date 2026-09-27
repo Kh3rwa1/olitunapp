@@ -8,6 +8,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/version/build_version_checker.dart';
 import 'package:itun/core/version/build_version_status.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/features/admin/presentation/widgets/media_picker/audio_picker_preview.dart';
 
 class MediaPickerField extends ConsumerStatefulWidget {
   final String label;
@@ -428,6 +429,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
     if (media.url.trim().isEmpty) {
       return const SizedBox.shrink();
     }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (media.kind) {
       case ContentMediaKind.image:
       case ContentMediaKind.svg:
@@ -567,21 +569,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
           ),
         );
       case ContentMediaKind.audio:
-        return Container(
-          height: 80,
-          alignment: Alignment.center,
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.audiotrack_rounded, color: AppColors.warning),
-              SizedBox(width: 8),
-              Text(
-                'Audio track uploaded successfully',
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ],
-          ),
-        );
+        return AudioPickerPreview(media: media, isDark: isDark);
     }
   }
 }

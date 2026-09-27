@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/audio/audio_cache_manager.dart';
 import '../../../../core/config/feature_flags.dart';
 import '../../../../core/languages/providers/target_language_provider.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
@@ -145,6 +146,13 @@ class _QuizActiveViewState extends ConsumerState<QuizActiveView> {
     final audioQuizzesEnabled = ref
         .watch(featureFlagsProvider)
         .audioQuizzesEnabled;
+
+    final quizAudioUrls = widget.quiz.questions
+        .map((q) => q.audioUrl)
+        .whereType<String>();
+    if (quizAudioUrls.isNotEmpty) {
+      ref.read(audioCacheManagerProvider).precache(quizAudioUrls);
+    }
     final isListeningQuestion =
         audioQuizzesEnabled &&
         widget.question.type == 'listen_meaning' &&

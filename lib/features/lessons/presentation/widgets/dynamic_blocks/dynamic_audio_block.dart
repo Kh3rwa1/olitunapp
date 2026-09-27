@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/audio/audio_cache_manager.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../content/presentation/providers/audio_playback_providers.dart';
@@ -23,6 +24,7 @@ class DynamicAudioBlock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final audioUrl = block.audioUrl?.trim();
     if (audioUrl == null || audioUrl.isEmpty) return const SizedBox.shrink();
+    ref.read(audioCacheManagerProvider).precache([audioUrl]);
     final label = block.textLatin?.trim().isNotEmpty == true
         ? block.textLatin!.trim()
         : 'Play audio';

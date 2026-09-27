@@ -14,6 +14,7 @@ import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/audio/playback_controller.dart';
+import 'package:itun/core/audio/audio_cache_manager.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 
 class ContentGridScreen extends ConsumerStatefulWidget {
@@ -78,6 +79,30 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
     final listAsync = ref.watch(
       contentListProvider((widget.kind, widget.subcategoryId)),
     );
+
+    ref.listen<AsyncValue<List<ContentItem>>>(
+      contentListProvider((widget.kind, widget.subcategoryId)),
+      (_, next) {
+        final items = next.valueOrNull;
+        if (items != null && items.isNotEmpty) {
+          final audioUrls = items
+              .map((i) => i.effectiveAudioUrl)
+              .whereType<String>()
+              .where((url) => url.isNotEmpty);
+          ref.read(audioCacheManagerProvider).precache(audioUrls);
+        }
+      },
+    );
+
+    // Initial pre-caching for already-resolved items
+    final resolvedItems = listAsync.valueOrNull;
+    if (resolvedItems != null && resolvedItems.isNotEmpty) {
+      final audioUrls = resolvedItems
+          .map((i) => i.effectiveAudioUrl)
+          .whereType<String>()
+          .where((url) => url.isNotEmpty);
+      ref.read(audioCacheManagerProvider).precache(audioUrls);
+    }
 
     final categories = ref.watch(categoryNotifierProvider).valueOrNull ?? [];
     CategoryEntity? category;

@@ -9,6 +9,7 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/admin/presentation/content/admin_content_list_screen.dart';
 import 'package:itun/features/admin/presentation/content/widgets/number_discovery_banner.dart';
 import 'package:itun/features/admin/presentation/categories/widgets/category_card.dart';
+import 'package:itun/features/admin/presentation/widgets/content_form.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form/ol_chiki_number_helper.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/categories/domain/repositories/category_repository.dart';
@@ -240,5 +241,78 @@ void main() {
       expect(titleOlChikiCtrl.text, 'ᱵᱟᱨ ᱜᱮᱞ');
       expect(subtitleCtrl.text, 'Twenty');
     });
+
+    testWidgets(
+      'ContentForm for ContentKind.number renders Pronunciation Audio and excludes Hero Cover Media',
+      (tester) async {
+        tester.view.physicalSize = const Size(1200, 4000);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        ContentItem? savedItem;
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              categoryRepositoryProvider.overrideWithValue(
+                FakeCategoryRepository(),
+              ),
+            ],
+            child: MaterialApp(
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              home: Scaffold(
+                body: ContentForm(
+                  kind: ContentKind.number,
+                  initial: ContentItem(
+                    id: 'n_20',
+                    kind: ContentKind.number,
+                    categoryId: 'cat_numbers',
+                    title: 'Bar Gel',
+                    titleOlChiki: 'ᱵᱟᱨ ᱜᱮᱞ',
+                    subtitle: 'Twenty',
+                    olChiki: '᱒᱐',
+                    audioUrl: 'https://example.com/audio/num_n_20.wav',
+                    order: 20,
+                    blocks: const [],
+                    isPublished: true,
+                    updatedAt: DateTime.utc(2026),
+                  ),
+                  onSubmit: (item) async {
+                    savedItem = item;
+                  },
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Check that Pronunciation Audio is displayed with the number-specific label
+        expect(find.text('Pronunciation Audio'), findsOneWidget);
+        expect(find.text('Number Pronunciation Track'), findsOneWidget);
+        expect(
+          find.text('Audio track ready · Tap to test playback'),
+          findsOneWidget,
+        );
+
+        // Check that Hero Cover Media and Cover Visual Element are completely absent
+        expect(find.text('Hero Cover Media'), findsNothing);
+        expect(find.text('Cover Visual Element'), findsNothing);
+        expect(find.text('Letter Illustration (Optional)'), findsNothing);
+
+        // Save form and verify audioUrl is preserved
+        await tester.ensureVisible(find.text('Save Content'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Save Content'));
+        await tester.pumpAndSettle();
+
+        expect(savedItem, isNotNull);
+        expect(savedItem!.audioUrl, 'https://example.com/audio/num_n_20.wav');
+        expect(savedItem!.title, 'Bar Gel');
+      },
+    );
   });
 }

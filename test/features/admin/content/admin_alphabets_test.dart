@@ -214,6 +214,13 @@ void main() {
         expect(find.text('Example Word (e.g. Ol)'), findsOneWidget);
         expect(find.text('Alphabet Index (1-35)*'), findsOneWidget);
 
+        // Verify media sections: Pronunciation Audio is shown, but Hero Cover Media is not
+        expect(find.text('Pronunciation Audio'), findsOneWidget);
+        expect(find.text('Alphabet Pronunciation Track'), findsOneWidget);
+        expect(find.text('Letter Illustration (Optional)'), findsOneWidget);
+        expect(find.text('Hero Cover Media'), findsNothing);
+        expect(find.text('Cover Visual Element'), findsNothing);
+
         // Fill in letter fields
         await tester.enterText(
           find.widgetWithText(

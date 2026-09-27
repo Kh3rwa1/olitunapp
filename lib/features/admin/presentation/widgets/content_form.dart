@@ -46,6 +46,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
   final List<String> _tags = [];
 
   ContentMedia? _heroMedia;
+  ContentMedia? _audioMedia;
   TracingConfig? _tracingConfig;
   final List<ContentBlock> _blocks = [];
 
@@ -55,6 +56,19 @@ class _ContentFormState extends ConsumerState<ContentForm> {
 
   bool get _requiresCategory =>
       widget.kind != ContentKind.letter && widget.kind != ContentKind.number;
+
+  bool get _supportsAudio =>
+      widget.kind == ContentKind.letter ||
+      widget.kind == ContentKind.number ||
+      widget.kind == ContentKind.word ||
+      widget.kind == ContentKind.sentence ||
+      widget.kind == ContentKind.rhyme;
+
+  bool get _supportsCoverMedia =>
+      widget.kind == ContentKind.lesson ||
+      widget.kind == ContentKind.rhyme ||
+      widget.kind == ContentKind.letter ||
+      widget.kind == ContentKind.word;
 
   String get glyphValue => _olChikiController.text.isNotEmpty
       ? _olChikiController.text
@@ -90,7 +104,24 @@ class _ContentFormState extends ConsumerState<ContentForm> {
       _tags.addAll(widget.initial!.tags);
     }
 
-    _heroMedia = widget.initial?.heroMedia;
+    final initialAudio = widget.initial?.audioUrl?.trim();
+    if (initialAudio != null && initialAudio.isNotEmpty) {
+      final fileId = widget.initial!.audioFileId?.trim().isNotEmpty == true
+          ? widget.initial!.audioFileId!.trim()
+          : (ContentItemSerialization.extractFileIdFromUrl(initialAudio) ?? '');
+      _audioMedia = ContentMedia(
+        url: initialAudio,
+        fileId: fileId,
+        kind: ContentMediaKind.audio,
+      );
+    } else if (widget.initial?.heroMedia?.kind == ContentMediaKind.audio) {
+      _audioMedia = widget.initial!.heroMedia;
+    }
+
+    if (widget.initial?.heroMedia != null &&
+        widget.initial!.heroMedia!.kind != ContentMediaKind.audio) {
+      _heroMedia = widget.initial!.heroMedia;
+    }
     _tracingConfig = widget.initial?.tracing;
     if (_tracingConfig == null &&
         (widget.kind == ContentKind.letter ||
@@ -240,6 +271,9 @@ class _ContentFormState extends ConsumerState<ContentForm> {
         ? 'n_${int.tryParse(_orderController.text.trim()) ?? DateTime.now().millisecondsSinceEpoch}'
         : const Uuid().v4();
 
+    final audioUrl = _audioMedia?.url.trim();
+    final audioFileId = _audioMedia?.fileId.trim();
+
     final item = ContentItem(
       id: widget.initial?.id ?? generatedId,
       kind: widget.kind,
@@ -250,7 +284,9 @@ class _ContentFormState extends ConsumerState<ContentForm> {
           ? _subtitleController.text.trim()
           : null,
       olChiki: effectiveOlChiki,
-      heroMedia: _heroMedia,
+      heroMedia: _heroMedia ?? (_supportsAudio ? _audioMedia : null),
+      audioUrl: audioUrl?.isNotEmpty == true ? audioUrl : null,
+      audioFileId: audioFileId?.isNotEmpty == true ? audioFileId : null,
       blocks: List.unmodifiable(_blocks),
       tracing: finalTracing,
       order: int.tryParse(_orderController.text) ?? 0,
@@ -287,6 +323,16 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                 databaseId: 'olitun_db',
                 collectionId: 'rhymes',
                 fieldNames: ['audioFileId', 'thumbnailUrl'],
+              ),
+              ReferenceCheck(
+                databaseId: 'olitun_db',
+                collectionId: 'letters',
+                fieldNames: ['audioUrl', 'imageUrl'],
+              ),
+              ReferenceCheck(
+                databaseId: 'olitun_db',
+                collectionId: 'numbers',
+                fieldNames: ['audioUrl', 'imageUrl'],
               ),
             ],
           );
@@ -397,25 +443,69 @@ class _ContentFormState extends ConsumerState<ContentForm> {
             ),
             const SizedBox(height: 16),
 
-            // Section 2 - Hero Media
-            ContentFormCard(
-              isDark: isDark,
-              title: 'Hero Cover Media',
-              child: MediaPickerField(
-                label: 'Cover Visual Element',
-                kind: widget.kind == ContentKind.lesson
-                    ? ContentMediaKind.video
-                    : ContentMediaKind.image,
-                value: _heroMedia,
-                onRemove: _markForDeletion,
-                onChanged: (media) {
-                  setState(() {
-                    _heroMedia = media;
-                  });
-                },
+            // Section 2 - Pronunciation Audio (Letters, Numbers, Words, Sentences, Rhymes)
+            if (_supportsAudio) ...[
+              ContentFormCard(
+                isDark: isDark,
+                title: widget.kind == ContentKind.rhyme
+                    ? 'Song Audio Track'
+                    : 'Pronunciation Audio',
+                child: MediaPickerField(
+                  label: widget.kind == ContentKind.letter
+                      ? 'Alphabet Pronunciation Track'
+                      : widget.kind == ContentKind.number
+                      ? 'Number Pronunciation Track'
+                      : widget.kind == ContentKind.word
+                      ? 'Word Pronunciation Track'
+                      : widget.kind == ContentKind.sentence
+                      ? 'Sentence Pronunciation Track'
+                      : 'Full Audio Track',
+                  kind: ContentMediaKind.audio,
+                  value: _audioMedia,
+                  onRemove: _markForDeletion,
+                  onChanged: (media) {
+                    setState(() {
+                      _audioMedia = media;
+                    });
+                  },
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
+            ],
+
+            // Section 3 - Hero Cover Media / Visual Illustration (Lessons, Rhymes, Letters, Words)
+            if (_supportsCoverMedia) ...[
+              ContentFormCard(
+                isDark: isDark,
+                title: widget.kind == ContentKind.lesson
+                    ? 'Hero Cover Media'
+                    : widget.kind == ContentKind.rhyme
+                    ? 'Cover Artwork'
+                    : widget.kind == ContentKind.letter
+                    ? 'Letter Illustration (Optional)'
+                    : 'Word Illustration (Optional)',
+                child: MediaPickerField(
+                  label: widget.kind == ContentKind.lesson
+                      ? 'Cover Visual Element'
+                      : widget.kind == ContentKind.rhyme
+                      ? 'Cover Image'
+                      : widget.kind == ContentKind.letter
+                      ? 'Visual Illustration / Artwork (Optional)'
+                      : 'Illustration Image (Optional)',
+                  kind: widget.kind == ContentKind.lesson
+                      ? ContentMediaKind.video
+                      : ContentMediaKind.image,
+                  value: _heroMedia,
+                  onRemove: _markForDeletion,
+                  onChanged: (media) {
+                    setState(() {
+                      _heroMedia = media;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Section 3 - Tracing config (Letters & Numbers only)
             if (widget.kind == ContentKind.letter ||

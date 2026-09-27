@@ -43,4 +43,30 @@ void main() {
     expect(find.text('Transcribing…'), findsOneWidget);
     expect(find.byType(Row), findsWidgets);
   });
+
+  testWidgets(
+    'AiSparkAssistant fullscreen mode renders badge and dismiss button',
+    (tester) async {
+      bool dismissed = false;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: AiSparkAssistant(
+              statusText: 'Creating Santali Voice…',
+              fullscreen: true,
+              onDismiss: () => dismissed = true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Creating Santali Voice…'), findsOneWidget);
+      expect(find.text('AI ASSISTANT ACTIVE'), findsOneWidget);
+
+      final dismissFinder = find.byTooltip('Minimize to background');
+      expect(dismissFinder, findsOneWidget);
+      await tester.tap(dismissFinder);
+      expect(dismissed, isTrue);
+    },
+  );
 }

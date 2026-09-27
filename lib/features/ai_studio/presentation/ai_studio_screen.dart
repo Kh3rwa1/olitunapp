@@ -100,6 +100,31 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
   int _pollAttempts = 0;
   late final AnimationController _pulse;
   _Draft get _draft => _drafts[_tool]!;
+  bool _sparkDismissed = false;
+
+  bool get _isProcessing =>
+      _draft.busy ||
+      (_tool == _Tool.scan &&
+          _draft.job != null &&
+          !_draft.job!.isTerminal &&
+          _draft.result.text.trim().isEmpty);
+
+  void _restoreSpark() => setState(() => _sparkDismissed = false);
+
+  String _sparkStatus(AppLocalizations l10n) => switch (_tool) {
+    _Tool.transcribe => '${l10n.aiStudioToolTranscribe}…',
+    _Tool.translate => '${l10n.aiStudioToolTranslate}…',
+    _Tool.scan => 'Scanning & OCR converting…',
+  };
+
+  String _sparkSubhead() => switch (_tool) {
+    _Tool.transcribe => 'Transcribing speech to text… Tap spark ✨',
+    _Tool.translate => 'Translating text into Santali… Tap spark ✨',
+    _Tool.scan =>
+      _draft.job != null
+          ? 'Scan status: ${_draft.job!.status} • Job: ${_draft.job!.id}'
+          : 'Extracting text from document… Tap spark ✨',
+  };
 
   void _setState(VoidCallback fn) => setState(fn);
 
@@ -367,6 +392,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     setState(() {
       draft.busy = true;
       draft.error = null;
+      if (!autoPoll) _sparkDismissed = false;
     });
     if (!checkStatus && !autoPoll && flipOnStart) {
       unawaited(_flipTo(showResult: true));
@@ -528,6 +554,26 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                   isDark,
                 );
               },
+            ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !_isProcessing || _sparkDismissed,
+              child: AnimatedOpacity(
+                opacity: (_isProcessing && !_sparkDismissed) ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOutCubic,
+                child: (_isProcessing && !_sparkDismissed)
+                    ? AiSparkAssistant(
+                        key: ValueKey('studio-fullscreen-spark-$_tool'),
+                        statusText: _sparkStatus(l10n),
+                        subheadText: _sparkSubhead(),
+                        fullscreen: true,
+                        light: isDark,
+                        onDismiss: () => setState(() => _sparkDismissed = true),
+                      )
+                    : const SizedBox.shrink(),
+              ),
             ),
           ),
         ],

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/api/ai_service.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../shared/widgets/ai_spark_assistant.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
@@ -268,6 +269,26 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
               borderRadius: 20,
               width: double.infinity,
             ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.3),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !_isLoading,
+              child: AnimatedOpacity(
+                opacity: _isLoading ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 280),
+                curve: Curves.easeInOutCubic,
+                child: _isLoading
+                    ? AiSparkAssistant(
+                        key: const ValueKey('translator-fullscreen-spark'),
+                        statusText: 'Translating into Santali…',
+                        subheadText:
+                            'Translating text into Ol Chiki… Tap spark ✨',
+                        fullscreen: true,
+                        light: isDark,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+            ),
           ),
         ],
       ),

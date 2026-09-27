@@ -252,7 +252,7 @@ class VoicePlayerFace extends StatelessWidget {
                     statusText: l10n.voiceCreatingBack,
                     subheadText:
                         'Giving your words a Santali voice… Tap spark ✨',
-                    size: 80,
+                    size: 110,
                     light: true,
                   ),
                 ),

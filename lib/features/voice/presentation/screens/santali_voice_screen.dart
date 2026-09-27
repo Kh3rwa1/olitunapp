@@ -20,6 +20,7 @@ import 'widgets/studio_hero.dart';
 import 'widgets/studio_status_dock.dart';
 import 'widgets/voice_flip_faces.dart';
 import 'widgets/voice_pickers.dart';
+import 'widgets/voice_spark_overlay.dart';
 
 /// Santali AI Voice studio — compact single-screen layout.
 ///
@@ -54,6 +55,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
 
   VoiceClip? _clip;
   bool _isLoading = false;
+  bool _sparkDismissed = false;
   String? _error;
   bool _loginRequired = false;
   bool _isDownloading = false;
@@ -125,6 +127,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     HapticFeedback.mediumImpact();
     setState(() {
       _isLoading = true;
+      _sparkDismissed = false;
       _error = null;
       _loginRequired = false;
     });
@@ -174,46 +177,32 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
       });
       return;
     }
-    if (!_showingBack) {
-      setState(() => _showingBack = true);
-      await _flipController.flipcard();
-    }
+    if (!_showingBack) await _flipTo(showBack: true);
   }
 
-  Future<void> _flipToFront() async {
-    if (!_showingBack) return;
+  Future<void> _flipTo({required bool showBack}) async {
+    if (_showingBack == showBack) return;
     HapticFeedback.lightImpact();
-    setState(() => _showingBack = false);
+    setState(() => _showingBack = showBack);
     await _flipController.flipcard();
   }
 
-  Future<void> _flipToBack() async {
-    if (_showingBack) return;
-    HapticFeedback.lightImpact();
-    setState(() => _showingBack = true);
-    await _flipController.flipcard();
-  }
+  Future<void> _flipToFront() => _flipTo(showBack: false);
+  Future<void> _flipToBack() => _flipTo(showBack: true);
 
   /// X button: stop and return to the text box. The clip is kept so the
   /// learner can flip back to the player from the input face.
   Future<void> _dismissClip() async {
     HapticFeedback.lightImpact();
     await _player.stop();
-    if (!_showingBack || !mounted) return;
-    setState(() => _showingBack = false);
-    await _flipController.flipcard();
+    if (_showingBack && mounted) await _flipTo(showBack: false);
   }
 
   /// Play tap on the back face: toggle when the shared player carries our
   /// clip, otherwise (re)play it — so the button replays instead of
   /// being a dead control after dismiss.
-  Future<void> _onPlayTap() async {
-    if (_isMine) {
-      await _player.togglePlayPause();
-      return;
-    }
-    await _playCurrentClip();
-  }
+  Future<void> _onPlayTap() =>
+      _isMine ? _player.togglePlayPause() : _playCurrentClip();
 
   /// Plays the current clip through the central player.
   Future<void> _playCurrentClip() async {
@@ -231,11 +220,9 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
   }
 
   void _onSpeedTap() {
-    final current = _player.state.speed;
-    final index = _speedCycle.indexOf(current);
-    final next = _speedCycle[(index + 1) % _speedCycle.length];
     HapticFeedback.lightImpact();
-    _player.setSpeed(next);
+    final idx = _speedCycle.indexOf(_player.state.speed);
+    _player.setSpeed(_speedCycle[(idx + 1) % _speedCycle.length]);
   }
 
   Future<void> _download() async {
@@ -243,25 +230,31 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     if (clip == null || _isDownloading) return;
     HapticFeedback.mediumImpact();
     setState(() => _isDownloading = true);
-    final message = await ref
-        .read(voiceDownloadServiceProvider)
-        .saveClip(audioUrl: clip.audioUrl, voice: clip.voice);
+    final service = ref.read(voiceDownloadServiceProvider);
+    final message = await service.saveClip(
+      audioUrl: clip.audioUrl,
+      voice: clip.voice,
+    );
     if (!mounted) return;
     setState(() => _isDownloading = false);
-    final failure = ref.read(voiceDownloadServiceProvider).errorMessage;
     final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message ?? failure ?? l10n.voiceDownloadFailed)),
+      SnackBar(
+        content: Text(
+          message ?? service.errorMessage ?? l10n.voiceDownloadFailed,
+        ),
+      ),
     );
   }
 
-  String _statusText(AppLocalizations l10n, bool playing, bool mine) {
-    if (_isLoading) return l10n.voiceStatusWorking;
-    if (_clip == null) return l10n.voiceStatusIdle;
-    if (playing) return l10n.voiceStatusPlaying(_clip!.voice);
-    if (mine) return l10n.voiceStatusReady;
-    return l10n.voiceStatusOpenPlayer;
-  }
+  String _statusText(AppLocalizations l10n, bool playing, bool mine) =>
+      _isLoading
+      ? l10n.voiceStatusWorking
+      : _clip == null
+      ? l10n.voiceStatusIdle
+      : playing
+      ? l10n.voiceStatusPlaying(_clip!.voice)
+      : (mine ? l10n.voiceStatusReady : l10n.voiceStatusOpenPlayer);
 
   @override
   Widget build(BuildContext context) {
@@ -353,6 +346,13 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                 );
               },
             ),
+          ),
+          VoiceSparkOverlay(
+            isLoading: _isLoading,
+            dismissed: _sparkDismissed,
+            statusText: l10n.creatingVoiceProgress,
+            isDark: isDark,
+            onDismiss: () => setState(() => _sparkDismissed = true),
           ),
         ],
       ),
@@ -547,18 +547,8 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
           maxChars: SantaliVoiceConfig.maxChars,
           hasClip: _clip != null,
           onFlipToBack: _flipToBack,
-          onClear: () {
-            _controller.clear();
-            setState(() {});
-          },
-          onTextChanged: () {
-            if (_error != null) {
-              setState(() {
-                _error = null;
-                _loginRequired = false;
-              });
-            }
-          },
+          onClear: _clearText,
+          onTextChanged: _onInputChanged,
           onSubmit: _generate,
         ),
         backWidget: VoicePlayerFace(
@@ -568,7 +558,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
           isLoading: _isLoading,
           isDownloading: _isDownloading,
           onPlayTap: _onPlayTap,
-          onSeek: (position) => _player.seek(position),
+          onSeek: (pos) => _player.seek(pos),
           onSpeedTap: _onSpeedTap,
           onDownload: _download,
           onRegenerate: _generate,
@@ -579,22 +569,31 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     );
   }
 
-  void _pickSample(String text) {
-    _controller.text = text;
-    setState(() {
-      _error = null;
-      _loginRequired = false;
-    });
+  void _clearText() {
+    _controller.clear();
+    setState(() {});
   }
 
-  Widget _buildStatusDock(bool isDark) {
-    return StudioStatusDock(
-      isDark: isDark,
-      isLoading: _isLoading,
-      error: _error,
-      loginRequired: _loginRequired,
-      onLogin: () => context.push('/login'),
-      onRetry: _generate,
-    );
+  void _onInputChanged() {
+    if (_error != null) _clearError();
   }
+
+  void _pickSample(String text) {
+    _controller.text = text;
+    _clearError();
+  }
+
+  void _clearError() => setState(() {
+    _error = null;
+    _loginRequired = false;
+  });
+
+  Widget _buildStatusDock(bool isDark) => StudioStatusDock(
+    isDark: isDark,
+    isLoading: _isLoading,
+    error: _error,
+    loginRequired: _loginRequired,
+    onLogin: () => context.push('/login'),
+    onRetry: _generate,
+  );
 }

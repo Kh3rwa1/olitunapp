@@ -64,7 +64,8 @@ extension _AiStudioResult on _AiStudioScreenState {
               AiSparkAssistant(
                 statusText: status,
                 subheadText: subhead,
-                size: isMobile ? 116 : 140,
+                size: isMobile ? 180 : 220,
+                onTap: _restoreSpark,
               ),
               if (_tool == _Tool.scan &&
                   job != null &&

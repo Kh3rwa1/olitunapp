@@ -166,12 +166,10 @@ extension _AiStudioInput on _AiStudioScreenState {
           Center(
             child: AiSparkAssistant(
               statusText: l10n.aiStudioThinking,
-              subheadText: isMobile ? 'Tap to view animated spark ➔' : null,
+              subheadText: 'Tap to view full screen spark ✨',
               compact: true,
               size: 28,
-              onTap: isMobile
-                  ? () => unawaited(_flipTo(showResult: true))
-                  : null,
+              onTap: _restoreSpark,
             ),
           ),
           const SizedBox(height: 8),

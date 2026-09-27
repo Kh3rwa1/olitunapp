@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import '../../core/theme/app_typography.dart';
 ///   burst animation (frames 142–200), haptic feedback, and dynamic
 ///   entertaining tips / Santali language tidbits so the user stays engaged.
 /// - Mouse hover reaction on desktop/web (frames 84–126).
+/// - Fullscreen mode: fills almost the entire screen with a massive,
+///   interactive Lottie spark and frosted blur backdrop.
 /// - Vanishes smoothly when processing completes.
 class AiSparkAssistant extends StatefulWidget {
   const AiSparkAssistant({
@@ -25,7 +28,9 @@ class AiSparkAssistant extends StatefulWidget {
     this.size = 130,
     this.compact = false,
     this.light = false,
+    this.fullscreen = false,
     this.onTap,
+    this.onDismiss,
   });
 
   /// Primary progress/status text (e.g. "Generating audio…", "Transcribing…").
@@ -43,8 +48,15 @@ class AiSparkAssistant extends StatefulWidget {
   /// When true, styles text in bright white (for gradient cards like VoicePlayerFace).
   final bool light;
 
+  /// When true, renders almost full screen with a massive Lottie spark,
+  /// frosted glass backdrop, and full-screen tap-to-interact behavior.
+  final bool fullscreen;
+
   /// Optional callback invoked when the user interacts with the spark.
   final VoidCallback? onTap;
+
+  /// Optional callback invoked when the user dismisses/minimizes fullscreen mode.
+  final VoidCallback? onDismiss;
 
   /// Total composition frames in `ai_spark.json`.
   static const double totalFrames = 393.0;
@@ -77,6 +89,9 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
     '🎨 Converting your thoughts into rich Ol Chiki…',
     '💫 Almost there! Crafting your result with precision…',
     '🔥 Turbo spark charged! Polishing the output…',
+    '📜 Ol Chiki has 30 primary letters and 5 modifiers!',
+    '🚀 Powered by cutting-edge neural models for Santali.',
+    '✨ Keep tapping! You charged the AI with magical energy!',
   ];
 
   Timer? _bounceTimer;
@@ -191,6 +206,10 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
         ? Colors.white.withValues(alpha: 0.8)
         : (isDark ? Colors.white60 : Colors.black54);
 
+    if (widget.fullscreen) {
+      return _buildFullscreen(isDark, primaryTextColor, secondaryTextColor);
+    }
+
     final animationWidget = MouseRegion(
       onEnter: _onMouseEnter,
       onExit: _onMouseExit,
@@ -205,46 +224,8 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // Glowing aura backdrop
-              Container(
-                width: widget.size * 0.85,
-                height: widget.size * 0.85,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: RadialGradient(
-                    colors: [
-                      (widget.light ? Colors.white : AppColors.primary)
-                          .withValues(alpha: isDark ? 0.25 : 0.16),
-                      (widget.light
-                              ? AppColors.voiceTeal
-                              : AppColors.bakhedGlowBlue)
-                          .withValues(alpha: isDark ? 0.12 : 0.08),
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-              Lottie.asset(
-                'assets/animations/ai_spark.json',
-                controller: _controller,
-                onLoaded: _onCompositionLoaded,
-                width: widget.size,
-                height: widget.size,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: widget.size * 0.6,
-                  height: widget.size * 0.6,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome_rounded,
-                    color: AppColors.primary,
-                    size: 28,
-                  ),
-                ),
-              ),
+              _buildAura(widget.size * 0.85, isDark),
+              _buildLottie(widget.size),
             ],
           ),
         ),
@@ -323,29 +304,282 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
         ),
         if (_tapCount > 0) ...[
           const SizedBox(height: 6),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          _sparkBadge('⚡ Sparks: $_tapCount', primaryTextColor, 10, 8, 2),
+        ],
+      ],
+    );
+  }
+
+  Widget _sparkBadge(
+    String text,
+    Color color,
+    double fontSize,
+    double hPad,
+    double vPad,
+  ) {
+    final border = (widget.light ? Colors.white : AppColors.primary);
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+      decoration: BoxDecoration(
+        color: border.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: border.withValues(alpha: 0.28)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.4,
+          color: color,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAura(double auraSize, bool isDark) {
+    return Container(
+      width: auraSize,
+      height: auraSize,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            (widget.light ? Colors.white : AppColors.primary).withValues(
+              alpha: isDark ? 0.28 : 0.16,
+            ),
+            (widget.light ? AppColors.voiceTeal : AppColors.bakhedGlowBlue)
+                .withValues(alpha: isDark ? 0.14 : 0.08),
+            Colors.transparent,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLottie(double size) {
+    return Lottie.asset(
+      'assets/animations/ai_spark.json',
+      controller: _controller,
+      onLoaded: _onCompositionLoaded,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) => Container(
+        width: size * 0.6,
+        height: size * 0.6,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: AppColors.primary.withValues(alpha: 0.15),
+        ),
+        child: const Icon(
+          Icons.auto_awesome_rounded,
+          color: AppColors.primary,
+          size: 32,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFullscreen(
+    bool isDark,
+    Color primaryTextColor,
+    Color secondaryTextColor,
+  ) {
+    final screenSize = MediaQuery.sizeOf(context);
+    final maxSparkHeight = (screenSize.height * 0.44).clamp(200.0, 420.0);
+    final sparkSize = (screenSize.width * 0.80)
+        .clamp(260.0, 360.0)
+        .clamp(0.0, maxSparkHeight);
+
+    return Material(
+      color: Colors.transparent,
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
             decoration: BoxDecoration(
-              color: (widget.light ? Colors.white : AppColors.primary)
-                  .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: (widget.light ? Colors.white : AppColors.primary)
-                    .withValues(alpha: 0.25),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDark
+                    ? [
+                        AppColors.studioAtmosphereDark.withValues(alpha: 0.94),
+                        AppColors.studioCardDark.withValues(alpha: 0.96),
+                        AppColors.studioAtmosphereDark.withValues(alpha: 0.98),
+                      ]
+                    : [
+                        AppColors.lightBackground.withValues(alpha: 0.95),
+                        AppColors.lightSurfaceVariant.withValues(alpha: 0.96),
+                        AppColors.lightBackground.withValues(alpha: 0.98),
+                      ],
               ),
             ),
-            child: Text(
-              '⚡ Sparks: $_tapCount',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 0.5,
-                color: primaryTextColor,
+            child: SafeArea(
+              child: Stack(
+                children: [
+                  Center(child: _buildAura(sparkSize * 1.35, isDark)),
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: _handleTap,
+                      child: Center(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color:
+                                      (isDark
+                                              ? Colors.white
+                                              : AppColors.primary)
+                                          .withValues(alpha: 0.10),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(
+                                    color:
+                                        (isDark
+                                                ? Colors.white
+                                                : AppColors.primary)
+                                            .withValues(alpha: 0.22),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 8,
+                                      height: 8,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: AppColors.success,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.success,
+                                            blurRadius: 8,
+                                            spreadRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'AI ASSISTANT ACTIVE',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.0,
+                                        color: primaryTextColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              MouseRegion(
+                                onEnter: _onMouseEnter,
+                                onExit: _onMouseExit,
+                                cursor: SystemMouseCursors.click,
+                                child: AnimatedScale(
+                                  scale: _scale,
+                                  duration: const Duration(milliseconds: 140),
+                                  curve: Curves.easeOutBack,
+                                  child: _buildLottie(sparkSize),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                widget.statusText,
+                                textAlign: TextAlign.center,
+                                style: AppTypography.inter(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.4,
+                                  color: primaryTextColor,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 250),
+                                child: Padding(
+                                  key: ValueKey(
+                                    'fullscreen-tip-$_tapCount-$_tipIndex',
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                  ),
+                                  child: Text(
+                                    _tapCount > 0
+                                        ? _sparkTips[_tipIndex]
+                                        : (widget.subheadText ??
+                                              'Tap anywhere on the screen to energize the AI ✨'),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: _tapCount > 0
+                                          ? FontWeight.w700
+                                          : FontWeight.w500,
+                                      height: 1.4,
+                                      color: _tapCount > 0
+                                          ? (widget.light
+                                                ? Colors.amberAccent
+                                                : AppColors.amberEmber)
+                                          : secondaryTextColor,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              _sparkBadge(
+                                _tapCount > 0
+                                    ? '⚡ $_tapCount Sparks Energized • Keep tapping!'
+                                    : '✨ Tap anywhere to interact with Spark',
+                                primaryTextColor,
+                                12,
+                                14,
+                                6,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (widget.onDismiss != null)
+                    Positioned(
+                      top: MediaQuery.paddingOf(context).top + 8,
+                      right: 12,
+                      child: Semantics(
+                        label: 'Minimize AI Spark',
+                        button: true,
+                        child: IconButton(
+                          onPressed: widget.onDismiss,
+                          icon: Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            size: 28,
+                            color: primaryTextColor.withValues(alpha: 0.7),
+                          ),
+                          tooltip: 'Minimize to background',
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
-        ],
-      ],
+        ),
+      ),
     );
   }
 }

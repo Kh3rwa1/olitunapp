@@ -3,6 +3,7 @@ import '../../lessons/domain/entities/lesson_entity.dart';
 
 import 'lesson_quiz_generator.dart';
 import 'quiz_identity_validation.dart';
+import 'quiz_option_equivalence.dart';
 
 /// Generates a listening quiz from a lesson's playable audio blocks.
 ///
@@ -67,29 +68,20 @@ class ListeningQuizGenerator {
       );
       if (correctOption.isEmpty) continue;
 
-      // High-quality distractors first: other meanings in this lesson.
-      final otherBlockTranslations = resolvedBlockOptions
-          .where((t) => t != correctOption)
-          .toSet()
-          .toList();
-
-      final fallbackDistractors = LessonQuizGenerator.fallbackDistractors(
-        teachingLanguage,
-        isNumberCategory,
-        isAlphabetCategory,
+      final options = QuizOptionEquivalence.buildOptions(
+        correctOption: correctOption,
+        lessonOptions: resolvedBlockOptions,
+        isNumber: isNumberCategory,
+        isAlphabet: isAlphabetCategory,
+        getFallbackDistractors: () => LessonQuizGenerator.fallbackDistractors(
+          teachingLanguage,
+          isNumberCategory,
+          isAlphabetCategory,
+          sampleOption: correctOption,
+        ),
       );
-
-      // A distractor identical to the answer makes a correct option textually
-      // indistinguishable from a wrong one (picking it fails validation) —
-      // filter it out and dedupe before sampling.
-      final distractors = [
-        ...otherBlockTranslations,
-        ...fallbackDistractors,
-      ].where((d) => d != correctOption).toSet().toList()..shuffle();
-
-      final options = [correctOption, ...distractors.take(3)]..shuffle();
       final correctIndex = options.indexOf(correctOption);
-      if (correctIndex < 0) continue;
+      if (options.length < 4 || correctIndex < 0) continue;
 
       final prompt = _listeningPrompt(teachingLanguage);
 

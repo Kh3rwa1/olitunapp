@@ -11,6 +11,7 @@ import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../../../shared/widgets/state_widgets.dart';
 import '../../../../quiz/domain/quiz_scoring_rules.dart';
+import '../../../../quiz/domain/quiz_option_equivalence.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
 part 'quiz_screen_sections.dart';
@@ -120,8 +121,38 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   void _answerQuestion(int index) {
     if (_answered) return;
 
-    final correctIndex = _questions[_currentQuestionIndex].correctIndex;
-    final isCorrect = index == correctIndex;
+    final q = _questions[_currentQuestionIndex];
+    final selectedLatin = index >= 0 && index < q.optionsLatin.length
+        ? q.optionsLatin[index]
+        : '';
+    final correctLatin =
+        q.correctIndex >= 0 && q.correctIndex < q.optionsLatin.length
+        ? q.optionsLatin[q.correctIndex]
+        : '';
+    final selectedOlChiki = index >= 0 && index < q.optionsOlChiki.length
+        ? q.optionsOlChiki[index]
+        : '';
+    final correctOlChiki =
+        q.correctIndex >= 0 && q.correctIndex < q.optionsOlChiki.length
+        ? q.optionsOlChiki[q.correctIndex]
+        : '';
+
+    final isCorrect =
+        index == q.correctIndex ||
+        (selectedLatin.isNotEmpty &&
+            correctLatin.isNotEmpty &&
+            QuizOptionEquivalence.areEquivalent(
+              selectedLatin,
+              correctLatin,
+              isNumber: true,
+            )) ||
+        (selectedOlChiki.isNotEmpty &&
+            correctOlChiki.isNotEmpty &&
+            QuizOptionEquivalence.areEquivalent(
+              selectedOlChiki,
+              correctOlChiki,
+              isNumber: true,
+            ));
 
     setState(() {
       _answered = true;

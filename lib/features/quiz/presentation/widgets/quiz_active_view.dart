@@ -16,6 +16,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/widgets/state_widgets.dart';
 import '../../../content/presentation/providers/audio_playback_providers.dart';
+import '../../domain/quiz_option_equivalence.dart';
 import '../providers/quiz_session_notifier.dart';
 import 'fill_blank_question_card.dart';
 import 'listening_question_card.dart';
@@ -430,15 +431,45 @@ class _QuizActiveViewState extends ConsumerState<QuizActiveView> {
             ],
           ),
           bottomNavigationBar: widget.state.isAnswered
-              ? QuizFeedbackPanel(
-                  isCorrect:
-                      widget.state.selectedAnswer ==
-                      widget.question.correctIndex,
-                  correctOptionOlChiki: correctOptionOlChiki,
-                  correctOptionLatin: correctOptionLatin,
-                  explanation: widget.question.explanation,
-                  onContinue: widget.onContinue,
-                )
+              ? () {
+                  final selectedIdx = widget.state.selectedAnswer;
+                  final selectedLatin =
+                      selectedIdx != null &&
+                          selectedIdx >= 0 &&
+                          selectedIdx < widget.question.optionsLatin.length
+                      ? widget.question.optionsLatin[selectedIdx]
+                      : '';
+                  final selectedOlChiki =
+                      selectedIdx != null &&
+                          selectedIdx >= 0 &&
+                          selectedIdx < widget.question.optionsOlChiki.length
+                      ? widget.question.optionsOlChiki[selectedIdx]
+                      : '';
+                  final isAnswerCorrect =
+                      selectedIdx == widget.question.correctIndex ||
+                      (selectedLatin.isNotEmpty &&
+                          correctOptionLatin.isNotEmpty &&
+                          QuizOptionEquivalence.areEquivalent(
+                            selectedLatin,
+                            correctOptionLatin,
+                            isNumber: true,
+                          )) ||
+                      (selectedOlChiki.isNotEmpty &&
+                          correctOptionOlChiki.isNotEmpty &&
+                          QuizOptionEquivalence.areEquivalent(
+                            selectedOlChiki,
+                            correctOptionOlChiki,
+                            isNumber: true,
+                          ));
+
+                  return QuizFeedbackPanel(
+                    isCorrect: isAnswerCorrect,
+                    correctOptionOlChiki: correctOptionOlChiki,
+                    correctOptionLatin: correctOptionLatin,
+                    explanation: widget.question.explanation,
+                    onContinue: widget.onContinue,
+                  );
+                }()
               : null,
         ),
       ),

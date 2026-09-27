@@ -1,8 +1,10 @@
 import '../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/utils/santali_numbers.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 import 'quiz_generation_diagnostics.dart';
 import 'quiz_identity_validation.dart';
+import 'quiz_option_equivalence.dart';
 
 export 'quiz_generation_diagnostics.dart';
 
@@ -118,25 +120,18 @@ class LessonQuizGenerator {
         continue;
       }
 
-      // 1. Gather other items in the same lesson as high-quality distractors
-      final otherBlockTranslations = resolvedBlockOptions
-          .where((opt) => opt != correctOption)
-          .toSet()
-          .toList();
-
-      // 2. Fallback general distractors based on category & language
-      final defaultDistractors = fallbackDistractors(
-        teachingLanguage,
-        isNumberCategory,
-        isAlphabetCategory,
+      final options = QuizOptionEquivalence.buildOptions(
+        correctOption: correctOption,
+        lessonOptions: resolvedBlockOptions,
+        isNumber: isNumberCategory,
+        isAlphabet: isAlphabetCategory,
+        getFallbackDistractors: () => fallbackDistractors(
+          teachingLanguage,
+          isNumberCategory,
+          isAlphabetCategory,
+          sampleOption: correctOption,
+        ),
       );
-
-      final distractors = [
-        ...otherBlockTranslations,
-        ...defaultDistractors,
-      ].where((d) => d != correctOption).toSet().toList()..shuffle();
-
-      final options = [correctOption, ...distractors.take(3)]..shuffle();
       final correctIndex = options.indexOf(correctOption);
 
       // Every multiple-choice question needs four unique, non-empty options
@@ -272,6 +267,13 @@ class LessonQuizGenerator {
       if (lang == 'sat') return olChiki.isNotEmpty ? olChiki : latin;
       final meaning = _getExplicitMeaning(block, lang);
       if (meaning.isNotEmpty) return meaning;
+      final numVal =
+          QuizOptionEquivalence.extractNumberValue(latin) ??
+          QuizOptionEquivalence.extractNumberValue(olChiki);
+      if (numVal != null && lang != 'en') {
+        final localized = SantaliNumbers.teachingLanguageName(numVal, lang);
+        if (localized.isNotEmpty) return localized;
+      }
       return latin;
     }
 
@@ -397,12 +399,31 @@ class LessonQuizGenerator {
   static List<String> fallbackDistractors(
     String lang,
     bool isNumber,
-    bool isAlphabet,
-  ) {
+    bool isAlphabet, {
+    String? sampleOption,
+  }) {
     if (isNumber) {
+      final sample = sampleOption?.trim() ?? '';
+      final hasParentheses = sample.contains('(') && sample.contains(')');
+      final hasDash = sample.contains('–') || sample.contains('-');
+
+      if (hasParentheses) {
+        return List<String>.generate(
+          9,
+          (i) => SantaliNumbers.teachingLanguageName(i + 1, lang),
+        );
+      } else if (hasDash) {
+        return List<String>.generate(
+          9,
+          (i) => '${i + 1} – ${SantaliNumbers.englishName(i + 1)}',
+        );
+      }
+
       switch (lang) {
         case 'bn':
           return ['১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        case 'hi':
+          return ['१', '२', '३', '४', '५', '६', '७', '८', '९'];
         case 'or':
           return ['୧', '୨', '୩', '୪', '୫', '୬', '୭', '୮', '୯'];
         case 'sat':

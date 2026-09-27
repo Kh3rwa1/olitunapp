@@ -114,8 +114,9 @@ class _AudioPickerPreviewState extends ConsumerState<AudioPickerPreview> {
               size: 26,
             ),
             style: IconButton.styleFrom(
-              backgroundColor:
-                  _isPlaying ? Colors.redAccent : AppColors.primary,
+              backgroundColor: _isPlaying
+                  ? Colors.redAccent
+                  : AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.all(8),
             ),
@@ -160,8 +161,8 @@ class _AudioPickerPreviewState extends ConsumerState<AudioPickerPreview> {
                     color: _isPlaying
                         ? AppColors.primary
                         : (isDark
-                            ? AppColors.textSecondaryDark
-                            : AppColors.textSecondaryLight),
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight),
                   ),
                 ),
               ],

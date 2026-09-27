@@ -400,7 +400,8 @@ class ContentItemSerialization {
             item.heroMedia?.kind == ContentMediaKind.svg
         ? item.heroMedia?.url
         : null;
-    final legacyAudioUrl = item.audioUrl ??
+    final legacyAudioUrl =
+        item.audioUrl ??
         (item.heroMedia?.kind == ContentMediaKind.audio
             ? item.heroMedia?.url
             : null);

@@ -5,7 +5,7 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
-import 'mini_bars.dart';
+import '../../../../../shared/widgets/ai_spark_assistant.dart';
 
 /// Loading / error dock under the generate button. The player itself
 /// lives on the flip-card back face.
@@ -32,29 +32,16 @@ class StudioStatusDock extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     if (isLoading) {
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
           color: AppColors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.primary.withValues(alpha: 0.25)),
         ),
-        child: Row(
-          children: [
-            const MiniBars(barCount: 12, height: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                l10n.voiceStatusWorking,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
+        child: AiSparkAssistant(
+          statusText: l10n.voiceStatusWorking,
+          compact: true,
+          size: 34,
         ),
       ).animate().fadeIn();
     }

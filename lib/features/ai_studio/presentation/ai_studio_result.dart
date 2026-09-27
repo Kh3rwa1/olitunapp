@@ -33,8 +33,63 @@ extension _AiStudioResult on _AiStudioScreenState {
       ],
     );
 
+    final isProcessing =
+        draft.busy ||
+        (_tool == _Tool.scan &&
+            job != null &&
+            !job.isTerminal &&
+            job.text.isEmpty);
+
     Widget body;
-    if (_tool == _Tool.scan && job != null) {
+    if (isProcessing) {
+      final status = switch (_tool) {
+        _Tool.transcribe => '${l10n.aiStudioToolTranscribe}…',
+        _Tool.translate => '${l10n.aiStudioToolTranslate}…',
+        _Tool.scan => 'Scanning & OCR converting…',
+      };
+      final subhead = switch (_tool) {
+        _Tool.transcribe => 'Transcribing speech to text… Tap spark ✨',
+        _Tool.translate => 'Translating text into Santali… Tap spark ✨',
+        _Tool.scan =>
+          job != null
+              ? 'Scan status: ${job.status} • Job: ${job.id}'
+              : 'Extracting text from document… Tap spark ✨',
+      };
+      body = Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: isMobile ? 18 : 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AiSparkAssistant(
+                statusText: status,
+                subheadText: subhead,
+                size: isMobile ? 116 : 140,
+              ),
+              if (_tool == _Tool.scan &&
+                  job != null &&
+                  !job.isTerminal &&
+                  !draft.auto) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  key: const Key('studio-check-status'),
+                  onPressed:
+                      draft.busy ||
+                          !ref.watch(aiStudioServiceProvider).configured
+                      ? null
+                      : () => _process(checkStatus: true),
+                  icon: const Icon(Icons.refresh_rounded, size: 15),
+                  label: Text(
+                    AppLocalizations.of(context)!.aiStudioCheckStatus,
+                    style: const TextStyle(fontSize: 11.5),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    } else if (_tool == _Tool.scan && job != null) {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -282,6 +337,22 @@ extension _AiStudioResult on _AiStudioScreenState {
           ],
         ],
       );
+    } else if (isProcessing && isMobile) {
+      footer = Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          style: TextButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+          ),
+          onPressed: () => unawaited(_flipTo(showResult: false)),
+          icon: const Icon(Icons.arrow_back_rounded, size: 13),
+          label: Text(
+            AppLocalizations.of(context)!.aiStudioEditSource,
+            style: const TextStyle(fontSize: 11.5),
+          ),
+        ),
+      );
     }
 
     return _studioCard(
@@ -302,7 +373,7 @@ extension _AiStudioResult on _AiStudioScreenState {
         ),
         child: KeyedSubtree(
           key: ValueKey(
-            'result-${_tool.name}-$hasText-${job?.status ?? 'none'}',
+            'result-${_tool.name}-$isProcessing-$hasText-${job?.status ?? 'none'}',
           ),
           child: body,
         ),

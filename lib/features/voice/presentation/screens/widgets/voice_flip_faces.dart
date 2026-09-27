@@ -8,6 +8,7 @@ import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
+import '../../../../../shared/widgets/ai_spark_assistant.dart';
 import '../../providers/santali_voice_providers.dart';
 import 'mini_bars.dart';
 
@@ -233,6 +234,7 @@ class VoicePlayerFace extends StatelessWidget {
       // Shown immediately after CREATE VOICE is tapped (the card flips
       // first, Bodhan renders second) and before the first generation.
       return Container(
+        key: ValueKey('player-face-loading-$isLoading'),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             colors: [AppColors.voicePurple, AppColors.voiceTeal],
@@ -242,26 +244,38 @@ class VoicePlayerFace extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const MiniBars(barCount: 12, height: 24, light: true),
-            const SizedBox(width: 14),
-            Flexible(
-              child: Text(
-                isLoading ? l10n.voiceCreatingBack : l10n.voiceEmptyBack,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        child: isLoading
+            ? Center(
+                child: SingleChildScrollView(
+                  child: AiSparkAssistant(
+                    statusText: l10n.voiceCreatingBack,
+                    subheadText:
+                        'Giving your words a Santali voice… Tap spark ✨',
+                    size: 80,
+                    light: true,
+                  ),
                 ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const MiniBars(barCount: 12, height: 24, light: true),
+                  const SizedBox(width: 14),
+                  Flexible(
+                    child: Text(
+                      l10n.voiceEmptyBack,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       );
     }
     final state = player.state;

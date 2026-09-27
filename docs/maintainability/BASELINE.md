@@ -328,3 +328,94 @@ Symbol and provider declaration count in `lib/`:
 | **8. Hardcoded strings in `quiz_screen.dart`** | "Loading Quiz...", "Quiz is Empty", "Back to Home". | **CONFIRMED TRUE** | `lib/features/quiz/presentation/quiz_screen.dart:245, 273, 276` contains untranslated strings. |
 | **9. Live credentials test in `test/`** | `test/ai_studio_sdk_temporary_test.dart` requires live credentials. | **CONFIRMED TRUE** | `test/ai_studio_sdk_temporary_test.dart` checks `Platform.environment['STUDIO_LIVE_CHECK']`. |
 | **10. Untested Functions** | Several functions have no tests. | **CONFIRMED TRUE** | 6 functions have 0 tests, including `manageAdminAccess` (a protected zone). |
+
+---
+
+## 12. Investigation of Test Suite, CI Gates & Pipeline Wiring
+
+### A. Full `flutter test` Results on `main`
+- **Total Tests**: 2,609
+- **Passing**: 2,607
+- **Skipped**: 2
+- **Failing**: 0
+
+#### Deep Dive: `test/shared/widgets/ai_spark_assistant_test.dart` Status & Root Cause
+- **Is it failing on `main`?** **NO.** On current `main` (commit `5693413d`), all 3 tests in `ai_spark_assistant_test.dart` pass cleanly.
+- **Root Cause of Background Run Failure**:
+  - At the start of the audit session, the local repository was checked out to `feat/fullscreen-ai-spark-animation` (commit `c5630ed9`).
+  - At 22:23:05, `main` was checked out at commit `f80a5396` (PR #408). In `f80a5396`, `AiSparkAssistant` did not yet support the `fullscreen` parameter.
+  - At 22:24:18, `flutter test --coverage` was launched as a background task. The Flutter test compiler cache (`build/test_cache/`) had already parsed `ai_spark_assistant_test.dart` with `fullscreen: true` from the feature branch.
+  - At 22:24:37 (19 seconds after the test task started), PR #409 was merged into `origin/main` on GitHub (`5693413d`), which added `fullscreen` support to both `lib/shared/widgets/ai_spark_assistant.dart` and `test/shared/widgets/ai_spark_assistant_test.dart`.
+  - When the running background test suite reached `ai_spark_assistant_test.dart`, it encountered a compilation mismatch between the cached test and the pre-PR#409 library code.
+  - Once rebased onto current `main` (`5693413d`), both the library and test code are in sync, and all 3 tests pass without error.
+
+---
+
+### B. Execution Output of All 13 CI Gate Scripts & `custom_lint`
+
+| Gate Name | Execution Command | Result | Terminal Output Summary |
+| :--- | :--- | :---: | :--- |
+| **File Length Gate** | `node scripts/check_file_length.mjs` | **PASS** | `Checked 775 Dart files against 600-line limit. All non-exempted files under 600 lines.` |
+| **Bundled Typography Gate** | `node scripts/check_typography.mjs` | **PASS** | `All text complies with bundled Inter & Ol Chiki font contracts.` |
+| **Color Token Gate** | `node scripts/check_color_literals.mjs` | **PASS** | `Zero unapproved raw color literals.` |
+| **Appwrite Deployability Gate** | `node scripts/check_appwrite_deployable.mjs` | **PASS** | `Appwrite configuration is valid and deployable.` |
+| **Appwrite Manifest Parity** | `node scripts/verify_function_deployment.mjs` | **PASS** | `Verified 25 function manifests and 8 buckets: source paths, roles, schedules, runtimes match.` |
+| **Function Packaging Smoke** | `node scripts/smoke_package_functions.mjs` | **PASS** | `Packaging smoke passed for 25 functions (package.json, lockfile, entrypoint syntax).` |
+| **Sheets-Above-Nav Gate** | `node scripts/check_sheets_above_nav.mjs` | **PASS** | `All bottom sheets open above the floating navigation.` |
+| **Architecture Boundaries Gate** | `node scripts/check_architecture_boundaries.mjs` | **PASS** | `782 Dart files checked, 0 boundary violations.` |
+| **Localization Key Parity** | `node scripts/check_l10n_parity.mjs` | **PASS** | `All ARB files passed 100% localization parity check.` |
+| **Review Corpus ID Integrity** | `node scripts/check_review_corpus_ids.mjs` | **PASS** | `All IDs, aliases, and tombstones are consistent across client and seed.` |
+| **Action SHA Pinning Gate** | `node scripts/verify_pinned_actions.mjs` | **PASS** | `All GitHub Actions in .github/workflows/ are immutably pinned to 40-character commit SHAs.` |
+| **Signing Config Gate** | `node scripts/verify_signing_configuration.mjs` | **PASS** | `All workflows and Gradle definitions resolve certificate and store credentials properly.` |
+| **Node Dependency Alignment** | `node scripts/verify_node_dependency_alignment.mjs` | **PASS** | `node-appwrite 25.1.0 is pinned and protected from automated upgrades.` |
+| **Static Analyzer** | `flutter analyze --fatal-infos` | **PASS** | `Analyzing olitunapp... No issues found! (ran in 26.9s)` |
+| **Riverpod Lint Gate** | `flutter pub run custom_lint` | **PASS** | `Analyzing... No issues found!` |
+
+---
+
+### C. CI Pipeline Wiring Analysis for `check_hardcoded_strings.mjs`
+
+- **Is `check_hardcoded_strings.mjs` failing in CI on `main` right now?** **NO.**
+- **Why?** It is **not wired into GitHub Actions CI workflows at all**.
+- **Evidence**:
+  - Grepping `.github/workflows/` for `check_hardcoded_strings` yields **0 matches**:
+    ```bash
+    $ git grep -n "check_hardcoded_strings" .github/
+    # (exit code 1 - no occurrences)
+    ```
+  - In `.github/workflows/flutter-ci.yml`, the static analysis job runs lines 30–59:
+    ```yaml
+    30:       - name: Enforce File Length Gate
+    31:         run: node scripts/check_file_length.mjs
+    32:       - name: Enforce Bundled Typography Gate
+    33:         run: node scripts/check_typography.mjs
+    34:       - name: Enforce Color Token Gate
+    35:         run: node scripts/check_color_literals.mjs
+    36:       - name: Enforce Appwrite Deployability Gate
+    37:         run: node scripts/check_appwrite_deployable.mjs
+    38:       - name: Enforce Appwrite Manifest Parity Gate
+    39:         run: node scripts/verify_function_deployment.mjs
+    40:       - name: Enforce Function Packaging Smoke Gate
+    41:         run: node scripts/smoke_package_functions.mjs
+    42:       - name: Enforce Sheets-Above-Nav Gate
+    43:         run: node scripts/check_sheets_above_nav.mjs
+    44:       - name: Enforce Architecture Boundaries Gate
+    45:         run: node scripts/check_architecture_boundaries.mjs
+    46:       - name: Enforce Localization Key Parity Gate
+    47:         run: node scripts/check_l10n_parity.mjs
+    48:       - name: Enforce Review Corpus ID Integrity
+    49:         run: node scripts/check_review_corpus_ids.mjs
+    50:       - name: Unit Test Review Corpus ID Integrity Checker
+    51:         run: node --test scripts/check_review_corpus_ids.test.mjs
+    52:       - name: Verify Version Consistency
+    53:         run: dart run tool/verify_version_consistency.dart
+    54:       - name: Audit Immutable GitHub Action SHA Pinning
+    55:         run: node scripts/verify_pinned_actions.mjs
+    56:       - name: Verify Signing Configuration Consistency
+    57:         run: node scripts/verify_signing_configuration.mjs
+    58:       - name: Verify Node Dependency Alignment
+    59:         run: node scripts/verify_node_dependency_alignment.mjs
+    ```
+  - The script is referenced only in documentation (`ARCHITECTURE.md:108` and `README.md:293`) as a recommended manual gate, but was never wired into `flutter-ci.yml`.
+  - When executed locally, `node scripts/check_hardcoded_strings.mjs` currently fails due to 1 stale baseline entry (`ai_studio_input.dart:172`) and 2 ungrandfathered literals (`category_lessons_screen.dart:230` and `ai_spark_assistant.dart:337`). Wiring it to CI as part of Phase 4 will require fixing these violations and burning the baseline down to zero.
+

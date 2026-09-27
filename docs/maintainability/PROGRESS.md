@@ -35,15 +35,24 @@ Running log of work completed, verified findings, architectural decisions, skipp
 
 ---
 
-## Open Questions for the Owner
+### Owner Decisions Recorded
+- **`SecureHttpOverrides` + `ALLOW_SELF_SIGNED`**: **DELETE** approved (no self-signed dev flow exists). Scheduled for Phase 1.
+- **Phase 2 Web Build in GitHub Actions**: **APPROVED**. Build Flutter web in CI and deploy pre-built artifacts to unblock capped dependencies.
+- **Application ID & Security Email**: Awaiting confirmation on published Google Play ID and contact mailbox.
 
-1. **Google Play Package & Application ID**:
-   - In `android/app/build.gradle.kts`, `applicationId = "com.ol.itun"` has the Flutter template comment `// TODO: Specify your own unique Application ID`. Is `com.ol.itun` already the live, published production Application ID on Google Play?
-2. **Security Vulnerability Reporting Address**:
-   - `SECURITY.md` currently lists `security@olitun.app`, while the website and domain are `olitun.in`. Is `security@olitun.app` configured to receive emails, or should it be updated to `security@olitun.in`?
-3. **`SecureHttpOverrides` Removal**:
-   - `lib/core/network/secure_http_overrides.dart` provides no functional certificate override beyond platform defaults. Is there any active on-premise or local self-signed Appwrite testing environment that requires an override, or can this file and the `ALLOW_SELF_SIGNED` flag be completely deleted?
-4. **Historical Git History Cleanup**:
-   - Git history contains ~420 MB of cached `.dill` build files and release archives (`build_web_*.zip`, `mapping.txt`). `scripts/clean_history_remove_build_artifacts.sh` exists to purge them. Does the owner approve rewriting history on non-release branches or using Git LFS for remaining large media assets?
-5. **Flutter Web Build Strategy (Phase 2 Pre-approval)**:
-   - Several major packages (`lottie`, `image_picker`, `path_provider`, `record`) are capped strictly because the Appwrite Sites builder runtime is pinned to Flutter 3.35. We recommend switching to building Flutter Web in GitHub Actions with a single pinned version and deploying the pre-built web artifact. Does the owner approve this architectural shift?
+---
+
+## Phase 0 Completion & Sign-Off Checklist
+- [x] Dart LOC & layer distribution measured
+- [x] 20 largest files and >500 line files tracked
+- [x] Flutter unit, widget, and coverage measured
+- [x] Appwrite functions test coverage and untested function list compiled
+- [x] Hardcoded strings baseline & CI wiring status confirmed
+- [x] Direct dependencies and builder caps documented
+- [x] `node-appwrite` version fragmentation mapped
+- [x] 29 open Dependabot PRs triaged by ecosystem and risk
+- [x] Riverpod usage census compiled
+- [x] Repository and git history bloat identified
+- [x] 13 CI gate scripts and `custom_lint` verified
+- [x] `BASELINE.md` committed and verified
+

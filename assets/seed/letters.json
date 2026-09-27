@@ -5,7 +5,8 @@
     "transliterationLatin": "La (a)",
     "order": 0,
     "isActive": true,
-    "exampleWord": "Ol"
+    "exampleWord": "Ol",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250190a7f82535f27/view?project=699495910038e39622c5"
   },
   {
     "id": "l_at",
@@ -13,7 +14,8 @@
     "transliterationLatin": "At (t)",
     "order": 1,
     "isActive": true,
-    "exampleWord": "At"
+    "exampleWord": "At",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250556e988268cbc4/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ag",
@@ -21,7 +23,8 @@
     "transliterationLatin": "Ag (g)",
     "order": 2,
     "isActive": true,
-    "exampleWord": "Ag"
+    "exampleWord": "Ag",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250b4a4100e7defbd/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ang",
@@ -29,7 +32,8 @@
     "transliterationLatin": "Ang (ng)",
     "order": 3,
     "isActive": true,
-    "exampleWord": "Ang"
+    "exampleWord": "Ang",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250d67b0c04c6801c/view?project=699495910038e39622c5"
   },
   {
     "id": "l_al",
@@ -37,7 +41,8 @@
     "transliterationLatin": "Al (l)",
     "order": 4,
     "isActive": true,
-    "exampleWord": "Al"
+    "exampleWord": "Al",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2250ee96258c657ea3/view?project=699495910038e39622c5"
   },
   {
     "id": "l_laa",
@@ -45,7 +50,8 @@
     "transliterationLatin": "Laa (aa)",
     "order": 5,
     "isActive": true,
-    "exampleWord": "Aa"
+    "exampleWord": "Aa",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225105a16085db8931/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ak",
@@ -53,7 +59,8 @@
     "transliterationLatin": "Ak (k)",
     "order": 6,
     "isActive": true,
-    "exampleWord": "Ka"
+    "exampleWord": "Ka",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22514a3b9203095ee3/view?project=699495910038e39622c5"
   },
   {
     "id": "l_aj",
@@ -61,7 +68,8 @@
     "transliterationLatin": "Aj (j)",
     "order": 7,
     "isActive": true,
-    "exampleWord": "Ja"
+    "exampleWord": "Ja",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22516063da850d046a/view?project=699495910038e39622c5"
   },
   {
     "id": "l_am",
@@ -69,7 +77,8 @@
     "transliterationLatin": "Am (m)",
     "order": 8,
     "isActive": true,
-    "exampleWord": "Ma"
+    "exampleWord": "Ma",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22517837e889fdb03b/view?project=699495910038e39622c5"
   },
   {
     "id": "l_aw",
@@ -77,7 +86,8 @@
     "transliterationLatin": "Aw (w)",
     "order": 9,
     "isActive": true,
-    "exampleWord": "Wa"
+    "exampleWord": "Wa",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225190700f8c03fa04/view?project=699495910038e39622c5"
   },
   {
     "id": "l_li",
@@ -85,7 +95,8 @@
     "transliterationLatin": "Li (i)",
     "order": 10,
     "isActive": true,
-    "exampleWord": "Ir"
+    "exampleWord": "Ir",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251b5cfc383d059c4/view?project=699495910038e39622c5"
   },
   {
     "id": "l_is",
@@ -93,7 +104,8 @@
     "transliterationLatin": "Is (s)",
     "order": 11,
     "isActive": true,
-    "exampleWord": "Si"
+    "exampleWord": "Si",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251e2501402bad607/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ih",
@@ -101,7 +113,8 @@
     "transliterationLatin": "Ih (h)",
     "order": 12,
     "isActive": true,
-    "exampleWord": "Ha"
+    "exampleWord": "Ha",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2251fe4c2c04d55d95/view?project=699495910038e39622c5"
   },
   {
     "id": "l_iny",
@@ -109,7 +122,8 @@
     "transliterationLatin": "Iny (ny)",
     "order": 13,
     "isActive": true,
-    "exampleWord": "Ny"
+    "exampleWord": "Ny",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252113e41828569e5/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ir",
@@ -117,7 +131,8 @@
     "transliterationLatin": "Ir (r)",
     "order": 14,
     "isActive": true,
-    "exampleWord": "Ra"
+    "exampleWord": "Ra",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252351adb06d109e1/view?project=699495910038e39622c5"
   },
   {
     "id": "l_lu",
@@ -125,7 +140,8 @@
     "transliterationLatin": "Lu (u)",
     "order": 15,
     "isActive": true,
-    "exampleWord": "Ul"
+    "exampleWord": "Ul",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22525a21ef8b1b0c78/view?project=699495910038e39622c5"
   },
   {
     "id": "l_uc",
@@ -133,7 +149,8 @@
     "transliterationLatin": "Uc (c)",
     "order": 16,
     "isActive": true,
-    "exampleWord": "Ca"
+    "exampleWord": "Ca",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252741ccf0c743cbd/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ud",
@@ -141,7 +158,8 @@
     "transliterationLatin": "Ud (d)",
     "order": 17,
     "isActive": true,
-    "exampleWord": "Da"
+    "exampleWord": "Da",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22528ed13a81b80015/view?project=699495910038e39622c5"
   },
   {
     "id": "l_unn",
@@ -149,7 +167,8 @@
     "transliterationLatin": "Unn (nn)",
     "order": 18,
     "isActive": true,
-    "exampleWord": "Nn"
+    "exampleWord": "Nn",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252ac05dc0a9715c2/view?project=699495910038e39622c5"
   },
   {
     "id": "l_uy",
@@ -157,7 +176,8 @@
     "transliterationLatin": "Uy (y)",
     "order": 19,
     "isActive": true,
-    "exampleWord": "Ya"
+    "exampleWord": "Ya",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252c70714877a5a0a/view?project=699495910038e39622c5"
   },
   {
     "id": "l_le",
@@ -165,7 +185,8 @@
     "transliterationLatin": "Le (e)",
     "order": 20,
     "isActive": true,
-    "exampleWord": "En"
+    "exampleWord": "En",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2252dc708c86888ec6/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ep",
@@ -173,7 +194,8 @@
     "transliterationLatin": "Ep (p)",
     "order": 21,
     "isActive": true,
-    "exampleWord": "Pa"
+    "exampleWord": "Pa",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22533a8d9a0373fe0b/view?project=699495910038e39622c5"
   },
   {
     "id": "l_edd",
@@ -181,7 +203,8 @@
     "transliterationLatin": "Edd (dd)",
     "order": 22,
     "isActive": true,
-    "exampleWord": "Dd"
+    "exampleWord": "Dd",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225355084d08dea4ca/view?project=699495910038e39622c5"
   },
   {
     "id": "l_en",
@@ -189,7 +212,8 @@
     "transliterationLatin": "En (n)",
     "order": 23,
     "isActive": true,
-    "exampleWord": "Na"
+    "exampleWord": "Na",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a22537d416e01308ed2/view?project=699495910038e39622c5"
   },
   {
     "id": "l_err",
@@ -197,7 +221,8 @@
     "transliterationLatin": "Err (rr)",
     "order": 24,
     "isActive": true,
-    "exampleWord": "Rr"
+    "exampleWord": "Rr",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225395372d07ecb0de/view?project=699495910038e39622c5"
   },
   {
     "id": "l_lo",
@@ -205,7 +230,8 @@
     "transliterationLatin": "Lo (o)",
     "order": 25,
     "isActive": true,
-    "exampleWord": "Ol"
+    "exampleWord": "Ol",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a2259f209c40c851e46/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ott",
@@ -213,7 +239,8 @@
     "transliterationLatin": "Ott (tt)",
     "order": 26,
     "isActive": true,
-    "exampleWord": "Tt"
+    "exampleWord": "Tt",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a094e200e7c1e99/view?project=699495910038e39622c5"
   },
   {
     "id": "l_obb",
@@ -221,7 +248,8 @@
     "transliterationLatin": "Obb (b)",
     "order": 27,
     "isActive": true,
-    "exampleWord": "Ba"
+    "exampleWord": "Ba",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a203f7a00d74225/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ov",
@@ -229,7 +257,8 @@
     "transliterationLatin": "Ov (v)",
     "order": 28,
     "isActive": true,
-    "exampleWord": "Va"
+    "exampleWord": "Va",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a389c400594c3dd/view?project=699495910038e39622c5"
   },
   {
     "id": "l_oh",
@@ -237,7 +266,8 @@
     "transliterationLatin": "Oh (h)",
     "order": 29,
     "isActive": true,
-    "exampleWord": "Ha"
+    "exampleWord": "Ha",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/6a225a4cf07a8a62fb2e/view?project=699495910038e39622c5"
   },
   {
     "id": "l_mu_tudag",
@@ -245,7 +275,8 @@
     "transliterationLatin": "Mu Tudag",
     "order": 30,
     "isActive": true,
-    "exampleWord": "ᱦᱮᱸ"
+    "exampleWord": "ᱦᱮᱸ",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_tudag/view?project=699495910038e39622c5"
   },
   {
     "id": "l_gahla_tudag",
@@ -253,7 +284,8 @@
     "transliterationLatin": "Gahla Tudag",
     "order": 31,
     "isActive": true,
-    "exampleWord": "ᱟᱹᱛᱩ"
+    "exampleWord": "ᱟᱹᱛᱩ",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_gahla_tudag/view?project=699495910038e39622c5"
   },
   {
     "id": "l_mu_gahla_tudag",
@@ -261,7 +293,8 @@
     "transliterationLatin": "Mu-Gahla Tudag",
     "order": 32,
     "isActive": true,
-    "exampleWord": "ᱥᱟᱺᱜᱤᱧ"
+    "exampleWord": "ᱥᱟᱺᱜᱤᱧ",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_gahla_tudag/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ohod",
@@ -269,7 +302,8 @@
     "transliterationLatin": "Ohod",
     "order": 33,
     "isActive": true,
-    "exampleWord": "ᱢᱟᱹᱡᱷᱤ"
+    "exampleWord": "ᱢᱟᱹᱡᱷᱤ",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ohod/view?project=699495910038e39622c5"
   },
   {
     "id": "l_ahd",
@@ -277,6 +311,7 @@
     "transliterationLatin": "Ahd",
     "order": 34,
     "isActive": true,
-    "exampleWord": "ᱮᱻ"
+    "exampleWord": "ᱮᱻ",
+    "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_rela/view?project=699495910038e39622c5"
   }
 ]

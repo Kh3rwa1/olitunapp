@@ -53,6 +53,7 @@ class AlphabetSeeder {
               exampleWordLatin: exampleWord,
               order: order,
               isActive: isActive,
+              audioUrl: item['audioUrl'] as String?,
             ),
           );
         }

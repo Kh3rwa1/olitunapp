@@ -80,12 +80,12 @@ void main() {
         expect(SantaliNumbers.pronunciation(10, 'en'), 'Gel');
         expect(SantaliNumbers.pronunciation(10, 'sat'), 'ᱜᱮᱞ');
 
-        // 21 (Isi Mit)
-        expect(SantaliNumbers.pronunciation(21, 'bn'), 'ইসি মিৎ');
-        expect(SantaliNumbers.pronunciation(21, 'hi'), 'इसी मित');
-        expect(SantaliNumbers.pronunciation(21, 'or'), 'ଇସି ମିତ୍');
-        expect(SantaliNumbers.pronunciation(21, 'en'), 'Isi Mit');
-        expect(SantaliNumbers.pronunciation(21, 'sat'), 'ᱤᱥᱤ ᱢᱤᱫ');
+        // 21 (Bar Gel Mit)
+        expect(SantaliNumbers.pronunciation(21, 'bn'), 'বার গেল মিৎ');
+        expect(SantaliNumbers.pronunciation(21, 'hi'), 'बार गेल मित');
+        expect(SantaliNumbers.pronunciation(21, 'or'), 'ବାର୍ ଗେଲ୍ ମିତ୍');
+        expect(SantaliNumbers.pronunciation(21, 'en'), 'Bar Gel Mit');
+        expect(SantaliNumbers.pronunciation(21, 'sat'), 'ᱵᱟᱨ ᱜᱮᱞ ᱢᱤᱫ');
 
         // 100 (Say)
         expect(SantaliNumbers.pronunciation(100, 'bn'), 'সায়');
@@ -109,7 +109,10 @@ void main() {
       expect(SantaliNumbers.teachingLanguageName(21, 'hi'), 'इक्कीस (२१)');
       expect(SantaliNumbers.teachingLanguageName(21, 'or'), 'ଏକୋଇଶ (୨୧)');
       expect(SantaliNumbers.teachingLanguageName(21, 'en'), 'Twenty-One (21)');
-      expect(SantaliNumbers.teachingLanguageName(21, 'sat'), 'ᱤᱥᱤ ᱢᱤᱫ (᱒᱑)');
+      expect(
+        SantaliNumbers.teachingLanguageName(21, 'sat'),
+        'ᱵᱟᱨ ᱜᱮᱞ ᱢᱤᱫ (᱒᱑)',
+      );
 
       // 100
       expect(SantaliNumbers.teachingLanguageName(100, 'bn'), 'একশো (১০০)');
@@ -190,7 +193,7 @@ void main() {
 
       expect(display.title, 'একুশ (২১)');
       expect(display.scriptText, '᱒᱑');
-      expect(display.subtitle, 'ইসি মিৎ');
+      expect(display.subtitle, 'বার গেল মিৎ');
       expect(display.ctaText, 'শুনুন');
     });
 

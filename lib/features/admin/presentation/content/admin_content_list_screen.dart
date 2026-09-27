@@ -10,6 +10,7 @@ import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_states.dart';
 import 'utils/content_list_actions.dart';
 import 'widgets/alphabet_discovery_banner.dart';
+import 'widgets/number_discovery_banner.dart';
 import 'widgets/content_bulk_action_bar.dart';
 import 'widgets/content_filter_bar.dart';
 import 'widgets/content_form_sheet.dart';
@@ -86,7 +87,7 @@ class _AdminContentListScreenState
       case ContentKind.letter:
         return '35 Alphabets';
       case ContentKind.number:
-        return 'Ol Chiki Numbers';
+        return '100 Numbers';
       case ContentKind.word:
         return 'Vocabulary Words';
       case ContentKind.sentence:
@@ -103,7 +104,7 @@ class _AdminContentListScreenState
       case ContentKind.letter:
         return 'CONTENT · 35 ALPHABETS';
       case ContentKind.number:
-        return 'CONTENT · NUMBERS';
+        return 'CONTENT · 100 NUMBERS';
       case ContentKind.word:
         return 'CONTENT · WORDS';
       case ContentKind.sentence:
@@ -120,7 +121,7 @@ class _AdminContentListScreenState
       case ContentKind.letter:
         return 'Manage the 35 Ol Chiki alphabet characters, pronunciation, audio, and tracing';
       case ContentKind.number:
-        return 'Manage numerals and counting';
+        return 'Manage the 100 Ol Chiki numbers (0-100), numerals, pronunciation, audio, and tracing';
       case ContentKind.word:
         return 'Manage words and their meanings';
       case ContentKind.sentence:
@@ -130,6 +131,12 @@ class _AdminContentListScreenState
       case ContentKind.rhyme:
         return 'Manage kid-friendly music and stories';
     }
+  }
+
+  String get _actionLabel {
+    if (widget.kind == ContentKind.letter) return 'Add Alphabet';
+    if (widget.kind == ContentKind.number) return 'Add Number';
+    return 'Add $_title';
   }
 
   IconData get _icon {
@@ -354,18 +361,30 @@ class _AdminContentListScreenState
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            if (widget.kind == ContentKind.lesson &&
-                AlphabetDiscoveryBanner.isAlphabetCategory(
-                  _selectedCategoryId,
-                  categories,
-                )) ...[
-              SliverToBoxAdapter(
-                child: AlphabetDiscoveryBanner(
-                  isDark: isDark,
-                  isWideScreen: isWideScreen,
+            if (widget.kind == ContentKind.lesson) ...[
+              if (AlphabetDiscoveryBanner.isAlphabetCategory(
+                _selectedCategoryId,
+                categories,
+              )) ...[
+                SliverToBoxAdapter(
+                  child: AlphabetDiscoveryBanner(
+                    isDark: isDark,
+                    isWideScreen: isWideScreen,
+                  ),
                 ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 12)),
+                const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              ] else if (NumberDiscoveryBanner.isNumberCategory(
+                _selectedCategoryId,
+                categories,
+              )) ...[
+                SliverToBoxAdapter(
+                  child: NumberDiscoveryBanner(
+                    isDark: isDark,
+                    isWideScreen: isWideScreen,
+                  ),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 12)),
+              ],
             ],
             ...listAsync.when(
               data: (items) {
@@ -379,9 +398,7 @@ class _AdminContentListScreenState
                         title: 'No items found',
                         message:
                             'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
-                        actionLabel: widget.kind == ContentKind.letter
-                            ? 'Add Alphabet'
-                            : 'Add $_title',
+                        actionLabel: _actionLabel,
                         onAction: () => _openFormSheet(null),
                       ),
                     ),
@@ -564,7 +581,7 @@ class _AdminContentListScreenState
         foregroundColor: AppColors.elevatedButtonFg,
         icon: const Icon(Icons.add_rounded),
         label: Text(
-          widget.kind == ContentKind.letter ? 'Add Alphabet' : 'Add $_title',
+          _actionLabel,
           style: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),

@@ -23,7 +23,9 @@ class DashboardBentoGrid extends ConsumerWidget {
     );
     final lessonsAsync = ref.watch(lessonNotifierProvider);
     final wordsAsync = ref.watch(wordsProvider);
-    final numbersAsync = ref.watch(numbersProvider);
+    final numbersAsync = ref.watch(
+      contentListProvider((ContentKind.number, null)),
+    );
     final quizzesAsync = ref.watch(quizzesProvider);
 
     int countOf(AsyncValue v) => v.when(
@@ -77,7 +79,7 @@ class DashboardBentoGrid extends ConsumerWidget {
         onTap: () => context.go('/admin/letters'),
       ),
       _Kpi(
-        label: 'Numerals',
+        label: '100 Numbers',
         value: _txt(numbersAsync),
         icon: Icons.format_list_numbered_rounded,
         accent: AppColors.accentCyan,

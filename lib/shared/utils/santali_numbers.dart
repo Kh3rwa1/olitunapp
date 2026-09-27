@@ -5,8 +5,8 @@ import 'santali_number_names.dart';
 /// Single source of truth for:
 /// - [toOlChikiNumeral] / [toNumeral]: decimal value -> localized digits (᱐-᱙, ০-৯, ०-९, ୦-୯, 0-9).
 /// - [nameLatin]/[nameOlChiki]: Santali number names (Mit, Bar, ..., Gel Mit,
-///   Isi, Pe Gel, ..., Say) per omniglot/Santali counting
-///   (10 Gel, 20 Isi, 30 Pe Gel, ..., 100 Say).
+///   Bar Gel, Pe Gel, ..., Say) per Santali decimal counting
+///   (10 Gel, 20 Bar Gel, 30 Pe Gel, ..., 100 Say).
 /// - [pronunciation]: Santali phonetic pronunciation in user's script ('bn', 'hi', 'or', 'en', 'sat').
 /// - [teachingLanguageName]: Number meaning/name in learner's teaching language with numerals ('bn', 'hi', 'or', 'en', 'sat').
 /// - [tryParseValue]: Resolves decimal value 0-100 from Ol Chiki numerals or Latin strings.
@@ -134,10 +134,15 @@ class SantaliNumbers {
   static const String gelHindi = 'गेल';
   static const String gelOdia = 'ଗେଲ୍';
 
+  @Deprecated('Use Bar Gel counting')
   static const String isiLatin = 'Isi';
+  @Deprecated('Use Bar Gel counting')
   static const String isiOlChiki = 'ᱤᱥᱤ';
+  @Deprecated('Use Bar Gel counting')
   static const String isiBengali = 'ইসি';
+  @Deprecated('Use Bar Gel counting')
   static const String isiHindi = 'इसी';
+  @Deprecated('Use Bar Gel counting')
   static const String isiOdia = 'ଇସି';
 
   static const String sayLatin = 'Say';
@@ -192,8 +197,8 @@ class SantaliNumbers {
     return buffer.toString();
   }
 
-  /// Santali name in Latin script, Title Case (e.g. `Gel Mit`, `Isi Bar`,
-  /// `Pe Gel`, `Pe Gel Mit`, `Say`).
+  /// Santali name in Latin script, Title Case (e.g. `Gel Mit`, `Bar Gel`,
+  /// `Bar Gel Mit`, `Pe Gel`, `Say`).
   static String nameLatin(int value) {
     if (value < 0 || value > maxValue) {
       throw RangeError.range(value, 0, maxValue, 'value');
@@ -202,13 +207,12 @@ class SantaliNumbers {
       value: value,
       units: _unitLatin,
       gel: gelLatin,
-      isi: isiLatin,
       say: sayLatin,
     );
   }
 
-  /// Santali name in Ol Chiki (e.g. `ᱜᱮᱞ ᱢᱤᱫ`, `ᱤᱥᱤ ᱵᱟᱨ`,
-  /// `ᱯᱮ ᱜᱮᱞ`, `ᱥᱟᱭ`).
+  /// Santali name in Ol Chiki (e.g. `ᱜᱮᱞ ᱢᱤᱫ`, `ᱵᱟᱨ ᱜᱮᱞ`,
+  /// `ᱵᱟᱨ ᱜᱮᱞ ᱢᱤᱫ`, `ᱯᱮ ᱜᱮᱞ`, `ᱥᱟᱭ`).
   static String nameOlChiki(int value) {
     if (value < 0 || value > maxValue) {
       throw RangeError.range(value, 0, maxValue, 'value');
@@ -217,7 +221,6 @@ class SantaliNumbers {
       value: value,
       units: _unitOlChiki,
       gel: gelOlChiki,
-      isi: isiOlChiki,
       say: sayOlChiki,
     );
   }
@@ -232,7 +235,6 @@ class SantaliNumbers {
           value: value,
           units: _unitBengali,
           gel: gelBengali,
-          isi: isiBengali,
           say: sayBengali,
         );
       case 'hi':
@@ -240,7 +242,6 @@ class SantaliNumbers {
           value: value,
           units: _unitHindi,
           gel: gelHindi,
-          isi: isiHindi,
           say: sayHindi,
         );
       case 'or':
@@ -248,7 +249,6 @@ class SantaliNumbers {
           value: value,
           units: _unitOdia,
           gel: gelOdia,
-          isi: isiOdia,
           say: sayOdia,
         );
       case 'sat':
@@ -263,14 +263,11 @@ class SantaliNumbers {
     required int value,
     required Map<int, String> units,
     required String gel,
-    required String isi,
     required String say,
   }) {
     if (value <= 9) return units[value]!;
     if (value == 10) return gel;
     if (value < 20) return '$gel ${units[value - 10]!}';
-    if (value == 20) return isi;
-    if (value < 30) return '$isi ${units[value - 20]!}';
     if (value == 100) return say;
     final tens = value ~/ 10;
     final ones = value % 10;

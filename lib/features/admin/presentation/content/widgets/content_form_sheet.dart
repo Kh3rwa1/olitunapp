@@ -38,7 +38,17 @@ void showContentFormSheet({
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    initialItem == null ? 'New $title' : 'Edit $title',
+                    initialItem == null
+                        ? (kind == ContentKind.letter
+                              ? 'New Alphabet'
+                              : kind == ContentKind.number
+                              ? 'New Number'
+                              : 'New $title')
+                        : (kind == ContentKind.letter
+                              ? 'Edit Alphabet'
+                              : kind == ContentKind.number
+                              ? 'Edit Number'
+                              : 'Edit $title'),
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,

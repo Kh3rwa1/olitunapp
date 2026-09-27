@@ -111,8 +111,16 @@ class AdminSidebar extends ConsumerWidget {
                                 category.titleLatin.toLowerCase().contains(
                                   'alphabet',
                                 );
+                            final isNumber =
+                                iconName == 'numbers' ||
+                                id.contains('number') ||
+                                category.titleLatin.toLowerCase().contains(
+                                  'number',
+                                );
                             final route = isAlphabet
                                 ? '/admin/letters'
+                                : isNumber
+                                ? '/admin/numbers'
                                 : '/admin/lessons?categoryId=$id';
                             IconData icon;
 
@@ -144,6 +152,8 @@ class AdminSidebar extends ConsumerWidget {
                             final isSelected = isAlphabet
                                 ? (currentUri.path == '/admin/letters' ||
                                       currentUri.path == '/admin/alphabets')
+                                : isNumber
+                                ? currentUri.path == '/admin/numbers'
                                 : (currentUri.path == '/admin/lessons' &&
                                       currentId == id);
 
@@ -197,7 +207,7 @@ class AdminSidebar extends ConsumerWidget {
                     ),
                     AdminNavItem(
                       icon: Icons.pin_rounded,
-                      label: 'Numbers Database',
+                      label: '100 Numbers Database',
                       isSelected: location == '/admin/numbers',
                       onTap: () => _navigate(context, '/admin/numbers'),
                       isCompact: isCompact,

@@ -56,8 +56,9 @@ class _ContentFormState extends ConsumerState<ContentForm> {
   bool get _requiresCategory =>
       widget.kind != ContentKind.letter && widget.kind != ContentKind.number;
 
-  String get glyphValue =>
-      _olChikiController.text.isNotEmpty ? _olChikiController.text : 'ᱚ';
+  String get glyphValue => _olChikiController.text.isNotEmpty
+      ? _olChikiController.text
+      : (widget.kind == ContentKind.number ? '᱐' : 'ᱚ');
 
   @override
   void initState() {
@@ -229,8 +230,18 @@ class _ContentFormState extends ConsumerState<ContentForm> {
         ? rawTitleOlChiki
         : effectiveOlChiki;
 
+    var finalTracing = _tracingConfig;
+    if (needTracing && finalTracing == null) {
+      finalTracing =
+          tracingTemplates[glyphValue] ?? getFallbackTemplate(glyphValue);
+    }
+
+    final generatedId = widget.kind == ContentKind.number
+        ? 'n_${int.tryParse(_orderController.text.trim()) ?? DateTime.now().millisecondsSinceEpoch}'
+        : const Uuid().v4();
+
     final item = ContentItem(
-      id: widget.initial?.id ?? const Uuid().v4(),
+      id: widget.initial?.id ?? generatedId,
       kind: widget.kind,
       categoryId: resolvedCategoryId ?? widget.kind.name,
       title: _titleController.text.trim(),
@@ -241,7 +252,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
       olChiki: effectiveOlChiki,
       heroMedia: _heroMedia,
       blocks: List.unmodifiable(_blocks),
-      tracing: _tracingConfig,
+      tracing: finalTracing,
       order: int.tryParse(_orderController.text) ?? 0,
       isPublished: _isPublished,
       isPremium: _isPremium,

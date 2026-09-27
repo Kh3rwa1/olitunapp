@@ -70,8 +70,6 @@ function _santaliLatin(v) {
   if (v <= 9) return _unitLat[v];
   if (v === 10) return 'Gel';
   if (v < 20) return `Gel ${_unitLat[v - 10]}`;
-  if (v === 20) return 'Isi';
-  if (v < 30) return `Isi ${_unitLat[v - 20]}`;
   if (v === 100) return 'Say';
   const t = Math.floor(v / 10), o = v % 10;
   const base = `${_unitLat[t]} Gel`;
@@ -81,8 +79,6 @@ function _santaliOl(v) {
   if (v <= 9) return _unitOl[v];
   if (v === 10) return 'ᱜᱮᱞ';
   if (v < 20) return `ᱜᱮᱞ ${_unitOl[v - 10]}`;
-  if (v === 20) return 'ᱤᱥᱤ';
-  if (v < 30) return `ᱤᱥᱤ ${_unitOl[v - 20]}`;
   if (v === 100) return 'ᱥᱟᱭ';
   const t = Math.floor(v / 10), o = v % 10;
   const base = `${_unitOl[t]} ᱜᱮᱞ`;

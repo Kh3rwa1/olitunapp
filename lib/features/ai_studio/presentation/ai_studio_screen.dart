@@ -13,6 +13,7 @@ import '../../../core/sharing/growth_share_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/ai_spark_assistant.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
 import '../data/studio_recorder.dart';
@@ -312,7 +313,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
       draft.pendingAuto = true;
       return;
     }
-    unawaited(_process());
+    unawaited(_process(flipOnStart: tool != _Tool.translate));
   }
 
   void _onSourceChanged() {
@@ -350,6 +351,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
   Future<void> _process({
     bool checkStatus = false,
     bool autoPoll = false,
+    bool flipOnStart = true,
   }) async {
     final draft = _draft;
     final tool = _tool;
@@ -366,6 +368,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
       draft.busy = true;
       draft.error = null;
     });
+    if (!checkStatus && !autoPoll && flipOnStart) {
+      unawaited(_flipTo(showResult: true));
+    }
     bool alive() =>
         mounted &&
         generation == _generation &&

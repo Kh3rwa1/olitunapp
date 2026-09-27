@@ -162,23 +162,14 @@ extension _AiStudioInput on _AiStudioScreenState {
               minHeight: 4,
             ),
           ),
-          const SizedBox(height: 5),
-          Semantics(
-            liveRegion: true,
-            child: AnimatedBuilder(
-              animation: _pulse,
-              builder: (_, _) {
-                final dots = '.' * (1 + ((_pulse.value * 3).floor() % 3));
-                return Text(
-                  '${l10n.aiStudioThinking}$dots',
-                  style: const TextStyle(
-                    color: AppColors.amberEmber,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                  ),
-                  textAlign: TextAlign.center,
-                );
-              },
+          const SizedBox(height: 6),
+          Center(
+            child: AiSparkAssistant(
+              statusText: l10n.aiStudioThinking,
+              subheadText: isMobile ? 'Tap to view animated spark ➔' : null,
+              compact: true,
+              size: 28,
+              onTap: isMobile ? () => unawaited(_flipTo(showResult: true)) : null,
             ),
           ),
           const SizedBox(height: 8),

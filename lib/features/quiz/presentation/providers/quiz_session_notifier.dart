@@ -12,6 +12,7 @@ import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import '../../domain/quiz_memory_resolver.dart';
+import '../../domain/quiz_option_equivalence.dart';
 import 'mistake_provider.dart';
 
 export '../../domain/quiz_memory_resolver.dart';
@@ -214,7 +215,44 @@ class QuizSessionNotifier
     if (quiz.questions.isEmpty) return;
     if (state.isAnswered || state.isQuizComplete || state.hearts <= 0) return;
 
-    final isCorrect = index == question.correctIndex;
+    final selectedLatin = index >= 0 && index < question.optionsLatin.length
+        ? question.optionsLatin[index]
+        : '';
+    final correctLatin =
+        question.correctIndex >= 0 &&
+            question.correctIndex < question.optionsLatin.length
+        ? question.optionsLatin[question.correctIndex]
+        : '';
+    final selectedOlChiki = index >= 0 && index < question.optionsOlChiki.length
+        ? question.optionsOlChiki[index]
+        : '';
+    final correctOlChiki =
+        question.correctIndex >= 0 &&
+            question.correctIndex < question.optionsOlChiki.length
+        ? question.optionsOlChiki[question.correctIndex]
+        : '';
+
+    final catId = quiz.categoryId?.toLowerCase() ?? '';
+    final isNumber = catId.contains('number');
+    final isAlphabet = catId.contains('alphabet') || catId.contains('letter');
+    final isCorrect =
+        index == question.correctIndex ||
+        (selectedLatin.isNotEmpty &&
+            correctLatin.isNotEmpty &&
+            QuizOptionEquivalence.areEquivalent(
+              selectedLatin,
+              correctLatin,
+              isNumber: isNumber,
+              isAlphabet: isAlphabet,
+            )) ||
+        (selectedOlChiki.isNotEmpty &&
+            correctOlChiki.isNotEmpty &&
+            QuizOptionEquivalence.areEquivalent(
+              selectedOlChiki,
+              correctOlChiki,
+              isNumber: isNumber,
+              isAlphabet: isAlphabet,
+            ));
     final scoredState = applyQuizAnswerResult(state, isCorrect: isCorrect);
 
     final origIdx = state.questionOrder.isNotEmpty

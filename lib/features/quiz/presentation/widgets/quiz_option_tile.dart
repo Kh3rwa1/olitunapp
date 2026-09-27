@@ -6,6 +6,7 @@ import '../../../../core/accessibility/learning_semantics.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
+import '../../domain/quiz_option_equivalence.dart';
 import 'wrong_answer_shake.dart';
 
 class QuizOptionTile extends StatelessWidget {
@@ -30,7 +31,36 @@ class QuizOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCorrect = index == question.correctIndex;
+    final optionText = index < question.optionsLatin.length
+        ? question.optionsLatin[index]
+        : (index < question.optionsOlChiki.length
+              ? question.optionsOlChiki[index]
+              : '');
+    final correctLatin =
+        question.correctIndex >= 0 &&
+            question.correctIndex < question.optionsLatin.length
+        ? question.optionsLatin[question.correctIndex]
+        : '';
+    final correctOlChiki =
+        question.correctIndex >= 0 &&
+            question.correctIndex < question.optionsOlChiki.length
+        ? question.optionsOlChiki[question.correctIndex]
+        : '';
+    final isCorrect =
+        index == question.correctIndex ||
+        (optionText.isNotEmpty &&
+            ((correctLatin.isNotEmpty &&
+                    QuizOptionEquivalence.areEquivalent(
+                      optionText,
+                      correctLatin,
+                      isNumber: true,
+                    )) ||
+                (correctOlChiki.isNotEmpty &&
+                    QuizOptionEquivalence.areEquivalent(
+                      optionText,
+                      correctOlChiki,
+                      isNumber: true,
+                    ))));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktopWeb =
         kIsWeb ||
@@ -55,11 +85,6 @@ class QuizOptionTile extends StatelessWidget {
           : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white);
     }
 
-    final optionText = index < question.optionsLatin.length
-        ? question.optionsLatin[index]
-        : (index < question.optionsOlChiki.length
-              ? question.optionsOlChiki[index]
-              : '');
     final hasOlChiki = optionText.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
 
     final borderColor = isSelected

@@ -52,7 +52,9 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
         categoryId: '', // will be resolved in form dropdown
         title: letter.transliterationLatin,
         titleOlChiki: letter.charOlChiki,
+        subtitle: letter.exampleWordLatin,
         olChiki: letter.charOlChiki,
+        audioUrl: letter.audioUrl,
         heroMedia: hasMedia
             ? ContentMedia(
                 url: letter.animationUrl ?? letter.imageUrl!,

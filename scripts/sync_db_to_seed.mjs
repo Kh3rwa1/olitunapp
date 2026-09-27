@@ -120,6 +120,7 @@ async function main() {
     order: l.order ?? 0,
     isActive: l.isActive !== false,
     exampleWord: l.exampleWord || 'Ol',
+    audioUrl: l.audioUrl,
   }));
   writeFileSync(join(seedDir, 'letters.json'), JSON.stringify(letters, null, 2) + '\n');
   console.log(`done (${letters.length} items)`);

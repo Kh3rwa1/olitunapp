@@ -20179,8 +20179,10 @@
           "meaning_en": "Baseline dot modifying vowel into deep/open variant (e.g. ᱟ -> ᱟᱹ as in ᱟᱹᱛᱩ)",
           "meaning_bn": "গাহলা টুডাগ (নিচের বিন্দু) – স্বর গভীর করে, যেমন ᱟᱹᱛᱩ (গ্রাম)",
           "meaning_hi": "गाहला टुडाग – स्वर को गहरा बनाता है, जैसे ᱟᱹᱛᱩ (गाँव)",
-          "meaning_or": "ଗାହଲା ଟୁଡାଗ – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)"
-        }
+          "meaning_or": "ଗାହଲା ଟୁଡାଗ – ସ୍ୱରକୁ ଗଭୀର କରେ, ଯେପରି ᱟᱹᱛᱩ (ଗାଁ)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_gahla_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_gahla_tudag/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_1",
@@ -20198,8 +20200,10 @@
           "meaning_en": "Top dot adding nasalization to vowel (e.g. ᱦᱮᱸ: Yes)",
           "meaning_bn": "মু টুডাগ (উপরের বিন্দু) – অনুনাসিক ধ্বনি তৈরি করে, যেমন ᱦᱮᱸ (হ্যাঁ)",
           "meaning_hi": "मु टुडाग – स्वर को अनुनासिक करता है, जैसे ᱦᱮᱸ (हाँ)",
-          "meaning_or": "ମୁ ଟୁଡାଗ – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦେᱸ (ହଁ)"
-        }
+          "meaning_or": "ମୁ ଟୁଡାଗ – ନାସିକ୍ୟ ଧ୍ୱନି କରେ, ଯେପରି ᱦେᱸ (ହଁ)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_tudag/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_2",
@@ -20217,8 +20221,10 @@
           "meaning_en": "Colon-like double dot combining deepening and nasalization together",
           "meaning_bn": "মু-গাহলা টুডাগ – গভীর ও অনুনাসিক যুগল ধ্বনি, যেমন ᱥᱟᱺᱜᱤᱧ (দূর)",
           "meaning_hi": "मु-गाहला टुडाग – गहरा और अनुनासिक का संयुक्त रूप, जैसे ᱥᱟᱺᱜᱤᱧ (दूर)",
-          "meaning_or": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟର ସଂଯୁକ୍ତ ରୂପ"
-        }
+          "meaning_or": "ମୁ-ଗାହଲା ଟୁଡାଗ – ଗଭୀର ଓ ନାସିକ୍ୟର ସଂଯୁକ୍ତ ରୂପ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_gahla_tudag/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mu_gahla_tudag/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_3",
@@ -20236,8 +20242,10 @@
           "meaning_en": "Deglottalizer releasing checked consonants ᱜ, ᱡ, ᱫ, ᱵ into continuous sounds",
           "meaning_bn": "অহদ – অবরুদ্ধ ব্যঞ্জনধ্বনিকে পূর্ণ কণ্ঠে প্রকাশ করে, যেমন ᱢᱮᱫᱽ ( চোখ)",
           "meaning_hi": "ओहद – रुके हुए व्यंजन को मुक्त करता है, जैसे ᱢᱮᱫᱽ ( आँख )",
-          "meaning_or": "ଓହଦ୍ – ସ୍ୱର ପ୍ରବାହ ମୁକ୍ତ କରେ, ଯେପରି ᱢᱮᱫᱽ (ଆଖି)"
-        }
+          "meaning_or": "ଓହଦ୍ – ସ୍ୱର ପ୍ରବାହ ମୁକ୍ତ କରେ, ଯେପରି ᱢᱮᱫᱽ (ଆଖି)",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ohod/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ohod/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_4",
@@ -20256,9 +20264,9 @@
           "meaning_bn": "রেলা– স্বরধ্বনি দীর্ঘায়িত করার চিহ্ন-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
           "meaning_hi": "आहद – स्वर को दीर्घ करने का चिह्न-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
           "meaning_or": "ଆହଦ୍ – ସ୍ୱରକୁ ଦୀର୍ଘ କରିବାର ଚିହ୍ନ-ᱪᱮᱸᱻᱪᱮᱸ, ᱛᱟᱸᱻᱦᱟᱸᱻᱨᱮᱻᱛᱟ।",
-          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_rela/view?project=699495910038e39622c5"
         },
-        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_ahd/view?project=699495910038e39622c5"
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_rela/view?project=699495910038e39622c5"
       },
       {
         "id": "blk_5",
@@ -20276,7 +20284,30 @@
           "meaning_en": "Sentence terminal punctuation mark (full stop)",
           "meaning_bn": "মুচাদ – পূর্ণচ্ছেদ (দাঁড়ি / ফুলস্টপ)",
           "meaning_hi": "मुचाद – पूर्ण विराम (खड़ी पाई)",
-          "meaning_or": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ"
+          "meaning_or": "ମୁଚାଦ୍ – ପୂର୍ଣ୍ଣଚ୍ଛେଦ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mucaad/view?project=699495910038e39622c5"
+        },
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_mucaad/view?project=699495910038e39622c5"
+      },
+      {
+        "id": "blk_6",
+        "order": 6,
+        "type": "text",
+        "markdown": "(ᱼ)- ᱯᱷᱟᱨᱠᱟ – Separates words/syllables for clear pronunciation.",
+        "textOlChiki": "(ᱼ)- ᱯᱷᱟᱨᱠᱟ",
+        "textLatin": "Pharka – separates words/syllables for clear pronunciation.",
+        "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_pharka/view?project=699495910038e39622c5",
+        "meta": {
+          "textBengali": "ফারকা – শব্দ বা সিলেবল পৃথককারী চিহ্ন",
+          "textHindi": "फारका – शब्द या शब्दांश को अलग करने वाला चिह्न",
+          "textOdia": "ଫାରକା – ଶବ୍ଦ ବା ଶବ୍ଦାଂଶ ଅଲଗା କରିବା ଚିହ୍ନ",
+          "pronunciation": "Pharka",
+          "meaning": "Syllable / morpheme boundary separator sign",
+          "meaning_en": "Syllable / morpheme boundary separator sign",
+          "meaning_bn": "ফারকা – শব্দের সিলেবল আলাদা করার চিহ্ন",
+          "meaning_hi": "फारका – शब्दांश विभाजक चिह्न",
+          "meaning_or": "ଫାରକା – ଶବ୍ଦାଂଶ ବିଭାଜକ ଚିହ୍ନ",
+          "audioUrl": "https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/snd_mod_pharka/view?project=699495910038e39622c5"
         }
       }
     ],

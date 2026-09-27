@@ -20,16 +20,15 @@ void main() {
 
   group('AudioCacheManager', () {
     test('returns Uri as-is for empty or local/asset URLs', () async {
-      expect(
-        (await cacheManager.getPlayableUri('')).toString(),
-        '',
-      );
+      expect((await cacheManager.getPlayableUri('')).toString(), '');
       expect(
         (await cacheManager.getPlayableUri('assets/audio/eyes.wav')).toString(),
         'assets/audio/eyes.wav',
       );
       expect(
-        (await cacheManager.getPlayableUri('file:///data/audio.mp3')).toString(),
+        (await cacheManager.getPlayableUri(
+          'file:///data/audio.mp3',
+        )).toString(),
         'file:///data/audio.mp3',
       );
       expect(
@@ -53,35 +52,44 @@ void main() {
         () => mockCache.getFileFromCache('https://example.com/audio.wav'),
       ).thenAnswer((_) async => fileInfo);
 
-      final uri = await cacheManager.getPlayableUri('https://example.com/audio.wav');
+      final uri = await cacheManager.getPlayableUri(
+        'https://example.com/audio.wav',
+      );
 
       expect(uri.isScheme('file'), isTrue);
       expect(uri.toFilePath(), '/cache/audio/123.wav');
       verifyNever(() => mockCache.downloadFile(any()));
     });
 
-    test('returns remote Uri on cache miss and initiates background download', () async {
-      when(
-        () => mockCache.getFileFromCache('https://example.com/new.wav'),
-      ).thenAnswer((_) async => null);
+    test(
+      'returns remote Uri on cache miss and initiates background download',
+      () async {
+        when(
+          () => mockCache.getFileFromCache('https://example.com/new.wav'),
+        ).thenAnswer((_) async => null);
 
-      final file = memoryFs.file('/cache/audio/new.wav');
-      final fileInfo = FileInfo(
-        file,
-        FileSource.Online,
-        DateTime.now().add(const Duration(days: 1)),
-        'https://example.com/new.wav',
-      );
-      when(
-        () => mockCache.downloadFile('https://example.com/new.wav'),
-      ).thenAnswer((_) async => fileInfo);
+        final file = memoryFs.file('/cache/audio/new.wav');
+        final fileInfo = FileInfo(
+          file,
+          FileSource.Online,
+          DateTime.now().add(const Duration(days: 1)),
+          'https://example.com/new.wav',
+        );
+        when(
+          () => mockCache.downloadFile('https://example.com/new.wav'),
+        ).thenAnswer((_) async => fileInfo);
 
-      final uri = await cacheManager.getPlayableUri('https://example.com/new.wav');
+        final uri = await cacheManager.getPlayableUri(
+          'https://example.com/new.wav',
+        );
 
-      expect(uri.toString(), 'https://example.com/new.wav');
-      await Future<void>.delayed(Duration.zero);
-      verify(() => mockCache.downloadFile('https://example.com/new.wav')).called(1);
-    });
+        expect(uri.toString(), 'https://example.com/new.wav');
+        await Future<void>.delayed(Duration.zero);
+        verify(
+          () => mockCache.downloadFile('https://example.com/new.wav'),
+        ).called(1);
+      },
+    );
 
     test('isCached returns true when file is in cache and exists', () async {
       final file = memoryFs.file('/cache/audio/cached.mp3');
@@ -98,7 +106,10 @@ void main() {
         () => mockCache.getFileFromCache('https://example.com/cached.mp3'),
       ).thenAnswer((_) async => fileInfo);
 
-      expect(await cacheManager.isCached('https://example.com/cached.mp3'), isTrue);
+      expect(
+        await cacheManager.isCached('https://example.com/cached.mp3'),
+        isTrue,
+      );
     });
 
     test('isCached returns false when file is missing from cache', () async {
@@ -106,7 +117,10 @@ void main() {
         () => mockCache.getFileFromCache('https://example.com/missing.mp3'),
       ).thenAnswer((_) async => null);
 
-      expect(await cacheManager.isCached('https://example.com/missing.mp3'), isFalse);
+      expect(
+        await cacheManager.isCached('https://example.com/missing.mp3'),
+        isFalse,
+      );
     });
 
     test('precache downloads missing audio files in batches', () async {
@@ -121,7 +135,9 @@ void main() {
         DateTime.now().add(const Duration(days: 1)),
         'url',
       );
-      when(() => mockCache.downloadFile(any())).thenAnswer((_) async => fileInfo);
+      when(
+        () => mockCache.downloadFile(any()),
+      ).thenAnswer((_) async => fileInfo);
 
       await cacheManager.precache([
         'https://example.com/1.wav',
@@ -129,9 +145,15 @@ void main() {
         'https://example.com/3.wav',
       ]);
 
-      verify(() => mockCache.downloadFile('https://example.com/1.wav')).called(1);
-      verify(() => mockCache.downloadFile('https://example.com/2.wav')).called(1);
-      verify(() => mockCache.downloadFile('https://example.com/3.wav')).called(1);
+      verify(
+        () => mockCache.downloadFile('https://example.com/1.wav'),
+      ).called(1);
+      verify(
+        () => mockCache.downloadFile('https://example.com/2.wav'),
+      ).called(1);
+      verify(
+        () => mockCache.downloadFile('https://example.com/3.wav'),
+      ).called(1);
     });
 
     test('clearCache empties cache safely', () async {

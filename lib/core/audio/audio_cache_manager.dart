@@ -54,7 +54,7 @@ class DefaultAudioCacheManager implements AudioCacheManager {
   bool? _isAvailable;
 
   DefaultAudioCacheManager([BaseCacheManager? cacheManager])
-      : _customCacheManager = cacheManager;
+    : _customCacheManager = cacheManager;
 
   Future<bool> _checkAvailable() async {
     if (_isAvailable != null) return _isAvailable!;

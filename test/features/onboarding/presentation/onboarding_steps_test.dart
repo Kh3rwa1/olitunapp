@@ -7,6 +7,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:itun/features/rhymes/presentation/widgets/enchanted_visualizer.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -219,4 +220,55 @@ void main() {
     // without ever signing in.
     verify(() => authRepository.isLoggedIn());
   });
+
+  testWidgets(
+    'large tablet surface keeps content column max 560dp while background visualizer fills width',
+    (tester) async {
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/onboarding',
+        routes: [
+          GoRoute(
+            path: '/onboarding',
+            builder: (context, state) => const OnboardingScreen(),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            authRepositoryProvider.overrideWithValue(authRepository),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      // Verify headline has real newline instead of literal backslash
+      expect(find.text('Learn Ol Chiki,\none step at a time'), findsOneWidget);
+
+      // Verify visualizer fills the entire 1280dp wide screen
+      final visualizerSize = tester.getSize(find.byType(EnchantedVisualizer));
+      expect(visualizerSize.width, equals(1280));
+
+      // Verify interactive CTA button is constrained within 560dp
+      final continueBtn = find.text('Continue');
+      expect(continueBtn, findsOneWidget);
+      final continueWidth = tester.getSize(continueBtn).width;
+      expect(continueWidth, lessThanOrEqualTo(560));
+    },
+  );
 }

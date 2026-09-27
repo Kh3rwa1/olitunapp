@@ -96,7 +96,9 @@ class _AudioPickerPreviewState extends ConsumerState<AudioPickerPreview> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+        color: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurfaceVariant,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: _isPlaying

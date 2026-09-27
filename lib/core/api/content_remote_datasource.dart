@@ -55,15 +55,14 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   ContentRemoteDataSourceImpl({required TablesDB tablesDB})
     : _tablesDB = tablesDB;
 
-  List<String> _readPermissions(bool allowAnonymousRead) => [
-    Permission.update(Role.team(AppwriteConfig.adminTeamId)),
-    Permission.delete(Role.team(AppwriteConfig.adminTeamId)),
-    Permission.read(Role.team(AppwriteConfig.adminTeamId)),
-    if (allowAnonymousRead)
-      Permission.read(Role.any())
-    else
-      Permission.read(Role.users()),
-  ];
+  List<String> _readPermissions(bool allowAnonymousRead) => allowAnonymousRead
+      ? [
+          Permission.read(Role.any()),
+          Permission.read(Role.team(AppwriteConfig.adminTeamId)),
+          Permission.update(Role.team(AppwriteConfig.adminTeamId)),
+          Permission.delete(Role.team(AppwriteConfig.adminTeamId)),
+        ]
+      : const [];
 
   @override
   Future<List<ContentRowData>> listRows({

@@ -238,47 +238,47 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560),
-          child: Stack(
-            children: [
-              // Dark/Light Overlay Gradient
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: isDark
-                          ? [
-                              AppColors.darkBackground.withValues(alpha: 0.3),
-                              AppColors.darkBackground.withValues(alpha: 0.8),
-                              AppColors.darkBackground,
-                            ]
-                          : [
-                              AppColors.lightBackground.withValues(alpha: 0.6),
-                              AppColors.lightBackground.withValues(alpha: 0.9),
-                              AppColors.lightBackground,
-                            ],
-                      stops: const [0.0, 0.4, 1.0],
-                    ),
-                  ),
+      body: Stack(
+        children: [
+          // Dark/Light Overlay Gradient
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: isDark
+                      ? [
+                          AppColors.darkBackground.withValues(alpha: 0.3),
+                          AppColors.darkBackground.withValues(alpha: 0.8),
+                          AppColors.darkBackground,
+                        ]
+                      : [
+                          AppColors.lightBackground.withValues(alpha: 0.6),
+                          AppColors.lightBackground.withValues(alpha: 0.9),
+                          AppColors.lightBackground,
+                        ],
+                  stops: const [0.0, 0.4, 1.0],
                 ),
               ),
+            ),
+          ),
 
-              // Enchanted Visualizer (Blended for Step 0 only)
-              if (showAnimations && _currentStep == 0)
-                Positioned.fill(
-                  child: EnchantedVisualizer(
-                    isPlaying: true,
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    height: MediaQuery.of(context).size.height,
-                  ),
-                ),
+          // Enchanted Visualizer (Blended for Step 0 only)
+          if (showAnimations && _currentStep == 0)
+            Positioned.fill(
+              child: EnchantedVisualizer(
+                isPlaying: true,
+                color: AppColors.primary.withValues(alpha: 0.3),
+                height: MediaQuery.of(context).size.height,
+              ),
+            ),
 
-              // Safe Area UI Elements
-              SafeArea(
+          // Safe Area UI Elements
+          SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
                 child: Column(
                   children: [
                     // Top Progress Bar
@@ -459,9 +459,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

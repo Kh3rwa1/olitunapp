@@ -2885,7 +2885,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingHeadline.
   ///
   /// In en, this message translates to:
-  /// **'Learn Ol Chiki,\\none step at a time'**
+  /// **'Learn Ol Chiki,\none step at a time'**
   String get onboardingHeadline;
 
   /// No description provided for @familiarityTitle.

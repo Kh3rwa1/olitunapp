@@ -1561,7 +1561,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please select your mother tongue / teaching language to continue.';
 
   @override
-  String get onboardingHeadline => 'Learn Ol Chiki,\\none step at a time';
+  String get onboardingHeadline => 'Learn Ol Chiki,\none step at a time';
 
   @override
   String get familiarityTitle => 'How familiar are you with Ol Chiki?';

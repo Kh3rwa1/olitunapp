@@ -63,7 +63,7 @@ dependencies:
   # >=3.38, but the Appwrite Sites builder is pinned to flutter-3.35
   # (Dart 3.9.2). Same story as lottie and image_picker above; lift the cap
   # when the builder runtime is upgraded.
-  path_provider: '>=2.1.5 <2.1.6'
+  path_provider: ^2.1.6
   web: ^1.1.1
   fpdart: ^1.1.0
   connectivity_plus: ^7.3.1

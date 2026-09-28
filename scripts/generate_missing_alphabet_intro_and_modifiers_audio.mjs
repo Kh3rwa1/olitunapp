@@ -26,7 +26,7 @@ const INSTRUCTIONS = '{"lang": "sat"}';
 
 function loadBodhanKeys() {
   const keys = [];
-  for (let i = 0; i < 8; i++) {
+  for (let i = 0; i < 50; i++) {
     const keyPath = join(rootDir, '.keys', `bodhan${i}`);
     if (existsSync(keyPath)) {
       const key = readFileSync(keyPath, 'utf8').trim();

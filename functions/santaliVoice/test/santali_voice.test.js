@@ -125,6 +125,10 @@ test('bodhan client: classifies auth/credit/validation failures', async () => {
     (e) => e.reason === 'credit_ended'
   );
   await assert.rejects(
+    synthesizeWithKey({ ...baseInput, apiKey: 'budget_poor', fetchImpl: fakeFetch(429, '{"error":{"message":"ExceededBudget: User over budget","type":"budget_exceeded"}}', 'application/json') }),
+    (e) => e.reason === 'credit_ended'
+  );
+  await assert.rejects(
     synthesizeWithKey({ ...baseInput, apiKey: 'ok', fetchImpl: fakeFetch(422, 'unknown voice', 'application/json') }),
     (e) => e.reason === 'bad_request'
   );

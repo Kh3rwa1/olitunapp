@@ -64,6 +64,14 @@
             android:exported="false"
             android:resizeableActivity="true"
             tools:replace="android:resizeableActivity" />
+        <!-- Razorpay Checkout Activity large-screen resizability and orientation (Android 16+) -->
+        <activity
+            android:name="com.razorpay.CheckoutActivity"
+            android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
+            android:exported="false"
+            android:resizeableActivity="true"
+            android:screenOrientation="unspecified"
+            tools:replace="android:resizeableActivity,android:configChanges,android:screenOrientation" />
         <!-- Appwrite OAuth2 Callback Activity -->
         <activity
             android:name="com.linusu.flutter_web_auth_2.CallbackActivity"

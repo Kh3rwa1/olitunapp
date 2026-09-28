@@ -3,26 +3,14 @@
 -keep class io.flutter.plugin.** { *; }
 -keep class io.flutter.util.** { *; }
 -keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
 
-# Custom ProGuard rules for your app
--keep class com.ol.itun.** { *; }
-
-# Just Audio, Audio Service & ExoPlayer (Media3)
--keep class com.ryanheise.just_audio.** { *; }
--keep class com.ryanheise.audioservice.** { *; }
--keep class com.google.android.exoplayer2.** { *; }
--keep class androidx.media3.** { *; }
--keep class androidx.media.** { *; }
+# Just Audio & Audio Service (ExoPlayer & Media3 bundle consumer rules)
 -dontwarn com.google.android.exoplayer2.**
 -dontwarn androidx.media3.**
+-dontwarn androidx.media.**
 -dontwarn com.ryanheise.**
 
-# Razorpay & Sentry
--keep class com.razorpay.** { *; }
--dontwarn com.razorpay.**
--keep class io.sentry.** { *; }
+# Sentry (bundles official consumer rules in sentry-android-core)
 -dontwarn io.sentry.**
 
 # Google Play Core & GMS (Flutter engine references these)
@@ -31,16 +19,11 @@
 
 # Flutter Local Notifications & GSON
 -keep class com.dexterous.flutterlocalnotifications.** { *; }
--keep class com.google.gson.** { *; }
--dontwarn com.google.gson.**
-
-# Preserve BitmapFactory Options and downsampling fields for R8
--keepclassmembers class android.graphics.BitmapFactory$Options {
-    public int inSampleSize;
-    public boolean inJustDecodeBounds;
-    public <fields>;
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+    @com.google.gson.annotations.Expose <fields>;
 }
--dontwarn android.graphics.BitmapFactory
+-dontwarn com.google.gson.**
 
 # Allow obfuscation of most things, but keep some essentials
 -keepattributes Signature

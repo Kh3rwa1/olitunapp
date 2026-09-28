@@ -17,6 +17,12 @@
 -dontwarn com.google.android.play.core.**
 -dontwarn com.google.android.gms.**
 
+# AndroidX Room & WorkManager (reflection-instantiated by Razorpay / androidx.startup)
+-keep class * extends androidx.room.RoomDatabase { *; }
+-keep class androidx.work.impl.WorkDatabase_Impl { *; }
+-dontwarn androidx.work.impl.**
+-dontwarn androidx.room.**
+
 # Flutter Local Notifications & GSON
 -keep class com.dexterous.flutterlocalnotifications.** { *; }
 -keepclassmembers class * {

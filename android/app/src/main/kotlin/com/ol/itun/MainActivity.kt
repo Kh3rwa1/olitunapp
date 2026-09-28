@@ -8,8 +8,8 @@ import com.ryanheise.audioservice.AudioServiceFragmentActivity
 
 class MainActivity : AudioServiceFragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val attributes = window.attributes

@@ -1,0 +1,8 @@
+name = "olitun-ai-gateway"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+account_id = "bcb4692769683fbc73837789082f9096"
+workers_dev = true
+
+[ai]
+binding = "AI"

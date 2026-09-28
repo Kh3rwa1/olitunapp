@@ -4,11 +4,49 @@ import { synthesizeWithKey, shouldDisableKey } from './bodhan_client.js';
 export const BODHAN_KEYS_COLLECTION = 'bodhan_api_keys';
 
 /**
+ * Parses Bodhan API keys from process.env.BODHAN_API_KEYS (JSON array or comma-separated).
+ * Used when running on serverless environments where database read quotas are capped
+ * or to eliminate database reads on every synthesis request.
+ */
+export function parseEnvKeys(envValue = process.env.BODHAN_API_KEYS) {
+  if (!envValue || typeof envValue !== 'string') return [];
+  try {
+    const parsed = JSON.parse(envValue);
+    if (Array.isArray(parsed)) {
+      return parsed
+        .map((k, i) => {
+          const key = typeof k === 'string' ? k.trim() : (k?.key || '').trim();
+          const label = typeof k === 'object' && k?.label ? k.label : `env-account-${i + 1}`;
+          return key ? { $id: `env-key-${i + 1}`, key, label, priority: i, isActive: true } : null;
+        })
+        .filter(Boolean);
+    }
+  } catch (_) {
+    return envValue
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.startsWith('sk-'))
+      .map((key, i) => ({
+        $id: `env-key-${i + 1}`,
+        key,
+        label: `env-account-${i + 1}`,
+        priority: i,
+        isActive: true,
+      }));
+  }
+  return [];
+}
+
+/**
  * Loads active Bodhan keys ordered by priority (lowest first), then oldest.
- * Admins add rows in the Appwrite console; `priority` controls which key
- * is tried first. Returns `[]` when none are configured.
+ * If BODHAN_API_KEYS environment variable is set, uses it directly to save
+ * database reads. Otherwise queries the Appwrite bodhan_api_keys collection.
  */
 export async function loadActiveKeys(databases, dbId) {
+  const envKeys = parseEnvKeys();
+  if (envKeys.length > 0) {
+    return envKeys;
+  }
   const result = await databases.listDocuments(dbId, BODHAN_KEYS_COLLECTION, [
     Query.equal('isActive', true),
     Query.orderAsc('priority'),
@@ -92,6 +130,7 @@ function rotationExhausted(code, message, failures) {
 }
 
 async function recordKeySuccess(databases, dbId, keyDoc) {
+  if (keyDoc?.$id?.startsWith('env-key-')) return;
   await databases.updateDocument(dbId, BODHAN_KEYS_COLLECTION, keyDoc.$id, {
     successCount: (keyDoc.successCount || 0) + 1,
     lastUsedAt: new Date().toISOString(),
@@ -100,6 +139,7 @@ async function recordKeySuccess(databases, dbId, keyDoc) {
 }
 
 async function recordKeyFailure(databases, dbId, keyDoc, reason, keyErr) {
+  if (keyDoc?.$id?.startsWith('env-key-')) return;
   const patch = {
     failCount: (keyDoc.failCount || 0) + 1,
     lastUsedAt: new Date().toISOString(),

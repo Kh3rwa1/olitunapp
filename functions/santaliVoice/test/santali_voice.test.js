@@ -12,7 +12,7 @@ import {
   validateSantaliVoiceRequest,
 } from '../src/validation.js';
 import { shouldDisableKey, synthesizeWithKey } from '../src/bodhan_client.js';
-import { synthesizeWithRotation } from '../src/key_rotation.js';
+import { loadActiveKeys, parseEnvKeys, synthesizeWithRotation } from '../src/key_rotation.js';
 
 // ---- Validation ----
 
@@ -144,6 +144,41 @@ test('shouldDisableKey: only dead/exhausted keys are disabled', () => {
   assert.equal(shouldDisableKey('rate_limited'), false);
   assert.equal(shouldDisableKey('upstream_error'), false);
   assert.equal(shouldDisableKey('bad_request'), false);
+});
+
+test('parseEnvKeys: correctly parses JSON array and comma-separated keys', () => {
+  const jsonKeys = JSON.stringify(['sk-key-1', 'sk-key-2']);
+  const parsedJson = parseEnvKeys(jsonKeys);
+  assert.equal(parsedJson.length, 2);
+  assert.equal(parsedJson[0].key, 'sk-key-1');
+  assert.equal(parsedJson[0].priority, 0);
+  assert.equal(parsedJson[1].key, 'sk-key-2');
+  assert.equal(parsedJson[1].priority, 1);
+
+  const csvKeys = 'sk-alpha, sk-beta';
+  const parsedCsv = parseEnvKeys(csvKeys);
+  assert.equal(parsedCsv.length, 2);
+  assert.equal(parsedCsv[0].key, 'sk-alpha');
+  assert.equal(parsedCsv[1].key, 'sk-beta');
+});
+
+test('loadActiveKeys: returns env keys directly without querying database', async () => {
+  const orig = process.env.BODHAN_API_KEYS;
+  try {
+    process.env.BODHAN_API_KEYS = JSON.stringify(['sk-test-env']);
+    const dbs = {
+      listDocuments() {
+        throw new Error('Database listDocuments should not be called when env keys are present');
+      },
+    };
+    const keys = await loadActiveKeys(dbs, 'olitun_db');
+    assert.equal(keys.length, 1);
+    assert.equal(keys[0].key, 'sk-test-env');
+    assert.equal(keys[0].$id, 'env-key-1');
+  } finally {
+    if (orig !== undefined) process.env.BODHAN_API_KEYS = orig;
+    else delete process.env.BODHAN_API_KEYS;
+  }
 });
 
 // ---- Rotation ----

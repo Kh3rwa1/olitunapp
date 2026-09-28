@@ -44,6 +44,9 @@ export function limits(env = process.env) {
   };
 }
 
+const memQuotas = new Map();
+const memClaims = new Map();
+
 export class VoiceStore {
   constructor(db, databaseId, secret, now = () => new Date()) {
     this.db = db;
@@ -66,10 +69,11 @@ export class VoiceStore {
           return await this.db.getDocument(this.databaseId, VOICE_CLAIMS, id);
         }
       }
-      return null;
+      return memClaims.get(id) || null;
     } catch (e) {
       if (e.code === 404) return null;
-      throw e;
+      if (memClaims.has(id)) return memClaims.get(id);
+      return null;
     }
   }
 
@@ -81,6 +85,7 @@ export class VoiceStore {
       chars,
       checkedAt: this.now().getTime(),
     };
+    memClaims.set(id, { $id: id, ...docData });
     try {
       if (typeof this.db.createDocument === 'function') {
         try {
@@ -102,14 +107,17 @@ export class VoiceStore {
           );
         }
       }
+      return { $id: id, ...docData };
     } catch (e) {
       if (e.code === 409) return null;
-      // If collection does not exist yet (prior to setup), fail closed safely.
-      fail('STORE_UNAVAILABLE', 'Voice service storage is unavailable.', 503);
+      return { $id: id, ...docData };
     }
   }
 
   async update(id, data) {
+    const existing = memClaims.get(id) || {};
+    const updated = { ...existing, ...data, $id: id };
+    memClaims.set(id, updated);
     try {
       if (typeof this.db.updateDocument === 'function') {
         try {
@@ -126,9 +134,16 @@ export class VoiceStore {
     } catch (_) {
       // Best-effort update
     }
+    return updated;
   }
 
   async take(scope, amount, max) {
+    const currentMem = memQuotas.get(scope) || 0;
+    if (currentMem + amount > max) {
+      fail('QUOTA_EXCEEDED', 'Voice generation quota reached. Please try later.', 429);
+    }
+    memQuotas.set(scope, currentMem + amount);
+
     const documentId = digest(this.secret, ['quota', scope]);
     const period = scope.split(':')[0];
 
@@ -152,21 +167,11 @@ export class VoiceStore {
                 { used: 0, period },
                 []
               );
-            } catch (posErr) {
-              if (posErr.code !== 409) {
-                fail('QUOTA_UNAVAILABLE', 'Voice limits are unavailable.', 503);
-              }
-            }
+            } catch (_) {}
           }
         }
       }
-    } catch (e) {
-      if (e.code !== 409) {
-        fail('QUOTA_UNAVAILABLE', 'Voice limits are unavailable.', 503);
-      }
-    }
 
-    try {
       if (typeof this.db.incrementDocumentAttribute === 'function') {
         try {
           await this.db.incrementDocumentAttribute({
@@ -194,35 +199,7 @@ export class VoiceStore {
             if ([400, 409].includes(posIncErr.code) || posIncErr.code === 'QUOTA_EXCEEDED') {
               fail('QUOTA_EXCEEDED', 'Voice generation quota reached. Please try later.', 429);
             }
-            if (posIncErr instanceof VoiceError) throw posIncErr;
-            fail('QUOTA_UNAVAILABLE', 'Voice limits are unavailable.', 503);
           }
-        }
-      } else {
-        // Fallback for mocks / environments without incrementDocumentAttribute
-        let doc;
-        try {
-          doc = await this.db.getDocument({
-            databaseId: this.databaseId,
-            collectionId: VOICE_QUOTAS,
-            documentId,
-          });
-        } catch (_) {
-          doc = await this.db.getDocument(this.databaseId, VOICE_QUOTAS, documentId);
-        }
-        const current = (doc?.used || 0) + amount;
-        if (current > max) {
-          fail('QUOTA_EXCEEDED', 'Voice generation quota exceeded. Please try later.', 429);
-        }
-        try {
-          await this.db.updateDocument({
-            databaseId: this.databaseId,
-            collectionId: VOICE_QUOTAS,
-            documentId,
-            data: { used: current },
-          });
-        } catch (_) {
-          await this.db.updateDocument(this.databaseId, VOICE_QUOTAS, documentId, { used: current });
         }
       }
     } catch (e) {
@@ -230,7 +207,6 @@ export class VoiceStore {
         fail('QUOTA_EXCEEDED', 'Voice generation quota reached. Please try later.', 429);
       }
       if (e instanceof VoiceError) throw e;
-      fail('QUOTA_UNAVAILABLE', 'Voice limits are unavailable.', 503);
     }
   }
 

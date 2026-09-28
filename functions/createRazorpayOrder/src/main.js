@@ -3,8 +3,8 @@ import { Client, Databases } from 'node-appwrite';
 import { publishPendingPurchase, isPayablePurchase } from './purchase_ledger.js';
 import { enforceWindowRateLimit, WINDOW_HOUR_MS } from './shared/rate_limiter.js';
 
-export const LEASE_DURATION_MS = 30000; // 30s active reservation lease window
-export const STALE_RESERVATION_TIMEOUT_MS = 30000; // 30s threshold (2x 12s gateway timeout) to recover abandoned attempts
+export const LEASE_DURATION_MS = 60000; // 60s active reservation lease window
+export const STALE_RESERVATION_TIMEOUT_MS = 60000; // 60s threshold (> execution timeout + clock skew) to recover abandoned attempts
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -231,13 +231,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
 
           const leaseExpires = new Date(attemptRecord.leaseExpiresAt || 0).getTime();
           const nowMs = Date.now();
-          if (attemptRecord.status === 'in_progress' && leaseExpires > nowMs) {
-            return res.json({
-              ok: false,
-              code: 'in_progress',
-              message: 'Order creation is in progress by another request. Please retry shortly.',
-            }, 409);
-          }
+          const recordTime = new Date(attemptRecord.updatedAt || attemptRecord.createdAt || 0).getTime();
+          const attemptAgeMs = nowMs - recordTime;
 
           // Allow re-reservation if the existing attempt failed or is a stale in_progress attempt
           // without a providerOrderId. An attempt with an active lease or with a providerOrderId
@@ -245,7 +240,16 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           const isStaleInProgress =
             attemptRecord.status === 'in_progress' &&
             !attemptRecord.providerOrderId &&
-            (leaseExpires <= nowMs || (nowMs - new Date(attemptRecord.updatedAt || attemptRecord.createdAt || 0).getTime()) >= STALE_RESERVATION_TIMEOUT_MS);
+            attemptAgeMs >= STALE_RESERVATION_TIMEOUT_MS &&
+            leaseExpires <= nowMs;
+
+          if (attemptRecord.status === 'in_progress' && !isStaleInProgress) {
+            return res.json({
+              ok: false,
+              code: 'in_progress',
+              message: 'Order creation is in progress by another request. Please retry shortly.',
+            }, 409);
+          }
 
           const isFailedWithoutOrder =
             attemptRecord.status === 'failed' &&
@@ -254,13 +258,14 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           if (isFailedWithoutOrder || isStaleInProgress) {
             log(`[${attemptDocId}] Re-reserving attempt (status=${attemptRecord.status}, stale=${isStaleInProgress})`);
 
-            // Re-check right before updating to catch any concurrent worker that won the lease
+            // Re-check right before attempting election to catch any worker that completed the order
             const preAttempt = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
             if (preAttempt.providerOrderId) {
               return await finishCheckout(preAttempt, true);
             }
             const preLeaseExpires = new Date(preAttempt.leaseExpiresAt || 0).getTime();
-            if (preAttempt.status === 'in_progress' && preLeaseExpires > Date.now()) {
+            const preRecordTime = new Date(preAttempt.updatedAt || preAttempt.createdAt || 0).getTime();
+            if (preAttempt.status === 'in_progress' && (preLeaseExpires > Date.now() || (Date.now() - preRecordTime) < STALE_RESERVATION_TIMEOUT_MS)) {
               return res.json({
                 ok: false,
                 code: 'in_progress',
@@ -271,6 +276,56 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             const candidateLeaseOwner = `${process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder'}:${nowMs}:${Math.random().toString(36).slice(2, 10)}`;
             const newLeaseExpiresAt = new Date(nowMs + LEASE_DURATION_MS).toISOString();
 
+            // Atomic generation election primitive:
+            // Contenders create a fixed-ID election document derived from (attemptDocId + current generation/updatedAt timestamp).
+            // Appwrite's unique document ID constraint guarantees exactly ONE contender succeeds.
+            // Losers receive 409 conflict and exit cleanly without calling the payment gateway.
+            const currentGeneration = preAttempt.updatedAt || preAttempt.createdAt || 'initial';
+            const electionDocId = `elc_${stableId(`${attemptDocId}:${currentGeneration}`)}`;
+            const electionIdempotencyKey = `election:${attemptDocId}:${currentGeneration}`;
+
+            try {
+              await databases.createDocument(
+                databaseId,
+                'payment_attempts',
+                electionDocId,
+                {
+                  userId,
+                  categoryId,
+                  idempotencyKey: electionIdempotencyKey,
+                  attemptId: electionDocId,
+                  expectedAmount,
+                  currency: 'INR',
+                  status: 'election_lock',
+                  provider: 'razorpay',
+                  providerOrderId: null,
+                  providerReceipt: purchaseId,
+                  leaseOwner: candidateLeaseOwner,
+                  leaseExpiresAt: newLeaseExpiresAt,
+                  reconciliationStatus: 'none',
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                },
+                [`read("user:${userId}")`]
+              );
+            } catch (electErr) {
+              if (electErr.code === 409 || electErr.message?.includes('already exists') || electErr.message?.includes('conflict')) {
+                // Another concurrent worker won the atomic lease election for this generation
+                return res.json({
+                  ok: false,
+                  code: 'in_progress',
+                  message: 'Order creation is in progress by another request. Please retry shortly.',
+                }, 409);
+              }
+              error(`[${attemptDocId}] Failed to create atomic election lock: ${electErr?.message}`);
+              return res.json({
+                ok: false,
+                code: 'reservation_conflict',
+                message: 'Order creation attempt reservation conflict. Please retry.',
+              }, 409);
+            }
+
+            // Single atomic winner updates the canonical attempt record and proceeds
             try {
               attemptRecord = await databases.updateDocument(
                 databaseId,
@@ -286,27 +341,11 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
                 }
               );
             } catch (updateErr) {
-              error(`[${attemptDocId}] Failed to update lease during re-reservation: ${updateErr?.message}`);
+              error(`[${attemptDocId}] Failed to update canonical attempt: ${updateErr?.message}`);
               return res.json({
                 ok: false,
                 code: 'reservation_conflict',
                 message: 'Order creation attempt reservation conflict. Please retry.',
-              }, 409);
-            }
-
-            // Brief settling delay to allow any concurrent election contenders to complete their write
-            await new Promise(r => setTimeout(r, 10));
-
-            // Verify lease election to guarantee exactly one concurrent worker proceeds
-            const verifiedAttempt = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
-            if (verifiedAttempt.providerOrderId) {
-              return await finishCheckout(verifiedAttempt, true);
-            }
-            if (verifiedAttempt.leaseOwner !== candidateLeaseOwner) {
-              return res.json({
-                ok: false,
-                code: 'in_progress',
-                message: 'Order creation is in progress by another request. Please retry shortly.',
               }, 409);
             }
           } else {

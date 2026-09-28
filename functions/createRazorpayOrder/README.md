@@ -38,10 +38,10 @@ attemptDocId = 'att_' + sha256(`${userId}:${categoryId}:${idempotencyKey}`).slic
 - Initial checkout attempts rely on Appwrite's database-level unique document ID constraint on `attemptDocId`.
 - For re-reserving failed or stale (`>60s`) attempts, an **atomic generation election lock** primitive guarantees mutual exclusion without sleeps or arbitrary settling delays:
   1. Contenders check for an existing canonical order or active unexpired lease.
-  2. Contenders attempt to create an atomic election lock document `elc_${stableId(`${attemptDocId}:${currentGeneration}`)}` where `currentGeneration` is derived from `updatedAt || createdAt`.
+  2. Contenders attempt to create an atomic election lock document `elc_${stableId(`${attemptDocId}:${nextGeneration}`)}` where `nextGeneration = (preAttempt.reservationGeneration || 0) + 1`.
   3. Appwrite's document ID uniqueness constraint guarantees **exactly one** worker succeeds.
   4. Losers catch the 409 conflict and exit cleanly with HTTP 409 (`code: 'in_progress'`), without calling Razorpay.
-  5. The single winning worker updates the canonical attempt record with its candidate lease and proceeds to call Razorpay.
+  5. The single winning worker updates the canonical attempt record with its candidate lease and incremented `reservationGeneration: nextGeneration`, then proceeds to call Razorpay.
   6. Subsequent retries find the canonical order populated and return 200 OK without additional gateway calls.
 
 ### 5. Rate Limiting

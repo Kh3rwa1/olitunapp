@@ -85,6 +85,17 @@ class InMemDb {
     }
     return { documents: JSON.parse(JSON.stringify(docs)), total: docs.length };
   }
+
+  async deleteDocument(dbId, col, id) {
+    const table = this.collections.get(col);
+    if (!table || !table.has(id)) {
+      const err = new Error('Document not found');
+      err.code = 404;
+      throw err;
+    }
+    table.delete(id);
+    return {};
+  }
 }
 
 describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
@@ -745,6 +756,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
         providerReceipt: 'rec_adv_1',
         leaseOwner: 'crashed_worker',
         leaseExpiresAt: pastTime,
+        reservationGeneration: 0,
         reconciliationStatus: 'none',
         createdAt: pastTime,
         updatedAt: pastTime,
@@ -757,7 +769,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
 
     const mockFetch = async () => {
       rzpCalls++;
-      // Pause worker 1 while holding the lease election lock to simulate network latency
+      // Pause winner in gateway fetch until contenders have competed
       await rzpGatePromise;
       return {
         ok: true,
@@ -765,7 +777,51 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
       };
     };
 
-    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+    // Barrier ensuring BOTH contenders read the pre-state BEFORE either one creates its election document
+    let preStateReads = 0;
+    let releaseCreateGate;
+    const createGatePromise = new Promise(resolve => { releaseCreateGate = resolve; });
+    let contender2Encountered409 = false;
+
+    const wrappedDb = {
+      collections: db.collections,
+      async getDocument(dbId, col, id) {
+        const doc = await db.getDocument(dbId, col, id);
+        if (col === 'payment_attempts' && id === attemptDocId) {
+          preStateReads++;
+          if (preStateReads === 2) {
+            // Both contenders have completed reading the pre-state! Release the create gate!
+            releaseCreateGate();
+          }
+        }
+        return doc;
+      },
+      async createDocument(dbId, col, id, data, permissions) {
+        if (col === 'payment_attempts' && id.startsWith('elc_')) {
+          // Pause contenders until BOTH have read the pre-state
+          await createGatePromise;
+        }
+        try {
+          return await db.createDocument(dbId, col, id, data, permissions);
+        } catch (err) {
+          if (err.code === 409 && col === 'payment_attempts' && id.startsWith('elc_')) {
+            contender2Encountered409 = true;
+          }
+          throw err;
+        }
+      },
+      async updateDocument(dbId, col, id, data, permissions) {
+        return await db.updateDocument(dbId, col, id, data, permissions);
+      },
+      async listDocuments(dbId, col, queries) {
+        return await db.listDocuments(dbId, col, queries);
+      },
+      async deleteDocument(dbId, col, id) {
+        return await db.deleteDocument(dbId, col, id);
+      },
+    };
+
+    const handler = createOrderHandler({ databases: wrappedDb, fetchImpl: mockFetch });
 
     const req = {
       method: 'POST',
@@ -773,22 +829,23 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
       body: JSON.stringify({ categoryId, idempotencyKey })
     };
 
-    // Contender 1 initiates re-reservation and enters Razorpay fetch (paused on rzpGatePromise)
+    // Both contenders start concurrently
     const res1 = createMockRes();
-    const contender1Promise = handler({ req, res: res1, error: createMockErrorLogger() });
+    const res2 = createMockRes();
+    const p1 = handler({ req, res: res1, error: createMockErrorLogger() });
+    const p2 = handler({ req, res: res2, error: createMockErrorLogger() });
 
-    // Yield execution to allow contender 1 to win the atomic election lock and enter mockFetch
+    // Wait for the race to resolve through the election creation gate
     await new Promise(r => setTimeout(r, 20));
 
-    // Verify election lock document exists in DB
-    const electionLocks = [...db.collections.get('payment_attempts').keys()].filter(k => k.startsWith('elc_'));
-    assert.equal(electionLocks.length, 1, 'Exactly one election lock document created');
+    // Confirm that BOTH contenders read the pre-state before either one created its election document
+    assert.equal(preStateReads >= 2, true, 'Both contenders read pre-state before election document was created');
 
-    // Contender 2 arrives concurrently while contender 1 is awaiting Razorpay gateway response
-    const res2 = createMockRes();
-    await handler({ req, res: res2, error: createMockErrorLogger() });
+    // Confirm the fake DB returned 409 for the duplicate document ID, matching Appwrite
+    assert.equal(contender2Encountered409, true, 'Fake DB returned 409 for duplicate document ID');
 
     // Contender 2 must receive 409 conflict with code 'in_progress'
+    await p2;
     assert.equal(res2.statusCode, 409);
     assert.equal(res2.body.ok, false);
     assert.equal(res2.body.code, 'in_progress');
@@ -798,7 +855,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
 
     // Contender 1 finishes gateway call and saves order
     rzpFetchResolve();
-    await contender1Promise;
+    await p1;
 
     // Contender 1 must succeed with 200 OK
     assert.equal(res1.statusCode, 200);
@@ -849,6 +906,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
         providerReceipt: stableId(`${userId}:${categoryId}`),
         leaseOwner: 'crashed_worker_1',
         leaseExpiresAt: staleTime,
+        reservationGeneration: 0,
         reconciliationStatus: 'none',
         createdAt: staleTime,
         updatedAt: staleTime,
@@ -1032,6 +1090,117 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(res2.body.ok, true);
     assert.equal(res2.body.orderId, 'order_legacy_recovery');
     assert.equal(rzpCalls, 2);
+  });
+
+  test('8i. Multi-cycle failure and retry: 3 consecutive failure/retry cycles advance reservationGeneration without permanent 409', async () => {
+    const db = new InMemDb();
+    const userId = 'u_multicycle_user';
+    const categoryId = 'cat_multicycle_course';
+    const idempotencyKey = 'multicycle_retry_key';
+    const priceInr = 399;
+
+    db.collections.set('categories', new Map([
+      [categoryId, { name: 'Multicycle Course', priceInr, unlockMode: 'paid_only' }]
+    ]));
+
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
+    const nowIso = new Date().toISOString();
+    // Seed initial failed attempt at generation 0
+    db.collections.set('payment_attempts', new Map([
+      [attemptDocId, {
+        $id: attemptDocId,
+        userId,
+        categoryId,
+        idempotencyKey,
+        attemptId: attemptDocId,
+        expectedAmount: priceInr,
+        currency: 'INR',
+        status: 'failed',
+        provider: 'razorpay',
+        providerOrderId: null,
+        providerReceipt: stableId(`${userId}:${categoryId}`),
+        leaseOwner: 'crashed_worker',
+        leaseExpiresAt: nowIso,
+        reservationGeneration: 0,
+        reconciliationStatus: 'none',
+        createdAt: nowIso,
+        updatedAt: nowIso,
+      }]
+    ]));
+
+    let cycleCount = 0;
+    let rzpCalls = 0;
+    const mockFetch = async () => {
+      rzpCalls++;
+      if (cycleCount <= 3) {
+        // Fail at Razorpay with 500 for the first 3 cycles
+        return {
+          ok: false,
+          status: 500,
+          json: async () => ({ error: { description: `Razorpay 500 in cycle ${cycleCount}` } })
+        };
+      }
+      // Succeed on the 4th cycle
+      return {
+        ok: true,
+        json: async () => ({ id: 'order_multicycle_final_success', amount: priceInr * 100, currency: 'INR' })
+      };
+    };
+
+    const handler = createOrderHandler({ databases: db, fetchImpl: mockFetch });
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({ categoryId, idempotencyKey })
+    };
+
+    // Cycle 1: election won (gen 1), gateway fails, attempt marked failed
+    cycleCount = 1;
+    const res1 = createMockRes();
+    await handler({ req, res: res1, error: createMockErrorLogger() });
+    assert.equal(res1.statusCode, 502, `Cycle 1 failed at gateway, got ${res1.statusCode}`);
+    let attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.equal(attemptInDb.status, 'failed');
+    assert.equal(attemptInDb.reservationGeneration, 1);
+    assert.equal(attemptInDb.providerOrderId, null);
+
+    // Cycle 2: user retries, NEW election won (gen 2), gateway fails, attempt marked failed
+    cycleCount = 2;
+    const res2 = createMockRes();
+    await handler({ req, res: res2, error: createMockErrorLogger() });
+    assert.equal(res2.statusCode, 502, `Cycle 2 must succeed in election and fail only at gateway, got ${res2.statusCode}: ${JSON.stringify(res2.body)}`);
+    attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.equal(attemptInDb.status, 'failed');
+    assert.equal(attemptInDb.reservationGeneration, 2);
+    assert.equal(attemptInDb.providerOrderId, null);
+
+    // Cycle 3: user retries, NEW election won (gen 3), gateway fails, attempt marked failed
+    cycleCount = 3;
+    const res3 = createMockRes();
+    await handler({ req, res: res3, error: createMockErrorLogger() });
+    assert.equal(res3.statusCode, 502, `Cycle 3 must succeed in election and fail only at gateway, got ${res3.statusCode}: ${JSON.stringify(res3.body)}`);
+    attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.equal(attemptInDb.status, 'failed');
+    assert.equal(attemptInDb.reservationGeneration, 3);
+    assert.equal(attemptInDb.providerOrderId, null);
+
+    // Final cycle: user retries, NEW election won (gen 4), gateway succeeds with 200 OK!
+    cycleCount = 4;
+    const res4 = createMockRes();
+    await handler({ req, res: res4, error: createMockErrorLogger() });
+    assert.equal(res4.statusCode, 200, `Cycle 4 should return 200 OK, got ${res4.statusCode}: ${JSON.stringify(res4.body)}`);
+    assert.equal(res4.body.ok, true);
+    assert.equal(res4.body.orderId, 'order_multicycle_final_success');
+    attemptInDb = db.collections.get('payment_attempts').get(attemptDocId);
+    assert.equal(attemptInDb.status, 'created');
+    assert.equal(attemptInDb.reservationGeneration, 4);
+    assert.equal(attemptInDb.providerOrderId, 'order_multicycle_final_success');
+
+    // Confirm distinct election documents were created for each cycle without collision
+    const electionLocks = [...db.collections.get('payment_attempts').keys()].filter(k => k.startsWith('elc_'));
+    assert.equal(electionLocks.length, 4, 'Four distinct election documents created across the 4 cycles');
+    assert.equal(rzpCalls, 4);
   });
 });
 

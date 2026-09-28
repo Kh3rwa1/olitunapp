@@ -847,6 +847,7 @@ const collections = [
       { type: 'string', key: 'reconciliationStatus', size: 30, required: false, default: 'none' },
       { type: 'string', key: 'createdAt', size: 30, required: true },
       { type: 'string', key: 'updatedAt', size: 30, required: true },
+      { type: 'integer', key: 'reservationGeneration', required: false, default: 0 },
     ],
     indexes: [
       { key: 'idx_user_cat_idempotency', type: 'unique', attributes: ['userId', 'categoryId', 'idempotencyKey'] },

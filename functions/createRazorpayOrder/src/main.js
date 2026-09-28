@@ -202,6 +202,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             providerReceipt: purchaseId,
             leaseOwner: process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder',
             leaseExpiresAt,
+            reservationGeneration: 0,
             reconciliationStatus: 'none',
             createdAt: now,
             updatedAt: now,
@@ -277,13 +278,17 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             const newLeaseExpiresAt = new Date(nowMs + LEASE_DURATION_MS).toISOString();
 
             // Atomic generation election primitive:
-            // Contenders create a fixed-ID election document derived from (attemptDocId + current generation/updatedAt timestamp).
+            // Contenders create a fixed-ID election document derived from (attemptDocId + next generation integer).
             // Appwrite's unique document ID constraint guarantees exactly ONE contender succeeds.
             // Losers receive 409 conflict and exit cleanly without calling the payment gateway.
-            const currentGeneration = preAttempt.updatedAt || preAttempt.createdAt || 'initial';
-            const electionDocId = `elc_${stableId(`${attemptDocId}:${currentGeneration}`)}`;
-            const electionIdempotencyKey = `election:${attemptDocId}:${currentGeneration}`;
+            const currentGeneration = Number.isSafeInteger(preAttempt.reservationGeneration)
+              ? preAttempt.reservationGeneration
+              : 0;
+            const nextGeneration = currentGeneration + 1;
+            const electionDocId = `elc_${stableId(`${attemptDocId}:${nextGeneration}`)}`;
+            const electionIdempotencyKey = `election:${attemptDocId}:${nextGeneration}`;
 
+            let electionWon = false;
             try {
               await databases.createDocument(
                 databaseId,
@@ -302,27 +307,67 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
                   providerReceipt: purchaseId,
                   leaseOwner: candidateLeaseOwner,
                   leaseExpiresAt: newLeaseExpiresAt,
+                  reservationGeneration: nextGeneration,
                   reconciliationStatus: 'none',
                   createdAt: new Date().toISOString(),
                   updatedAt: new Date().toISOString(),
                 },
                 [`read("user:${userId}")`]
               );
+              electionWon = true;
             } catch (electErr) {
               if (electErr.code === 409 || electErr.message?.includes('already exists') || electErr.message?.includes('conflict')) {
-                // Another concurrent worker won the atomic lease election for this generation
+                // If this generation election document already exists, check if it was left by a stale crashed worker (>60s)
+                try {
+                  const existingElection = await databases.getDocument(databaseId, 'payment_attempts', electionDocId);
+                  const electionExpires = new Date(existingElection.leaseExpiresAt || 0).getTime();
+                  const electionAge = nowMs - new Date(existingElection.updatedAt || existingElection.createdAt || 0).getTime();
+                  if (electionExpires <= nowMs && electionAge >= STALE_RESERVATION_TIMEOUT_MS) {
+                    await databases.deleteDocument(databaseId, 'payment_attempts', electionDocId);
+                    await databases.createDocument(
+                      databaseId,
+                      'payment_attempts',
+                      electionDocId,
+                      {
+                        userId,
+                        categoryId,
+                        idempotencyKey: electionIdempotencyKey,
+                        attemptId: electionDocId,
+                        expectedAmount,
+                        currency: 'INR',
+                        status: 'election_lock',
+                        provider: 'razorpay',
+                        providerOrderId: null,
+                        providerReceipt: purchaseId,
+                        leaseOwner: candidateLeaseOwner,
+                        leaseExpiresAt: newLeaseExpiresAt,
+                        reservationGeneration: nextGeneration,
+                        reconciliationStatus: 'none',
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                      },
+                      [`read("user:${userId}")`]
+                    );
+                    electionWon = true;
+                  }
+                } catch (_) {}
+
+                if (!electionWon) {
+                  // Another concurrent worker won the atomic lease election for this generation
+                  return res.json({
+                    ok: false,
+                    code: 'in_progress',
+                    message: 'Order creation is in progress by another request. Please retry shortly.',
+                  }, 409);
+                }
+              } else {
+                error(`[${attemptDocId}] Failed to create atomic election lock: ${electErr?.message}`);
                 return res.json({
                   ok: false,
-                  code: 'in_progress',
-                  message: 'Order creation is in progress by another request. Please retry shortly.',
+                  code: 'reservation_conflict',
+                  message: 'Order creation attempt reservation conflict. Please retry.',
                 }, 409);
               }
-              error(`[${attemptDocId}] Failed to create atomic election lock: ${electErr?.message}`);
-              return res.json({
-                ok: false,
-                code: 'reservation_conflict',
-                message: 'Order creation attempt reservation conflict. Please retry.',
-              }, 409);
             }
 
             // Single atomic winner updates the canonical attempt record and proceeds
@@ -336,6 +381,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
                   providerOrderId: null,
                   leaseOwner: candidateLeaseOwner,
                   leaseExpiresAt: newLeaseExpiresAt,
+                  reservationGeneration: nextGeneration,
                   reconciliationStatus: 'none',
                   updatedAt: new Date().toISOString(),
                 }

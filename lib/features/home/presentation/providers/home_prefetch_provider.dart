@@ -35,9 +35,9 @@ class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
 
   Future<void> prefetch({bool forceRefresh = false}) async {
     if (_disposed) return;
-    // Observe each background Future immediately, including failures arriving
-    // after disposal. This handles only the prefetch task: provider error
-    // states remain available to visible screens and their retry controls.
+
+    // Observe background loads only when explicitly requested (e.g. user pull-to-refresh)
+    // to avoid an aggressive 4-collection query storm on every boot.
     final loads = <Future<void>>[];
     for (final kind in [
       ContentKind.word,
@@ -46,7 +46,9 @@ class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
       ContentKind.letter,
     ]) {
       final provider = contentListProvider((kind, null));
-      if (forceRefresh) ref.invalidate(provider);
+      if (forceRefresh) {
+        ref.invalidate(provider);
+      }
       loads.add(
         ref
             .read(provider.future)

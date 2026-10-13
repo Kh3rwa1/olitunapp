@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../api/appwrite_databases_pagination.dart';
 import '../auth/appwrite_auth_service.dart';
 import '../config/appwrite_config.dart';
+import '../config/cloudflare_config.dart';
 
 /// Clean-architecture data representation of a row returned by [ContentRemoteDataSource].
 class ContentRowData {
@@ -48,12 +51,69 @@ abstract class ContentRemoteDataSource {
   Future<void> deleteRow({required String tableId, required String rowId});
 }
 
-/// Default implementation of [ContentRemoteDataSource] backed by Appwrite [TablesDB].
+/// Default implementation of [ContentRemoteDataSource] backed by Cloudflare Edge API and Appwrite [TablesDB].
 class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   final TablesDB _tablesDB;
+  final http.Client? _httpClient;
 
-  ContentRemoteDataSourceImpl({required TablesDB tablesDB})
-    : _tablesDB = tablesDB;
+  ContentRemoteDataSourceImpl({
+    required TablesDB tablesDB,
+    http.Client? httpClient,
+  })  : _tablesDB = tablesDB,
+        _httpClient = httpClient;
+
+  http.Client get _client => _httpClient ?? http.Client();
+
+  String? _cloudflareEndpointFor(String tableId, {String? categoryId}) {
+    final queryParam = (categoryId != null && categoryId.isNotEmpty)
+        ? '?category=${Uri.encodeComponent(categoryId)}'
+        : '';
+    switch (tableId.toLowerCase()) {
+      case 'categories':
+        return CloudflareConfig.categoriesEndpoint;
+      case 'words':
+      case 'word':
+        return '${CloudflareConfig.wordsEndpoint}$queryParam';
+      case 'letters':
+      case 'letter':
+        return CloudflareConfig.lettersEndpoint;
+      case 'numbers':
+      case 'number':
+        return CloudflareConfig.numbersEndpoint;
+      case 'sentences':
+      case 'sentence':
+        return '${CloudflareConfig.sentencesEndpoint}$queryParam';
+      case 'lessons':
+      case 'lesson':
+        return '${CloudflareConfig.lessonsEndpoint}$queryParam';
+      default:
+        return null;
+    }
+  }
+
+  String _keyForTable(String tableId) {
+    switch (tableId.toLowerCase()) {
+      case 'categories':
+        return 'categories';
+      case 'words':
+      case 'word':
+        return 'words';
+      case 'letters':
+      case 'letter':
+        return 'letters';
+      case 'numbers':
+      case 'number':
+        return 'numbers';
+      case 'sentences':
+      case 'sentence':
+        return 'sentences';
+      case 'lessons':
+      case 'lesson':
+        return 'lessons';
+      default:
+        return tableId;
+    }
+  }
 
   List<String> _readPermissions(bool allowAnonymousRead) => allowAnonymousRead
       ? [
@@ -72,6 +132,33 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     bool orderAsc = false,
     int limit = 500,
   }) async {
+    // 1. Try Cloudflare Edge API first (Sub-20ms global edge cache, zero Appwrite reads)
+    try {
+      final endpoint = _cloudflareEndpointFor(tableId, categoryId: categoryId);
+      if (endpoint != null) {
+        final uri = Uri.parse(endpoint);
+        final res = await _client.get(uri).timeout(const Duration(seconds: 6));
+        if (res.statusCode == 200) {
+          final body = jsonDecode(res.body);
+          if (body is Map && body['ok'] == true) {
+            final key = _keyForTable(tableId);
+            final items = body[key];
+            if (items is List && items.isNotEmpty) {
+              return items
+                  .map((it) => ContentRowData(
+                        id: (it as Map)['id']?.toString() ?? '',
+                        data: Map<String, dynamic>.from(it),
+                      ))
+                  .toList();
+            }
+          }
+        }
+      }
+    } catch (_) {
+      // Fall through to Appwrite on failure
+    }
+
+    // 2. Fallback to Appwrite TablesDB
     final List<String> queries = [
       if (categoryAttribute != null &&
           categoryId != null &&
@@ -111,6 +198,21 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     required String categoryId,
     Duration timeout = const Duration(seconds: 6),
   }) async {
+    // 1. Try Cloudflare Edge API first
+    try {
+      final uri = Uri.parse('${CloudflareConfig.categoriesEndpoint}/$categoryId');
+      final res = await _client.get(uri).timeout(timeout);
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map && body['ok'] == true && body['category'] is Map) {
+          return Map<String, dynamic>.from(body['category'] as Map);
+        }
+      }
+    } catch (_) {
+      // Fall through to Appwrite
+    }
+
+    // 2. Fallback to Appwrite TablesDB
     final category = await _tablesDB
         .getRow(
           databaseId: AppwriteConfig.databaseId,

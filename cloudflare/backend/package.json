@@ -1,0 +1,20 @@
+{
+  "name": "olitun-api",
+  "version": "1.0.0",
+  "description": "High-performance Cloudflare Worker backend for Olitun with D1, R2, and Edge Caching",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute olitun-db --remote --file=./schema.sql",
+    "db:seed": "node seed.js"
+  },
+  "dependencies": {
+    "hono": "^4.7.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241011.0",
+    "typescript": "^5.6.3",
+    "wrangler": "^4.75.0"
+  }
+}

@@ -378,7 +378,7 @@
     {
       "$id": "getUserGamificationSummary",
       "name": "getUserGamificationSummary",
-      "runtime": "node-22.0",
+      "runtime": "node-22",
       "execute": [
         "users"
       ],
@@ -478,10 +478,10 @@
       "id": "reconcilePaymentAttempts",
       "$id": "reconcilePaymentAttempts",
       "name": "reconcilePaymentAttempts",
-      "runtime": "node-22.0",
+      "runtime": "node-22",
       "execute": [],
       "events": [],
-      "schedule": "*/15 * * * *",
+      "schedule": "0 */6 * * *",
       "timeout": 60,
       "path": "functions/reconcilePaymentAttempts",
       "entrypoint": "src/main.js",

@@ -86,3 +86,213 @@ CREATE TABLE IF NOT EXISTS translation_cache (
   created_at INTEGER NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_translation_cache_key ON translation_cache(cache_key);
+
+-- User Mistakes
+CREATE TABLE IF NOT EXISTS user_mistakes (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  quiz_id TEXT NOT NULL,
+  question_id TEXT NOT NULL,
+  question_index INTEGER DEFAULT 0,
+  wrong_answer TEXT,
+  correct_answer TEXT,
+  question_snapshot TEXT,
+  times_missed INTEGER DEFAULT 1,
+  times_reviewed INTEGER DEFAULT 0,
+  is_mastered INTEGER DEFAULT 0,
+  mastered_at TEXT,
+  last_missed_at TEXT,
+  last_reviewed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_user_mistakes_user ON user_mistakes(user_id, is_mastered);
+
+-- Mistake Review Sessions
+CREATE TABLE IF NOT EXISTS mistake_review_sessions (
+  session_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  question_ids TEXT,
+  score INTEGER,
+  total INTEGER,
+  completed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_mistake_review_user ON mistake_review_sessions(user_id);
+
+-- Bakhed Listening Progress
+CREATE TABLE IF NOT EXISTS bakhed_listening_progress (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  bakhed_id TEXT NOT NULL,
+  listened_percent INTEGER DEFAULT 0,
+  completed_80_percent INTEGER DEFAULT 0,
+  completed_at TEXT,
+  last_position_ms INTEGER DEFAULT 0,
+  updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_bakhed_progress_user ON bakhed_listening_progress(user_id);
+
+-- Badges & Gamification
+CREATE TABLE IF NOT EXISTS badges (
+  badge_id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  category TEXT DEFAULT 'learning',
+  icon TEXT DEFAULT '🏆',
+  reward_stars INTEGER DEFAULT 10,
+  target INTEGER DEFAULT 1,
+  sort_order INTEGER DEFAULT 0,
+  is_active INTEGER DEFAULT 1,
+  status TEXT DEFAULT 'published'
+);
+
+CREATE TABLE IF NOT EXISTS user_badges (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  badge_id TEXT NOT NULL,
+  progress INTEGER DEFAULT 0,
+  target INTEGER DEFAULT 1,
+  is_unlocked INTEGER DEFAULT 0,
+  unlocked_at TEXT,
+  updated_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_user_badges_user ON user_badges(user_id);
+
+CREATE TABLE IF NOT EXISTS reward_events (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  source_type TEXT,
+  source_id TEXT,
+  stars_awarded INTEGER DEFAULT 0,
+  badge_id TEXT,
+  reason TEXT,
+  created_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_reward_events_user ON reward_events(user_id);
+
+CREATE TABLE IF NOT EXISTS learning_analytics_events (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  event_name TEXT NOT NULL,
+  date_key TEXT NOT NULL,
+  source_id TEXT,
+  occurred_at TEXT,
+  created_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_date_event ON learning_analytics_events(date_key, event_name);
+CREATE INDEX IF NOT EXISTS idx_analytics_user ON learning_analytics_events(user_id);
+
+-- Waitlist
+CREATE TABLE IF NOT EXISTS binti_waitlist (
+  id TEXT PRIMARY KEY,
+  user_id TEXT,
+  full_name TEXT NOT NULL,
+  phone_number TEXT NOT NULL,
+  ceremony_type TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  event_date TEXT,
+  notes TEXT,
+  submitted_at TEXT NOT NULL,
+  status TEXT DEFAULT 'new'
+);
+CREATE INDEX IF NOT EXISTS idx_binti_waitlist_phone ON binti_waitlist(phone_number, ceremony_type);
+
+-- Course Purchases & Entitlements
+CREATE TABLE IF NOT EXISTS course_purchases (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  category_id TEXT NOT NULL,
+  course_id TEXT,
+  amount_in_cents INTEGER,
+  currency TEXT DEFAULT 'INR',
+  status TEXT DEFAULT 'completed',
+  order_id TEXT,
+  payment_id TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_course_purchases_user ON course_purchases(user_id, category_id);
+
+-- Payment Orders
+CREATE TABLE IF NOT EXISTS payment_orders (
+  order_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  category_id TEXT NOT NULL,
+  amount INTEGER NOT NULL,
+  currency TEXT DEFAULT 'INR',
+  status TEXT DEFAULT 'created',
+  receipt TEXT,
+  payment_id TEXT,
+  signature TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_payment_orders_user ON payment_orders(user_id);
+
+-- Analytics Rollups
+CREATE TABLE IF NOT EXISTS learning_analytics_daily_rollups (
+  id TEXT PRIMARY KEY,
+  date_key TEXT NOT NULL,
+  total_events INTEGER DEFAULT 0,
+  unique_users INTEGER DEFAULT 0,
+  event_counts_json TEXT NOT NULL,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rollups_date ON learning_analytics_daily_rollups(date_key);
+
+-- Voice & Audio Cache
+CREATE TABLE IF NOT EXISTS tts_cache (
+  cache_key TEXT PRIMARY KEY,
+  text_hash TEXT NOT NULL,
+  voice_id TEXT NOT NULL,
+  audio_url TEXT NOT NULL,
+  duration_ms INTEGER DEFAULT 0,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_tts_cache_key ON tts_cache(cache_key);
+
+CREATE TABLE IF NOT EXISTS audio_tracks (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  language TEXT DEFAULT 'sat',
+  category TEXT DEFAULT 'general',
+  audio_url TEXT NOT NULL,
+  duration_seconds REAL DEFAULT 0,
+  status TEXT DEFAULT 'pending_review',
+  reviewed_by TEXT,
+  reviewed_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_audio_tracks_status ON audio_tracks(status);
+
+CREATE TABLE IF NOT EXISTS localized_contents (
+  id TEXT PRIMARY KEY,
+  content_key TEXT NOT NULL,
+  locale TEXT NOT NULL,
+  translated_text TEXT NOT NULL,
+  status TEXT DEFAULT 'pending_review',
+  reviewed_by TEXT,
+  reviewed_at TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_localized_contents_key ON localized_contents(content_key, locale);
+
+-- Admin Audit Logs
+CREATE TABLE IF NOT EXISTS admin_audit_logs (
+  id TEXT PRIMARY KEY,
+  admin_user_id TEXT NOT NULL,
+  action TEXT NOT NULL,
+  target_id TEXT,
+  details_json TEXT,
+  timestamp TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_user ON admin_audit_logs(admin_user_id);
+
+-- Account Deletion Requests
+CREATE TABLE IF NOT EXISTS deletion_requests (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  last_error TEXT,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_deletion_requests_user ON deletion_requests(user_id);

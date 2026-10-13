@@ -17,5 +17,8 @@
       "binding": "ASSETS",
       "bucket_name": "olitun-assets"
     }
-  ]
+  ],
+  "ai": {
+    "binding": "AI"
+  }
 }

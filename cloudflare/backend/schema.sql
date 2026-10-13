@@ -75,3 +75,14 @@ CREATE TABLE IF NOT EXISTS leaderboard_cache (
   data_json TEXT NOT NULL,
   updated_at INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS translation_cache (
+  cache_key TEXT PRIMARY KEY,
+  from_lang TEXT NOT NULL,
+  to_lang TEXT NOT NULL,
+  source_text TEXT NOT NULL,
+  translated_text TEXT NOT NULL,
+  engine TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_translation_cache_key ON translation_cache(cache_key);

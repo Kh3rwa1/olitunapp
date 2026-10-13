@@ -4,12 +4,170 @@ import { cors } from 'hono/cors';
 type Bindings = {
   DB: D1Database;
   ASSETS: R2Bucket;
+  AI: any;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
 // Global CORS middleware for Flutter Web & Mobile
 app.use('*', cors());
+
+// Language mappings for IndicTrans2 model
+const INDICTRANS2_TARGETS: Record<string, string> = {
+  sat: 'sat_Olck',
+  santali: 'sat_Olck',
+  'sat-in': 'sat_Olck',
+  'sat_olck': 'sat_Olck',
+  hin: 'hin_Deva',
+  hi: 'hin_Deva',
+  hindi: 'hin_Deva',
+  ben: 'ben_Beng',
+  bn: 'ben_Beng',
+  bengali: 'ben_Beng',
+  ory: 'ory_Orya',
+  or: 'ory_Orya',
+  odia: 'ory_Orya',
+  asm: 'asm_Beng',
+  as: 'asm_Beng',
+  guj: 'guj_Gujr',
+  gu: 'guj_Gujr',
+  mar: 'mar_Deva',
+  mr: 'mar_Deva',
+  pan: 'pan_Guru',
+  pa: 'pan_Guru',
+  tam: 'tam_Taml',
+  ta: 'tam_Taml',
+  tel: 'tel_Telu',
+  te: 'tel_Telu',
+  urd: 'urd_Arab',
+  ur: 'urd_Arab',
+  san: 'san_Deva',
+  sa: 'san_Deva',
+};
+
+async function computeCacheKey(from: string, to: string, text: string, engine: string): Promise<string> {
+  const input = JSON.stringify({ from: from.toLowerCase(), to: to.toLowerCase(), text: text.trim(), engine: engine.toLowerCase() });
+  const msgUint8 = new TextEncoder().encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function translateWithGoogle(text: string, from = 'auto', to = 'sat'): Promise<{ translation: string; detectedLanguage: string; provider: string }> {
+  const sl = from === 'auto' ? 'auto' : from;
+  const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(to)}&q=${encodeURIComponent(text)}`;
+
+  const res = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Google Translate HTTP error ${res.status}`);
+  }
+
+  const data: any = await res.json();
+  let translation = '';
+  let detectedLanguage = from;
+
+  if (Array.isArray(data)) {
+    if (typeof data[0] === 'string') {
+      translation = data[0];
+    } else if (Array.isArray(data[0])) {
+      translation = data[0][0] || '';
+      detectedLanguage = data[0][1] || from;
+    }
+  }
+
+  if (!translation) {
+    throw new Error('Google Translate returned empty translation');
+  }
+
+  return {
+    translation: translation.trim(),
+    detectedLanguage,
+    provider: 'google-nmt-instant',
+  };
+}
+
+async function translateWithWorkersAi(ai: any, text: string, targetTag: string): Promise<{ translation: string; provider: string }> {
+  const res: any = await ai.run('@cf/ai4bharat/indictrans2-en-indic-1b', {
+    text: text,
+    target_language: targetTag,
+  });
+  const translation = res?.translations?.[0] || res?.result?.translations?.[0] || res?.translation;
+  if (!translation || typeof translation !== 'string') {
+    throw new Error('Workers AI returned empty translation');
+  }
+  return {
+    translation: translation.trim(),
+    provider: 'cloudflare-indictrans2-ai',
+  };
+}
+
+async function translateWithAiLlama(ai: any, text: string, from: string, to: string): Promise<{ translation: string; provider: string }> {
+  const res: any = await ai.run('@cf/meta/llama-3.2-3b-instruct', {
+    messages: [
+      {
+        role: 'system',
+        content: 'You are an accurate translator. Translate the text into the target language faithfully. Output ONLY the translation. Never add any notes, commentary, markdown formatting, or quotes.',
+      },
+      {
+        role: 'user',
+        content: `Translate this text from ${from} to ${to}:\n${text}`,
+      },
+    ],
+    max_tokens: 256,
+  });
+  const response = res?.response || res?.result?.response || '';
+  if (!response || typeof response !== 'string') {
+    throw new Error('Llama AI translation returned empty');
+  }
+  return {
+    translation: response.trim().replace(/^["']|["']$/g, ''),
+    provider: 'cloudflare-llama3-ai',
+  };
+}
+
+const M2M100_LANGS: Record<string, string> = {
+  en: 'english',
+  hi: 'hindi',
+  bn: 'bengali',
+  or: 'oriya',
+  mr: 'marathi',
+  gu: 'gujarati',
+  pa: 'punjabi',
+  ta: 'tamil',
+  te: 'telugu',
+  ur: 'urdu',
+  es: 'spanish',
+  fr: 'french',
+  de: 'german',
+  zh: 'chinese',
+  ja: 'japanese',
+  ru: 'russian',
+  ar: 'arabic',
+};
+
+async function translateWithM2M100(ai: any, text: string, from: string, to: string): Promise<{ translation: string; provider: string }> {
+  const srcLang = M2M100_LANGS[from.toLowerCase()] || 'english';
+  const tgtLang = M2M100_LANGS[to.toLowerCase()] || to;
+  const res: any = await ai.run('@cf/meta/m2m100-1.2b', {
+    text: text,
+    source_lang: srcLang,
+    target_lang: tgtLang,
+  });
+  const translation = res?.translated_text;
+  if (!translation || typeof translation !== 'string') {
+    throw new Error('m2m100 returned empty translation');
+  }
+  return {
+    translation: translation.trim(),
+    provider: 'cloudflare-m2m100-ai',
+  };
+}
 
 // Root landing page
 app.get('/', (c) => {
@@ -38,13 +196,18 @@ app.get('/', (c) => {
 <body>
   <div class="card">
     <h1><span>⚡</span> Olitun Cloudflare Edge API <span class="badge">ONLINE</span></h1>
-    <p>Powered by Cloudflare Workers, D1 Serverless Database, and global Edge Caching across 300+ cities worldwide.</p>
+    <p>Powered by Cloudflare Workers, D1 Serverless Database, Workers AI, and global Edge Caching across 300+ cities worldwide.</p>
     <div style="margin: 16px 0;">
       <span class="stat">D1 SQLite</span>
+      <span class="stat">Workers AI</span>
       <span class="stat">R2 Media</span>
       <span class="stat">Global Edge Cache</span>
     </div>
     <div class="endpoints">
+      <a class="endpoint" href="/api/v1/translate?text=Hello+friend&to=sat" target="_blank">
+        <span class="path">/api/v1/translate (AI & Instant)</span>
+        <span class="method">POST / GET</span>
+      </a>
       <a class="endpoint" href="/api/v1/categories" target="_blank">
         <span class="path">/api/v1/categories</span>
         <span class="method">GET</span>
@@ -83,6 +246,7 @@ app.get('/', (c) => {
     service: 'olitun-api',
     edge: true,
     endpoints: {
+      translate: '/api/v1/translate',
       categories: '/api/v1/categories',
       words: '/api/v1/words',
       letters: '/api/v1/letters',
@@ -224,6 +388,141 @@ app.get('/api/v1/assets/*', async (c) => {
     return new Response(object.body, { headers });
   } catch (err: any) {
     return c.json({ ok: false, error: err.message }, 500);
+  }
+});
+
+// 8. Translation (AI IndicTrans2 via Workers AI + Instant Google Translate + D1 Caching)
+app.all('/api/v1/translate', async (c) => {
+  try {
+    let text = '';
+    let from = 'auto';
+    let to = 'sat';
+    let engine = 'cloudflare';
+
+    if (c.req.method === 'POST') {
+      const body = await c.req.json().catch(() => ({}));
+      text = body?.text || '';
+      from = body?.from || 'auto';
+      to = body?.to || 'sat';
+      engine = (body?.engine || body?.provider || 'cloudflare').toLowerCase();
+    } else {
+      text = c.req.query('text') || '';
+      from = c.req.query('from') || 'auto';
+      to = c.req.query('to') || 'sat';
+      engine = (c.req.query('engine') || 'cloudflare').toLowerCase();
+    }
+
+    if (!text || text.trim().length === 0) {
+      return c.json({ success: false, error: 'INVALID_INPUT', message: 'Missing text parameter' }, 400);
+    }
+
+    text = text.trim();
+    if (text.length > 5000) {
+      return c.json({ success: false, error: 'INPUT_TOO_LONG', message: 'Text too long (max 5000 chars)' }, 400);
+    }
+
+    // A. Check D1 Cache
+    const cacheKey = await computeCacheKey(from, to, text, engine);
+    try {
+      const cached = await c.env.DB.prepare(
+        'SELECT translated_text, from_lang, to_lang, engine FROM translation_cache WHERE cache_key = ?'
+      ).bind(cacheKey).first();
+
+      if (cached && (cached as any).translated_text) {
+        return c.json({
+          success: true,
+          data: {
+            translation: (cached as any).translated_text,
+            detectedLanguage: (cached as any).from_lang,
+            detectedLanguageCode: (cached as any).from_lang,
+            translatedText: (cached as any).translated_text,
+            from: (cached as any).from_lang,
+            to: (cached as any).to_lang,
+            cached: true,
+            provider: (cached as any).engine,
+          }
+        });
+      }
+    } catch (_) {
+      // cache miss or table lookup issue
+    }
+
+    // B. Execute Translation
+    let result: { translation: string; detectedLanguage: string; provider: string };
+    const targetTag = INDICTRANS2_TARGETS[to.toLowerCase()];
+    const isEnglishOrAuto = from === 'auto' || from === 'en' || from === 'eng';
+
+    // 1. If English -> Indic/Santali, use IndicTrans2 (Best for Ol Chiki)
+    if (isEnglishOrAuto && targetTag && c.env.AI) {
+      try {
+        const aiRes = await translateWithWorkersAi(c.env.AI, text, targetTag);
+        result = {
+          translation: aiRes.translation,
+          detectedLanguage: 'en',
+          provider: aiRes.provider,
+        };
+      } catch (_) {
+        // Fallback to Llama or Google
+        try {
+          const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
+          result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
+        } catch (__2) {
+          result = await translateWithGoogle(text, from, to);
+        }
+      }
+    } else if (M2M100_LANGS[to.toLowerCase()] && c.env.AI) {
+      // 2. Multilingual translation using Meta M2M100
+      try {
+        const m2mRes = await translateWithM2M100(c.env.AI, text, from, to);
+        result = { translation: m2mRes.translation, detectedLanguage: from, provider: m2mRes.provider };
+      } catch (_) {
+        try {
+          const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
+          result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
+        } catch (__2) {
+          result = await translateWithGoogle(text, from, to);
+        }
+      }
+    } else if (c.env.AI) {
+      // 3. Ol Chiki to English or conversational languages using Llama 3
+      try {
+        const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
+        result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
+      } catch (_) {
+        result = await translateWithGoogle(text, from, to);
+      }
+    } else {
+      result = await translateWithGoogle(text, from, to);
+    }
+
+    // C. Save to D1 Cache
+    try {
+      await c.env.DB.prepare(
+        'INSERT OR REPLACE INTO translation_cache (cache_key, from_lang, to_lang, source_text, translated_text, engine, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(cacheKey, result.detectedLanguage, to, text, result.translation, result.provider, Date.now()).run();
+    } catch (_) {
+      // ignore cache write error
+    }
+
+    return c.json({
+      success: true,
+      data: {
+        translation: result.translation,
+        detectedLanguage: result.detectedLanguage,
+        detectedLanguageCode: result.detectedLanguage,
+        translatedText: result.translation,
+        from: result.detectedLanguage,
+        to: to,
+        cached: false,
+        provider: result.provider,
+      }
+    });
+  } catch (err: any) {
+    return c.json({
+      success: false,
+      error: 'TRANSLATION_ERROR',
+      message: err.message || 'Translation service failed',
+    }, 500);
   }
 });
 

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/config/appwrite_config.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import '../../shared/providers/app_settings_provider.dart';
 import '../auth/appwrite_auth_service.dart';
 
@@ -31,8 +32,7 @@ import '../auth/appwrite_auth_service.dart';
 /// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
 /// separate deployment.
 class AiConfig {
-  static const String _defaultUrl =
-      'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions';
+  static const String _defaultUrl = CloudflareConfig.translateEndpoint;
   static const String _envUrl = String.fromEnvironment('TRANSLATE_URL');
 
   static String get translateUrl {

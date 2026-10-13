@@ -15,4 +15,5 @@ class CloudflareConfig {
   static const String numbersEndpoint = '$baseUrl/api/v1/numbers';
   static const String sentencesEndpoint = '$baseUrl/api/v1/sentences';
   static const String lessonsEndpoint = '$baseUrl/api/v1/lessons';
+  static const String translateEndpoint = '$baseUrl/api/v1/translate';
 }

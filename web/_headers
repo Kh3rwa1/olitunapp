@@ -1,0 +1,34 @@
+# Custom HTTP headers for Cloudflare Pages
+
+/sw.js
+  Service-Worker-Allowed: /
+  Cache-Control: no-cache, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/offline.html
+  Cache-Control: no-cache, must-revalidate
+  X-Content-Type-Options: nosniff
+
+/flutter_bootstrap.js
+  Cache-Control: no-cache, must-revalidate
+
+/flutter.js
+  Cache-Control: no-cache, must-revalidate
+
+/main.dart.js
+  Cache-Control: no-cache, must-revalidate
+
+/version.json
+  Cache-Control: no-cache, must-revalidate
+
+/build-info.json
+  Cache-Control: no-cache, must-revalidate
+
+/manifest.json
+  Cache-Control: no-cache, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

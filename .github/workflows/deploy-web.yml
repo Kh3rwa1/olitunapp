@@ -1,0 +1,72 @@
+name: Deploy Web to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'lib/**'
+      - 'web/**'
+      - 'assets/**'
+      - 'scripts/build_web.sh'
+      - 'scripts/patch_service_worker.dart'
+      - 'scripts/verify_service_worker_patch.dart'
+      - 'scripts/verify_pwa_offline.dart'
+      - '.github/workflows/deploy-web.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deploy-web-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Cloudflare Pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Web Application
+        env:
+          APP_ENV: production
+          APPWRITE_ENDPOINT: https://sgp.cloud.appwrite.io/v1
+          APPWRITE_PROJECT_ID: 699495910038e39622c5
+          TRANSLATE_URL: https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions
+          SANTALI_VOICE_FUNCTION_ID: santaliVoice
+        run: bash scripts/build_web.sh
+
+      - name: Check Cloudflare Secret Availability
+        id: check_creds
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CF_TOKEN" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::CLOUDFLARE_API_TOKEN secret is not yet configured in GitHub repository secrets. Deployment skipped."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        if: steps.check_creds.outputs.configured == 'true'
+        uses: cloudflare/wrangler-action@392082e81ffbcb9cbdee146c4ab51a66fa9e2856 # v3.14.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || 'bcb4692769683fbc73837789082f9096' }}
+          command: pages deploy build/web --project-name=olitunapp --commit-dirty=true
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

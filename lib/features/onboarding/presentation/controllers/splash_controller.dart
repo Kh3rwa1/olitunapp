@@ -26,6 +26,17 @@ class SplashController {
           AppLogger.debug('Splash: Admin hash target requested: $hash');
           return hash;
         }
+        final path = Uri.base.path;
+        if (path.startsWith('/admin')) {
+          AppLogger.debug('Splash: Admin path target requested: $path');
+          return path;
+        }
+        if (Uri.base.host.toLowerCase() == 'admin.olitun.in') {
+          AppLogger.debug(
+            'Splash: Admin host detected, routing to /admin/login',
+          );
+          return '/admin/login';
+        }
       }
 
       // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)

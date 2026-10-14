@@ -1,4 +1,2 @@
-# Cloudflare Pages SPA Routing & Admin Redirects
-/admin/* /#/admin/:splat 302
-/admin /#/admin 302
+# Cloudflare Pages SPA Routing
 /* /index.html 200

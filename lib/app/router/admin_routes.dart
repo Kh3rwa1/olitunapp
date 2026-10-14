@@ -29,7 +29,7 @@ List<RouteBase> buildAdminRoutes({
     modalRoute(
       path: '/admin/login',
       name: RouteNames.adminLogin,
-      child: (_, _) => _deferred(admin.loginScreen),
+      child: (_, _) => _deferred(() => admin.loginScreen()),
     ),
     ShellRoute(
       builder: (context, state, child) => _deferred(() => admin.shell(child)),
@@ -37,19 +37,21 @@ List<RouteBase> buildAdminRoutes({
         adminRoute(
           path: '/admin',
           name: RouteNames.admin,
-          builder: (context, state) => _deferred(admin.dashboardScreen),
+          builder: (context, state) => _deferred(() => admin.dashboardScreen()),
         ),
         adminRoute(
           path: '/admin/translations',
-          builder: (context, state) => _deferred(admin.translationsScreen),
+          builder: (context, state) =>
+              _deferred(() => admin.translationsScreen()),
         ),
         adminRoute(
           path: '/admin/categories',
-          builder: (context, state) => _deferred(admin.categoriesScreen),
+          builder: (context, state) =>
+              _deferred(() => admin.categoriesScreen()),
         ),
         adminRoute(
           path: '/admin/banners',
-          builder: (context, state) => _deferred(admin.bannersScreen),
+          builder: (context, state) => _deferred(() => admin.bannersScreen()),
         ),
         adminRoute(
           path: '/admin/letters',
@@ -97,7 +99,7 @@ List<RouteBase> buildAdminRoutes({
         ),
         adminRoute(
           path: '/admin/quizzes',
-          builder: (context, state) => _deferred(admin.quizzesScreen),
+          builder: (context, state) => _deferred(() => admin.quizzesScreen()),
         ),
         adminRoute(
           path: '/admin/rhymes',
@@ -114,7 +116,7 @@ List<RouteBase> buildAdminRoutes({
         ),
         adminRoute(
           path: '/admin/media',
-          builder: (context, state) => _deferred(admin.mediaScreen),
+          builder: (context, state) => _deferred(() => admin.mediaScreen()),
         ),
         adminRoute(
           path: '/admin/audio',
@@ -128,11 +130,11 @@ List<RouteBase> buildAdminRoutes({
         ),
         adminRoute(
           path: '/admin/settings',
-          builder: (context, state) => _deferred(admin.settingsScreen),
+          builder: (context, state) => _deferred(() => admin.settingsScreen()),
         ),
         adminRoute(
           path: '/admin/access',
-          builder: (context, state) => _deferred(admin.accessScreen),
+          builder: (context, state) => _deferred(() => admin.accessScreen()),
         ),
         adminRoute(
           path: '/admin/gamification',
@@ -156,7 +158,7 @@ List<RouteBase> buildAdminRoutes({
         ),
         adminRoute(
           path: '/admin/analytics',
-          builder: (context, state) => _deferred(admin.analyticsScreen),
+          builder: (context, state) => _deferred(() => admin.analyticsScreen()),
         ),
         adminRoute(
           path: '/admin/maintenance',
@@ -165,15 +167,16 @@ List<RouteBase> buildAdminRoutes({
         ),
         adminRoute(
           path: '/admin/purchases',
-          builder: (context, state) => _deferred(admin.purchasesScreen),
+          builder: (context, state) => _deferred(() => admin.purchasesScreen()),
         ),
         adminRoute(
           path: '/admin/binti-waitlist',
-          builder: (context, state) => _deferred(admin.bintiWaitlistScreen),
+          builder: (context, state) =>
+              _deferred(() => admin.bintiWaitlistScreen()),
         ),
         adminRoute(
           path: '/admin/review',
-          builder: (context, state) => _deferred(admin.reviewScreen),
+          builder: (context, state) => _deferred(() => admin.reviewScreen()),
         ),
       ],
     ),

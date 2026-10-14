@@ -42,7 +42,11 @@ class DeferredRoute extends StatefulWidget {
 class _DeferredRouteState extends State<DeferredRoute> {
   late Future<void> _future = widget.library.ensureLoaded();
 
-  void _retry() => setState(() => _future = widget.library.ensureLoaded());
+  void _retry() {
+    setState(() {
+      _future = widget.library.ensureLoaded();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,18 +55,22 @@ class _DeferredRouteState extends State<DeferredRoute> {
       future: _future,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(
-            child: IconButton(
-              tooltip: MaterialLocalizations.of(
-                context,
-              ).refreshIndicatorSemanticLabel,
-              icon: const Icon(Icons.refresh_rounded),
-              onPressed: _retry,
+          return Scaffold(
+            body: Center(
+              child: IconButton(
+                tooltip: MaterialLocalizations.of(
+                  context,
+                ).refreshIndicatorSemanticLabel,
+                icon: const Icon(Icons.refresh_rounded),
+                onPressed: _retry,
+              ),
             ),
           );
         }
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
         return widget.builder(context);
       },

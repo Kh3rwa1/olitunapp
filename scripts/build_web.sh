@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Ensure dart from Flutter SDK is available on PATH
+if ! command -v dart &>/dev/null; then
+  FLUTTER_REAL="$(readlink -f "$(command -v flutter)")"
+  FLUTTER_DIR="$(dirname "$FLUTTER_REAL")"
+  export PATH="$FLUTTER_DIR:$PATH"
+fi
+
 # Olitun Web Production Build Wrapper
 # Compiles Flutter Web, patches the service worker, and validates the output.
 

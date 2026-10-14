@@ -111,8 +111,7 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
         error: e,
         stackTrace: stack,
       );
-      if (cached != null) return cached;
-      rethrow;
+      return cached ?? const <FeaturedBannerModel>[];
     }
   }
 

@@ -134,4 +134,32 @@ void main() {
       ).called(1);
     },
   );
+
+  test(
+    'bannersProvider gracefully returns empty list when both Edge and Appwrite fail',
+    () async {
+      final mockHttpClient = MockClient((request) async {
+        return http.Response('Edge error', 500);
+      });
+
+      when(
+        () =>
+            mockDb.listAllDocuments('banners', queries: any(named: 'queries')),
+      ).thenThrow(Exception('Appwrite offline'));
+
+      final container = ProviderContainer(
+        overrides: [
+          isAuthenticatedProvider.overrideWith((ref) => true),
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          bannersProvider.overrideWith(
+            () => BannersNotifier(httpClient: mockHttpClient),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final banners = await container.read(bannersProvider.future);
+      expect(banners, isEmpty);
+    },
+  );
 }

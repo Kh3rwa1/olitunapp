@@ -5,6 +5,13 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.3.3] (2026-10-14)
+
+### Features
+
+* **backend:** migrate read traffic to Cloudflare D1/Worker edge API and optimize Appwrite functions
+* **translator:** enhance Instant Translate UX with auto-copy, hidden translate button on result, and single-screen compact layout
+
 ## [1.3.1] (2026-09-06)
 
 ### Bug Fixes

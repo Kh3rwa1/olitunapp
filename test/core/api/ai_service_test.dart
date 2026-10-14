@@ -125,44 +125,47 @@ void main() {
   });
 
   group('AiService Cloudflare Edge API Integration', () {
-    test('successfully translates and parses Cloudflare IndicTrans2 response', () async {
-      final mock = MockClient((request) async {
-        expect(request.url.toString(), CloudflareConfig.translateEndpoint);
-        final body = jsonDecode(request.body) as Map<String, dynamic>;
-        expect(body['text'], 'Hello teacher');
-        expect(body['to'], 'sat');
+    test(
+      'successfully translates and parses Cloudflare IndicTrans2 response',
+      () async {
+        final mock = MockClient((request) async {
+          expect(request.url.toString(), CloudflareConfig.translateEndpoint);
+          final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['text'], 'Hello teacher');
+          expect(body['to'], 'sat');
 
-        return http.Response(
-          jsonEncode({
-            'success': true,
-            'data': {
-              'translation': 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾',
-              'detectedLanguage': 'en',
-              'detectedLanguageCode': 'en',
-              'translatedText': 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾',
-              'from': 'en',
-              'to': 'sat',
-              'cached': true,
-              'provider': 'cloudflare-indictrans2-ai',
-            },
-          }),
-          200,
-          headers: {'content-type': 'application/json'},
+          return http.Response(
+            jsonEncode({
+              'success': true,
+              'data': {
+                'translation': 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾',
+                'detectedLanguage': 'en',
+                'detectedLanguageCode': 'en',
+                'translatedText': 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾',
+                'from': 'en',
+                'to': 'sat',
+                'cached': true,
+                'provider': 'cloudflare-indictrans2-ai',
+              },
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        });
+
+        final service = AiService(client: mock);
+        final result = await service.translateFromUrlForTest(
+          CloudflareConfig.translateEndpoint,
+          {'text': 'Hello teacher', 'from': 'en', 'to': 'sat'},
         );
-      });
 
-      final service = AiService(client: mock);
-      final result = await service.translateFromUrlForTest(
-        CloudflareConfig.translateEndpoint,
-        {'text': 'Hello teacher', 'from': 'en', 'to': 'sat'},
-      );
-
-      expect(result, isNotNull);
-      expect(result!.isError, isFalse);
-      expect(result.translation, 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾');
-      expect(result.detectedLanguage, 'en');
-      expect(result.cached, isTrue);
-      expect(result.provider, 'cloudflare-indictrans2-ai');
-    });
+        expect(result, isNotNull);
+        expect(result!.isError, isFalse);
+        expect(result.translation, 'ᱦᱚᱞᱳ ᱥᱮᱪᱮᱫᱤᱭᱟᱹ ᱾');
+        expect(result.detectedLanguage, 'en');
+        expect(result.cached, isTrue);
+        expect(result.provider, 'cloudflare-indictrans2-ai');
+      },
+    );
   });
 }

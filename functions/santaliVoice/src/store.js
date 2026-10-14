@@ -167,7 +167,11 @@ export class VoiceStore {
                 { used: 0, period },
                 []
               );
-            } catch (_) {}
+            } catch (posErr) {
+              if (posErr?.code !== 409) {
+                fail('QUOTA_UNAVAILABLE', 'Voice quota service unavailable.', 503);
+              }
+            }
           }
         }
       }
@@ -199,6 +203,7 @@ export class VoiceStore {
             if ([400, 409].includes(posIncErr.code) || posIncErr.code === 'QUOTA_EXCEEDED') {
               fail('QUOTA_EXCEEDED', 'Voice generation quota reached. Please try later.', 429);
             }
+            fail('QUOTA_UNAVAILABLE', 'Voice quota service unavailable.', 503);
           }
         }
       }
@@ -207,6 +212,7 @@ export class VoiceStore {
         fail('QUOTA_EXCEEDED', 'Voice generation quota reached. Please try later.', 429);
       }
       if (e instanceof VoiceError) throw e;
+      fail('QUOTA_UNAVAILABLE', 'Voice quota service unavailable.', 503);
     }
   }
 

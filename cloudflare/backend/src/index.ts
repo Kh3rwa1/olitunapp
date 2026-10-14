@@ -1241,6 +1241,11 @@ app.post('/api/v1/payments/order', async (c) => {
 
     return c.json({
       ok: true,
+      orderId,
+      amount,
+      currency,
+      receipt,
+      categoryId,
       order: {
         id: orderId,
         amount,

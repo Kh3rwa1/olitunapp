@@ -59,10 +59,13 @@ export class Store {
     const documentId = digest(this.secret, ['quota', scope]);
     const params = { databaseId: this.databaseId, collectionId: QUOTAS, documentId };
     try { await this.db.createDocument({ ...params, data: { used: 0, period: scope.split(':')[0] }, permissions: [] }); }
-    catch (_) {}
+    catch (e) {
+      if (e?.code !== 409) fail('QUOTA_UNAVAILABLE', 'AI Studio quota store unavailable. Please try later.', 503);
+    }
     try { await this.db.incrementDocumentAttribute({ ...params, attribute: 'used', value: amount, max }); }
     catch (e) {
       if ([400, 409].includes(e.code)) fail('QUOTA_EXCEEDED', 'AI Studio usage limit reached. Please try later.', 429);
+      fail('QUOTA_UNAVAILABLE', 'AI Studio quota store unavailable. Please try later.', 503);
     }
   }
   async requestLimit(userId) {

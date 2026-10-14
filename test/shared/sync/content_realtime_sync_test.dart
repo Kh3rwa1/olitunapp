@@ -18,6 +18,7 @@ import 'package:itun/features/categories/presentation/providers/category_provide
 import 'package:itun/features/lessons/data/di/lesson_di.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/realtime_change_feed.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/shared/sync/content_realtime_sync.dart';
@@ -54,6 +55,12 @@ class _FakeRealtime extends Mock implements Realtime {
 }
 
 final _refProvider = Provider<Ref>((ref) => ref);
+
+RealtimeChangeEvent _toEvent(RealtimeMessage message) => RealtimeChangeEvent(
+  events: message.events,
+  channels: message.channels,
+  payload: message.payload,
+);
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -127,6 +134,12 @@ void main() {
         queries: any(named: 'queries'),
       ),
     ).thenAnswer((_) async => []);
+    when(
+      () => mockAppwriteDbService.listAllDocuments(
+        any(),
+        queries: any(named: 'queries'),
+      ),
+    ).thenAnswer((_) async => []);
 
     container = ProviderContainer(
       overrides: [
@@ -152,7 +165,7 @@ void main() {
     final sync = ContentRealtimeSync(
       ref: testRef,
       networkInfo: mockNetworkInfo,
-      realtimeOverride: fakeRealtime,
+      feed: AppwriteRealtimeChangeFeed(fakeRealtime),
     );
 
     sync.initialize();
@@ -201,7 +214,7 @@ void main() {
       final sync = ContentRealtimeSync(
         ref: testRef,
         networkInfo: mockNetworkInfo,
-        realtimeOverride: fakeRealtime,
+        feed: AppwriteRealtimeChangeFeed(fakeRealtime),
         onInvalidated: (kind, itemId, categoryId) {
           invalidatedKind = kind;
           invalidatedItemId = itemId;
@@ -227,7 +240,7 @@ void main() {
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      await sync.handleMessageForTesting(message);
+      await sync.handleMessageForTesting(_toEvent(message));
 
       // Verify cache eviction
       expect(
@@ -265,7 +278,7 @@ void main() {
       final sync = ContentRealtimeSync(
         ref: testRef,
         networkInfo: mockNetworkInfo,
-        realtimeOverride: fakeRealtime,
+        feed: AppwriteRealtimeChangeFeed(fakeRealtime),
         onInvalidated: (kind, itemId, categoryId) {
           invalidatedKind = kind;
           invalidatedItemId = itemId;
@@ -297,7 +310,7 @@ void main() {
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      await sync.handleMessageForTesting(message);
+      await sync.handleMessageForTesting(_toEvent(message));
 
       expect(
         await CacheService.get<dynamic>('content_list_lesson_all', (d) => d),
@@ -332,7 +345,7 @@ void main() {
       final sync = ContentRealtimeSync(
         ref: testRef,
         networkInfo: mockNetworkInfo,
-        realtimeOverride: fakeRealtime,
+        feed: AppwriteRealtimeChangeFeed(fakeRealtime),
       );
       sync.initialize();
 
@@ -349,7 +362,7 @@ void main() {
         timestamp: DateTime.now().toIso8601String(),
       );
 
-      await sync.handleMessageForTesting(message);
+      await sync.handleMessageForTesting(_toEvent(message));
 
       expect(
         await CacheService.get<dynamic>('cached_categories', (d) => d),
@@ -365,7 +378,7 @@ void main() {
     final sync = ContentRealtimeSync(
       ref: testRef,
       networkInfo: mockNetworkInfo,
-      realtimeOverride: fakeRealtime,
+      feed: AppwriteRealtimeChangeFeed(fakeRealtime),
       onSyncAll: () => syncAllCalled = true,
     );
 
@@ -380,7 +393,7 @@ void main() {
     final sync = ContentRealtimeSync(
       ref: testRef,
       networkInfo: mockNetworkInfo,
-      realtimeOverride: fakeRealtime,
+      feed: AppwriteRealtimeChangeFeed(fakeRealtime),
       onSyncAll: () => syncAllCalled = true,
     );
     sync.initialize();

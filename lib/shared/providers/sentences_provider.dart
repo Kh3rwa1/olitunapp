@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../models/content_models.dart';
 import 'seeded_content_list_notifier.dart';
 
@@ -19,7 +20,7 @@ Future<List<SentenceModel>> loadSeedSentences() async {
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final sentencesProvider =
-    NotifierProvider<SentencesNotifier, AsyncValue<List<SentenceModel>>>(
+    AsyncNotifierProvider<SentencesNotifier, List<SentenceModel>>(
       SentencesNotifier.new,
     );
 
@@ -44,19 +45,25 @@ class SentencesNotifier extends SeededContentListNotifier<SentenceModel> {
   Future<List<SentenceModel>> loadSeed() => loadSeedSentences();
 
   @override
-  Future<void> loadList() async {
+  Future<List<SentenceModel>> loadList() async {
     final seed = await loadSeedSentences();
     try {
       final remote = await fetchRemote();
-      if (remote.isEmpty) return emit(seed);
+      if (remote.isEmpty) return seed;
       final Map<String, SentenceModel> map = {for (final s in seed) s.id: s};
       for (final r in remote) {
         map[r.id] = r;
       }
-      emit(map.values.toList()..sort((a, b) => a.order.compareTo(b.order)));
-    } catch (_) {
+      return map.values.toList()..sort((a, b) => a.order.compareTo(b.order));
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Loading sentences failed; using bundled seed',
+        name: 'SentencesNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       // Offline or collection unavailable — fall back to bundled content.
-      emit(seed);
+      return seed;
     }
   }
 }

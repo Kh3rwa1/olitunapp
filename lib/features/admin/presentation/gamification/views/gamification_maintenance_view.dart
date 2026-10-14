@@ -104,12 +104,14 @@ class _GamificationMaintenanceViewState
             'success': true,
             'createdAt': now,
           });
-    } catch (e) {
+    } catch (e, stack) {
       // Do not block the admin operation if audit logging is unavailable,
       // but the missed audit entry is a real gap — surface it in logs.
       AppLogger.warning(
-        'GamificationMaintenanceView: failed to write audit log for "$action": $e',
+        'GamificationMaintenanceView: failed to write audit log for "$action"',
         name: 'GamificationMaintenanceView',
+        error: e,
+        stackTrace: stack,
       );
     }
   }

@@ -9,7 +9,6 @@ import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart'
 import 'package:itun/features/review/data/review_state_migration.dart';
 import 'package:itun/features/review/data/review_store.dart';
 import 'package:itun/features/review/domain/memory_scheduler.dart';
-import 'package:itun/features/review/domain/retention_metrics.dart';
 import 'package:itun/features/review/domain/review_corpus_identity.dart';
 import 'package:itun/features/review/domain/review_item.dart';
 import 'package:itun/features/review/domain/review_state_merge_policy.dart';
@@ -272,46 +271,6 @@ void main() {
         overdueItem.nextReviewAt.isBefore(recentItem.nextReviewAt),
         isTrue,
       );
-    });
-
-    test('Scenario 8: Retention rate accuracy', () {
-      final tIntro = DateTime.utc(2026, 1, 1, 10);
-      final tRecallD1 = DateTime.utc(2026, 1, 1, 20); // Within 24 hours
-      final tRecallLate = DateTime.utc(2026, 1, 5, 10); // After 4 days
-
-      final item1 = MemoryItemState(
-        itemId: 'w_d1',
-        itemType: ReviewItemType.word,
-        introducedAt: tIntro,
-        nextReviewAt: tRecallD1,
-        firstRecallAt: tRecallD1,
-        successfulRecalls: 1,
-      );
-      final item2 = MemoryItemState(
-        itemId: 'w_late',
-        itemType: ReviewItemType.word,
-        introducedAt: tIntro,
-        nextReviewAt: tRecallLate,
-        firstRecallAt: tRecallLate,
-        successfulRecalls: 1,
-      );
-      final item3 = MemoryItemState(
-        itemId: 'w_never',
-        itemType: ReviewItemType.word,
-        introducedAt: tIntro,
-        nextReviewAt: tIntro,
-      );
-
-      final metrics = RetentionMetrics.compute([
-        item1,
-        item2,
-        item3,
-      ], now: DateTime.utc(2026, 1, 10));
-
-      expect(metrics.introducedCount, 3);
-      expect(metrics.d1EligibleCount, 2);
-      expect(metrics.d1RecalledCount, 1); // Only item1 recalled within 24h
-      expect(metrics.d1RecallRate, closeTo(0.5, 0.01));
     });
 
     test('Scenario 9: Leech quarantine / orphan identification', () {

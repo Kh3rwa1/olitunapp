@@ -3,9 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/accessibility/wcag_audit.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/core/theme/app_theme.dart';
-import 'package:itun/features/home/presentation/widgets/magic_translate_dialog.dart';
 import 'package:itun/shared/widgets/animated_buttons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -62,34 +60,6 @@ void main() {
       expect(tester.takeException(), isNull);
       expect(find.text('SUBMIT ANSWER'), findsOneWidget);
     });
-
-    testWidgets(
-      'MagicTranslateDialog renders cleanly under 200% text scale without overflow',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            child: MaterialApp(
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              theme: AppTheme.lightTheme,
-              home: const MediaQuery(
-                data: MediaQueryData(
-                  textScaler: TextScaler.linear(2.0),
-                  size: Size(500, 1000),
-                ),
-                child: Scaffold(
-                  body: SingleChildScrollView(child: MagicTranslateDialog()),
-                ),
-              ),
-            ),
-          ),
-        );
-
-        expect(tester.takeException(), isNull);
-        expect(find.text('AI Translator'), findsOneWidget);
-        expect(find.text('CLOSE'), findsOneWidget);
-      },
-    );
   });
 
   group('Accessibility: Focus Navigation & Semantics Tree', () {

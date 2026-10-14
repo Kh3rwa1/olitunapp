@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../models/content_models.dart';
 import 'seeded_content_list_notifier.dart';
 
@@ -18,10 +19,9 @@ Future<List<WordModel>> loadSeedWords() async {
 }
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
-final wordsProvider =
-    NotifierProvider<WordsNotifier, AsyncValue<List<WordModel>>>(
-      WordsNotifier.new,
-    );
+final wordsProvider = AsyncNotifierProvider<WordsNotifier, List<WordModel>>(
+  WordsNotifier.new,
+);
 
 class WordsNotifier extends SeededContentListNotifier<WordModel> {
   @override
@@ -44,23 +44,29 @@ class WordsNotifier extends SeededContentListNotifier<WordModel> {
   Future<List<WordModel>> loadSeed() => loadSeedWords();
 
   @override
-  Future<void> loadList() async {
+  Future<List<WordModel>> loadList() async {
     final seed = await loadSeedWords();
     try {
       final remote = await fetchRemote();
-      if (remote.isEmpty) return emit(seed);
+      if (remote.isEmpty) return seed;
       final Map<String, WordModel> map = {for (final w in seed) w.id: w};
       for (final r in remote) {
         map[r.id] = r;
       }
-      emit(map.values.toList()..sort((a, b) => a.order.compareTo(b.order)));
-    } catch (_) {
+      return map.values.toList()..sort((a, b) => a.order.compareTo(b.order));
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Loading words failed; using bundled seed',
+        name: 'WordsNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       // Offline or collection unavailable — fall back to bundled content.
-      emit(seed);
+      return seed;
     }
   }
 
   Future<void> addWord(WordModel item) => add(item);
-  Future<void> updateWord(WordModel item) => update(item);
+  Future<void> updateWord(WordModel item) => updateItem(item);
   Future<void> deleteWord(String id) => delete(id);
 }

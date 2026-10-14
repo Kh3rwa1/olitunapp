@@ -120,6 +120,56 @@ class AppwriteDbService {
     return rows;
   }
 
+  /// Lists every row matching [queries] using cursor pagination.
+  ///
+  /// Unlike offset paging, `Query.cursorAfter` keeps each page request O(1)
+  /// on the server and stays stable while rows are inserted concurrently.
+  /// Any `limit`/`offset`/cursor queries in [queries] are ignored; ordering
+  /// and filter queries are preserved. Use this instead of hand-written
+  /// `Query.limit(500)` reads so large collections are never truncated.
+  Future<List<Map<String, dynamic>>> listAllDocuments(
+    String collectionId, {
+    List<String>? queries,
+    int pageSize = AppwriteQueryPaging.defaultPageSize,
+  }) async {
+    AppwriteQueryPaging.validatePageSize(pageSize);
+    _ensureBackendConfigured();
+
+    final baseQueries = (queries ?? const <String>[])
+        .where((query) {
+          final method = AppwriteQueryPaging.queryMethod(query);
+          return method != 'limit' &&
+              method != 'offset' &&
+              method != 'cursorAfter' &&
+              method != 'cursorBefore';
+        })
+        .toList(growable: false);
+    final rows = <Map<String, dynamic>>[];
+    String? cursor;
+
+    while (true) {
+      final pageCursor = cursor;
+      final result = await _retryWithBackoff(
+        () => _tablesDB
+            .listRows(
+              databaseId: AppwriteConfig.databaseId,
+              tableId: collectionId,
+              queries: [
+                ...baseQueries,
+                Query.limit(pageSize),
+                if (pageCursor != null) Query.cursorAfter(pageCursor),
+              ],
+            )
+            .timeout(_readTimeout),
+      );
+      rows.addAll(result.rows.map(_rowToMap));
+      if (result.rows.length < pageSize) break;
+      cursor = result.rows.last.$id;
+    }
+
+    return rows;
+  }
+
   Future<List<Map<String, dynamic>>> _listSinglePage(
     String collectionId, {
     required List<String> queries,

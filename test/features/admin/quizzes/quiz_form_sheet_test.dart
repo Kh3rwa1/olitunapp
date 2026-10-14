@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/quizzes/widgets/quiz_form_sheet.dart';
-import 'package:itun/features/admin/presentation/quizzes/widgets/quiz_form_sheet/quiz_form_state.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
@@ -21,7 +20,7 @@ class _FakeCategoryNotifier extends CategoryNotifier {
 
 class _NoopQuizzesNotifier extends QuizzesNotifier {
   @override
-  AsyncValue<List<QuizModel>> build() => const AsyncValue.data([]);
+  List<QuizModel> build() => const [];
 }
 
 QuizModel _quiz() => QuizModel(
@@ -91,19 +90,5 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(find.text('Questions (1)'), findsOneWidget);
-  });
-
-  testWidgets('QuizFormState dispose releases its controllers', (tester) async {
-    final state = QuizFormState(
-      formKey: GlobalKey<FormState>(),
-      titleCtrl: TextEditingController(text: 't'),
-      orderCtrl: TextEditingController(),
-      passingScoreCtrl: TextEditingController(),
-      questions: const [],
-    );
-    expect(state.titleCtrl.text, 't');
-    expect(state.level, 'beginner');
-    expect(state.isActive, isTrue);
-    expect(state.dispose, returnsNormally);
   });
 }

@@ -84,9 +84,14 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   try {
     await QuizSeeder.seed(ref, actualAlphabetsId);
-  } catch (e) {
+  } catch (e, stack) {
     // Gracefully catch database exceptions if the quizzes collection is not set up
     // in Appwrite yet, allowing categories, words, and sentences to seed successfully.
-    AppLogger.debug('⚠️ Quizzes seeding skipped/failed: $e');
+    AppLogger.warning(
+      '⚠️ Quizzes seeding skipped/failed',
+      name: 'SeedProvider',
+      error: e,
+      stackTrace: stack,
+    );
   }
 }

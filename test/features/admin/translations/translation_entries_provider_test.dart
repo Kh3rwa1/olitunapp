@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/translations/models/translation_entry.dart';
@@ -18,8 +20,8 @@ class FakeWordsNotifier extends WordsNotifier {
   final bool loading;
 
   @override
-  AsyncValue<List<WordModel>> build() =>
-      loading ? const AsyncValue.loading() : AsyncValue.data(items);
+  FutureOr<List<WordModel>> build() =>
+      loading ? Completer<List<WordModel>>().future : items;
 }
 
 class FakeSentencesNotifier extends SentencesNotifier {
@@ -28,8 +30,8 @@ class FakeSentencesNotifier extends SentencesNotifier {
   final bool loading;
 
   @override
-  AsyncValue<List<SentenceModel>> build() =>
-      loading ? const AsyncValue.loading() : AsyncValue.data(items);
+  FutureOr<List<SentenceModel>> build() =>
+      loading ? Completer<List<SentenceModel>>().future : items;
 }
 
 class FakeLessonNotifier extends LessonNotifier {
@@ -58,8 +60,8 @@ class FakeRhymesNotifier extends RhymesNotifier {
   final bool loading;
 
   @override
-  AsyncValue<List<RhymeModel>> build() =>
-      loading ? const AsyncValue.loading() : AsyncValue.data(items);
+  FutureOr<List<RhymeModel>> build() =>
+      loading ? Completer<List<RhymeModel>>().future : items;
 }
 
 ProviderContainer createContainer({

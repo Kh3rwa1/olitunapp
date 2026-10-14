@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/services.dart';
 
 import 'dart:async';
@@ -25,7 +27,11 @@ void main() {
           const MethodChannel('plugins.flutter.io/path_provider'),
           (MethodCall methodCall) async => '.',
         );
-    Hive.init('./test_hive_entitlements_v2');
+    Hive.init(
+      (await Directory.systemTemp.createTemp(
+        'test_hive_entitlements_v2_',
+      )).path,
+    );
   });
 
   setUp(() async {

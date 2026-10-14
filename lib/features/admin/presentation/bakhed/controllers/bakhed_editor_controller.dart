@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
@@ -67,17 +69,18 @@ class BakhedEditorState {
 
 class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
   late String bakhedId;
-  bool _disposed = false;
+
+  /// Request id; a load whose id is no longer current (superseded or
+  /// disposed, which bumps it) drops its result.
+  int _loadSeq = 0;
 
   BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
 
   @override
   BakhedEditorState build(String arg) {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
+    ref.onDispose(() => _loadSeq++);
     bakhedId = arg;
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(load);
+    unawaited(_fetch(++_loadSeq));
     return BakhedEditorState(item: const AsyncValue.loading());
   }
 
@@ -102,10 +105,18 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
   }
 
   Future<void> load() async {
-    if (_disposed) return;
+    final seq = ++_loadSeq;
     state = state.copyWith(item: const AsyncValue.loading());
+    await _fetch(seq);
+  }
+
+  /// Does not touch [state] before its first await, so it may start in build.
+  Future<void> _fetch(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     final res = await _repository.get(bakhedId);
-    if (_disposed) return;
+    if (seq != _loadSeq) return;
     res.fold(
       (failure) {
         if (failure is ServerFailure && failure.code == 404) {
@@ -495,7 +506,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
 
           final uploader = ref.read(mediaUploaderProvider);
           // Execute deletions in background so it doesn't block the UI transit
-          Future.microtask(() async {
+          unawaited(() async {
             for (final fileId in deletions) {
               try {
                 final delRes = await uploader.deleteIfUnreferenced(
@@ -523,14 +534,16 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
                     name: 'BakhedEditorController',
                   ),
                 );
-              } catch (e) {
-                AppLogger.debug(
-                  'Error deleting pending media file $fileId during save commit: $e',
+              } catch (e, stack) {
+                AppLogger.warning(
+                  'Error deleting pending media file $fileId during save commit',
                   name: 'BakhedEditorController',
+                  error: e,
+                  stackTrace: stack,
                 );
               }
             }
-          });
+          }());
 
           // Re-initialize original lists to establish new baseline for edits
           if (lyricsState.isLoaded) {

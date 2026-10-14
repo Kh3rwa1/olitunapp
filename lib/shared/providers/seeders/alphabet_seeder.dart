@@ -57,10 +57,12 @@ class AlphabetSeeder {
             ),
           );
         }
-      } catch (e) {
+      } catch (e, stack) {
         AppLogger.warning(
-          'AlphabetSeeder: failed to load assets/seed/letters.json, falling back: $e',
+          'AlphabetSeeder: failed to load assets/seed/letters.json, falling back',
           name: 'AlphabetSeeder',
+          error: e,
+          stackTrace: stack,
         );
         final fallbackLetters = [
           ['ᱚ', 'l_la', 'La (a)'],

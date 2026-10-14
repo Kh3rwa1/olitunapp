@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
@@ -21,7 +23,9 @@ void main() {
           const MethodChannel('plugins.flutter.io/path_provider'),
           (MethodCall methodCall) async => '.',
         );
-    Hive.init('./test_hive_cache_v3');
+    Hive.init(
+      (await Directory.systemTemp.createTemp('test_hive_cache_v3_')).path,
+    );
   });
 
   setUp(() async {

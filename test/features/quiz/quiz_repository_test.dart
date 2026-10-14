@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_utils.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -83,5 +86,5 @@ class _TestQuizzesNotifier extends QuizzesNotifier {
   _TestQuizzesNotifier(this._initial);
 
   @override
-  AsyncValue<List<QuizModel>> build() => _initial;
+  FutureOr<List<QuizModel>> build() => asyncValueBuild(_initial);
 }

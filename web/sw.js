@@ -56,7 +56,6 @@ const APP_SHELL = [
   '/assets/fonts/fallback/Roboto-Regular.ttf',
   '/assets/assets/fonts/Inter-Variable.ttf',
   '/assets/assets/fonts/OlChiki.ttf',
-  '/assets/packages/cupertino_icons/assets/CupertinoIcons.ttf',
   '/assets/assets/seed/lessons.json',
   '/assets/assets/seed/categories.json',
   '/assets/assets/seed/vocab_lessons.json',

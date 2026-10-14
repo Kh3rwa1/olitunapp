@@ -21,7 +21,7 @@ import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
-import 'shared/offline/content_mutation_replay.dart';
+import 'shared/repositories/content_mutation_replay.dart';
 import 'shared/sync/content_realtime_sync.dart';
 import 'features/review/data/review_sync_init.dart';
 import 'core/notifications/notification_tap_router.dart';

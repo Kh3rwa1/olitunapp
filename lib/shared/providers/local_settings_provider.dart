@@ -2,6 +2,7 @@ import 'dart:ui' show PlatformDispatcher;
 import 'package:flutter/widgets.dart'
     show WidgetsBinding, WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../core/storage/hive_service.dart';
 import 'language_settings_providers.dart';
 
@@ -99,7 +100,13 @@ final lastOpenedLessonIdProvider = StateProvider<String?>((ref) {
         .read(sharedPreferencesProvider)
         .getString('last_opened_lesson_id');
     return value == null || value.isEmpty ? null : value;
-  } catch (_) {
+  } catch (e, stack) {
+    AppLogger.warning(
+      'Reading last opened lesson failed',
+      name: 'LocalSettings',
+      error: e,
+      stackTrace: stack,
+    );
     return null;
   }
 });

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -72,6 +74,13 @@ class FakeAppwriteDbService implements AppwriteDbService {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> listAllDocuments(
+    String collectionId, {
+    List<String>? queries,
+    int pageSize = 500,
+  }) => listDocuments(collectionId, queries: queries);
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
@@ -81,7 +90,9 @@ void main() {
     late SharedPreferences prefs;
 
     setUpAll(() async {
-      Hive.init('test_hive_quizzes_v2');
+      Hive.init(
+        (await Directory.systemTemp.createTemp('test_hive_quizzes_v2_')).path,
+      );
       CacheService.resetForTesting();
     });
 
@@ -301,16 +312,8 @@ void main() {
       ),
     ];
 
-    Future<List<QuizModel>> waitForQuizzes(ProviderContainer container) async {
-      final state = container.read(quizzesProvider);
-      if (state.hasValue && state.value != null) {
-        return state.value!;
-      }
-      await Future.delayed(Duration.zero);
-      await Future.delayed(Duration.zero);
-      final next = container.read(quizzesProvider);
-      return next.value!;
-    }
+    Future<List<QuizModel>> waitForQuizzes(ProviderContainer container) =>
+        container.read(quizzesProvider.future);
 
     ProviderContainer createContainer(FakeAppwriteDbService fakeDb) {
       return ProviderContainer(
@@ -511,7 +514,7 @@ void main() {
           isTrue,
         );
 
-        await notifier.update(
+        await notifier.updateItem(
           QuizModel(
             id: 'new_quiz',
             categoryId: 'custom',

@@ -12,7 +12,7 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/offline/content_mutation_replay.dart';
+import 'package:itun/shared/repositories/content_mutation_replay.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:fpdart/fpdart.dart';
 

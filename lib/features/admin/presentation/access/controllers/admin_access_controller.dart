@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 import '../../../domain/admin_failure.dart';
 
@@ -45,31 +48,45 @@ class AdminAccessState {
 }
 
 class AdminAccessController extends Notifier<AdminAccessState> {
-  bool _disposed = false;
+  /// Request id; responses for superseded requests (or after dispose, which
+  /// bumps it) are discarded.
+  int _loadSeq = 0;
 
   AppwriteAuthService get _authService => ref.read(appwriteAuthServiceProvider);
 
   @override
   AdminAccessState build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadSummary);
+    ref.onDispose(() => _loadSeq++);
+    unawaited(_fetchSummary(++_loadSeq));
     return const AdminAccessState();
   }
 
   Future<void> loadSummary() async {
-    if (_disposed) return;
+    final seq = ++_loadSeq;
     state = state.copyWith(isLoading: true, message: () => null);
+    await _fetchSummary(seq);
+  }
+
+  /// Does not touch [state] before its first await, so it may start in build.
+  Future<void> _fetchSummary(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     try {
       final data = await _authService.executeAdminAccess({'action': 'summary'});
-      if (_disposed) return;
+      if (seq != _loadSeq) return;
       _applySummary(data);
-    } catch (e) {
-      if (_disposed) return;
+    } catch (e, stack) {
+      if (seq != _loadSeq) return;
+      AppLogger.warning(
+        'Loading admin access summary failed',
+        name: 'AdminAccessController',
+        error: e,
+        stackTrace: stack,
+      );
       state = state.copyWith(message: () => 'Could not load admin access: $e');
     } finally {
-      if (!_disposed) {
+      if (seq == _loadSeq) {
         state = state.copyWith(isLoading: false);
       }
     }

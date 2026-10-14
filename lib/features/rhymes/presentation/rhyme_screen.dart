@@ -8,7 +8,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
-import '../../../core/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../core/motion/branded_refresh.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../domain/rhyme_model.dart';

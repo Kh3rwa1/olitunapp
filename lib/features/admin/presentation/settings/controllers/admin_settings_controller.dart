@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -133,9 +134,10 @@ class AdminSettingsState {
 class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
   @override
   AdminSettingsState build() {
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadSettings);
-    return const AdminSettingsState(status: AdminSettingsStatus.initial);
+    // Disposal supersedes any in-flight load.
+    ref.onDispose(() => _loadSeq++);
+    unawaited(_fetchSettings(++_loadSeq));
+    return const AdminSettingsState(status: AdminSettingsStatus.loading);
   }
 
   static const defaultGoals = [
@@ -177,7 +179,14 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
       status: AdminSettingsStatus.loading,
       clearFailure: true,
     );
+    await _fetchSettings(seq);
+  }
 
+  /// Does not touch [state] before its first await, so it may start in build.
+  Future<void> _fetchSettings(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final docs = await db.listDocuments('app_settings');
@@ -207,9 +216,12 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
               };
             }).toList();
           }
-        } catch (e) {
+        } catch (e, stack) {
           AppLogger.warning(
-            'AdminSettings: failed to parse onboarding_goals, using defaults: $e',
+            'AdminSettings: failed to parse onboarding_goals, using defaults',
+            name: 'AdminSettingsController',
+            error: e,
+            stackTrace: stack,
           );
           loadedGoals = defaultGoals;
         }
@@ -273,13 +285,16 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
 
       if (seq != _loadSeq) return;
       state = nextState.copyWith(lastConfirmedState: nextState);
-    } catch (e) {
+    } catch (e, stack) {
       final failure = AdminFailure.fromException(
         e,
         actionContext: 'Loading system settings',
       );
-      AppLogger.debug(
+      AppLogger.error(
         '❌ AdminSettingsController load failed: ${failure.sanitizedDetails}',
+        name: 'AdminSettingsController',
+        error: e,
+        stackTrace: stack,
       );
 
       // Never expose fallback defaults as confirmed loaded production values
@@ -376,13 +391,16 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
       state = updated.copyWith(lastConfirmedState: updated);
       ref.invalidate(appSettingsProvider);
       return true;
-    } catch (e) {
+    } catch (e, stack) {
       final failure = AdminFailure.fromException(
         e,
         actionContext: 'Saving setting ($key)',
       );
-      AppLogger.debug(
+      AppLogger.error(
         '❌ AdminSettingsController save ($key) failed: ${failure.sanitizedDetails}',
+        name: 'AdminSettingsController',
+        error: e,
+        stackTrace: stack,
       );
 
       // Rollback visible state to last confirmed snapshot

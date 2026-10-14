@@ -1,9 +1,11 @@
+import 'dart:async';
+
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/appwrite_query_builders.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 /// Shared skeleton for the admin content-list notifiers (words, letters,
@@ -12,8 +14,7 @@ import 'package:itun/core/logging/app_logger.dart';
 /// Subclasses supply the collection id, model mapping, bundled seed, and their
 /// own load policy via [loadList]; the provider lifecycle, remote fetch, CRUD,
 /// and seed backfill live here exactly once.
-abstract class SeededContentListNotifier<T>
-    extends Notifier<AsyncValue<List<T>>> {
+abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
   /// Appwrite collection backing this list.
   String get collectionId;
 
@@ -36,28 +37,19 @@ abstract class SeededContentListNotifier<T>
   /// logged and swallowed (numbers).
   bool get rethrowCrudErrors => true;
 
-  bool _disposed = false;
-
   @override
-  AsyncValue<List<T>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadList);
-    return const AsyncValue.loading();
-  }
+  FutureOr<List<T>> build() => loadList();
 
-  /// Loads and emits the list. Implementations may use any policy (seed merge,
-  /// cache-first, dedupe) but must respect the [_disposed] guard.
-  Future<void> loadList();
+  /// Loads the list. Implementations may use any policy (seed merge,
+  /// cache-first, dedupe); the returned list becomes the provider's data.
+  Future<List<T>> loadList();
 
   /// Fetches the remote collection ordered ascending by `order`.
   Future<List<T>> fetchRemote() async {
-    if (_disposed) return [];
     final db = ref.read(appwriteDbServiceProvider);
-    final data = await db.listDocuments(
+    final data = await db.listAllDocuments(
       collectionId,
-      queries: [Query.orderAsc('order'), Query.limit(500)],
+      queries: [DbQuery.orderAsc('order')],
     );
     return data.map(fromJson).toList();
   }
@@ -72,30 +64,40 @@ abstract class SeededContentListNotifier<T>
         .toList(growable: false);
   }
 
-  /// Emits [items] unless the notifier was disposed mid-flight.
-  void emit(List<T> items) {
-    if (_disposed) return;
-    state = AsyncValue.data(items);
+  /// Re-runs [build] and waits for the refreshed list.
+  Future<void> reload() async {
+    ref.invalidateSelf();
+    await future;
   }
 
   Future<void> add(T item) async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       await db.createDocument(collectionId, itemId(item), _encode(item));
-      await loadList();
-    } catch (e) {
-      AppLogger.debug('❌ add $label FAILED: $e');
+      await reload();
+    } catch (e, stack) {
+      AppLogger.error(
+        'add $label failed',
+        name: 'SeededContentListNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       if (rethrowCrudErrors) rethrow;
     }
   }
 
-  Future<void> update(T item) async {
+  Future<void> updateItem(T item) async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       await db.updateDocument(collectionId, itemId(item), _encode(item));
-      await loadList();
-    } catch (e) {
-      AppLogger.debug('❌ update $label FAILED: $e');
+      await reload();
+    } catch (e, stack) {
+      AppLogger.error(
+        'update $label failed',
+        name: 'SeededContentListNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       if (rethrowCrudErrors) rethrow;
     }
   }
@@ -104,9 +106,14 @@ abstract class SeededContentListNotifier<T>
     try {
       final db = ref.read(appwriteDbServiceProvider);
       await db.deleteDocument(collectionId, id);
-      await loadList();
-    } catch (e) {
-      AppLogger.debug('❌ delete $label FAILED: $e');
+      await reload();
+    } catch (e, stack) {
+      AppLogger.error(
+        'delete $label failed',
+        name: 'SeededContentListNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       if (rethrowCrudErrors) rethrow;
     }
   }
@@ -116,7 +123,7 @@ abstract class SeededContentListNotifier<T>
   Future<void> seed() async {
     final db = ref.read(appwriteDbServiceProvider);
     final seedItems = await loadSeed();
-    final existingDocs = await db.listDocuments(collectionId);
+    final existingDocs = await db.listAllDocuments(collectionId);
     final existingIds = existingDocs.map((doc) => doc['id'] as String).toSet();
     var seededCount = 0;
     for (final item in seedItems) {
@@ -124,12 +131,17 @@ abstract class SeededContentListNotifier<T>
       try {
         await db.createDocument(collectionId, itemId(item), _encode(item));
         seededCount++;
-      } catch (e) {
-        AppLogger.debug('⚠️ Error seeding $label ${itemId(item)}: $e');
+      } catch (e, stack) {
+        AppLogger.warning(
+          'Seeding $label ${itemId(item)} failed',
+          name: 'SeededContentListNotifier',
+          error: e,
+          stackTrace: stack,
+        );
       }
     }
     AppLogger.debug('Seeded $seededCount missing default $label entries.');
-    await loadList();
+    await reload();
   }
 
   Map<String, dynamic> _encode(T item) =>

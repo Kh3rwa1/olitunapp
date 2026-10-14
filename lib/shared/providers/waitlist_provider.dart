@@ -1,10 +1,10 @@
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart';
-import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/api/appwrite_functions_service.dart';
+import 'package:itun/core/api/appwrite_query_builders.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 
@@ -26,44 +26,43 @@ Future<WaitlistModel> submitWaitlistViaFunction(
   Ref ref,
   WaitlistModel entry,
 ) async {
-  final authService = ref.read(appwriteAuthServiceProvider);
-  final functions = Functions(authService.client);
-
-  final dynamic execution;
+  final FunctionExecutionResult execution;
   try {
-    execution = await functions.createExecution(
-      functionId: 'bintiWaitlist',
-      body: jsonEncode({
-        'fullName': entry.fullName,
-        'phoneNumber': entry.phoneNumber,
-        'ceremonyType': entry.ceremonyType,
-        if (entry.eventDate != null) 'eventDate': entry.eventDate,
-        'city': entry.city,
-        'state': entry.state,
-        if (entry.notes != null) 'notes': entry.notes,
-      }),
+    execution = await ref
+        .read(appwriteFunctionsServiceProvider)
+        .execute(
+          'bintiWaitlist',
+          usePost: true,
+          body: {
+            'fullName': entry.fullName,
+            'phoneNumber': entry.phoneNumber,
+            'ceremonyType': entry.ceremonyType,
+            if (entry.eventDate != null) 'eventDate': entry.eventDate,
+            'city': entry.city,
+            'state': entry.state,
+            if (entry.notes != null) 'notes': entry.notes,
+          },
+        );
+  } catch (e, stack) {
+    AppLogger.warning(
+      'Waitlist execution failed',
+      name: 'Waitlist',
+      error: e,
+      stackTrace: stack,
     );
-  } catch (e) {
-    AppLogger.debug('Waitlist execution failed: $e');
     throw const WaitlistSubmissionException(
       'Could not reach the waitlist service. Check your connection and try again.',
     );
   }
 
-  if (execution.status.name != 'completed') {
+  if (!execution.isCompleted) {
     throw const WaitlistSubmissionException(
       'Waitlist submission failed. Please try again.',
     );
   }
 
-  final Map<String, dynamic> data;
-  try {
-    data = jsonDecode(execution.responseBody) as Map<String, dynamic>;
-  } catch (e) {
-    AppLogger.warning(
-      'Waitlist: failed to parse function response: $e',
-      name: 'Waitlist',
-    );
+  final data = execution.bodyJson;
+  if (data == null) {
     throw const WaitlistSubmissionException(
       'Unexpected waitlist service response.',
     );
@@ -88,49 +87,57 @@ final userWaitlistProvider = FutureProvider<List<WaitlistModel>>((ref) async {
     final db = ref.read(appwriteDbServiceProvider);
     final result = await db.listDocuments(
       'binti_guru_waitlist',
-      queries: [Query.equal('userId', user.id), Query.orderDesc('submittedAt')],
+      queries: [
+        DbQuery.equal('userId', user.id),
+        DbQuery.orderDesc('submittedAt'),
+      ],
     );
     return result.map(WaitlistModel.fromJson).toList();
-  } catch (e) {
-    AppLogger.debug('❌ fetch userWaitlist failed: $e');
+  } catch (e, stack) {
+    AppLogger.warning(
+      'Fetching user waitlist failed',
+      name: 'Waitlist',
+      error: e,
+      stackTrace: stack,
+    );
     return [];
   }
 });
 
 final adminWaitlistProvider =
-    NotifierProvider<AdminWaitlistNotifier, AsyncValue<List<WaitlistModel>>>(
+    AsyncNotifierProvider<AdminWaitlistNotifier, List<WaitlistModel>>(
       AdminWaitlistNotifier.new,
     );
 
-class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
-  bool _disposed = false;
+class AdminWaitlistNotifier extends AsyncNotifier<List<WaitlistModel>> {
+  static const String _collectionId = 'binti_guru_waitlist';
 
   @override
-  AsyncValue<List<WaitlistModel>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadWaitlist);
-    return const AsyncValue.loading();
+  FutureOr<List<WaitlistModel>> build() async {
+    try {
+      final result = await ref
+          .read(appwriteDbServiceProvider)
+          .listAllDocuments(
+            _collectionId,
+            queries: [DbQuery.orderDesc('submittedAt')],
+          );
+      return result.map(WaitlistModel.fromJson).toList();
+    } catch (e, stack) {
+      AppLogger.error(
+        'Loading admin waitlist failed',
+        name: 'Waitlist',
+        error: e,
+        stackTrace: stack,
+      );
+      rethrow;
+    }
   }
 
+  /// Re-fetches the waitlist and waits for the result.
   Future<void> loadWaitlist() async {
-    try {
-      if (_disposed) return;
-      state = const AsyncValue.loading();
-      final db = ref.read(appwriteDbServiceProvider);
-      final result = await db.listDocuments(
-        'binti_guru_waitlist',
-        queries: [Query.orderDesc('submittedAt'), Query.limit(1000)],
-      );
-      if (_disposed) return;
-      final list = result.map(WaitlistModel.fromJson).toList();
-      state = AsyncValue.data(list);
-    } catch (e, stack) {
-      AppLogger.debug('❌ loadWaitlist failed: $e');
-      if (_disposed) return;
-      state = AsyncValue.error(e, stack);
-    }
+    ref.invalidateSelf();
+    // Failures are logged in build() and exposed through `state`.
+    await future.then<void>((_) {}, onError: (Object _, StackTrace _) {});
   }
 
   Future<void> updateStatus(String waitlistId, String status) async {
@@ -140,11 +147,16 @@ class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
       if (status == 'contacted') {
         data['contactedAt'] = DateTime.now().toIso8601String();
       }
-      await db.updateDocument('binti_guru_waitlist', waitlistId, data);
+      await db.updateDocument(_collectionId, waitlistId, data);
       await loadWaitlist();
       ref.invalidate(userWaitlistProvider);
-    } catch (e) {
-      AppLogger.debug('❌ updateWaitlistStatus failed: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        'Updating waitlist status failed',
+        name: 'Waitlist',
+        error: e,
+        stackTrace: stack,
+      );
       rethrow;
     }
   }
@@ -154,8 +166,13 @@ class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
       await submitWaitlistViaFunction(ref, entry);
       await loadWaitlist();
       ref.invalidate(userWaitlistProvider);
-    } catch (e) {
-      AppLogger.debug('❌ submitWaitlistEntry failed: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        'Submitting waitlist entry failed',
+        name: 'Waitlist',
+        error: e,
+        stackTrace: stack,
+      );
       rethrow;
     }
   }
@@ -165,8 +182,8 @@ final submitWaitlistEntryProvider = Provider((ref) {
   return (WaitlistModel entry) async {
     final created = await submitWaitlistViaFunction(ref, entry);
     ref.invalidate(userWaitlistProvider);
-    // If admin is active, refresh the admin list as well
-    ref.read(adminWaitlistProvider.notifier).loadWaitlist();
+    // Refresh the admin list as well if it is currently being listened to.
+    ref.invalidate(adminWaitlistProvider);
     return created;
   };
 });

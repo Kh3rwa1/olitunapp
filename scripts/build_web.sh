@@ -45,4 +45,11 @@ dart run scripts/patch_service_worker.dart
 dart run scripts/verify_service_worker_patch.dart
 dart run scripts/verify_pwa_offline.dart
 
+if [ -f "web/_redirects" ]; then
+  cp "web/_redirects" "build/web/_redirects"
+fi
+if [ -f "web/_headers" ]; then
+  cp "web/_headers" "build/web/_headers"
+fi
+
 echo "Web build and service-worker verification completed."

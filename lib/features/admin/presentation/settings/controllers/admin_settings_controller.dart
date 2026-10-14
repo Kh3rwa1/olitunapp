@@ -184,6 +184,9 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
 
   /// Does not touch [state] before its first await, so it may start in build.
   Future<void> _fetchSettings(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final docs = await db.listDocuments('app_settings');

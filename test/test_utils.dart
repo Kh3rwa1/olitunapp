@@ -24,5 +24,5 @@ Widget createTestableWidget({
 FutureOr<T> asyncValueBuild<T>(AsyncValue<T> value) => value.when(
   data: (data) => data,
   loading: () => Completer<T>().future,
-  error: Future<T>.error,
+  error: Error.throwWithStackTrace,
 );

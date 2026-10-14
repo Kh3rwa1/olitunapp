@@ -69,6 +69,9 @@ class AdminAccessController extends Notifier<AdminAccessState> {
 
   /// Does not touch [state] before its first await, so it may start in build.
   Future<void> _fetchSummary(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     try {
       final data = await _authService.executeAdminAccess({'action': 'summary'});
       if (seq != _loadSeq) return;

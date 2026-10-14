@@ -84,6 +84,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer(
           (_) async => [
@@ -157,6 +158,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((invocation) async {
           final queries =
@@ -195,6 +197,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((invocation) async {
           final queries =
@@ -243,6 +246,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer(
           (_) async => [
@@ -283,6 +287,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((_) async => []);
         final mockAuthService = MockAppwriteAuthService();
@@ -323,6 +328,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((invocation) async {
           final queries =
@@ -376,6 +382,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((invocation) async {
           return List.generate(
@@ -413,6 +420,7 @@ void main() {
           () => mockDb.listDocuments(
             'course_purchases',
             queries: any(named: 'queries'),
+            paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((invocation) async {
           return List.generate(

@@ -254,6 +254,9 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     required String filter,
     required String search,
   }) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final queries = <String>[

@@ -96,6 +96,7 @@ void main() {
             () => mockDb.listDocuments(
               'course_purchases',
               queries: any(named: 'queries'),
+              paginate: any(named: 'paginate'),
             ),
           ).thenAnswer((_) async => sampleDocs);
 
@@ -119,6 +120,7 @@ void main() {
             () => mockDb.listDocuments(
               'course_purchases',
               queries: any(named: 'queries'),
+              paginate: any(named: 'paginate'),
             ),
           ).thenAnswer((_) async => sampleDocs);
 
@@ -143,6 +145,7 @@ void main() {
         () => mockDb.listDocuments(
           'course_purchases',
           queries: any(named: 'queries'),
+          paginate: any(named: 'paginate'),
         ),
       ).thenAnswer((_) async => sampleDocs);
 

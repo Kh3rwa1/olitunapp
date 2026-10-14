@@ -112,6 +112,9 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
 
   /// Does not touch [state] before its first await, so it may start in build.
   Future<void> _fetch(int seq) async {
+    // Yield first so a synchronously failing call cannot touch `state`
+    // while build() is still running.
+    await Future<void>.value();
     final res = await _repository.get(bakhedId);
     if (seq != _loadSeq) return;
     res.fold(

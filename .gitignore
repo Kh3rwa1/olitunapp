@@ -58,6 +58,7 @@ docs/maintainability/PROD_ENV_AUDIT.md
 
 # `node_modules/` matches at any depth, so the nested overrides are redundant.
 node_modules/
+.wrangler/
 
 # --- Agent / AI --------------------------------------------------------------
 .agent/

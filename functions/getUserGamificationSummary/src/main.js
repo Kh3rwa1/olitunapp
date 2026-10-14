@@ -14,7 +14,18 @@ const BADGES_COLLECTION = "badges";
 const USER_BADGES_COLLECTION = "user_badges";
 const REWARD_EVENTS_COLLECTION = "reward_events";
 const PAGE_SIZE = 100;
-const MAX_EVENTS_PER_TYPE = 5000;
+const MAX_EVENTS_PER_TYPE = 500;
+
+let _cachedScoredLeaderboard = null;
+let _cachedWeekRange = null;
+let _cachedAt = 0;
+const LEADERBOARD_CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes in-memory cache
+
+export function clearLeaderboardCache() {
+  _cachedScoredLeaderboard = null;
+  _cachedWeekRange = null;
+  _cachedAt = 0;
+}
 
 async function listWeeklyEvents(databases, start, end) {
   const events = [];
@@ -36,7 +47,7 @@ async function listWeeklyEvents(databases, start, end) {
       if (result.documents.length < PAGE_SIZE) break;
       offset += result.documents.length;
       if (offset >= MAX_EVENTS_PER_TYPE) {
-        throw new Error(`Leaderboard event limit reached for ${eventName}.`);
+        break; // Cap scan cleanly rather than failing or looping endlessly
       }
     }
   }
@@ -49,9 +60,21 @@ export async function buildWeeklyLeaderboard(
   now = new Date(),
 ) {
   const week = utcWeekRange(now);
-  const events = await listWeeklyEvents(databases, week.start, week.end);
-  const scored = scoreWeeklyEvents(events, week.start, week.end);
-  const current = leaderboardForUser(scored, userId);
+  const weekKey = `${week.start}_${week.end}`;
+  const nowMs = now.getTime();
+
+  if (
+    !_cachedScoredLeaderboard ||
+    _cachedWeekRange !== weekKey ||
+    nowMs - _cachedAt > LEADERBOARD_CACHE_TTL_MS
+  ) {
+    const events = await listWeeklyEvents(databases, week.start, week.end);
+    _cachedScoredLeaderboard = scoreWeeklyEvents(events, week.start, week.end);
+    _cachedWeekRange = weekKey;
+    _cachedAt = nowMs;
+  }
+
+  const current = leaderboardForUser(_cachedScoredLeaderboard, userId);
   return {
     ...current,
     weekStart: week.start,

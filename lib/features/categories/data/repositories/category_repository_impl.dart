@@ -41,64 +41,64 @@ class CategoryRepositoryImpl implements CategoryRepository {
     }
   }
 
+  static const List<CategoryEntity> _staticSeedCategories = [
+    CategoryEntity(
+      id: 'cat_alphabets',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+      titleLatin: 'Alphabets',
+      iconName: 'alphabet',
+      gradientPreset: 'sky',
+      totalLessons: 5,
+    ),
+    CategoryEntity(
+      id: 'cat_numbers',
+      titleOlChiki: 'ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers',
+      iconName: 'numbers',
+      gradientPreset: 'peach',
+      order: 1,
+      totalLessons: 4,
+    ),
+    CategoryEntity(
+      id: 'cat_vocab',
+      titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
+      titleLatin: 'Vocabulary',
+      iconName: 'vocabulary',
+      gradientPreset: 'rose',
+      order: 2,
+      totalLessons: 14,
+    ),
+    CategoryEntity(
+      id: 'cat_sentences',
+      titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ',
+      titleLatin: 'Sentences',
+      iconName: 'sentences',
+      gradientPreset: 'emerald',
+      order: 3,
+      totalLessons: 23,
+    ),
+    CategoryEntity(
+      id: 'cat_greetings',
+      titleOlChiki: 'ᱡᱚᱦᱟᱨ ᱜᱮ',
+      titleLatin: 'Greetings',
+      iconName: 'greetings',
+      gradientPreset: 'indigo',
+      order: 4,
+      totalLessons: 1,
+    ),
+  ];
+
   Future<Either<Failure, List<CategoryEntity>>> _getCachedCategories(
     String originalMessage, [
     int? originalCode,
   ]) async {
     try {
       final cached = await localDataSource.getCategories();
-      return Right(cached.map((m) => m.toEntity()).toList());
-    } on CacheException {
-      // Fallback to static seed categories if both remote fetch fails and local cache is empty.
-      // This ensures guest/offline mode has active paths on the very first startup.
-      const staticSeedCategories = [
-        CategoryEntity(
-          id: 'cat_alphabets',
-          titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-          titleLatin: 'Alphabets',
-          iconName: 'alphabet',
-          gradientPreset: 'sky',
-          totalLessons: 5,
-        ),
-        CategoryEntity(
-          id: 'cat_numbers',
-          titleOlChiki: 'ᱮᱞᱠᱷᱟ',
-          titleLatin: 'Numbers',
-          iconName: 'numbers',
-          gradientPreset: 'peach',
-          order: 1,
-          totalLessons: 4,
-        ),
-        CategoryEntity(
-          id: 'cat_vocab',
-          titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
-          titleLatin: 'Vocabulary',
-          iconName: 'vocabulary',
-          gradientPreset: 'rose',
-          order: 2,
-          totalLessons: 14,
-        ),
-        CategoryEntity(
-          id: 'cat_sentences',
-          titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ',
-          titleLatin: 'Sentences',
-          iconName: 'sentences',
-          gradientPreset: 'emerald',
-          order: 3,
-          totalLessons: 23,
-        ),
-        CategoryEntity(
-          id: 'cat_greetings',
-          titleOlChiki: 'ᱡᱚᱦᱟᱨ ᱜᱮ',
-          titleLatin: 'Greetings',
-          iconName: 'greetings',
-          gradientPreset: 'indigo',
-          order: 4,
-          totalLessons: 1,
-        ),
-      ];
-      return const Right(staticSeedCategories);
-    }
+      if (cached.isNotEmpty) {
+        return Right(cached.map((m) => m.toEntity()).toList());
+      }
+    } catch (_) {}
+    return const Right(_staticSeedCategories);
   }
 
   @override
@@ -108,11 +108,26 @@ class CategoryRepositoryImpl implements CategoryRepository {
         final result = await remoteDataSource.getCategoryById(id);
         return Right(result.toEntity());
       } on ServerException catch (e) {
-        return Left(_recordedServerFailure(e));
+        return _getCachedCategoryById(id, e);
       }
     } else {
-      return const Left(NetworkFailure());
+      return _getCachedCategoryById(id);
     }
+  }
+
+  Future<Either<Failure, CategoryEntity>> _getCachedCategoryById(
+    String id, [
+    ServerException? e,
+  ]) async {
+    try {
+      final categories = await localDataSource.getCategories();
+      final match = categories.where((c) => c.id == id).firstOrNull;
+      if (match != null) return Right(match.toEntity());
+    } catch (_) {}
+    final seed = _staticSeedCategories.where((c) => c.id == id).firstOrNull;
+    if (seed != null) return Right(seed);
+    if (e != null) return Left(_recordedServerFailure(e));
+    return const Left(NetworkFailure());
   }
 
   @override

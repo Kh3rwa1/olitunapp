@@ -79,7 +79,8 @@ export async function synthesizeWithKey({
     lowered.includes('quota') ||
     lowered.includes('credit') ||
     lowered.includes('billing') ||
-    lowered.includes('payment')
+    lowered.includes('payment') ||
+    lowered.includes('budget')
   ) {
     throw classifiedError('credit_ended', 'Voice service credits exhausted.');
   }

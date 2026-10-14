@@ -42,7 +42,7 @@ const ONLY_IDS = (process.env.ONLY_IDS || '')
 // Load Bodhan keys
 function loadBodhanKeys() {
   const keys = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 50; i++) {
     const keyPath = join(rootDir, '.keys', `bodhan${i}`);
     if (existsSync(keyPath)) {
       const key = readFileSync(keyPath, 'utf8').trim();

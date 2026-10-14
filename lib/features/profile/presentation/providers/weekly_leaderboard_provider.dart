@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.dart';
@@ -7,7 +5,6 @@ import 'package:itun/features/profile/domain/entities/weekly_leaderboard_entity.
 import 'user_stats_provider.dart';
 
 const _gamificationSummaryFunctionId = 'getUserGamificationSummary';
-const _leaderboardRefreshInterval = Duration(minutes: 5);
 const _leaderboardRequestTimeout = Duration(seconds: 10);
 
 WeeklyLeaderboardEntity parseWeeklyLeaderboardExecution(
@@ -45,11 +42,6 @@ final weeklyLeaderboardProvider =
           );
         }),
       );
-      final refreshTimer = Timer(
-        _leaderboardRefreshInterval,
-        ref.invalidateSelf,
-      );
-      ref.onDispose(refreshTimer.cancel);
 
       final execution = await ref
           .watch(appwriteFunctionsServiceProvider)

@@ -481,7 +481,7 @@
       "runtime": "node-22.0",
       "execute": [],
       "events": [],
-      "schedule": "*/15 * * * *",
+      "schedule": "0 */6 * * *",
       "timeout": 60,
       "path": "functions/reconcilePaymentAttempts",
       "entrypoint": "src/main.js",

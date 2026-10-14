@@ -33,6 +33,14 @@ abstract final class DbQuery {
 
   static String search(String attribute, String value) =>
       Query.search(attribute, value);
+
+  static String isNull(String attribute) => Query.isNull(attribute);
+
+  static String cursorAfter(String rowId) => Query.cursorAfter(rowId);
+
+  static String or(List<String> queries) => Query.or(queries);
+
+  static String and(List<String> queries) => Query.and(queries);
 }
 
 /// Presentation-friendly document ID generator, mirroring [ID.unique].

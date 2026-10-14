@@ -1,11 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../api/appwrite_db_service.dart';
-import '../auth/appwrite_auth_service.dart';
+import '../api/appwrite_functions_service.dart';
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
 
@@ -280,8 +279,7 @@ class PurchaseRepository {
     String? idempotencyKey,
   }) async {
     try {
-      final client = ref.read(appwriteAuthServiceProvider).client;
-      final functions = appwrite.Functions(client);
+      final functions = ref.read(appwriteFunctionsServiceProvider);
 
       final payload = <String, dynamic>{
         'categoryId': categoryId,
@@ -289,12 +287,20 @@ class PurchaseRepository {
           'idempotencyKey': idempotencyKey,
       };
 
-      final response = await functions.createExecution(
-        functionId: 'createRazorpayOrder',
-        body: jsonEncode(payload),
+      final response = await functions.execute(
+        'createRazorpayOrder',
+        body: payload,
+        usePost: true,
       );
 
-      final resBody = jsonDecode(response.responseBody) as Map<String, dynamic>;
+      final resBody = Map<String, dynamic>.from(response.bodyJson ?? {});
+      if (resBody['order'] is Map) {
+        final order = resBody['order'] as Map;
+        resBody['orderId'] ??= order['id'];
+        resBody['amount'] ??= order['amount'];
+        resBody['currency'] ??= order['currency'];
+        resBody['receipt'] ??= order['receipt'];
+      }
       return resBody;
     } catch (e) {
       AppLogger.debug('❌ createRazorpayOrder failed: $e');
@@ -313,21 +319,24 @@ class PurchaseRepository {
     required String signature,
   }) async {
     try {
-      final client = ref.read(appwriteAuthServiceProvider).client;
-      final functions = appwrite.Functions(client);
+      final functions = ref.read(appwriteFunctionsServiceProvider);
 
-      final response = await functions.createExecution(
-        functionId: 'verifyCoursePurchase',
-        body: jsonEncode({
+      final response = await functions.execute(
+        'verifyCoursePurchase',
+        body: {
           'unlockMethod': 'razorpay',
           'categoryId': categoryId,
           'razorpayPaymentId': paymentId,
           'razorpayOrderId': orderId,
           'razorpaySignature': signature,
-        }),
+          'orderId': orderId,
+          'paymentId': paymentId,
+          'signature': signature,
+        },
+        usePost: true,
       );
 
-      final resBody = jsonDecode(response.responseBody) as Map<String, dynamic>;
+      final resBody = response.bodyJson ?? {};
       return resBody;
     } catch (e) {
       AppLogger.debug('❌ verifyPurchase failed: $e');

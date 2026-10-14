@@ -205,8 +205,32 @@ async function translateWithM2M100(ai: any, text: string, from: string, to: stri
   };
 }
 
+// Helper to proxy non-API web traffic to Cloudflare Pages SPA
+async function proxyToPages(c: any) {
+  const url = new URL(c.req.url);
+  const pagesUrl = new URL(url.pathname + url.search, 'https://olitunapp.pages.dev');
+  try {
+    const upstream = await fetch(pagesUrl.toString(), {
+      method: c.req.method,
+      headers: c.req.raw.headers,
+      body: c.req.method !== 'GET' && c.req.method !== 'HEAD' ? c.req.raw.body : undefined,
+    });
+    return upstream;
+  } catch (err: any) {
+    return c.text('Gateway Error: ' + (err.message || 'Unknown error'), 502);
+  }
+}
+
 // Root landing page
-app.get('/', (c) => {
+app.get('/', async (c) => {
+  const url = new URL(c.req.url);
+  const hostname = url.hostname.toLowerCase();
+
+  // If request is on a custom web domain (olitun.in, admin.olitun.in, app.olitun.in, etc.), serve web app
+  if (hostname.endsWith('olitun.in') || hostname === 'localhost') {
+    return proxyToPages(c);
+  }
+
   const accept = c.req.header('Accept') || '';
   if (accept.includes('text/html')) {
     return c.html(`<!DOCTYPE html>
@@ -2003,6 +2027,20 @@ app.post('/api/v1/user/delete', async (c) => {
   } catch (err: any) {
     return c.json({ ok: false, message: err.message || 'Deletion failed' }, 500);
   }
+});
+
+// ==========================================
+// SPA & STATIC ASSETS PROXY (CLOUDFLARE PAGES)
+// ==========================================
+app.notFound(async (c) => {
+  const url = new URL(c.req.url);
+  // Explicit API 404
+  if (url.pathname.startsWith('/api/')) {
+    return c.json({ ok: false, error: 'NOT_FOUND', message: 'API route not found' }, 404);
+  }
+
+  // Proxy non-API requests (web SPA, HTML, JS, CSS, assets) to Cloudflare Pages
+  return proxyToPages(c);
 });
 
 export default app;

@@ -4,5 +4,5 @@
   "description": "Appwrite function to verify Razorpay course purchases with guarded state transitions",
   "main": "src/main.js",
   "type": "module",
-  "dependencies": { "node-appwrite": "25.1.0" }
+  "dependencies": { "node-appwrite": "29.0.0" }
 }

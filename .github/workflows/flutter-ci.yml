@@ -114,8 +114,6 @@ jobs:
             --allow-invisible=lib/features/auth/presentation/email_auth_screen.dart \
             --allow-invisible=lib/features/categories/presentation/providers/category_providers.dart \
             --allow-invisible=lib/features/lessons/presentation/providers/lesson_providers.dart \
-            --allow-invisible=lib/features/lessons/presentation/quiz/quiz_screen.dart \
-            --allow-invisible=lib/features/lessons/presentation/widgets/lesson_content_widgets.dart \
             --allow-invisible=lib/features/main/presentation/main_shell_screen.dart \
             --allow-invisible=lib/features/profile/presentation/providers/profile_providers.dart
       - name: Smoke tests

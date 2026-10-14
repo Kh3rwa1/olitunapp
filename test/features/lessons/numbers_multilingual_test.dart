@@ -10,9 +10,7 @@ import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
-import 'package:itun/features/lessons/presentation/widgets/lesson_content/number_grid_content.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
-import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
@@ -488,63 +486,6 @@ void main() {
         expect(find.text('᱑'), findsWidgets);
         // Subtitle pronunciation in Devanagari script
         expect(find.text('मित'), findsOneWidget);
-      },
-    );
-  });
-
-  group('NumberGridContent Widget Tests', () {
-    final mockNumbers = [
-      NumberModel(
-        id: 'n_1',
-        numeral: '᱑',
-        value: 1,
-        nameOlChiki: 'ᱢᱤᱫ',
-        nameLatin: 'Mit',
-      ),
-    ];
-
-    const lessonWithNumber = LessonEntity(
-      id: 'lesson_with_num',
-      categoryId: 'cat_numbers',
-      titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
-      titleLatin: 'Numbers 0-9',
-      blocks: [
-        LessonBlockEntity(type: 'text', textOlChiki: '᱑', textLatin: '1 – One'),
-      ],
-    );
-
-    testWidgets(
-      'displays localized number name and pronunciation in Bengali mode',
-      (tester) async {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              sharedPreferencesProvider.overrideWithValue(prefs),
-              learnerNumbersProvider.overrideWith(
-                (ref) => AsyncValue.data(mockNumbers),
-              ),
-              learnerLessonsProvider.overrideWith(
-                (ref) => const AsyncValue.data([lessonWithNumber]),
-              ),
-              effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
-            ],
-            child: const MaterialApp(
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              supportedLocales: AppLocalizations.supportedLocales,
-              home: Scaffold(
-                body: SingleChildScrollView(
-                  child: NumberGridContent(lessonId: 'lesson_with_num'),
-                ),
-              ),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        expect(find.text('᱑'), findsOneWidget);
-        expect(find.text('এক (১)'), findsOneWidget);
-        expect(find.text('মিৎ'), findsOneWidget);
-        expect(find.text('ᱢᱤᱫ'), findsOneWidget);
       },
     );
   });

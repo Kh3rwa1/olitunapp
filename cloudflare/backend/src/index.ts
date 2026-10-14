@@ -410,7 +410,25 @@ app.get('/api/v1/lessons', async (c) => {
   }
 });
 
-// 7. Assets stream from R2 (Zero egress fees, immutable caching)
+// 7. Rhymes & Bakhed Prayers (Edge cached curriculum)
+app.get('/api/v1/rhymes', async (c) => {
+  try {
+    const category = c.req.query('category');
+    let stmt;
+    if (category) {
+      stmt = c.env.DB.prepare('SELECT raw_json FROM rhymes WHERE category = ? ORDER BY order_index ASC').bind(category);
+    } else {
+      stmt = c.env.DB.prepare('SELECT raw_json FROM rhymes ORDER BY order_index ASC');
+    }
+    const result = await stmt.all();
+    const rhymes = (result.results || []).map((r: any) => JSON.parse(r.raw_json));
+    return cachedJson(c, { ok: true, total: rhymes.length, rhymes });
+  } catch (err: any) {
+    return c.json({ ok: false, error: err.message }, 500);
+  }
+});
+
+// 8. Assets stream from R2 (Zero egress fees, immutable caching)
 app.get('/api/v1/assets/*', async (c) => {
   try {
     const path = c.req.path.replace('/api/v1/assets/', '');
@@ -565,6 +583,10 @@ function getRequestUserId(c: any, body?: any): string {
   const headerUser = c.req.header('x-appwrite-user-id') || c.req.header('x-user-id') || c.req.header('user-id');
   if (headerUser && typeof headerUser === 'string' && headerUser.trim().length > 0) {
     return headerUser.trim();
+  }
+  const queryUser = c.req.query('userId') || c.req.query('user_id');
+  if (queryUser && typeof queryUser === 'string' && queryUser.trim().length > 0) {
+    return queryUser.trim();
   }
   if (body?.userId && typeof body.userId === 'string' && body.userId.trim().length > 0) {
     return body.userId.trim();
@@ -1303,7 +1325,84 @@ app.post('/api/v1/payments/verify', async (c) => {
   }
 });
 
-// 19. Razorpay Webhook (replaces Appwrite razorpayWebhook function)
+// 19. User Entitlements (replaces direct Appwrite DB reads on course_purchases)
+app.get('/api/v1/payments/entitlements', async (c) => {
+  try {
+    const userId = getRequestUserId(c, {});
+    if (!userId) {
+      return c.json({ ok: false, message: 'Unauthenticated', categoryIds: [] }, 401);
+    }
+
+    const result: any = await c.env.DB.prepare(
+      'SELECT category_id, status FROM course_purchases WHERE user_id = ? AND (status = "completed" OR status = "verified")'
+    ).bind(userId).all().catch(() => ({ results: [] }));
+
+    const categoryIds = (result.results || [])
+      .map((r: any) => r.category_id)
+      .filter((id: any) => typeof id === 'string' && id.trim().length > 0);
+
+    return c.json({
+      ok: true,
+      userId,
+      categoryIds: Array.from(new Set(categoryIds)),
+      total: categoryIds.length,
+    });
+  } catch (err: any) {
+    return c.json({ ok: false, message: err.message || 'Failed to fetch entitlements', categoryIds: [] }, 500);
+  }
+});
+
+app.post('/api/v1/payments/entitlements', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const userId = getRequestUserId(c, body);
+    if (!userId) {
+      return c.json({ ok: false, message: 'Unauthenticated', categoryIds: [] }, 401);
+    }
+
+    const result: any = await c.env.DB.prepare(
+      'SELECT category_id, status FROM course_purchases WHERE user_id = ? AND (status = "completed" OR status = "verified")'
+    ).bind(userId).all().catch(() => ({ results: [] }));
+
+    const categoryIds = (result.results || [])
+      .map((r: any) => r.category_id)
+      .filter((id: any) => typeof id === 'string' && id.trim().length > 0);
+
+    return c.json({
+      ok: true,
+      userId,
+      categoryIds: Array.from(new Set(categoryIds)),
+      total: categoryIds.length,
+    });
+  } catch (err: any) {
+    return c.json({ ok: false, message: err.message || 'Failed to fetch entitlements', categoryIds: [] }, 500);
+  }
+});
+
+app.post('/api/v1/payments/entitlements/sync', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => ({}));
+    const userId = getRequestUserId(c, body);
+    const categoryIds: string[] = Array.isArray(body.categoryIds) ? body.categoryIds : [];
+    if (!userId || categoryIds.length === 0) {
+      return c.json({ ok: true, synced: 0 });
+    }
+
+    const now = new Date().toISOString();
+    for (const catId of categoryIds) {
+      const purchaseId = await stableId(`purch:${userId}:${catId}`);
+      await c.env.DB.prepare(
+        'INSERT OR IGNORE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).bind(purchaseId, userId, catId, catId, 49900, 'INR', 'completed', now).run().catch(() => {});
+    }
+
+    return c.json({ ok: true, synced: categoryIds.length });
+  } catch (err: any) {
+    return c.json({ ok: false, message: err.message || 'Failed to sync entitlements' }, 500);
+  }
+});
+
+// 20. Razorpay Webhook (replaces Appwrite razorpayWebhook function)
 app.post('/api/v1/payments/webhook', async (c) => {
   try {
     const body = await c.req.json().catch(() => ({}));

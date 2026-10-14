@@ -74,5 +74,16 @@ if (fs.existsSync(lessonsPath)) {
   }
 }
 
+// 7. Rhymes (Bakhed Prayers)
+const rhymesPath = path.join(seedDir, 'rhymes.json');
+if (fs.existsSync(rhymesPath)) {
+  const rhymes = JSON.parse(fs.readFileSync(rhymesPath, 'utf8'));
+  for (let idx = 0; idx < rhymes.length; idx++) {
+    const r = rhymes[idx];
+    const rawJson = JSON.stringify(r);
+    sql += `INSERT OR REPLACE INTO rhymes (id, title_ol_chiki, title_latin, content_ol_chiki, content_latin, audio_url, thumbnail_url, category, is_premium, order_index, raw_json) VALUES (${escapeSql(r.id || r.$id)}, ${escapeSql(r.titleOlChiki)}, ${escapeSql(r.titleLatin)}, ${escapeSql(r.contentOlChiki)}, ${escapeSql(r.contentLatin)}, ${escapeSql(r.audioUrl)}, ${escapeSql(r.thumbnailUrl)}, ${escapeSql(r.category)}, ${r.isPremium ? 1 : 0}, ${r.orderIndex ?? r.order ?? idx}, ${escapeSql(rawJson)});\n`;
+  }
+}
+
 fs.writeFileSync(sqlFile, sql, 'utf8');
 console.log(`Generated ${sqlFile} (${(sql.length / 1024).toFixed(1)} KB)`);

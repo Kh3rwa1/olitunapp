@@ -1,10 +1,19 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:itun/core/config/cloudflare_config.dart';
 
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/api/appwrite_query_builders.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
+
+/// HTTP client provider for Bakhed Content Edge API (overridable in tests).
+final bakhedContentHttpClientProvider = Provider<http.Client>(
+  (ref) => http.Client(),
+);
 
 class BakhedLyricLine extends Equatable {
   final String id;
@@ -325,6 +334,41 @@ Future<BakhedLearningContent> _fetchBakhedLearningContent(
   );
 }
 
+Future<BakhedLearningContent> _fetchBakhedContent(
+  Ref ref,
+  String trimmedId,
+) async {
+  // 1. Try Cloudflare Edge API first (edge-cached JSON)
+  try {
+    final client = ref.read(bakhedContentHttpClientProvider);
+    final uri = Uri.parse(
+      CloudflareConfig.bakhedContentEndpoint,
+    ).replace(queryParameters: {'id': trimmedId});
+    final response = await client
+        .get(uri, headers: const {'Accept': 'application/json'})
+        .timeout(const Duration(seconds: 4));
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic> && body['ok'] == true) {
+        final content = BakhedLearningContent.fromCacheJson(body);
+        if (!content.isEmpty) return content;
+      }
+    }
+  } catch (e, stack) {
+    AppLogger.warning(
+      'Bakhed content Cloudflare edge fetch failed for $trimmedId, falling back to Appwrite DB',
+      name: 'BakhedContent',
+      error: e,
+      stackTrace: stack,
+    );
+  }
+
+  // 2. Fall back to Appwrite DB
+  final db = ref.read(appwriteDbServiceProvider);
+  return _fetchBakhedLearningContent(db, trimmedId);
+}
+
 final bakhedLearningContentProvider =
     FutureProvider.family<BakhedLearningContent, String>((ref, bakhedId) async {
       final trimmedId = bakhedId.trim();
@@ -346,8 +390,7 @@ final bakhedLearningContentProvider =
         if (fresh == null) {
           Future(() async {
             try {
-              final db = ref.read(appwriteDbServiceProvider);
-              final latest = await _fetchBakhedLearningContent(db, trimmedId);
+              final latest = await _fetchBakhedContent(ref, trimmedId);
               if (!latest.isEmpty) {
                 await CacheService.set(cacheKey, latest.toCacheJson());
                 ref.invalidateSelf();
@@ -367,8 +410,7 @@ final bakhedLearningContentProvider =
       }
 
       try {
-        final db = ref.read(appwriteDbServiceProvider);
-        final content = await _fetchBakhedLearningContent(db, trimmedId);
+        final content = await _fetchBakhedContent(ref, trimmedId);
         if (!content.isEmpty) {
           await CacheService.set(cacheKey, content.toCacheJson());
         }

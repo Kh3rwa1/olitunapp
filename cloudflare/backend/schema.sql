@@ -110,6 +110,16 @@ CREATE TABLE IF NOT EXISTS app_settings (
   raw_json TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS gamification_content (
+  id TEXT PRIMARY KEY,
+  raw_json TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS bakhed_content (
+  bakhed_id TEXT PRIMARY KEY,
+  raw_json TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS leaderboard_cache (
   id TEXT PRIMARY KEY,
   week_id TEXT NOT NULL,

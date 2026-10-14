@@ -1,0 +1,165 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/shared/providers/letters_provider.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:itun/core/storage/cache_service.dart';
+
+class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late MockAppwriteDbService mockDb;
+
+  setUpAll(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async => '.',
+        );
+    Hive.init(
+      (await Directory.systemTemp.createTemp('test_hive_letters_')).path,
+    );
+  });
+
+  setUp(() async {
+    CacheService.resetForTesting();
+    SharedPreferences.setMockInitialValues({});
+    await CacheService.clear();
+    mockDb = MockAppwriteDbService();
+  });
+
+  tearDown(() async {
+    await CacheService.clear();
+  });
+
+  tearDownAll(() async {
+    await Hive.deleteFromDisk();
+  });
+
+  test(
+    'lettersProvider fetches from Cloudflare Edge first without hitting Appwrite',
+    () async {
+      final mockHttpClient = MockClient((request) async {
+        if (request.url.path.contains('/api/v1/letters')) {
+          return http.Response(
+            jsonEncode({
+              'ok': true,
+              'total': 2,
+              'letters': [
+                {
+                  'id': 'edge_letter_1',
+                  'charOlChiki': 'ᱚ',
+                  'transliterationLatin': 'La',
+                  'pronunciation': 'o',
+                },
+                {
+                  'id': 'edge_letter_2',
+                  'charOlChiki': 'ᱟ',
+                  'transliterationLatin': 'Aah',
+                  'pronunciation': 'aa',
+                },
+              ],
+            }),
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final container = ProviderContainer(
+        overrides: [
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          lettersHttpClientProvider.overrideWithValue(mockHttpClient),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final letters = await container.read(lettersProvider.future);
+      expect(letters.length, 2);
+      expect(letters[0].id, 'edge_letter_1');
+      expect(letters[0].charOlChiki, 'ᱚ');
+      expect(letters[1].id, 'edge_letter_2');
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
+    },
+  );
+
+  test(
+    'lettersProvider falls back to Appwrite DB when Cloudflare edge fails',
+    () async {
+      final mockHttpClient = MockClient((request) async {
+        return http.Response('Edge error', 500);
+      });
+
+      when(
+        () =>
+            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
+      ).thenAnswer(
+        (_) async => [
+          {
+            'id': 'appwrite_letter_1',
+            'charOlChiki': 'ᱤ',
+            'transliterationLatin': 'Li',
+            'pronunciation': 'i',
+          },
+        ],
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          lettersHttpClientProvider.overrideWithValue(mockHttpClient),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final letters = await container.read(lettersProvider.future);
+      expect(letters.length, 1);
+      expect(letters[0].id, 'appwrite_letter_1');
+      expect(letters[0].charOlChiki, 'ᱤ');
+      verify(
+        () =>
+            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
+      ).called(1);
+    },
+  );
+
+  test(
+    'lettersProvider falls back to seed letters when both networks fail',
+    () async {
+      final mockHttpClient = MockClient((request) async {
+        return http.Response('Edge network failure', 500);
+      });
+
+      when(
+        () =>
+            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
+      ).thenThrow(Exception('Appwrite offline'));
+
+      final container = ProviderContainer(
+        overrides: [
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          lettersHttpClientProvider.overrideWithValue(mockHttpClient),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final letters = await container.read(lettersProvider.future);
+      expect(letters.isNotEmpty, isTrue);
+      expect(letters.any((l) => l.charOlChiki == 'ᱚ'), isTrue);
+    },
+  );
+}

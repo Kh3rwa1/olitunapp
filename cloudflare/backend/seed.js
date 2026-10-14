@@ -121,5 +121,26 @@ if (fs.existsSync(settingsPath)) {
   }
 }
 
+// 11. Gamification Content
+const gamificationPath = path.join(seedDir, 'gamification_content.json');
+if (fs.existsSync(gamificationPath)) {
+  const gamification = JSON.parse(fs.readFileSync(gamificationPath, 'utf8'));
+  const rawJson = JSON.stringify(gamification);
+  sql += `INSERT OR REPLACE INTO gamification_content (id, raw_json) VALUES ('default', ${escapeSql(rawJson)});\n`;
+}
+
+// 12. Bakhed Content
+const bakhedPath = path.join(seedDir, 'bakhed_content.json');
+if (fs.existsSync(bakhedPath)) {
+  const bakheds = JSON.parse(fs.readFileSync(bakhedPath, 'utf8'));
+  for (const b of bakheds) {
+    const id = b.id || b.bakhedId;
+    if (id) {
+      const rawJson = JSON.stringify(b);
+      sql += `INSERT OR REPLACE INTO bakhed_content (bakhed_id, raw_json) VALUES (${escapeSql(id)}, ${escapeSql(rawJson)});\n`;
+    }
+  }
+}
+
 fs.writeFileSync(sqlFile, sql, 'utf8');
 console.log(`Generated ${sqlFile} (${(sql.length / 1024).toFixed(1)} KB)`);

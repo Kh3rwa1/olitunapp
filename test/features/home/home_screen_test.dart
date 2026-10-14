@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -86,7 +88,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Disable flutter_animate effects in tests to prevent pending timers
     Animate.restartOnHotReload = false;
-    Hive.init('test_hive_home_v2');
+    Hive.init(
+      (await Directory.systemTemp.createTemp('test_hive_home_v2_')).path,
+    );
     CacheService.resetForTesting();
   });
 

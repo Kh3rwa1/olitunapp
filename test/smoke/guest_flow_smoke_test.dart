@@ -1,3 +1,5 @@
+import 'dart:io';
+
 // Guest Flow Smoke Test - Optimized for AAA+ Premium Splash Screen and Test Isolation
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +24,7 @@ void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     Animate.restartOnHotReload = false;
-    Hive.init('test_hive_smoke');
+    Hive.init((await Directory.systemTemp.createTemp('test_hive_smoke_')).path);
     CacheService.resetForTesting();
   });
 

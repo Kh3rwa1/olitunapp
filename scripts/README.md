@@ -12,7 +12,6 @@ Developer scripts for database setup, data migration, and seeding.
 | `check_premium_content_permissions.mjs` | Node.js | Audits and stages the protected premium-lesson permission cutover |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
 | `appwrite_import.mjs` | Node.js | Imports a MySQL JSON snapshot into Appwrite collections with field mapping |
-| `post-merge.sh` | Bash | Post-merge setup hook |
 
 > The import script works against an existing `scripts/exported_data.json`
 > snapshot. Generate any fresh snapshot directly from a database backup before

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -67,7 +69,9 @@ void main() {
 
   group('CacheService integration', () {
     setUpAll(() async {
-      Hive.init('test_hive_cache_v2');
+      Hive.init(
+        (await Directory.systemTemp.createTemp('test_hive_cache_v2_')).path,
+      );
       CacheService.resetForTesting();
     });
 

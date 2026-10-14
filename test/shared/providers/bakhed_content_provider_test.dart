@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -100,7 +102,9 @@ Map<String, List<Map<String, dynamic>>> _sampleRows() {
 void main() {
   group('BakhedLearningContent offline cache', () {
     setUpAll(() async {
-      Hive.init('test_hive_bakhed_v2');
+      Hive.init(
+        (await Directory.systemTemp.createTemp('test_hive_bakhed_v2_')).path,
+      );
       CacheService.resetForTesting();
     });
 

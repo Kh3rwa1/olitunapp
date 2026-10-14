@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -81,7 +83,9 @@ void main() {
     late SharedPreferences prefs;
 
     setUpAll(() async {
-      Hive.init('test_hive_quizzes_v2');
+      Hive.init(
+        (await Directory.systemTemp.createTemp('test_hive_quizzes_v2_')).path,
+      );
       CacheService.resetForTesting();
     });
 

@@ -378,7 +378,7 @@
     {
       "$id": "getUserGamificationSummary",
       "name": "getUserGamificationSummary",
-      "runtime": "node-22",
+      "runtime": "node-22.0",
       "execute": [
         "users"
       ],
@@ -478,7 +478,7 @@
       "id": "reconcilePaymentAttempts",
       "$id": "reconcilePaymentAttempts",
       "name": "reconcilePaymentAttempts",
-      "runtime": "node-22",
+      "runtime": "node-22.0",
       "execute": [],
       "events": [],
       "schedule": "0 */6 * * *",

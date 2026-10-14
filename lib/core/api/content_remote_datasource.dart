@@ -59,8 +59,8 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   ContentRemoteDataSourceImpl({
     required TablesDB tablesDB,
     http.Client? httpClient,
-  })  : _tablesDB = tablesDB,
-        _httpClient = httpClient;
+  }) : _tablesDB = tablesDB,
+       _httpClient = httpClient;
 
   http.Client get _client => _httpClient ?? http.Client();
 
@@ -145,10 +145,12 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
             final items = body[key];
             if (items is List && items.isNotEmpty) {
               return items
-                  .map((it) => ContentRowData(
-                        id: (it as Map)['id']?.toString() ?? '',
-                        data: Map<String, dynamic>.from(it),
-                      ))
+                  .map(
+                    (it) => ContentRowData(
+                      id: (it as Map)['id']?.toString() ?? '',
+                      data: Map<String, dynamic>.from(it),
+                    ),
+                  )
                   .toList();
             }
           }
@@ -200,7 +202,9 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   }) async {
     // 1. Try Cloudflare Edge API first
     try {
-      final uri = Uri.parse('${CloudflareConfig.categoriesEndpoint}/$categoryId');
+      final uri = Uri.parse(
+        '${CloudflareConfig.categoriesEndpoint}/$categoryId',
+      );
       final res = await _client.get(uri).timeout(timeout);
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);

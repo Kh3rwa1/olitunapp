@@ -32,7 +32,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   final http.Client? _httpClient;
 
   CategoryRemoteDataSourceImpl(this.tablesDB, {http.Client? httpClient})
-      : _httpClient = httpClient;
+    : _httpClient = httpClient;
 
   http.Client get _client => _httpClient ?? http.Client();
 
@@ -46,10 +46,12 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
         final body = jsonDecode(response.body);
         if (body is Map && body['ok'] == true && body['categories'] is List) {
           final items = (body['categories'] as List)
-              .map((data) => CategoryModel.fromJson(
-                    data as Map<String, dynamic>,
-                    (data as Map)['id']?.toString() ?? '',
-                  ))
+              .map(
+                (data) => CategoryModel.fromJson(
+                  data as Map<String, dynamic>,
+                  (data as Map)['id']?.toString() ?? '',
+                ),
+              )
               .toList();
           if (items.isNotEmpty) return items;
         }
@@ -88,7 +90,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       if (response.statusCode == 200) {
         final body = jsonDecode(response.body);
         if (body is Map && body['ok'] == true && body['category'] is Map) {
-          return CategoryModel.fromJson(body['category'] as Map<String, dynamic>, id);
+          return CategoryModel.fromJson(
+            body['category'] as Map<String, dynamic>,
+            id,
+          );
         }
       }
     } catch (_) {

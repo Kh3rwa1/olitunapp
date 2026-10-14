@@ -69,7 +69,11 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
         content: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 20),
+            Icon(
+              Icons.check_circle_rounded,
+              color: Colors.greenAccent,
+              size: 20,
+            ),
             SizedBox(width: 8),
             Text('Copied to clipboard!'),
           ],
@@ -198,7 +202,10 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                     borderRadius: 24,
                     glowColor: AppColors.primary,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: (isDark ? Colors.white : Colors.black)
                             .withValues(alpha: 0.05),
@@ -256,7 +263,10 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       onTap: _copyResult,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 20,
+                        ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: _isError
@@ -266,7 +276,9 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                                   ]
                                 : [
                                     AppColors.primary.withValues(alpha: 0.15),
-                                    AppColors.primaryDark.withValues(alpha: 0.05),
+                                    AppColors.primaryDark.withValues(
+                                      alpha: 0.05,
+                                    ),
                                   ],
                           ),
                           borderRadius: BorderRadius.circular(24),
@@ -274,8 +286,12 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                             color: _isError
                                 ? Colors.red.withValues(alpha: 0.3)
                                 : (_isCopied
-                                    ? Colors.greenAccent.withValues(alpha: 0.7)
-                                    : AppColors.primary.withValues(alpha: 0.3)),
+                                      ? Colors.greenAccent.withValues(
+                                          alpha: 0.7,
+                                        )
+                                      : AppColors.primary.withValues(
+                                          alpha: 0.3,
+                                        )),
                             width: _isCopied ? 1.5 : 1.0,
                           ),
                         ),
@@ -307,9 +323,13 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: _isCopied
-                                          ? Colors.greenAccent.withValues(alpha: 0.2)
-                                          : (isDark ? Colors.white : Colors.black)
-                                              .withValues(alpha: 0.08),
+                                          ? Colors.greenAccent.withValues(
+                                              alpha: 0.2,
+                                            )
+                                          : (isDark
+                                                    ? Colors.white
+                                                    : Colors.black)
+                                                .withValues(alpha: 0.08),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
                                         color: _isCopied
@@ -327,7 +347,9 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                                           size: 13,
                                           color: _isCopied
                                               ? Colors.greenAccent
-                                              : (isDark ? Colors.white70 : Colors.black54),
+                                              : (isDark
+                                                    ? Colors.white70
+                                                    : Colors.black54),
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
@@ -338,7 +360,9 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                                             letterSpacing: 0.5,
                                             color: _isCopied
                                                 ? Colors.greenAccent
-                                                : (isDark ? Colors.white70 : Colors.black54),
+                                                : (isDark
+                                                      ? Colors.white70
+                                                      : Colors.black54),
                                           ),
                                         ),
                                       ],
@@ -353,13 +377,17 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                                   ? AppTypography.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: isDark ? Colors.white : Colors.black,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
                                     )
                                   : TextStyle(
                                       fontFamily: 'OlChiki',
                                       fontSize: 38,
                                       height: 1.15,
-                                      color: isDark ? Colors.white : Colors.black,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
                                       fontWeight: FontWeight.w900,
                                     ),
                             ),
@@ -398,7 +426,9 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 child: IgnorePointer(
                   ignoring: !_showTranslateButton,
                   child: DuoButton(
-                    text: _isLoading ? 'MAGIC IN PROGRESS...' : 'TRANSLATE MAGIC',
+                    text: _isLoading
+                        ? 'MAGIC IN PROGRESS...'
+                        : 'TRANSLATE MAGIC',
                     onPressed: _translate,
                     height: 60,
                     borderRadius: 20,

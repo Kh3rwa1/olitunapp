@@ -7,7 +7,7 @@ import '../../../core/motion/motion.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/widgets/shimmer_loading.dart';
+import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
 import '../../categories/domain/entities/category_entity.dart';

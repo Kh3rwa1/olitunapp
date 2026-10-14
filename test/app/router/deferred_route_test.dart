@@ -21,21 +21,24 @@ void main() {
       expect(loadCalls, equals(1));
     });
 
-    test('DeferredLibrary resets pending future on error to allow retry', () async {
-      int loadCalls = 0;
-      final lib = DeferredLibrary(() async {
-        loadCalls++;
-        if (loadCalls == 1) throw Exception('Network timeout');
-      });
+    test(
+      'DeferredLibrary resets pending future on error to allow retry',
+      () async {
+        int loadCalls = 0;
+        final lib = DeferredLibrary(() async {
+          loadCalls++;
+          if (loadCalls == 1) throw Exception('Network timeout');
+        });
 
-      await expectLater(lib.ensureLoaded(), throwsA(isA<Exception>()));
-      expect(lib.isLoaded, isFalse);
+        await expectLater(lib.ensureLoaded(), throwsA(isA<Exception>()));
+        expect(lib.isLoaded, isFalse);
 
-      // Second attempt succeeds
-      await lib.ensureLoaded();
-      expect(lib.isLoaded, isTrue);
-      expect(loadCalls, equals(2));
-    });
+        // Second attempt succeeds
+        await lib.ensureLoaded();
+        expect(lib.isLoaded, isTrue);
+        expect(loadCalls, equals(2));
+      },
+    );
 
     testWidgets('DeferredRoute renders builder directly when already loaded', (
       tester,
@@ -56,62 +59,64 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('DeferredRoute displays CircularProgressIndicator while loading inside Scaffold', (
-      tester,
-    ) async {
-      final completer = Completer<void>();
-      final lib = DeferredLibrary(() => completer.future);
+    testWidgets(
+      'DeferredRoute displays CircularProgressIndicator while loading inside Scaffold',
+      (tester) async {
+        final completer = Completer<void>();
+        final lib = DeferredLibrary(() => completer.future);
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: DeferredRoute(
-            library: lib,
-            builder: (_) => const Text('Done'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: DeferredRoute(
+              library: lib,
+              builder: (_) => const Text('Done'),
+            ),
           ),
-        ),
-      );
+        );
 
-      // Loading state inside Scaffold
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.text('Done'), findsNothing);
+        // Loading state inside Scaffold
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(Scaffold), findsOneWidget);
+        expect(find.text('Done'), findsNothing);
 
-      completer.complete();
-      await tester.pumpAndSettle();
+        completer.complete();
+        await tester.pumpAndSettle();
 
-      expect(find.text('Done'), findsOneWidget);
-      expect(find.byType(CircularProgressIndicator), findsNothing);
-    });
+        expect(find.text('Done'), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsNothing);
+      },
+    );
 
-    testWidgets('DeferredRoute handles error with a retry IconButton inside Scaffold', (
-      tester,
-    ) async {
-      bool shouldFail = true;
-      final lib = DeferredLibrary(() async {
-        if (shouldFail) throw Exception('Chunk download failed');
-      });
+    testWidgets(
+      'DeferredRoute handles error with a retry IconButton inside Scaffold',
+      (tester) async {
+        bool shouldFail = true;
+        final lib = DeferredLibrary(() async {
+          if (shouldFail) throw Exception('Chunk download failed');
+        });
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: DeferredRoute(
-            library: lib,
-            builder: (_) => const Text('Success After Retry'),
+        await tester.pumpWidget(
+          MaterialApp(
+            home: DeferredRoute(
+              library: lib,
+              builder: (_) => const Text('Success After Retry'),
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      // Error state inside Scaffold with refresh button
-      expect(find.byType(IconButton), findsOneWidget);
-      expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
-      expect(find.byType(Scaffold), findsOneWidget);
+        // Error state inside Scaffold with refresh button
+        expect(find.byType(IconButton), findsOneWidget);
+        expect(find.byIcon(Icons.refresh_rounded), findsOneWidget);
+        expect(find.byType(Scaffold), findsOneWidget);
 
-      shouldFail = false;
-      await tester.tap(find.byIcon(Icons.refresh_rounded));
-      await tester.pumpAndSettle();
+        shouldFail = false;
+        await tester.tap(find.byIcon(Icons.refresh_rounded));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Success After Retry'), findsOneWidget);
-    });
+        expect(find.text('Success After Retry'), findsOneWidget);
+      },
+    );
   });
 }

@@ -428,7 +428,80 @@ app.get('/api/v1/rhymes', async (c) => {
   }
 });
 
-// 8. Assets stream from R2 (Zero egress fees, immutable caching)
+// 8. Remote App Settings (Edge cached, reduces Appwrite DB reads to zero)
+app.get('/api/v1/settings', async (c) => {
+  try {
+    const result = await c.env.DB.prepare(
+      'SELECT setting_key, setting_value, raw_json FROM app_settings'
+    ).all();
+    const settings: Record<string, any> = {};
+    const documents: any[] = [];
+    for (const r of (result.results || []) as any[]) {
+      const key = r.setting_key;
+      let val: any = r.setting_value;
+      if (r.raw_json) {
+        try {
+          const parsed = JSON.parse(r.raw_json);
+          documents.push(parsed);
+          if (parsed.settingValue !== undefined) {
+            val = parsed.settingValue;
+          }
+          if (parsed.settingKey && parsed.settingValue !== undefined) {
+            settings[parsed.settingKey] = parsed.settingValue;
+          }
+        } catch (_) {}
+      }
+      if (key && settings[key] === undefined) {
+        settings[key] = val;
+      }
+    }
+    return cachedJson(c, { ok: true, settings, documents }, 3600);
+  } catch (err: any) {
+    return c.json({ ok: false, error: err.message }, 500);
+  }
+});
+
+// 9. Featured Banners (Edge cached promotional & informational banners)
+app.get('/api/v1/banners', async (c) => {
+  try {
+    const result = await c.env.DB.prepare(
+      'SELECT raw_json FROM banners WHERE is_active = 1 ORDER BY order_index ASC'
+    ).all();
+    const banners = (result.results || []).map((r: any) => JSON.parse(r.raw_json));
+    return cachedJson(c, { ok: true, total: banners.length, banners });
+  } catch (err: any) {
+    return c.json({ ok: false, error: err.message }, 500);
+  }
+});
+
+// 10. Base Quizzes (Edge cached curriculum quizzes)
+app.get('/api/v1/quizzes', async (c) => {
+  try {
+    const categoryId = c.req.query('categoryId') || c.req.query('category_id');
+    const level = c.req.query('level');
+    let query = 'SELECT raw_json FROM quizzes WHERE is_active = 1';
+    const params: any[] = [];
+    if (categoryId) {
+      query += ' AND category_id = ?';
+      params.push(categoryId);
+    }
+    if (level) {
+      query += ' AND level = ?';
+      params.push(level);
+    }
+    query += ' ORDER BY order_index ASC';
+    const stmt = params.length > 0
+      ? c.env.DB.prepare(query).bind(...params)
+      : c.env.DB.prepare(query);
+    const result = await stmt.all();
+    const quizzes = (result.results || []).map((r: any) => JSON.parse(r.raw_json));
+    return cachedJson(c, { ok: true, total: quizzes.length, quizzes });
+  } catch (err: any) {
+    return c.json({ ok: false, error: err.message }, 500);
+  }
+});
+
+// 11. Assets stream from R2 (Zero egress fees, immutable caching)
 app.get('/api/v1/assets/*', async (c) => {
   try {
     const path = c.req.path.replace('/api/v1/assets/', '');

@@ -85,6 +85,31 @@ CREATE TABLE IF NOT EXISTS rhymes (
 CREATE INDEX IF NOT EXISTS idx_rhymes_category ON rhymes(category);
 CREATE INDEX IF NOT EXISTS idx_rhymes_order ON rhymes(order_index);
 
+CREATE TABLE IF NOT EXISTS banners (
+  id TEXT PRIMARY KEY,
+  title TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_active INTEGER DEFAULT 1,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_banners_order ON banners(order_index);
+
+CREATE TABLE IF NOT EXISTS quizzes (
+  id TEXT PRIMARY KEY,
+  category_id TEXT,
+  level TEXT,
+  order_index INTEGER DEFAULT 0,
+  is_active INTEGER DEFAULT 1,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_quizzes_order ON quizzes(order_index);
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  setting_key TEXT PRIMARY KEY,
+  setting_value TEXT NOT NULL,
+  raw_json TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS leaderboard_cache (
   id TEXT PRIMARY KEY,
   week_id TEXT NOT NULL,

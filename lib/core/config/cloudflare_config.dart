@@ -15,6 +15,7 @@ class CloudflareConfig {
   static const String numbersEndpoint = '$baseUrl/api/v1/numbers';
   static const String sentencesEndpoint = '$baseUrl/api/v1/sentences';
   static const String lessonsEndpoint = '$baseUrl/api/v1/lessons';
+  static const String rhymesEndpoint = '$baseUrl/api/v1/rhymes';
   static const String translateEndpoint = '$baseUrl/api/v1/translate';
 
   // Gamification, Mistakes & Progress
@@ -39,6 +40,10 @@ class CloudflareConfig {
   static const String paymentsOrderEndpoint = '$baseUrl/api/v1/payments/order';
   static const String paymentsVerifyEndpoint =
       '$baseUrl/api/v1/payments/verify';
+  static const String paymentsEntitlementsEndpoint =
+      '$baseUrl/api/v1/payments/entitlements';
+  static const String paymentsEntitlementsSyncEndpoint =
+      '$baseUrl/api/v1/payments/entitlements/sync';
   static const String voiceSynthesizeEndpoint =
       '$baseUrl/api/v1/voice/synthesize';
   static const String audioGenerateEndpoint = '$baseUrl/api/v1/audio/generate';

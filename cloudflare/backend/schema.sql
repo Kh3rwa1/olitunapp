@@ -69,6 +69,22 @@ CREATE TABLE IF NOT EXISTS lessons (
 );
 CREATE INDEX IF NOT EXISTS idx_lessons_category ON lessons(category_id);
 
+CREATE TABLE IF NOT EXISTS rhymes (
+  id TEXT PRIMARY KEY,
+  title_ol_chiki TEXT,
+  title_latin TEXT,
+  content_ol_chiki TEXT,
+  content_latin TEXT,
+  audio_url TEXT,
+  thumbnail_url TEXT,
+  category TEXT,
+  is_premium INTEGER DEFAULT 0,
+  order_index INTEGER DEFAULT 0,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rhymes_category ON rhymes(category);
+CREATE INDEX IF NOT EXISTS idx_rhymes_order ON rhymes(order_index);
+
 CREATE TABLE IF NOT EXISTS leaderboard_cache (
   id TEXT PRIMARY KEY,
   week_id TEXT NOT NULL,

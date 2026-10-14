@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../api/appwrite_db_service.dart';
 import '../api/appwrite_functions_service.dart';
+import '../config/cloudflare_config.dart';
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
 
@@ -44,11 +47,15 @@ final entitlementRevisionProvider = StateProvider.family<int, String>(
 
 class PurchaseRepository {
   final Ref ref;
-  PurchaseRepository(this.ref);
+  final http.Client? _httpClient;
+  PurchaseRepository(this.ref, {http.Client? httpClient})
+    : _httpClient = httpClient;
   final Set<String> _revokedUsers = {};
   final Map<String, int> _generations = {};
   bool _disposed = false;
   static const offlineEntitlementGrace = Duration(hours: 24);
+
+  http.Client get _client => _httpClient ?? http.Client();
 
   void dispose() {
     _disposed = true;
@@ -122,6 +129,52 @@ class PurchaseRepository {
     String userCacheKey,
   ) async {
     final generation = _generations[userId] ?? 0;
+
+    // 1. Try Cloudflare Workers Edge API first (D1 course_purchases)
+    try {
+      final uri = Uri.parse(
+        '${CloudflareConfig.paymentsEntitlementsEndpoint}?userId=${Uri.encodeComponent(userId)}',
+      );
+      final res = await _client
+          .get(
+            uri,
+            headers: {
+              'x-appwrite-user-id': userId,
+              'Accept': 'application/json',
+            },
+          )
+          .timeout(const Duration(seconds: 4));
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map && body['ok'] == true && body['categoryIds'] is List) {
+          final categoryIds = (body['categoryIds'] as List)
+              .map((e) => e.toString())
+              .where((id) => id.isNotEmpty)
+              .toSet();
+
+          if (_disposed || generation != (_generations[userId] ?? 0)) {
+            return const EntitlementResult(
+              categoryIds: {},
+              status: EntitlementStatus.unauthenticated,
+            );
+          }
+          _revokedUsers.remove(userId);
+          await CacheService.set(userCacheKey, {
+            'ids': categoryIds.toList(),
+          }, ttl: entitlementTtl);
+
+          return EntitlementResult(
+            categoryIds: categoryIds,
+            status: EntitlementStatus.verified,
+          );
+        }
+      }
+    } catch (e) {
+      AppLogger.debug('Cloudflare entitlements fetch bypassed: $e');
+    }
+
+    // 2. Fallback to Appwrite Database if Cloudflare is unreachable or unconfigured
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
@@ -153,6 +206,11 @@ class PurchaseRepository {
       await CacheService.set(userCacheKey, {
         'ids': categoryIds.toList(),
       }, ttl: entitlementTtl);
+
+      // Async sync to Cloudflare D1 so future reads hit Edge
+      if (categoryIds.isNotEmpty) {
+        _syncEntitlementsToCloudflare(userId, categoryIds);
+      }
 
       return EntitlementResult(
         categoryIds: categoryIds,
@@ -227,6 +285,32 @@ class PurchaseRepository {
             'Service temporarily unavailable. Please try again later.',
       );
     }
+  }
+
+  void _syncEntitlementsToCloudflare(String userId, Set<String> categoryIds) {
+    if (userId.isEmpty || categoryIds.isEmpty) return;
+    unawaited(() async {
+      try {
+        final uri = Uri.parse(
+          CloudflareConfig.paymentsEntitlementsSyncEndpoint,
+        );
+        await _client
+            .post(
+              uri,
+              headers: {
+                'Content-Type': 'application/json',
+                'x-appwrite-user-id': userId,
+              },
+              body: jsonEncode({
+                'userId': userId,
+                'categoryIds': categoryIds.toList(),
+              }),
+            )
+            .timeout(const Duration(seconds: 4));
+      } catch (_) {
+        // Silently ignore background sync failures
+      }
+    }());
   }
 
   void _triggerRevalidation(

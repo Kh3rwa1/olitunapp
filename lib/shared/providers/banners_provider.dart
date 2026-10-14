@@ -30,6 +30,7 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
   FutureOr<List<FeaturedBannerModel>> build() async {
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
+    final db = ref.read(appwriteDbServiceProvider);
     var active = true;
     ref.onDispose(() => active = false);
 
@@ -40,12 +41,10 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
     if (active && cached != null) state = AsyncValue.data(cached);
 
     try {
-      final data = await ref
-          .read(appwriteDbServiceProvider)
-          .listAllDocuments(
-            _collectionId,
-            queries: [DbQuery.orderAsc('order')],
-          );
+      final data = await db.listAllDocuments(
+        _collectionId,
+        queries: [DbQuery.orderAsc('order')],
+      );
       final banners = data.map(FeaturedBannerModel.fromJson).toList();
       await CacheService.set(
         _cacheKey,

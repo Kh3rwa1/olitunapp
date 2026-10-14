@@ -16,6 +16,9 @@ class CloudflareConfig {
   static const String sentencesEndpoint = '$baseUrl/api/v1/sentences';
   static const String lessonsEndpoint = '$baseUrl/api/v1/lessons';
   static const String rhymesEndpoint = '$baseUrl/api/v1/rhymes';
+  static const String bannersEndpoint = '$baseUrl/api/v1/banners';
+  static const String quizzesEndpoint = '$baseUrl/api/v1/quizzes';
+  static const String settingsEndpoint = '$baseUrl/api/v1/settings';
   static const String translateEndpoint = '$baseUrl/api/v1/translate';
 
   // Gamification, Mistakes & Progress

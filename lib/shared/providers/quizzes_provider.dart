@@ -1,13 +1,14 @@
 import 'dart:async';
-
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/api/appwrite_query_builders.dart';
+import '../../core/config/cloudflare_config.dart';
 import '../../core/error/appwrite_error_classifier.dart';
 import '../../core/storage/cache_service.dart';
 import '../../core/storage/hive_service.dart';
@@ -19,6 +20,9 @@ import '../quiz_engine/quiz_engine.dart';
 import 'language_settings_providers.dart';
 import 'learner_content_providers.dart';
 
+/// Injected HTTP client for testing quizzes edge queries.
+final quizzesHttpClientProvider = Provider<http.Client?>((ref) => null);
+
 final quizzesProvider = AsyncNotifierProvider<QuizzesNotifier, List<QuizModel>>(
   QuizzesNotifier.new,
 );
@@ -29,13 +33,20 @@ final quizzesByIdProvider = Provider<AsyncValue<Map<String, QuizModel>>>((ref) {
   });
 });
 
-/// Quizzes = stored base quizzes (cache → Appwrite → bundled defaults)
+/// Quizzes = stored base quizzes (cache → Cloudflare Edge → Appwrite → bundled defaults)
 /// compiled together with dynamic quizzes generated from learner words and
 /// sentences in the effective teaching language.
 class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
   static const String _collectionId = 'quizzes';
   static const String _cacheKey = 'cached_quizzes';
   static const String _legacyCacheKey = 'quizzes';
+
+  final http.Client? _injectedClient;
+
+  QuizzesNotifier({http.Client? httpClient}) : _injectedClient = httpClient;
+
+  http.Client get _client =>
+      _injectedClient ?? ref.read(quizzesHttpClientProvider) ?? http.Client();
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -45,6 +56,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
   FutureOr<List<QuizModel>> build() async {
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
+    final db = ref.read(appwriteDbServiceProvider);
     var active = true;
     ref.onDispose(() => active = false);
     ref.listen(learnerWordsProvider, (_, _) => _recompile());
@@ -58,7 +70,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
       _recompile();
     }
 
-    final remote = await _fetchRemoteQuizzes();
+    final remote = await _fetchRemoteQuizzes(db);
     if (remote != null) {
       _baseQuizzes = remote.isNotEmpty ? remote : _fallbackIfEmpty();
       await _saveQuizzes(_baseQuizzes);
@@ -115,15 +127,48 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
     state = compiled;
   }
 
-  /// Fetches base quizzes from Appwrite; returns null when unavailable.
-  Future<List<QuizModel>?> _fetchRemoteQuizzes() async {
+  /// Fetches base quizzes from Cloudflare Workers edge (with Appwrite DB fallback);
+  /// returns null when unavailable.
+  Future<List<QuizModel>?> _fetchRemoteQuizzes(AppwriteDbService db) async {
+    // 1. Try Cloudflare Workers Edge API (Global edge caching, zero Appwrite reads)
     try {
-      final data = await ref
-          .read(appwriteDbServiceProvider)
-          .listAllDocuments(
-            _collectionId,
-            queries: [DbQuery.orderAsc('order')],
-          );
+      final uri = Uri.parse(CloudflareConfig.quizzesEndpoint);
+      final res = await _client.get(uri).timeout(const Duration(seconds: 4));
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body);
+        if (body is Map && body['ok'] == true && body['quizzes'] is List) {
+          final quizzes = <QuizModel>[];
+          for (final row in body['quizzes']) {
+            try {
+              if (row is Map<String, dynamic>) {
+                quizzes.add(QuizModel.fromJson(row));
+              } else if (row is Map) {
+                quizzes.add(QuizModel.fromJson(Map<String, dynamic>.from(row)));
+              }
+            } catch (e, stack) {
+              AppLogger.warning(
+                'Skipping malformed quiz from Cloudflare',
+                name: 'QuizzesNotifier',
+                error: e,
+                stackTrace: stack,
+              );
+            }
+          }
+          if (quizzes.isNotEmpty) {
+            return quizzes;
+          }
+        }
+      }
+    } catch (e) {
+      AppLogger.debug('Cloudflare quizzes fetch bypassed: $e');
+    }
+
+    // 2. Resilient Appwrite DB fallback
+    try {
+      final data = await db.listAllDocuments(
+        _collectionId,
+        queries: [DbQuery.orderAsc('order')],
+      );
       return data.map(QuizModel.fromJson).toList();
     } catch (e, stack) {
       if (AppwriteErrorClassifier.infoOf(e)?.code == 404) {

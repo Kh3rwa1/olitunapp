@@ -85,5 +85,41 @@ if (fs.existsSync(rhymesPath)) {
   }
 }
 
+// 8. Banners
+const bannersPath = path.join(seedDir, 'banners.json');
+if (fs.existsSync(bannersPath)) {
+  const banners = JSON.parse(fs.readFileSync(bannersPath, 'utf8'));
+  for (let idx = 0; idx < banners.length; idx++) {
+    const b = banners[idx];
+    const rawJson = JSON.stringify(b);
+    sql += `INSERT OR REPLACE INTO banners (id, title, order_index, is_active, raw_json) VALUES (${escapeSql(b.id || b.$id)}, ${escapeSql(b.title)}, ${b.orderIndex ?? b.order ?? idx}, ${b.isActive !== false ? 1 : 0}, ${escapeSql(rawJson)});\n`;
+  }
+}
+
+// 9. Quizzes
+const quizzesPath = path.join(seedDir, 'quizzes.json');
+if (fs.existsSync(quizzesPath)) {
+  const quizzes = JSON.parse(fs.readFileSync(quizzesPath, 'utf8'));
+  for (let idx = 0; idx < quizzes.length; idx++) {
+    const q = quizzes[idx];
+    const rawJson = JSON.stringify(q);
+    sql += `INSERT OR REPLACE INTO quizzes (id, category_id, level, order_index, is_active, raw_json) VALUES (${escapeSql(q.id || q.$id)}, ${escapeSql(q.categoryId || q.category)}, ${escapeSql(q.level || 'beginner')}, ${q.orderIndex ?? q.order ?? idx}, ${q.isActive !== false ? 1 : 0}, ${escapeSql(rawJson)});\n`;
+  }
+}
+
+// 10. App Settings
+const settingsPath = path.join(seedDir, 'app_settings.json');
+if (fs.existsSync(settingsPath)) {
+  const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+  for (const s of settings) {
+    const key = s.settingKey || s.setting_key || s.key;
+    const val = s.settingValue || s.setting_value || s.value || '';
+    const rawJson = JSON.stringify(s);
+    if (key) {
+      sql += `INSERT OR REPLACE INTO app_settings (setting_key, setting_value, raw_json) VALUES (${escapeSql(key)}, ${escapeSql(val)}, ${escapeSql(rawJson)});\n`;
+    }
+  }
+}
+
 fs.writeFileSync(sqlFile, sql, 'utf8');
 console.log(`Generated ${sqlFile} (${(sql.length / 1024).toFixed(1)} KB)`);

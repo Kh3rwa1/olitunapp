@@ -55,40 +55,76 @@ async function computeCacheKey(from: string, to: string, text: string, engine: s
 
 async function translateWithGoogle(text: string, from = 'auto', to = 'sat'): Promise<{ translation: string; detectedLanguage: string; provider: string }> {
   const sl = from === 'auto' ? 'auto' : from;
-  const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(to)}&q=${encodeURIComponent(text)}`;
+  
+  // 1. Primary: translate_a/single (matches @vitalets/google-translate-api)
+  try {
+    const url = 'https://translate.google.com/translate_a/single?client=at&dt=t&dt=rm&dj=1';
+    const body = new URLSearchParams({ sl, tl: to, q: text }).toString();
 
-  const res = await fetch(url, {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+        'User-Agent': 'GoogleTranslate/6.28.0.05.421483610 (Linux; U; Android 12; Pixel 5)',
+      },
+      body,
+    });
+
+    if (res.ok) {
+      const data: any = await res.json();
+      const translation = (data?.sentences || [])
+        .filter((s: any) => typeof s?.trans === 'string')
+        .map((s: any) => s.trans)
+        .join('')
+        .trim();
+      const detectedLanguage = data?.src || from;
+
+      if (translation.length > 0) {
+        return {
+          translation,
+          detectedLanguage,
+          provider: 'google-translate',
+        };
+      }
+    }
+  } catch (_) {
+    // try fallback endpoint
+  }
+
+  // 2. Secondary fallback: dict-chrome-ex GET endpoint
+  const urlFallback = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=${encodeURIComponent(sl)}&tl=${encodeURIComponent(to)}&q=${encodeURIComponent(text)}`;
+  const resFallback = await fetch(urlFallback, {
     method: 'GET',
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     },
   });
 
-  if (!res.ok) {
-    throw new Error(`Google Translate HTTP error ${res.status}`);
+  if (!resFallback.ok) {
+    throw new Error(`Google Translate HTTP error ${resFallback.status}`);
   }
 
-  const data: any = await res.json();
-  let translation = '';
-  let detectedLanguage = from;
+  const dataFallback: any = await resFallback.json();
+  let translationFallback = '';
+  let detectedLanguageFallback = from;
 
-  if (Array.isArray(data)) {
-    if (typeof data[0] === 'string') {
-      translation = data[0];
-    } else if (Array.isArray(data[0])) {
-      translation = data[0][0] || '';
-      detectedLanguage = data[0][1] || from;
+  if (Array.isArray(dataFallback)) {
+    if (typeof dataFallback[0] === 'string') {
+      translationFallback = dataFallback[0];
+    } else if (Array.isArray(dataFallback[0])) {
+      translationFallback = dataFallback[0][0] || '';
+      detectedLanguageFallback = dataFallback[0][1] || from;
     }
   }
 
-  if (!translation) {
+  if (!translationFallback || translationFallback.trim().length === 0) {
     throw new Error('Google Translate returned empty translation');
   }
 
   return {
-    translation: translation.trim(),
-    detectedLanguage,
-    provider: 'google-nmt-instant',
+    translation: translationFallback.trim(),
+    detectedLanguage: detectedLanguageFallback,
+    provider: 'google-translate',
   };
 }
 
@@ -397,19 +433,19 @@ app.all('/api/v1/translate', async (c) => {
     let text = '';
     let from = 'auto';
     let to = 'sat';
-    let engine = 'cloudflare';
+    let engine = 'google';
 
     if (c.req.method === 'POST') {
       const body = await c.req.json().catch(() => ({}));
       text = body?.text || '';
       from = body?.from || 'auto';
       to = body?.to || 'sat';
-      engine = (body?.engine || body?.provider || 'cloudflare').toLowerCase();
+      engine = (body?.engine || body?.provider || 'google').toLowerCase();
     } else {
       text = c.req.query('text') || '';
       from = c.req.query('from') || 'auto';
       to = c.req.query('to') || 'sat';
-      engine = (c.req.query('engine') || 'cloudflare').toLowerCase();
+      engine = (c.req.query('engine') || 'google').toLowerCase();
     }
 
     if (!text || text.trim().length === 0) {
@@ -449,50 +485,48 @@ app.all('/api/v1/translate', async (c) => {
 
     // B. Execute Translation
     let result: { translation: string; detectedLanguage: string; provider: string };
-    const targetTag = INDICTRANS2_TARGETS[to.toLowerCase()];
-    const isEnglishOrAuto = from === 'auto' || from === 'en' || from === 'eng';
+    const isGoogleDefault = engine === 'google' || engine === 'vitalets' || engine === 'instant';
 
-    // 1. If English -> Indic/Santali, use IndicTrans2 (Best for Ol Chiki)
-    if (isEnglishOrAuto && targetTag && c.env.AI) {
+    if (isGoogleDefault) {
+      // Google Translate as default for instant translation
       try {
-        const aiRes = await translateWithWorkersAi(c.env.AI, text, targetTag);
-        result = {
-          translation: aiRes.translation,
-          detectedLanguage: 'en',
-          provider: aiRes.provider,
-        };
-      } catch (_) {
-        // Fallback to Llama or Google
-        try {
-          const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
-          result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
-        } catch (__2) {
-          result = await translateWithGoogle(text, from, to);
-        }
-      }
-    } else if (M2M100_LANGS[to.toLowerCase()] && c.env.AI) {
-      // 2. Multilingual translation using Meta M2M100
-      try {
-        const m2mRes = await translateWithM2M100(c.env.AI, text, from, to);
-        result = { translation: m2mRes.translation, detectedLanguage: from, provider: m2mRes.provider };
-      } catch (_) {
-        try {
-          const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
-          result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
-        } catch (__2) {
-          result = await translateWithGoogle(text, from, to);
-        }
-      }
-    } else if (c.env.AI) {
-      // 3. Ol Chiki to English or conversational languages using Llama 3
-      try {
-        const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
-        result = { translation: llamaRes.translation, detectedLanguage: from, provider: llamaRes.provider };
-      } catch (_) {
         result = await translateWithGoogle(text, from, to);
+      } catch (err: any) {
+        // Fallback to Workers AI if Google is temporarily unreachable
+        const targetTag = INDICTRANS2_TARGETS[to.toLowerCase()];
+        const isEnglishOrAuto = from === 'auto' || from === 'en' || from === 'eng';
+        if (isEnglishOrAuto && targetTag && c.env.AI) {
+          const aiRes = await translateWithWorkersAi(c.env.AI, text, targetTag);
+          result = { translation: aiRes.translation, detectedLanguage: 'en', provider: 'cloudflare-indictrans2-ai-fallback' };
+        } else if (c.env.AI) {
+          const llamaRes = await translateWithAiLlama(c.env.AI, text, from, to);
+          result = { translation: llamaRes.translation, detectedLanguage: from, provider: 'cloudflare-llama-ai-fallback' };
+        } else {
+          throw err;
+        }
       }
     } else {
-      result = await translateWithGoogle(text, from, to);
+      // Cloudflare Workers AI explicitly requested (IndicTrans2 / M2M100)
+      const targetTag = INDICTRANS2_TARGETS[to.toLowerCase()];
+      const isEnglishOrAuto = from === 'auto' || from === 'en' || from === 'eng';
+
+      if (isEnglishOrAuto && targetTag && c.env.AI) {
+        try {
+          const aiRes = await translateWithWorkersAi(c.env.AI, text, targetTag);
+          result = { translation: aiRes.translation, detectedLanguage: 'en', provider: aiRes.provider };
+        } catch (_) {
+          result = await translateWithGoogle(text, from, to);
+        }
+      } else if (M2M100_LANGS[to.toLowerCase()] && c.env.AI) {
+        try {
+          const m2mRes = await translateWithM2M100(c.env.AI, text, from, to);
+          result = { translation: m2mRes.translation, detectedLanguage: from, provider: m2mRes.provider };
+        } catch (_) {
+          result = await translateWithGoogle(text, from, to);
+        }
+      } else {
+        result = await translateWithGoogle(text, from, to);
+      }
     }
 
     // C. Save to D1 Cache

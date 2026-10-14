@@ -88,8 +88,8 @@ final translationEngineProvider = Provider<String>((ref) {
   return settingsAsync.maybeWhen(
     data: (settings) =>
         (settings['translation_engine'] as String?)?.toLowerCase().trim() ??
-        'cloudflare',
-    orElse: () => 'cloudflare',
+        'google',
+    orElse: () => 'google',
   );
 });
 

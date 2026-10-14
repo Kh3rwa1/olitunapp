@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/features/quiz/domain/quiz_identity_validation.dart'
     as quiz_identity;
 
@@ -86,7 +87,13 @@ class QuizValidation {
       }
       return result.message ??
           'Invalid corpus identity (${result.status.name}).';
-    } catch (_) {
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Corpus identity validation threw',
+        name: 'QuizValidation',
+        error: e,
+        stackTrace: stack,
+      );
       return 'Unable to verify corpus identity. Retry before publishing.';
     }
   }

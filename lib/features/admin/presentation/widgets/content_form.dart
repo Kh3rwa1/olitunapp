@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -308,7 +310,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
     _pendingDeletions.clear();
 
     final uploader = ref.read(mediaUploaderProvider);
-    Future.microtask(() async {
+    unawaited(() async {
       for (final fileId in toDelete) {
         try {
           final res = await uploader.deleteIfUnreferenced(
@@ -346,14 +348,16 @@ class _ContentFormState extends ConsumerState<ContentForm> {
               name: 'ContentForm',
             ),
           );
-        } catch (e) {
-          AppLogger.debug(
-            'Error cleaning up pending media file $fileId: $e',
+        } catch (e, stack) {
+          AppLogger.warning(
+            'Error cleaning up pending media file $fileId',
             name: 'ContentForm',
+            error: e,
+            stackTrace: stack,
           );
         }
       }
-    });
+    }());
   }
 
   void _showStrokesBlockingModal() {

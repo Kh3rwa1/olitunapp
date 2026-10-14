@@ -1,28 +1,23 @@
-import 'package:itun/core/logging/app_logger.dart';
-import 'package:appwrite/appwrite.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
+
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/appwrite_query_builders.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lettersProvider =
-    NotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>(
+    AsyncNotifierProvider<LettersNotifier, List<LetterModel>>(
       LettersNotifier.new,
     );
 
-class LettersNotifier extends Notifier<AsyncValue<List<LetterModel>>> {
-  bool _disposed = false;
-
-  @override
-  AsyncValue<List<LetterModel>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(_loadLetters);
-    return const AsyncValue.loading();
-  }
-
+/// Letters: cache-first, refreshed from Appwrite, falling back to a bundled
+/// seed when neither cache nor network has data.
+class LettersNotifier extends AsyncNotifier<List<LetterModel>> {
+  static const String _collectionId = 'letters';
   static const String _cacheKey = 'cached_letters';
 
   static final List<LetterModel> _seedLetters = [
@@ -77,39 +72,40 @@ class LettersNotifier extends Notifier<AsyncValue<List<LetterModel>>> {
     ),
   ];
 
-  Future<void> _loadLetters() async {
-    // 1. Try Cache
+  @override
+  FutureOr<List<LetterModel>> build() async {
+    var active = true;
+    ref.onDispose(() => active = false);
+
     final cached = await CacheService.getList(_cacheKey, LetterModel.fromJson);
-    if (_disposed) return;
-    if (cached != null && cached.isNotEmpty) {
-      state = AsyncValue.data(cached);
-    }
+    final hasCache = cached != null && cached.isNotEmpty;
+    if (active && hasCache) state = AsyncValue.data(cached);
 
-    // 2. Network
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listDocuments(
-        'letters',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
-      if (_disposed) return;
+      final data = await ref
+          .read(appwriteDbServiceProvider)
+          .listAllDocuments(
+            _collectionId,
+            queries: [DbQuery.orderAsc('order')],
+          );
       final list = data.map(LetterModel.fromJson).toList();
-
-      if (list.isNotEmpty) {
-        final uniqueList = _deduplicate(list);
-        state = AsyncValue.data(uniqueList);
-        // 3. Save Cache
-        await CacheService.set(
-          _cacheKey,
-          uniqueList.map((e) => e.toJson()).toList(),
-        );
+      if (list.isEmpty) {
+        return hasCache ? cached : _deduplicate(_seedLetters);
       }
-    } catch (e) {
-      AppLogger.debug('❌ _loadLetters network FAILED: $e');
-      if (_disposed) return;
-      if (!state.hasValue || state.value!.isEmpty) {
-        state = AsyncValue.data(_deduplicate(_seedLetters));
-      }
+      final uniqueList = _deduplicate(list);
+      await CacheService.set(
+        _cacheKey,
+        uniqueList.map((e) => e.toJson()).toList(),
+      );
+      return uniqueList;
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Loading letters failed; using cache or seed',
+        name: 'LettersNotifier',
+        error: e,
+        stackTrace: stack,
+      );
+      return hasCache ? cached : _deduplicate(_seedLetters);
     }
   }
 
@@ -128,39 +124,47 @@ class LettersNotifier extends Notifier<AsyncValue<List<LetterModel>>> {
     return unique;
   }
 
-  Future<void> add(LetterModel item) async {
+  Future<void> _mutate(String action, Future<void> Function() write) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument('letters', item.id, item.toJson());
-      await _loadLetters();
-    } catch (e) {
-      AppLogger.debug('❌ add letter FAILED: $e');
+      await write();
+    } catch (e, stack) {
+      AppLogger.error(
+        '$action letter failed',
+        name: 'LettersNotifier',
+        error: e,
+        stackTrace: stack,
+      );
+      return;
     }
+    ref.invalidateSelf();
+    await future;
   }
 
-  Future<void> update(LetterModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.updateDocument('letters', item.id, item.toJson());
-      await _loadLetters();
-    } catch (e) {
-      AppLogger.debug('❌ update letter FAILED: $e');
-    }
-  }
+  Future<void> add(LetterModel item) => _mutate(
+    'Add',
+    () => ref
+        .read(appwriteDbServiceProvider)
+        .createDocument(_collectionId, item.id, item.toJson()),
+  );
 
-  Future<void> delete(String id) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.deleteDocument('letters', id);
-      await _loadLetters();
-    } catch (e) {
-      AppLogger.debug('❌ delete letter FAILED: $e');
-    }
-  }
+  Future<void> updateItem(LetterModel item) => _mutate(
+    'Update',
+    () => ref
+        .read(appwriteDbServiceProvider)
+        .updateDocument(_collectionId, item.id, item.toJson()),
+  );
+
+  Future<void> delete(String id) => _mutate(
+    'Delete',
+    () => ref.read(appwriteDbServiceProvider).deleteDocument(_collectionId, id),
+  );
 
   Future<void> addLetter(LetterModel item) => add(item);
-  Future<void> updateLetter(LetterModel item) => update(item);
+  Future<void> updateLetter(LetterModel item) => updateItem(item);
   Future<void> deleteLetter(String id) => delete(id);
 
-  Future<void> seed() async => _loadLetters();
+  Future<void> seed() async {
+    ref.invalidateSelf();
+    await future;
+  }
 }

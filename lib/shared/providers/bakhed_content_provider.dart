@@ -1,8 +1,8 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/appwrite_query_builders.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
 
@@ -295,28 +295,25 @@ Future<BakhedLearningContent> _fetchBakhedLearningContent(
   String trimmedId,
 ) async {
   final results = await Future.wait([
-    db.listDocuments(
+    db.listAllDocuments(
       'bakhed_lyrics',
       queries: [
-        Query.equal('bakhedId', trimmedId),
-        Query.orderAsc('lineIndex'),
-        Query.limit(100),
+        DbQuery.equal('bakhedId', trimmedId),
+        DbQuery.orderAsc('lineIndex'),
       ],
     ),
-    db.listDocuments(
+    db.listAllDocuments(
       'bakhed_vocabulary',
       queries: [
-        Query.equal('bakhedId', trimmedId),
-        Query.orderAsc('sortOrder'),
-        Query.limit(100),
+        DbQuery.equal('bakhedId', trimmedId),
+        DbQuery.orderAsc('sortOrder'),
       ],
     ),
-    db.listDocuments(
+    db.listAllDocuments(
       'bakhed_cultural_notes',
       queries: [
-        Query.equal('bakhedId', trimmedId),
-        Query.equal('isPublished', true),
-        Query.limit(20),
+        DbQuery.equal('bakhedId', trimmedId),
+        DbQuery.equal('isPublished', true),
       ],
     ),
   ]);
@@ -355,8 +352,14 @@ final bakhedLearningContentProvider =
                 await CacheService.set(cacheKey, latest.toCacheJson());
                 ref.invalidateSelf();
               }
-            } catch (_) {
+            } catch (e, stack) {
               // Offline: the stale copy above stays on screen.
+              AppLogger.warning(
+                'Bakhed content background refresh failed for $trimmedId',
+                name: 'BakhedContent',
+                error: e,
+                stackTrace: stack,
+              );
             }
           });
         }
@@ -370,8 +373,13 @@ final bakhedLearningContentProvider =
           await CacheService.set(cacheKey, content.toCacheJson());
         }
         return content;
-      } catch (e) {
-        AppLogger.debug('Bakhed content fallback for $trimmedId: $e');
+      } catch (e, stack) {
+        AppLogger.warning(
+          'Bakhed content fallback for $trimmedId',
+          name: 'BakhedContent',
+          error: e,
+          stackTrace: stack,
+        );
         return BakhedLearningContent.empty;
       }
     });

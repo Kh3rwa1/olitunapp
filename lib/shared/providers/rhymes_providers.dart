@@ -1,35 +1,26 @@
-import 'package:itun/core/logging/app_logger.dart';
-import 'package:appwrite/appwrite.dart';
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
+
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/storage/cache_service.dart';
 import '../../core/observability/crash_reporting.dart';
-import '../../features/rhymes/domain/rhyme_model.dart';
-import '../../features/rhymes/domain/rhyme_category_model.dart';
+import '../../core/storage/cache_service.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/rhymes/domain/rhyme_catalog.dart';
+import '../../features/rhymes/domain/rhyme_category_model.dart';
+import '../../features/rhymes/domain/rhyme_model.dart';
 
 // ============== RHYMES ==============
 
-final rhymesProvider =
-    NotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>(
-      RhymesNotifier.new,
-    );
+final rhymesProvider = AsyncNotifierProvider<RhymesNotifier, List<RhymeModel>>(
+  RhymesNotifier.new,
+);
 
-class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
-  bool _disposed = false;
-
-  @override
-  AsyncValue<List<RhymeModel>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Re-create the notifier when the auth state changes.
-    ref.watch(isAuthenticatedProvider);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(_loadRhymes);
-    return const AsyncValue.loading();
-  }
-
+/// Rhymes: cache-first, refreshed from Appwrite, with a bundled seed as the
+/// last-resort fallback.
+class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
+  static const String _collectionId = 'rhymes';
   static const String _cacheKey = 'cached_rhymes';
 
   static final List<RhymeModel> _seedRhymes = [
@@ -102,29 +93,31 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
     ),
   ];
 
-  Future<void> _loadRhymes() async {
-    // 1. Try Cache
+  @override
+  FutureOr<List<RhymeModel>> build() async {
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    var active = true;
+    ref.onDispose(() => active = false);
+
+    List<RhymeModel>? cached;
     try {
-      final cached = await CacheService.getList(_cacheKey, RhymeModel.fromJson);
-      if (cached != null && cached.isNotEmpty && !_disposed) {
-        state = AsyncValue.data(cached);
-      }
-    } catch (e) {
+      cached = await CacheService.getList(_cacheKey, RhymeModel.fromJson);
+    } catch (e, stack) {
       AppLogger.warning(
-        'Failed to load cached rhymes: $e',
+        'Failed to load cached rhymes',
         name: 'RhymesProviders',
+        error: e,
+        stackTrace: stack,
       );
     }
+    final hasCache = cached != null && cached.isNotEmpty;
+    if (active && hasCache) state = AsyncValue.data(cached);
 
-    if (_disposed) return;
-
-    // 2. Fetch Network
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listDocuments(
-        'rhymes',
-        queries: [Query.limit(500)],
-      );
+      final data = await ref
+          .read(appwriteDbServiceProvider)
+          .listAllDocuments(_collectionId);
       final rhymes = <RhymeModel>[];
       for (final row in data) {
         try {
@@ -132,81 +125,80 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
           if (rhyme.id.isNotEmpty && rhyme.titleLatin.isNotEmpty) {
             rhymes.add(rhyme);
           }
-        } catch (e) {
+        } catch (e, stack) {
           AppLogger.warning(
-            'Skipping malformed rhyme row: $e',
+            'Skipping malformed rhyme row',
             name: 'RhymesProviders',
+            error: e,
+            stackTrace: stack,
           );
         }
       }
 
-      final resultList = rhymes.isEmpty ? _seedRhymes : rhymes;
-      if (!_disposed) {
-        state = AsyncValue.data(resultList);
-      }
-
-      // 3. Save Cache
-      if (rhymes.isNotEmpty && !_disposed) {
-        await CacheService.set(
-          _cacheKey,
-          rhymes.map((e) => e.toJson()).toList(),
-        );
-      }
+      if (rhymes.isEmpty) return _seedRhymes;
+      await CacheService.set(_cacheKey, rhymes.map((e) => e.toJson()).toList());
+      return rhymes;
     } catch (e, stack) {
-      if (_disposed) return;
       AppLogger.error(
-        'Error loading rhymes from Appwrite: $e',
+        'Error loading rhymes from Appwrite',
         name: 'RhymesProviders',
+        error: e,
+        stackTrace: stack,
       );
       CrashReporting.recordError(e, stack);
       CrashReporting.addAppwriteBreadcrumb(
         operation: 'list',
-        collection: 'rhymes',
+        collection: _collectionId,
         success: false,
         error: e.toString(),
       );
-
-      if (!_disposed && (!state.hasValue || state.value!.isEmpty)) {
-        state = AsyncValue.data(_seedRhymes);
-      }
+      return hasCache ? cached : _seedRhymes;
     }
   }
 
-  Future<void> add(RhymeModel item) async {
+  Future<void> _mutate(String action, Future<void> Function() write) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument('rhymes', item.id, item.toJson());
-      await _loadRhymes();
-    } catch (e) {
-      AppLogger.debug('❌ add rhyme FAILED: $e');
+      await write();
+    } catch (e, stack) {
+      AppLogger.error(
+        '$action rhyme failed',
+        name: 'RhymesProviders',
+        error: e,
+        stackTrace: stack,
+      );
+      return;
     }
+    ref.invalidateSelf();
+    await future;
   }
 
-  Future<void> update(RhymeModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.updateDocument('rhymes', item.id, item.toJson());
-      await _loadRhymes();
-    } catch (e) {
-      AppLogger.debug('❌ update rhyme FAILED: $e');
-    }
-  }
+  Future<void> add(RhymeModel item) => _mutate(
+    'Add',
+    () => ref
+        .read(appwriteDbServiceProvider)
+        .createDocument(_collectionId, item.id, item.toJson()),
+  );
 
-  Future<void> delete(String id) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.deleteDocument('rhymes', id);
-      await _loadRhymes();
-    } catch (e) {
-      AppLogger.debug('❌ delete rhyme FAILED: $e');
-    }
-  }
+  Future<void> updateItem(RhymeModel item) => _mutate(
+    'Update',
+    () => ref
+        .read(appwriteDbServiceProvider)
+        .updateDocument(_collectionId, item.id, item.toJson()),
+  );
+
+  Future<void> delete(String id) => _mutate(
+    'Delete',
+    () => ref.read(appwriteDbServiceProvider).deleteDocument(_collectionId, id),
+  );
 
   Future<void> addRhyme(RhymeModel item) async => add(item);
-  Future<void> updateRhyme(RhymeModel item) async => update(item);
+  Future<void> updateRhyme(RhymeModel item) async => updateItem(item);
   Future<void> deleteRhyme(String id) async => delete(id);
 
-  Future<void> seed() async => _loadRhymes();
+  Future<void> seed() async {
+    ref.invalidateSelf();
+    await future;
+  }
 }
 
 // ============== RHYME CATEGORIES (derived from rhymes) ==============

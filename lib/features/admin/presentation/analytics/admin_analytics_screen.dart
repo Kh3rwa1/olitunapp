@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../../../core/api/appwrite_db_service.dart';
 import '../../../../core/api/appwrite_query_builders.dart';
 import '../../../../core/theme/admin_tokens.dart';
@@ -95,33 +96,35 @@ final adminAnalyticsSnapshotProvider =
       final startKey = formatDateKey(start);
       final endKey = formatDateKey(end);
 
-      final rollups = await db.listDocuments(
+      final rollups = await db.listAllDocuments(
         'learning_analytics_daily_rollups',
         queries: [
           DbQuery.greaterThanEqual('dateKey', startKey),
           DbQuery.lessThanEqual('dateKey', endKey),
           DbQuery.orderDesc('dateKey'),
-          DbQuery.limit(500),
         ],
-        paginate: false,
       );
 
       var events = <Map<String, dynamic>>[];
       try {
-        events = await db.listDocuments(
+        events = await db.listAllDocuments(
           'learning_analytics_events',
           queries: [
             DbQuery.greaterThanEqual('dateKey', startKey),
             DbQuery.lessThanEqual('dateKey', endKey),
             DbQuery.orderDesc('dateKey'),
-            DbQuery.limit(1000),
           ],
-          paginate: false,
         );
-      } catch (_) {
+      } catch (e, stack) {
         // Rollups still power the product dashboard when raw event reads are
         // restricted. DAU/retention gracefully drop to zero instead of failing
         // the whole admin page.
+        AppLogger.warning(
+          'AdminAnalytics: raw event read failed; DAU/retention fall back to 0',
+          name: 'AdminAnalytics',
+          error: e,
+          stackTrace: stack,
+        );
       }
 
       return AdminAnalyticsSnapshot.fromRows(

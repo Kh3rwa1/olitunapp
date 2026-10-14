@@ -1,12 +1,12 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart';
-import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/api/appwrite_functions_service.dart';
+import 'package:itun/core/api/appwrite_query_builders.dart';
+import 'package:itun/core/error/appwrite_error_classifier.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/admin_failure.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
@@ -176,19 +176,21 @@ final adminPurchasesProvider =
     );
 
 class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
-  bool _disposed = false;
-
   static const int pageSize = 50;
   static const int exportSafetyThreshold = 25000;
+
+  /// Monotonic request id. Every request captures the value it was issued
+  /// under and discards its response when a newer request (or a dispose,
+  /// which bumps the counter) superseded it.
   int _generationCounter = 0;
 
   @override
   AdminPurchasesState build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadPurchases);
-    return const AdminPurchasesState(isLoading: true);
+    // Disposing/rebuilding invalidates any in-flight response.
+    ref.onDispose(() => _generationCounter++);
+    final gen = ++_generationCounter;
+    unawaited(_fetchFirstPage(gen: gen, filter: 'all', search: ''));
+    return AdminPurchasesState(isLoading: true, requestGeneration: gen);
   }
 
   bool get isLoadingMore => state.isLoadingMore;
@@ -203,11 +205,11 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
 
   /// Canonical provider wins; legacy values apply only to unmigrated rows.
   String _providerFilter(String provider) {
-    return Query.or([
-      Query.equal('provider', provider),
-      Query.and([
-        Query.or([Query.isNull('provider'), Query.equal('provider', '')]),
-        Query.equal('unlockMethod', provider),
+    return DbQuery.or([
+      DbQuery.equal('provider', provider),
+      DbQuery.and([
+        DbQuery.or([DbQuery.isNull('provider'), DbQuery.equal('provider', '')]),
+        DbQuery.equal('unlockMethod', provider),
       ]),
     ]);
   }
@@ -227,36 +229,47 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
       clearNextCursor: true,
       requestGeneration: gen,
     );
+    await _fetchFirstPage(gen: gen, filter: newFilter, search: newSearch);
+  }
 
+  /// Adds the server-side status/provider/search filters for [filter].
+  void _addFilterQueries(List<String> queries, String filter, String search) {
+    if (filter == 'razorpay') {
+      queries.add(_providerFilter('razorpay'));
+      queries.add(DbQuery.equal('status', 'verified'));
+    } else if (filter == 'review') {
+      queries.add(_providerFilter('play_store_review'));
+    } else if (filter == 'refunded') {
+      queries.add(DbQuery.equal('status', 'refunded'));
+    }
+    if (search.isNotEmpty) {
+      queries.add(DbQuery.search('categoryId', search));
+    }
+  }
+
+  /// Fetches the first page. Never touches [state] before its first await,
+  /// so it is safe to start from [build].
+  Future<void> _fetchFirstPage({
+    required int gen,
+    required String filter,
+    required String search,
+  }) async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final queries = <String>[
-        Query.orderDesc('\$createdAt'),
-        Query.limit(pageSize),
+        DbQuery.orderDesc(r'$createdAt'),
+        DbQuery.limit(pageSize),
       ];
-
-      // Status and canonical/legacy provider filtering
-      if (newFilter == 'razorpay') {
-        queries.add(_providerFilter('razorpay'));
-        queries.add(Query.equal('status', 'verified'));
-      } else if (newFilter == 'review') {
-        queries.add(_providerFilter('play_store_review'));
-      } else if (newFilter == 'refunded') {
-        queries.add(Query.equal('status', 'refunded'));
-      }
-
-      // Search filter
-      if (newSearch.isNotEmpty) {
-        queries.add(Query.search('categoryId', newSearch));
-      }
+      _addFilterQueries(queries, filter, search);
 
       final result = await db.listDocuments(
         'course_purchases',
         queries: queries,
+        paginate: false,
       );
 
-      // Stale response protection: if a newer request was dispatched, discard this result
-      if (gen != _generationCounter || _disposed) return;
+      // Stale response protection: a newer request (or dispose) superseded us.
+      if (gen != _generationCounter) return;
 
       final list = result.map(PurchaseModel.fromJson).toList();
       final hasMoreRecords = list.length >= pageSize;
@@ -274,14 +287,18 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         clearInitialFailure: true,
         clearLoadMoreFailure: true,
       );
-    } catch (e) {
-      if (gen != _generationCounter || _disposed) return;
+    } catch (e, stack) {
+      if (gen != _generationCounter) return;
 
       final failure = AdminFailure.fromException(
         e,
         actionContext: 'Loading purchases',
       );
-      AppLogger.debug('❌ loadPurchases failed: ${failure.sanitizedDetails}');
+      AppLogger.error(
+        'loadPurchases failed: ${failure.sanitizedDetails}',
+        name: 'AdminPurchasesNotifier',
+        stackTrace: stack,
+      );
       state = state.copyWith(isLoading: false, initialFailure: failure);
     }
   }
@@ -299,30 +316,18 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final queries = <String>[
-        Query.orderDesc('\$createdAt'),
-        Query.cursorAfter(cursor),
-        Query.limit(pageSize),
+        DbQuery.orderDesc(r'$createdAt'),
+        DbQuery.cursorAfter(cursor),
+        DbQuery.limit(pageSize),
       ];
-
-      if (state.activeFilter == 'razorpay') {
-        queries.add(_providerFilter('razorpay'));
-        queries.add(Query.equal('status', 'verified'));
-      } else if (state.activeFilter == 'review') {
-        queries.add(_providerFilter('play_store_review'));
-      } else if (state.activeFilter == 'refunded') {
-        queries.add(Query.equal('status', 'refunded'));
-      }
-
-      if (state.searchQuery.isNotEmpty) {
-        queries.add(Query.search('categoryId', state.searchQuery));
-      }
+      _addFilterQueries(queries, state.activeFilter, state.searchQuery);
 
       final result = await db.listDocuments(
         'course_purchases',
         queries: queries,
       );
 
-      if (gen != _generationCounter || _disposed) return;
+      if (gen != _generationCounter) return;
 
       final newItems = result.map(PurchaseModel.fromJson).toList();
       final hasMoreRecords = newItems.length >= pageSize;
@@ -346,14 +351,18 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         lastUpdatedAt: DateTime.now().toUtc(),
         clearLoadMoreFailure: true,
       );
-    } catch (e) {
-      if (gen != _generationCounter || _disposed) return;
+    } catch (e, stack) {
+      if (gen != _generationCounter) return;
 
       final failure = AdminFailure.fromException(
         e,
         actionContext: 'Loading next purchases page',
       );
-      AppLogger.debug('⚠️ loadNextPage failed: ${failure.sanitizedDetails}');
+      AppLogger.warning(
+        'loadNextPage failed: ${failure.sanitizedDetails}',
+        name: 'AdminPurchasesNotifier',
+        stackTrace: stack,
+      );
       // Preserves existing loaded items and keeps hasMore intact for retry
       state = state.copyWith(isLoadingMore: false, loadMoreFailure: failure);
     }
@@ -405,15 +414,12 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         final result = await executor(payload);
         resBody = result;
       } else {
-        final client = ref.read(appwriteAuthServiceProvider).client;
-        final functions = Functions(client);
-        final execution = await functions.createExecution(
-          functionId: 'admin-maintenance',
-          body: jsonEncode(payload),
-        );
-        statusCode = execution.responseStatusCode;
-        final decoded = jsonDecode(execution.responseBody);
-        if (decoded is! Map<String, dynamic>) return RefundResult.failed;
+        final execution = await ref
+            .read(appwriteFunctionsServiceProvider)
+            .execute('admin-maintenance', body: payload, usePost: true);
+        statusCode = execution.statusCode;
+        final decoded = execution.bodyJson;
+        if (decoded == null) return RefundResult.failed;
         resBody = decoded;
       }
       final outcome = refundResultFromResponse(
@@ -425,10 +431,16 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         await loadPurchases();
       }
       return outcome;
-    } catch (e) {
-      AppLogger.debug('recordExternalRefund failed: $e');
-      if (e is AppwriteException) {
-        return refundResultFromResponse(statusCode: e.code, body: null);
+    } catch (e, stack) {
+      AppLogger.error(
+        'recordExternalRefund failed',
+        name: 'AdminPurchasesNotifier',
+        error: e,
+        stackTrace: stack,
+      );
+      final info = AppwriteErrorClassifier.infoOf(e);
+      if (info != null) {
+        return refundResultFromResponse(statusCode: info.code, body: null);
       }
       return RefundResult.failed;
     }
@@ -474,26 +486,11 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
       }
 
       final queries = <String>[
-        Query.orderDesc('\$createdAt'),
-        Query.limit(pageSize),
+        DbQuery.orderDesc(r'$createdAt'),
+        DbQuery.limit(pageSize),
+        if (cursor != null) DbQuery.cursorAfter(cursor),
       ];
-
-      if (cursor != null) {
-        queries.add(Query.cursorAfter(cursor));
-      }
-
-      if (effectiveFilter == 'razorpay') {
-        queries.add(_providerFilter('razorpay'));
-        queries.add(Query.equal('status', 'verified'));
-      } else if (effectiveFilter == 'review') {
-        queries.add(_providerFilter('play_store_review'));
-      } else if (effectiveFilter == 'refunded') {
-        queries.add(Query.equal('status', 'refunded'));
-      }
-
-      if (effectiveSearch.isNotEmpty) {
-        queries.add(Query.search('categoryId', effectiveSearch));
-      }
+      _addFilterQueries(queries, effectiveFilter, effectiveSearch);
 
       List<Map<String, dynamic>>? result;
       int attempts = 0;
@@ -501,9 +498,19 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
 
       while (attempts < maxRetries && result == null) {
         try {
-          result = await db.listDocuments('course_purchases', queries: queries);
-        } catch (e) {
+          result = await db.listDocuments(
+            'course_purchases',
+            queries: queries,
+            paginate: false,
+          );
+        } catch (e, stack) {
           attempts++;
+          AppLogger.warning(
+            'Export page fetch failed (attempt $attempts/$maxRetries)',
+            name: 'AdminPurchasesNotifier',
+            error: e,
+            stackTrace: stack,
+          );
           if (attempts >= maxRetries) {
             final failure = AdminFailure.fromException(
               e,

@@ -34,32 +34,32 @@ class MockLessonNotifier extends LessonNotifier {
 
 class MockQuizzesNotifier extends QuizzesNotifier {
   @override
-  AsyncValue<List<QuizModel>> build() => const AsyncValue.data([]);
+  List<QuizModel> build() => const [];
 }
 
 class MockBannersNotifier extends BannersNotifier {
   @override
-  AsyncValue<List<FeaturedBannerModel>> build() => const AsyncValue.data([]);
+  List<FeaturedBannerModel> build() => const [];
 }
 
 class MockWordsNotifier extends WordsNotifier {
   @override
-  AsyncValue<List<WordModel>> build() => const AsyncValue.data([]);
+  List<WordModel> build() => const [];
 }
 
 class MockNumbersNotifier extends NumbersNotifier {
   @override
-  AsyncValue<List<NumberModel>> build() => const AsyncValue.data([]);
+  List<NumberModel> build() => const [];
 }
 
 class MockSentencesNotifier extends SentencesNotifier {
   @override
-  AsyncValue<List<SentenceModel>> build() => const AsyncValue.data([]);
+  List<SentenceModel> build() => const [];
 }
 
 class MockLettersNotifier extends LettersNotifier {
   @override
-  AsyncValue<List<LetterModel>> build() => const AsyncValue.data([]);
+  List<LetterModel> build() => const [];
 }
 
 class MockUserStatsNotifier extends UserStatsNotifier {

@@ -1,0 +1,96 @@
+import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/config/appwrite_config.dart';
+import 'package:itun/core/logging/app_logger.dart';
+
+/// Server-side admin authorization.
+///
+/// Admin rights are granted by membership in the Appwrite Team configured
+/// via [AppwriteConfig.adminTeamId]. There is NO client-side secret. A user
+/// must (a) have a valid Appwrite session and (b) be a member of the admin
+/// team, both of which are verified server-side by Appwrite.
+///
+/// The previous client-side admin-secret model has been removed —
+/// it provided no real security because the secret was bundled into the
+/// compiled JS/APK and could be extracted by anyone.
+/// Minimal seam over `Teams(client).list()` so unit tests can inject a fake
+/// without depending on a real Appwrite client.
+typedef TeamsListFetcher = Future<List<String>> Function();
+
+class AdminAuthService {
+  AdminAuthService(this._auth, {TeamsListFetcher? teamsListFetcher})
+    : _teamsListFetcher = teamsListFetcher;
+
+  final AppwriteAuthService _auth;
+  final TeamsListFetcher? _teamsListFetcher;
+
+  Future<List<String>> _listTeamIds() async {
+    if (_teamsListFetcher != null) return _teamsListFetcher();
+    final teams = Teams(_auth.client);
+    final result = await teams.list();
+    return result.teams.map((t) => t.$id).toList();
+  }
+
+  /// Returns true if the currently logged-in user is a member of the admin
+  /// team. Returns false if there is no session, or membership lookup fails.
+  ///
+  /// Membership is matched against the team's **immutable ID** only.
+  /// Matching by team name would let any user with team-create permission
+  /// escalate to admin by creating a team called `admins`, so name matching
+  /// is intentionally not supported.
+  Future<bool> isCurrentUserAdmin() async {
+    try {
+      final teamIds = await _listTeamIds();
+      const adminId = AppwriteConfig.adminTeamId;
+      return teamIds.any((id) => id == adminId);
+    } catch (e, stack) {
+      AppLogger.warning(
+        'AdminAuth: membership lookup failed',
+        name: 'AdminAuthService',
+        error: e,
+        stackTrace: stack,
+      );
+      return false;
+    }
+  }
+
+  /// Sign the user in via email + password and verify admin team membership.
+  /// Returns true only if the session is created AND the account belongs to
+  /// the admin team. On failure, any partial session is cleaned up.
+  Future<bool> signInAsAdmin({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      // Make sure no stale session is in the way
+      try {
+        await _auth.account.deleteSession(sessionId: 'current');
+      } catch (e) {
+        // No existing session — nothing to clear.
+        AppLogger.debug('AdminAuth: no stale session to clear ($e)');
+      }
+
+      await _auth.account.createEmailPasswordSession(
+        email: email.trim(),
+        password: password,
+      );
+
+      final isAdmin = await isCurrentUserAdmin();
+      if (!isAdmin) {
+        // Clean up — non-admin should not be left with a session created here.
+        await _auth.signOut();
+      }
+      return isAdmin;
+    } catch (e, stack) {
+      AppLogger.warning(
+        'AdminAuth: sign-in failed',
+        name: 'AdminAuthService',
+        error: e,
+        stackTrace: stack,
+      );
+      return false;
+    }
+  }
+
+  Future<void> signOut() => _auth.signOut();
+}

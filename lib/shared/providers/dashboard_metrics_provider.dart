@@ -1,8 +1,8 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/appwrite_query_builders.dart';
 import '../../core/theme/app_colors.dart';
 
 /// A single recent activity entry rendered in the admin dashboard
@@ -177,14 +177,16 @@ final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
       try {
         final rows = await db.listDocuments(
           spec.id,
-          queries: [Query.orderDesc(r'$updatedAt'), Query.limit(50)],
+          queries: [DbQuery.orderDesc(r'$updatedAt'), DbQuery.limit(50)],
           paginate: false,
         );
         return MapEntry(spec, rows);
-      } catch (e) {
+      } catch (e, stack) {
         AppLogger.warning(
-          'DashboardMetrics: failed to load collection ${spec.id}: $e',
+          'DashboardMetrics: failed to load collection ${spec.id}',
           name: 'DashboardMetrics',
+          error: e,
+          stackTrace: stack,
         );
         return MapEntry(spec, const <Map<String, dynamic>>[]);
       }

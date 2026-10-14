@@ -16,15 +16,17 @@ class GamificationAnalyticsView extends ConsumerWidget {
     final db = ref.read(appwriteDbServiceProvider);
     Future<int> count(String collectionId, {List<String>? queries}) async {
       try {
-        final rows = await db.listDocuments(
+        final rows = await db.listAllDocuments(
           collectionId,
-          queries: [DbQuery.limit(500), ...?queries],
-          paginate: false,
+          queries: [...?queries],
         );
         return rows.length;
-      } catch (e) {
+      } catch (e, stack) {
         AppLogger.warning(
-          'GamificationAnalyticsView: count failed for $collectionId: $e',
+          'GamificationAnalyticsView: count failed for $collectionId',
+          name: 'GamificationAnalyticsView',
+          error: e,
+          stackTrace: stack,
         );
         return 0;
       }

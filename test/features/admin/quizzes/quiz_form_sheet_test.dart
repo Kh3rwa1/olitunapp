@@ -20,7 +20,7 @@ class _FakeCategoryNotifier extends CategoryNotifier {
 
 class _NoopQuizzesNotifier extends QuizzesNotifier {
   @override
-  AsyncValue<List<QuizModel>> build() => const AsyncValue.data([]);
+  List<QuizModel> build() => const [];
 }
 
 QuizModel _quiz() => QuizModel(

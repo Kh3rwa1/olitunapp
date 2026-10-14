@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -205,7 +207,7 @@ class MockQuizzesNotifier extends QuizzesNotifier {
   MockQuizzesNotifier(this._initial);
 
   @override
-  AsyncValue<List<QuizModel>> build() => _initial;
+  FutureOr<List<QuizModel>> build() => asyncValueBuild(_initial);
 }
 
 class MockUserStatsNotifier extends UserStatsNotifier {

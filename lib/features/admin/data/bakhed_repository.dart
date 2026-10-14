@@ -26,10 +26,7 @@ class BakhedRepository {
   Future<Either<Failure, List<ContentItem>>> list() async {
     if (await _networkInfo.isConnected) {
       try {
-        final response = await _dbService.listDocuments(
-          'rhymes',
-          queries: [Query.limit(500)],
-        );
+        final response = await _dbService.listAllDocuments('rhymes');
         final items = response.map((data) {
           final id = data['id'] as String;
           return ContentItem.fromJson(data, id, ContentKind.rhyme);
@@ -75,6 +72,9 @@ class BakhedRepository {
           await _dbService.updateDocument('rhymes', item.id, payload);
         } catch (e) {
           // If update fails (e.g. document not found), attempt create
+          AppLogger.debug(
+            'BakhedRepository: update of ${item.id} failed ($e); creating',
+          );
           await _dbService.createDocument('rhymes', item.id, payload);
         }
         return right(unit);
@@ -101,9 +101,14 @@ class BakhedRepository {
         if (audioFileId != null && audioFileId!.isNotEmpty) {
           try {
             await _storage.deleteFile(bucketId: 'audio', fileId: audioFileId!);
-          } catch (e) {
+          } catch (e, stack) {
             // Log and continue — never block the cascade DB cleanup below.
-            AppLogger.warning('BakhedRepository: audio delete failed: $e');
+            AppLogger.warning(
+              'BakhedRepository: audio delete failed',
+              name: 'BakhedRepository',
+              error: e,
+              stackTrace: stack,
+            );
           }
         }
 
@@ -130,28 +135,33 @@ class BakhedRepository {
     String bakhedId,
   ) async {
     try {
-      final response = await _dbService.listDocuments(
+      final response = await _dbService.listAllDocuments(
         collectionId,
-        queries: [Query.equal('bakhedId', bakhedId), Query.limit(100)],
+        queries: [Query.equal('bakhedId', bakhedId)],
       );
       for (final doc in response) {
         try {
           await _dbService.deleteDocument(collectionId, doc['id'] as String);
-        } catch (e) {
+        } catch (e, stack) {
           // Best-effort child delete: continue with the remaining docs, but
           // a missed delete leaves an orphaned doc — surface it in logs.
           AppLogger.warning(
             'BakhedRepository: child delete failed in $collectionId '
-            '(doc ${doc['id']}): $e',
+            '(doc ${doc['id']})',
             name: 'BakhedRepository',
+            error: e,
+            stackTrace: stack,
           );
         }
       }
-    } catch (e) {
+    } catch (e, stack) {
       // A failed subcollection listing leaves orphaned child docs behind —
       // surface it, but the parent cascade delete still proceeds.
       AppLogger.warning(
-        'BakhedRepository: subcollection cleanup failed for $collectionId: $e',
+        'BakhedRepository: subcollection cleanup failed for $collectionId',
+        name: 'BakhedRepository',
+        error: e,
+        stackTrace: stack,
       );
     }
   }
@@ -162,12 +172,11 @@ class BakhedRepository {
   ) async {
     if (await _networkInfo.isConnected) {
       try {
-        final response = await _dbService.listDocuments(
+        final response = await _dbService.listAllDocuments(
           'bakhed_lyrics',
           queries: [
             Query.equal('bakhedId', bakhedId),
             Query.orderAsc('lineIndex'),
-            Query.limit(100),
           ],
         );
         final lines = response.map((data) {
@@ -188,12 +197,11 @@ class BakhedRepository {
   ) async {
     if (await _networkInfo.isConnected) {
       try {
-        final response = await _dbService.listDocuments(
+        final response = await _dbService.listAllDocuments(
           'bakhed_vocabulary',
           queries: [
             Query.equal('bakhedId', bakhedId),
             Query.orderAsc('sortOrder'),
-            Query.limit(100),
           ],
         );
         final items = response.map((data) {
@@ -214,9 +222,9 @@ class BakhedRepository {
   ) async {
     if (await _networkInfo.isConnected) {
       try {
-        final response = await _dbService.listDocuments(
+        final response = await _dbService.listAllDocuments(
           'bakhed_cultural_notes',
-          queries: [Query.equal('bakhedId', bakhedId), Query.limit(20)],
+          queries: [Query.equal('bakhedId', bakhedId)],
         );
         final notes = response.map((data) {
           final map = Map<String, dynamic>.from(data);

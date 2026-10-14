@@ -26,6 +26,13 @@ class FakeBakhedDbService implements AppwriteDbService {
   }
 
   @override
+  Future<List<Map<String, dynamic>>> listAllDocuments(
+    String collectionId, {
+    List<String>? queries,
+    int pageSize = 500,
+  }) => listDocuments(collectionId, queries: queries);
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 

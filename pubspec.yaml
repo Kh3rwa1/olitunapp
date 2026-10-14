@@ -56,9 +56,6 @@ dependencies:
   file_picker: ^10.3.10
   http: ^1.2.0
 
-  # Icons
-  cupertino_icons: ^1.0.8
-
   # Capped below 2.1.6: path_provider 2.1.6 requires Dart ^3.10 / Flutter
   # >=3.38, but the Appwrite Sites builder is pinned to flutter-3.35
   # (Dart 3.9.2). Same story as lottie and image_picker above; lift the cap

@@ -40,19 +40,19 @@ class _TestNotifier extends SeededContentListNotifier<_Item> {
   Future<List<_Item>> loadSeed() async => seedItems;
 
   @override
-  Future<void> loadList() async {
+  Future<List<_Item>> loadList() async {
     loadListCalls++;
     try {
       final remote = await fetchRemote();
-      emit(remote..sort((a, b) => itemOrder(a).compareTo(itemOrder(b))));
+      return remote..sort((a, b) => itemOrder(a).compareTo(itemOrder(b)));
     } catch (_) {
-      emit(List.of(seedItems));
+      return List.of(seedItems);
     }
   }
 }
 
 typedef _Provider =
-    NotifierProvider<SeededContentListNotifier<_Item>, AsyncValue<List<_Item>>>;
+    AsyncNotifierProvider<SeededContentListNotifier<_Item>, List<_Item>>;
 
 _Provider _providerOf(_TestNotifier notifier) => _Provider(() => notifier);
 
@@ -81,28 +81,25 @@ void main() {
     return (container, _providerOf(notifier));
   }
 
-  test(
-    'build starts in loading and the deferred load emits the seed',
-    () async {
-      when(
-        () => db.listDocuments('test_items', queries: any(named: 'queries')),
-      ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
-      final notifier = _TestNotifier(seed);
-      final (container, p) = await harness(notifier);
-      addTearDown(container.dispose);
+  test('build starts in loading and then emits the loaded list', () async {
+    when(
+      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
+    ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
+    final notifier = _TestNotifier(seed);
+    final (container, p) = await harness(notifier);
+    addTearDown(container.dispose);
 
-      expect(container.read(p).isLoading, isTrue);
-      await _flush();
+    expect(container.read(p).isLoading, isTrue);
+    await _flush();
 
-      // _TestNotifier.loadList treats the remote list as authoritative.
-      expect(container.read(p).value, isEmpty);
-      expect(notifier.loadListCalls, 1);
-    },
-  );
+    // _TestNotifier.loadList treats the remote list as authoritative.
+    expect(container.read(p).value, isEmpty);
+    expect(notifier.loadListCalls, 1);
+  });
 
   test('fetchRemote maps documents and emits them sorted by order', () async {
     when(
-      () => db.listDocuments('test_items', queries: any(named: 'queries')),
+      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
     ).thenAnswer(
       (_) async => [
         const {'id': 'r_9', 'order': 9},
@@ -126,7 +123,7 @@ void main() {
     'loadList falls back to the seed when the remote fetch throws',
     () async {
       when(
-        () => db.listDocuments('test_items', queries: any(named: 'queries')),
+        () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
       ).thenThrow(Exception('offline'));
 
       final notifier = _TestNotifier(seed);
@@ -142,7 +139,7 @@ void main() {
 
   test('add writes through to the collection and reloads', () async {
     when(
-      () => db.listDocuments('test_items', queries: any(named: 'queries')),
+      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
     ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
     when(
       () => db.createDocument('test_items', any(), any()),
@@ -164,7 +161,7 @@ void main() {
 
   test('update and delete target the item id and reload', () async {
     when(
-      () => db.listDocuments('test_items', queries: any(named: 'queries')),
+      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
     ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
     when(
       () => db.updateDocument('test_items', any(), any()),
@@ -177,7 +174,7 @@ void main() {
     container.read(p);
     await _flush();
 
-    await container.read(p.notifier).update(const _Item('s_1', 1));
+    await container.read(p.notifier).updateItem(const _Item('s_1', 1));
     await container.read(p.notifier).delete('s_2');
 
     verify(
@@ -193,7 +190,7 @@ void main() {
       expect(notifier.rethrowCrudErrors, isTrue);
 
       when(
-        () => db.listDocuments('test_items', queries: any(named: 'queries')),
+        () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
       ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
       when(
         () => db.deleteDocument('test_items', any()),
@@ -213,14 +210,14 @@ void main() {
 
   test('seed backfills only the ids missing remotely', () async {
     when(
-      () => db.listDocuments('test_items', queries: any(named: 'queries')),
+      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
     ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
     when(
       () => db.createDocument('test_items', any(), any()),
     ).thenAnswer((_) async {});
     // Registered last: mocktail's any() also matches omitted named args,
     // so this no-arg stub must win for seed()'s plain listDocuments call.
-    when(() => db.listDocuments('test_items')).thenAnswer(
+    when(() => db.listAllDocuments('test_items')).thenAnswer(
       (_) async => [
         const {'id': 's_1', 'order': 1},
       ],

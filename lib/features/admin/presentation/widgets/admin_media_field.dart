@@ -114,10 +114,10 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stack) {
       final appwriteInfo = AppwriteErrorClassifier.infoOf(e);
-      AppLogger.debug(
-        'Error picking ${widget.label}: $e',
+      AppLogger.warning(
+        'Error picking ${widget.label}',
         fields: {
           'error': e.toString(),
           if (appwriteInfo != null) ...{
@@ -126,6 +126,9 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
             'message': appwriteInfo.message,
           },
         },
+        name: 'AdminMediaField',
+        error: e,
+        stackTrace: stack,
       );
       if (mounted) setState(() => _uploading = false);
       if (mounted) {

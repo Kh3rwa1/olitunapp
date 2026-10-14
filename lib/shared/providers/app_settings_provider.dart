@@ -35,8 +35,13 @@ final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
       settings[doc['settingKey'] as String] = doc['settingValue'];
     }
     return settings;
-  } catch (e) {
-    AppLogger.debug('Failed to load app settings: $e');
+  } catch (e, stack) {
+    AppLogger.warning(
+      'Failed to load app settings',
+      name: 'AppSettings',
+      error: e,
+      stackTrace: stack,
+    );
     return <String, dynamic>{};
   }
 });
@@ -73,8 +78,13 @@ final onboardingGoalsProvider = Provider<List<OnboardingGoal>>((ref) {
           return decoded
               .map((e) => OnboardingGoal.fromJson(e as Map<String, dynamic>))
               .toList();
-        } catch (e) {
-          AppLogger.debug('Error decoding onboarding_goals from settings: $e');
+        } catch (e, stack) {
+          AppLogger.warning(
+            'Error decoding onboarding_goals from settings',
+            name: 'AppSettings',
+            error: e,
+            stackTrace: stack,
+          );
         }
       }
       return _defaultGoals;

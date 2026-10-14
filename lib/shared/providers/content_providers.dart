@@ -75,9 +75,14 @@ final contentListProvider =
       try {
         final local = await repo.cachedList(kind, categoryId: categoryId);
         cached = local.fold((_) => null, (items) => items);
-      } catch (_) {
+      } catch (e, stack) {
         // A broken local cache must not prevent a successful network load.
-        AppLogger.debug('Local content unavailable; requesting fresh content.');
+        AppLogger.warning(
+          'Local content unavailable; requesting fresh content.',
+          name: 'ContentProviders',
+          error: e,
+          stackTrace: stack,
+        );
       }
 
       if (cached != null) {
@@ -93,9 +98,14 @@ final contentListProvider =
                 timeout,
               );
               if (active) ref.state = AsyncData(fresh);
-            } catch (_) {
+            } catch (e, stack) {
               // Keep usable learning content on screen during network errors.
-              AppLogger.debug('Content refresh failed; retaining local data.');
+              AppLogger.warning(
+                'Content refresh failed; retaining local data.',
+                name: 'ContentProviders',
+                error: e,
+                stackTrace: stack,
+              );
             }
           });
         }

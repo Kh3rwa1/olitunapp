@@ -10,7 +10,7 @@ Olitun follows **Clean Architecture** with feature-first module organization.
 │  ConsumerWidget → AsyncValue.when → Widget tree      │
 ├─────────────────────────────────────────────────────┤
 │                    Providers (Riverpod)               │
-│  StateNotifier / FutureProvider / StateProvider       │
+│  AsyncNotifier / Notifier / FutureProvider           │
 ├─────────────────────────────────────────────────────┤
 │                    Domain                            │
 │  Entities  │  Repository contracts  │  Failures      │
@@ -27,75 +27,87 @@ Olitun follows **Clean Architecture** with feature-first module organization.
 
 ```
 lib/
+├── main.dart
 ├── app/
-│   └── router/                  # GoRouter config + route guards
-├── core/
-│   ├── api/                     # AppwriteDbService, AiService
-│   ├── auth/                    # AppwriteAuthService (singleton)
+│   └── router/                  # GoRouter config, route guards, deferred admin loader
+├── core/                        # App-agnostic infrastructure + design system
+│   ├── api/                     # AppwriteDbService, AppwriteFunctionsService,
+│   │                            #   RealtimeChangeFeed, DbQuery, ContentRemoteDataSource
+│   ├── auth/                    # AppwriteAuthService (singleton), session helpers
 │   ├── config/                  # AppwriteConfig (build-time validation)
-│   ├── error/                   # Sealed Failure + Exception classes
-│   ├── motion/                  # PressableScale, AnimatedCounter, ConfettiBurst
-│   ├── network/                 # NetworkInfo (connectivity check)
-│   ├── observability/           # CrashReporting (Sentry wrapper)
-│   ├── presentation/layout/     # ResponsiveLayout, PageContainer
+│   ├── error/                   # Sealed Failure + Exception classes, error classifier
+│   ├── logging/ observability/  # AppLogger (Sentry forwarding), CrashReporting
+│   ├── offline/                 # MutationOutboxService (generic durable write queue)
 │   ├── storage/                 # CacheService (Hive), HiveService (init)
+│   ├── network/ payments/ ads/ analytics/ audio/ media/ notifications/ …
+│   ├── motion/                  # Motion primitives (PressableScale, AnimatedCounter…)
+│   ├── presentation/            # Layout + animation primitives (ResponsiveLayout…)
 │   └── theme/                   # AppTheme, AppColors, AdminTokens
 ├── features/
-│   ├── admin/                   # CMS dashboard (presentation-heavy)
-│   ├── ai_studio/               # AI workspace (data/presentation; screen split across part files)
-│   ├── auth/                    # data/domain/presentation layers
-│   ├── categories/              # data/domain/presentation layers
-│   ├── content/                 # Content detail surfaces (data/domain/presentation)
-│   ├── home/                    # Home screen incl. AI translator (presentation)
-│   ├── learn/                   # Browseable content grids (presentation)
-│   ├── lessons/                 # data/domain/presentation layers
-│   ├── legal/                   # Privacy / terms screens
-│   ├── main/                    # Shell + bottom nav
-│   ├── onboarding/              # First-run flow
-│   ├── practice/                # Typing practice (data/domain/presentation)
-│   ├── profile/                 # data/domain/presentation layers
-│   ├── quiz/                    # Quiz gameplay (presentation)
-│   └── rhymes/                  # Rhyme viewer (presentation)
-└── shared/
-    ├── models/                  # Content models (shared DTOs)
-    ├── offline/                 # Offline mutation replay service
-    ├── providers/               # Cross-feature providers (language, gamification,
-    │                            #   waitlist, purchases, rhymes...) — the app's
-    │                            #   parallel data-access layer for features shared
-    │                            #   by multiple features; consumers must go through
-    │                            #   these providers, never construct SDK objects
-    ├── repositories/            # Content repository (bundled seeds + cache + network)
-    └── widgets/                 # Reusable UI components
+│   ├── admin/                   # CMS (deferred load unit, see "Admin CMS" below)
+│   │   ├── admin_screens.dart   #   the only library the router imports (deferred)
+│   │   ├── data/                #   AdminAuthService, BakhedRepository (Appwrite)
+│   │   ├── domain/ presentation/ providers/
+│   ├── ai_studio/ auth/ categories/ content/ home/ learn/ legal/ lessons/
+│   ├── main/ onboarding/ practice/ profile/ quiz/ review/ rhymes/ voice/
+│   │                            # each: data/ (SDK impls + di/), domain/, presentation/
+└── shared/                      # Cross-feature, content-aware code
+    ├── models/                  # Content DTOs (ContentItem, *Model)
+    ├── providers/               # Cross-feature providers (content lists, quizzes,
+    │                            #   banners, rhymes, waitlist, purchases, settings…)
+    ├── quiz_engine/             # Dynamic quiz compilation
+    ├── repositories/            # ContentRepository (seed + Hive + remote) and
+    │                            #   ContentMutationReplay (drains the outbox)
+    ├── sync/                    # ContentRealtimeSync (realtime → cache/provider invalidation)
+    ├── security/ utils/
+    └── widgets/                 # Reusable UI components (shimmer, buttons, media…)
 ```
+
+### Layering rule: core vs shared vs features
+
+- **`core/`** is app-agnostic infrastructure and design-system primitives. It
+  must not import `shared/` or `features/` (existing exceptions are legacy
+  and must not grow). Generic mechanisms live here (e.g. the mutation outbox).
+- **`shared/`** is code reused by several features that *knows about Olitun
+  content* (models, content repository, cross-feature providers, widgets).
+  It may import `core/`. Content-specific offline logic (outbox replay) lives
+  beside the repository it drives in `shared/repositories/`.
+- **`features/<name>/`** own their screens and data. A feature may import
+  `core/`, `shared/`, and another feature's `domain/` (avoid importing another
+  feature's `presentation/`).
+- Reusable widgets go in `shared/widgets/`; `core/motion/` and
+  `core/presentation/` hold only low-level motion/layout primitives.
 
 ## SDK Isolation Rule
 
-`package:appwrite` must never be imported outside `lib/core/` and
-`lib/features/*/data/`. Presentation and domain layers consume SDK
+`package:appwrite` may only be imported from `lib/core/**` and
+`lib/features/*/data/**`. Everything else — presentation, domain,
+`lib/shared/**`, `lib/app/**`, feature `providers/` — consumes SDK
 capabilities exclusively through these anti-corruption seams:
 
 | Seam | Location | Purpose |
 | --- | --- | --- |
-| `AppwriteDbService` | `core/api/appwrite_db_service.dart` | All TablesDB reads/writes (retry, paging, breadcrumbs) |
+| `AppwriteDbService` | `core/api/appwrite_db_service.dart` | All TablesDB reads/writes (retry, breadcrumbs). `listAllDocuments` pages with `Query.cursorAfter`; `listDocuments(paginate: false)` for intentionally capped reads |
 | `AppwriteFunctionsService` | `core/api/appwrite_functions_service.dart` | Serverless function RPCs; returns neutral `FunctionExecutionResult` |
+| `RealtimeChangeFeed` | `core/api/realtime_change_feed.dart` | Realtime subscriptions as neutral `RealtimeChangeEvent`s |
 | `ContentRemoteDataSource` | `core/api/content_remote_datasource.dart` | Remote datasource abstraction isolating Appwrite TablesDB from shared repositories |
-| `DbQuery` / `DbId` | `core/api/appwrite_query_builders.dart` | Query-string builders + unique ID generation |
-| `AppwriteErrorClassifier` | `core/error/appwrite_error_classifier.dart` | Exception → neutral error-info mapping |
+| `DbQuery` / `DbId` | `core/api/appwrite_query_builders.dart` | Query-string builders (filters, order, cursor, `or`/`and`) + unique ID generation |
+| `AppwriteErrorClassifier` | `core/error/appwrite_error_classifier.dart` | Exception → neutral error-info mapping (e.g. 404 detection) |
 | `data/di/*.dart` | `features/*/data/di/` | Datasource/repository provider wiring beside the impls it constructs |
+
+Never hand-roll `Query.limit(500)` reads: use `listAllDocuments` so large
+collections are never silently truncated.
 
 ### Boundary Enforcement
 
-Architecture boundaries are strictly validated in CI (`.github/workflows/flutter-ci.yml`) via:
+Architecture boundaries are validated in CI (`.github/workflows/flutter-ci.yml`) via:
 ```bash
 node scripts/check_architecture_boundaries.mjs
 ```
-This check verifies that:
-1. No presentation layers (`lib/features/*/presentation/`) directly import `package:appwrite`.
-2. Shared repositories (`lib/shared/repositories/`) do not import `package:appwrite`, using `ContentRemoteDataSource` instead.
-
-Providers for cross-feature data live in `shared/providers/` (documented in
-the directory table above); the content repository and mutation outbox are
-documented in the Data Flow section below.
+It scans **every** Dart file under `lib/` and fails on any `package:appwrite`
+import/export outside `lib/core/**` and `lib/features/*/data/**`, and on any
+new `lib/core/**` import of `lib/shared/**` or `lib/features/**` (legacy
+exceptions are baselined in the script and may only shrink).
 
 ## Quality Gates
 
@@ -106,11 +118,12 @@ CI (`.github/workflows/flutter-ci.yml`) enforces repository standards on every P
 | File length | `node scripts/check_file_length.mjs` | Hand-written Dart files ≤ 600 lines (no grandfathered files) |
 | Localization parity | `node scripts/check_l10n_parity.mjs` | All ARB locales share the same keys and placeholder signatures |
 | Hardcoded strings | `node scripts/check_hardcoded_strings.mjs` | No user-facing `Text`/`Toast` literals outside `lib/features/admin/**` (grandfathered baseline in `scripts/hardcoded_strings_baseline.json`) |
-| Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | No `package:appwrite` imports from presentation/domain layers |
+| Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | `package:appwrite` only in `lib/core/**` and `lib/features/*/data/**` |
 | Appwrite deployability | `node scripts/check_appwrite_deployable.mjs` | Sites use `scripts/build_web.sh` and do not ignore `scripts/` |
 | Appwrite manifest parity | `node scripts/verify_function_deployment.mjs` | `appwrite.json` and `appwrite.config.json` agree on functions, buckets, sites, and projectId; least-privilege scope checks |
 | Function packaging smoke | `node scripts/smoke_package_functions.mjs` | Each function has `package.json`, lockfile, entrypoint, and a syntax-valid entry |
 | Format + analyze | `dart format`, `flutter analyze --fatal-infos` | Style and static analysis clean |
+| riverpod_lint | `dart run custom_lint` | Configured with the 14 rules riverpod_lint 2.6 ships; currently inert because riverpod_lint 2.x (analyzer ^7) cannot parse the SDK's dot-shorthand syntax — see `analysis_options.yaml` |
 
 Regenerate the hardcoded-string baseline only after intentional localized changes:
 
@@ -160,10 +173,10 @@ UI (watch provider) → Riverpod provider → Repository
    `NetworkFailure` to the UI when nothing is available (no fabricated content)
 
 **Offline writes** are durable: a content edit made while offline is cached
-locally and queued in the `MutationOutboxService` (dedicated Hive box with
-bounded exponential backoff and dead-lettering). The
-`ContentMutationReplay` service drains the queue at startup and whenever
-connectivity is regained.
+locally and queued in the `MutationOutboxService` (`core/offline/`, dedicated
+Hive box with bounded exponential backoff and dead-lettering). The
+`ContentMutationReplay` service (`shared/repositories/`) drains the queue at
+startup and whenever connectivity is regained.
 
 ## Error Architecture
 
@@ -179,11 +192,33 @@ Failure types: `ServerFailure`, `CacheFailure`, `NetworkFailure`, `AuthFailure`,
 
 ## State Management
 
-All state flows through **Riverpod**:
+All state flows through **Riverpod 2** (hand-written providers, no codegen):
 - `SharedPreferences` → injected via `sharedPreferencesProvider` override at root `ProviderScope`
-- `AsyncValue<T>` → used for all async data (categories, lessons, quizzes, user stats)
-- `StateNotifier` → used for mutable domain state (quiz progress, user stats)
-- `StateProvider` → used for simple UI state (theme mode, tab index)
+- Async data → `AsyncNotifier` / `FutureProvider`. `build()` performs the IO
+  directly (`await` inside `build`), so loading/error/data come from
+  Riverpod. Cache-first notifiers may set `state = AsyncData(cached)` after
+  an `await` while the network request is in flight, guarded by a per-build
+  flag registered with `ref.onDispose`. Mutations write remotely, then
+  `ref.invalidateSelf(); await future;`.
+- Do **not** model async data as `Notifier<AsyncValue<T>>` that starts IO via
+  `Future.microtask` in `build()` with manual `_disposed` flags.
+- Non-`AsyncValue` controller state (e.g. admin purchases/settings/access)
+  uses `Notifier<T>`: `build()` returns a loading state and starts a fetch
+  that does not touch `state` before its first `await`; stale responses are
+  dropped with a request-generation counter that `ref.onDispose` bumps.
+- `StateProvider` → simple UI state (theme mode, tab index)
+
+## Admin CMS (deferred)
+
+`lib/features/admin` is ~40% of the presentation code but only used by
+admins. The router imports it exclusively through
+`features/admin/admin_screens.dart` as a `deferred as admin` library;
+every admin route builder wraps its screen in `DeferredRoute`
+(`app/router/deferred_route.dart`), which calls `loadLibrary()` once and
+shows a progress indicator meanwhile. On web this keeps the CMS out of the
+learner's initial `main.dart.js`. Do not import admin presentation code from
+any eagerly-loaded library; admin auth (`features/admin/providers`,
+`features/admin/data`) is small and stays eager for the route guard.
 
 ## Security Model
 

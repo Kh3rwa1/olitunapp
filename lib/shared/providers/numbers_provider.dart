@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../models/content_models.dart';
 import '../utils/santali_numbers.dart';
 import 'seeded_content_list_notifier.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final numbersProvider =
-    NotifierProvider<NumbersNotifier, AsyncValue<List<NumberModel>>>(
+    AsyncNotifierProvider<NumbersNotifier, List<NumberModel>>(
       NumbersNotifier.new,
     );
 
@@ -52,14 +53,20 @@ class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
   /// fallback (this list deliberately does not merge seed rows into remote
   /// results, unlike words/sentences).
   @override
-  Future<void> loadList() async {
+  Future<List<NumberModel>> loadList() async {
     try {
       final remote = await fetchRemote();
-      emit(_deduplicate(remote));
-    } catch (_) {
+      return _deduplicate(remote);
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Loading numbers failed; using bundled seed',
+        name: 'NumbersNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       // Offline or collection unavailable — bundled seed is the
       // documented fallback for this list (see doc comment above).
-      emit(_deduplicate(_seedNumbers));
+      return _deduplicate(_seedNumbers);
     }
   }
 
@@ -79,7 +86,7 @@ class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
   }
 
   void addNumber(NumberModel item) => add(item);
-  void updateNumber(NumberModel item) => update(item);
+  void updateNumber(NumberModel item) => updateItem(item);
   void deleteNumber(String id) => delete(id);
 
   @override
@@ -87,6 +94,6 @@ class NumbersNotifier extends SeededContentListNotifier<NumberModel> {
     for (final item in _seedNumbers) {
       await add(item);
     }
-    await loadList();
+    await reload();
   }
 }

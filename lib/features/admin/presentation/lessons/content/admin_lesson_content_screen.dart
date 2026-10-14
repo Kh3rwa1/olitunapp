@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/theme/app_colors.dart';
@@ -116,7 +117,13 @@ class _AdminLessonContentScreenState
           if (mounted) setState(() => _isLoading = false);
         },
       );
-    } catch (e) {
+    } catch (e, stack) {
+      AppLogger.error(
+        'Loading lesson ${widget.lessonId} for editing failed',
+        name: 'AdminLessonContentScreen',
+        error: e,
+        stackTrace: stack,
+      );
       if (mounted) context.go('/admin/lessons');
     }
   }

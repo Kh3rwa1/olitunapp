@@ -216,13 +216,13 @@ class _AdminGamificationScreenState
     int reload,
   ) async {
     final db = ref.read(appwriteDbServiceProvider);
-    final queries = <String>[DbQuery.limit(500)];
+    final queries = <String>[];
     if (section.collectionId == 'admin_audit_logs') {
       queries.add(DbQuery.orderDesc('createdAt'));
     } else if (section.editableFields.contains('sortOrder')) {
       queries.add(DbQuery.orderAsc('sortOrder'));
     }
-    return db.listDocuments(section.collectionId, queries: queries);
+    return db.listAllDocuments(section.collectionId, queries: queries);
   }
 
   List<Map<String, dynamic>> _filterRows(List<Map<String, dynamic>> rows) {
@@ -409,12 +409,14 @@ class _AdminGamificationScreenState
             'success': true,
             'createdAt': now,
           });
-    } catch (e) {
+    } catch (e, stack) {
       // Do not block the admin operation if audit logging is unavailable,
       // but the missed audit entry is a real gap — surface it in logs.
       AppLogger.warning(
-        'AdminGamificationScreen: failed to write audit log for "$action": $e',
+        'AdminGamificationScreen: failed to write audit log for "$action"',
         name: 'AdminGamificationScreen',
+        error: e,
+        stackTrace: stack,
       );
     }
   }

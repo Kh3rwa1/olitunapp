@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,32 +34,32 @@ class MockLessonNotifier extends LessonNotifier {
 
 class MockQuizzesNotifier extends QuizzesNotifier {
   @override
-  AsyncValue<List<QuizModel>> build() => const AsyncValue.data([]);
+  List<QuizModel> build() => const [];
 }
 
 class MockBannersNotifier extends BannersNotifier {
   @override
-  AsyncValue<List<FeaturedBannerModel>> build() => const AsyncValue.data([]);
+  List<FeaturedBannerModel> build() => const [];
 }
 
 class MockWordsNotifier extends WordsNotifier {
   @override
-  AsyncValue<List<WordModel>> build() => const AsyncValue.data([]);
+  List<WordModel> build() => const [];
 }
 
 class MockNumbersNotifier extends NumbersNotifier {
   @override
-  AsyncValue<List<NumberModel>> build() => const AsyncValue.data([]);
+  List<NumberModel> build() => const [];
 }
 
 class MockSentencesNotifier extends SentencesNotifier {
   @override
-  AsyncValue<List<SentenceModel>> build() => const AsyncValue.data([]);
+  List<SentenceModel> build() => const [];
 }
 
 class MockLettersNotifier extends LettersNotifier {
   @override
-  AsyncValue<List<LetterModel>> build() => const AsyncValue.data([]);
+  List<LetterModel> build() => const [];
 }
 
 class MockUserStatsNotifier extends UserStatsNotifier {
@@ -86,7 +88,9 @@ void main() {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Disable flutter_animate effects in tests to prevent pending timers
     Animate.restartOnHotReload = false;
-    Hive.init('test_hive_home_v2');
+    Hive.init(
+      (await Directory.systemTemp.createTemp('test_hive_home_v2_')).path,
+    );
     CacheService.resetForTesting();
   });
 

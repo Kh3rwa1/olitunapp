@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/network/network_info.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/shimmer_loading.dart';
+import 'shimmer_loading.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/local_settings_provider.dart';
 import '../../features/profile/presentation/providers/profile_providers.dart';

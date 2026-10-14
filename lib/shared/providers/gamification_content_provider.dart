@@ -1,10 +1,8 @@
-import 'dart:convert';
-
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/auth/appwrite_auth_service.dart';
+import '../../core/api/appwrite_functions_service.dart';
+import '../../core/api/appwrite_query_builders.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
 
@@ -181,44 +179,47 @@ final gamificationContentProvider = FutureProvider<GamificationContent>((
   if (CacheService.isOpen) {
     try {
       cached = await CacheService.get(cacheKey, GamificationContent.fromJson);
-    } catch (e) {
-      AppLogger.debug('GamificationContent: cache read skipped: $e');
+    } catch (e, stack) {
+      AppLogger.warning(
+        'GamificationContent: cache read skipped',
+        name: 'GamificationContent',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 
   try {
     final db = ref.read(appwriteDbServiceProvider);
     final publishedActive = [
-      Query.equal('status', 'published'),
-      Query.equal('isActive', true),
-      Query.limit(500),
+      DbQuery.equal('status', 'published'),
+      DbQuery.equal('isActive', true),
     ];
 
     final results = await Future.wait([
-      db.listDocuments('bravo_messages', queries: publishedActive),
-      db.listDocuments(
+      db.listAllDocuments('bravo_messages', queries: publishedActive),
+      db.listAllDocuments(
         'badges',
         queries: [
-          Query.equal('status', 'published'),
-          Query.equal('isActive', true),
-          Query.orderAsc('sortOrder'),
-          Query.limit(500),
+          DbQuery.equal('status', 'published'),
+          DbQuery.equal('isActive', true),
+          DbQuery.orderAsc('sortOrder'),
         ],
       ),
-      db.listDocuments(
+      db.listAllDocuments(
         'mission_templates',
         queries: [
-          Query.equal('status', 'published'),
-          Query.equal('isActive', true),
-          Query.orderAsc('sortOrder'),
-          Query.limit(500),
+          DbQuery.equal('status', 'published'),
+          DbQuery.equal('isActive', true),
+          DbQuery.orderAsc('sortOrder'),
         ],
       ),
-      db.listDocuments('reward_messages', queries: publishedActive),
-      db.listDocuments('quiz_feedback_messages', queries: publishedActive),
+      db.listAllDocuments('reward_messages', queries: publishedActive),
+      db.listAllDocuments('quiz_feedback_messages', queries: publishedActive),
       db.listDocuments(
         'gamification_config',
-        queries: [Query.equal('configId', 'default'), Query.limit(1)],
+        queries: [DbQuery.equal('configId', 'default'), DbQuery.limit(1)],
+        paginate: false,
       ),
     ]);
 
@@ -237,8 +238,13 @@ final gamificationContentProvider = FutureProvider<GamificationContent>((
       await CacheService.set(cacheKey, remote.toJson());
     }
     return remote;
-  } catch (e) {
-    AppLogger.debug('GamificationContent: remote load failed: $e');
+  } catch (e, stack) {
+    AppLogger.warning(
+      'GamificationContent: remote load failed',
+      name: 'GamificationContent',
+      error: e,
+      stackTrace: stack,
+    );
     return cached ?? GamificationContent.fallback();
   }
 });
@@ -325,23 +331,22 @@ class UserGamificationSummary {
 final userGamificationSummaryProvider = FutureProvider<UserGamificationSummary>(
   (ref) async {
     try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      final response = await functions.createExecution(
-        functionId: 'getUserGamificationSummary',
-        body: jsonEncode({}),
-      );
-      if (response.status.name != 'completed') {
+      final response = await ref
+          .read(appwriteFunctionsServiceProvider)
+          .execute('getUserGamificationSummary', usePost: true);
+      if (!response.isCompleted) return UserGamificationSummary.empty;
+      final decoded = response.bodyJson;
+      if (decoded == null || decoded['ok'] != true) {
         return UserGamificationSummary.empty;
       }
-      final decoded = jsonDecode(response.responseBody);
-      if (decoded is! Map || decoded['ok'] != true) {
-        return UserGamificationSummary.empty;
-      }
-      return UserGamificationSummary.fromJson(
-        Map<String, dynamic>.from(decoded),
+      return UserGamificationSummary.fromJson(decoded);
+    } catch (e, stack) {
+      AppLogger.warning(
+        'UserGamificationSummary fallback',
+        name: 'GamificationContent',
+        error: e,
+        stackTrace: stack,
       );
-    } catch (e) {
-      AppLogger.debug('UserGamificationSummary fallback: $e');
       return UserGamificationSummary.empty;
     }
   },

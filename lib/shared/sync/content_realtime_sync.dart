@@ -1,11 +1,10 @@
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/auth/appwrite_auth_service.dart';
+import '../../core/api/realtime_change_feed.dart';
 import '../../core/config/appwrite_config.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/network/network_info.dart';
@@ -28,29 +27,26 @@ import '../../features/lessons/presentation/providers/lesson_notifier.dart';
 /// invalidates Riverpod providers so the mobile app reflects changes instantly.
 class ContentRealtimeSync with WidgetsBindingObserver {
   final Ref _ref;
-  final Client? _client;
   final NetworkInfo? _networkInfoOverride;
-  final Realtime? _realtimeOverride;
+  final RealtimeChangeFeed? _feedOverride;
   final void Function(ContentKind kind, String? itemId, String? categoryId)?
   onInvalidated;
   final void Function()? onSyncAll;
 
-  RealtimeSubscription? _subscription;
-  StreamSubscription<RealtimeMessage>? _streamSubscription;
+  RealtimeChangeSubscription? _subscription;
+  StreamSubscription<RealtimeChangeEvent>? _streamSubscription;
   StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
   bool _disposed = false;
 
   ContentRealtimeSync({
     required Ref ref,
-    Client? client,
     NetworkInfo? networkInfo,
-    Realtime? realtimeOverride,
+    RealtimeChangeFeed? feed,
     this.onInvalidated,
     this.onSyncAll,
   }) : _ref = ref,
-       _client = client,
        _networkInfoOverride = networkInfo,
-       _realtimeOverride = realtimeOverride;
+       _feedOverride = feed;
 
   /// Starts listening to Appwrite Realtime events and lifecycle hooks.
   void initialize() {
@@ -64,7 +60,14 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     NetworkInfo? networkInfo = _networkInfoOverride;
     try {
       networkInfo ??= _ref.read(networkInfoProvider);
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        '[RealtimeSync] Network info unavailable; skipping connectivity sync',
+        name: 'ContentRealtimeSync',
+        error: e,
+        stackTrace: stack,
+      );
+    }
     if (networkInfo == null) return;
 
     _connectivitySubscription = networkInfo.onConnectivityChanged.listen((
@@ -87,7 +90,7 @@ class ContentRealtimeSync with WidgetsBindingObserver {
 
   /// Subscribes to document updates across all content collections.
   void _startRealtimeSubscription() {
-    if (!AppwriteConfig.isBackendConfigured && _realtimeOverride == null) {
+    if (!AppwriteConfig.isBackendConfigured && _feedOverride == null) {
       AppLogger.debug(
         '[RealtimeSync] Backend not configured; skipping realtime socket.',
       );
@@ -95,13 +98,7 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     }
 
     try {
-      final Realtime realtime;
-      if (_realtimeOverride != null) {
-        realtime = _realtimeOverride;
-      } else {
-        final client = _client ?? AppwriteAuthService().client;
-        realtime = Realtime(client);
-      }
+      final feed = _feedOverride ?? AppwriteRealtimeChangeFeed.fromAuth();
       const dbId = AppwriteConfig.databaseId;
 
       final channels = [
@@ -114,26 +111,36 @@ class ContentRealtimeSync with WidgetsBindingObserver {
         'databases.$dbId.collections.categories.documents',
       ];
 
-      _subscription = realtime.subscribe(channels);
-      _streamSubscription = _subscription?.stream.listen(
+      final subscription = _subscription = feed.subscribe(channels);
+      _streamSubscription = subscription.stream.listen(
         _handleRealtimeMessage,
-        onError: (error) {
-          AppLogger.debug('[RealtimeSync] Realtime stream error: $error');
+        onError: (Object error, StackTrace stack) {
+          AppLogger.warning(
+            '[RealtimeSync] Realtime stream error',
+            name: 'ContentRealtimeSync',
+            error: error,
+            stackTrace: stack,
+          );
         },
       );
       AppLogger.debug(
         '[RealtimeSync] Successfully subscribed to content channels.',
       );
-    } catch (e) {
-      AppLogger.debug('[RealtimeSync] Failed to initialize subscription: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        '[RealtimeSync] Failed to initialize subscription',
+        name: 'ContentRealtimeSync',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 
   @visibleForTesting
-  Future<void> handleMessageForTesting(RealtimeMessage message) =>
+  Future<void> handleMessageForTesting(RealtimeChangeEvent message) =>
       _handleRealtimeMessage(message);
 
-  Future<void> _handleRealtimeMessage(RealtimeMessage message) async {
+  Future<void> _handleRealtimeMessage(RealtimeChangeEvent message) async {
     if (_disposed) return;
     try {
       final events = message.events;
@@ -164,8 +171,13 @@ class ContentRealtimeSync with WidgetsBindingObserver {
           );
         }
       }
-    } catch (e) {
-      AppLogger.debug('[RealtimeSync] Error handling realtime message: $e');
+    } catch (e, stack) {
+      AppLogger.error(
+        '[RealtimeSync] Error handling realtime message',
+        name: 'ContentRealtimeSync',
+        error: e,
+        stackTrace: stack,
+      );
     }
   }
 
@@ -208,7 +220,14 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     _ref.invalidate(categoryNotifierProvider);
     try {
       await _ref.read(categoryNotifierProvider.notifier).refresh();
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        '[RealtimeSync] Category refresh failed',
+        name: 'ContentRealtimeSync',
+        error: e,
+        stackTrace: stack,
+      );
+    }
     if (categoryId != null && categoryId.isNotEmpty) {
       _ref.invalidate(lessonsByCategoryProvider(categoryId));
     }
@@ -309,7 +328,7 @@ class ContentRealtimeSync with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _connectivitySubscription?.cancel();
     _streamSubscription?.cancel();
-    _subscription?.close();
+    unawaited(_subscription?.close());
   }
 }
 

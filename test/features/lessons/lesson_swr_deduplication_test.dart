@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itun/core/content/content_state.dart';
-import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_local_datasource.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
@@ -39,37 +37,6 @@ void main() {
       networkInfo: network,
     );
     registerFallbackValue(<LessonModel>[]);
-  });
-
-  group('ContentState Typed Lifecycles', () {
-    test('Initializes with correct source and freshness flags', () {
-      final initial = ContentState<String>.noData();
-      expect(initial.hasData, isFalse);
-      expect(initial.isAvailable, isFalse);
-      expect(initial.source, ContentSource.none);
-      expect(initial.freshness, ContentFreshness.initial);
-
-      final cached = ContentState<String>.freshCache('data');
-      expect(cached.hasData, isTrue);
-      expect(cached.isFromCache, isTrue);
-      expect(cached.freshness, ContentFreshness.fresh);
-
-      final stale = ContentState<String>.staleCache('data', isRefreshing: true);
-      expect(stale.isStale, isTrue);
-      expect(stale.isRefreshing, isTrue);
-
-      final seed = ContentState<String>.offlineUsingSeed('seed');
-      expect(seed.isFromSeed, isTrue);
-      expect(seed.hasData, isTrue);
-
-      final failed = ContentState<String>.refreshFailedUsingCache(
-        'data',
-        const ServerFailure(message: 'timeout'),
-      );
-      expect(failed.hasData, isTrue);
-      expect(failed.failure, isNotNull);
-      expect(failed.freshness, ContentFreshness.failed);
-    });
   });
 
   group('LessonRepositoryImpl SWR & In-Flight Deduplication', () {

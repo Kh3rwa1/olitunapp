@@ -1,12 +1,18 @@
 import 'dart:async';
-
 import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/api/appwrite_query_builders.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
+
+/// HTTP client provider for SeededContent Edge API (overridable in tests).
+final seededContentHttpClientProvider = Provider<http.Client>(
+  (ref) => http.Client(),
+);
 
 /// Shared skeleton for the admin content-list notifiers (words, letters,
 /// numbers, sentences).
@@ -45,13 +51,84 @@ abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
   Future<List<T>> loadList();
 
   /// Fetches the remote collection ordered ascending by `order`.
+  /// Tries Cloudflare Edge API first, falling back to Appwrite DB.
   Future<List<T>> fetchRemote() async {
+    final edgeEndpoint = _cloudflareEndpointFor(collectionId);
+    if (edgeEndpoint != null) {
+      try {
+        final client = ref.read(seededContentHttpClientProvider);
+        final response = await client
+            .get(
+              Uri.parse(edgeEndpoint),
+              headers: const {'Accept': 'application/json'},
+            )
+            .timeout(const Duration(seconds: 4));
+
+        if (response.statusCode == 200) {
+          final body = jsonDecode(response.body);
+          final key = _keyForCollection(collectionId);
+          if (body is Map<String, dynamic> && body[key] is List) {
+            final list = (body[key] as List)
+                .cast<Map<String, dynamic>>()
+                .map(fromJson)
+                .toList();
+            if (list.isNotEmpty) return list;
+          }
+        }
+      } catch (e, stack) {
+        AppLogger.warning(
+          'Cloudflare edge fetch failed for $label ($collectionId), falling back to Appwrite DB',
+          name: 'SeededContentListNotifier',
+          error: e,
+          stackTrace: stack,
+        );
+      }
+    }
+
     final db = ref.read(appwriteDbServiceProvider);
     final data = await db.listAllDocuments(
       collectionId,
       queries: [DbQuery.orderAsc('order')],
     );
     return data.map(fromJson).toList();
+  }
+
+  String? _cloudflareEndpointFor(String collection) {
+    switch (collection.toLowerCase()) {
+      case 'words':
+      case 'word':
+        return CloudflareConfig.wordsEndpoint;
+      case 'letters':
+      case 'letter':
+        return CloudflareConfig.lettersEndpoint;
+      case 'numbers':
+      case 'number':
+        return CloudflareConfig.numbersEndpoint;
+      case 'sentences':
+      case 'sentence':
+        return CloudflareConfig.sentencesEndpoint;
+      default:
+        return null;
+    }
+  }
+
+  String _keyForCollection(String collection) {
+    switch (collection.toLowerCase()) {
+      case 'words':
+      case 'word':
+        return 'words';
+      case 'letters':
+      case 'letter':
+        return 'letters';
+      case 'numbers':
+      case 'number':
+        return 'numbers';
+      case 'sentences':
+      case 'sentence':
+        return 'sentences';
+      default:
+        return collection;
+    }
   }
 
   /// Decodes a bundled seed asset (`assets/seed/<name>.json`).

@@ -31,8 +31,11 @@ class CloudflareConfig {
       '$baseUrl/api/v1/mistakes/review/complete';
   static const String bakhedProgressEndpoint =
       '$baseUrl/api/v1/bakhed/progress';
+  static const String bakhedContentEndpoint = '$baseUrl/api/v1/bakhed/content';
   static const String gamificationSummaryEndpoint =
       '$baseUrl/api/v1/gamification/summary';
+  static const String gamificationContentEndpoint =
+      '$baseUrl/api/v1/gamification/content';
 
   // Waitlist & Authorization
   static const String waitlistEndpoint = '$baseUrl/api/v1/waitlist/join';

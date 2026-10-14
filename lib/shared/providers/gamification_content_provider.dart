@@ -1,10 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:itun/core/config/cloudflare_config.dart';
 
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/api/appwrite_functions_service.dart';
 import '../../core/api/appwrite_query_builders.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
+
+/// HTTP client provider for Gamification Edge API (overridable in tests).
+final gamificationHttpClientProvider = Provider<http.Client>(
+  (ref) => http.Client(),
+);
 
 class GamificationContent {
   const GamificationContent({
@@ -189,6 +198,36 @@ final gamificationContentProvider = FutureProvider<GamificationContent>((
     }
   }
 
+  // 1. Try Cloudflare Edge API first (single sub-10ms global edge cache fetch)
+  try {
+    final client = ref.read(gamificationHttpClientProvider);
+    final response = await client
+        .get(
+          Uri.parse(CloudflareConfig.gamificationContentEndpoint),
+          headers: const {'Accept': 'application/json'},
+        )
+        .timeout(const Duration(seconds: 4));
+
+    if (response.statusCode == 200) {
+      final body = jsonDecode(response.body);
+      if (body is Map<String, dynamic> && body['ok'] == true) {
+        final remote = GamificationContent.fromJson(body);
+        if (CacheService.isOpen) {
+          await CacheService.set(cacheKey, remote.toJson());
+        }
+        return remote;
+      }
+    }
+  } catch (e, stack) {
+    AppLogger.warning(
+      'GamificationContent: Cloudflare Edge load failed, falling back to Appwrite DB',
+      name: 'GamificationContent',
+      error: e,
+      stackTrace: stack,
+    );
+  }
+
+  // 2. Fall back to Appwrite DB
   try {
     final db = ref.read(appwriteDbServiceProvider);
     final publishedActive = [

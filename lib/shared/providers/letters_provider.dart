@@ -1,12 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/api/appwrite_query_builders.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
+
+/// HTTP client provider for Letters Edge API (overridable in tests).
+final lettersHttpClientProvider = Provider<http.Client>((ref) => http.Client());
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lettersProvider =
@@ -81,6 +87,43 @@ class LettersNotifier extends AsyncNotifier<List<LetterModel>> {
     final hasCache = cached != null && cached.isNotEmpty;
     if (active && hasCache) state = AsyncValue.data(cached);
 
+    // 1. Try Cloudflare Edge API first (global edge cache)
+    try {
+      final client = ref.read(lettersHttpClientProvider);
+      final response = await client
+          .get(
+            Uri.parse(CloudflareConfig.lettersEndpoint),
+            headers: const {'Accept': 'application/json'},
+          )
+          .timeout(const Duration(seconds: 4));
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body is Map<String, dynamic> && body['letters'] is List) {
+          final list = (body['letters'] as List)
+              .cast<Map<String, dynamic>>()
+              .map(LetterModel.fromJson)
+              .toList();
+          if (list.isNotEmpty) {
+            final uniqueList = _deduplicate(list);
+            await CacheService.set(
+              _cacheKey,
+              uniqueList.map((e) => e.toJson()).toList(),
+            );
+            return uniqueList;
+          }
+        }
+      }
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Cloudflare letters fetch failed, falling back to Appwrite DB',
+        name: 'LettersNotifier',
+        error: e,
+        stackTrace: stack,
+      );
+    }
+
+    // 2. Fall back to Appwrite DB
     try {
       final data = await ref
           .read(appwriteDbServiceProvider)

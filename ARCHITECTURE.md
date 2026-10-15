@@ -19,7 +19,7 @@ Olitun follows **Clean Architecture** with feature-first module organization.
 │  Repository impls  │  Models  │  DataSources         │
 ├─────────────────────────────────────────────────────┤
 │                    Core / Infrastructure             │
-│  Appwrite SDK  │  Hive  │  SharedPreferences         │
+│  Worker HTTP clients │ Appwrite Account │ Hive      │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -30,13 +30,13 @@ lib/
 ├── main.dart
 ├── app/
 │   ├── router/                  # GoRouter config, route guards, deferred admin loader
-│   └── sync/                    # ContentRealtimeSync (realtime → cache/provider invalidation)
+│   └── sync/                    # ContentChangeSync (change feed → cache/provider invalidation)
 ├── core/                        # App-agnostic infrastructure + design system
-│   ├── api/                     # AppwriteDbService, AppwriteFunctionsService,
-│   │                            #   RealtimeChangeFeed, DbQuery, ContentRemoteDataSource
+│   ├── api/                     # Worker clients: ContentRemoteDataSource, ContentChangeFeed,
+│   │                            #   AppwriteFunctionsService (legacy ids → Worker routes), admin APIs
 │   ├── auth/                    # AppwriteAuthService (singleton), session helpers,
 │   │                            #   AuthRepository + auth/current-user providers
-│   ├── config/                  # AppwriteConfig (build-time validation), remote app settings
+│   ├── config/                  # AppwriteConfig (build-time validation), CloudflareConfig, app settings
 │   ├── error/                   # Sealed Failure + Exception classes, error classifier
 │   ├── logging/ observability/  # AppLogger (Sentry forwarding), CrashReporting
 │   ├── offline/                 # MutationOutboxService (generic durable write queue)
@@ -48,7 +48,7 @@ lib/
 ├── features/
 │   ├── admin/                   # CMS (deferred load unit, see "Admin CMS" below)
 │   │   ├── admin_screens.dart   #   the only library the router imports (deferred)
-│   │   ├── data/                #   AdminAuthService, BakhedRepository (Appwrite)
+│   │   ├── data/                #   AdminAuthService, BakhedRepository (Worker)
 │   │   ├── domain/ presentation/ providers/
 │   ├── ai_studio/ auth/ categories/ content/ home/ learn/ legal/ lessons/
 │   ├── main/ onboarding/ practice/ profile/ quiz/ review/ rhymes/ voice/
@@ -133,9 +133,10 @@ CI (`.github/workflows/flutter-ci.yml`) enforces repository standards on every P
 | Localization parity | `node scripts/check_l10n_parity.mjs` | All ARB locales share the same keys and placeholder signatures |
 | Hardcoded strings | `node scripts/check_hardcoded_strings.mjs` | No user-facing `Text`/`Toast` literals outside `lib/features/admin/**` (grandfathered baseline in `scripts/hardcoded_strings_baseline.json`) |
 | Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | `package:appwrite` only in `lib/core/**` and `lib/features/*/data/**`; core ↛ shared/features; shared ↛ features; feature data/domain ↛ other features' presentation |
-| Appwrite deployability | `node scripts/check_appwrite_deployable.mjs` | Sites use `scripts/build_web.sh` and do not ignore `scripts/` |
-| Appwrite manifest parity | `node scripts/verify_function_deployment.mjs` | `appwrite.json` and `appwrite.config.json` agree on functions, buckets, sites, and projectId; least-privilege scope checks |
-| Function packaging smoke | `node scripts/smoke_package_functions.mjs` | Each function has `package.json`, lockfile, entrypoint, and a syntax-valid entry |
+| Appwrite auth-only | `node scripts/check_appwrite_auth_only.mjs` | `lib/` uses Appwrite only for Account/sessions/JWT/OAuth/Teams |
+| Pinned actions | `node scripts/verify_pinned_actions.mjs` | Every workflow `uses:` is pinned to a commit SHA |
+| Node tests | `npm run test:backend` | Gate-script unit tests, `web/_headers` CSP/Permissions-Policy, build-script checks |
+| Worker CI | `worker-ci.yml` | Worker typecheck, tests (Appwrite mocked), `wrangler deploy --dry-run` |
 | Format + analyze | `dart format`, `flutter analyze --fatal-infos` | Style and static analysis clean |
 | riverpod_lint | `dart run custom_lint` | Configured with the 14 rules riverpod_lint 2.6 ships; currently inert because riverpod_lint 2.x (analyzer ^7) cannot parse the SDK's dot-shorthand syntax — see `analysis_options.yaml` |
 
@@ -176,12 +177,12 @@ UI (watch provider) → Riverpod provider → Repository
                     ┌─────────────────────────┤
                     ▼                         ▼
               Remote DataSource         Local DataSource
-              (Appwrite SDK)              (Hive cache)
+              (Worker over HTTP)          (Hive cache)
 ```
 
 **Offline-first pattern:**
 1. Repository checks cache (Hive) → returns cached data immediately
-2. Fetches remote (Appwrite) in parallel
+2. Fetches remote (Cloudflare Worker) in parallel
 3. On success → updates cache + emits fresh data
 4. On failure → falls back to cached/bundled data, or surfaces a `CacheFailure` /
    `NetworkFailure` to the UI when nothing is available (no fabricated content)
@@ -237,44 +238,86 @@ any eagerly-loaded library; admin auth (`features/admin/providers`,
 ## Security Model
 
 - **No hardcoded secrets** — all config via `--dart-define`
-- **Admin access** — Appwrite Team membership (server-side), not client-side tokens
-- **Two-layer admin guard** — GoRouter redirect + AdminShell widget re-check
-- **CSP headers** configured in `vercel.json`
+- **Admin access** — Appwrite Team membership, enforced by the Worker's `requireAdmin`
+- **Two-layer admin guard in the app** — GoRouter redirect + AdminShell widget re-check
+- **Identity** — the Worker derives the user only from a verified Appwrite JWT
+- **CSP and security headers** configured in `web/_headers` (Cloudflare Pages)
 - See `SECURITY.md` for full threat model
 
 ## Configuration
 
-Required build flags:
+Release build flags (see `scripts/build_web.sh`, `scripts/build_playstore_bundle.sh`):
 ```
---dart-define=APPWRITE_ENDPOINT=...
+--dart-define=APP_ENV=production
+--dart-define=APPWRITE_ENDPOINT=...       # sign-in only
 --dart-define=APPWRITE_PROJECT_ID=...
---dart-define=TRANSLATE_URL=...
+--dart-define=CLOUDFLARE_API_URL=https://olitun.in
 ```
 
 Optional:
 ```
---dart-define=SENTRY_DSN=...
---dart-define=ADMIN_TEAM_ID=...
---dart-define=ALLOW_SELF_SIGNED=true
+--dart-define=ADMIN_TEAM_ID=...           # default admins
+--dart-define=SENTRY_DSN=... --dart-define=SENTRY_ENV=...
+--dart-define=TRANSLATE_URL=...           # override; defaults to the Worker's /api/v1/translate
 ```
 
-The app **fails fast** at boot if mandatory flags are missing (`AppwriteConfig.validate()`).
+The app **fails fast** at boot on invalid release configuration
+(`AppwriteConfig.validate()`): unknown `APP_ENV`, placeholder or non-HTTPS
+Appwrite values in production/staging.
 
-## Appwrite Functions
+## Backend (Cloudflare Worker)
 
-Serverless Node-22 functions live under `functions/`. Key scheduled jobs:
+All server logic is one Cloudflare Worker, `olitun-api`, in
+`cloudflare/backend` (Hono on Workers, config in `wrangler.json`):
 
-| Function | Schedule | Purpose |
-| --- | --- | --- |
-| `aggregateLearningAnalytics` | `30 0 * * *` | Rolls up raw analytics events into daily summaries |
-| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events (90d), expired rate-limits, translation-cache (90d), AI Studio inputs (24h), AI Studio jobs (30d), audio TTS cache (90d + storage cleanup), and voice claims (7d) |
-| `backupCollections` | `0 4 * * 0` | Weekly JSON backup of core content to `admin_backups` bucket (12-file rolling retention) |
+| Binding | What |
+| --- | --- |
+| `DB` (D1 `olitun-db`) | Content, change feed, progress, reviews, mistakes, gamification, purchases, analytics, waitlist, audit log. Schema: `schema.sql` (idempotent, additive). |
+| `ASSETS` (R2 `olitun-assets`) | Media at `<bucket>/<fileId>` (`audio`, `images`, `animations`, `avatars`, `videos`, `cover_videos`, `html`, private `paid_media`) and admin backups. |
+| `AI` | Workers AI (IndicTrans2 / m2m100 translation). |
+| `*_LIMITER` | Native rate limits for AI, analytics and waitlist routes. |
 
-Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), voice synthesis (`santaliVoice`), Bakhed progress (`recordBakhedProgress`), and public Binti Guru waitlist signups (`bintiWaitlist` — validated, rate-limited per caller and phone, deduplicated; the collection has no public write access).
+Workers Logs are enabled (`observability` in `wrangler.json`).
 
-### Version Pinning & Governance Exceptions
+**Code layout.** `src/index.ts` holds the app, CORS, the learner content
+lists (edge-cached), translation, voice, AI Studio, mistakes, Bakhed
+progress, payments (Razorpay order/verify/webhook/entitlements) and the SPA
+proxy for `olitun.in`. Feature modules in `src/routes/` are registered from
+`src/routes/index.ts`, each applying its own auth middleware:
 
-- **`functions/translator/`**: Intentionally version-frozen on `node-appwrite: 25.1.0` due to upstream removal of `account.createJWT` in `node-appwrite` 28.0.0. Excluded from automated Dependabot updates and governed by `scripts/verify_node_dependency_alignment.mjs`. See [functions/translator/README.md](functions/translator/README.md) for full context and revisit criteria.
+| Module | Routes |
+| --- | --- |
+| `learner_content.ts` | Content by id, audio tracks, localized contents, story segments, avatar catalogue (R2 listing) |
+| `review.ts` | `/api/v1/review/states`, `/api/v1/review/mutate` (idempotent SRS operations) |
+| `paid_media.ts` | Entitlement-checked, HMAC-signed short-lived URLs for `paid_media/` |
+| `media.ts` | Admin uploads/deletes to R2; `serveAsset` behind public `/api/v1/assets/<bucket>/<fileId>` |
+| `account.ts` | Account deletion: purge D1 rows + R2 objects, anonymise purchases, delete the Appwrite login |
+| `analytics.ts`, `waitlist.ts` | Learning analytics events, Binti Guru waitlist |
+| `admin_content.ts`, `gamification_cms.ts` (+ `admin_common.ts`, `cms_specs.ts`, `cms_legacy.ts` helpers) | Admin CMS writes, each appending to `content_changes` in the same D1 batch; `GET /api/v1/content/changes` |
+| `admin_access.ts`, `admin_purchases.ts`, `admin_review.ts`, `admin_dashboard.ts`, `admin_maintenance.ts` (+ `admin_backup.ts`, `admin_restore.ts`) | Admin team view, refunds, content review queue, dashboard, maintenance, backup to R2 and restore |
+
+`src/key_rotation.ts` rotates provider API keys (Bodhan) with parking state
+in D1. Secrets are set with `wrangler secret put` (see `src/env.ts`).
+
+**Auth.** Appwrite is the identity provider only. The app sends
+`Authorization: Bearer <Appwrite JWT>` (`EdgeAuth` in the app); `src/auth.ts` verifies it by calling
+Appwrite `GET /account` with that JWT (cached per isolate for 5 minutes by a
+hash of the token) and takes the user id from Appwrite's answer, never from
+the request. `requireAdmin` additionally calls `GET /teams` and requires the
+team whose **ID** is `ADMIN_TEAM_ID`; scheduled callers may instead present
+`CRON_SECRET` in `x-cron-secret`. If Appwrite is unreachable the Worker
+answers 503 rather than guessing.
+
+**Live updates.** Admin writes append `(table, row_id, op, seq)` to
+`content_changes`. `ContentChangeSync` (`lib/app/sync/`) polls
+`GET /api/v1/content/changes?since=<seq>` on start, on resume, on reconnect
+and every 5 minutes, then evicts the matching Hive caches and invalidates the
+affected providers. It replaced Appwrite Realtime.
+
+**Media.** Public media is served from R2 by the Worker with range support.
+Files not yet copied from Appwrite Storage are redirected there until
+`cloudflare/backend/scripts/copy_appwrite_storage_to_r2.mjs` has run. Paid
+media is only reachable through `paid_media.ts` signed URLs.
 
 ## Learner-State Authority (forensic hardening)
 

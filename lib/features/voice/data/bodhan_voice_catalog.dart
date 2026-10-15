@@ -1,6 +1,7 @@
 /// Bodhan indic-speak catalog for the Santali AI Voice feature.
 ///
-/// Mirrors `functions/santaliVoice/src/validation.js` — keep both in sync
+/// Mirrors the voice allowlist in `cloudflare/backend/src/index.ts` (the
+/// `/api/v1/voice/synthesize` route) — keep both in sync
 /// when voices or styles change. Santali-only by product decision: just
 /// the two native Santali voices, Phulmani (female) and Sibu (male).
 library;

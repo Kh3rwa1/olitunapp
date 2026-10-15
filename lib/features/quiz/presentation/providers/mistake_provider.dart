@@ -237,7 +237,7 @@ class MistakeNotifier extends Notifier<List<MistakeItem>> {
         case 'resolve':
           // Deployed compat function id. It resolves the recovery TASK
           // (audit), not SRS mastery — see deprecation note on
-          // [masterMistake] and functions/markMistakeMastered/README.
+          // [masterMistake] and the Worker's /api/v1/mistakes/master.
           functionId = 'markMistakeMastered';
           break;
         case 'complete':

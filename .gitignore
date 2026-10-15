@@ -45,6 +45,7 @@ app.*.map.json
 .dev.vars
 .dev.vars.*
 cookies.txt
+cookies/
 *.cookies
 *cookie*.txt
 run.sh
@@ -69,9 +70,10 @@ node_modules/
 # --- Test artifacts ----------------------------------------------------------
 coverage/
 test_hive_cache/
-test_hive_*/
+test_hive_*
 project_sdk_dump.json
 output/
+build_artifacts/
 **/failures/*.png
 
 # --- Migration backups -------------------------------------------------------

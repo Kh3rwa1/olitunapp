@@ -78,35 +78,50 @@
 
 ```mermaid
 graph TB
-    subgraph "Presentation Layer"
-        UI[Material 3 UI]
-        Router[GoRouter]
-        Shell[Main Shell]
-    end
-
-    subgraph "Logic Layer (Riverpod)"
-        NP[Notifiers / Providers]
-        States[Async States]
-    end
-
-    subgraph "Data Layer"
+    subgraph "Flutter app (Android / Web)"
+        UI[Material 3 UI + GoRouter]
+        NP[Riverpod providers]
         Repo[Repositories]
-        Appwrite[Appwrite BaaS]
-        Hive[Hive Offline Cache]
+        Hive[Hive offline cache + outbox]
     end
 
-    UI --> Router
-    Router --> NP
-    NP --> Repo
-    Repo --> Appwrite
+    subgraph "Cloudflare"
+        Worker[Worker: olitun-api]
+        D1[(D1: content, progress, purchases)]
+        R2[(R2: media, backups)]
+        AI[Workers AI]
+        Pages[Pages: web app]
+    end
+
+    Appwrite[Appwrite: sign-in only]
+
+    UI --> NP --> Repo
     Repo --> Hive
-    Appwrite -.-> Hive
+    Repo -- "HTTPS + Appwrite JWT" --> Worker
+    Repo -- "account, session, OAuth, JWT" --> Appwrite
+    Worker -- "verify JWT (GET /account, /teams)" --> Appwrite
+    Worker --> D1
+    Worker --> R2
+    Worker --> AI
 ```
+
+- **Cloudflare Worker** (`cloudflare/backend`, Hono, D1 + R2) is the whole
+  backend: learner content, progress, reviews, mistakes, gamification,
+  payments (Razorpay), translation, voice, AI Studio, account deletion and the
+  admin CMS. See [ARCHITECTURE.md](ARCHITECTURE.md#backend-cloudflare-worker).
+- **Appwrite** is used only for login: account, sessions, OAuth, JWTs, and the
+  Teams membership that marks admins. The app sends its Appwrite JWT to the
+  Worker, which verifies it with Appwrite and never trusts a client-supplied
+  user id.
+- **Live updates:** admin edits append to a D1 change feed; the app polls
+  `GET /api/v1/content/changes?since=<seq>` and refreshes only what changed.
+- **Media** (audio, images, video, avatars, lesson HTML) lives in R2 and is
+  served by the Worker; paid media only through short-lived signed URLs.
 
 ### Data and error contract
 
 Repositories return `Either<Failure, T>` from `fpdart` at feature boundaries.
-Appwrite SDK errors are translated into the sealed `Failure` hierarchy
+HTTP and auth errors are translated into the sealed `Failure` hierarchy
 (`NetworkFailure`, `ServerFailure`, `CacheFailure`, `AuthFailure`, and
 `ValidationFailure`) before reaching UI code.
 
@@ -114,8 +129,8 @@ Learning product analytics live in
 `lib/core/analytics/analytics_service.dart`. Events such as
 `lesson_started`, `lesson_completed`, `quiz_attempted`,
 `quiz_question_answered`, `daily_mission_completed`, and `streak_milestone`
-are written to Appwrite's `learning_analytics_events` collection when online
-and queued locally when offline.
+are sent to the Worker (`/api/v1/analytics/*`, stored in D1) when online and
+queued locally when offline.
 
 ---
 
@@ -123,7 +138,9 @@ and queued locally when offline.
 
 ### Prerequisites
 - Flutter SDK with Dart `^3.9.0` support
-- An [Appwrite](https://appwrite.io/) project
+- Node.js 22 (Worker and repo scripts)
+- An [Appwrite](https://appwrite.io/) project for sign-in (or the production
+  one, `sgp.cloud.appwrite.io`)
 
 ### Setup
 ```bash
@@ -139,11 +156,13 @@ flutter pub get
 
 The test surface is intentionally part of the public repo:
 
-- `test/core/` covers config, storage, auth helpers, Appwrite query behavior,
-  motion tokens, logging, and error/failure types.
+- `test/core/` covers config, storage, auth helpers, API clients, motion
+  tokens, logging, and error/failure types.
 - `test/features/` covers auth, lessons, quiz logic, quiz screens, profile,
   home, onboarding, admin auth, categories, rhymes, and accessibility widgets.
 - `test/goldens/` protects high-value learning UI surfaces.
+- `test/web/` and `test/scripts/` (Node) cover the Cloudflare Pages headers
+  and the build/release scripts; run them with `npm run test:backend`.
 - `integration_test/` keeps end-to-end auth, legal, and quiz flows visible.
 
 Run the same checks locally before release:
@@ -152,103 +171,72 @@ Run the same checks locally before release:
 flutter analyze
 flutter test
 dart format .
+npm run test:backend
 ```
 
-### Run
+### Run the app
 ```bash
 flutter run \
+  --dart-define=APP_ENV=development \
   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
   --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
+  --dart-define=CLOUDFLARE_API_URL=https://olitun.in \
   --dart-define=ADMIN_TEAM_ID=admins \
-  --dart-define=TRANSLATE_URL=<appwrite-function-execution-url> \
-  --dart-define=SENTRY_DSN=<your-sentry-dsn> \
-  --dart-define=ALLOW_SELF_SIGNED=false
+  --dart-define=SENTRY_DSN=<your-sentry-dsn>
 ```
 
-The app will refuse to boot if `APPWRITE_ENDPOINT` or `APPWRITE_PROJECT_ID`
-is missing — there are no hardcoded fallbacks. Admin access is granted by
-membership in the Appwrite Team named by `ADMIN_TEAM_ID` (default `admins`);
-see [SECURITY.md](SECURITY.md) for the full model.
+`CLOUDFLARE_API_URL` selects the Worker (default
+`https://olitun-api.dulalkisku0.workers.dev`; use `http://localhost:8787` for
+a local Worker). Release builds must set `APP_ENV=production` (or `staging`)
+and real Appwrite values; `AppwriteConfig.validate()` refuses to boot
+otherwise. Admin access is membership in the Appwrite Team named by
+`ADMIN_TEAM_ID` (default `admins`); see [SECURITY.md](SECURITY.md).
 
-### Provisioning Appwrite (one-time)
-
-Set `APPWRITE_API_KEY` to a server key with `databases.write`, `collections.write`,
-`teams.write`, and `buckets.write` scopes, then run:
+### Local backend (Worker)
 
 ```bash
-node scripts/appwrite_setup.mjs
+cd cloudflare/backend
+npm ci
+npx wrangler d1 execute olitun-db --local --file=schema.sql   # local D1
+npm run db:seed && npx wrangler d1 execute olitun-db --local --file=seed.sql
+npx wrangler dev                                             # http://localhost:8787
 ```
 
-This script is idempotent (existing resources return `409` and are skipped) and
-creates:
-- the `olitun_db` database, every content collection, and the
-  `translation_cache` / `rate_limits` collections used by the translator function,
-- the `review_states` table (row-level security, per-user memory scheduler state),
-- the storage buckets, and
-- the admin team whose **team ID** matches `ADMIN_TEAM_ID` (default `admins`).
-  Override via `ADMIN_TEAM_ID=<id> node scripts/appwrite_setup.mjs`.
+`wrangler dev` runs the Worker with local D1 and R2 (Miniflare). Secrets go in
+`cloudflare/backend/.dev.vars` (git-ignored): `RAZORPAY_*`, `BODHAN_API_KEYS`,
+`SARVAM_API_KEY`, `MEDIA_SIGNING_SECRET`, `CRON_SECRET`, `APPWRITE_API_KEY`.
+Every authenticated route verifies the caller's JWT against
+`APPWRITE_ENDPOINT` (`GET /account`, plus `GET /teams` for admin routes), so
+sign in to a real Appwrite project, or point `APPWRITE_ENDPOINT` in
+`.dev.vars` at a mock that answers those two calls. The Worker test suite
+(Worker CI) mocks Appwrite the same way and never reaches the network.
 
-To verify or update the `review_states` table independently:
-```bash
-# Verify schema without mutating
-APPWRITE_API_KEY=... node scripts/create_review_collection.mjs --verify-only
+### Deploying
 
-# Apply schema idempotently
-APPWRITE_API_KEY=... node scripts/create_review_collection.mjs --apply [--confirm-prod]
-```
+| Target | How |
+| --- | --- |
+| Worker | `deploy-worker.yml` on push to `main` (paths `cloudflare/backend/**`): runs Worker CI (`worker-ci.yml`), applies `schema.sql` to D1, uploads a new version, smoke-tests it, then promotes it. |
+| Web | `deploy-web.yml` on push to `main`: `scripts/build_web.sh` then `wrangler pages deploy build/web` (Cloudflare Pages project `olitunapp`). Headers, including the CSP, come from `web/_headers`. |
+| Android | `scripts/build_playstore_bundle.sh` builds the signed Play Store `.aab` locally (Worker-only defines; needs `android/key.properties`). `build-apk.yml` builds a signed APK on `v*` tags. |
 
-Then deploy the translator function (see
-[`functions/translator/README.md`](functions/translator/README.md)) and pass its execution URL to
-the Flutter build via `--dart-define=TRANSLATE_URL=…`.
-
-### Deploying to Vercel
-
-The repo includes [`vercel.json`](vercel.json) and
-[`scripts/vercel_build.sh`](scripts/vercel_build.sh). Set these Vercel
-environment variables before deploying:
-
-- `APPWRITE_ENDPOINT`
-- `APPWRITE_PROJECT_ID`
-- `TRANSLATE_URL`
-- `ADMIN_TEAM_ID` (optional, defaults to `admins`)
-- `SENTRY_DSN` and `SENTRY_ENV` (optional)
-
-The build script installs Flutter when the Vercel image does not provide it,
-runs code generation, and builds `build/web`. The SPA rewrite sends deep links
-such as `/privacy`, `/terms`, and `/admin/login` back to Flutter.
-
-### Admin and mobile Appwrite connection
-
-The admin panel at `admin.olitun.in` and the Flutter mobile app must be built
-with the same Appwrite values:
-
-- `APPWRITE_ENDPOINT`
-- `APPWRITE_PROJECT_ID`
-- `ADMIN_TEAM_ID`
-
-`admin.olitun.in` is routed to the same Flutter web app and redirects non-admin
-paths to `/admin`. Admin CMS writes go to Appwrite content collections, including
-`categories`, `lessons`, `quizzes`, `letters`, `numbers`, `words`, `sentences`,
-`rhymes`, `banners`, and settings. The mobile app reads those same collections
-and keeps Hive/shared-preferences caches as an offline fallback, so production
-admin edits become visible to mobile users after the next content refresh.
+See [RELEASE_CHECKLIST.md](RELEASE_CHECKLIST.md) for the full release flow.
 
 ### Managing admins
 
-Admin access is purely team membership — there is no client-side secret.
+Admin access is purely Appwrite Team membership — there is no client-side
+secret. The app's route guard and the Worker's `requireAdmin` both check it.
 
 1. Open the **Appwrite Console** → **Auth** → **Teams** → select the team whose
    ID matches `ADMIN_TEAM_ID` (default `admins`).
 2. **Add an admin:** click **Add member**, enter the user's email. They must
    already have an Appwrite account; once accepted they can sign in at
-   `/admin/login` in the Flutter app.
-3. **Remove an admin:** open the team, find the member, click **Remove**.
-   The next call to `Teams.list()` from their session will return without the
-   admin team and the `/admin/*` router guard will bounce them to login.
-4. **Rotating the admin team:** create a new team in the Console, rebuild the
-   app with `--dart-define=ADMIN_TEAM_ID=<new-team-id>`, and delete the old
-   team. The match is on the immutable team ID, never the name, so renaming a
-   team does not grant or revoke access.
+   `/admin/login` in the Flutter app. (Adding admins from the in-app access
+   screen needs a server key, so it points to the Console.)
+3. **Remove an admin:** open the team, find the member, click **Remove**. The
+   Worker re-checks team membership at most every 5 minutes per token.
+4. **Rotating the admin team:** create a new team, set `ADMIN_TEAM_ID` in both
+   the app build and `cloudflare/backend/wrangler.json`, then delete the old
+   team. The match is on the immutable team ID, never the name.
 
 ---
 
@@ -258,7 +246,8 @@ Admin access is purely team membership — there is no client-side secret.
 |-----------|------------|
 | **Frontend** | [Flutter](https://flutter.dev/) (Material 3) |
 | **State** | [Riverpod](https://riverpod.dev/) |
-| **BaaS** | [Appwrite](https://appwrite.io/) |
+| **Backend** | [Cloudflare Workers](https://workers.cloudflare.com/) + D1 + R2 ([Hono](https://hono.dev/)) |
+| **Auth** | [Appwrite](https://appwrite.io/) (sign-in only) |
 | **Offline DB** | [Hive](https://docs.hivedb.dev/) |
 | **Navigation** | [GoRouter](https://pub.dev/packages/go_router) |
 | **Charts** | [FL Chart](https://pub.dev/packages/fl_chart) |
@@ -274,6 +263,11 @@ lib/
 ├── features/          # Feature-first modules (Admin, Home, Lessons, Profile)
 ├── shared/            # Reusable Models, Providers, and Widgets
 └── main.dart          # App Entry & Router
+cloudflare/
+├── backend/           # The Worker (src/index.ts + src/routes/*), schema.sql, wrangler.json
+└── ai-gateway/        # Separate AI gateway Worker
+web/                   # Web shell, _headers (CSP) and _redirects for Cloudflare Pages
+scripts/               # Build scripts and CI gates (scripts/oneoff/: historical one-off tools)
 ```
 
 ---
@@ -287,14 +281,18 @@ Pull requests must pass automated gates (see `.github/workflows/flutter-ci.yml`)
 - **Hardcoded strings** — user-facing copy goes through `AppLocalizations`
 - **File length** — hand-written Dart files stay ≤ 600 lines
 - **Architecture boundaries** — presentation layers never import `package:appwrite`
-- **Appwrite manifests** — `appwrite.json` and `appwrite.config.json` stay in lockstep (functions + buckets), and every function package is smoke-checked for a lockfile and valid entrypoint
+- **Appwrite auth-only** — `lib/` may use Appwrite only for account/session/JWT/OAuth/Teams
+- **Pinned actions** — every GitHub Action is pinned to a commit SHA
+- **Node tests** — `npm run test:backend` (gate scripts, web headers/CSP, build scripts)
+- **Worker CI** — typecheck, Worker tests, and a dry-run deploy for `cloudflare/backend`
 
 ```bash
 node scripts/check_hardcoded_strings.mjs
 node scripts/check_l10n_parity.mjs
 node scripts/check_file_length.mjs
-node scripts/verify_function_deployment.mjs
-node scripts/smoke_package_functions.mjs
+node scripts/check_architecture_boundaries.mjs
+node scripts/check_appwrite_auth_only.mjs
+node scripts/verify_pinned_actions.mjs
 ```
 
 Details live in [ARCHITECTURE.md](ARCHITECTURE.md#quality-gates).
@@ -317,9 +315,9 @@ Track our progress and upcoming features on our [Public Project Board](https://g
 
 Ensure the following repository settings are configured in the GitHub repository UI settings page:
 
-*   **Description:** `A beautifully crafted, offline-first learning platform for Ol Chiki (Santali Script) built with Flutter and Appwrite.`
+*   **Description:** `A beautifully crafted, offline-first learning platform for Ol Chiki (Santali Script) built with Flutter and Cloudflare Workers.`
 *   **Homepage:** `https://olitun.in`
-*   **Topics:** `flutter`, `appwrite`, `santali`, `ol-chiki`, `offline-first`, `dart`, `education`, `learning-platform`, `mobile-app`
+*   **Topics:** `flutter`, `cloudflare-workers`, `santali`, `ol-chiki`, `offline-first`, `dart`, `education`, `learning-platform`, `mobile-app`
 
 ---
 
@@ -333,10 +331,10 @@ animations via [LottieFiles](https://lottiefiles.com) (see source links in
 
 ### Managing avatars without a release
 
-The picker reads the **`profile_avatars`** Appwrite Storage bucket first:
-upload a valid `.json` Lottie as `avatar_<id>.json` (lowercase,
-underscores) and it appears as the `<id>` choice on next launch — no app
-update needed. Deleting a file removes that choice (stored picks migrate
+The picker reads the Worker's avatar catalogue (`GET /api/v1/avatars`,
+every object under `avatars/` in R2) first: upload a valid `.json` Lottie to
+the `avatars` bucket from the admin media screen and it appears as a choice
+on next launch — no app update needed. Deleting a file removes that choice (stored picks migrate
 to the default). The bundled `assets/animations/avatars/` set is the
 offline fallback and is never deleted.
 
@@ -346,7 +344,7 @@ offline fallback and is never deleted.
 
 This project is proprietary - see the [LICENSE](LICENSE) file for details.
 See also the [Privacy Policy](PRIVACY.md), [Terms Of Use](TERMS.md), and
-[Release Checklist](docs/RELEASE_CHECKLIST.md).
+[Release Checklist](RELEASE_CHECKLIST.md).
 
 ---
 

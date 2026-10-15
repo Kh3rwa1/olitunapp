@@ -4,7 +4,6 @@ const runtimeFiles = [
   'lib/core/config/appwrite_config.dart',
   'lib/core/observability/crash_reporting.dart',
   'scripts/build_web.sh',
-  'scripts/vercel_build.sh',
   '.github/workflows/flutter-ci.yml',
   '.github/workflows/build-apk.yml',
 ];
@@ -51,7 +50,7 @@ if (
   );
 }
 
-for (const path of ['scripts/build_web.sh', 'scripts/vercel_build.sh']) {
+for (const path of ['scripts/build_web.sh']) {
   const source = readFileSync(path, 'utf8');
   if (!source.includes('APP_ENV')) {
     throw new Error(`${path} must pass an explicit APP_ENV.`);

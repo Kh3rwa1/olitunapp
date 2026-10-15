@@ -76,6 +76,36 @@ void main() {
       );
     });
 
+    test('accepts a Worker-only production build without TRANSLATE_URL', () {
+      // Release builds translate through the Worker by default; the build
+      // scripts deliberately pass no TRANSLATE_URL.
+      expect(
+        () => AppwriteConfig.validateValues(
+          environment: 'production',
+          endpoint: 'https://backend.example.com/v1',
+          projectId: 'production-project',
+          translateUrl: '',
+          isReleaseMode: true,
+          requireTranslateUrl: false,
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('still requires TRANSLATE_URL when a build demands it', () {
+      expect(
+        () => AppwriteConfig.validateValues(
+          environment: 'production',
+          endpoint: 'https://backend.example.com/v1',
+          projectId: 'production-project',
+          translateUrl: '',
+          isReleaseMode: true,
+          requireTranslateUrl: true,
+        ),
+        throwsStateError,
+      );
+    });
+
     test('rejects insecure production endpoints', () {
       expect(
         () => AppwriteConfig.validateValues(

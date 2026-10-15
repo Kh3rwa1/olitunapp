@@ -3,25 +3,18 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readPagesHeaders } from './pages_headers.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const rootDir = path.resolve(__dirname, '../..');
 
 test('Permissions-Policy configuration test', async (t) => {
-  const vercelJsonPath = path.join(rootDir, 'vercel.json');
-  assert.ok(fs.existsSync(vercelJsonPath), 'vercel.json must exist');
+  const catchAllRule = readPagesHeaders()['/*'];
+  assert.ok(catchAllRule, 'web/_headers must define a /* rule');
 
-  const vercelConfig = JSON.parse(fs.readFileSync(vercelJsonPath, 'utf8'));
-  assert.ok(Array.isArray(vercelConfig.headers), 'vercel.json must define headers array');
-
-  const catchAllRule = vercelConfig.headers.find((h) => h.source === '/(.*)');
-  assert.ok(catchAllRule, 'catch-all header rule for /(.*) must exist');
-
-  const permissionsPolicyHeader = catchAllRule.headers.find((h) => h.key === 'Permissions-Policy');
-  assert.ok(permissionsPolicyHeader, 'Permissions-Policy header must be configured');
-
-  const policyValue = permissionsPolicyHeader.value;
+  const policyValue = catchAllRule['Permissions-Policy'];
+  assert.ok(policyValue, 'Permissions-Policy header must be configured');
 
   await t.test('camera is allowed for self and not globally disabled', () => {
     assert.ok(

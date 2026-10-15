@@ -10,8 +10,6 @@ echo "=================================================="
 
 export APPWRITE_ENDPOINT="${APPWRITE_ENDPOINT:-https://sgp.cloud.appwrite.io/v1}"
 export APPWRITE_PROJECT_ID="${APPWRITE_PROJECT_ID:-699495910038e39622c5}"
-export TRANSLATE_URL="${TRANSLATE_URL:-https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions}"
-export SANTALI_VOICE_FUNCTION_ID="${SANTALI_VOICE_FUNCTION_ID:-santaliVoice}"
 
 PROJECT_NAME="${CLOUDFLARE_PAGES_PROJECT:-olitunapp}"
 

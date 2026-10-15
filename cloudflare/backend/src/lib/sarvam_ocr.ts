@@ -47,10 +47,13 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
   try {
     res = await (deps.fetchImpl ?? fetch)(`${ORIGIN}${path}`, {
       ...init,
-      redirect: 'error',
+      // Workers only accept 'follow' or 'manual'; 'error' throws before the
+      // request is sent. 'manual' plus the ok check rejects any redirect.
+      redirect: 'manual',
       headers: { 'api-subscription-key': deps.apiKey, ...(init.headers || {}) },
     });
-  } catch {
+  } catch (err) {
+    console.error(`Sarvam OCR ${path.split('?')[0]} fetch failed: ${String(err)}`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam could not be reached.');
   }
   if (res.status === 400 || res.status === 413 || res.status === 422) {
@@ -60,6 +63,9 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
     throw new OcrError('RATE_LIMITED', 429, 'Sarvam rate limit reached.');
   }
   if (!res.ok) {
+    // Never log the key; status and Sarvam's own message are enough to debug.
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    console.error(`Sarvam OCR ${path.split('?')[0]} -> ${res.status}: ${detail}`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, `Sarvam request failed (${res.status}).`);
   }
   try {

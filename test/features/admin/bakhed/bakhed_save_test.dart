@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/core/network/network_info.dart';
@@ -22,7 +22,7 @@ class MockGamificationCmsApi extends Mock implements GamificationCmsApi {}
 
 class MockNetworkInfo extends Mock implements NetworkInfo {}
 
-class MockStorage extends Mock implements Storage {}
+class MockMedia extends Mock implements WorkerMediaApi {}
 
 class FakeContentItem extends Fake implements ContentItem {}
 
@@ -192,7 +192,7 @@ void main() {
       mockNetworkInfo = MockNetworkInfo();
       repository = BakhedRepository(
         api: mockCms,
-        storage: MockStorage(),
+        media: MockMedia(),
         networkInfo: mockNetworkInfo,
       );
     });

@@ -10,6 +10,7 @@ import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -19,7 +20,7 @@ class _Account extends Mock implements Account {}
 
 class _Jwt extends Mock implements models.Jwt {}
 
-class _Storage extends Mock implements Storage {}
+class _Media extends Mock implements WorkerMediaApi {}
 
 class _Network extends Mock implements NetworkInfo {}
 
@@ -193,18 +194,18 @@ void main() {
   });
 
   group('BakhedRepository on the Worker', () {
-    late _Storage storage;
+    late _Media media;
     late _Network network;
 
     setUp(() {
-      storage = _Storage();
+      media = _Media();
       network = _Network();
       when(() => network.isConnected).thenAnswer((_) async => true);
     });
 
     BakhedRepository repo(_Recorder rec) => BakhedRepository(
       api: GamificationCmsApi(httpClient: rec.client, edgeAuth: _edgeAuth()),
-      storage: storage,
+      media: media,
       networkInfo: network,
     );
 
@@ -223,12 +224,7 @@ void main() {
             'audioFileId': 'aud1',
           }),
         );
-        when(
-          () => storage.deleteFile(
-            bucketId: any(named: 'bucketId'),
-            fileId: any(named: 'fileId'),
-          ),
-        ).thenAnswer((_) async {});
+        when(() => media.delete(any(), any())).thenAnswer((_) async => true);
 
         final result = await repo(rec).delete('bk1');
 
@@ -240,9 +236,7 @@ void main() {
           '${CloudflareConfig.adminCmsBakhedEndpoint}/bk1',
         );
         expect(req.headers['Authorization'], 'Bearer admin-jwt');
-        verify(
-          () => storage.deleteFile(bucketId: 'audio', fileId: 'aud1'),
-        ).called(1);
+        verify(() => media.delete('audio', 'aud1')).called(1);
       },
     );
 
@@ -254,12 +248,7 @@ void main() {
       final result = await repo(rec).delete('bk1');
 
       expect(result.isLeft(), isTrue);
-      verifyNever(
-        () => storage.deleteFile(
-          bucketId: any(named: 'bucketId'),
-          fileId: any(named: 'fileId'),
-        ),
-      );
+      verifyNever(() => media.delete(any(), any()));
     });
 
     test('get maps a Worker 404 to ServerFailure code 404', () async {

@@ -1,10 +1,9 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/bakhed_content_provider.dart';
@@ -14,15 +13,15 @@ import 'package:itun/shared/providers/bakhed_content_provider.dart';
 
 class BakhedRepository {
   final GamificationCmsApi _api;
-  final Storage _storage;
+  final WorkerMediaApi _media;
   final NetworkInfo _networkInfo;
 
   BakhedRepository({
     required GamificationCmsApi api,
-    required Storage storage,
+    required WorkerMediaApi media,
     required NetworkInfo networkInfo,
   }) : _api = api,
-       _storage = storage,
+       _media = media,
        _networkInfo = networkInfo;
 
   /// List all rhymes/stories (Bakhed parents).
@@ -89,7 +88,7 @@ class BakhedRepository {
     final audioFileId = result['audioFileId']?.toString() ?? '';
     if (audioFileId.isNotEmpty) {
       try {
-        await _storage.deleteFile(bucketId: 'audio', fileId: audioFileId);
+        await _media.delete('audio', audioFileId);
       } catch (e, stack) {
         // The DB cascade already succeeded; a leftover file is only storage.
         AppLogger.warning(
@@ -155,12 +154,10 @@ class BakhedRepository {
 
 // Provider
 final bakhedRepositoryProvider = Provider<BakhedRepository>((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
   final networkInfo = ref.watch(networkInfoProvider);
   return BakhedRepository(
     api: ref.watch(gamificationCmsApiProvider),
-    // Appwrite Storage only for removing the legacy play-along audio file.
-    storage: Storage(authService.client),
+    media: ref.watch(workerMediaApiProvider),
     networkInfo: networkInfo,
   );
 });

@@ -384,27 +384,31 @@ void main() {
       expect(result.bodyJson!['fromAppwrite'], isTrue);
     });
 
-    for (final functionId in ['createRazorpayOrder', 'verifyCoursePurchase']) {
-      test('$functionId runs only on Appwrite', () async {
-        stubAppwrite('{"ok":true}');
-
-        await service.execute(functionId, body: {'x': 1}, usePost: true);
-
-        verifyNever(
+    for (final entry in {
+      'createRazorpayOrder': CloudflareConfig.paymentsOrderEndpoint,
+      'verifyCoursePurchase': CloudflareConfig.paymentsVerifyEndpoint,
+    }.entries) {
+      test('${entry.key} runs on the edge with the session JWT', () async {
+        when(
           () => mockHttp.post(
             any(),
             headers: any(named: 'headers'),
             body: any(named: 'body'),
           ),
-        );
-        verify(
-          () => mockFunctions.createExecution(
-            functionId: functionId,
-            body: any(named: 'body'),
-            xasync: false,
-            method: ExecutionMethod.pOST,
-          ),
-        ).called(1);
+        ).thenAnswer((_) async => http.Response('{"ok":true}', 200));
+
+        await service.execute(entry.key, body: {'x': 1}, usePost: true);
+
+        final headers =
+            verify(
+                  () => mockHttp.post(
+                    Uri.parse(entry.value),
+                    headers: captureAny(named: 'headers'),
+                    body: any(named: 'body'),
+                  ),
+                ).captured.single
+                as Map<String, String>;
+        expect(headers['Authorization'], 'Bearer session-jwt');
       });
     }
   });

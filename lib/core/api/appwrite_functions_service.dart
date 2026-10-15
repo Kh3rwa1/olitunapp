@@ -83,8 +83,10 @@ class AppwriteFunctionsService {
         return CloudflareConfig.waitlistEndpoint;
       case 'getAuthorizedLesson':
         return CloudflareConfig.lessonsAuthorizeEndpoint;
-      // createRazorpayOrder / verifyCoursePurchase stay on Appwrite: only
-      // those functions price orders server-side and verify signatures.
+      case 'createRazorpayOrder':
+        return CloudflareConfig.paymentsOrderEndpoint;
+      case 'verifyCoursePurchase':
+        return CloudflareConfig.paymentsVerifyEndpoint;
       case 'santaliVoice':
         return CloudflareConfig.voiceSynthesizeEndpoint;
       case 'generateAudio':

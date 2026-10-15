@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/shared/providers/seeded_content_list_notifier.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -103,36 +104,46 @@ void main() {
     },
   );
 
+  ProviderContainer containerWith(http.Client client) {
+    final container = ProviderContainer(
+      overrides: [
+        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        seededContentHttpClientProvider.overrideWithValue(client),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  test('SeededContentListNotifier accepts an empty Worker list', () async {
+    final container = containerWith(
+      MockClient(
+        (request) async =>
+            http.Response(jsonEncode({'ok': true, 'words': []}), 200),
+      ),
+    );
+
+    final words = await container.read(_testWordProvider.future);
+    expect(words, isEmpty);
+    verifyNever(
+      () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+    );
+  });
+
   test(
-    'SeededContentListNotifier falls back to Appwrite DB when Cloudflare edge fails',
+    'SeededContentListNotifier surfaces a Worker failure without reading Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () => mockDb.listAllDocuments('words', queries: any(named: 'queries')),
-      ).thenAnswer(
-        (_) async => [
-          {'id': 'db_w1', 'word': 'ᱨᱚᱲ', 'order': 1},
-        ],
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
       );
 
-      final container = ProviderContainer(
-        overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          seededContentHttpClientProvider.overrideWithValue(mockHttpClient),
-        ],
+      await expectLater(
+        container.read(_testWordProvider.future),
+        throwsA(isA<EdgeApiException>()),
       );
-      addTearDown(container.dispose);
-
-      final words = await container.read(_testWordProvider.future);
-      expect(words.length, 1);
-      expect(words[0].id, 'db_w1');
-      expect(words[0].word, 'ᱨᱚᱲ');
-      verify(
-        () => mockDb.listAllDocuments('words', queries: any(named: 'queries')),
-      ).called(1);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 }

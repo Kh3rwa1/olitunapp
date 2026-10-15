@@ -111,62 +111,25 @@ void main() {
   );
 
   test(
-    'bakhedLearningContentProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'bakhedLearningContentProvider returns empty content when the Worker fails, never Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () => mockDb.listAllDocuments(
-          'bakhed_lyrics',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer(
-        (_) async => [
-          {
-            '\$id': 'l_db_1',
-            'lineIndex': 0,
-            'startMs': 0,
-            'endMs': 1000,
-            'olChiki': 'ᱫᱟᱨᱮ',
-            'latin': 'Dare',
-            'meaning': 'Tree',
-          },
-        ],
-      );
-      when(
-        () => mockDb.listAllDocuments(
-          'bakhed_vocabulary',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer((_) async => <Map<String, dynamic>>[]);
-      when(
-        () => mockDb.listAllDocuments(
-          'bakhed_cultural_notes',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer((_) async => <Map<String, dynamic>>[]);
-
       final container = ProviderContainer(
         overrides: [
           appwriteDbServiceProvider.overrideWithValue(mockDb),
-          bakhedContentHttpClientProvider.overrideWithValue(mockHttpClient),
+          bakhedContentHttpClientProvider.overrideWithValue(
+            MockClient((request) async => http.Response('Edge error', 500)),
+          ),
         ],
       );
       addTearDown(container.dispose);
 
       final content = await container.read(
-        bakhedLearningContentProvider('bakhed_test_1').future,
+        bakhedLearningContentProvider('bakhed_test_2').future,
       );
-      expect(content.lyrics.length, 1);
-      expect(content.lyrics[0].olChiki, 'ᱫᱟᱨᱮ');
-      verify(
-        () => mockDb.listAllDocuments(
-          'bakhed_lyrics',
-          queries: any(named: 'queries'),
-        ),
-      ).called(1);
+      expect(content.isEmpty, isTrue);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 }

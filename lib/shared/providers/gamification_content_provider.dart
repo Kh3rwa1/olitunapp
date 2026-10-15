@@ -1,18 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/config/cloudflare_config.dart';
 
-import '../../core/api/appwrite_db_service.dart';
 import '../../core/api/appwrite_functions_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
 
 /// HTTP client provider for Gamification Edge API (overridable in tests).
 final gamificationHttpClientProvider = Provider<http.Client>(
-  (ref) => http.Client(),
+  (ref) => ref.watch(edgeHttpClientProvider),
 );
 
 class GamificationContent {
@@ -198,81 +195,13 @@ final gamificationContentProvider = FutureProvider<GamificationContent>((
     }
   }
 
-  // 1. Try Cloudflare Edge API first (single sub-10ms global edge cache fetch)
   try {
-    final client = ref.read(gamificationHttpClientProvider);
-    final response = await client
-        .get(
-          Uri.parse(CloudflareConfig.gamificationContentEndpoint),
-          headers: const {'Accept': 'application/json'},
-        )
-        .timeout(const Duration(seconds: 4));
-
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      if (body is Map<String, dynamic> && body['ok'] == true) {
-        final remote = GamificationContent.fromJson(body);
-        if (CacheService.isOpen) {
-          await CacheService.set(cacheKey, remote.toJson());
-        }
-        return remote;
-      }
-    }
-  } catch (e, stack) {
-    AppLogger.warning(
-      'GamificationContent: Cloudflare Edge load failed, falling back to Appwrite DB',
-      name: 'GamificationContent',
-      error: e,
-      stackTrace: stack,
+    final body = await EdgeJsonClient.getJson(
+      ref.read(gamificationHttpClientProvider),
+      Uri.parse(CloudflareConfig.gamificationContentEndpoint),
+      timeout: const Duration(seconds: 4),
     );
-  }
-
-  // 2. Fall back to Appwrite DB
-  try {
-    final db = ref.read(appwriteDbServiceProvider);
-    final publishedActive = [
-      DbQuery.equal('status', 'published'),
-      DbQuery.equal('isActive', true),
-    ];
-
-    final results = await Future.wait([
-      db.listAllDocuments('bravo_messages', queries: publishedActive),
-      db.listAllDocuments(
-        'badges',
-        queries: [
-          DbQuery.equal('status', 'published'),
-          DbQuery.equal('isActive', true),
-          DbQuery.orderAsc('sortOrder'),
-        ],
-      ),
-      db.listAllDocuments(
-        'mission_templates',
-        queries: [
-          DbQuery.equal('status', 'published'),
-          DbQuery.equal('isActive', true),
-          DbQuery.orderAsc('sortOrder'),
-        ],
-      ),
-      db.listAllDocuments('reward_messages', queries: publishedActive),
-      db.listAllDocuments('quiz_feedback_messages', queries: publishedActive),
-      db.listDocuments(
-        'gamification_config',
-        queries: [DbQuery.equal('configId', 'default'), DbQuery.limit(1)],
-        paginate: false,
-      ),
-    ]);
-
-    final remote = GamificationContent(
-      bravoMessages: results[0],
-      badges: results[1],
-      missionTemplates: results[2],
-      rewardMessages: results[3],
-      quizFeedbackMessages: results[4],
-      config: results[5].isNotEmpty
-          ? results[5].first
-          : GamificationContent.fallback().config,
-      loadedFromFallback: false,
-    );
+    final remote = GamificationContent.fromJson(body);
     if (CacheService.isOpen) {
       await CacheService.set(cacheKey, remote.toJson());
     }

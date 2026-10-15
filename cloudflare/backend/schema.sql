@@ -407,3 +407,39 @@ CREATE TABLE IF NOT EXISTS review_operations (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS idx_review_operations_user_op ON review_operations(user_id, operation_id);
 CREATE INDEX IF NOT EXISTS idx_review_operations_user_item ON review_operations(user_id, item_id);
+
+-- Learner content mirrored from the Appwrite collections of the same shape
+-- (audio_tracks, localized_contents, story_segments). raw_json holds the
+-- Appwrite document; the columns below exist only for filtering. Distinct
+-- from the legacy audio_tracks / localized_contents tables above, which
+-- back TTS generation and the admin review queue with a different shape.
+CREATE TABLE IF NOT EXISTS content_audio_tracks (
+  id TEXT PRIMARY KEY,
+  content_kind TEXT NOT NULL,
+  content_id TEXT NOT NULL,
+  segment_id TEXT,
+  language_code TEXT NOT NULL DEFAULT '',
+  track_type TEXT NOT NULL DEFAULT '',
+  review_status TEXT NOT NULL DEFAULT 'needsReview',
+  created_at TEXT,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_content_audio_tracks_item ON content_audio_tracks(content_kind, content_id);
+
+CREATE TABLE IF NOT EXISTS content_localizations (
+  id TEXT PRIMARY KEY,
+  content_kind TEXT NOT NULL,
+  content_id TEXT NOT NULL,
+  language_code TEXT NOT NULL,
+  review_status TEXT NOT NULL DEFAULT 'needsReview',
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_content_localizations_item ON content_localizations(content_kind, content_id, language_code);
+
+CREATE TABLE IF NOT EXISTS story_segments (
+  id TEXT PRIMARY KEY,
+  story_id TEXT NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments(story_id, order_index);

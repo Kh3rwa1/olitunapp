@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -7,12 +6,14 @@ import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 /// HTTP client provider for Letters Edge API (overridable in tests).
-final lettersHttpClientProvider = Provider<http.Client>((ref) => http.Client());
+final lettersHttpClientProvider = Provider<http.Client>(
+  (ref) => ref.watch(edgeHttpClientProvider),
+);
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lettersProvider =
@@ -20,7 +21,7 @@ final lettersProvider =
       LettersNotifier.new,
     );
 
-/// Letters: cache-first, refreshed from Appwrite, falling back to a bundled
+/// Letters: cache-first, refreshed from the Cloudflare Worker, falling back to a bundled
 /// seed when neither cache nor network has data.
 class LettersNotifier extends AsyncNotifier<List<LetterModel>> {
   static const String _collectionId = 'letters';
@@ -87,51 +88,14 @@ class LettersNotifier extends AsyncNotifier<List<LetterModel>> {
     final hasCache = cached != null && cached.isNotEmpty;
     if (active && hasCache) state = AsyncValue.data(cached);
 
-    // 1. Try Cloudflare Edge API first (global edge cache)
     try {
-      final client = ref.read(lettersHttpClientProvider);
-      final response = await client
-          .get(
-            Uri.parse(CloudflareConfig.lettersEndpoint),
-            headers: const {'Accept': 'application/json'},
-          )
-          .timeout(const Duration(seconds: 4));
-
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
-        if (body is Map<String, dynamic> && body['letters'] is List) {
-          final list = (body['letters'] as List)
-              .cast<Map<String, dynamic>>()
-              .map(LetterModel.fromJson)
-              .toList();
-          if (list.isNotEmpty) {
-            final uniqueList = _deduplicate(list);
-            await CacheService.set(
-              _cacheKey,
-              uniqueList.map((e) => e.toJson()).toList(),
-            );
-            return uniqueList;
-          }
-        }
-      }
-    } catch (e, stack) {
-      AppLogger.warning(
-        'Cloudflare letters fetch failed, falling back to Appwrite DB',
-        name: 'LettersNotifier',
-        error: e,
-        stackTrace: stack,
+      final rows = await EdgeJsonClient.getList(
+        ref.read(lettersHttpClientProvider),
+        Uri.parse(CloudflareConfig.lettersEndpoint),
+        'letters',
+        timeout: const Duration(seconds: 4),
       );
-    }
-
-    // 2. Fall back to Appwrite DB
-    try {
-      final data = await ref
-          .read(appwriteDbServiceProvider)
-          .listAllDocuments(
-            _collectionId,
-            queries: [DbQuery.orderAsc('order')],
-          );
-      final list = data.map(LetterModel.fromJson).toList();
+      final list = rows.map(LetterModel.fromJson).toList();
       if (list.isEmpty) {
         return hasCache ? cached : _deduplicate(_seedLetters);
       }

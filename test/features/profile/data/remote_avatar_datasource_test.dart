@@ -1,15 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/profile/data/datasources/remote_avatar_cache.dart';
 import 'package:itun/features/profile/data/datasources/remote_avatar_datasource.dart';
-
-class MockStorage extends Mock implements Storage {}
 
 class MemoryAvatarCache extends RemoteAvatarCache {
   final files = <String, List<int>>{};
@@ -45,20 +42,14 @@ class MemoryAvatarCache extends RemoteAvatarCache {
       .toSet();
 }
 
-Map<String, dynamic> _fileMap(String id, String name, String updatedAt) => {
-  '\$id': id,
-  'bucketId': 'profile_avatars',
-  '\$createdAt': updatedAt,
-  '\$updatedAt': updatedAt,
-  '\$permissions': ['read("any")'],
+Map<String, dynamic> _object(String name, String version) => {
+  'id': name,
   'name': name,
-  'signature': 'sig',
-  'mimeType': 'application/json',
-  'sizeOriginal': 10,
-  'chunksTotal': 1,
-  'chunksUploaded': 1,
-  'encryption': false,
-  'compression': 'none',
+  'key': 'avatars/$name',
+  'path': '/api/v1/assets/avatars/$name',
+  'size': 10,
+  'version': version,
+  'updatedAt': '2026-10-01T00:00:00.000Z',
 };
 
 Uint8List _lottieBytes() => Uint8List.fromList(
@@ -77,33 +68,49 @@ Uint8List _lottieBytes() => Uint8List.fromList(
   ),
 );
 
+/// Fake Worker: `/api/v1/avatars` lists [objects]; `/api/v1/assets/*`
+/// serves [fileBytes]. Records every request path.
+class _FakeWorker {
+  List<Map<String, dynamic>> objects = [];
+  List<int> Function() fileBytes = _lottieBytes;
+  int listStatus = 200;
+  final requests = <String>[];
+
+  late final MockClient client = MockClient((request) async {
+    requests.add(request.url.path);
+    if (request.url.path == '/api/v1/avatars') {
+      if (listStatus != 200) return http.Response('boom', listStatus);
+      return http.Response(
+        jsonEncode({'ok': true, 'total': objects.length, 'avatars': objects}),
+        200,
+      );
+    }
+    if (request.url.path.startsWith('/api/v1/assets/avatars/')) {
+      return http.Response.bytes(fileBytes(), 200);
+    }
+    return http.Response('not found', 404);
+  });
+
+  int get downloads =>
+      requests.where((p) => p.startsWith('/api/v1/assets/')).length;
+}
+
 void main() {
-  late MockStorage storage;
+  late _FakeWorker worker;
   late MemoryAvatarCache cache;
   late RemoteAvatarDatasource datasource;
 
   setUp(() {
-    storage = MockStorage();
+    worker = _FakeWorker();
     cache = MemoryAvatarCache();
-    datasource = RemoteAvatarDatasource(storage, cache);
+    datasource = RemoteAvatarDatasource(worker.client, cache);
   });
 
-  test('sync maps bucket files to catalog entries and caches bytes', () async {
-    when(() => storage.listFiles(bucketId: any(named: 'bucketId'))).thenAnswer(
-      (_) async => FileList.fromMap({
-        'total': 2,
-        'files': [
-          _fileMap('f1', 'avatar_tiger.json', 'u1'),
-          _fileMap('f2', 'avatar_owl.json', 'u2'),
-        ],
-      }),
-    );
-    when(
-      () => storage.getFileDownload(
-        bucketId: any(named: 'bucketId'),
-        fileId: any(named: 'fileId'),
-      ),
-    ).thenAnswer((_) async => _lottieBytes());
+  test('sync lists the Worker catalogue and caches bytes', () async {
+    worker.objects = [
+      _object('avatar_tiger.json', 'e1'),
+      _object('avatar_owl.json', 'e2'),
+    ];
 
     final result = await datasource.syncAvatars();
 
@@ -111,27 +118,27 @@ void main() {
     final avatars = result.getOrElse((_) => throw StateError('left'));
     expect(avatars.map((a) => a.id), ['tiger', 'owl']);
     expect(avatars.every((a) => a.isRemote), isTrue);
-    expect(avatars.first.remoteFileId, 'f1');
-    expect(await cache.exists('f1.json'), isTrue);
+    expect(avatars.first.remoteFileId, 'avatar_tiger.json');
+    expect(await cache.exists('avatar_tiger.json.json'), isTrue);
+    expect(worker.requests, contains('/api/v1/avatars'));
+    expect(
+      worker.requests,
+      contains('/api/v1/assets/avatars/avatar_tiger.json'),
+    );
+  });
+
+  test('empty catalogue is a valid empty result', () async {
+    final result = await datasource.syncAvatars();
+    expect(result.getOrElse((_) => throw StateError('left')), isEmpty);
+    expect(worker.downloads, 0);
   });
 
   test('sync skips non-json files and unusable names', () async {
-    when(() => storage.listFiles(bucketId: any(named: 'bucketId'))).thenAnswer(
-      (_) async => FileList.fromMap({
-        'total': 3,
-        'files': [
-          _fileMap('f1', 'avatar_tiger.json', 'u1'),
-          _fileMap('f2', 'notes.txt', 'u1'),
-          _fileMap('f3', 'avatar_.json', 'u1'),
-        ],
-      }),
-    );
-    when(
-      () => storage.getFileDownload(
-        bucketId: any(named: 'bucketId'),
-        fileId: any(named: 'fileId'),
-      ),
-    ).thenAnswer((_) async => _lottieBytes());
+    worker.objects = [
+      _object('avatar_tiger.json', 'e1'),
+      _object('notes.txt', 'e1'),
+      _object('avatar_.json', 'e1'),
+    ];
 
     final result = await datasource.syncAvatars();
     final avatars = result.getOrElse((_) => throw StateError('left'));
@@ -139,66 +146,31 @@ void main() {
   });
 
   test('sync skips re-download for unchanged files', () async {
-    when(() => storage.listFiles(bucketId: any(named: 'bucketId'))).thenAnswer(
-      (_) async => FileList.fromMap({
-        'total': 1,
-        'files': [_fileMap('f1', 'avatar_tiger.json', 'u1')],
-      }),
-    );
-    var downloads = 0;
-    when(
-      () => storage.getFileDownload(
-        bucketId: any(named: 'bucketId'),
-        fileId: any(named: 'fileId'),
-      ),
-    ).thenAnswer((_) async {
-      downloads++;
-      return _lottieBytes();
-    });
+    worker.objects = [_object('avatar_tiger.json', 'e1')];
 
     await datasource.syncAvatars();
     await datasource.syncAvatars();
-    expect(downloads, 1);
+    expect(worker.downloads, 1);
+
+    worker.objects = [_object('avatar_tiger.json', 'e2')];
+    await datasource.syncAvatars();
+    expect(worker.downloads, 2);
   });
 
-  test('sync prunes files removed from the bucket', () async {
-    when(() => storage.listFiles(bucketId: any(named: 'bucketId'))).thenAnswer(
-      (_) async => FileList.fromMap({
-        'total': 1,
-        'files': [_fileMap('f1', 'avatar_tiger.json', 'u1')],
-      }),
-    );
-    when(
-      () => storage.getFileDownload(
-        bucketId: any(named: 'bucketId'),
-        fileId: any(named: 'fileId'),
-      ),
-    ).thenAnswer((_) async => _lottieBytes());
-
+  test('sync prunes files removed from the catalogue', () async {
+    worker.objects = [_object('avatar_tiger.json', 'e1')];
     await datasource.syncAvatars();
-    expect(await cache.exists('f1.json'), isTrue);
+    expect(await cache.exists('avatar_tiger.json.json'), isTrue);
 
-    when(
-      () => storage.listFiles(bucketId: any(named: 'bucketId')),
-    ).thenAnswer((_) async => FileList.fromMap({'total': 0, 'files': []}));
+    worker.objects = [];
     final result = await datasource.syncAvatars();
     expect(result.getOrElse((_) => throw StateError('left')), isEmpty);
-    expect(await cache.exists('f1.json'), isFalse);
+    expect(await cache.exists('avatar_tiger.json.json'), isFalse);
   });
 
   test('sync rejects invalid lottie payloads', () async {
-    when(() => storage.listFiles(bucketId: any(named: 'bucketId'))).thenAnswer(
-      (_) async => FileList.fromMap({
-        'total': 1,
-        'files': [_fileMap('f1', 'avatar_tiger.json', 'u1')],
-      }),
-    );
-    when(
-      () => storage.getFileDownload(
-        bucketId: any(named: 'bucketId'),
-        fileId: any(named: 'fileId'),
-      ),
-    ).thenAnswer((_) async => utf8.encode('not json'));
+    worker.objects = [_object('avatar_tiger.json', 'e1')];
+    worker.fileBytes = () => utf8.encode('not json');
 
     final result = await datasource.syncAvatars();
     expect(result.isLeft(), isTrue);
@@ -208,13 +180,22 @@ void main() {
     );
   });
 
-  test('sync maps Appwrite errors to failures', () async {
-    when(
-      () => storage.listFiles(bucketId: any(named: 'bucketId')),
-    ).thenThrow(AppwriteException('offline', 500, 'network_error', 'resp'));
+  test('sync surfaces Worker errors as failures', () async {
+    worker.listStatus = 500;
 
     final result = await datasource.syncAvatars();
-    expect(result.isLeft(), isTrue);
+    expect(
+      result.fold((l) => l, (_) => throw StateError('right')),
+      isA<ServerFailure>(),
+    );
+  });
+
+  test('sync maps transport errors to network failures', () async {
+    final offline = RemoteAvatarDatasource(
+      MockClient((_) async => throw http.ClientException('offline')),
+      cache,
+    );
+    final result = await offline.syncAvatars();
     expect(
       result.fold((l) => l, (_) => throw StateError('right')),
       isA<NetworkFailure>(),

@@ -1,19 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../core/storage/cache_service.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../models/content_models.dart';
 
-/// Injected HTTP client for testing banners edge queries.
-final bannersHttpClientProvider = Provider<http.Client?>((ref) => null);
+/// HTTP client for banners Worker reads (overridable in tests).
+final bannersHttpClientProvider = Provider<http.Client>(
+  (ref) => ref.watch(edgeHttpClientProvider),
+);
 
 final bannersProvider =
     AsyncNotifierProvider<BannersNotifier, List<FeaturedBannerModel>>(
@@ -23,11 +24,12 @@ final bannersProvider =
 // Alias for backward compatibility
 final featuredBannersProvider = bannersProvider;
 
-/// Featured banners: cache-first, then refreshed from Cloudflare Edge (with Appwrite DB fallback).
+/// Featured banners: cache-first, then refreshed from the Cloudflare Worker.
 ///
 /// The cached list (if any) is emitted immediately while the network request
-/// is in flight; the remote result then replaces it. A network failure keeps
-/// the cached list, or surfaces the error when nothing is cached.
+/// is in flight; the remote result then replaces it (an empty Worker list is
+/// authoritative). A network failure keeps the cached list, or yields an
+/// empty list when nothing is cached.
 class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
   static const String _collectionId = 'banners';
   static const String _cacheKey = 'cached_banners';
@@ -37,13 +39,12 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
   BannersNotifier({http.Client? httpClient}) : _injectedClient = httpClient;
 
   http.Client get _client =>
-      _injectedClient ?? ref.read(bannersHttpClientProvider) ?? http.Client();
+      _injectedClient ?? ref.read(bannersHttpClientProvider);
 
   @override
   FutureOr<List<FeaturedBannerModel>> build() async {
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
-    final db = ref.read(appwriteDbServiceProvider);
     var active = true;
     ref.onDispose(() => active = false);
 
@@ -53,52 +54,26 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
     );
     if (active && cached != null) state = AsyncValue.data(cached);
 
-    // 1. Try Cloudflare Workers Edge API (Global edge caching, zero Appwrite reads)
     try {
-      final uri = Uri.parse(CloudflareConfig.bannersEndpoint);
-      final res = await _client.get(uri).timeout(const Duration(seconds: 4));
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map && body['ok'] == true && body['banners'] is List) {
-          final banners = <FeaturedBannerModel>[];
-          for (final row in body['banners']) {
-            try {
-              if (row is Map<String, dynamic>) {
-                banners.add(FeaturedBannerModel.fromJson(row));
-              } else if (row is Map) {
-                banners.add(
-                  FeaturedBannerModel.fromJson(Map<String, dynamic>.from(row)),
-                );
-              }
-            } catch (e, stack) {
-              AppLogger.warning(
-                'Skipping malformed banner from Cloudflare',
-                name: 'BannersNotifier',
-                error: e,
-                stackTrace: stack,
-              );
-            }
-          }
-          if (banners.isNotEmpty) {
-            await CacheService.set(
-              _cacheKey,
-              banners.map((e) => e.toJson()).toList(),
-            );
-            return banners;
-          }
+      final rows = await EdgeJsonClient.getList(
+        _client,
+        Uri.parse(CloudflareConfig.bannersEndpoint),
+        'banners',
+        timeout: const Duration(seconds: 4),
+      );
+      final banners = <FeaturedBannerModel>[];
+      for (final row in rows) {
+        try {
+          banners.add(FeaturedBannerModel.fromJson(row));
+        } catch (e, stack) {
+          AppLogger.warning(
+            'Skipping malformed banner from Cloudflare',
+            name: 'BannersNotifier',
+            error: e,
+            stackTrace: stack,
+          );
         }
       }
-    } catch (e) {
-      AppLogger.debug('Cloudflare banners fetch bypassed: $e');
-    }
-
-    // 2. Resilient Appwrite DB fallback
-    try {
-      final data = await db.listAllDocuments(
-        _collectionId,
-        queries: [DbQuery.orderAsc('order')],
-      );
-      final banners = data.map(FeaturedBannerModel.fromJson).toList();
       await CacheService.set(
         _cacheKey,
         banners.map((e) => e.toJson()).toList(),

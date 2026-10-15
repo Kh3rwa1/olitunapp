@@ -4,6 +4,7 @@ import { registerReviewRoutes } from './review';
 import { registerAccountRoutes } from './account';
 import { registerAnalyticsRoutes } from './analytics';
 import { registerWaitlistRoutes } from './waitlist';
+import { registerLearnerContentRoutes } from './learner_content';
 
 // Feature route modules. Each module applies its own auth middleware
 // (requireUser / optionalUser / requireAdmin from ../auth) before its
@@ -14,4 +15,5 @@ export function registerRoutes(app: App): void {
   registerAnalyticsRoutes(app);
   registerWaitlistRoutes(app);
   registerAccountRoutes(app);
+  registerLearnerContentRoutes(app);
 }

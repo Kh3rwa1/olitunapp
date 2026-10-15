@@ -1,40 +1,41 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/shared/providers/bakhed_content_provider.dart';
 
-class FakeBakhedDbService implements AppwriteDbService {
-  Map<String, List<Map<String, dynamic>>> collections = {};
-  bool shouldThrow = false;
-  int listRequests = 0;
+/// Fake Worker for `/api/v1/bakhed/content`.
+class FakeBakhedEdge {
+  Map<String, dynamic>? payload;
+  bool shouldFail = false;
+  int requests = 0;
 
-  @override
-  Future<List<Map<String, dynamic>>> listDocuments(
-    String collectionId, {
-    List<String>? queries,
-    bool paginate = true,
-    int pageSize = 500,
-  }) async {
-    listRequests++;
-    if (shouldThrow) throw StateError('offline');
-    return collections[collectionId] ?? [];
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> listAllDocuments(
-    String collectionId, {
-    List<String>? queries,
-    int pageSize = 500,
-  }) => listDocuments(collectionId, queries: queries);
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+  http.Client get client => MockClient((request) async {
+    requests++;
+    if (shouldFail) return http.Response('unavailable', 503);
+    return http.Response.bytes(
+      utf8.encode(
+        jsonEncode({
+          'ok': true,
+          'bakhedId': request.url.queryParameters['id'],
+          ...?payload,
+        }),
+      ),
+      200,
+      headers: const {'content-type': 'application/json'},
+    );
+  });
 }
+
+ProviderContainer _containerFor(FakeBakhedEdge edge) => ProviderContainer(
+  overrides: [bakhedContentHttpClientProvider.overrideWithValue(edge.client)],
+);
 
 BakhedLearningContent _sampleContent() {
   return const BakhedLearningContent(
@@ -71,41 +72,6 @@ BakhedLearningContent _sampleContent() {
   );
 }
 
-Map<String, List<Map<String, dynamic>>> _sampleRows() {
-  return {
-    'bakhed_lyrics': [
-      {
-        '\$id': 'l1',
-        'lineIndex': 0,
-        'startMs': 0,
-        'endMs': 1200,
-        'olChiki': 'ᱡᱚᱦᱟᱨ',
-        'latin': 'Johar',
-        'meaning': 'Greetings',
-      },
-    ],
-    'bakhed_vocabulary': [
-      {
-        '\$id': 'v1',
-        'olChiki': 'ᱥᱮᱨᱮᱧ',
-        'latin': 'Sereng',
-        'meaning': 'Song',
-        'audioFileId': 'audio1',
-        'sortOrder': 0,
-      },
-    ],
-    'bakhed_cultural_notes': [
-      {
-        '\$id': 'n1',
-        'title': 'Sohrai',
-        'body': 'Harvest festival',
-        'source': 'Elders',
-        'isPublished': true,
-      },
-    ],
-  };
-}
-
 void main() {
   group('BakhedLearningContent offline cache', () {
     setUpAll(() async {
@@ -137,15 +103,13 @@ void main() {
       expect(restored.culturalNotes.single.isPublished, isTrue);
     });
 
-    test('serves Hive-cached content when Appwrite is unreachable', () async {
+    test('serves Hive-cached content when the Worker is unreachable', () async {
       await CacheService.set(
         'bakhed_content_r1',
         _sampleContent().toCacheJson(),
       );
-      final fakeDb = FakeBakhedDbService()..shouldThrow = true;
-      final container = ProviderContainer(
-        overrides: [appwriteDbServiceProvider.overrideWithValue(fakeDb)],
-      );
+      final edge = FakeBakhedEdge()..shouldFail = true;
+      final container = _containerFor(edge);
       addTearDown(container.dispose);
 
       final content = await container.read(
@@ -158,10 +122,8 @@ void main() {
     });
 
     test('fetches once and persists for the next offline open', () async {
-      final fakeDb = FakeBakhedDbService()..collections = _sampleRows();
-      final container = ProviderContainer(
-        overrides: [appwriteDbServiceProvider.overrideWithValue(fakeDb)],
-      );
+      final edge = FakeBakhedEdge()..payload = _sampleContent().toCacheJson();
+      final container = _containerFor(edge);
       addTearDown(container.dispose);
 
       final content = await container.read(
@@ -169,7 +131,7 @@ void main() {
       );
 
       expect(content.lyrics.map((line) => line.id), ['l1']);
-      expect(fakeDb.listRequests, 3);
+      expect(edge.requests, 1);
 
       final cached = await CacheService.get(
         'bakhed_content_r1',
@@ -179,11 +141,35 @@ void main() {
       expect(cached?.vocabulary.single.audioFileId, 'audio1');
     });
 
-    test('blank id returns empty without touching the network', () async {
-      final fakeDb = FakeBakhedDbService();
-      final container = ProviderContainer(
-        overrides: [appwriteDbServiceProvider.overrideWithValue(fakeDb)],
+    test('empty Worker payload is a valid empty result', () async {
+      final edge = FakeBakhedEdge();
+      final container = _containerFor(edge);
+      addTearDown(container.dispose);
+
+      final content = await container.read(
+        bakhedLearningContentProvider('r2').future,
       );
+
+      expect(content.isEmpty, isTrue);
+      expect(edge.requests, 1);
+    });
+
+    test('Worker failure with nothing cached yields empty content', () async {
+      final edge = FakeBakhedEdge()..shouldFail = true;
+      final container = _containerFor(edge);
+      addTearDown(container.dispose);
+
+      final content = await container.read(
+        bakhedLearningContentProvider('r3').future,
+      );
+
+      expect(content.isEmpty, isTrue);
+      expect(edge.requests, 1);
+    });
+
+    test('blank id returns empty without touching the network', () async {
+      final edge = FakeBakhedEdge();
+      final container = _containerFor(edge);
       addTearDown(container.dispose);
 
       final content = await container.read(
@@ -191,7 +177,7 @@ void main() {
       );
 
       expect(content.isEmpty, isTrue);
-      expect(fakeDb.listRequests, 0);
+      expect(edge.requests, 0);
     });
   });
 }

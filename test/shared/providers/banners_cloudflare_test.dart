@@ -92,74 +92,65 @@ void main() {
     },
   );
 
+  ProviderContainer containerWith(http.Client client) {
+    final container = ProviderContainer(
+      overrides: [
+        isAuthenticatedProvider.overrideWith((ref) => true),
+        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        bannersHttpClientProvider.overrideWithValue(client),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  test('bannersProvider treats an empty Worker list as valid', () async {
+    final requests = <Uri>[];
+    final container = containerWith(
+      MockClient((request) async {
+        requests.add(request.url);
+        return http.Response(jsonEncode({'ok': true, 'banners': []}), 200);
+      }),
+    );
+
+    final banners = await container.read(bannersProvider.future);
+    expect(banners, isEmpty);
+    expect(requests.single.path, '/api/v1/banners');
+    verifyNever(
+      () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+    );
+  });
+
   test(
-    'bannersProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'bannersProvider keeps cached banners when the Worker fails, never Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () =>
-            mockDb.listAllDocuments('banners', queries: any(named: 'queries')),
-      ).thenAnswer(
-        (_) async => [
-          {
-            'id': 'appwrite_banner_1',
-            'title': 'Appwrite Fallback Banner',
-            'order': 0,
-            'isActive': true,
-          },
-        ],
+      await CacheService.set('cached_banners', [
+        {'id': 'cached_banner', 'title': 'Cached', 'order': 0},
+      ]);
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
       );
-
-      final container = ProviderContainer(
-        overrides: [
-          isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          bannersProvider.overrideWith(
-            () => BannersNotifier(httpClient: mockHttpClient),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
 
       final banners = await container.read(bannersProvider.future);
-      expect(banners, hasLength(1));
-      expect(banners.first.id, 'appwrite_banner_1');
-      expect(banners.first.title, 'Appwrite Fallback Banner');
-      verify(
-        () =>
-            mockDb.listAllDocuments('banners', queries: any(named: 'queries')),
-      ).called(1);
+      expect(banners.single.id, 'cached_banner');
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 
   test(
-    'bannersProvider gracefully returns empty list when both Edge and Appwrite fail',
+    'bannersProvider returns an empty list when the Worker fails and nothing is cached',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () =>
-            mockDb.listAllDocuments('banners', queries: any(named: 'queries')),
-      ).thenThrow(Exception('Appwrite offline'));
-
-      final container = ProviderContainer(
-        overrides: [
-          isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          bannersProvider.overrideWith(
-            () => BannersNotifier(httpClient: mockHttpClient),
-          ),
-        ],
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
       );
-      addTearDown(container.dispose);
 
       final banners = await container.read(bannersProvider.future);
       expect(banners, isEmpty);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 }

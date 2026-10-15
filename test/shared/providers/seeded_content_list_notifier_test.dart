@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/providers/seeded_content_list_notifier.dart';
 import 'package:mocktail/mocktail.dart';
@@ -21,7 +25,7 @@ class _TestNotifier extends SeededContentListNotifier<_Item> {
   _TestNotifier(this.seedItems);
 
   @override
-  String get collectionId => 'test_items';
+  String get collectionId => 'words';
 
   @override
   String get label => 'test item';
@@ -65,6 +69,9 @@ void main() {
   const seed = [_Item('s_2', 2), _Item('s_1', 1)];
 
   late _MockDbService db;
+  late List<Map<String, dynamic>> edgeRows;
+  late int edgeStatus;
+  late List<Uri> edgeRequests;
 
   setUpAll(() {
     registerFallbackValue(<String>[]);
@@ -72,19 +79,30 @@ void main() {
 
   setUp(() {
     db = _MockDbService();
+    edgeRows = const [];
+    edgeStatus = 200;
+    edgeRequests = [];
   });
 
   Future<(ProviderContainer, _Provider)> harness(_TestNotifier notifier) async {
     final container = ProviderContainer(
-      overrides: [appwriteDbServiceProvider.overrideWithValue(db)],
+      overrides: [
+        appwriteDbServiceProvider.overrideWithValue(db),
+        seededContentHttpClientProvider.overrideWithValue(
+          MockClient((request) async {
+            edgeRequests.add(request.url);
+            return http.Response(
+              jsonEncode({'ok': true, 'words': edgeRows}),
+              edgeStatus,
+            );
+          }),
+        ),
+      ],
     );
     return (container, _providerOf(notifier));
   }
 
   test('build starts in loading and then emits the loaded list', () async {
-    when(
-      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-    ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
     addTearDown(container.dispose);
@@ -92,20 +110,20 @@ void main() {
     expect(container.read(p).isLoading, isTrue);
     await _flush();
 
-    // _TestNotifier.loadList treats the remote list as authoritative.
+    // _TestNotifier.loadList treats the (empty) Worker list as authoritative.
     expect(container.read(p).value, isEmpty);
     expect(notifier.loadListCalls, 1);
+    expect(edgeRequests.single.path, '/api/v1/words');
+    verifyNever(
+      () => db.listAllDocuments(any(), queries: any(named: 'queries')),
+    );
   });
 
   test('fetchRemote maps documents and emits them sorted by order', () async {
-    when(
-      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-    ).thenAnswer(
-      (_) async => [
-        const {'id': 'r_9', 'order': 9},
-        const {'id': 'r_3', 'order': 3},
-      ],
-    );
+    edgeRows = [
+      {'id': 'r_9', 'order': 9},
+      {'id': 'r_3', 'order': 3},
+    ];
 
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
@@ -117,32 +135,27 @@ void main() {
 
     final value = container.read(p).value!;
     expect(value.map((e) => e.id), ['r_3', 'r_9']);
+    verifyNever(
+      () => db.listAllDocuments(any(), queries: any(named: 'queries')),
+    );
   });
 
-  test(
-    'loadList falls back to the seed when the remote fetch throws',
-    () async {
-      when(
-        () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-      ).thenThrow(Exception('offline'));
+  test('loadList falls back to the seed when the Worker fetch fails', () async {
+    edgeStatus = 503;
 
-      final notifier = _TestNotifier(seed);
-      final (container, p) = await harness(notifier);
-      addTearDown(container.dispose);
+    final notifier = _TestNotifier(seed);
+    final (container, p) = await harness(notifier);
+    addTearDown(container.dispose);
 
-      container.read(p);
-      await _flush();
+    container.read(p);
+    await _flush();
 
-      expect(container.read(p).value!.map((e) => e.id), ['s_2', 's_1']);
-    },
-  );
+    expect(container.read(p).value!.map((e) => e.id), ['s_2', 's_1']);
+  });
 
   test('add writes through to the collection and reloads', () async {
     when(
-      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-    ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
-    when(
-      () => db.createDocument('test_items', any(), any()),
+      () => db.createDocument('words', any(), any()),
     ).thenAnswer((_) async {});
 
     final notifier = _TestNotifier(seed);
@@ -154,19 +167,16 @@ void main() {
     await container.read(p.notifier).add(const _Item('n_1', 5));
 
     verify(
-      () => db.createDocument('test_items', 'n_1', {'id': 'n_1', 'order': 5}),
+      () => db.createDocument('words', 'n_1', {'id': 'n_1', 'order': 5}),
     ).called(1);
     expect(notifier.loadListCalls, greaterThanOrEqualTo(2));
   });
 
   test('update and delete target the item id and reload', () async {
     when(
-      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-    ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
-    when(
-      () => db.updateDocument('test_items', any(), any()),
+      () => db.updateDocument('words', any(), any()),
     ).thenAnswer((_) async {});
-    when(() => db.deleteDocument('test_items', any())).thenAnswer((_) async {});
+    when(() => db.deleteDocument('words', any())).thenAnswer((_) async {});
 
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
@@ -178,9 +188,9 @@ void main() {
     await container.read(p.notifier).delete('s_2');
 
     verify(
-      () => db.updateDocument('test_items', 's_1', {'id': 's_1', 'order': 1}),
+      () => db.updateDocument('words', 's_1', {'id': 's_1', 'order': 1}),
     ).called(1);
-    verify(() => db.deleteDocument('test_items', 's_2')).called(1);
+    verify(() => db.deleteDocument('words', 's_2')).called(1);
   });
 
   test(
@@ -190,10 +200,7 @@ void main() {
       expect(notifier.rethrowCrudErrors, isTrue);
 
       when(
-        () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-      ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
-      when(
-        () => db.deleteDocument('test_items', any()),
+        () => db.deleteDocument('words', any()),
       ).thenThrow(Exception('denied'));
 
       final (container, p) = await harness(notifier);
@@ -210,14 +217,10 @@ void main() {
 
   test('seed backfills only the ids missing remotely', () async {
     when(
-      () => db.listAllDocuments('test_items', queries: any(named: 'queries')),
-    ).thenAnswer((_) async => const <Map<String, dynamic>>[]);
-    when(
-      () => db.createDocument('test_items', any(), any()),
+      () => db.createDocument('words', any(), any()),
     ).thenAnswer((_) async {});
-    // Registered last: mocktail's any() also matches omitted named args,
-    // so this no-arg stub must win for seed()'s plain listDocuments call.
-    when(() => db.listAllDocuments('test_items')).thenAnswer(
+    // seed() is an admin backfill and still lists the Appwrite collection.
+    when(() => db.listAllDocuments('words')).thenAnswer(
       (_) async => [
         const {'id': 's_1', 'order': 1},
       ],
@@ -232,7 +235,7 @@ void main() {
     await container.read(p.notifier).seed();
 
     // s_1 already exists remotely; only s_2 is backfilled.
-    verify(() => db.createDocument('test_items', 's_2', any())).called(1);
-    verifyNever(() => db.createDocument('test_items', 's_1', any()));
+    verify(() => db.createDocument('words', 's_2', any())).called(1);
+    verifyNever(() => db.createDocument('words', 's_1', any()));
   });
 }

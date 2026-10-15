@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../core/observability/crash_reporting.dart';
 import '../../core/storage/cache_service.dart';
@@ -20,8 +20,13 @@ final rhymesProvider = AsyncNotifierProvider<RhymesNotifier, List<RhymeModel>>(
   RhymesNotifier.new,
 );
 
-/// Rhymes: cache-first, refreshed from Cloudflare Edge / Appwrite, with a bundled seed as the
-/// last-resort fallback.
+/// HTTP client for rhymes Worker reads (overridable in tests).
+final rhymesHttpClientProvider = Provider<http.Client>(
+  (ref) => ref.watch(edgeHttpClientProvider),
+);
+
+/// Rhymes: cache-first, refreshed from the Cloudflare Worker, with a bundled
+/// seed as the last-resort fallback.
 class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
   static const String _collectionId = 'rhymes';
   static const String _cacheKey = 'cached_rhymes';
@@ -29,7 +34,7 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
   final http.Client? _httpClient;
   RhymesNotifier({http.Client? httpClient}) : _httpClient = httpClient;
 
-  http.Client get _client => _httpClient ?? http.Client();
+  http.Client get _client => _httpClient ?? ref.read(rhymesHttpClientProvider);
 
   static final List<RhymeModel> _seedRhymes = [
     RhymeModel(
@@ -105,7 +110,6 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
   FutureOr<List<RhymeModel>> build() async {
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
-    final db = ref.read(appwriteDbServiceProvider);
     var active = true;
     ref.onDispose(() => active = false);
 
@@ -123,56 +127,15 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
     final hasCache = cached != null && cached.isNotEmpty;
     if (active && hasCache) state = AsyncValue.data(cached);
 
-    // 1. Try Cloudflare Workers Edge API (Global edge caching, zero Appwrite reads)
     try {
-      final uri = Uri.parse(CloudflareConfig.rhymesEndpoint);
-      final res = await _client.get(uri).timeout(const Duration(seconds: 4));
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map && body['ok'] == true && body['rhymes'] is List) {
-          final rhymes = <RhymeModel>[];
-          for (final row in body['rhymes']) {
-            try {
-              if (row is Map<String, dynamic>) {
-                final rhyme = RhymeModel.fromJson(row);
-                if (rhyme.id.isNotEmpty && rhyme.titleLatin.isNotEmpty) {
-                  rhymes.add(rhyme);
-                }
-              } else if (row is Map) {
-                final rhyme = RhymeModel.fromJson(
-                  Map<String, dynamic>.from(row),
-                );
-                if (rhyme.id.isNotEmpty && rhyme.titleLatin.isNotEmpty) {
-                  rhymes.add(rhyme);
-                }
-              }
-            } catch (e, stack) {
-              AppLogger.warning(
-                'Skipping malformed rhyme from Cloudflare',
-                name: 'RhymesProviders',
-                error: e,
-                stackTrace: stack,
-              );
-            }
-          }
-          if (rhymes.isNotEmpty) {
-            await CacheService.set(
-              _cacheKey,
-              rhymes.map((e) => e.toJson()).toList(),
-            );
-            return rhymes;
-          }
-        }
-      }
-    } catch (e) {
-      AppLogger.debug('Cloudflare rhymes fetch bypassed: $e');
-    }
-
-    // 2. Fallback to Appwrite DB if Cloudflare is unreachable
-    try {
-      final data = await db.listAllDocuments(_collectionId);
+      final rows = await EdgeJsonClient.getList(
+        _client,
+        Uri.parse(CloudflareConfig.rhymesEndpoint),
+        'rhymes',
+        timeout: const Duration(seconds: 4),
+      );
       final rhymes = <RhymeModel>[];
-      for (final row in data) {
+      for (final row in rows) {
         try {
           final rhyme = RhymeModel.fromJson(row);
           if (rhyme.id.isNotEmpty && rhyme.titleLatin.isNotEmpty) {
@@ -180,7 +143,7 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
           }
         } catch (e, stack) {
           AppLogger.warning(
-            'Skipping malformed rhyme row',
+            'Skipping malformed rhyme from Cloudflare',
             name: 'RhymesProviders',
             error: e,
             stackTrace: stack,
@@ -193,18 +156,12 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
       return rhymes;
     } catch (e, stack) {
       AppLogger.error(
-        'Error loading rhymes from Appwrite',
+        'Error loading rhymes from Cloudflare',
         name: 'RhymesProviders',
         error: e,
         stackTrace: stack,
       );
       CrashReporting.recordError(e, stack);
-      CrashReporting.addAppwriteBreadcrumb(
-        operation: 'list',
-        collection: _collectionId,
-        success: false,
-        error: e.toString(),
-      );
       return hasCache ? cached : _seedRhymes;
     }
   }

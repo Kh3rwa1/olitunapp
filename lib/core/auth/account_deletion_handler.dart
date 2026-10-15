@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:http/http.dart' as http;
+import '../config/cloudflare_config.dart';
 import '../logging/app_logger.dart';
 import '../logging/redaction_helper.dart';
+import 'edge_auth.dart';
 
 enum AccountDeletionOutcomeKind {
   completed,
@@ -114,22 +117,66 @@ AccountDeletionResult parseAccountDeletionExecution({
   );
 }
 
+/// HTTP outcome of the Worker's `POST /api/v1/user/delete`.
+class AccountDeletionResponse {
+  const AccountDeletionResponse(this.statusCode, this.body);
+
+  final int statusCode;
+  final String body;
+}
+
+typedef AccountDeletionRequest = Future<AccountDeletionResponse> Function();
+
+/// Asks the Cloudflare Worker to delete the signed-in account. The Worker
+/// identifies the user only from the Appwrite JWT, purges their data, and
+/// deletes the Appwrite login before confirming. Without a session there is
+/// no JWT, which is reported as a 401 (re-authentication required).
+AccountDeletionRequest edgeAccountDeletionRequest({
+  required EdgeAuth edgeAuth,
+  http.Client? httpClient,
+}) {
+  return () async {
+    final authHeaders = await edgeAuth.headers();
+    if (authHeaders.isEmpty) {
+      throw AppwriteException('No active session', 401);
+    }
+    final client = httpClient ?? http.Client();
+    try {
+      final res = await client
+          .post(
+            Uri.parse(CloudflareConfig.deleteAccountEndpoint),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              ...authHeaders,
+            },
+            body: '{}',
+          )
+          .timeout(const Duration(seconds: 60));
+      if (res.statusCode == 401) edgeAuth.clear();
+      return AccountDeletionResponse(res.statusCode, res.body);
+    } finally {
+      if (httpClient == null) client.close();
+    }
+  };
+}
+
 Future<void> executeAccountDeletion({
-  required Functions functions,
+  required AccountDeletionRequest requestDeletion,
   required Future<void> Function() restoreWebSession,
   required Future<void> Function({bool preserveAccount}) clearLocalSessionState,
 }) async {
   try {
     await restoreWebSession();
 
-    final execution = await functions.createExecution(
-      functionId: 'delete-account',
-    );
+    final response = await requestDeletion();
 
     final result = parseAccountDeletionExecution(
-      status: execution.status.toString(),
-      statusCode: execution.responseStatusCode,
-      responseBody: execution.responseBody,
+      // Any HTTP answer from the Worker is a completed request; the status
+      // code and body decide whether deletion is confirmed.
+      status: 'completed',
+      statusCode: response.statusCode,
+      responseBody: response.body,
     );
 
     if (!result.isFullSuccess) {

@@ -1,15 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/api/appwrite_query_builders.dart';
+import 'package:itun/core/auth/edge_auth.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 
-/// Thrown when the bintiWaitlist function rejects a submission; the message
-/// is user-facing (validation errors, rate limits, or a generic failure).
+/// Thrown when the waitlist service rejects a submission; the message is
+/// user-facing (validation errors, rate limits, or a generic failure).
 class WaitlistSubmissionException implements Exception {
   final String message;
   const WaitlistSubmissionException(this.message);
@@ -18,81 +21,116 @@ class WaitlistSubmissionException implements Exception {
   String toString() => message;
 }
 
-/// Submits a waitlist entry through the `bintiWaitlist` Appwrite function,
-/// which validates input, rate-limits by caller and phone number, and
-/// deduplicates pending submissions. The collection itself has no public
-/// write access; the function's API key performs the write server-side.
-Future<WaitlistModel> submitWaitlistViaFunction(
-  Ref ref,
-  WaitlistModel entry,
-) async {
-  final FunctionExecutionResult execution;
-  try {
-    execution = await ref
-        .read(appwriteFunctionsServiceProvider)
-        .execute(
-          'bintiWaitlist',
-          usePost: true,
-          body: {
-            'fullName': entry.fullName,
-            'phoneNumber': entry.phoneNumber,
-            'ceremonyType': entry.ceremonyType,
-            if (entry.eventDate != null) 'eventDate': entry.eventDate,
-            'city': entry.city,
-            'state': entry.state,
-            if (entry.notes != null) 'notes': entry.notes,
-          },
-        );
-  } catch (e, stack) {
-    AppLogger.warning(
-      'Waitlist execution failed',
-      name: 'Waitlist',
-      error: e,
-      stackTrace: stack,
-    );
-    throw const WaitlistSubmissionException(
-      'Could not reach the waitlist service. Check your connection and try again.',
-    );
+/// Cloudflare Worker waitlist API. The Worker validates input, rate-limits by
+/// caller and phone number, and deduplicates pending submissions; the caller
+/// is identified only by the session JWT (guests may join anonymously).
+class WaitlistApi {
+  WaitlistApi({http.Client? httpClient, EdgeAuth? edgeAuth})
+    : _http = httpClient ?? http.Client(),
+      _edgeAuth = edgeAuth ?? EdgeAuth.instance;
+
+  final http.Client _http;
+  final EdgeAuth _edgeAuth;
+
+  Future<Map<String, String>> _headers() async => {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    ...await _edgeAuth.headers(),
+  };
+
+  Future<WaitlistModel> join(WaitlistModel entry) async {
+    final http.Response res;
+    try {
+      res = await _http
+          .post(
+            Uri.parse(CloudflareConfig.waitlistEndpoint),
+            headers: await _headers(),
+            body: jsonEncode({
+              'fullName': entry.fullName,
+              'phoneNumber': entry.phoneNumber,
+              'ceremonyType': entry.ceremonyType,
+              if (entry.eventDate != null) 'eventDate': entry.eventDate,
+              'city': entry.city,
+              'state': entry.state,
+              if (entry.notes != null) 'notes': entry.notes,
+            }),
+          )
+          .timeout(const Duration(seconds: 15));
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Waitlist request failed',
+        name: 'Waitlist',
+        error: e,
+        stackTrace: stack,
+      );
+      throw const WaitlistSubmissionException(
+        'Could not reach the waitlist service. Check your connection and try again.',
+      );
+    }
+
+    if (res.statusCode == 401) _edgeAuth.clear();
+    final data = _decode(res.body);
+    if (data == null) {
+      throw const WaitlistSubmissionException(
+        'Unexpected waitlist service response.',
+      );
+    }
+    if (res.statusCode < 200 || res.statusCode >= 300 || data['ok'] != true) {
+      throw WaitlistSubmissionException(
+        (data['message'] as String?) ??
+            'Waitlist submission failed. Please try again.',
+      );
+    }
+
+    final entryData = Map<String, dynamic>.from(data['entry'] as Map);
+    return WaitlistModel.fromJson(entryData, entryData['id'] as String?);
   }
 
-  if (!execution.isCompleted) {
-    throw const WaitlistSubmissionException(
-      'Waitlist submission failed. Please try again.',
-    );
+  /// The signed-in user's own entries, newest first.
+  Future<List<WaitlistModel>> mine() async {
+    final res = await _http
+        .get(
+          Uri.parse(CloudflareConfig.waitlistMineEndpoint),
+          headers: await _headers(),
+        )
+        .timeout(const Duration(seconds: 15));
+    if (res.statusCode == 401) _edgeAuth.clear();
+    final data = _decode(res.body);
+    if (res.statusCode != 200 || data == null || data['ok'] != true) {
+      throw http.ClientException(
+        'Waitlist entries request failed (${res.statusCode})',
+      );
+    }
+    return [
+      for (final raw in (data['entries'] as List? ?? const []).whereType<Map>())
+        WaitlistModel.fromJson(
+          Map<String, dynamic>.from(raw),
+          raw['id'] as String?,
+        ),
+    ];
   }
 
-  final data = execution.bodyJson;
-  if (data == null) {
-    throw const WaitlistSubmissionException(
-      'Unexpected waitlist service response.',
-    );
+  static Map<String, dynamic>? _decode(String body) {
+    try {
+      final decoded = jsonDecode(body);
+      return decoded is Map ? Map<String, dynamic>.from(decoded) : null;
+    } catch (_) {
+      return null;
+    }
   }
-
-  if (data['ok'] != true) {
-    throw WaitlistSubmissionException(
-      (data['message'] as String?) ??
-          'Waitlist submission failed. Please try again.',
-    );
-  }
-
-  final entryData = Map<String, dynamic>.from(data['entry'] as Map);
-  return WaitlistModel.fromJson(entryData, entryData['id'] as String?);
 }
+
+final waitlistApiProvider = Provider<WaitlistApi>((ref) => WaitlistApi());
+
+Future<WaitlistModel> joinWaitlist(Ref ref, WaitlistModel entry) =>
+    ref.read(waitlistApiProvider).join(entry);
 
 final userWaitlistProvider = FutureProvider<List<WaitlistModel>>((ref) async {
   final user = ref.watch(currentUserProvider).value;
   if (user == null) return [];
 
   try {
-    final db = ref.read(appwriteDbServiceProvider);
-    final result = await db.listDocuments(
-      'binti_guru_waitlist',
-      queries: [
-        DbQuery.equal('userId', user.id),
-        DbQuery.orderDesc('submittedAt'),
-      ],
-    );
-    return result.map(WaitlistModel.fromJson).toList();
+    return await ref.read(waitlistApiProvider).mine();
   } catch (e, stack) {
     AppLogger.warning(
       'Fetching user waitlist failed',
@@ -163,7 +201,7 @@ class AdminWaitlistNotifier extends AsyncNotifier<List<WaitlistModel>> {
 
   Future<void> submitWaitlistEntry(WaitlistModel entry) async {
     try {
-      await submitWaitlistViaFunction(ref, entry);
+      await joinWaitlist(ref, entry);
       await loadWaitlist();
       ref.invalidate(userWaitlistProvider);
     } catch (e, stack) {
@@ -180,7 +218,7 @@ class AdminWaitlistNotifier extends AsyncNotifier<List<WaitlistModel>> {
 
 final submitWaitlistEntryProvider = Provider((ref) {
   return (WaitlistModel entry) async {
-    final created = await submitWaitlistViaFunction(ref, entry);
+    final created = await joinWaitlist(ref, entry);
     ref.invalidate(userWaitlistProvider);
     // Refresh the admin list as well if it is currently being listened to.
     ref.invalidate(adminWaitlistProvider);

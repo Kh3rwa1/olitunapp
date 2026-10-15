@@ -1,8 +1,31 @@
 import 'dart:convert';
 
+import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart' as models;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/core/auth/edge_auth.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+class _Account extends Mock implements Account {}
+
+class _Jwt extends Mock implements models.Jwt {}
+
+EdgeAuth _edgeAuth({String? jwt}) {
+  final account = _Account();
+  if (jwt == null) {
+    when(account.createJWT).thenThrow(AppwriteException('guest'));
+  } else {
+    final token = _Jwt();
+    when(() => token.jwt).thenReturn(jwt);
+    when(account.createJWT).thenAnswer((_) async => token);
+  }
+  return EdgeAuth(account);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -81,5 +104,83 @@ void main() {
       await service.flushPending();
       expect(writes, isEmpty);
     });
+  });
+
+  group('LearningAnalyticsService.edge', () {
+    late SharedPreferences prefs;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({});
+      prefs = await SharedPreferences.getInstance();
+    });
+
+    test('posts a batch to the Worker with the session JWT', () async {
+      final sent = <http.Request>[];
+      final service = LearningAnalyticsService.edge(
+        prefs: prefs,
+        edgeAuth: _edgeAuth(jwt: 'jwt-1'),
+        httpClient: MockClient((req) async {
+          sent.add(req);
+          return http.Response('{"ok":true,"accepted":1}', 200);
+        }),
+      );
+
+      await service.track(LearningAnalyticsEvents.lessonStarted);
+
+      expect(sent, hasLength(1));
+      expect(
+        sent.single.url.toString(),
+        CloudflareConfig.analyticsEventsEndpoint,
+      );
+      expect(sent.single.headers['Authorization'], 'Bearer jwt-1');
+      final body = jsonDecode(sent.single.body) as Map<String, dynamic>;
+      final events = body['events'] as List;
+      expect(events, hasLength(1));
+      expect(events.single['eventName'], LearningAnalyticsEvents.lessonStarted);
+      // Identity comes from the JWT on the server, never the payload.
+      expect(events.single, isNot(contains('userId')));
+    });
+
+    test('guests post without Authorization', () async {
+      http.Request? sent;
+      final service = LearningAnalyticsService.edge(
+        prefs: prefs,
+        edgeAuth: _edgeAuth(),
+        httpClient: MockClient((req) async {
+          sent = req;
+          return http.Response('{"ok":true,"accepted":1}', 200);
+        }),
+      );
+      await service.track(LearningAnalyticsEvents.lessonStarted);
+      expect(sent, isNotNull);
+      expect(sent!.headers.containsKey('Authorization'), isFalse);
+    });
+
+    test(
+      'server errors queue the event; rejected events are dropped',
+      () async {
+        var status = 503;
+        var calls = 0;
+        final service = LearningAnalyticsService.edge(
+          prefs: prefs,
+          edgeAuth: _edgeAuth(),
+          httpClient: MockClient((_) async {
+            calls++;
+            return http.Response('{"ok":false}', status);
+          }),
+        );
+
+        await service.track(LearningAnalyticsEvents.quizAttempted);
+        expect(
+          prefs.getString('pending_learning_analytics_events_v1'),
+          isNotNull,
+        );
+
+        status = 400;
+        await service.flushPending();
+        expect(prefs.getString('pending_learning_analytics_events_v1'), isNull);
+        expect(calls, 2);
+      },
+    );
   });
 }

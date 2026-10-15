@@ -25,6 +25,7 @@ import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
 import 'admin_functions_client.dart';
+import 'edge_auth.dart';
 
 class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
@@ -46,6 +47,9 @@ class AppwriteAuthService with AdminFunctionsMixin {
     _account = Account(_client);
     _functions = Functions(_client);
     _browserAuthenticate = FlutterWebAuth2.authenticate;
+    _accountDeletionRequest = edgeAccountDeletionRequest(
+      edgeAuth: EdgeAuth.instance,
+    );
   }
 
   static final AppwriteAuthService _instance = AppwriteAuthService._internal();
@@ -54,6 +58,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
   late final Client _client;
   late final Account _account;
   late final Functions _functions;
+  late final AccountDeletionRequest _accountDeletionRequest;
 
   SharedPreferences? _prefsOverride;
   DateTime Function()? _nowProvider;
@@ -74,6 +79,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
       required String callbackUrlScheme,
     })?
     browserAuthenticate,
+    AccountDeletionRequest? accountDeletionRequest,
   }) : _client = client,
        _account = account,
        _functions = functions,
@@ -82,7 +88,10 @@ class AppwriteAuthService with AdminFunctionsMixin {
        _isWebOverride = isWebOverride,
        _connectivityOverride = connectivity,
        _browserAuthenticate =
-           browserAuthenticate ?? FlutterWebAuth2.authenticate;
+           browserAuthenticate ?? FlutterWebAuth2.authenticate,
+       _accountDeletionRequest =
+           accountDeletionRequest ??
+           edgeAccountDeletionRequest(edgeAuth: EdgeAuth(account));
 
   /// Browser entry-point for the mobile OAuth flow. A field (not a direct
   /// plugin call) so unit tests can inject a canned callback URL instead of
@@ -519,9 +528,10 @@ class AppwriteAuthService with AdminFunctionsMixin {
     });
   }
 
-  /// Permanently delete the user account from Appwrite and clear all local state.
+  /// Permanently delete the account (data + Appwrite login) through the
+  /// Cloudflare Worker and clear all local state.
   Future<void> deleteAccount() => executeAccountDeletion(
-    functions: _functions,
+    requestDeletion: _accountDeletionRequest,
     restoreWebSession: _restoreWebSession,
     clearLocalSessionState: _clearLocalSessionState,
   );

@@ -3,12 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:itun/core/storage/media_uploader.dart';
-import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:mocktail/mocktail.dart';
 // ignore: depend_on_referenced_packages
 import 'package:just_audio_platform_interface/just_audio_platform_interface.dart';
 
-class MockClient extends Mock implements Client {}
+class MockWorkerMediaApi extends Mock implements WorkerMediaApi {}
 
 class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
   final _eventController = StreamController<PlaybackEventMessage>.broadcast();
@@ -116,11 +116,11 @@ void main() {
 
   group('MediaUploader Duration Probe Tests', () {
     late MediaUploader uploader;
-    late MockClient mockClient;
+    late MockWorkerMediaApi mockApi;
 
     setUp(() {
-      mockClient = MockClient();
-      uploader = MediaUploader(mockClient);
+      mockApi = MockWorkerMediaApi();
+      uploader = MediaUploader(mockApi);
     });
 
     test(

@@ -8,21 +8,19 @@ import '../auth/appwrite_auth_service.dart';
 import '../config/appwrite_config.dart';
 import '../observability/crash_reporting.dart';
 import 'appwrite_query_paging.dart';
+import '../storage/worker_media_api.dart';
 
 class AppwriteDbService {
   static const Duration _readTimeout = Duration(seconds: 3);
   static const Duration _writeTimeout = Duration(seconds: 15);
 
   final TablesDB _tablesDB;
-  final Storage storage;
-  final Client _client;
   final bool _backendConfigured;
 
-  AppwriteDbService(this._client, {bool? backendConfigured})
+  AppwriteDbService(Client client, {bool? backendConfigured})
     : _backendConfigured =
           backendConfigured ?? AppwriteConfig.isBackendConfigured,
-      _tablesDB = TablesDB(_client),
-      storage = Storage(_client);
+      _tablesDB = TablesDB(client);
 
   void _ensureBackendConfigured() {
     if (_backendConfigured) return;
@@ -378,24 +376,18 @@ class AppwriteDbService {
     }
   }
 
-  String getFileViewUrl(String bucketId, String fileId) {
-    final endpoint = _client.endPoint;
-    return '$endpoint/storage/buckets/$bucketId/files/$fileId/view?project=${AppwriteConfig.projectId}';
-  }
+  /// Public Worker (R2) URL for a media file; storage left Appwrite.
+  String getFileViewUrl(String bucketId, String fileId) =>
+      workerAssetUrl(bucketId, fileId);
 
+  /// The Worker serves originals only; [width]/[height] are accepted for
+  /// call-site compatibility and ignored.
   String getFilePreviewUrl(
     String bucketId,
     String fileId, {
     int? width,
     int? height,
-  }) {
-    final endpoint = _client.endPoint;
-    var url =
-        '$endpoint/storage/buckets/$bucketId/files/$fileId/preview?project=${AppwriteConfig.projectId}';
-    if (width != null) url += '&width=$width';
-    if (height != null) url += '&height=$height';
-    return url;
-  }
+  }) => workerAssetUrl(bucketId, fileId);
 }
 
 final appwriteDbServiceProvider = Provider<AppwriteDbService>((ref) {

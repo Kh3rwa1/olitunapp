@@ -11,7 +11,7 @@ import '../../../../shared/widgets/animated_svg_display.dart';
 /// Reusable media upload row used for audio, image, and animation fields
 /// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
 ///
-/// Handles file picking, upload via [AppwriteStorageUploadService], shows success/error feedback,
+/// Handles file picking, upload via [MediaUploadService], shows success/error feedback,
 /// and provides a direct text input for entering custom URLs manually.
 class AdminMediaField extends ConsumerStatefulWidget {
   final String label;

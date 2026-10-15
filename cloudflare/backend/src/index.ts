@@ -18,6 +18,7 @@ import { getRequestUserId, stableId, type App, type AppEnv, type Bindings } from
 import { registerRoutes } from './routes';
 import { issuePaidMediaLease } from './routes/paid_media';
 import { ANONYMIZED_USER_ID, deleteUserAccount } from './routes/account';
+import { serveAsset } from './routes/media';
 
 const app: App = new Hono<AppEnv>();
 
@@ -678,22 +679,8 @@ app.get('/api/v1/bakhed/content', async (c) => {
   }
 });
 
-// 13. Assets stream from R2 (Zero egress fees, immutable caching)
-app.get('/api/v1/assets/*', async (c) => {
-  try {
-    const path = c.req.path.replace('/api/v1/assets/', '');
-    const object = await c.env.ASSETS.get(path);
-    if (!object) return c.text('Asset Not Found', 404);
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-    return new Response(object.body, { headers });
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message }, 500);
-  }
-});
+// 13. Assets stream from R2 (Range/HEAD, private prefixes blocked): routes/media.ts
+app.get('/api/v1/assets/*', serveAsset);
 
 // 8. Translation (AI IndicTrans2 via Workers AI + Instant Google Translate + D1 Caching)
 app.all('/api/v1/translate', async (c) => {

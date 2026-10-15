@@ -29,6 +29,9 @@ class CloudflareConfig {
   static const String avatarsEndpoint = '$baseUrl/api/v1/avatars';
   static const String assetsEndpoint = '$baseUrl/api/v1/assets';
 
+  // Admin media storage (R2): PUT/DELETE /<bucket>/<fileId>, GET /references
+  static const String adminMediaEndpoint = '$baseUrl/api/v1/admin/media';
+
   // Gamification, Mistakes & Progress
   static const String mistakesEndpoint = '$baseUrl/api/v1/mistakes';
   static const String mistakesRecordEndpoint =

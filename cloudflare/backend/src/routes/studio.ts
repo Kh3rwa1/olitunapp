@@ -184,6 +184,7 @@ export function registerStudioRoutes(app: App): void {
           return c.json({ ok: true, success: true, data: job });
         } catch (err) {
           if (err instanceof OcrError) {
+            console.error(`AI Studio OCR ${action}: ${err.code} ${err.message}`);
             return c.json({ ok: false, success: false, error: err.code, message: err.message }, err.status as any);
           }
           throw err;

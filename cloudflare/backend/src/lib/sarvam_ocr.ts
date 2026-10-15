@@ -71,6 +71,7 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
   try {
     return await res.json();
   } catch {
+    console.error(`Sarvam OCR ${path.split('?')[0]} -> ${res.status}: unreadable JSON`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam returned an unreadable response.');
   }
 }
@@ -144,26 +145,48 @@ async function tag(secret: string, sarvamId: string, userId: string): Promise<st
   return b64url(new Uint8Array(mac).slice(0, 6)); // 8 chars
 }
 
-export async function encodeJobToken(sarvamId: string, userId: string, secret: string): Promise<string> {
+/** Sarvam ids we will pass back into a URL path. */
+const SAFE_ID = /^[A-Za-z0-9._:-]{1,128}$/;
+
+/**
+ * A pollable id for the app (max 36 chars), or null when the Sarvam id is
+ * too long to carry; then the start request waits for the result instead.
+ * "o" = compact form of the documented "YYYYMMDD_<uuid>" id,
+ * "g" = any id of at most 20 bytes, base64url-encoded.
+ */
+export async function encodeJobToken(sarvamId: string, userId: string, secret: string): Promise<string | null> {
+  const mac = await tag(secret, sarvamId, userId);
   const m = SARVAM_ID.exec(sarvamId);
-  if (!m) throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Unexpected Sarvam job id.');
-  const hex = m.slice(1).join(''); // 8 date digits + 32 uuid hex = 40 hex chars
-  const bytes = Uint8Array.from(hex.match(/../g)!, (h) => parseInt(h, 16));
-  return `o${b64url(bytes)}${await tag(secret, sarvamId, userId)}`; // 1 + 27 + 8 = 36
+  if (m) {
+    const hex = m.slice(1).join(''); // 8 date digits + 32 uuid hex = 40 hex chars
+    const bytes = Uint8Array.from(hex.match(/../g)!, (h) => parseInt(h, 16));
+    return `o${b64url(bytes)}${mac}`; // 1 + 27 + 8 = 36
+  }
+  const raw = new TextEncoder().encode(sarvamId);
+  if (raw.length <= 20) return `g${b64url(raw)}${mac}`; // <= 1 + 27 + 8
+  return null;
 }
 
 export async function decodeJobToken(token: string, userId: string, secret: string): Promise<string> {
-  if (!/^o[A-Za-z0-9_-]{35}$/.test(token)) throw new OcrError('INVALID_JOB', 400, 'Invalid job.');
-  let hex: string;
+  const bad = () => new OcrError('INVALID_JOB', 400, 'Invalid job.');
+  if (!/^[og][A-Za-z0-9_-]{9,35}$/.test(token)) throw bad();
+  const body = token.slice(1, -8);
+  let sarvamId: string;
   try {
-    hex = Array.from(fromB64url(token.slice(1, 28)), (b) => b.toString(16).padStart(2, '0')).join('');
+    const bytes = fromB64url(body);
+    if (token[0] === 'o') {
+      const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+      if (hex.length !== 40) throw bad();
+      const u = hex.slice(8);
+      sarvamId = `${hex.slice(0, 8)}_${u.slice(0, 8)}-${u.slice(8, 12)}-${u.slice(12, 16)}-${u.slice(16, 20)}-${u.slice(20)}`;
+    } else {
+      sarvamId = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false }).decode(bytes);
+    }
   } catch {
-    throw new OcrError('INVALID_JOB', 400, 'Invalid job.');
+    throw bad();
   }
-  if (hex.length !== 40) throw new OcrError('INVALID_JOB', 400, 'Invalid job.');
-  const u = hex.slice(8);
-  const sarvamId = `${hex.slice(0, 8)}_${u.slice(0, 8)}-${u.slice(8, 12)}-${u.slice(12, 16)}-${u.slice(16, 20)}-${u.slice(20)}`;
-  if ((await tag(secret, sarvamId, userId)) !== token.slice(28)) {
+  if (!SAFE_ID.test(sarvamId)) throw bad();
+  if ((await tag(secret, sarvamId, userId)) !== token.slice(-8)) {
     throw new OcrError('INVALID_JOB', 403, 'This job belongs to another account.');
   }
   return sarvamId;
@@ -184,9 +207,9 @@ async function check(deps: Deps, sarvamId: string): Promise<{ status: string; te
   return { status: state, text };
 }
 
-async function waitFor(deps: Deps, sarvamId: string): Promise<{ status: string; text?: string }> {
+async function waitFor(deps: Deps, sarvamId: string, waitMs: number): Promise<{ status: string; text?: string }> {
   const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
-  const deadline = Date.now() + (deps.waitMs ?? 40_000);
+  const deadline = Date.now() + waitMs;
   const pollMs = deps.pollMs ?? 1500;
   for (;;) {
     const result = await check(deps, sarvamId);
@@ -195,9 +218,10 @@ async function waitFor(deps: Deps, sarvamId: string): Promise<{ status: string; 
   }
 }
 
-async function toJob(deps: Deps, sarvamId: string, result: { status: string; text?: string }): Promise<OcrJob> {
-  const jobId = await encodeJobToken(sarvamId, deps.userId, deps.secret);
-  return result.text === undefined ? { jobId, status: result.status } : { jobId, status: result.status, text: result.text };
+function toJob(token: string | null, result: { status: string; text?: string }): OcrJob {
+  if (result.text !== undefined) return { jobId: token ?? 'done', status: result.status, text: result.text };
+  if (!token) throw new OcrError('OCR_TIMEOUT', 504, 'The scan took too long. Try a smaller or clearer page.');
+  return { jobId: token, status: result.status };
 }
 
 export async function startOcr(
@@ -214,14 +238,19 @@ export async function startOcr(
   form.set('file', new Blob([file.bytes], { type: mime }), `document.${ext}`);
   if (language) form.set('language', language);
   const created = await sarvam(deps, '/doc-ai/v1/job/digitise', { method: 'POST', body: form });
-  const sarvamId = typeof created?.job_id === 'string' ? created.job_id : '';
-  if (!SARVAM_ID.test(sarvamId)) {
+  const rawId = created?.job_id ?? created?.jobId ?? created?.id;
+  const sarvamId = typeof rawId === 'string' ? rawId : '';
+  if (!SAFE_ID.test(sarvamId)) {
+    console.error(`Sarvam OCR digitise: no usable job id (keys: ${Object.keys(created ?? {}).join(',')})`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam did not confirm the job.');
   }
-  return toJob(deps, sarvamId, await waitFor(deps, sarvamId));
+  const token = await encodeJobToken(sarvamId, deps.userId, deps.secret);
+  // Without a pollable token, wait longer: the app allows 60 s per request.
+  const waitMs = deps.waitMs ?? (token ? 40_000 : 50_000);
+  return toJob(token, await waitFor(deps, sarvamId, waitMs));
 }
 
 export async function ocrStatus(deps: Deps, token: string): Promise<OcrJob> {
   const sarvamId = await decodeJobToken(token, deps.userId, deps.secret);
-  return toJob(deps, sarvamId, await check(deps, sarvamId));
+  return toJob(token, await check(deps, sarvamId));
 }

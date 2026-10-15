@@ -1,15 +1,17 @@
-import 'package:appwrite/appwrite.dart';
-import 'package:itun/core/api/appwrite_databases_pagination.dart';
-import 'package:itun/core/config/appwrite_config.dart';
+import 'package:http/http.dart' as http;
+import 'package:itun/core/api/edge_json_client.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/error/exceptions.dart';
 
 import '../models/audio_track_model.dart';
 
-/// Read-only access to the `audio_tracks` collection.
+/// Read-only access to learner audio tracks via the Cloudflare Worker
+/// (`GET /api/v1/audio-tracks`, backed by D1 `content_audio_tracks`).
 ///
 /// Mobile clients never create, update, or delete tracks — Santali
 /// audio is uploaded via the admin CMS and teaching-language audio is
-/// generated server-side (Phase 4). This datasource only lists rows.
+/// generated server-side (Phase 4). This datasource only lists rows. The
+/// Worker strips media from rows that are not yet playable.
 abstract class AudioTrackRemoteDataSource {
   /// Every track row for [contentKind]:[contentId], including
   /// unplayable ones so the UI can show "audio unavailable" states.
@@ -35,24 +37,22 @@ abstract class AudioTrackRemoteDataSource {
 }
 
 class AudioTrackRemoteDataSourceImpl implements AudioTrackRemoteDataSource {
-  static const Duration _readTimeout = Duration(seconds: 8);
+  /// The Worker accepts at most this many `contentId` values per request.
+  static const int maxIdsPerRequest = 100;
 
-  final TablesDB tablesDB;
+  final http.Client _client;
 
-  AudioTrackRemoteDataSourceImpl(this.tablesDB);
+  AudioTrackRemoteDataSourceImpl(this._client);
 
   @override
   Future<List<AudioTrackModel>> getAllTracks({
     required String contentKind,
     required String contentId,
   }) {
-    return _list(
-      () => [
-        Query.equal('contentKind', contentKind),
-        Query.equal('contentId', contentId),
-        Query.limit(500),
-      ],
-    );
+    return _list({
+      'contentKind': contentKind,
+      'contentId': [contentId],
+    });
   }
 
   @override
@@ -62,15 +62,12 @@ class AudioTrackRemoteDataSourceImpl implements AudioTrackRemoteDataSource {
     required String trackType,
     required String languageCode,
   }) {
-    return _list(
-      () => [
-        Query.equal('contentKind', contentKind),
-        Query.equal('contentId', contentId),
-        Query.equal('trackType', trackType),
-        Query.equal('languageCode', languageCode),
-        Query.limit(100),
-      ],
-    );
+    return _list({
+      'contentKind': contentKind,
+      'contentId': [contentId],
+      'trackType': trackType,
+      'languageCode': languageCode,
+    });
   }
 
   @override
@@ -79,38 +76,29 @@ class AudioTrackRemoteDataSourceImpl implements AudioTrackRemoteDataSource {
     required List<String> contentIds,
   }) async {
     if (contentIds.isEmpty) return const <AudioTrackModel>[];
-    // Query.equal supports up to 100 values; chunk larger batches.
     final results = <AudioTrackModel>[];
-    for (var i = 0; i < contentIds.length; i += 100) {
-      final chunk = contentIds.skip(i).take(100).toList();
+    for (var i = 0; i < contentIds.length; i += maxIdsPerRequest) {
+      final chunk = contentIds.skip(i).take(maxIdsPerRequest).toList();
       results.addAll(
-        await _list(
-          () => [
-            Query.equal('contentKind', contentKind),
-            Query.equal('contentId', chunk),
-            Query.limit(500),
-          ],
-        ),
+        await _list({'contentKind': contentKind, 'contentId': chunk}),
       );
     }
     return results;
   }
 
-  Future<List<AudioTrackModel>> _list(List<String> Function() queries) async {
+  Future<List<AudioTrackModel>> _list(Map<String, dynamic> query) async {
     try {
-      final rows = await AppwriteDatabasesPagination.listRows(
-        tablesDB,
-        databaseId: AppwriteConfig.databaseId,
-        tableId: 'audio_tracks',
-        queries: queries(),
-      ).timeout(_readTimeout);
+      final uri = Uri.parse(
+        CloudflareConfig.audioTracksEndpoint,
+      ).replace(queryParameters: query);
+      final rows = await EdgeJsonClient.getList(_client, uri, 'tracks');
       return rows
-          .map((row) => AudioTrackModel.fromJson(row.data, row.$id))
+          .map((row) => AudioTrackModel.fromJson(row, '${row['id'] ?? ''}'))
           .toList();
-    } on AppwriteException catch (e) {
+    } on EdgeApiException catch (e) {
       throw ServerException(
-        message: e.message ?? 'Failed to load audio tracks',
-        code: e.code,
+        message: 'Failed to load audio tracks: ${e.message}',
+        code: e.statusCode,
       );
     } catch (e) {
       throw ServerException(message: e.toString());

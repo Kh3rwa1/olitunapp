@@ -13,7 +13,6 @@ fi
 
 : "${APPWRITE_ENDPOINT:?Set APPWRITE_ENDPOINT for the production build}"
 : "${APPWRITE_PROJECT_ID:?Set APPWRITE_PROJECT_ID for the production build}"
-: "${TRANSLATE_URL:?Set TRANSLATE_URL for the production build}"
 
 APP_ENV="${APP_ENV:-production}"
 BUILD_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -32,10 +31,7 @@ flutter build web --release --no-wasm-dry-run --no-web-resources-cdn \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
   --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
   --dart-define=ADMIN_TEAM_ID="${ADMIN_TEAM_ID:-admins}" \
-  --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
   --dart-define=CLOUDFLARE_API_URL="${CLOUDFLARE_API_URL:-https://olitun.in}" \
-  --dart-define=SANTALI_VOICE_FUNCTION_ID="${SANTALI_VOICE_FUNCTION_ID:-santaliVoice}" \
-  --dart-define=AI_STUDIO_FUNCTION_ID="${AI_STUDIO_FUNCTION_ID:-aiStudio}" \
   --dart-define=SENTRY_DSN="${SENTRY_DSN:-}" \
   --dart-define=SENTRY_ENV="${SENTRY_ENV:-production}" \
   --dart-define=BUILD_SHA="$BUILD_SHA" \

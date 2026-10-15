@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/api/appwrite_db_service.dart';
+import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/logging/app_logger.dart';
@@ -44,12 +44,12 @@ final userAvatarIdProvider = StateProvider<String>((ref) {
   return normalizeAvatarId(stored);
 });
 
-/// Syncs the live avatar set from the `profile_avatars` bucket.
+/// Syncs the live avatar set from R2 (`avatars/`) through the Worker.
 final remoteAvatarDatasourceProvider = Provider<RemoteAvatarDatasource>((ref) {
-  return RemoteAvatarDatasource(ref.watch(appwriteDbServiceProvider).storage);
+  return RemoteAvatarDatasource(ref.watch(edgeHttpClientProvider));
 });
 
-/// Live avatar entries from Appwrite. Empty (never an error) when offline,
+/// Live avatar entries from the Worker. Empty (never an error) when offline,
 /// misconfigured, or unsupported so the bundled set below stays available.
 final remoteAvatarListProvider = FutureProvider<List<ProfileAvatar>>((
   ref,

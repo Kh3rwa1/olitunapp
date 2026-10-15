@@ -1,6 +1,13 @@
 import 'dart:convert';
 
+import 'package:appwrite/appwrite.dart';
+import 'package:appwrite/models.dart' as models;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:itun/core/auth/edge_auth.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/voice/data/santali_tts_service.dart';
 import 'package:itun/features/voice/data/voice_download_service.dart';
 
@@ -25,24 +32,56 @@ void main() {
       expect(badStyle.failure, isNotNull);
     });
 
-    test('unwraps Appwrite execution envelopes', () {
-      final inner = jsonEncode({
-        'success': true,
-        'data': {'audioUrl': 'https://x/y.wav', 'voice': 'Phulmani'},
-      });
-      final envelope = jsonEncode({
-        r'$id': 'exec1',
-        'status': 'completed',
-        'responseBody': inner,
-        'responseStatusCode': 200,
-      });
-      final parsed = SantaliTtsService.unwrapExecutionForTest(envelope);
-      expect(parsed?['success'], isTrue);
-      expect(
-        SantaliTtsService.unwrapExecutionForTest(inner)?['success'],
-        isTrue,
+    test('parses the Worker voice payload', () {
+      final service = SantaliTtsService();
+      final ok = service.parsePayloadForTest(
+        jsonEncode({
+          'success': true,
+          'data': {'audioUrl': 'https://x/y.wav', 'voice': 'Phulmani'},
+        }),
       );
-      expect(SantaliTtsService.unwrapExecutionForTest('not-json'), isNull);
+      expect(ok.clip?.audioUrl, 'https://x/y.wav');
+      expect(service.parsePayloadForTest('not-json').failure, isNotNull);
+    });
+
+    test('posts to the Worker with the session JWT', () async {
+      late http.Request sent;
+      final service = SantaliTtsService(
+        client: MockClient((request) async {
+          sent = request;
+          return http.Response(
+            jsonEncode({
+              'ok': true,
+              'data': {'audioUrl': 'https://x/a.wav', 'voice': 'Phulmani'},
+            }),
+            200,
+          );
+        }),
+        edgeAuth: _fixedEdgeAuth(),
+      );
+      final result = await service.synthesize(text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani');
+      expect(result.clip?.audioUrl, 'https://x/a.wav');
+      expect(sent.url.toString(), CloudflareConfig.voiceSynthesizeEndpoint);
+      expect(sent.headers['Authorization'], 'Bearer test-jwt');
+    });
+
+    test('maps 401 to a sign-in prompt and surfaces Worker messages', () async {
+      SantaliTtsService serviceReturning(int status, Map<String, dynamic> b) =>
+          SantaliTtsService(
+            client: MockClient(
+              (_) async => http.Response(jsonEncode(b), status),
+            ),
+          );
+      final unauth = await serviceReturning(401, {
+        'ok': false,
+      }).synthesize(text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani');
+      expect(unauth.failure?.loginRequired, isTrue);
+
+      final exhausted = await serviceReturning(503, {
+        'ok': false,
+        'message': 'All voice keys are out of credit or invalid.',
+      }).synthesize(text: 'ᱡᱚᱦᱟᱨ', voice: 'Phulmani');
+      expect(exhausted.failure?.message, contains('out of credit'));
     });
   });
 
@@ -52,4 +91,12 @@ void main() {
       expect(voiceFileNameForTest('', 1), 'olitun-santali-1.wav');
     });
   });
+}
+
+class _MockAccount extends Mock implements Account {}
+
+EdgeAuth _fixedEdgeAuth() {
+  final account = _MockAccount();
+  when(account.createJWT).thenAnswer((_) async => models.Jwt(jwt: 'test-jwt'));
+  return EdgeAuth(account);
 }

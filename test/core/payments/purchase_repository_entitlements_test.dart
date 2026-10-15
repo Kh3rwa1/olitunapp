@@ -4,22 +4,19 @@ import 'package:flutter/services.dart';
 
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/core/storage/cache_service.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+import 'edge_entitlements_fake.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockAppwriteDbService mockDb;
+  late EdgeEntitlementsFake edge;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -38,7 +35,7 @@ void main() {
     CacheService.resetForTesting();
     SharedPreferences.setMockInitialValues({});
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
+    edge = EdgeEntitlementsFake();
   });
 
   tearDown(() async {
@@ -50,9 +47,7 @@ void main() {
   });
 
   ProviderContainer createContainer() {
-    return ProviderContainer(
-      overrides: [appwriteDbServiceProvider.overrideWithValue(mockDb)],
-    );
+    return ProviderContainer(overrides: [edge.override]);
   }
 
   test(
@@ -62,12 +57,7 @@ void main() {
       await CacheService.set('entitlements:production:$userId', {
         'ids': ['refunded'],
       });
-      when(
-        () => mockDb.listDocuments(
-          'course_purchases',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer((_) async => []);
+      edge.answer(userId, []);
       final container = createContainer();
       addTearDown(container.dispose);
       final changed = Completer<void>();
@@ -97,12 +87,7 @@ void main() {
       await CacheService.set('entitlements:production:$userId', {
         'ids': ['paid'],
       });
-      when(
-        () => mockDb.listDocuments(
-          'course_purchases',
-          queries: any(named: 'queries'),
-        ),
-      ).thenThrow(AppwriteException('not permitted', 403));
+      edge.status(403);
       final container = createContainer();
       addTearDown(container.dispose);
       final changed = Completer<void>();
@@ -126,22 +111,15 @@ void main() {
     'logout invalidates an in-flight verification before it can repopulate cache',
     () async {
       const userId = 'logout_race';
-      final response = Completer<List<Map<String, dynamic>>>();
-      when(
-        () => mockDb.listDocuments(
-          'course_purchases',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer((_) => response.future);
+      final response = Completer<List<String>>();
+      edge.answerLater(userId, response);
       final container = createContainer();
       addTearDown(container.dispose);
       final repo = container.read(purchaseRepositoryProvider);
       final pending = repo.fetchEntitlements(userId);
       await Future<void>.delayed(const Duration(milliseconds: 10));
       await repo.clearUserEntitlementCache(userId);
-      response.complete([
-        {'categoryId': 'paid', 'status': 'verified'},
-      ]);
+      response.complete(['paid']);
       expect((await pending).categoryIds, isEmpty);
       expect(
         await CacheService.getMeta('entitlements:production:$userId'),
@@ -152,29 +130,9 @@ void main() {
 
   group('PurchaseRepository - Entitlements & User-Scoped Cache', () {
     test(
-      'Case 1: fetchEntitlements returns verified categories from Appwrite and caches with user key',
+      'Case 1: fetchEntitlements returns verified categories from the Worker and caches with user key',
       () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer(
-          (_) async => [
-            {
-              '\$id': 'p1',
-              'userId': 'user_456',
-              'categoryId': 'santali_basics',
-              'status': 'verified',
-            },
-            {
-              '\$id': 'p2',
-              'userId': 'user_456',
-              'categoryId': 'santali_intermediate',
-              'status': 'verified',
-            },
-          ],
-        );
+        edge.answer('user_456', ['santali_basics', 'santali_intermediate']);
 
         final container = createContainer();
         addTearDown(container.dispose);
@@ -198,21 +156,7 @@ void main() {
     test(
       'Case 2: clearUserEntitlementCache purges user cache so next fetch hits server',
       () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer(
-          (_) async => [
-            {
-              '\$id': 'p1',
-              'userId': 'user_789',
-              'categoryId': 'santali_basics',
-              'status': 'verified',
-            },
-          ],
-        );
+        edge.answer('user_789', ['santali_basics']);
 
         final container = createContainer();
         addTearDown(container.dispose);
@@ -224,12 +168,7 @@ void main() {
         await repo.clearUserEntitlementCache('user_789');
 
         // When server returns updated entitlements (e.g. after refund)
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer((_) async => []);
+        edge.answer('user_789', []);
 
         final freshResult = await repo.fetchEntitlements('user_789');
         expect(freshResult.status, EntitlementStatus.verified);
@@ -240,21 +179,7 @@ void main() {
     test(
       'Case 3: refunding one category leaves other verified categories intact',
       () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-          ),
-        ).thenAnswer(
-          (_) async => [
-            {
-              '\$id': 'p1',
-              'userId': 'user_multi',
-              'categoryId': 'santali_basics',
-              'status': 'verified',
-            },
-          ],
-        );
+        edge.answer('user_multi', ['santali_basics']);
 
         final container = createContainer();
         addTearDown(container.dispose);

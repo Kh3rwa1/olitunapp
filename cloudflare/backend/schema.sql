@@ -231,6 +231,23 @@ CREATE TABLE IF NOT EXISTS learning_analytics_events (
 CREATE INDEX IF NOT EXISTS idx_analytics_date_event ON learning_analytics_events(date_key, event_name);
 CREATE INDEX IF NOT EXISTS idx_analytics_user ON learning_analytics_events(user_id);
 
+-- Per-event context (session, platform, metadata) for learning_analytics_events.
+-- user_id is '' for guests.
+CREATE TABLE IF NOT EXISTS learning_analytics_event_details (
+  event_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  date_key TEXT NOT NULL,
+  session_id TEXT,
+  source TEXT,
+  learner_level TEXT,
+  script_mode TEXT,
+  platform TEXT,
+  event_version INTEGER DEFAULT 1,
+  metadata_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_details_user ON learning_analytics_event_details(user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_details_date ON learning_analytics_event_details(date_key);
+
 -- Waitlist
 CREATE TABLE IF NOT EXISTS binti_waitlist (
   id TEXT PRIMARY KEY,
@@ -246,6 +263,7 @@ CREATE TABLE IF NOT EXISTS binti_waitlist (
   status TEXT DEFAULT 'new'
 );
 CREATE INDEX IF NOT EXISTS idx_binti_waitlist_phone ON binti_waitlist(phone_number, ceremony_type);
+CREATE INDEX IF NOT EXISTS idx_binti_waitlist_user ON binti_waitlist(user_id, submitted_at);
 
 -- Course Purchases & Entitlements
 CREATE TABLE IF NOT EXISTS course_purchases (
@@ -355,3 +373,73 @@ CREATE TABLE IF NOT EXISTS provider_key_rotation (
   state_json TEXT NOT NULL DEFAULT '{}',
   updated_at TEXT NOT NULL
 );
+
+-- Learner spaced-repetition state (replaces Appwrite review_states).
+-- id = 'r_' + sha256('usr:<len>:<userId>:item:<len>:<itemId>')[0:31], the
+-- same deterministic id the Appwrite rows use, so (user_id, item_id) is
+-- unique by construction. version/write_token back optimistic concurrency
+-- for applyRecall.
+CREATE TABLE IF NOT EXISTS review_states (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  item_type TEXT NOT NULL CHECK (item_type IN ('word', 'sentence')),
+  state_json TEXT NOT NULL,
+  next_review_at TEXT NOT NULL,
+  last_reviewed_at TEXT,
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  version INTEGER NOT NULL DEFAULT 1,
+  write_token TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_review_states_user ON review_states(user_id, id);
+CREATE INDEX IF NOT EXISTS idx_review_states_user_next ON review_states(user_id, next_review_at);
+
+-- Idempotency ledger for applyRecall: one row per (user, operationId).
+-- id = 'op_' + sha256('usr:<len>:<userId>:op:<len>:<operationId>')[0:30].
+CREATE TABLE IF NOT EXISTS review_operations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  operation_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  occurred_at TEXT NOT NULL,
+  applied_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_review_operations_user_op ON review_operations(user_id, operation_id);
+CREATE INDEX IF NOT EXISTS idx_review_operations_user_item ON review_operations(user_id, item_id);
+
+-- Learner content mirrored from the Appwrite collections of the same shape
+-- (audio_tracks, localized_contents, story_segments). raw_json holds the
+-- Appwrite document; the columns below exist only for filtering. Distinct
+-- from the legacy audio_tracks / localized_contents tables above, which
+-- back TTS generation and the admin review queue with a different shape.
+CREATE TABLE IF NOT EXISTS content_audio_tracks (
+  id TEXT PRIMARY KEY,
+  content_kind TEXT NOT NULL,
+  content_id TEXT NOT NULL,
+  segment_id TEXT,
+  language_code TEXT NOT NULL DEFAULT '',
+  track_type TEXT NOT NULL DEFAULT '',
+  review_status TEXT NOT NULL DEFAULT 'needsReview',
+  created_at TEXT,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_content_audio_tracks_item ON content_audio_tracks(content_kind, content_id);
+
+CREATE TABLE IF NOT EXISTS content_localizations (
+  id TEXT PRIMARY KEY,
+  content_kind TEXT NOT NULL,
+  content_id TEXT NOT NULL,
+  language_code TEXT NOT NULL,
+  review_status TEXT NOT NULL DEFAULT 'needsReview',
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_content_localizations_item ON content_localizations(content_kind, content_id, language_code);
+
+CREATE TABLE IF NOT EXISTS story_segments (
+  id TEXT PRIMARY KEY,
+  story_id TEXT NOT NULL,
+  order_index INTEGER DEFAULT 0,
+  raw_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments(story_id, order_index);

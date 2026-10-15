@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/auth/edge_auth.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -12,7 +17,7 @@ class DeletionAccount extends Mock implements Account {}
 
 class DeletionFunctions extends Mock implements Functions {}
 
-class DeletionExecution extends Mock implements models.Execution {}
+class DeletionJwt extends Mock implements models.Jwt {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -34,8 +39,21 @@ void main() {
       });
     }
 
+    test('accepts a blocked login as the login being removed', () {
+      final result = parseAccountDeletionExecution(
+        status: 'completed',
+        statusCode: 200,
+        responseBody:
+            '{"ok":true,"code":"account_deleted","authDeleted":false,'
+            '"loginBlocked":true}',
+      );
+      expect(result.isFullSuccess, isTrue);
+      expect(result.isAuthDeleted, isTrue);
+    });
+
     for (final body in [
       '{"ok":true}',
+      '{"ok":true,"loginBlocked":false}',
       '{"ok":true,"authDeleted":false}',
       '{"ok":true,"code":"account_deleted","authDeleted":false}',
     ]) {
@@ -67,6 +85,8 @@ void main() {
     late DeletionFunctions functions;
     late SharedPreferences prefs;
     late AppwriteAuthService service;
+    late AccountDeletionRequest request;
+    var requests = 0;
 
     setUp(() async {
       SharedPreferences.setMockInitialValues({
@@ -78,29 +98,34 @@ void main() {
       client = DeletionClient();
       functions = DeletionFunctions();
       when(() => client.setSession(any())).thenReturn(client);
+      requests = 0;
+      request = () async => throw StateError('no response configured');
       service = AppwriteAuthService.forTesting(
         client: client,
         account: DeletionAccount(),
         functions: functions,
         prefs: prefs,
         isWebOverride: false,
+        accountDeletionRequest: () {
+          requests++;
+          return request();
+        },
       );
     });
 
     void execution(int code, String body) {
-      final result = DeletionExecution();
-      when(() => result.status).thenReturn(ExecutionStatus.completed);
-      when(() => result.responseStatusCode).thenReturn(code);
-      when(() => result.responseBody).thenReturn(body);
-      when(
-        () => functions.createExecution(functionId: 'delete-account'),
-      ).thenAnswer((_) async => result);
+      request = () async => AccountDeletionResponse(code, body);
     }
 
+    test('deletion goes to the Worker, never Appwrite Functions', () async {
+      execution(200, '{"ok":true,"code":"account_deleted","authDeleted":true}');
+      await service.deleteAccount();
+      expect(requests, 1);
+      verifyZeroInteractions(functions);
+    });
+
     test('transport 401 requires sign-in and never returns success', () async {
-      when(
-        () => functions.createExecution(functionId: 'delete-account'),
-      ).thenThrow(AppwriteException('Expired session', 401));
+      request = () async => throw AppwriteException('Expired session', 401);
       await expectLater(
         service.deleteAccount(),
         throwsA(
@@ -114,14 +139,12 @@ void main() {
       expect(prefs.getBool('olitun_has_local_session'), isFalse);
     });
 
-    test('missing function does not imply deletion', () async {
+    test('network failure does not imply deletion', () async {
       final sessionTimestamp = prefs.getInt('olitun_web_session_ts');
-      when(
-        () => functions.createExecution(functionId: 'delete-account'),
-      ).thenThrow(AppwriteException('Function not found', 404));
+      request = () async => throw http.ClientException('offline');
       await expectLater(
         service.deleteAccount(),
-        throwsA(isA<AppwriteException>().having((e) => e.code, 'code', 404)),
+        throwsA(isA<AppwriteException>().having((e) => e.code, 'code', 500)),
       );
       expect(prefs.getBool('olitun_has_local_session'), isTrue);
       // Legacy preference cleanup must not be mistaken for signing out.
@@ -130,7 +153,7 @@ void main() {
       verifyNever(() => client.setSession(''));
     });
 
-    test('nested function 404 is not proof that the user is absent', () async {
+    test('worker 404 is not proof that the user is absent', () async {
       execution(404, '{"ok":false,"message":"Resource not found"}');
       await expectLater(
         service.deleteAccount(),
@@ -139,7 +162,7 @@ void main() {
       expect(prefs.getBool('olitun_has_local_session'), isTrue);
     });
 
-    test('nested function 401 requires reauthentication', () async {
+    test('worker 401 requires reauthentication', () async {
       execution(401, '{"ok":false,"code":"unauthenticated"}');
       await expectLater(
         service.deleteAccount(),
@@ -156,6 +179,17 @@ void main() {
       );
       expect(prefs.getBool('olitun_has_local_session'), isTrue);
     });
+
+    for (final code in [502, 503]) {
+      test('worker $code (login not removed) keeps the session', () async {
+        execution(code, '{"ok":false,"code":"deletion_failed"}');
+        await expectLater(
+          service.deleteAccount(),
+          throwsA(isA<AppwriteException>().having((e) => e.code, 'code', code)),
+        );
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
+      });
+    }
 
     test('confirmed server deletion clears persisted session state', () async {
       execution(200, '{"ok":true,"code":"account_deleted"}');
@@ -182,5 +216,56 @@ void main() {
         expect(prefs.getBool('olitun_has_local_session'), isFalse);
       });
     }
+  });
+
+  group('Edge deletion transport', () {
+    late DeletionAccount account;
+
+    setUp(() {
+      account = DeletionAccount();
+    });
+
+    void jwt(String value) {
+      final token = DeletionJwt();
+      when(() => token.jwt).thenReturn(value);
+      when(() => account.createJWT()).thenAnswer((_) async => token);
+    }
+
+    test('posts to the Worker with the session JWT', () async {
+      jwt('jwt-abc');
+      late http.Request sent;
+      final request = edgeAccountDeletionRequest(
+        edgeAuth: EdgeAuth(account),
+        httpClient: MockClient((req) async {
+          sent = req;
+          return http.Response(
+            jsonEncode({'ok': true, 'code': 'account_deleted'}),
+            200,
+          );
+        }),
+      );
+      final res = await request();
+      expect(res.statusCode, 200);
+      expect(sent.method, 'POST');
+      expect(sent.url.toString(), CloudflareConfig.deleteAccountEndpoint);
+      expect(sent.headers['Authorization'], 'Bearer jwt-abc');
+    });
+
+    test('no session means 401 without calling the Worker', () async {
+      when(() => account.createJWT()).thenThrow(AppwriteException('guest'));
+      var called = false;
+      final request = edgeAccountDeletionRequest(
+        edgeAuth: EdgeAuth(account),
+        httpClient: MockClient((_) async {
+          called = true;
+          return http.Response('{}', 200);
+        }),
+      );
+      await expectLater(
+        request(),
+        throwsA(isA<AppwriteException>().having((e) => e.code, 'code', 401)),
+      );
+      expect(called, isFalse);
+    });
   });
 }

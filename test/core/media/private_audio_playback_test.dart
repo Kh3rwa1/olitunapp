@@ -36,21 +36,22 @@ void main() {
       var requests = 0;
       var denied = false;
       final media = AuthorizedMediaService(
-        endpoint: 'https://media.example.test/v1',
-        projectId: 'test',
+        endpoint: 'https://api.example.test',
         clock: () => now,
         execute: (_) async {
           requests++;
           if (denied) throw const MediaAccessException();
+          final expiry = now.add(const Duration(minutes: 5));
+          final exp = expiry.millisecondsSinceEpoch ~/ 1000;
           return {
             'ok': true,
-            'protocolVersion': 2,
-            'transport': 'appwrite-file-token',
+            'protocolVersion': 3,
+            'transport': 'edge-signed-url',
             'bucketId': 'paid_media',
             'fileId': 'file',
             'url':
-                'https://media.example.test/v1/storage/buckets/paid_media/files/file/view?project=test&token=lease$requests',
-            'expiresAt': now.add(const Duration(minutes: 5)).toIso8601String(),
+                'https://api.example.test/api/v1/media/paid/file?exp=$exp&uid=u1&sig=lease$requests',
+            'expiresAt': expiry.toIso8601String(),
             'mimeType': 'audio/mpeg',
           };
         },
@@ -69,7 +70,7 @@ void main() {
       expect(loaded.length, 2);
       expect(positions.last, const Duration(seconds: 12));
       expect(
-        (loaded.last as UriAudioSource).uri.queryParameters['token'],
+        (loaded.last as UriAudioSource).uri.queryParameters['sig'],
         'lease2',
       );
       denied = true;
@@ -90,8 +91,7 @@ void main() {
     when(player.pause).thenAnswer((_) async {});
     when(player.stop).thenThrow(StateError('native player already disposed'));
     final media = AuthorizedMediaService(
-      endpoint: 'https://media.example.test/v1',
-      projectId: 'test',
+      endpoint: 'https://api.example.test',
       execute: (_) async => throw const MediaAccessException(),
     );
     final playback = PrivateAudioPlayback(player, media);

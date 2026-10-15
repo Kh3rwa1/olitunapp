@@ -6,23 +6,31 @@ import 'package:itun/core/media/authorized_media.dart';
 void main() {
   final now = DateTime.utc(2026, 9, 6);
   const endpoint = 'https://media.example.test/v1';
+  const worker = 'https://api.example.test';
   const source = 'appwrite-storage://paid_media/file?lessonId=lesson';
+  final expiry = now.add(const Duration(minutes: 5));
+  final exp = expiry.millisecondsSinceEpoch ~/ 1000;
+  String leaseUrl({
+    String base = worker,
+    String fileId = 'file',
+    String? query,
+  }) =>
+      '$base/api/v1/media/paid/$fileId?'
+      '${query ?? 'exp=$exp&uid=u1&sig=short-lived'}';
   Map<String, dynamic> response() => {
     'ok': true,
-    'protocolVersion': 2,
-    'transport': 'appwrite-file-token',
+    'protocolVersion': 3,
+    'transport': 'edge-signed-url',
     'bucketId': 'paid_media',
     'fileId': 'file',
-    'url':
-        '$endpoint/storage/buckets/paid_media/files/file/view?project=test&token=short-lived',
-    'expiresAt': now.add(const Duration(minutes: 5)).toIso8601String(),
+    'url': leaseUrl(),
+    'expiresAt': expiry.toIso8601String(),
     'mimeType': 'video/mp4',
   };
   AuthorizedMediaService service(MediaExecute execute) =>
       AuthorizedMediaService(
         execute: execute,
-        endpoint: endpoint,
-        projectId: 'test',
+        endpoint: worker,
         clock: () => now,
       );
 
@@ -67,7 +75,7 @@ void main() {
   );
 
   test(
-    'resolution uses protocol v2 and each refresh reauthorizes, never caches',
+    'resolution uses protocol v3 and each refresh reauthorizes, never caches',
     () async {
       final bodies = <Map<String, dynamic>>[];
       final resolver = service((body) async {
@@ -75,14 +83,15 @@ void main() {
         return response();
       });
       final lease = await resolver.resolve(source);
-      expect(lease.uri.queryParameters['token'], 'short-lived');
+      expect(lease.uri.toString(), leaseUrl());
+      expect(lease.uri.queryParameters['sig'], 'short-lived');
       expect(lease.refreshAfter(now), const Duration(minutes: 4, seconds: 30));
       await resolver.resolve(source);
       expect(
         bodies,
         List.filled(2, {
           'action': 'get_media',
-          'protocolVersion': 2,
+          'protocolVersion': 3,
           'lessonId': 'lesson',
           'bucketId': 'paid_media',
           'fileId': 'file',
@@ -112,28 +121,38 @@ void main() {
   );
 
   for (final override in <Map<String, dynamic>>[
-    {'protocolVersion': 1, 'base64': 'legacy'},
+    {'protocolVersion': 2},
+    {'transport': 'appwrite-file-token'},
+    {
+      'protocolVersion': 2,
+      'transport': 'appwrite-file-token',
+      'url':
+          '$endpoint/storage/buckets/paid_media/files/file/view?project=test&token=x',
+    },
     {'bucketId': 'other'},
     {'fileId': 'other'},
     {'ok': false},
-    {
-      'url':
-          'https://evil.test/v1/storage/buckets/paid_media/files/file/view?project=test&token=x',
-    },
-    {
-      'url':
-          '$endpoint/storage/buckets/paid_media/files/other/view?project=test&token=x',
-    },
-    {
-      'url':
-          '$endpoint/storage/buckets/paid_media/files/file/view?project=other&token=x',
-    },
-    {
-      'url':
-          '$endpoint/storage/buckets/paid_media/files/file/view?project=test',
-    },
+    // Foreign host, wrong scheme, credentials or fragments.
+    {'url': leaseUrl(base: 'https://evil.test')},
+    {'url': leaseUrl(base: 'http://api.example.test')},
+    {'url': leaseUrl(base: 'https://user@api.example.test')},
+    {'url': '${leaseUrl()}#frag'},
+    // Cross-file grant and path tricks.
+    {'url': leaseUrl(fileId: 'other')},
+    {'url': leaseUrl(fileId: 'file/extra')},
+    // Missing, extra or tampered signing parameters.
+    {'url': leaseUrl(query: 'exp=$exp&uid=u1')},
+    {'url': leaseUrl(query: 'exp=$exp&uid=u1&sig=')},
+    {'url': leaseUrl(query: 'exp=$exp&sig=x')},
+    {'url': leaseUrl(query: 'exp=$exp&uid=u1&sig=x&token=y')},
+    {'url': leaseUrl(query: 'exp=${exp + 3600}&uid=u1&sig=x')},
+    // Expired or unbounded leases.
     {'expiresAt': now.toIso8601String()},
-    {'expiresAt': now.add(const Duration(hours: 1)).toIso8601String()},
+    {'expiresAt': now.add(const Duration(seconds: 20)).toIso8601String()},
+    {
+      'expiresAt': now.add(const Duration(hours: 1)).toIso8601String(),
+      'url': leaseUrl(query: 'exp=${exp + 3300}&uid=u1&sig=x'),
+    },
   ]) {
     test(
       'reject malformed, expired, unbounded or cross-file grant: $override',

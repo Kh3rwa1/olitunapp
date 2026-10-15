@@ -1,15 +1,11 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import '../../../core/auth/account_scope.dart';
-import '../../../core/auth/appwrite_auth_service.dart';
 import '../../../core/auth/edge_auth.dart';
-import '../../../core/config/appwrite_config.dart';
 import '../../../core/config/cloudflare_config.dart';
 
 const studioLanguages = {
@@ -158,8 +154,7 @@ class AiStudioService {
 }
 
 final aiStudioServiceProvider = Provider<AiStudioService>((ref) {
-  final auth = ref.watch(appwriteAuthServiceProvider);
-  final transport = _StudioTransport(auth, EdgeAuth.instance);
+  final transport = _StudioTransport(EdgeAuth.instance);
   final subscription = AccountScope.changes.listen((_) {
     transport.active = false;
     ref.invalidateSelf();
@@ -170,23 +165,18 @@ final aiStudioServiceProvider = Provider<AiStudioService>((ref) {
   });
   return AiStudioService(
     call: transport.call,
-    configured:
-        (_studioFunctionId.isNotEmpty && AppwriteConfig.isBackendConfigured) ||
-        CloudflareConfig.baseUrl.isNotEmpty,
+    configured: CloudflareConfig.baseUrl.isNotEmpty,
   );
 });
 
-const _studioFunctionId = String.fromEnvironment(
-  'AI_STUDIO_FUNCTION_ID',
-  defaultValue: 'aiStudio',
-);
-const _inputBucket = 'ai_studio_inputs';
-
+/// Sends Studio requests to the Cloudflare Worker, signed with the session
+/// JWT. Input files travel inline as base64.
 class _StudioTransport {
-  _StudioTransport(this.auth, this.edgeAuth);
-  final AppwriteAuthService auth;
+  _StudioTransport(this.edgeAuth);
   final EdgeAuth edgeAuth;
   bool active = true;
+
+  static const _url = '${CloudflareConfig.baseUrl}/api/v1/studio/process';
 
   void _check() {
     if (!active) throw const StudioException('ACCOUNT_CHANGED');
@@ -202,106 +192,43 @@ class _StudioTransport {
     StudioInput? input,
   ) async {
     _check();
-
-    // 1. Try Cloudflare Edge Studio endpoint first (zero cold starts, high-availability edge)
-    const cfUrl = '${CloudflareConfig.baseUrl}/api/v1/studio/process';
+    final payload = Map<String, dynamic>.from(body);
+    if (input != null && input.bytes.isNotEmpty) {
+      payload['audioBase64'] = base64Encode(input.bytes);
+      payload['fileBase64'] = base64Encode(input.bytes);
+      payload['fileName'] = input.name;
+    }
+    final authHeaders = await edgeAuth.headers();
+    _check();
+    final http.Response res;
     try {
-      final payload = Map<String, dynamic>.from(body);
-      if (input != null && input.bytes.isNotEmpty) {
-        payload['audioBase64'] = base64Encode(input.bytes);
-        payload['fileBase64'] = base64Encode(input.bytes);
-        payload['fileName'] = input.name;
-      }
-      final authHeaders = await edgeAuth.headers();
-      _check();
-      final res = await http
+      res = await http
           .post(
-            Uri.parse(cfUrl),
+            Uri.parse(_url),
             headers: {'Content-Type': 'application/json', ...authHeaders},
             body: jsonEncode(payload),
           )
-          .timeout(const Duration(seconds: 30));
-      if (res.statusCode == 200) {
-        final decoded = jsonDecode(res.body);
-        if (decoded is Map &&
-            (decoded['success'] == true || decoded['ok'] == true) &&
-            decoded['data'] is Map) {
-          return Map<String, dynamic>.from(decoded['data'] as Map);
-        }
-      } else {
-        final decoded = jsonDecode(res.body);
-        if (decoded is Map && decoded['error'] is String) {
-          throw StudioException(decoded['error'] as String);
-        }
-      }
-    } on StudioException {
-      rethrow;
+          .timeout(const Duration(seconds: 60));
     } catch (_) {
-      if (!AppwriteConfig.isBackendConfigured) {
-        throw const StudioException('REQUEST_FAILED');
-      }
-      // Fall through to Appwrite SDK execution
+      throw const StudioException('REQUEST_FAILED');
     }
-
-    // Keep the session stable until upload, execution and cleanup finish.
-    // A second SDK client still shares cookies; adding setJWT to it causes
-    // Appwrite's user_jwt_and_cookie_set rejection. Authenticate SDK requests
-    // using the existing session and forward JWT only inside execution headers.
-    final token = await auth.account.createJWT();
     _check();
-    final client = auth.client;
-    final storage = Storage(client);
-    String? fileId;
+    Object? decoded;
     try {
-      final user = await Account(client).get();
-      _check();
-      if (input != null) {
-        fileId = ID.unique();
-        final extension = input.name.split('.').last.toLowerCase();
-        await storage.createFile(
-          bucketId: _inputBucket,
-          fileId: fileId,
-          file: InputFile.fromBytes(
-            bytes: input.bytes,
-            filename: 'input.$extension',
-          ),
-          permissions: [
-            Permission.read(Role.user(user.$id)),
-            Permission.delete(Role.user(user.$id)),
-          ],
-        );
-        _check();
-      }
-      final response = await Functions(client).createExecution(
-        functionId: _studioFunctionId,
-        method: ExecutionMethod.pOST,
-        xasync: false,
-        headers: {'Authorization': 'Bearer ${token.jwt}'},
-        body: jsonEncode({...body, 'fileId': ?fileId}),
-      );
-      _check();
-      final decoded = jsonDecode(response.responseBody);
-      if (response.responseStatusCode != 200 ||
-          decoded is! Map ||
-          decoded['success'] != true ||
-          decoded['data'] is! Map) {
-        throw StudioException(
-          decoded is Map && decoded['error'] is String
-              ? decoded['error'] as String
-              : 'REQUEST_FAILED',
-        );
-      }
-      return Map<String, dynamic>.from(decoded['data'] as Map);
-    } finally {
-      if (fileId != null) {
-        // OCR submission uploads to Sarvam before acknowledging; it does not
-        // need our input file while polling. Best effort cleanup on all paths.
-        try {
-          await storage.deleteFile(bucketId: _inputBucket, fileId: fileId);
-        } catch (_) {
-          /* Server retention cleanup handles interrupted uploads. */
-        }
-      }
+      decoded = jsonDecode(res.body);
+    } catch (_) {
+      throw const StudioException('INVALID_RESPONSE');
     }
+    if (res.statusCode == 200 &&
+        decoded is Map &&
+        (decoded['success'] == true || decoded['ok'] == true) &&
+        decoded['data'] is Map) {
+      return Map<String, dynamic>.from(decoded['data'] as Map);
+    }
+    throw StudioException(
+      decoded is Map && decoded['error'] is String
+          ? decoded['error'] as String
+          : 'REQUEST_FAILED',
+    );
   }
 }

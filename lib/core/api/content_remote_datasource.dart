@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'dart:convert';
-
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../api/appwrite_databases_pagination.dart';
+import '../api/edge_json_client.dart';
 import '../auth/appwrite_auth_service.dart';
 import '../config/appwrite_config.dart';
 import '../config/cloudflare_config.dart';
@@ -36,6 +33,12 @@ abstract class ContentRemoteDataSource {
     required String rowId,
   });
 
+  /// One learner-visible row from the Cloudflare Worker.
+  Future<ContentRowData> getPublicRow({
+    required String tableId,
+    required String rowId,
+  });
+
   Future<Map<String, dynamic>> getCategory({
     required String categoryId,
     Duration timeout = const Duration(seconds: 6),
@@ -53,16 +56,18 @@ abstract class ContentRemoteDataSource {
 
 /// Default implementation of [ContentRemoteDataSource] backed by Cloudflare Edge API and Appwrite [TablesDB].
 class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
-  final TablesDB _tablesDB;
-  final http.Client? _httpClient;
+  static const Duration _listTimeout = Duration(seconds: 6);
 
+  final TablesDB _tablesDB;
+  final http.Client _client;
+
+  /// Learner reads ([listRows], [getCategory]) come only from the Cloudflare
+  /// Worker; [tablesDB] backs the admin CMS row reads and writes.
   ContentRemoteDataSourceImpl({
     required TablesDB tablesDB,
     http.Client? httpClient,
   }) : _tablesDB = tablesDB,
-       _httpClient = httpClient;
-
-  http.Client get _client => _httpClient ?? http.Client();
+       _client = httpClient ?? http.Client();
 
   String? _cloudflareEndpointFor(String tableId, {String? categoryId}) {
     final queryParam = (categoryId != null && categoryId.isNotEmpty)
@@ -86,6 +91,9 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       case 'lessons':
       case 'lesson':
         return '${CloudflareConfig.lessonsEndpoint}$queryParam';
+      case 'rhymes':
+      case 'rhyme':
+        return '${CloudflareConfig.rhymesEndpoint}$queryParam';
       default:
         return null;
     }
@@ -110,6 +118,9 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
       case 'lessons':
       case 'lesson':
         return 'lessons';
+      case 'rhymes':
+      case 'rhyme':
+        return 'rhymes';
       default:
         return tableId;
     }
@@ -132,53 +143,20 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     bool orderAsc = false,
     int limit = 500,
   }) async {
-    // 1. Try Cloudflare Edge API first (Sub-20ms global edge cache, zero Appwrite reads)
-    try {
-      final endpoint = _cloudflareEndpointFor(tableId, categoryId: categoryId);
-      if (endpoint != null) {
-        final uri = Uri.parse(endpoint);
-        final res = await _client.get(uri).timeout(const Duration(seconds: 6));
-        if (res.statusCode == 200) {
-          final body = jsonDecode(res.body);
-          if (body is Map && body['ok'] == true) {
-            final key = _keyForTable(tableId);
-            final items = body[key];
-            if (items is List && items.isNotEmpty) {
-              return items
-                  .map(
-                    (it) => ContentRowData(
-                      id: (it as Map)['id']?.toString() ?? '',
-                      data: Map<String, dynamic>.from(it),
-                    ),
-                  )
-                  .toList();
-            }
-          }
-        }
-      }
-    } catch (_) {
-      // Fall through to Appwrite on failure
+    final endpoint = _cloudflareEndpointFor(tableId, categoryId: categoryId);
+    if (endpoint == null) {
+      throw UnsupportedError('No Cloudflare Worker route for "$tableId"');
     }
-
-    // 2. Fallback to Appwrite TablesDB
-    final List<String> queries = [
-      if (categoryAttribute != null &&
-          categoryId != null &&
-          categoryId.isNotEmpty)
-        Query.equal(categoryAttribute, categoryId),
-      if (orderAsc) Query.orderAsc('order'),
-      Query.limit(limit),
-    ];
-
-    final response = await AppwriteDatabasesPagination.listRows(
-      _tablesDB,
-      databaseId: AppwriteConfig.databaseId,
-      tableId: tableId,
-      queries: queries,
+    // The Worker returns rows already filtered and ordered; an empty list is
+    // a valid result.
+    final items = await EdgeJsonClient.getList(
+      _client,
+      Uri.parse(endpoint),
+      _keyForTable(tableId),
+      timeout: _listTimeout,
     );
-
-    return response
-        .map((row) => ContentRowData(id: row.$id, data: row.data))
+    return items
+        .map((it) => ContentRowData(id: it['id']?.toString() ?? '', data: it))
         .toList();
   }
 
@@ -196,35 +174,55 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   }
 
   @override
+  Future<ContentRowData> getPublicRow({
+    required String tableId,
+    required String rowId,
+  }) async {
+    final kind = _publicKinds[tableId];
+    if (kind == null) {
+      throw UnsupportedError('No Cloudflare Worker route for "$tableId"');
+    }
+    final body = await EdgeJsonClient.getJson(
+      _client,
+      Uri.parse(
+        '${CloudflareConfig.baseUrl}/api/v1/content/$kind/'
+        '${Uri.encodeComponent(rowId)}',
+      ),
+      timeout: _listTimeout,
+    );
+    final item = body['item'];
+    if (item is! Map) throw const FormatException('Missing content item');
+    final data = Map<String, dynamic>.from(item);
+    return ContentRowData(id: data['id']?.toString() ?? rowId, data: data);
+  }
+
+  static const _publicKinds = {
+    'letters': 'letter',
+    'numbers': 'number',
+    'words': 'word',
+    'sentences': 'sentence',
+    'rhymes': 'rhyme',
+    'categories': 'category',
+  };
+
+  @override
   Future<Map<String, dynamic>> getCategory({
     required String categoryId,
     Duration timeout = const Duration(seconds: 6),
   }) async {
-    // 1. Try Cloudflare Edge API first
-    try {
-      final uri = Uri.parse(
-        '${CloudflareConfig.categoriesEndpoint}/$categoryId',
-      );
-      final res = await _client.get(uri).timeout(timeout);
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map && body['ok'] == true && body['category'] is Map) {
-          return Map<String, dynamic>.from(body['category'] as Map);
-        }
-      }
-    } catch (_) {
-      // Fall through to Appwrite
+    final body = await EdgeJsonClient.getJson(
+      _client,
+      Uri.parse(
+        '${CloudflareConfig.categoriesEndpoint}/'
+        '${Uri.encodeComponent(categoryId)}',
+      ),
+      timeout: timeout,
+    );
+    final category = body['category'];
+    if (category is! Map) {
+      throw const EdgeApiException('Missing category in response');
     }
-
-    // 2. Fallback to Appwrite TablesDB
-    final category = await _tablesDB
-        .getRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: 'categories',
-          rowId: categoryId,
-        )
-        .timeout(timeout);
-    return category.data;
+    return Map<String, dynamic>.from(category);
   }
 
   @override
@@ -287,5 +285,8 @@ final contentRemoteDataSourceProvider = Provider<ContentRemoteDataSource>((
   ref,
 ) {
   final authService = ref.watch(appwriteAuthServiceProvider);
-  return ContentRemoteDataSourceImpl(tablesDB: TablesDB(authService.client));
+  return ContentRemoteDataSourceImpl(
+    tablesDB: TablesDB(authService.client),
+    httpClient: ref.watch(edgeHttpClientProvider),
+  );
 });

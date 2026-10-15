@@ -7,7 +7,6 @@ import {
   requireUser,
   timingSafeEqualStr,
   type AuthEnv,
-  type AuthVariables,
 } from './auth';
 import {
   AllKeysFailedError,
@@ -15,22 +14,12 @@ import {
   classifyBodhanFailure,
   withKeyRotation,
 } from './key_rotation';
+import { getRequestUserId, stableId, type App, type AppEnv, type Bindings } from './env';
+import { registerRoutes } from './routes';
+import { issuePaidMediaLease } from './routes/paid_media';
+import { ANONYMIZED_USER_ID, deleteUserAccount } from './routes/account';
 
-type Bindings = AuthEnv & {
-  DB: D1Database;
-  ASSETS: R2Bucket;
-  AI: any;
-  // Secrets (wrangler secret put). Never hardcode provider keys here.
-  BODHAN_API_KEYS?: string; // comma-separated
-  SARVAM_API_KEY?: string;
-  RAZORPAY_KEY_ID?: string;
-  RAZORPAY_KEY_SECRET?: string;
-  RAZORPAY_WEBHOOK_SECRET?: string;
-  RAZORPAY_API_BASE?: string; // test override only; defaults to Razorpay
-  BODHAN_API_BASE?: string; // test override only; defaults to Bodhan
-};
-
-const app = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>();
+const app: App = new Hono<AppEnv>();
 
 // Global CORS middleware for Flutter Web & Mobile
 app.use('*', cors());
@@ -48,7 +37,6 @@ for (const path of [
   '/api/v1/payments/verify',
   '/api/v1/payments/entitlements',
   '/api/v1/payments/entitlements/sync',
-  '/api/v1/user/delete',
 ]) {
   app.use(path, requireUser);
 }
@@ -65,10 +53,12 @@ for (const path of [
 }
 
 app.use('/api/v1/lessons/authorize', optionalUser);
-app.use('/api/v1/waitlist/join', optionalUser);
 
 app.use('/api/v1/admin/*', requireAdmin);
-app.use('/api/v1/analytics/*', requireAdmin);
+// Only the admin analytics jobs; /api/v1/analytics/events is public ingest
+// (routes/analytics.ts).
+app.use('/api/v1/analytics/aggregate', requireAdmin);
+app.use('/api/v1/analytics/cleanup', requireAdmin);
 app.use('/api/v1/payments/reconcile', requireAdmin);
 
 // Language mappings for IndicTrans2 model
@@ -838,19 +828,6 @@ app.all('/api/v1/translate', async (c) => {
   }
 });
 
-// The caller's user id, as verified by the auth middleware. Empty for
-// anonymous requests on optionalUser routes.
-function getRequestUserId(c: any, _body?: any): string {
-  return c.get('userId') || '';
-}
-
-async function stableId(value: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(value);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-}
-
 // 9. Record Mistake (replaces Appwrite recordMistake function)
 app.post('/api/v1/mistakes/record', async (c) => {
   try {
@@ -1270,88 +1247,7 @@ app.all('/api/v1/gamification/summary', async (c) => {
 // GROUP 2: PUBLIC INTERACTIVE & CONTENT AUTH
 // ==========================================
 
-// 15. Binti Waitlist (replaces Appwrite bintiWaitlist function)
-app.post('/api/v1/waitlist/join', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-
-    const fullName = String(body.fullName || '').trim();
-    if (fullName.length < 2 || fullName.length > 100) {
-      return c.json({ ok: false, message: 'fullName must be between 2 and 100 characters.' }, 400);
-    }
-
-    const phoneNumber = String(body.phoneNumber || '').trim();
-    const phoneDigits = phoneNumber.replace(/[^0-9]/g, '');
-    if (phoneDigits.length < 7 || phoneDigits.length > 20) {
-      return c.json({ ok: false, message: 'phoneNumber must be 7-20 digits.' }, 400);
-    }
-
-    const ceremonyType = String(body.ceremonyType || 'binti').trim().toLowerCase();
-    const city = String(body.city || '').trim().slice(0, 100);
-    const state = String(body.state || '').trim().slice(0, 100);
-    const notes = String(body.notes || '').trim().slice(0, 1000);
-
-    let eventDate: string | null = null;
-    if (body.eventDate) {
-      const parsed = new Date(String(body.eventDate));
-      if (!Number.isNaN(parsed.getTime())) {
-        eventDate = parsed.toISOString();
-      }
-    }
-
-    // Check duplicate pending entry
-    const existing: any = await c.env.DB.prepare(
-      'SELECT id, full_name, phone_number, ceremony_type, city, state, event_date, notes, submitted_at, status FROM binti_waitlist WHERE phone_number = ? AND ceremony_type = ? AND status = ? LIMIT 1'
-    ).bind(phoneNumber, ceremonyType, 'new').first().catch(() => null);
-
-    if (existing) {
-      return c.json({
-        ok: true,
-        duplicate: true,
-        entry: {
-          id: existing.id,
-          fullName: existing.full_name,
-          phoneNumber: existing.phone_number,
-          ceremonyType: existing.ceremony_type,
-          city: existing.city,
-          state: existing.state,
-          eventDate: existing.event_date,
-          notes: existing.notes,
-          submittedAt: existing.submitted_at,
-          status: existing.status,
-        }
-      });
-    }
-
-    const entryId = await stableId(`${phoneNumber}:${ceremonyType}:${Date.now()}`);
-    const now = new Date().toISOString();
-
-    await c.env.DB.prepare(
-      'INSERT INTO binti_waitlist (id, user_id, full_name, phone_number, ceremony_type, city, state, event_date, notes, submitted_at, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(entryId, userId || null, fullName, phoneNumber, ceremonyType, city, state, eventDate, notes, now, 'new').run();
-
-    return c.json({
-      ok: true,
-      duplicate: false,
-      entry: {
-        id: entryId,
-        userId: userId || null,
-        fullName,
-        phoneNumber,
-        ceremonyType,
-        city,
-        state,
-        eventDate,
-        notes,
-        submittedAt: now,
-        status: 'new',
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Waitlist submission failed' }, 500);
-  }
-});
+// 15. Binti Waitlist: see routes/waitlist.ts
 
 // 16. Get Authorized Lesson (replaces Appwrite getAuthorizedLesson function)
 app.all('/api/v1/lessons/authorize', async (c) => {
@@ -1435,6 +1331,13 @@ app.all('/api/v1/lessons/authorize', async (c) => {
       const isPurchased = purchasedCategoryIds.has(lessonRow.category_id);
       const isPreview = Boolean(parsed.isPreview);
       const isUnlocked = isFree || isPurchased || isPreview;
+
+      if (action === 'get_media') {
+        if (parsed.isActive === false) {
+          return c.json({ ok: false, error: 'lesson_not_found', message: 'Lesson not found' }, 404);
+        }
+        return issuePaidMediaLease(c, { lesson: parsed, unlocked: isUnlocked, userId, body });
+      }
 
       if (!isUnlocked) {
         return c.json({
@@ -2405,9 +2308,10 @@ app.post('/api/v1/analytics/aggregate', async (c) => {
 app.post('/api/v1/analytics/cleanup', async (c) => {
   try {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 86400 * 1000).toISOString().slice(0, 10);
-    const result: any = await c.env.DB.prepare(
-      'DELETE FROM learning_analytics_events WHERE date_key < ?'
-    ).bind(ninetyDaysAgo).run().catch(() => ({ changes: 0 }));
+    const [result]: any[] = await c.env.DB.batch([
+      c.env.DB.prepare('DELETE FROM learning_analytics_events WHERE date_key < ?').bind(ninetyDaysAgo),
+      c.env.DB.prepare('DELETE FROM learning_analytics_event_details WHERE date_key < ?').bind(ninetyDaysAgo),
+    ]);
 
     return c.json({ ok: true, deletedEvents: result.meta?.changes || 0, cutoffDate: ninetyDaysAgo });
   } catch (err: any) {
@@ -2416,27 +2320,25 @@ app.post('/api/v1/analytics/cleanup', async (c) => {
 });
 
 // 30. Reconcile Orphaned Deletions (replaces Appwrite reconcileOrphanedDeletions function)
+// Re-runs the full deletion (data + Appwrite login) for requests that were
+// interrupted, so a request is never marked completed while the login exists.
 app.post('/api/v1/admin/deletions/reconcile', async (c) => {
   try {
-    const pendingDeletions: any = await c.env.DB.prepare(
-      'SELECT id, user_id FROM deletion_requests WHERE status = "pending" OR status = "cleanup_failed" LIMIT 20'
-    ).all().catch(() => ({ results: [] }));
+    const staleBefore = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const pending = await c.env.DB.prepare(
+      "SELECT id, user_id FROM deletion_requests WHERE status IN ('pending', 'in_progress', 'cleanup_failed', 'cleanup_complete') AND updated_at < ? AND user_id != ? LIMIT 20"
+    ).bind(staleBefore, ANONYMIZED_USER_ID).all<{ id: string; user_id: string }>();
 
     let completed = 0;
-    const now = new Date().toISOString();
-
-    for (const req of pendingDeletions.results || []) {
-      const uId = req.user_id;
-      if (!uId) continue;
-      // Clean D1 user artifacts
-      await c.env.DB.prepare('DELETE FROM user_mistakes WHERE user_id = ?').bind(uId).run().catch(() => {});
-      await c.env.DB.prepare('DELETE FROM bakhed_listening_progress WHERE user_id = ?').bind(uId).run().catch(() => {});
-      await c.env.DB.prepare('DELETE FROM user_badges WHERE user_id = ?').bind(uId).run().catch(() => {});
-      await c.env.DB.prepare('UPDATE deletion_requests SET status = "completed", updated_at = ? WHERE id = ?').bind(now, req.id).run();
-      completed++;
+    let failed = 0;
+    for (const req of pending.results || []) {
+      if (!req.user_id) continue;
+      const outcome = await deleteUserAccount(c.env, req.user_id);
+      if (outcome.status === 200) completed++;
+      else failed++;
     }
 
-    return c.json({ ok: true, completedCount: completed });
+    return c.json({ ok: true, completedCount: completed, failedCount: failed });
   } catch (err: any) {
     return c.json({ ok: false, message: err.message || 'Deletion reconciliation failed' }, 500);
   }
@@ -2477,57 +2379,13 @@ app.post('/api/v1/admin/backup', async (c) => {
   }
 });
 
-// 32. Delete Account (replaces Appwrite delete-account function)
-app.post('/api/v1/user/delete', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-    if (!userId) {
-      return c.json({ ok: false, message: 'Unauthenticated' }, 401);
-    }
-
-    const now = new Date().toISOString();
-    const requestId = await stableId(`del:${userId}:${Date.now()}`);
-
-    await c.env.DB.prepare(
-      'INSERT INTO deletion_requests (id, user_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)'
-    ).bind(requestId, userId, 'processing', now, now).run().catch(() => {});
-
-    // 1. Purge all user data in D1
-    await c.env.DB.prepare('DELETE FROM user_mistakes WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM mistake_review_sessions WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM bakhed_listening_progress WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM user_badges WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM reward_events WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM learning_analytics_events WHERE user_id = ?').bind(userId).run().catch(() => {});
-    await c.env.DB.prepare('DELETE FROM binti_waitlist WHERE user_id = ?').bind(userId).run().catch(() => {});
-    
-    // Anonymize purchase records for statutory financial tracking
-    await c.env.DB.prepare(
-      'UPDATE course_purchases SET user_id = "anonymized_user" WHERE user_id = ?'
-    ).bind(userId).run().catch(() => {});
-    await c.env.DB.prepare(
-      'UPDATE payment_orders SET user_id = "anonymized_user" WHERE user_id = ?'
-    ).bind(userId).run().catch(() => {});
-
-    // Complete state
-    await c.env.DB.prepare(
-      'UPDATE deletion_requests SET status = "completed", updated_at = ? WHERE id = ?'
-    ).bind(new Date().toISOString(), requestId).run().catch(() => {});
-
-    return c.json({
-      ok: true,
-      code: 'account_deleted',
-      message: 'Account and associated personal data successfully deleted from edge records',
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Deletion failed' }, 500);
-  }
-});
+// 32. Delete Account: see routes/account.ts
 
 // ==========================================
 // SPA & STATIC ASSETS PROXY (CLOUDFLARE PAGES)
 // ==========================================
+registerRoutes(app);
+
 app.notFound(async (c) => {
   const url = new URL(c.req.url);
   // Explicit API 404

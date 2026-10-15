@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:appwrite/appwrite.dart';
@@ -5,6 +6,9 @@ import 'package:appwrite/models.dart' as models;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/storage/cache_service.dart';
@@ -54,21 +58,6 @@ ContentItem _buildLessonItem({
   updatedAt: DateTime(2026, 9, 6),
 );
 
-models.Row _buildCategoryDoc({
-  required String categoryId,
-  required String unlockMode,
-  int previewLessonCount = 0,
-}) => models.Row(
-  $id: categoryId,
-  $tableId: 'categories',
-  $databaseId: AppwriteConfig.databaseId,
-  $createdAt: '2026-09-01T00:00:00.000Z',
-  $updatedAt: '2026-09-01T00:00:00.000Z',
-  $permissions: [],
-  $sequence: 1,
-  data: {'unlockMode': unlockMode, 'previewLessonCount': previewLessonCount},
-);
-
 models.Row _buildLessonDoc(Map<String, dynamic> data) => models.Row(
   $id: 'lesson_basics_1',
   $tableId: 'lessons',
@@ -84,6 +73,8 @@ void main() {
   late Directory tempDir;
   late _MockDatabases tablesDB;
   late ContentRepository repo;
+  late Map<String, Map<String, dynamic>> categories;
+  late List<Uri> edgeRequests;
 
   setUpAll(() async {
     tempDir = await Directory.systemTemp.createTemp('test_hive_lesson_upsert');
@@ -100,8 +91,27 @@ void main() {
   setUp(() {
     CacheService.resetForTesting();
     tablesDB = _MockDatabases();
+    categories = {};
+    edgeRequests = [];
+    // Category premium lookups go to the Worker's /api/v1/categories/:id.
+    final edge = MockClient((request) async {
+      edgeRequests.add(request.url);
+      final id = request.url.pathSegments.last;
+      final category = categories[id];
+      if (category == null) return http.Response('{"ok":false}', 404);
+      return http.Response(
+        jsonEncode({
+          'ok': true,
+          'category': {'id': id, ...category},
+        }),
+        200,
+      );
+    });
     repo = ContentRepository(
-      tablesDB: tablesDB,
+      remoteDataSource: ContentRemoteDataSourceImpl(
+        tablesDB: tablesDB,
+        httpClient: edge,
+      ),
       networkInfo: _FakeNetworkInfo(),
     );
   });
@@ -110,18 +120,10 @@ void main() {
     test(
       'successfully upserts a lesson in a free category with public permissions',
       () async {
-        when(
-          () => tablesDB.getRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: 'cat_sentences',
-          ),
-        ).thenAnswer(
-          (_) async => _buildCategoryDoc(
-            categoryId: 'cat_sentences',
-            unlockMode: 'free',
-          ),
-        );
+        categories['cat_sentences'] = {
+          'unlockMode': 'free',
+          'previewLessonCount': 0,
+        };
 
         when(
           () => tablesDB.createRow(
@@ -168,18 +170,10 @@ void main() {
     test(
       'updates existing lesson (409 Conflict) without throwing Bad State',
       () async {
-        when(
-          () => tablesDB.getRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: 'cat_sentences',
-          ),
-        ).thenAnswer(
-          (_) async => _buildCategoryDoc(
-            categoryId: 'cat_sentences',
-            unlockMode: 'free',
-          ),
-        );
+        categories['cat_sentences'] = {
+          'unlockMode': 'free',
+          'previewLessonCount': 0,
+        };
 
         when(
           () => tablesDB.createRow(
@@ -222,19 +216,10 @@ void main() {
     );
 
     test('protects paid lessons outside preview window', () async {
-      when(
-        () => tablesDB.getRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: 'categories',
-          rowId: 'cat_paid',
-        ),
-      ).thenAnswer(
-        (_) async => _buildCategoryDoc(
-          categoryId: 'cat_paid',
-          unlockMode: 'paid_only',
-          previewLessonCount: 2,
-        ),
-      );
+      categories['cat_paid'] = {
+        'unlockMode': 'paid_only',
+        'previewLessonCount': 2,
+      };
 
       when(
         () => tablesDB.createRow(
@@ -267,6 +252,47 @@ void main() {
 
       final perms = captured.first as List<String>;
       expect(perms, isEmpty);
+      expect(edgeRequests.single.path, '/api/v1/categories/cat_paid');
+      verifyNever(
+        () => tablesDB.getRow(
+          databaseId: any(named: 'databaseId'),
+          tableId: 'categories',
+          rowId: any(named: 'rowId'),
+        ),
+      );
     });
+
+    test(
+      'unresolvable category (Worker error) keeps the lesson private',
+      () async {
+        when(
+          () => tablesDB.createRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: any(named: 'permissions'),
+          ),
+        ).thenAnswer(
+          (invocation) async => _buildLessonDoc(
+            invocation.namedArguments[#data] as Map<String, dynamic>,
+          ),
+        );
+
+        final result = await repo.upsert(_buildLessonItem(categoryId: 'cat_x'));
+
+        expect(result.isRight(), isTrue);
+        final captured = verify(
+          () => tablesDB.createRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: 'lessons',
+            rowId: 'lesson_basics_1',
+            data: any(named: 'data'),
+            permissions: captureAny(named: 'permissions'),
+          ),
+        ).captured;
+        expect(captured.first as List<String>, isEmpty);
+      },
+    );
   });
 }

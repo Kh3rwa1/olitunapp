@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/data/datasources/remote_avatar_cache.dart';
 import 'package:itun/features/profile/data/datasources/remote_avatar_datasource.dart';
@@ -15,10 +15,7 @@ import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:itun/features/profile/presentation/widgets/avatar_lottie.dart';
 import 'package:lottie/lottie.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockStorage extends Mock implements Storage {}
 
 class MemoryAvatarCache extends RemoteAvatarCache {
   final files = <String, List<int>>{};
@@ -67,36 +64,54 @@ Uint8List _lottieBytes() => Uint8List.fromList(
   ),
 );
 
-FileList _files(String updatedAt) => FileList.fromMap({
-  'total': 1,
-  'files': [
-    {
-      '\$id': 'remote1',
-      'bucketId': 'profile_avatars',
-      '\$createdAt': updatedAt,
-      '\$updatedAt': updatedAt,
-      '\$permissions': ['read("any")'],
-      'name': 'avatar_dragon.json',
-      'signature': 's',
-      'mimeType': 'application/json',
-      'sizeOriginal': 10,
-      'chunksTotal': 1,
-      'chunksUploaded': 1,
-      'encryption': false,
-      'compression': 'none',
-    },
-  ],
-});
+http.Response _listing() => http.Response(
+  jsonEncode({
+    'ok': true,
+    'total': 1,
+    'avatars': [
+      {
+        'id': 'avatar_dragon.json',
+        'name': 'avatar_dragon.json',
+        'key': 'avatars/avatar_dragon.json',
+        'path': '/api/v1/assets/avatars/avatar_dragon.json',
+        'size': 10,
+        'version': 'e1',
+        'updatedAt': '2026-10-01T00:00:00.000Z',
+      },
+    ],
+  }),
+  200,
+);
+
+/// Fake Worker: [list] answers `/api/v1/avatars`, [bytes] answers asset
+/// downloads; [downloads] counts asset requests.
+class _FakeWorker {
+  _FakeWorker({required this.list, List<int>? bytes})
+    : bytes = bytes ?? _lottieBytes();
+
+  final Future<http.Response> Function() list;
+  final List<int> bytes;
+  int downloads = 0;
+
+  late final MockClient client = MockClient((request) async {
+    if (request.url.path == '/api/v1/avatars') return list();
+    if (request.url.path.startsWith('/api/v1/assets/')) {
+      downloads++;
+      return http.Response.bytes(bytes, 200);
+    }
+    return http.Response('not found', 404);
+  });
+}
 
 Future<ProviderContainer> _container({
   required SharedPreferences prefs,
-  required Storage storage,
+  required http.Client client,
 }) async {
   final container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(prefs),
       remoteAvatarDatasourceProvider.overrideWithValue(
-        RemoteAvatarDatasource(storage, MemoryAvatarCache()),
+        RemoteAvatarDatasource(client, MemoryAvatarCache()),
       ),
     ],
   );
@@ -141,16 +156,13 @@ void main() {
       // A network that never answers: the old blocking implementation would
       // stall on the 8s sync timeout, so the first frame must arrive well
       // before that to prove the picker never blocks on Appwrite.
-      final gate = Completer<FileList>();
+      final gate = Completer<http.Response>();
       addTearDown(() {
         if (!gate.isCompleted) gate.completeError(StateError('teardown'));
       });
-      final storage = MockStorage();
-      when(
-        () => storage.listFiles(bucketId: any(named: 'bucketId')),
-      ).thenAnswer((_) => gate.future);
+      final worker = _FakeWorker(list: () => gate.future);
 
-      final container = await _container(prefs: prefs, storage: storage);
+      final container = await _container(prefs: prefs, client: worker.client);
       final first = await container
           .read(availableAvatarsProvider.future)
           .timeout(const Duration(seconds: 2));
@@ -167,18 +179,9 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      final storage = MockStorage();
-      when(
-        () => storage.listFiles(bucketId: any(named: 'bucketId')),
-      ).thenAnswer((_) async => _files('u1'));
-      when(
-        () => storage.getFileDownload(
-          bucketId: any(named: 'bucketId'),
-          fileId: any(named: 'fileId'),
-        ),
-      ).thenAnswer((_) async => _lottieBytes());
+      final worker = _FakeWorker(list: () async => _listing());
 
-      final container = await _container(prefs: prefs, storage: storage);
+      final container = await _container(prefs: prefs, client: worker.client);
       final emissions = await _emissionsUntil(container, (e) => e.length >= 2);
 
       // Bundled first (instant grid), merged catalog once sync lands.
@@ -203,12 +206,11 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      final storage = MockStorage();
-      when(
-        () => storage.listFiles(bucketId: any(named: 'bucketId')),
-      ).thenThrow(AppwriteException('offline'));
+      final worker = _FakeWorker(
+        list: () async => throw http.ClientException('offline'),
+      );
 
-      final container = await _container(prefs: prefs, storage: storage);
+      final container = await _container(prefs: prefs, client: worker.client);
       final emissions = await _emissionsUntil(container, (e) => e.isNotEmpty);
 
       expect(emissions.length, 1);
@@ -221,21 +223,15 @@ void main() {
     () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      final storage = MockStorage();
       final renderable = await io.File(
         'assets/animations/avatars/avatar_paw_prints.json',
       ).readAsBytes();
-      when(
-        () => storage.listFiles(bucketId: any(named: 'bucketId')),
-      ).thenAnswer((_) async => _files('u1'));
-      when(
-        () => storage.getFileDownload(
-          bucketId: any(named: 'bucketId'),
-          fileId: any(named: 'fileId'),
-        ),
-      ).thenAnswer((_) async => renderable);
+      final worker = _FakeWorker(
+        list: () async => _listing(),
+        bytes: renderable,
+      );
 
-      final container = await _container(prefs: prefs, storage: storage);
+      final container = await _container(prefs: prefs, client: worker.client);
       final emissions = await _emissionsUntil(
         container,
         (e) => e.any((list) => list.any((avatar) => avatar.isRemote)),
@@ -250,12 +246,7 @@ void main() {
 
       // Second read is served from the in-memory memo: no re-download.
       await container.read(avatarArtworkBytesProvider(remote).future);
-      verify(
-        () => storage.getFileDownload(
-          bucketId: any(named: 'bucketId'),
-          fileId: any(named: 'fileId'),
-        ),
-      ).called(1);
+      expect(worker.downloads, 1);
     },
   );
 

@@ -21,13 +21,13 @@ if [ ! -f "android/key.properties" ]; then
   exit 1
 fi
 
+# Appwrite is used only for sign-in; every backend call goes to the
+# Cloudflare Worker at CLOUDFLARE_API_URL (translate, voice and AI Studio
+# included).
 APPWRITE_ENDPOINT="${APPWRITE_ENDPOINT:-https://sgp.cloud.appwrite.io/v1}"
 APPWRITE_PROJECT_ID="${APPWRITE_PROJECT_ID:-699495910038e39622c5}"
-TRANSLATE_URL="${TRANSLATE_URL:-https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions}"
 CLOUDFLARE_API_URL="${CLOUDFLARE_API_URL:-https://olitun.in}"
 ADMIN_TEAM_ID="${ADMIN_TEAM_ID:-admins}"
-SANTALI_VOICE_FUNCTION_ID="${SANTALI_VOICE_FUNCTION_ID:-santaliVoice}"
-AI_STUDIO_FUNCTION_ID="${AI_STUDIO_FUNCTION_ID:-aiStudio}"
 SENTRY_DSN="${SENTRY_DSN:-https://84bebaf2d902ae3f5326d29727aa6635@o4510882921709568.ingest.us.sentry.io/4512026738229248}"
 SENTRY_ENV="${SENTRY_ENV:-production}"
 BUILD_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
@@ -37,11 +37,8 @@ flutter build appbundle --release \
   --dart-define=APP_ENV=production \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
   --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
-  --dart-define=TRANSLATE_URL="$TRANSLATE_URL" \
   --dart-define=CLOUDFLARE_API_URL="$CLOUDFLARE_API_URL" \
   --dart-define=ADMIN_TEAM_ID="$ADMIN_TEAM_ID" \
-  --dart-define=SANTALI_VOICE_FUNCTION_ID="$SANTALI_VOICE_FUNCTION_ID" \
-  --dart-define=AI_STUDIO_FUNCTION_ID="$AI_STUDIO_FUNCTION_ID" \
   --dart-define=SENTRY_DSN="$SENTRY_DSN" \
   --dart-define=SENTRY_ENV="$SENTRY_ENV" \
   --dart-define=BUILD_SHA="$BUILD_SHA" \

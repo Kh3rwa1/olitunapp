@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive/hive.dart';
 
@@ -19,7 +22,13 @@ class FakeAppwriteDbService implements AppwriteDbService {
   List<Map<String, dynamic>> wordsData = [];
   List<Map<String, dynamic>> sentencesData = [];
   List<Map<String, dynamic>> quizzesData = [];
+
+  /// Worker `/api/v1/quizzes` reads.
   int quizListRequests = 0;
+
+  /// Direct Appwrite reads of the quizzes collection (must stay 0 for
+  /// learner loads; only the admin seed backfill reads it).
+  int appwriteQuizReads = 0;
   int createRequests = 0;
   int updateRequests = 0;
   int deleteRequests = 0;
@@ -36,7 +45,7 @@ class FakeAppwriteDbService implements AppwriteDbService {
     } else if (collectionId == 'sentences') {
       return sentencesData;
     } else if (collectionId == 'quizzes') {
-      quizListRequests++;
+      appwriteQuizReads++;
       return quizzesData;
     }
     return [];
@@ -320,6 +329,21 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           appwriteDbServiceProvider.overrideWithValue(fakeDb),
+          quizzesHttpClientProvider.overrideWithValue(
+            MockClient((request) async {
+              if (!request.url.path.endsWith('/api/v1/quizzes')) {
+                return http.Response('Not Found', 404);
+              }
+              fakeDb.quizListRequests++;
+              return http.Response.bytes(
+                utf8.encode(
+                  jsonEncode({'ok': true, 'quizzes': fakeDb.quizzesData}),
+                ),
+                200,
+                headers: const {'content-type': 'application/json'},
+              );
+            }),
+          ),
           isAuthenticatedProvider.overrideWith((ref) => true),
           learnerWordsProvider.overrideWith((ref) {
             final list = fakeDb.wordsData.map(WordModel.fromJson).toList();
@@ -535,6 +559,7 @@ void main() {
         await notifier.delete('new_quiz');
         expect(fakeDb.deleteRequests, 1);
         expect(fakeDb.quizListRequests, 1);
+        expect(fakeDb.appwriteQuizReads, 0);
         expect(
           container
               .read(quizzesProvider)

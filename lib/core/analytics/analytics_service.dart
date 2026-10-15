@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
-import '../auth/appwrite_auth_service.dart';
-import '../config/appwrite_config.dart';
+import '../auth/edge_auth.dart';
+import '../config/cloudflare_config.dart';
 import '../logging/app_logger.dart';
 import '../storage/hive_service.dart';
 
@@ -131,33 +131,45 @@ class LearningAnalyticsService {
        _now = now ?? DateTime.now,
        _idFactory = idFactory ?? const Uuid().v4;
 
-  factory LearningAnalyticsService.appwrite({
+  /// Sends events to the Cloudflare Worker ingest. The Worker attributes
+  /// events only from the session JWT (guests log anonymously), so no user
+  /// id is put in the payload.
+  factory LearningAnalyticsService.edge({
     required SharedPreferences prefs,
-    required AppwriteAuthService authService,
+    EdgeAuth? edgeAuth,
+    http.Client? httpClient,
   }) {
-    final tables = TablesDB(authService.client);
+    final auth = edgeAuth ?? EdgeAuth.instance;
+    final client = httpClient ?? http.Client();
     return LearningAnalyticsService(
       prefs: prefs,
-      userIdProvider: () async {
-        try {
-          final user = await authService.account.get().timeout(
-            const Duration(seconds: 3),
-          );
-          return user.$id;
-        } catch (_) {
-          // Guest/offline — events are emitted without a userId.
-          return null;
-        }
-      },
       remoteWriter: (eventId, payload) async {
-        await tables
-            .createRow(
-              databaseId: AppwriteConfig.databaseId,
-              tableId: collectionId,
-              rowId: eventId,
-              data: payload,
+        final res = await client
+            .post(
+              Uri.parse(CloudflareConfig.analyticsEventsEndpoint),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                ...await auth.headers(),
+              },
+              body: jsonEncode({
+                'events': [payload],
+              }),
             )
             .timeout(const Duration(seconds: 4));
+        if (res.statusCode >= 200 && res.statusCode < 300) return;
+        // A malformed event will never be accepted; drop it instead of
+        // retrying it from the queue forever.
+        if (res.statusCode == 400 || res.statusCode == 413) {
+          AppLogger.debug(
+            'LearningAnalytics: event $eventId rejected (${res.statusCode})',
+          );
+          return;
+        }
+        if (res.statusCode == 401) auth.clear();
+        throw http.ClientException(
+          'Analytics ingest failed (${res.statusCode})',
+        );
       },
     );
   }
@@ -420,16 +432,5 @@ final learningAnalyticsServiceProvider = Provider<LearningAnalyticsService>((
   ref,
 ) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  try {
-    return LearningAnalyticsService.appwrite(
-      prefs: prefs,
-      authService: ref.watch(appwriteAuthServiceProvider),
-    );
-  } catch (e) {
-    AppLogger.debug('LearningAnalytics: Appwrite unavailable ($e)');
-    return LearningAnalyticsService(
-      prefs: prefs,
-      remoteWriter: (eventId, payload) async => throw e,
-    );
-  }
+  return LearningAnalyticsService.edge(prefs: prefs);
 });

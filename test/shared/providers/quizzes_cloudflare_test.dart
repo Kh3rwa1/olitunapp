@@ -110,61 +110,55 @@ void main() {
     },
   );
 
+  ProviderContainer containerWith(http.Client client) {
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        isAuthenticatedProvider.overrideWith((ref) => true),
+        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
+        learnerSentencesProvider.overrideWith(
+          (ref) => const AsyncValue.data([]),
+        ),
+        quizzesHttpClientProvider.overrideWithValue(client),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
   test(
-    'quizzesProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'quizzesProvider treats an empty Worker list as valid (bundled defaults)',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () =>
-            mockDb.listAllDocuments('quizzes', queries: any(named: 'queries')),
-      ).thenAnswer(
-        (_) async => [
-          {
-            'id': 'appwrite_quiz_1',
-            'categoryId': 'cat_numbers',
-            'title': 'Appwrite Numbers Quiz',
-            'level': 'beginner',
-            'order': 0,
-            'isActive': true,
-            'questions': [
-              {
-                'promptOlChiki': '᱑',
-                'promptLatin': 'What number?',
-                'optionsOlChiki': ['1', '2', '3', '4'],
-                'optionsLatin': ['1', '2', '3', '4'],
-                'correctIndex': 0,
-              },
-            ],
-          },
-        ],
+      final requests = <Uri>[];
+      final container = containerWith(
+        MockClient((request) async {
+          requests.add(request.url);
+          return http.Response(jsonEncode({'ok': true, 'quizzes': []}), 200);
+        }),
       );
-
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-          isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
-          learnerSentencesProvider.overrideWith(
-            (ref) => const AsyncValue.data([]),
-          ),
-          quizzesProvider.overrideWith(
-            () => QuizzesNotifier(httpClient: mockHttpClient),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
 
       final quizzes = await container.read(quizzesProvider.future);
       expect(quizzes, isNotEmpty);
-      expect(quizzes.any((q) => q.id == 'appwrite_quiz_1'), isTrue);
-      verify(
-        () =>
-            mockDb.listAllDocuments('quizzes', queries: any(named: 'queries')),
-      ).called(1);
+      expect(requests.single.path, '/api/v1/quizzes');
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
+    },
+  );
+
+  test(
+    'quizzesProvider serves bundled defaults when the Worker fails, never Appwrite',
+    () async {
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
+      );
+
+      final quizzes = await container.read(quizzesProvider.future);
+      expect(quizzes, isNotEmpty);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 }

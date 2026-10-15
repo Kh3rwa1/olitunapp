@@ -21,6 +21,14 @@ class CloudflareConfig {
   static const String settingsEndpoint = '$baseUrl/api/v1/settings';
   static const String translateEndpoint = '$baseUrl/api/v1/translate';
 
+  // Learner content (audio, localizations, stories, avatars)
+  static const String audioTracksEndpoint = '$baseUrl/api/v1/audio-tracks';
+  static const String localizedContentsEndpoint =
+      '$baseUrl/api/v1/localized-contents';
+  static const String storySegmentsEndpoint = '$baseUrl/api/v1/story-segments';
+  static const String avatarsEndpoint = '$baseUrl/api/v1/avatars';
+  static const String assetsEndpoint = '$baseUrl/api/v1/assets';
+
   // Gamification, Mistakes & Progress
   static const String mistakesEndpoint = '$baseUrl/api/v1/mistakes';
   static const String mistakesRecordEndpoint =
@@ -37,8 +45,18 @@ class CloudflareConfig {
   static const String gamificationContentEndpoint =
       '$baseUrl/api/v1/gamification/content';
 
+  // Learner spaced-repetition (review) sync
+  static const String reviewStatesEndpoint = '$baseUrl/api/v1/review/states';
+  static const String reviewMutateEndpoint = '$baseUrl/api/v1/review/mutate';
+
   // Waitlist & Authorization
   static const String waitlistEndpoint = '$baseUrl/api/v1/waitlist/join';
+  static const String waitlistMineEndpoint = '$baseUrl/api/v1/waitlist/mine';
+  static const String adminWaitlistEndpoint = '$baseUrl/api/v1/admin/waitlist';
+
+  // Learner analytics ingest
+  static const String analyticsEventsEndpoint =
+      '$baseUrl/api/v1/analytics/events';
   static const String lessonsAuthorizeEndpoint =
       '$baseUrl/api/v1/lessons/authorize';
 

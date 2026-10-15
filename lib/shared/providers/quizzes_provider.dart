@@ -7,9 +7,8 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
-import '../../core/error/appwrite_error_classifier.dart';
 import '../../core/storage/cache_service.dart';
 import '../../core/storage/hive_service.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
@@ -20,8 +19,10 @@ import '../quiz_engine/quiz_engine.dart';
 import 'language_settings_providers.dart';
 import 'learner_content_providers.dart';
 
-/// Injected HTTP client for testing quizzes edge queries.
-final quizzesHttpClientProvider = Provider<http.Client?>((ref) => null);
+/// HTTP client for quizzes Worker reads (overridable in tests).
+final quizzesHttpClientProvider = Provider<http.Client>(
+  (ref) => ref.watch(edgeHttpClientProvider),
+);
 
 final quizzesProvider = AsyncNotifierProvider<QuizzesNotifier, List<QuizModel>>(
   QuizzesNotifier.new,
@@ -33,7 +34,7 @@ final quizzesByIdProvider = Provider<AsyncValue<Map<String, QuizModel>>>((ref) {
   });
 });
 
-/// Quizzes = stored base quizzes (cache → Cloudflare Edge → Appwrite → bundled defaults)
+/// Quizzes = stored base quizzes (cache → Cloudflare Worker → bundled defaults)
 /// compiled together with dynamic quizzes generated from learner words and
 /// sentences in the effective teaching language.
 class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
@@ -46,7 +47,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
   QuizzesNotifier({http.Client? httpClient}) : _injectedClient = httpClient;
 
   http.Client get _client =>
-      _injectedClient ?? ref.read(quizzesHttpClientProvider) ?? http.Client();
+      _injectedClient ?? ref.read(quizzesHttpClientProvider);
 
   SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
@@ -56,7 +57,6 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
   FutureOr<List<QuizModel>> build() async {
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
-    final db = ref.read(appwriteDbServiceProvider);
     var active = true;
     ref.onDispose(() => active = false);
     ref.listen(learnerWordsProvider, (_, _) => _recompile());
@@ -70,7 +70,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
       _recompile();
     }
 
-    final remote = await _fetchRemoteQuizzes(db);
+    final remote = await _fetchRemoteQuizzes();
     if (remote != null) {
       _baseQuizzes = remote.isNotEmpty ? remote : _fallbackIfEmpty();
       await _saveQuizzes(_baseQuizzes);
@@ -127,64 +127,37 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
     state = compiled;
   }
 
-  /// Fetches base quizzes from Cloudflare Workers edge (with Appwrite DB fallback);
-  /// returns null when unavailable.
-  Future<List<QuizModel>?> _fetchRemoteQuizzes(AppwriteDbService db) async {
-    // 1. Try Cloudflare Workers Edge API (Global edge caching, zero Appwrite reads)
+  /// Fetches base quizzes from the Cloudflare Worker; returns null when it
+  /// is unavailable. An empty list is a valid (authoritative) result.
+  Future<List<QuizModel>?> _fetchRemoteQuizzes() async {
     try {
-      final uri = Uri.parse(CloudflareConfig.quizzesEndpoint);
-      final res = await _client.get(uri).timeout(const Duration(seconds: 4));
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map && body['ok'] == true && body['quizzes'] is List) {
-          final quizzes = <QuizModel>[];
-          for (final row in body['quizzes']) {
-            try {
-              if (row is Map<String, dynamic>) {
-                quizzes.add(QuizModel.fromJson(row));
-              } else if (row is Map) {
-                quizzes.add(QuizModel.fromJson(Map<String, dynamic>.from(row)));
-              }
-            } catch (e, stack) {
-              AppLogger.warning(
-                'Skipping malformed quiz from Cloudflare',
-                name: 'QuizzesNotifier',
-                error: e,
-                stackTrace: stack,
-              );
-            }
-          }
-          if (quizzes.isNotEmpty) {
-            return quizzes;
-          }
+      final rows = await EdgeJsonClient.getList(
+        _client,
+        Uri.parse(CloudflareConfig.quizzesEndpoint),
+        'quizzes',
+        timeout: const Duration(seconds: 4),
+      );
+      final quizzes = <QuizModel>[];
+      for (final row in rows) {
+        try {
+          quizzes.add(QuizModel.fromJson(row));
+        } catch (e, stack) {
+          AppLogger.warning(
+            'Skipping malformed quiz from Cloudflare',
+            name: 'QuizzesNotifier',
+            error: e,
+            stackTrace: stack,
+          );
         }
       }
-    } catch (e) {
-      AppLogger.debug('Cloudflare quizzes fetch bypassed: $e');
-    }
-
-    // 2. Resilient Appwrite DB fallback
-    try {
-      final data = await db.listAllDocuments(
-        _collectionId,
-        queries: [DbQuery.orderAsc('order')],
-      );
-      return data.map(QuizModel.fromJson).toList();
+      return quizzes;
     } catch (e, stack) {
-      if (AppwriteErrorClassifier.infoOf(e)?.code == 404) {
-        AppLogger.warning(
-          'Quizzes collection ("$_collectionId") not found in Appwrite; '
-          'using default quizzes. Run the setup script for new projects.',
-          name: 'QuizzesNotifier',
-        );
-      } else {
-        AppLogger.warning(
-          'Failed to load quizzes from Appwrite',
-          name: 'QuizzesNotifier',
-          error: e,
-          stackTrace: stack,
-        );
-      }
+      AppLogger.warning(
+        'Failed to load quizzes from Cloudflare',
+        name: 'QuizzesNotifier',
+        error: e,
+        stackTrace: stack,
+      );
       return null;
     }
   }

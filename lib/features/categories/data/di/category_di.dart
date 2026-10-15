@@ -1,6 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/network/network_info.dart';
 import '../datasources/category_local_datasource.dart';
@@ -16,7 +17,10 @@ final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((
   ref,
 ) {
   final client = ref.watch(appwriteAuthServiceProvider).client;
-  return CategoryRemoteDataSourceImpl(TablesDB(client));
+  return CategoryRemoteDataSourceImpl(
+    TablesDB(client),
+    httpClient: ref.watch(edgeHttpClientProvider),
+  );
 });
 
 final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((

@@ -1,17 +1,13 @@
 /// Naming conventions for the remote avatar bucket.
 ///
-/// Admins upload `.json` Lottie files to the `profile_avatars` Appwrite
-/// Storage bucket; each file becomes one avatar choice with no app release.
+/// Admins upload `.json` Lottie files to R2 under `avatars/` (listed by the
+/// Worker at `/api/v1/avatars`); each file becomes one avatar choice with no
+/// app release.
 /// See `RemoteAvatarDatasource` for syncing and `availableAvatarsProvider`
 /// for the bundled-first, background-merge resolution order.
 library;
 
 import 'avatar_ol_chiki_names.dart';
-
-/// Appwrite Storage bucket holding the live avatar set (public read,
-///
-/// admin write).
-const String remoteAvatarBucketId = 'profile_avatars';
 
 /// Derives a stable, persistable avatar id from a bucket file name:
 /// lowercased, `avatar_` prefix and `.json` suffix stripped, runs of other

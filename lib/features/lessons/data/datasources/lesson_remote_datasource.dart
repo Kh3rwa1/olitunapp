@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
+import 'package:http/http.dart' as http;
 import '../../../../core/api/appwrite_functions_service.dart';
+import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/config/appwrite_config.dart';
+import '../../../../core/config/cloudflare_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../shared/security/premium_content_policy.dart';
 import '../models/lesson_model.dart';
@@ -24,8 +27,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
 
   final TablesDB tablesDB;
   final AppwriteFunctionsService? functionsService;
+  final http.Client _edgeClient;
 
-  LessonRemoteDataSourceImpl(this.tablesDB, {this.functionsService});
+  LessonRemoteDataSourceImpl(
+    this.tablesDB, {
+    this.functionsService,
+    http.Client? edgeClient,
+  }) : _edgeClient = edgeClient ?? http.Client();
 
   Future<List<LessonModel>> _getAuthorizedLessonList({
     String? categoryId,
@@ -182,18 +190,24 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     }
 
     try {
-      final category = await tablesDB
-          .getRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: lesson.categoryId,
-          )
-          .timeout(_readTimeout);
+      // Category premium settings come from the Worker (D1), never Appwrite.
+      final body = await EdgeJsonClient.getJson(
+        _edgeClient,
+        Uri.parse(
+          '${CloudflareConfig.categoriesEndpoint}/'
+          '${Uri.encodeComponent(lesson.categoryId)}',
+        ),
+        timeout: _readTimeout,
+      );
+      final category = body['category'];
+      if (category is! Map) {
+        throw const EdgeApiException('Category payload missing');
+      }
       return PremiumContentPolicy.forContentItem(
         isPremium: lesson.data?['isPremium'] == true,
-        categoryUnlockMode: category.data['unlockMode'] as String?,
+        categoryUnlockMode: category['unlockMode'] as String?,
         lessonOrder: lesson.order,
-        previewLessonCount: category.data['previewLessonCount'] as int? ?? 0,
+        previewLessonCount: category['previewLessonCount'] as int? ?? 0,
         isPreview: lesson.isPreview,
       );
     } catch (_) {

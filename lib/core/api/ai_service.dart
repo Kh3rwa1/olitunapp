@@ -2,36 +2,17 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
-import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import '../../shared/providers/app_settings_provider.dart';
-import '../auth/appwrite_auth_service.dart';
 import '../auth/edge_auth.dart';
 
 /// Translation API configuration.
 ///
-/// Set the URL of the deployed Appwrite Function via build flag. There is
-/// no default value — calling [AiService.translate] without a configured
-/// URL will throw at request time, surfacing the misconfiguration rather
-/// than silently leaking traffic to an undeclared host.
-///
-/// Two URL shapes are supported:
-///
-/// 1. **Function HTTP endpoint** (recommended; returns the function's body
-///    directly with status 200):
-///      https://[id].[region].appwrite.run/
-///
-/// 2. **Executions REST API** (returns 201 + an Execution object whose
-///    `responseBody` field is the actual function response):
-///      https://[region].cloud.appwrite.io/v1/functions/[id]/executions
-///
-/// [_post] auto-detects the wrapper shape and parses both correctly.
-///
-/// Reverse translation uses the same function by default; only set
-/// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
-/// separate deployment.
+/// Translation runs on the Cloudflare Worker (`/api/v1/translate`), which
+/// requires a signed-in session. `TRANSLATE_URL` overrides the endpoint for
+/// local testing; debug builds without it fail closed so a misconfigured
+/// build never silently calls an undeclared host.
 class AiConfig {
   static const String _defaultUrl = CloudflareConfig.translateEndpoint;
   static const String _envUrl = String.fromEnvironment('TRANSLATE_URL');
@@ -53,23 +34,13 @@ class AiConfig {
       _reverseOverride.isNotEmpty ? _reverseOverride : translateUrl;
 }
 
-/// Translation service — talks to the Appwrite Function deployed under
-/// `functions/translator/`. The function wraps Google Translate and Cloudflare
-/// IndicTrans2 with caching + rate limiting (see that directory's README).
+/// Translation service backed by the Cloudflare Worker, which wraps Google
+/// Translate and Workers AI IndicTrans2 with caching and rate limiting.
 class AiService {
-  AiService({
-    http.Client? client,
-    this.functions,
-    this.defaultEngine,
-    this.edgeAuth,
-  }) : _client = client ?? http.Client();
+  AiService({http.Client? client, this.defaultEngine, this.edgeAuth})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
-
-  /// When provided, executions go through the Appwrite SDK so the user's
-  /// session authenticates the call (the function requires `users` execute
-  /// permission). Raw-HTTP fallback remains for web-cookie contexts.
-  final Functions? functions;
 
   /// Signs requests to the Cloudflare Worker, which rejects anonymous calls.
   final EdgeAuth? edgeAuth;
@@ -129,41 +100,15 @@ class AiService {
     }
     if (url.isEmpty) {
       return _failClosed(
-        'Translation service is not configured. Build with --dart-define=TRANSLATE_URL=[appwrite-function-execution-url].',
+        'Translation service is not configured. Build with --dart-define=TRANSLATE_URL=<worker translate endpoint>.',
       );
     }
     try {
-      // Preferred path: SDK execution with session auth. The function's
-      // execute permission is ['users'], so bare HTTP can never pass.
-      final execMatch = RegExp(
-        r'/functions/([^/]+)/executions',
-      ).firstMatch(url);
-      if (functions != null && execMatch != null) {
-        // Await inside try so execution failures surface through the
-        // existing connection-error handling below.
-        return await _executeViaSdk(
-          functions!,
-          execMatch.group(1)!,
-          body,
-          endpointName: endpointName,
-        );
-      }
-
-      final requestBody = url.contains('/executions')
-          ? jsonEncode({'body': jsonEncode(body), 'async': false})
-          : jsonEncode(body);
-
-      final authHeaders = url.startsWith(CloudflareConfig.baseUrl)
-          ? await edgeAuth?.headers() ?? const <String, String>{}
-          : const <String, String>{};
+      final authHeaders = await edgeAuth?.headers() ?? const <String, String>{};
       final response = await _client.post(
         Uri.parse(url),
-        headers: {
-          ...authHeaders,
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': AppwriteConfig.projectId,
-        },
-        body: requestBody,
+        headers: {...authHeaders, 'Content-Type': 'application/json'},
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 429) {
@@ -174,9 +119,10 @@ class AiService {
           isError: true,
         );
       }
-      // Function HTTP endpoint returns 200; the Executions REST API
-      // returns 201 with an Execution object wrapping the body.
-      if (response.statusCode != 200 && response.statusCode != 201) {
+      if (response.statusCode == 401) {
+        return _failClosed('Sign in to use translation.');
+      }
+      if (response.statusCode != 200) {
         AppLogger.debug(
           'AiService HTTP ${response.statusCode}: ${response.body}',
         );
@@ -185,25 +131,15 @@ class AiService {
         );
       }
 
-      final parsed = _unwrapAppwriteExecution(response.body);
+      final parsed = _decodeObject(response.body);
       if (parsed == null) {
         return _failClosed('Unexpected response format.');
       }
-
-      final int? innerStatusCode = parsed['_appwriteStatusCode'] as int?;
-      if (innerStatusCode == 429 || response.statusCode == 429) {
-        AppLogger.debug('AiService: 429 rate-limited on $endpointName');
-        return TranslateResult(
-          translation: 'Rate limit reached. Please try again later.',
-          isError: true,
-        );
-      }
-
-      if (parsed['success'] != true || parsed['data'] == null) {
+      if (parsed['success'] != true || parsed['data'] is! Map) {
         AppLogger.debug('AiService API error: ${parsed['message']}');
         return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
       }
-      final d = parsed['data'] as Map<String, dynamic>;
+      final d = Map<String, dynamic>.from(parsed['data'] as Map);
       return TranslateResult(
         translation: (d['translation'] as String?) ?? '',
         detectedLanguage: d['detectedLanguage'] as String?,
@@ -216,51 +152,6 @@ class AiService {
     }
   }
 
-  /// In production (release mode), never return null — always surface an
-  /// error result so the UI can display a user-facing message.
-  /// Only debug mode is lenient (returns null → retryable).
-  Future<TranslateResult?> _executeViaSdk(
-    Functions functions,
-    String functionId,
-    Map<String, dynamic> body, {
-    required String endpointName,
-  }) async {
-    final execution = await functions.createExecution(
-      functionId: functionId,
-      body: jsonEncode(body),
-      xasync: false,
-    );
-
-    final innerStatus = execution.responseStatusCode;
-    if (innerStatus == 429) {
-      AppLogger.debug('AiService: 429 rate-limited on $endpointName');
-      return TranslateResult(
-        translation: 'Rate limit reached. Please try again later.',
-        isError: true,
-      );
-    }
-    if (innerStatus != 200 && innerStatus != 201) {
-      AppLogger.debug('AiService execution $endpointName HTTP $innerStatus');
-      return _failClosed('Service error ($innerStatus). Please try again.');
-    }
-
-    final parsed = _unwrapAppwriteExecution(execution.responseBody);
-    if (parsed == null) {
-      return _failClosed('Unexpected response format.');
-    }
-    if (parsed['success'] != true || parsed['data'] == null) {
-      AppLogger.debug('AiService API error: ${parsed['message']}');
-      return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
-    }
-    final d = parsed['data'] as Map<String, dynamic>;
-    return TranslateResult(
-      translation: (d['translation'] as String?) ?? '',
-      detectedLanguage: d['detectedLanguage'] as String?,
-      cached: d['cached'] == true,
-      provider: d['provider'] as String?,
-    );
-  }
-
   static TranslateResult _failClosed(String message) {
     return TranslateResult(translation: message, isError: true);
   }
@@ -268,40 +159,12 @@ class AiService {
   @visibleForTesting
   static TranslateResult failClosedForTest(String message) =>
       _failClosed(message);
-
-  /// If the response body is an Appwrite Execution object (created by the
-  /// `/v1/functions/[id]/executions` endpoint), returns the inner JSON
-  /// response that the function itself produced. Otherwise returns the
-  /// body parsed as JSON.
-  @visibleForTesting
-  static Map<String, dynamic>? unwrapAppwriteExecution(String body) =>
-      _unwrapAppwriteExecution(body);
 }
 
-Map<String, dynamic>? _unwrapAppwriteExecution(String body) {
+Map<String, dynamic>? _decodeObject(String body) {
   try {
     final raw = jsonDecode(body);
-    if (raw is! Map<String, dynamic>) return null;
-    // An Appwrite Execution has $id + status + responseBody fields.
-    if (raw.containsKey('responseBody') && raw.containsKey('status')) {
-      final inner = raw['responseBody'];
-      final statusCode = raw['responseStatusCode'];
-
-      if (inner is String && inner.isNotEmpty) {
-        try {
-          final innerJson = jsonDecode(inner);
-          if (innerJson is Map<String, dynamic>) {
-            innerJson['_appwriteStatusCode'] = statusCode;
-            return innerJson;
-          }
-        } catch (_) {
-          // If JSON decode fails, just return the string wrapped
-        }
-        return {'_appwriteStatusCode': statusCode, 'message': inner};
-      }
-      return null;
-    }
-    return raw;
+    return raw is Map<String, dynamic> ? raw : null;
   } catch (e) {
     AppLogger.debug('AiService: response parse failed: $e');
     return null;
@@ -325,11 +188,6 @@ class TranslateResult {
 }
 
 final aiServiceProvider = Provider((ref) {
-  final auth = ref.watch(appwriteAuthServiceProvider);
   final engine = ref.watch(translationEngineProvider);
-  return AiService(
-    functions: Functions(auth.client),
-    defaultEngine: engine,
-    edgeAuth: EdgeAuth.instance,
-  );
+  return AiService(defaultEngine: engine, edgeAuth: EdgeAuth.instance);
 });

@@ -91,9 +91,10 @@ void main() {
     when(() => repo.getCategories()).thenAnswer((_) => pending.future);
     final refresh = container.read(categoryNotifierProvider.notifier).refresh();
 
+    // Previous data stays on screen without a loading flag (no spinner).
     final during = container.read(categoryNotifierProvider);
-    expect(during.isLoading, isTrue);
-    expect(during.valueOrNull, [_alphabets]);
+    expect(during.isLoading, isFalse);
+    expect(during.value, [_alphabets]);
 
     pending.complete(const Right([_alphabets, _numbers]));
     await refresh;
@@ -168,5 +169,27 @@ void main() {
       _numbers,
       _alphabets,
     ]);
+  });
+
+  test('refresh resolves while nothing listens to the provider', () async {
+    when(
+      () => repo.getCategories(),
+    ).thenAnswer((_) async => const Right([_alphabets]));
+    final container = ProviderContainer(
+      overrides: [
+        categoryRepositoryProvider.overrideWithValue(repo),
+        // Resolves after the first build, leaving a pending dependency
+        // rebuild that only happens when someone listens.
+        isAuthenticatedProvider.overrideWith((ref) async => false),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(categoryNotifierProvider.notifier)
+        .refresh()
+        .timeout(const Duration(seconds: 2));
+
+    expect(await container.read(categoryNotifierProvider.future), [_alphabets]);
   });
 }

@@ -26,6 +26,7 @@ class CategoryNotifier extends AsyncNotifier<List<CategoryEntity>> {
     ref.watch(isAuthenticatedProvider);
     // Rebuild when the teaching language changes (catalog is localized).
     ref.watch(teachingLanguageRevisionProvider);
+    ref.onDispose(() => _generation++);
     return _fetch();
   }
 
@@ -37,15 +38,24 @@ class CategoryNotifier extends AsyncNotifier<List<CategoryEntity>> {
     );
   }
 
+  /// Bumped whenever a build is disposed (rebuild or teardown) so a
+  /// [loadCategories] response that resolves afterwards is dropped.
+  int _generation = 0;
+
   /// Re-fetches the catalog. Previously loaded data stays visible while the
   /// request is in flight; a failure is surfaced through [state], not thrown.
+  ///
+  /// Writes `state` directly rather than `invalidateSelf()` + `await future`:
+  /// callers (sync, prefetch, pull-to-refresh) may run while nothing listens
+  /// to the provider, and then a pending dependency rebuild would never
+  /// resolve `future`.
   Future<void> loadCategories() async {
-    ref.invalidateSelf();
-    try {
-      await future;
-    } catch (_) {
-      // Already reflected in `state` as AsyncError.
-    }
+    // As before: only show loading when there is nothing to keep on screen.
+    if (!state.hasValue) state = const AsyncLoading<List<CategoryEntity>>();
+    final generation = _generation;
+    final next = await AsyncValue.guard(_fetch);
+    if (generation != _generation) return;
+    state = next;
   }
 
   /// Remove duplicate categories. Dedup by document ID first, then by

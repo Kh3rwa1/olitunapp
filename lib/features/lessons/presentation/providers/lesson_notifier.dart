@@ -37,7 +37,10 @@ class LessonNotifier extends AsyncNotifier<List<LessonEntity>> {
   LessonRepository get _repository => ref.read(lessonRepositoryProvider);
 
   @override
-  FutureOr<List<LessonEntity>> build() => _fetch();
+  FutureOr<List<LessonEntity>> build() {
+    ref.onDispose(() => _generation++);
+    return _fetch();
+  }
 
   Future<List<LessonEntity>> _fetch() async {
     final result = await _repository.getLessons();
@@ -47,15 +50,24 @@ class LessonNotifier extends AsyncNotifier<List<LessonEntity>> {
     );
   }
 
+  /// Bumped whenever a build is disposed (rebuild or teardown) so a
+  /// [loadLessons] response that resolves afterwards is dropped.
+  int _generation = 0;
+
   /// Re-fetches the list. Previously loaded data stays visible while the
   /// request is in flight; a failure is surfaced through [state], not thrown.
+  ///
+  /// Writes `state` directly rather than `invalidateSelf()` + `await future`:
+  /// callers (sync, prefetch, pull-to-refresh) may run while nothing listens
+  /// to the provider, and then a pending dependency rebuild would never
+  /// resolve `future`.
   Future<void> loadLessons() async {
-    ref.invalidateSelf();
-    try {
-      await future;
-    } catch (_) {
-      // Already reflected in `state` as AsyncError.
-    }
+    // As before: only show loading when there is nothing to keep on screen.
+    if (!state.hasValue) state = const AsyncLoading<List<LessonEntity>>();
+    final generation = _generation;
+    final next = await AsyncValue.guard(_fetch);
+    if (generation != _generation) return;
+    state = next;
   }
 
   List<LessonEntity> _deduplicateLessons(List<LessonEntity> lessons) {

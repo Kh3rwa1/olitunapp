@@ -3775,6 +3775,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI ASSISTANT ACTIVE'**
   String get aiAssistantActive;
+
+  /// No description provided for @paywallPaymentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment cancelled. You can try again anytime.'**
+  String get paywallPaymentCancelled;
+
+  /// No description provided for @paywallPaymentFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment didn\'t go through. Please try again.'**
+  String get paywallPaymentFailed;
+
+  /// No description provided for @paywallNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases aren\'t available right now. Please try again later.'**
+  String get paywallNotConfigured;
+
+  /// No description provided for @paywallVerificationPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment received. We\'ll confirm your unlock shortly.'**
+  String get paywallVerificationPending;
+
+  /// No description provided for @paywallAndroidOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases are available in the Olitun Android app.'**
+  String get paywallAndroidOnly;
+
+  /// No description provided for @paywallLockedLessonMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This lesson is part of a paid course. Unlock the course to continue.'**
+  String get paywallLockedLessonMessage;
 }
 
 class _AppLocalizationsDelegate

@@ -1218,5 +1218,11 @@
             }
         }
     },
-    "aiAssistantActive": "AI ASSISTANT ACTIVE"
+    "aiAssistantActive": "AI ASSISTANT ACTIVE",
+    "paywallPaymentCancelled": "Payment cancelled. You can try again anytime.",
+    "paywallPaymentFailed": "Payment didn't go through. Please try again.",
+    "paywallNotConfigured": "Purchases aren't available right now. Please try again later.",
+    "paywallVerificationPending": "Payment received. We'll confirm your unlock shortly.",
+    "paywallAndroidOnly": "Purchases are available in the Olitun Android app.",
+    "paywallLockedLessonMessage": "This lesson is part of a paid course. Unlock the course to continue."
 }

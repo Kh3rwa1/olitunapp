@@ -109,6 +109,12 @@ class LearningAnalyticsEvents {
   /// the funnel pair.
   static const todayReviewTapped = 'today_review_tapped';
 
+  // Course purchase funnel (paywall -> Razorpay -> Worker verify)
+  static const paywallViewed = 'paywall_viewed';
+  static const purchaseStarted = 'purchase_started';
+  static const purchaseSucceeded = 'purchase_succeeded';
+  static const purchaseFailed = 'purchase_failed';
+
   // Ad events
   static const adImpression = 'ad_impression';
   static const adClick = 'ad_click';

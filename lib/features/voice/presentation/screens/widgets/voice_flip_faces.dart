@@ -172,8 +172,9 @@ class VoiceInputFace extends StatelessWidget {
                 ValueListenableBuilder<TextEditingValue>(
                   valueListenable: controller,
                   builder: (context, value, _) => Text(
-                    AppLocalizations.of(context)!
-                        .charCount(value.text.trim().length, maxChars),
+                    AppLocalizations.of(
+                      context,
+                    )!.charCount(value.text.trim().length, maxChars),
                     style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,

@@ -5,7 +5,6 @@ import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../admin/data/gamification_cms_api.dart';
-import '../../../../../core/api/appwrite_query_builders.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
 import 'bakhed_lyrics_editor_controller.dart';
@@ -313,7 +312,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             await cms.deleteRow('bakhed_lyrics', line.id);
           }
           for (final line in toCreate) {
-            final docId = DbId.unique();
+            final docId = GamificationCmsApi.newRowId();
             final idx = lyricsState.currentLines.indexOf(line);
             final derivedEndMs = idx < lyricsState.currentLines.length - 1
                 ? lyricsState.currentLines[idx + 1].startMs
@@ -378,7 +377,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             await cms.deleteRow('bakhed_vocabulary', itemVal.id);
           }
           for (final itemVal in toCreate) {
-            final docId = DbId.unique();
+            final docId = GamificationCmsApi.newRowId();
             await cms.upsertRow(
               'bakhed_vocabulary',
               docId,
@@ -432,7 +431,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             await cms.deleteRow('bakhed_cultural_notes', note.noteId);
           }
           for (final note in toCreate) {
-            final docId = DbId.unique();
+            final docId = GamificationCmsApi.newRowId();
             await cms.upsertRow(
               'bakhed_cultural_notes',
               docId,
@@ -517,12 +516,10 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
                   fileId: fileId,
                   checks: const [
                     ReferenceCheck(
-                      databaseId: 'olitun_db',
                       collectionId: 'rhymes',
                       fieldNames: ['audioFileId'],
                     ),
                     ReferenceCheck(
-                      databaseId: 'olitun_db',
                       collectionId: 'bakhed_vocabulary',
                       fieldNames: ['audioFileId'],
                     ),

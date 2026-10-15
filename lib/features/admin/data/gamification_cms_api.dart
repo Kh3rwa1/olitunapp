@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
@@ -30,6 +31,20 @@ class GamificationCmsApi {
       _edgeAuth = edgeAuth ?? EdgeAuth.instance;
 
   static const Duration _timeout = Duration(seconds: 15);
+
+  static final Random _idRandom = Random.secure();
+
+  /// A new 20-char row id (`[0-9a-f]`): hex microsecond timestamp padded with
+  /// random hex digits — the same shape as the legacy ids already in D1.
+  static String newRowId() {
+    final buffer = StringBuffer(
+      DateTime.now().microsecondsSinceEpoch.toRadixString(16),
+    );
+    while (buffer.length < 20) {
+      buffer.write(_idRandom.nextInt(16).toRadixString(16));
+    }
+    return buffer.toString().substring(0, 20);
+  }
 
   final http.Client _http;
   final EdgeAuth _edgeAuth;

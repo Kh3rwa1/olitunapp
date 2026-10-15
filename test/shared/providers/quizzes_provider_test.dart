@@ -11,7 +11,6 @@ import 'package:hive/hive.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/core/api/admin_content_client.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/quiz_engine/quiz_engine.dart';
@@ -20,51 +19,20 @@ import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
 import '../../helpers/fake_admin_worker.dart';
 
-/// Concrete lightweight fake implementation of AppwriteDbService to supply test data.
-class FakeAppwriteDbService implements AppwriteDbService {
+/// Test data served by the fake Worker (quizzes) and the learner
+/// words/sentences providers.
+class FakeQuizBackend {
   List<Map<String, dynamic>> wordsData = [];
   List<Map<String, dynamic>> sentencesData = [];
   List<Map<String, dynamic>> quizzesData = [];
 
   /// Worker `/api/v1/quizzes` reads.
   int quizListRequests = 0;
-
-  /// Direct Appwrite reads of the quizzes collection (must stay 0 for
-  /// learner loads; only the admin seed backfill reads it).
-  int appwriteQuizReads = 0;
-
-  @override
-  Future<List<Map<String, dynamic>>> listDocuments(
-    String collectionId, {
-    List<String>? queries,
-    bool paginate = true,
-    int pageSize = 500,
-  }) async {
-    if (collectionId == 'words') {
-      return wordsData;
-    } else if (collectionId == 'sentences') {
-      return sentencesData;
-    } else if (collectionId == 'quizzes') {
-      appwriteQuizReads++;
-      return quizzesData;
-    }
-    return [];
-  }
-
-  @override
-  Future<List<Map<String, dynamic>>> listAllDocuments(
-    String collectionId, {
-    List<String>? queries,
-    int pageSize = 500,
-  }) => listDocuments(collectionId, queries: queries);
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
   group('Dynamic Hybrid Quizzes Generator Tests', () {
-    late FakeAppwriteDbService fakeDb;
+    late FakeQuizBackend backend;
     late FakeAdminWorker worker;
     late SharedPreferences prefs;
 
@@ -80,7 +48,7 @@ void main() {
     });
 
     setUp(() async {
-      fakeDb = FakeAppwriteDbService();
+      backend = FakeQuizBackend();
       worker = FakeAdminWorker();
       await CacheService.clear();
       SharedPreferences.setMockInitialValues({});
@@ -295,21 +263,20 @@ void main() {
     Future<List<QuizModel>> waitForQuizzes(ProviderContainer container) =>
         container.read(quizzesProvider.future);
 
-    ProviderContainer createContainer(FakeAppwriteDbService fakeDb) {
+    ProviderContainer createContainer(FakeQuizBackend backend) {
       return ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          appwriteDbServiceProvider.overrideWithValue(fakeDb),
           adminContentClientProvider.overrideWithValue(worker.adminClient),
           quizzesHttpClientProvider.overrideWithValue(
             MockClient((request) async {
               if (!request.url.path.endsWith('/api/v1/quizzes')) {
                 return http.Response('Not Found', 404);
               }
-              fakeDb.quizListRequests++;
+              backend.quizListRequests++;
               return http.Response.bytes(
                 utf8.encode(
-                  jsonEncode({'ok': true, 'quizzes': fakeDb.quizzesData}),
+                  jsonEncode({'ok': true, 'quizzes': backend.quizzesData}),
                 ),
                 200,
                 headers: const {'content-type': 'application/json'},
@@ -318,11 +285,11 @@ void main() {
           ),
           isAuthenticatedProvider.overrideWith((ref) => true),
           learnerWordsProvider.overrideWith((ref) {
-            final list = fakeDb.wordsData.map(WordModel.fromJson).toList();
+            final list = backend.wordsData.map(WordModel.fromJson).toList();
             return AsyncValue.data(list);
           }),
           learnerSentencesProvider.overrideWith((ref) {
-            final list = fakeDb.sentencesData
+            final list = backend.sentencesData
                 .map(SentenceModel.fromJson)
                 .toList();
             return AsyncValue.data(list);
@@ -334,7 +301,7 @@ void main() {
     test(
       'initializes with default alphabets and numbers quizzes when database is empty',
       () async {
-        final container = createContainer(fakeDb);
+        final container = createContainer(backend);
         addTearDown(container.dispose);
 
         // Read quizzes notifier initial state
@@ -352,10 +319,10 @@ void main() {
     test(
       'compiles hybrid quizzes with dynamic MCQ & Fill-Blank combinations',
       () async {
-        fakeDb.wordsData = dummyWords.map((w) => w.toJson()).toList();
-        fakeDb.sentencesData = dummySentences.map((s) => s.toJson()).toList();
+        backend.wordsData = dummyWords.map((w) => w.toJson()).toList();
+        backend.sentencesData = dummySentences.map((s) => s.toJson()).toList();
 
-        final container = createContainer(fakeDb);
+        final container = createContainer(backend);
         addTearDown(container.dispose);
 
         // Wait specifically for the dynamic hybrid quizzes to be compiled
@@ -436,10 +403,10 @@ void main() {
     test(
       'safety fallback handles empty database gracefully without crashing',
       () async {
-        fakeDb.wordsData = [];
-        fakeDb.sentencesData = [];
+        backend.wordsData = [];
+        backend.sentencesData = [];
 
-        final container = createContainer(fakeDb);
+        final container = createContainer(backend);
         addTearDown(container.dispose);
 
         final quizzes = await waitForQuizzes(container);
@@ -482,7 +449,7 @@ void main() {
     test(
       'admin CRUD updates quizzes optimistically without full reloads',
       () async {
-        fakeDb.quizzesData = [
+        backend.quizzesData = [
           QuizModel(
             id: 'existing_quiz',
             categoryId: 'custom',
@@ -490,11 +457,11 @@ void main() {
           ).toJson(),
         ];
 
-        final container = createContainer(fakeDb);
+        final container = createContainer(backend);
         addTearDown(container.dispose);
 
         await waitForQuizzes(container);
-        expect(fakeDb.quizListRequests, 1);
+        expect(backend.quizListRequests, 1);
 
         final notifier = container.read(quizzesProvider.notifier);
         await notifier.add(
@@ -508,7 +475,7 @@ void main() {
         );
         expect(worker.bodyOf(created)['title'], 'New Quiz');
         expect(worker.bodyOf(created)['questions'], isA<String>());
-        expect(fakeDb.quizListRequests, 1);
+        expect(backend.quizListRequests, 1);
         expect(
           container
               .read(quizzesProvider)
@@ -526,7 +493,7 @@ void main() {
         );
         expect(worker.requestsWith('PUT'), hasLength(2));
         expect(worker.rows['quizzes']!['new_quiz']!['title'], 'Updated Quiz');
-        expect(fakeDb.quizListRequests, 1);
+        expect(backend.quizListRequests, 1);
         expect(
           container
               .read(quizzesProvider)
@@ -542,8 +509,7 @@ void main() {
           '/api/v1/admin/content/quizzes/new_quiz',
         );
         expect(worker.rows['quizzes'], isNot(contains('new_quiz')));
-        expect(fakeDb.quizListRequests, 1);
-        expect(fakeDb.appwriteQuizReads, 0);
+        expect(backend.quizListRequests, 1);
         expect(
           container
               .read(quizzesProvider)
@@ -557,7 +523,7 @@ void main() {
     test(
       'quizzesByIdProvider returns a cached map for fast O(1) lookups',
       () async {
-        final container = createContainer(fakeDb);
+        final container = createContainer(backend);
         addTearDown(container.dispose);
 
         final quizzes = await waitForQuizzes(container);
@@ -574,7 +540,7 @@ void main() {
     );
 
     test('a failed Worker write rolls back and rethrows', () async {
-      final container = createContainer(fakeDb);
+      final container = createContainer(backend);
       addTearDown(container.dispose);
       await waitForQuizzes(container);
       worker.failStatus = 403;

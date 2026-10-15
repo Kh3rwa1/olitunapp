@@ -43,6 +43,10 @@ jobs:
         run: node scripts/check_sheets_above_nav.mjs
       - name: Enforce Architecture Boundaries Gate
         run: node scripts/check_architecture_boundaries.mjs
+      - name: Enforce Appwrite Auth-Only Gate
+        run: node scripts/check_appwrite_auth_only.mjs
+      - name: Unit Test Appwrite Auth-Only Gate
+        run: node --test scripts/check_appwrite_auth_only.test.mjs
       - name: Enforce Localization Key Parity Gate
         run: node scripts/check_l10n_parity.mjs
       - name: Enforce Review Corpus ID Integrity
@@ -164,8 +168,6 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Run Appwrite permission invariant unit tests
-        run: flutter test test/core/api/appwrite_permission_invariants_test.dart
       - name: Run staging permission integration test (dry-run)
         run: node scripts/staging_permission_test.mjs
       - name: Run service worker patch unit tests

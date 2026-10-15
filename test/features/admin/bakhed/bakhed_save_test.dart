@@ -64,7 +64,7 @@ void main() {
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(Uint8List(0));
     registerFallbackValue(
-      const ReferenceCheck(databaseId: '', collectionId: '', fieldNames: []),
+      const ReferenceCheck(collectionId: '', fieldNames: []),
     );
   });
 

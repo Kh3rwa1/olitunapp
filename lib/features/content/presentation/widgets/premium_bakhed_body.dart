@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:itun/core/theme/app_typography.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../../core/api/appwrite_db_service.dart';
+import '../../../../core/storage/worker_media_api.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';

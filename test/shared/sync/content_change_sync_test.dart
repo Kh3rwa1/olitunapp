@@ -12,7 +12,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:mocktail/mocktail.dart';
 
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/api/content_change_feed.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
@@ -31,8 +30,6 @@ class _MockContentRepository extends Mock implements ContentRepository {}
 class _MockLessonRepository extends Mock implements LessonRepository {}
 
 class _MockCategoryRepository extends Mock implements CategoryRepository {}
-
-class _MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 class _MockNetworkInfo extends Mock implements NetworkInfo {}
 
@@ -103,7 +100,6 @@ void main() {
     final contentRepository = _MockContentRepository();
     final lessonRepository = _MockLessonRepository();
     final categoryRepository = _MockCategoryRepository();
-    final db = _MockAppwriteDbService();
     when(
       () => contentRepository.cachedList(
         any(),
@@ -119,9 +115,6 @@ void main() {
     when(
       categoryRepository.getCategories,
     ).thenAnswer((_) async => const Right([]));
-    when(
-      () => db.listDocuments(any(), queries: any(named: 'queries')),
-    ).thenAnswer((_) async => []);
 
     container = ProviderContainer(
       overrides: [
@@ -130,7 +123,6 @@ void main() {
         contentRepositoryProvider.overrideWithValue(contentRepository),
         lessonRepositoryProvider.overrideWithValue(lessonRepository),
         categoryRepositoryProvider.overrideWithValue(categoryRepository),
-        appwriteDbServiceProvider.overrideWithValue(db),
       ],
     );
     testRef = container.read(_refProvider);

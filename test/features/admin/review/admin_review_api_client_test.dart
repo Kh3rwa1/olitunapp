@@ -14,7 +14,7 @@ class _FakeExecutor implements AdminReviewExecutor {
   final List<Map<String, dynamic>> requests = [];
 
   @override
-  Future<AdminReviewExecution> createExecution(
+  Future<AdminReviewExecution> execute(
     String functionId, {
     required String body,
   }) async {

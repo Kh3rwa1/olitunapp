@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/storage/media_uploader.dart';
@@ -19,8 +18,6 @@ import 'package:mocktail/mocktail.dart';
 class _Account extends Mock implements Account {}
 
 class _Jwt extends Mock implements models.Jwt {}
-
-class _AppwriteClient extends Mock implements Client {}
 
 EdgeAuth _edgeAuth(String jwt) {
   final account = _Account();
@@ -67,16 +64,7 @@ void main() {
     test('workerAssetUrl points at the Worker assets route', () {
       expect(workerAssetUrl('audio', 'f1'), '$assets/audio/f1');
       expect(admin, '${CloudflareConfig.baseUrl}/api/v1/admin/media');
-    });
-
-    test('AppwriteDbService view/preview URLs use the Worker', () {
-      final db = AppwriteDbService(_AppwriteClient(), backendConfigured: false);
-      expect(db.getFileViewUrl('audio', 'f1'), '$assets/audio/f1');
-      expect(
-        db.getFilePreviewUrl('images', 'p1', width: 300, height: 300),
-        '$assets/images/p1',
-      );
-      expect(db.getFileViewUrl('audio', 'f1'), isNot(contains('appwrite')));
+      expect(workerAssetUrl('audio', 'f1'), isNot(contains('appwrite')));
     });
   });
 

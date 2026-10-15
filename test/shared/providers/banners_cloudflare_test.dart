@@ -7,19 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/banners_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MockAppwriteDbService mockDb;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -36,7 +30,6 @@ void main() {
     CacheService.resetForTesting();
     SharedPreferences.setMockInitialValues({});
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
   });
 
   tearDown(() async {
@@ -76,7 +69,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           bannersProvider.overrideWith(
             () => BannersNotifier(httpClient: mockHttpClient),
           ),
@@ -88,7 +80,6 @@ void main() {
       expect(banners, hasLength(1));
       expect(banners.first.id, 'cf_banner_1');
       expect(banners.first.title, 'Learn Ol Chiki Today');
-      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -96,7 +87,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWith((ref) => true),
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
         bannersHttpClientProvider.overrideWithValue(client),
       ],
     );
@@ -116,9 +106,6 @@ void main() {
     final banners = await container.read(bannersProvider.future);
     expect(banners, isEmpty);
     expect(requests.single.path, '/api/v1/banners');
-    verifyNever(
-      () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-    );
   });
 
   test(
@@ -133,9 +120,6 @@ void main() {
 
       final banners = await container.read(bannersProvider.future);
       expect(banners.single.id, 'cached_banner');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
@@ -148,9 +132,6 @@ void main() {
 
       final banners = await container.read(bannersProvider.future);
       expect(banners, isEmpty);
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 }

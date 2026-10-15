@@ -7,19 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/providers/letters_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/storage/cache_service.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MockAppwriteDbService mockDb;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -36,7 +30,6 @@ void main() {
     CacheService.resetForTesting();
     SharedPreferences.setMockInitialValues({});
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
   });
 
   tearDown(() async {
@@ -80,7 +73,6 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           lettersHttpClientProvider.overrideWithValue(mockHttpClient),
         ],
       );
@@ -91,18 +83,12 @@ void main() {
       expect(letters[0].id, 'edge_letter_1');
       expect(letters[0].charOlChiki, 'ᱚ');
       expect(letters[1].id, 'edge_letter_2');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
   ProviderContainer containerWith(http.Client client) {
     final container = ProviderContainer(
-      overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
-        lettersHttpClientProvider.overrideWithValue(client),
-      ],
+      overrides: [lettersHttpClientProvider.overrideWithValue(client)],
     );
     addTearDown(container.dispose);
     return container;
@@ -120,9 +106,6 @@ void main() {
 
       final letters = await container.read(lettersProvider.future);
       expect(letters.any((l) => l.charOlChiki == 'ᱚ'), isTrue);
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
@@ -143,9 +126,6 @@ void main() {
 
       final letters = await container.read(lettersProvider.future);
       expect(letters.single.id, 'cached_1');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
@@ -159,9 +139,6 @@ void main() {
       final letters = await container.read(lettersProvider.future);
       expect(letters.isNotEmpty, isTrue);
       expect(letters.any((l) => l.charOlChiki == 'ᱚ'), isTrue);
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 }

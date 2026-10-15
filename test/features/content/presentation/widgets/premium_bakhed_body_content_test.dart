@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/audio/playback_controller.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 import 'package:itun/features/content/presentation/widgets/premium_bakhed_body.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -56,13 +56,10 @@ class _MockAudioService extends AudioService {
   Stream<bool> get isPlayingStream => const Stream.empty();
 }
 
-class _FakeDbService extends Mock implements AppwriteDbService {}
-
 // Exercises the lyrics/vocabulary/cultural-notes panel builders declared in
 // the premium_bakhed_body_content.dart part of premium_bakhed_body.dart.
 void main() {
   late _MockAudioService audio;
-  late _FakeDbService db;
 
   setUpAll(() {
     registerFallbackValue(<String, dynamic>{});
@@ -70,10 +67,6 @@ void main() {
 
   setUp(() {
     audio = _MockAudioService();
-    db = _FakeDbService();
-    when(
-      () => db.getFileViewUrl(any(), any()),
-    ).thenReturn('https://cdn.test/file.mp3');
   });
 
   final item = ContentItem(
@@ -103,7 +96,6 @@ void main() {
           playbackControllerProvider.overrideWithValue(
             PlaybackController(audioService: audio),
           ),
-          appwriteDbServiceProvider.overrideWithValue(db),
           bakhedLearningContentProvider(
             'bakhed-1',
           ).overrideWith((ref) async => content),
@@ -149,7 +141,7 @@ void main() {
     await tester.tap(find.byIcon(Icons.volume_up_rounded));
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(db.getFileViewUrl('audio', 'file-1'), 'https://cdn.test/file.mp3');
+    expect(audio.playedUrls, [workerAssetUrl('audio', 'file-1')]);
   });
 
   testWidgets(
@@ -186,7 +178,6 @@ void main() {
             playbackControllerProvider.overrideWithValue(
               PlaybackController(audioService: audio),
             ),
-            appwriteDbServiceProvider.overrideWithValue(db),
             bakhedLearningContentProvider(
               'bakhed-1',
             ).overrideWith((ref) async => const BakhedLearningContent()),

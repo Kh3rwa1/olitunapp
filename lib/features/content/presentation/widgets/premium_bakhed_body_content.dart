@@ -250,11 +250,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
                       tooltip: 'Play audio',
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        final db = ref.read(appwriteDbServiceProvider);
-                        final url = db.getFileViewUrl(
-                          'audio',
-                          item.audioFileId,
-                        );
+                        final url = workerAssetUrl('audio', item.audioFileId);
                         ref
                             .read(playbackControllerProvider)
                             .playSingle(

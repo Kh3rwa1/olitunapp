@@ -364,15 +364,10 @@ class _BytesAudioSource extends StreamAudioSource {
 }
 
 class ReferenceCheck {
-  final String databaseId;
   final String collectionId;
   final List<String> fieldNames; // e.g., ['audioFileId', 'coverFileId']
 
-  const ReferenceCheck({
-    required this.databaseId,
-    required this.collectionId,
-    required this.fieldNames,
-  });
+  const ReferenceCheck({required this.collectionId, required this.fieldNames});
 }
 
 final mediaUploaderProvider = Provider<MediaUploader>(

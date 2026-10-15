@@ -6,11 +6,7 @@ import 'package:itun/core/storage/worker_media_api.dart';
 class MockWorkerMediaApi extends Mock implements WorkerMediaApi {}
 
 const _checks = [
-  ReferenceCheck(
-    databaseId: 'olitun_db',
-    collectionId: 'rhymes',
-    fieldNames: ['audioFileId'],
-  ),
+  ReferenceCheck(collectionId: 'rhymes', fieldNames: ['audioFileId']),
 ];
 
 void main() {

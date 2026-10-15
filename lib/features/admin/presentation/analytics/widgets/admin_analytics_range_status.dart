@@ -1,8 +1,12 @@
-part of 'admin_analytics_screen.dart';
+import 'package:flutter/material.dart';
+import '../../../../../core/theme/admin_tokens.dart';
+import '../admin_analytics_models.dart';
+import '../admin_analytics_providers.dart';
 
-// Range status row and status chips shown beneath the analytics header.
-class _RangeStatus extends StatelessWidget {
-  const _RangeStatus({
+/// Range status row and status chips shown beneath the analytics header.
+class AdminAnalyticsRangeStatus extends StatelessWidget {
+  const AdminAnalyticsRangeStatus({
+    super.key,
     required this.range,
     required this.snapshot,
     required this.isDark,

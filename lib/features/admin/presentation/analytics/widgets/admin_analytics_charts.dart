@@ -1,4 +1,6 @@
-part of '../admin_analytics_screen.dart';
+import 'package:flutter/material.dart';
+import '../../../../../core/theme/admin_tokens.dart';
+import '../admin_analytics_models.dart';
 
 // Chart shells, heatmap primitives and empty-state surfaces.
 class RetentionHeatmapCard extends StatelessWidget {

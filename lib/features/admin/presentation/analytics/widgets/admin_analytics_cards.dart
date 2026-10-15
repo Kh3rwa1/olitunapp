@@ -1,4 +1,9 @@
-part of '../admin_analytics_screen.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/material.dart';
+import '../../../../../core/theme/admin_tokens.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../admin_analytics_models.dart';
+import 'admin_analytics_charts.dart';
 
 // KPI and top-list analytics cards.
 class KpiGrid extends StatelessWidget {
@@ -502,7 +507,7 @@ class TopEventsCard extends StatelessWidget {
                           child: RotatedBox(
                             quarterTurns: 3,
                             child: Text(
-                              _compactLabel(entries[index].key),
+                              compactAnalyticsLabel(entries[index].key),
                               style: AdminTokens.label(
                                 isDark,
                               ).copyWith(fontSize: 10),
@@ -559,4 +564,11 @@ class TopEventsCard extends StatelessWidget {
             ),
     );
   }
+}
+
+/// Shortens an event key for a rotated chart axis label.
+String compactAnalyticsLabel(String value) {
+  final trimmed = value.replaceAll('_', ' ');
+  if (trimmed.length <= 12) return trimmed;
+  return '${trimmed.substring(0, 11)}.';
 }

@@ -52,6 +52,7 @@ class CloudflareConfig {
   // Waitlist & Authorization
   static const String waitlistEndpoint = '$baseUrl/api/v1/waitlist/join';
   static const String waitlistMineEndpoint = '$baseUrl/api/v1/waitlist/mine';
+  static const String adminWaitlistEndpoint = '$baseUrl/api/v1/admin/waitlist';
 
   // Learner analytics ingest
   static const String analyticsEventsEndpoint =

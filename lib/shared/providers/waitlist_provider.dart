@@ -3,8 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/api/appwrite_query_builders.dart';
 import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
@@ -87,12 +85,37 @@ class WaitlistApi {
   }
 
   /// The signed-in user's own entries, newest first.
-  Future<List<WaitlistModel>> mine() async {
+  Future<List<WaitlistModel>> mine() =>
+      _list(CloudflareConfig.waitlistMineEndpoint);
+
+  /// Every entry, newest first (admin team only; enforced by the Worker).
+  Future<List<WaitlistModel>> adminList() =>
+      _list(CloudflareConfig.adminWaitlistEndpoint);
+
+  /// Sets an entry's status (admin team only).
+  Future<void> adminUpdateStatus(String id, String status) async {
     final res = await _http
-        .get(
-          Uri.parse(CloudflareConfig.waitlistMineEndpoint),
+        .post(
+          Uri.parse(
+            '${CloudflareConfig.adminWaitlistEndpoint}/'
+            '${Uri.encodeComponent(id)}/status',
+          ),
           headers: await _headers(),
+          body: jsonEncode({'status': status}),
         )
+        .timeout(const Duration(seconds: 15));
+    if (res.statusCode == 401) _edgeAuth.clear();
+    final data = _decode(res.body);
+    if (res.statusCode != 200 || data?['ok'] != true) {
+      throw http.ClientException(
+        'Waitlist status update failed (${res.statusCode})',
+      );
+    }
+  }
+
+  Future<List<WaitlistModel>> _list(String endpoint) async {
+    final res = await _http
+        .get(Uri.parse(endpoint), headers: await _headers())
         .timeout(const Duration(seconds: 15));
     if (res.statusCode == 401) _edgeAuth.clear();
     final data = _decode(res.body);
@@ -147,19 +170,12 @@ final adminWaitlistProvider =
       AdminWaitlistNotifier.new,
     );
 
+/// Admin view of the D1 waitlist — the same store learners submit to.
 class AdminWaitlistNotifier extends AsyncNotifier<List<WaitlistModel>> {
-  static const String _collectionId = 'binti_guru_waitlist';
-
   @override
   FutureOr<List<WaitlistModel>> build() async {
     try {
-      final result = await ref
-          .read(appwriteDbServiceProvider)
-          .listAllDocuments(
-            _collectionId,
-            queries: [DbQuery.orderDesc('submittedAt')],
-          );
-      return result.map(WaitlistModel.fromJson).toList();
+      return await ref.read(waitlistApiProvider).adminList();
     } catch (e, stack) {
       AppLogger.error(
         'Loading admin waitlist failed',
@@ -180,12 +196,7 @@ class AdminWaitlistNotifier extends AsyncNotifier<List<WaitlistModel>> {
 
   Future<void> updateStatus(String waitlistId, String status) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = <String, dynamic>{'status': status};
-      if (status == 'contacted') {
-        data['contactedAt'] = DateTime.now().toIso8601String();
-      }
-      await db.updateDocument(_collectionId, waitlistId, data);
+      await ref.read(waitlistApiProvider).adminUpdateStatus(waitlistId, status);
       await loadWaitlist();
       ref.invalidate(userWaitlistProvider);
     } catch (e, stack) {

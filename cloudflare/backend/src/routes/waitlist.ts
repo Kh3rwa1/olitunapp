@@ -85,7 +85,42 @@ function toEntry(row: any) {
   };
 }
 
+const ADMIN_STATUSES = new Set(['new', 'contacted', 'converted', 'closed']);
+const ADMIN_LIST_LIMIT = 1000;
+
 export function registerWaitlistRoutes(app: App): void {
+  // Admin view of the same D1 records learners submit to. Admin-team
+  // membership is enforced by the /api/v1/admin/* middleware in index.ts.
+  app.get('/api/v1/admin/waitlist', async (c) => {
+    try {
+      const rows: any = await c.env.DB.prepare(
+        'SELECT * FROM binti_waitlist ORDER BY submitted_at DESC LIMIT ?'
+      ).bind(ADMIN_LIST_LIMIT).all();
+      return c.json({ ok: true, entries: (rows.results || []).map(toEntry) });
+    } catch (err: any) {
+      console.error(`admin waitlist list failed: ${err?.message || err}`);
+      return c.json({ ok: false, message: 'Failed to load waitlist' }, 500);
+    }
+  });
+
+  app.post('/api/v1/admin/waitlist/:id/status', async (c) => {
+    const id = c.req.param('id').trim();
+    const body: any = await c.req.json().catch(() => ({}));
+    const status = String(body?.status || '').trim();
+    if (!id || !ADMIN_STATUSES.has(status)) {
+      return c.json({ ok: false, message: 'Invalid waitlist id or status' }, 400);
+    }
+    try {
+      const result = await c.env.DB.prepare('UPDATE binti_waitlist SET status = ? WHERE id = ?')
+        .bind(status, id).run();
+      if (!result.meta?.changes) return c.json({ ok: false, message: 'Waitlist entry not found' }, 404);
+      return c.json({ ok: true, id, status });
+    } catch (err: any) {
+      console.error(`admin waitlist update failed: ${err?.message || err}`);
+      return c.json({ ok: false, message: 'Failed to update waitlist' }, 500);
+    }
+  });
+
   app.post('/api/v1/waitlist/join', optionalUser, async (c) => {
     const limiter = c.env.WAITLIST_LIMITER;
     if (!limiter) {

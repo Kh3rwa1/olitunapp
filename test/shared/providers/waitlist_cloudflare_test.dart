@@ -39,6 +39,66 @@ WaitlistModel _entry() => WaitlistModel(
 );
 
 void main() {
+  group('WaitlistApi admin', () {
+    test('adminList reads the D1 waitlist from the Worker', () async {
+      late http.Request sent;
+      final api = WaitlistApi(
+        edgeAuth: _edgeAuth(jwt: 'admin-jwt'),
+        httpClient: MockClient((req) async {
+          sent = req;
+          return http.Response(
+            jsonEncode({
+              'ok': true,
+              'entries': [
+                {'id': 'w2', 'fullName': 'Sona Murmu', 'status': 'new'},
+              ],
+            }),
+            200,
+          );
+        }),
+      );
+
+      final entries = await api.adminList();
+
+      expect(sent.url.toString(), CloudflareConfig.adminWaitlistEndpoint);
+      expect(sent.headers['Authorization'], 'Bearer admin-jwt');
+      expect(entries.single.id, 'w2');
+    });
+
+    test('adminUpdateStatus posts the new status for one entry', () async {
+      late http.Request sent;
+      final api = WaitlistApi(
+        edgeAuth: _edgeAuth(jwt: 'admin-jwt'),
+        httpClient: MockClient((req) async {
+          sent = req;
+          return http.Response(jsonEncode({'ok': true}), 200);
+        }),
+      );
+
+      await api.adminUpdateStatus('w 2', 'contacted');
+
+      expect(
+        sent.url.toString(),
+        '${CloudflareConfig.adminWaitlistEndpoint}/w%202/status',
+      );
+      expect(jsonDecode(sent.body), {'status': 'contacted'});
+    });
+
+    test('a non-admin (403) update throws', () async {
+      final api = WaitlistApi(
+        edgeAuth: _edgeAuth(jwt: 'user-jwt'),
+        httpClient: MockClient(
+          (_) async => http.Response(jsonEncode({'ok': false}), 403),
+        ),
+      );
+
+      await expectLater(
+        api.adminUpdateStatus('w2', 'closed'),
+        throwsA(isA<http.ClientException>()),
+      );
+    });
+  });
+
   group('WaitlistApi', () {
     test('join posts to the Worker and parses the entry', () async {
       late http.Request sent;

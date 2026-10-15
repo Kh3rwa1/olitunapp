@@ -49,7 +49,7 @@ const deps = (fetchImpl: typeof fetch, userId = 'user_1') => ({
 });
 
 const file = { bytes: new Uint8Array([0xff, 0xd8, 0xff, 0xe0]), name: 'poem.jpeg' };
-const status = (s: string): Step => ({ status: 200, body: { job_id: JOB, status: s } });
+const status = (s: string): Step => ({ status: 200, body: { status: s } });
 const results: Step = {
   status: 200,
   body: { job_id: JOB, status: 'completed', documents: [{ pages: [{ content: `# ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\n\n\n**ᱥᱟᱱᱛᱟᱲᱤ** ᱯᱟᱹᱨᱥᱤ` }] }] },
@@ -92,11 +92,36 @@ describe('Sarvam OCR', () => {
   });
 
   it('job tokens round-trip and are bound to the user', async () => {
-    const token = await encodeJobToken(JOB, 'user_1', SECRET);
-    expect(token).toHaveLength(36);
-    await expect(decodeJobToken(token, 'user_1', SECRET)).resolves.toBe(JOB);
-    await expect(decodeJobToken(token, 'user_2', SECRET)).rejects.toMatchObject({ code: 'INVALID_JOB' });
+    for (const id of [JOB, 'job_7f3a9c21', 'a1b2c3d4e5f6a7b8c9d0']) {
+      const token = (await encodeJobToken(id, 'user_1', SECRET))!;
+      expect(token.length).toBeLessThanOrEqual(36);
+      expect(token).toMatch(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,35}$/); // the app's job id rule
+      await expect(decodeJobToken(token, 'user_1', SECRET)).resolves.toBe(id);
+      await expect(decodeJobToken(token, 'user_2', SECRET)).rejects.toMatchObject({ code: 'INVALID_JOB' });
+    }
     await expect(decodeJobToken('ocr_fake', 'user_1', SECRET)).rejects.toMatchObject({ code: 'INVALID_JOB' });
+    expect(await encodeJobToken('x'.repeat(60), 'user_1', SECRET)).toBeNull();
+  });
+
+  it('accepts job ids in other formats and still returns the text', async () => {
+    const LONG = 'doc-ai-job-' + 'f'.repeat(48); // too long for a pollable token
+    const api = sarvam({
+      '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: LONG, status: 'pending' } }],
+      [`/doc-ai/v1/job/${LONG}/status`]: [status('running'), status('completed')],
+      [`/doc-ai/v1/job/${LONG}/results?format=md`]: [results],
+    });
+    const job = await startOcr(deps(api.fetchImpl), file, 'sat-IN');
+    expect(job.text).toContain('ᱥᱟᱱᱛᱟᱲᱤ');
+    expect(job.jobId).toMatch(/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,35}$/);
+  });
+
+  it('times out clearly when a long-id job outlasts the wait', async () => {
+    const LONG = 'doc-ai-job-' + 'e'.repeat(48);
+    const api = sarvam({
+      '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: LONG, status: 'pending' } }],
+      [`/doc-ai/v1/job/${LONG}/status`]: [status('running')],
+    });
+    await expect(startOcr({ ...deps(api.fetchImpl), waitMs: 0 }, file, 'sat-IN')).rejects.toMatchObject({ code: 'OCR_TIMEOUT' });
   });
 
   it('reports failed jobs and empty pages instead of inventing text', async () => {

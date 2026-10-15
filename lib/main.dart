@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'app/router/app_router.dart';
 import 'app/router/url_strategy.dart';
+import 'core/payments/checkout_service.dart';
 import 'core/accessibility/app_experience_scope.dart';
 import 'core/config/appwrite_config.dart';
 import 'core/auth/session_persistence.dart';
@@ -215,6 +216,8 @@ class OlitunApp extends ConsumerWidget {
     ref.watch(contentChangeSyncProvider);
     // Review notification taps deep-link to Today's Review.
     ref.watch(notificationTapRouterProvider);
+    // Paid-but-unverified checkouts are re-verified once per app start.
+    ref.watch(pendingPurchaseVerificationRetryProvider);
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     final languageCode = ref.watch(appLanguageProvider);

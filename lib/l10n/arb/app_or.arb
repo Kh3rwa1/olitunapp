@@ -1218,5 +1218,11 @@
             }
         }
     },
-    "aiAssistantActive": "AI ସହାୟକ ସକ୍ରିୟ"
+    "aiAssistantActive": "AI ସହାୟକ ସକ୍ରିୟ",
+    "paywallPaymentCancelled": "ପେମେଣ୍ଟ ବାତିଲ ହେଲା। ଆପଣ ଯେକୌଣସି ସମୟରେ ପୁଣି ଚେଷ୍ଟା କରିପାରିବେ।",
+    "paywallPaymentFailed": "ପେମେଣ୍ଟ ସଫଳ ହେଲା ନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।",
+    "paywallNotConfigured": "ବର୍ତ୍ତମାନ କିଣିବା ଉପଲବ୍ଧ ନାହିଁ। ଦୟାକରି ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।",
+    "paywallVerificationPending": "ପେମେଣ୍ଟ ମିଳିଲା। ଆମେ ଶୀଘ୍ର ଆପଣଙ୍କ ଅନଲକ୍ ନିଶ୍ଚିତ କରିବୁ।",
+    "paywallAndroidOnly": "କିଣିବା Olitun Android ଆପରେ ଉପଲବ୍ଧ।",
+    "paywallLockedLessonMessage": "ଏହି ପାଠ ଏକ ପେଡ୍ କୋର୍ସର ଅଂଶ। ଆଗକୁ ବଢ଼ିବା ପାଇଁ କୋର୍ସ ଅନଲକ୍ କରନ୍ତୁ।"
 }

@@ -1333,6 +1333,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Pick up where you left off — small steps, every day.';
 
   @override
+  String get homeNewcomerSubtitle =>
+      'Start with your first letters — small steps, every day.';
+
+  @override
   String get aiTranslatorTitle => 'AI Translator';
 
   @override

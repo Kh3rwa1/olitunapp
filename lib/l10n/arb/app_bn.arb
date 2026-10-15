@@ -696,6 +696,7 @@
     "cancelLower": "বাতিল করুন",
     "greetingDayPart": "ᱡᱚᱦᱟᱨ • {part}",
     "homePickupSubtitle": "যেখানে থেমেছিলেন সেখান থেকে শুরু — ছোট পা, প্রতিদিন।",
+    "homeNewcomerSubtitle": "প্রথম অক্ষর দিয়ে শুরু করুন — ছোট পা, প্রতিদিন।",
     "aiTranslatorTitle": "AI Translator",
     "voiceSpeakWithConfidence": "আত্মবিশ্বাসের সাথে কথা বলুন",
     "aiStudioPromoBadge": "NEW • AI STUDIO",

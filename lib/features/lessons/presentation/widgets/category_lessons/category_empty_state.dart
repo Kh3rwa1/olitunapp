@@ -57,7 +57,7 @@ class CategoryEmptyState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(24),
               ),
               child: Icon(
-                isAlphabet ? Icons.translate_rounded : Icons.school_outlined,
+                isAlphabet ? Icons.abc_rounded : Icons.school_outlined,
                 size: 40,
                 color: AppColors.primary,
               ),

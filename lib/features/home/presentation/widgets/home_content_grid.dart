@@ -252,7 +252,7 @@ class _BentoCategoryCard extends ConsumerWidget {
   IconData _getIcon() {
     switch (category.iconName) {
       case 'alphabet':
-        return Icons.translate_rounded;
+        return Icons.abc_rounded;
       case 'numbers':
         return Icons.calculate_rounded;
       case 'words':

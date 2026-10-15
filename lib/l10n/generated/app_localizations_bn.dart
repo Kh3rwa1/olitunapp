@@ -1331,6 +1331,10 @@ class AppLocalizationsBn extends AppLocalizations {
       'যেখানে থেমেছিলেন সেখান থেকে শুরু — ছোট পা, প্রতিদিন।';
 
   @override
+  String get homeNewcomerSubtitle =>
+      'প্রথম অক্ষর দিয়ে শুরু করুন — ছোট পা, প্রতিদিন।';
+
+  @override
   String get aiTranslatorTitle => 'AI Translator';
 
   @override

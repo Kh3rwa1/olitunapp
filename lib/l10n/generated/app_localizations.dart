@@ -2480,6 +2480,12 @@ abstract class AppLocalizations {
   /// **'Pick up where you left off — small steps, every day.'**
   String get homePickupSubtitle;
 
+  /// No description provided for @homeNewcomerSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start with your first letters — small steps, every day.'**
+  String get homeNewcomerSubtitle;
+
   /// No description provided for @aiTranslatorTitle.
   ///
   /// In en, this message translates to:

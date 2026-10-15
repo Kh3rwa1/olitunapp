@@ -33,7 +33,7 @@ class HeroCategoryCard extends StatelessWidget {
   IconData _getIcon(String? iconName) {
     switch (iconName) {
       case 'alphabet':
-        return Icons.translate_rounded;
+        return Icons.abc_rounded;
       case 'numbers':
         return Icons.calculate_rounded;
       case 'words':

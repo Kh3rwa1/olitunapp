@@ -57,6 +57,11 @@ class CloudflareConfig {
   static const String waitlistMineEndpoint = '$baseUrl/api/v1/waitlist/mine';
   static const String adminWaitlistEndpoint = '$baseUrl/api/v1/admin/waitlist';
 
+  // Admin gamification / Bakhed CMS (D1 cms_rows + rhymes)
+  static const String adminCmsRowsEndpoint = '$baseUrl/api/v1/admin/cms/rows';
+  static const String adminCmsBakhedEndpoint =
+      '$baseUrl/api/v1/admin/cms/bakhed';
+
   // Learner analytics ingest
   static const String analyticsEventsEndpoint =
       '$baseUrl/api/v1/analytics/events';

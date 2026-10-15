@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/bakhed/widgets/bakhed_category_field.dart';
-import 'package:itun/features/rhymes/domain/rhyme_category_model.dart';
-import 'package:itun/shared/providers/rhymes_providers.dart';
+import 'package:itun/shared/models/catalog/rhyme_category_model.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 
 void main() {
   Widget wrap(Widget child, List<String> categories) {

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/observability/crash_reporting.dart';
-import 'package:itun/features/lessons/data/models/lesson_model.dart';
+import 'package:itun/shared/models/catalog/lesson_model.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/models/content_item_extensions.dart';
 

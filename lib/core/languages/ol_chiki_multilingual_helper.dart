@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import '../../shared/utils/santali_numbers.dart';
+import 'santali_numbers.dart';
 import 'indic_translations_dictionary.dart';
 import 'ol_chiki_char_maps.dart';
 import 'translation_override_service.dart';

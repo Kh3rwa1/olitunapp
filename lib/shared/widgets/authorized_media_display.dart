@@ -115,7 +115,9 @@ class _AuthorizedMediaDisplayState extends ConsumerState<AuthorizedMediaDisplay>
     } catch (_) {
       try {
         await candidate?.dispose();
-      } catch (_) {}
+      } catch (_) {
+        // Best-effort cleanup; the load failure itself is handled below.
+      }
       if (mounted && generation == _generation) {
         _controller = null;
         _refresh?.cancel();

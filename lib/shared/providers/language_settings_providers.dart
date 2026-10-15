@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/storage/hive_service.dart';
 import 'content_providers.dart';
 import 'learner_content_providers.dart';
-import '../../features/categories/presentation/providers/category_notifier.dart';
 
 // Language, proficiency, goal, and audio-mode preferences for the
 // multilingual audio-first learning experience.
@@ -148,6 +147,12 @@ void migrateLegacyLanguagePrefs(SharedPreferences prefs) {
   prefs.setInt(_prefsVersionKey, _prefsVersion);
 }
 
+/// Bumped by [updateTeachingLanguage] and
+/// [cascadeTeachingLanguageForInterface] after the teaching language changes.
+/// Feature-owned catalog notifiers (e.g. the category notifier) watch it so
+/// they rebuild for the new language without `shared/` importing features.
+final teachingLanguageRevisionProvider = StateProvider<int>((ref) => 0);
+
 /// The language used for meanings, explanations, and translation audio.
 /// Defaults to the interface language when teachable, otherwise English.
 final teachingLanguageProvider = StateProvider<String>((ref) {
@@ -205,7 +210,7 @@ void updateTeachingLanguage(WidgetRef ref, String languageCode) {
   ref.read(teachingLanguageProvider.notifier).state = normalized;
   ref.invalidate(contentListProvider);
   ref.invalidate(learnerLessonsProvider);
-  ref.invalidate(categoryNotifierProvider);
+  ref.read(teachingLanguageRevisionProvider.notifier).state++;
 }
 
 /// Keeps the teaching language aligned with the interface language until the
@@ -222,7 +227,7 @@ void cascadeTeachingLanguageForInterface(WidgetRef ref, String interfaceCode) {
   ref.read(teachingLanguageProvider.notifier).state = teaching;
   ref.invalidate(contentListProvider);
   ref.invalidate(learnerLessonsProvider);
-  ref.invalidate(categoryNotifierProvider);
+  ref.read(teachingLanguageRevisionProvider.notifier).state++;
 }
 
 void updateSantaliProficiency(WidgetRef ref, SantaliProficiency value) {

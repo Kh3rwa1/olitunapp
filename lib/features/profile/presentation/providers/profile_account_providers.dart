@@ -12,7 +12,7 @@ import '../../../../core/logging/app_logger.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/content_providers.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../../data/datasources/remote_avatar_datasource.dart';
 import '../../domain/entities/profile_avatar.dart';
 

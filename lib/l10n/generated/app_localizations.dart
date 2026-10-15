@@ -3757,6 +3757,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Content could not be loaded. Please try again.'**
   String get contentLoadFailed;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard!'**
+  String get copiedToClipboard;
+
+  /// No description provided for @coursePackPreviewNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} ({scriptName}) course packs are in preview. Foundational learning content is active.'**
+  String coursePackPreviewNotice(String name, String scriptName);
+
+  /// No description provided for @aiAssistantActive.
+  ///
+  /// In en, this message translates to:
+  /// **'AI ASSISTANT ACTIVE'**
+  String get aiAssistantActive;
 }
 
 class _AppLocalizationsDelegate

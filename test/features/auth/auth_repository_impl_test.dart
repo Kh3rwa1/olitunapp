@@ -5,9 +5,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
-import 'package:itun/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:itun/features/auth/data/models/user_model.dart';
-import 'package:itun/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:itun/core/auth/auth_remote_datasource.dart';
+import 'package:itun/core/auth/user_model.dart';
+import 'package:itun/core/auth/auth_repository_impl.dart';
 
 class _MockRemote extends Mock implements AuthRemoteDataSource {}
 

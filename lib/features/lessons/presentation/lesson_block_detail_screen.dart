@@ -16,13 +16,15 @@ import '../../content/presentation/providers/audio_playback_providers.dart';
 import '../../practice/data/typing_practice_settings.dart';
 import '../../practice/presentation/providers/typing_practice_controller.dart';
 import '../../quiz/domain/listening_quiz_generator.dart';
-import '../domain/entities/lesson_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 import '../domain/lesson_progression.dart';
 import 'providers/lesson_progression_provider.dart';
 import 'widgets/lesson_block_detail/lesson_block_item_view.dart';
 import 'widgets/lesson_block_detail/lesson_block_top_nav_bar.dart';
 import 'widgets/category_lessons/locked_lesson_view.dart';
 import 'widgets/lesson_block_widgets.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
 
 part 'lesson_block_detail_nav.dart';
 

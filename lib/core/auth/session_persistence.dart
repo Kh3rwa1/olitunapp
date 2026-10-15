@@ -15,7 +15,9 @@ class SessionPersistence {
     try {
       final s = session.secret;
       if (s is String && s.isNotEmpty) return s;
-    } catch (_) {}
+    } catch (_) {
+      // Not every session model exposes `secret`; treat that as no secret.
+    }
     return null;
   }
 

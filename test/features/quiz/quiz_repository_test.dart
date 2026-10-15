@@ -7,7 +7,7 @@ import '../../test_utils.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/quizzes_provider.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 void main() {
   final quiz = QuizModel(

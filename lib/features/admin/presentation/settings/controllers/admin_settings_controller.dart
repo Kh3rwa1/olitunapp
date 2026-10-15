@@ -8,6 +8,7 @@ import '../../../../../core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../domain/admin_failure.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 enum AdminSettingsStatus {
   initial,

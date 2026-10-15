@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/network/network_info.dart';
-import 'package:itun/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:itun/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:itun/core/auth/auth_remote_datasource.dart';
+import 'package:itun/core/auth/auth_repository_impl.dart';
 
 class _Client extends Mock implements Client {
   _Client() {

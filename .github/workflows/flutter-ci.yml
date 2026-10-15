@@ -43,12 +43,18 @@ jobs:
         run: node scripts/check_sheets_above_nav.mjs
       - name: Enforce Architecture Boundaries Gate
         run: node scripts/check_architecture_boundaries.mjs
+      - name: Unit Test Architecture Boundaries Gate
+        run: node --test scripts/check_architecture_boundaries.test.mjs
       - name: Enforce Appwrite Auth-Only Gate
         run: node scripts/check_appwrite_auth_only.mjs
       - name: Unit Test Appwrite Auth-Only Gate
         run: node --test scripts/check_appwrite_auth_only.test.mjs
       - name: Enforce Localization Key Parity Gate
         run: node scripts/check_l10n_parity.mjs
+      - name: Enforce Localized UI Strings
+        run: node scripts/check_hardcoded_strings.mjs
+        env:
+          HARD_CODED_BASELINE_STRICT: '1'
       - name: Enforce Review Corpus ID Integrity
         run: node scripts/check_review_corpus_ids.mjs
       - name: Unit Test Review Corpus ID Integrity Checker

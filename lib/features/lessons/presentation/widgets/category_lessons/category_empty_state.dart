@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryEmptyState extends StatelessWidget {

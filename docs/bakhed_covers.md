@@ -68,5 +68,5 @@ A Node script (`scripts/cleanup_orphaned_media.mjs`) is configured to sweep both
 
 *   **List Card Widget:** Promoted to [cover_thumbnail.dart](file:///Users/dulorai/olitun/olitunapp/lib/shared/widgets/cover_thumbnail.dart)
 *   **Detail Hero Widget:** Found in [cover_hero.dart](file:///Users/dulorai/olitun/olitunapp/lib/features/rhymes/presentation/widgets/cover_hero.dart)
-*   **Validation Rules:** Found in [media_uploader.dart](file:///Users/dulorai/olitun/olitunapp/lib/core/storage/media_uploader.dart)
+*   **Validation Rules:** Found in [media_uploader.dart](file:///Users/dulorai/olitun/olitunapp/lib/shared/media/media_uploader.dart)
 *   **Cleanup Script:** Found in [cleanup_orphaned_media.mjs](file:///Users/dulorai/olitun/olitunapp/scripts/cleanup_orphaned_media.mjs)

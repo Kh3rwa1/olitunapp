@@ -82,7 +82,12 @@ class NotificationService {
       tz.initializeTimeZones();
       try {
         tz.setLocalLocation(tz.UTC);
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.debug(
+          'Setting the UTC timezone baseline failed: $e',
+          name: 'NotificationService',
+        );
+      }
       try {
         final timezoneInfo = await FlutterTimezone.getLocalTimezone();
         tz.setLocalLocation(tz.getLocation(timezoneInfo.identifier));

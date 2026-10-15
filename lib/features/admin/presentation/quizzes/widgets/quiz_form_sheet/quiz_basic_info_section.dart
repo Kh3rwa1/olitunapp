@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../../shared/models/catalog/category_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 
 class QuizBasicInfoSection extends StatelessWidget {

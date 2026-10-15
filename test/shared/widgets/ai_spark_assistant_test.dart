@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/widgets/ai_spark_assistant.dart';
 
 void main() {
@@ -50,6 +51,9 @@ void main() {
       bool dismissed = false;
       await tester.pumpWidget(
         MaterialApp(
+          // The fullscreen badge is localized.
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: AiSparkAssistant(
               statusText: 'Creating Santali Voice…',

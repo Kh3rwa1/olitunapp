@@ -11,7 +11,8 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../core/motion/branded_refresh.dart';
 import '../../../shared/widgets/state_widgets.dart';
-import '../domain/rhyme_model.dart';
+import 'package:itun/features/profile/presentation/widgets/offline_status_banner.dart';
+import '../../../shared/models/catalog/rhyme_model.dart';
 
 import 'widgets/whimsical_background.dart';
 import 'widgets/tilt_card.dart';
@@ -26,6 +27,7 @@ import 'widgets/bakhed_preparing_animation.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});

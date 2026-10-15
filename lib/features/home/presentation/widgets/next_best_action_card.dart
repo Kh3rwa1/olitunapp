@@ -8,6 +8,7 @@ import '../../../../shared/providers/providers.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
 import '../providers/mission_providers.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class NextBestActionCard extends ConsumerWidget {
   final String? nextLessonId;

@@ -15,7 +15,7 @@ import '../../../shared/providers/local_settings_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'onboarding_ambient.dart';
 import 'onboarding_step_scaffold.dart';
-import '../../auth/presentation/providers/auth_providers.dart';
+import '../../../core/auth/auth_providers.dart';
 import '../providers/onboarding_provider.dart';
 import 'onboarding_option_card.dart';
 

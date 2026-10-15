@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// Interactive AI Assistant animation powered by Lottie.
 ///
@@ -475,7 +476,9 @@ class _AiSparkAssistantState extends State<AiSparkAssistant>
                                     ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      'AI ASSISTANT ACTIVE',
+                                      AppLocalizations.of(
+                                        context,
+                                      )!.aiAssistantActive,
                                       style: TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.w800,

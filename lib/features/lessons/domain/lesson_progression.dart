@@ -1,4 +1,4 @@
-import 'entities/lesson_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 
 /// The learner-facing state of a lesson in a sequential learning path.
 enum LessonProgressStatus { completed, current, locked }

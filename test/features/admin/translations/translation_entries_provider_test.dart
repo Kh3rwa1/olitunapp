@@ -4,13 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/translations/models/translation_entry.dart';
 import 'package:itun/features/admin/presentation/translations/providers/translation_entries_provider.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
-import 'package:itun/features/rhymes/domain/rhyme_model.dart';
+import 'package:itun/shared/models/catalog/rhyme_model.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/rhymes_providers.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 import 'package:itun/shared/providers/sentences_provider.dart';
 import 'package:itun/shared/providers/words_provider.dart';
 

@@ -2065,4 +2065,15 @@ class AppLocalizationsSat extends AppLocalizations {
   @override
   String get contentLoadFailed =>
       'ᱠᱟᱱᱰᱤ ᱞᱟᱦᱟᱨ ᱵᱟᱦᱟᱨ ᱟᱠᱟᱱᱟᱭ. ᱠᱷᱚᱱ ᱫᱩᱦᱲᱟᱹ ᱠᱷᱚᱱ ᱩᱦᱸᱡ ᱢᱮ.';
+
+  @override
+  String get copiedToClipboard => 'ᱠᱞᱤᱯᱵᱳᱨᱰ ᱨᱮ ᱠᱚᱯᱤ ᱦᱚᱭᱮᱱᱟ!';
+
+  @override
+  String coursePackPreviewNotice(String name, String scriptName) {
+    return '$name ($scriptName) course packs are in preview. Foundational learning content is active.';
+  }
+
+  @override
+  String get aiAssistantActive => 'AI ASSISTANT ACTIVE';
 }

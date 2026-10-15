@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/oauth_sanitizer.dart';
-import '../providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 /// Displays a one-time SnackBar notice when an OAuth error query parameter
 /// is present in the current URI on web (e.g. `?error=...`).
@@ -60,7 +61,12 @@ class _OAuthFailureNoticeState extends ConsumerState<OAuthFailureNotice> {
     if (isConflict) {
       try {
         ref.read(authRepositoryProvider).signOut();
-      } catch (_) {}
+      } catch (e) {
+        AppLogger.debug(
+          'Signing out after an OAuth session conflict failed: $e',
+          name: 'OAuthFailureNotice',
+        );
+      }
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

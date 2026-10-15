@@ -9,10 +9,10 @@ import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/audio/playback_controller.dart';
 import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/category_lessons_screen.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
@@ -20,7 +20,8 @@ import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/core/payments/purchased_categories_provider.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
   final List<CategoryEntity> _initial;

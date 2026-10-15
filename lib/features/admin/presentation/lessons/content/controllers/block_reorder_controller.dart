@@ -1,4 +1,4 @@
-import '../../../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../../../shared/models/catalog/lesson_entity.dart';
 
 List<LessonBlockEntity> reorderLessonBlocks(
   List<LessonBlockEntity> blocks,

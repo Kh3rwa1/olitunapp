@@ -9,8 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_repository.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/presentation/providers/user_stats_provider.dart';

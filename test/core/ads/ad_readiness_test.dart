@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/ads/ad_service.dart';
 import 'package:itun/core/ads/ad_state.dart';
 import 'package:itun/core/ads/consent_manager.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/core/payments/purchased_categories_provider.dart';
 
 class _AdService extends Fake implements AdService {
   @override

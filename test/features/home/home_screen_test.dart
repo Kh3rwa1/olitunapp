@@ -7,8 +7,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
@@ -21,6 +21,10 @@ import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/features/home/presentation/widgets/home_content_grid.dart';
 import '../../test_utils.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
   @override

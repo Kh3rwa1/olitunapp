@@ -10,7 +10,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 /// Test double for [AudioService]. Tile playback now routes through the

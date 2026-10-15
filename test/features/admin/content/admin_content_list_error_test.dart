@@ -6,9 +6,10 @@ import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/admin/presentation/content/admin_content_list_screen.dart';
 import 'package:itun/features/admin/presentation/widgets/common/admin_states.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/domain/repositories/category_repository.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/features/categories/presentation/providers/category_providers.dart';
 
 class MockContentRepository extends Mock implements ContentRepository {}
 

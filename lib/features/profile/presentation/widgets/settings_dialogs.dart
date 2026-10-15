@@ -5,9 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../providers/profile_providers.dart';
 import 'settings_widgets.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 void showThemeDialog(BuildContext context, WidgetRef ref, String current) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -315,7 +316,12 @@ void showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
                 // Guest mode: ensure any remote anonymous session is deleted and wipe local data
                 try {
                   await ref.read(authRepositoryProvider).signOut();
-                } catch (_) {}
+                } catch (e) {
+                  AppLogger.debug(
+                    'Deleting the guest session before local wipe failed: $e',
+                    name: 'SettingsDialogs',
+                  );
+                }
                 await finalizeLocalWipe();
                 return;
               }

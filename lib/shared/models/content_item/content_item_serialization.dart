@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:itun/core/logging/app_logger.dart';
 
-import '../../utils/santali_numbers.dart';
+import '../../../core/languages/santali_numbers.dart';
 import 'content_block.dart';
 import 'content_enums.dart';
 import 'content_item_model.dart';

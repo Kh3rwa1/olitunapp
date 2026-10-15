@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
+import 'package:itun/core/audio/playback_providers.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/accessibility/learning_semantics.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';

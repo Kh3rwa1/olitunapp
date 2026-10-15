@@ -8,7 +8,7 @@ import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../../core/observability/crash_reporting.dart';
 import '../../../../../core/storage/cache_service.dart';
-import '../../../../../shared/providers/seed_provider.dart';
+import '../../seeding/seed_provider.dart';
 
 class AdminMaintenanceController {
   AdminMaintenanceController(this.ref);

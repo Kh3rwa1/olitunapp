@@ -10,9 +10,10 @@ import '../../../core/theme/app_typography.dart';
 import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
-import '../../categories/domain/entities/category_entity.dart';
+import '../../../shared/models/catalog/category_entity.dart';
 import 'widgets/bento_category_card.dart';
 import 'widgets/hero_category_card.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});

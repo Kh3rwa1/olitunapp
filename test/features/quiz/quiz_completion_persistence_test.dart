@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';

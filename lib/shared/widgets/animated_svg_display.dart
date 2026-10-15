@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:http/http.dart' as http;
-import '../../features/lessons/presentation/widgets/platform_view_stub.dart'
-    if (dart.library.js_interop) '../../features/lessons/presentation/widgets/platform_view_web.dart';
+import 'platform_view_stub.dart'
+    if (dart.library.js_interop) 'platform_view_web.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 class AnimatedSvgDisplay extends StatefulWidget {

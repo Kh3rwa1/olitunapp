@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 
 /// Dynamic HTML rendering block. Parses standard block and inline HTML tags natively in pure Flutter.
 class DynamicHtmlBlock extends StatelessWidget {

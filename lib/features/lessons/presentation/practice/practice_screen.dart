@@ -13,6 +13,7 @@ import 'practice_guide.dart';
 import 'tracing_view.dart';
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class PracticeScreen extends ConsumerStatefulWidget {
   final String letterChar;

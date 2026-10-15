@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/error/failures.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_providers.dart';

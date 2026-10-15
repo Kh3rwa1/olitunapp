@@ -6,7 +6,7 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/features/categories/data/datasources/category_local_datasource.dart';
 import 'package:itun/features/categories/data/datasources/category_remote_datasource.dart';
-import 'package:itun/features/categories/data/models/category_model.dart';
+import 'package:itun/shared/models/catalog/category_model.dart';
 import 'package:itun/features/categories/data/repositories/category_repository_impl.dart';
 
 class _MockRemote extends Mock implements CategoryRemoteDataSource {}

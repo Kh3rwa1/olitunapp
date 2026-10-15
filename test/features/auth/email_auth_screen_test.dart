@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/core/auth/auth_repository.dart';
 import 'package:itun/features/auth/presentation/email_auth_screen.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import '../../test_utils.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}

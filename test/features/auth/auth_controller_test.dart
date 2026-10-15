@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/error/failures.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/core/auth/auth_repository.dart';
 import 'package:itun/features/auth/presentation/controllers/auth_controller.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 

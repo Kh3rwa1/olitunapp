@@ -1205,5 +1205,18 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "copiedToClipboard": "क्लिपबोर्ड पर कॉपी हो गया!",
+    "coursePackPreviewNotice": "{name} ({scriptName}) कोर्स पैक प्रीव्यू में हैं। बुनियादी सीखने की सामग्री उपलब्ध है।",
+    "@coursePackPreviewNotice": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "scriptName": {
+                "type": "String"
+            }
+        }
+    },
+    "aiAssistantActive": "AI सहायक सक्रिय"
 }

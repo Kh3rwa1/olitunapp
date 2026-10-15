@@ -56,7 +56,11 @@ AccountDeletionResult parseAccountDeletionExecution({
     isMalformed = true;
   }
 
-  final isAuthDeleted = responseData?['authDeleted'] == true;
+  // A blocked login (no server key available to hard-delete it) can never
+  // sign in again, so it counts as the login being removed.
+  final isAuthDeleted =
+      responseData?['authDeleted'] == true ||
+      responseData?['loginBlocked'] == true;
   // Accept both SDK enum strings and plain status values.
   final normalizedStatus = status.trim().toLowerCase().split('.').last;
   final isCompletedStatus = normalizedStatus == 'completed';
@@ -64,8 +68,9 @@ AccountDeletionResult parseAccountDeletionExecution({
   // newer responses may additionally include authDeleted. Never accept a
   // generic {ok: true} or an explicit authDeleted: false as confirmation.
   final isConfirmed =
-      responseData?['authDeleted'] != false &&
-      (isAuthDeleted || responseData?['code'] == 'account_deleted');
+      isAuthDeleted ||
+      (responseData?['authDeleted'] != false &&
+          responseData?['code'] == 'account_deleted');
 
   if (!isCompletedStatus ||
       !isConfirmed ||

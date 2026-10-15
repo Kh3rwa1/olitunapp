@@ -56,7 +56,36 @@ function encodeKeyPath(key: string): string {
   return key.split('/').map(encodeURIComponent).join('/');
 }
 
+// Single public content item by kind and id. Lessons are excluded: they go
+// through /lessons/authorize so paid blocks stay gated.
+const CONTENT_TABLES: Record<string, string> = {
+  letter: 'letters',
+  number: 'numbers',
+  word: 'words',
+  sentence: 'sentences',
+  rhyme: 'rhymes',
+  category: 'categories',
+};
+
 export function registerLearnerContentRoutes(app: App): void {
+  app.get('/api/v1/content/:kind/:id', async (c) => {
+    const table = CONTENT_TABLES[c.req.param('kind')];
+    const id = c.req.param('id').trim();
+    if (!table) return badRequest(c, 'Unknown content kind');
+    if (!id || id.length > 128) return badRequest(c, 'Invalid id');
+    try {
+      // Table names come from the fixed map above, never from input.
+      const row: any = await c.env.DB.prepare(`SELECT id, raw_json FROM ${table} WHERE id = ?`)
+        .bind(id)
+        .first();
+      const item = row ? parseRow(row) : null;
+      if (!item) return c.json({ ok: false, error: 'NOT_FOUND' }, 404);
+      return cachedJson(c, { ok: true, item });
+    } catch (err: any) {
+      return c.json({ ok: false, error: err.message }, 500);
+    }
+  });
+
   // Audio tracks for one or many items of a content kind. Mirrors the
   // Appwrite queries: contentKind + contentId (repeatable, max 100), with
   // optional trackType + languageCode filters.

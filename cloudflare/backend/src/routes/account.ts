@@ -67,7 +67,11 @@ async function purgeR2(bucket: R2Bucket, userId: string): Promise<void> {
   }
 }
 
-async function deleteAppwriteUser(env: Bindings, userId: string): Promise<void> {
+// Deletes the Appwrite login with the server key. Returns false when the key
+// is missing or lacks the users.write scope, so the caller can fall back to
+// blocking the account with the user's own session.
+async function deleteAppwriteUser(env: Bindings, userId: string): Promise<boolean> {
+  if (!env.APPWRITE_API_KEY) return false;
   const endpoint = env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
   let res: Response;
   try {
@@ -82,14 +86,34 @@ async function deleteAppwriteUser(env: Bindings, userId: string): Promise<void> 
   } catch (_) {
     throw new DeletionError('AUTH_DELETE_FAILED', 502);
   }
-  if (res.ok) return;
-  if (res.status === 404) {
-    // Only an explicit "user not found" proves the login is gone; a 404 for
-    // a wrong project or endpoint must not count as success.
-    const data: any = await res.json().catch(() => null);
-    if (data?.type === 'user_not_found') return;
-  }
+  if (res.ok) return true;
+  const data: any = await res.json().catch(() => null);
+  // Only an explicit "user not found" proves the login is gone; a 404 for
+  // a wrong project or endpoint must not count as success.
+  if (res.status === 404 && data?.type === 'user_not_found') return true;
+  if (res.status === 401 && data?.type === 'general_unauthorized_scope') return false;
   throw new DeletionError('AUTH_DELETE_FAILED', 502);
+}
+
+// Permanently blocks the login using the user's own session (Appwrite
+// account status API). Needs no server key; the user record remains in
+// Appwrite until a server-side hard delete, but can never sign in again.
+async function blockAppwriteUser(env: Bindings, jwt: string): Promise<void> {
+  const endpoint = env.APPWRITE_ENDPOINT.replace(/\/+$/, '');
+  let res: Response;
+  try {
+    res = await fetch(`${endpoint}/account/status`, {
+      method: 'PATCH',
+      headers: {
+        'X-Appwrite-Project': env.APPWRITE_PROJECT_ID,
+        'X-Appwrite-JWT': jwt,
+        Accept: 'application/json',
+      },
+    });
+  } catch (_) {
+    throw new DeletionError('AUTH_BLOCK_FAILED', 502);
+  }
+  if (!res.ok) throw new DeletionError('AUTH_BLOCK_FAILED', 502);
 }
 
 async function setRequestState(db: D1Database, requestId: string, status: string, lastError: string | null) {
@@ -101,8 +125,10 @@ async function setRequestState(db: D1Database, requestId: string, status: string
  * Runs the full deletion for [userId]. Used by the user route and by the
  * admin reconcile job for interrupted requests.
  */
-export async function deleteUserAccount(env: Bindings, userId: string): Promise<Outcome> {
-  if (!env.APPWRITE_API_KEY || !env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID) {
+export async function deleteUserAccount(env: Bindings, userId: string, jwt = ''): Promise<Outcome> {
+  // Without a server key the login can only be removed by blocking it with
+  // the user's own session, which the admin reconcile job does not have.
+  if (!env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID || (!env.APPWRITE_API_KEY && !jwt)) {
     return {
       status: 503,
       body: { ok: false, code: 'server_misconfiguration', message: 'Account deletion is temporarily unavailable.' },
@@ -128,6 +154,7 @@ export async function deleteUserAccount(env: Bindings, userId: string): Promise<
     };
   }
 
+  let loginBlocked = false;
   try {
     // 1. R2 objects under per-user prefixes.
     await purgeR2(env.ASSETS, userId);
@@ -153,8 +180,13 @@ export async function deleteUserAccount(env: Bindings, userId: string): Promise<
     }
     await setRequestState(db, requestId, 'cleanup_complete', null);
 
-    // 4. The Appwrite login, last.
-    await deleteAppwriteUser(env, userId);
+    // 4. The Appwrite login, last: hard delete, or block when the server key
+    // cannot delete users.
+    if (!(await deleteAppwriteUser(env, userId))) {
+      if (!jwt) throw new DeletionError('AUTH_DELETE_FAILED', 503);
+      await blockAppwriteUser(env, jwt);
+      loginBlocked = true;
+    }
   } catch (err: any) {
     const code = err instanceof DeletionError ? err.code : 'DOCUMENT_DELETE_FAILED';
     const status = err instanceof DeletionError ? err.status : 500;
@@ -169,9 +201,15 @@ export async function deleteUserAccount(env: Bindings, userId: string): Promise<
   }
 
   try {
+    // A blocked login keeps its id so it can be hard-deleted later.
     await db.prepare(
-      "UPDATE deletion_requests SET user_id = ?, status = 'completed', last_error = NULL, updated_at = ? WHERE id = ?"
-    ).bind(ANONYMIZED_USER_ID, new Date().toISOString(), requestId).run();
+      'UPDATE deletion_requests SET user_id = ?, status = ?, last_error = NULL, updated_at = ? WHERE id = ?'
+    ).bind(
+      loginBlocked ? userId : ANONYMIZED_USER_ID,
+      loginBlocked ? 'login_blocked' : 'completed',
+      new Date().toISOString(),
+      requestId,
+    ).run();
   } catch (_) {
     console.error('account deletion: auth deleted but final state update failed');
     return {
@@ -182,7 +220,13 @@ export async function deleteUserAccount(env: Bindings, userId: string): Promise<
 
   return {
     status: 200,
-    body: { ok: true, code: 'account_deleted', authDeleted: true, message: 'Account and associated personal data deleted.' },
+    body: {
+      ok: true,
+      code: 'account_deleted',
+      authDeleted: !loginBlocked,
+      loginBlocked,
+      message: 'Account and associated personal data deleted.',
+    },
   };
 }
 
@@ -190,7 +234,7 @@ export function registerAccountRoutes(app: App): void {
   app.post('/api/v1/user/delete', requireUser, async (c) => {
     const userId = getRequestUserId(c);
     if (!userId) return c.json({ ok: false, code: 'unauthenticated', message: 'Authentication required' }, 401);
-    const outcome = await deleteUserAccount(c.env, userId);
+    const outcome = await deleteUserAccount(c.env, userId, c.get('jwt'));
     return c.json(outcome.body, outcome.status as any);
   });
 }

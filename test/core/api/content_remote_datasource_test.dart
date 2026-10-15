@@ -31,6 +31,47 @@ void main() {
     );
   }
 
+  group('getPublicRow', () {
+    test('reads one learner item from the Worker, never Appwrite', () async {
+      final ds = datasource(
+        (_) async => http.Response(
+          jsonEncode({
+            'ok': true,
+            'item': {'id': 'w 1', 'wordLatin': 'johar'},
+          }),
+          200,
+        ),
+      );
+
+      final row = await ds.getPublicRow(tableId: 'words', rowId: 'w 1');
+
+      expect(requests.single.path, '/api/v1/content/word/w%201');
+      expect(row.id, 'w 1');
+      expect(row.data['wordLatin'], 'johar');
+      verifyZeroInteractions(tablesDB);
+    });
+
+    test('a missing item surfaces the Worker error', () async {
+      final ds = datasource((_) async => http.Response('{}', 404));
+
+      await expectLater(
+        ds.getPublicRow(tableId: 'letters', rowId: 'x'),
+        throwsA(isA<EdgeApiException>()),
+      );
+      verifyZeroInteractions(tablesDB);
+    });
+
+    test('lessons have no public by-id route', () async {
+      final ds = datasource((_) async => http.Response('{}', 200));
+
+      await expectLater(
+        ds.getPublicRow(tableId: 'lessons', rowId: 'l1'),
+        throwsUnsupportedError,
+      );
+      expect(requests, isEmpty);
+    });
+  });
+
   group('listRows', () {
     test(
       'rhymes are listed from the Worker with the category filter',

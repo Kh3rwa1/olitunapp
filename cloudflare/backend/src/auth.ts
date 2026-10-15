@@ -27,7 +27,9 @@ type Verification =
   | { status: 'invalid' }
   | { status: 'unavailable' };
 
-const VERIFY_TTL_MS = 60_000;
+// Appwrite JWTs live 15 minutes; re-verifying every 5 keeps Appwrite load low
+// while bounding how long a revoked session stays usable at the edge.
+const VERIFY_TTL_MS = 5 * 60_000;
 const MAX_CACHE_ENTRIES = 5_000;
 
 // Per-isolate caches keyed by a hash of the JWT, so a verified token is not

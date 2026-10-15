@@ -357,7 +357,7 @@ class ContentRepository {
   /// Gets a single content item by ID.
   Future<Either<Failure, ContentItem>> get(ContentKind kind, String id) async {
     if (kind == ContentKind.lesson) return _getAuthorizedLesson(id);
-    return getForAdministration(kind, id);
+    return _getRemoteItem(kind, id, public: true);
   }
 
   /// Full-body CMS read. Appwrite team/row permissions are authoritative;
@@ -365,7 +365,15 @@ class ContentRepository {
   Future<Either<Failure, ContentItem>> getForAdministration(
     ContentKind kind,
     String id,
-  ) async {
+  ) => _getRemoteItem(kind, id, public: false);
+
+  /// Learner reads ([public]) come from the Cloudflare Worker; CMS reads
+  /// still use the admin data source. Both fall back to cache and seeds.
+  Future<Either<Failure, ContentItem>> _getRemoteItem(
+    ContentKind kind,
+    String id, {
+    required bool public,
+  }) async {
     final tableId = _getCollectionId(kind);
 
     if (await _networkInfo.isConnected) {
@@ -373,7 +381,9 @@ class ContentRepository {
         final remoteDataSource = _remoteDataSource;
         if (remoteDataSource == null) return await _getCachedItem(kind, id);
 
-        final row = await remoteDataSource.getRow(tableId: tableId, rowId: id);
+        final row = public
+            ? await remoteDataSource.getPublicRow(tableId: tableId, rowId: id)
+            : await remoteDataSource.getRow(tableId: tableId, rowId: id);
 
         final item = ContentItem.fromJson(row.data, row.id, kind);
         await _cacheAdministrationItem(item);

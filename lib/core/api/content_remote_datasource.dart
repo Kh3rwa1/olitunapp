@@ -33,6 +33,12 @@ abstract class ContentRemoteDataSource {
     required String rowId,
   });
 
+  /// One learner-visible row from the Cloudflare Worker.
+  Future<ContentRowData> getPublicRow({
+    required String tableId,
+    required String rowId,
+  });
+
   Future<Map<String, dynamic>> getCategory({
     required String categoryId,
     Duration timeout = const Duration(seconds: 6),
@@ -166,6 +172,38 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     );
     return ContentRowData(id: row.$id, data: row.data);
   }
+
+  @override
+  Future<ContentRowData> getPublicRow({
+    required String tableId,
+    required String rowId,
+  }) async {
+    final kind = _publicKinds[tableId];
+    if (kind == null) {
+      throw UnsupportedError('No Cloudflare Worker route for "$tableId"');
+    }
+    final body = await EdgeJsonClient.getJson(
+      _client,
+      Uri.parse(
+        '${CloudflareConfig.baseUrl}/api/v1/content/$kind/'
+        '${Uri.encodeComponent(rowId)}',
+      ),
+      timeout: _listTimeout,
+    );
+    final item = body['item'];
+    if (item is! Map) throw const FormatException('Missing content item');
+    final data = Map<String, dynamic>.from(item);
+    return ContentRowData(id: data['id']?.toString() ?? rowId, data: data);
+  }
+
+  static const _publicKinds = {
+    'letters': 'letter',
+    'numbers': 'number',
+    'words': 'word',
+    'sentences': 'sentence',
+    'rhymes': 'rhyme',
+    'categories': 'category',
+  };
 
   @override
   Future<Map<String, dynamic>> getCategory({

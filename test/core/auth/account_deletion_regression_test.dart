@@ -39,8 +39,21 @@ void main() {
       });
     }
 
+    test('accepts a blocked login as the login being removed', () {
+      final result = parseAccountDeletionExecution(
+        status: 'completed',
+        statusCode: 200,
+        responseBody:
+            '{"ok":true,"code":"account_deleted","authDeleted":false,'
+            '"loginBlocked":true}',
+      );
+      expect(result.isFullSuccess, isTrue);
+      expect(result.isAuthDeleted, isTrue);
+    });
+
     for (final body in [
       '{"ok":true}',
+      '{"ok":true,"loginBlocked":false}',
       '{"ok":true,"authDeleted":false}',
       '{"ok":true,"code":"account_deleted","authDeleted":false}',
     ]) {

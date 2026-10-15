@@ -2076,4 +2076,26 @@ class AppLocalizationsSat extends AppLocalizations {
 
   @override
   String get aiAssistantActive => 'AI ASSISTANT ACTIVE';
+
+  @override
+  String get paywallPaymentCancelled => 'Payment cancelled. ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
+
+  @override
+  String get paywallPaymentFailed => 'Payment didn\'t go through. ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
+
+  @override
+  String get paywallNotConfigured =>
+      'Purchases aren\'t available right now. Please try again later.';
+
+  @override
+  String get paywallVerificationPending =>
+      'Payment received. We\'ll confirm your unlock shortly.';
+
+  @override
+  String get paywallAndroidOnly =>
+      'Purchases are available in the Olitun Android app.';
+
+  @override
+  String get paywallLockedLessonMessage =>
+      'This lesson is part of a paid course. Unlock the course to continue.';
 }

@@ -16,12 +16,16 @@ import '../../content/presentation/providers/audio_playback_providers.dart';
 import '../../practice/data/typing_practice_settings.dart';
 import '../../practice/presentation/providers/typing_practice_controller.dart';
 import '../../quiz/domain/listening_quiz_generator.dart';
+import '../../../shared/models/catalog/category_entity.dart';
 import '../../../shared/models/catalog/lesson_entity.dart';
+import '../../../shared/widgets/paywall/paywall_bottom_sheet.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
 import '../domain/lesson_progression.dart';
 import 'providers/lesson_progression_provider.dart';
 import 'widgets/lesson_block_detail/lesson_block_item_view.dart';
 import 'widgets/lesson_block_detail/lesson_block_top_nav_bar.dart';
 import 'widgets/category_lessons/locked_lesson_view.dart';
+import 'widgets/category_lessons/purchase_locked_lesson_view.dart';
 import 'widgets/lesson_block_widgets.dart';
 import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
@@ -197,6 +201,13 @@ class _LessonBlockDetailScreenState
     return null;
   }
 
+  Future<void> _openPaywall(CategoryEntity category) async {
+    final result = await PaywallBottomSheet.show(context, category: category);
+    if (result == PaywallResult.unlocked && mounted) {
+      ref.invalidate(learnerLessonDetailProvider(widget.lessonId));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final lessonsAsync = ref.watch(learnerLessonsProvider);
@@ -232,6 +243,32 @@ class _LessonBlockDetailScreenState
               isDark: isDark,
               onBack: () => context.canPop() ? context.pop() : context.go('/'),
             ),
+          );
+        }
+
+        // Paid category the learner does not own: offer the paywall instead
+        // of loading a body the Worker withholds. Free categories skip this.
+        final category = ref
+            .watch(categoryNotifierProvider)
+            .valueOrNull
+            ?.where((c) => c.id == listedLesson.categoryId)
+            .firstOrNull;
+        final ownedCategoryIds =
+            ref.watch(purchasedCategoriesProvider).valueOrNull ??
+            const <String>{};
+        if (category != null &&
+            lessonRequiresPurchase(
+              lesson: listedLesson,
+              category: category,
+              ownedCategoryIds: ownedCategoryIds,
+            )) {
+          return PurchaseLockedLessonView(
+            isDark: isDark,
+            category: category,
+            onUnlock: () => _openPaywall(category),
+            onBack: () => context.canPop()
+                ? context.pop()
+                : context.go('/lessons/${listedLesson.categoryId}'),
           );
         }
 

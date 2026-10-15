@@ -45,7 +45,17 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'no
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-const KNOWN_BUCKETS = ['audio', 'images', 'animations', 'avatars', 'videos', 'cover_videos', 'html', 'paid_media'];
+const KNOWN_BUCKETS = ['audio', 'images', 'animations', 'avatars', 'videos', 'cover_videos', 'html', 'paid_media', 'profile_avatars'];
+
+// The avatar catalogue (GET /api/v1/avatars) lists R2 `avatars/<file name>`
+// and derives ids/labels from the Lottie file name, so the Appwrite
+// `profile_avatars` bucket is stored by name under that prefix.
+function r2KeyFor(bucketId, file) {
+  if (bucketId === 'profile_avatars') {
+    return `avatars/${String(file.name || file.$id).replace(/[\\/]/g, '_')}`;
+  }
+  return `${bucketId}/${file.$id}`;
+}
 const PRIVATE_BUCKETS = new Set(['paid_media']);
 const PAGE_SIZE = 100;
 
@@ -232,7 +242,7 @@ async function main() {
     const worker = async () => {
       while (next < files.length) {
         const file = files[next++];
-        const objectKey = `${bucket.$id}/${file.$id}`;
+        const objectKey = r2KeyFor(bucket.$id, file);
         const contentType = file.mimeType || 'application/octet-stream';
         summary.files++;
         try {

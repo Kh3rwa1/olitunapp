@@ -56,6 +56,11 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
     console.error(`Sarvam OCR ${path.split('?')[0]} fetch failed: ${String(err)}`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam could not be reached.');
   }
+  if (!res.ok) {
+    // Never log the key; status and Sarvam's own message are enough to debug.
+    const detail = (await res.clone().text().catch(() => '')).slice(0, 500);
+    console.error(`Sarvam OCR ${path.split('?')[0]} -> ${res.status}: ${detail}`);
+  }
   if (res.status === 400 || res.status === 413 || res.status === 422) {
     throw new OcrError('INVALID_FILE', 400, `Sarvam rejected the document (${res.status}).`);
   }
@@ -63,9 +68,6 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
     throw new OcrError('RATE_LIMITED', 429, 'Sarvam rate limit reached.');
   }
   if (!res.ok) {
-    // Never log the key; status and Sarvam's own message are enough to debug.
-    const detail = (await res.text().catch(() => '')).slice(0, 300);
-    console.error(`Sarvam OCR ${path.split('?')[0]} -> ${res.status}: ${detail}`);
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, `Sarvam request failed (${res.status}).`);
   }
   try {

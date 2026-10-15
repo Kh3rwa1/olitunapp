@@ -1,1 +1,1 @@
-export '../../../../features/categories/data/models/category_model.dart';
+export '../catalog/category_model.dart';

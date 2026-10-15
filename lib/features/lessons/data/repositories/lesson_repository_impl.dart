@@ -5,11 +5,11 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/observability/crash_reporting.dart';
-import '../../domain/entities/lesson_entity.dart';
+import '../../../../shared/models/catalog/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
 import '../datasources/lesson_local_datasource.dart';
 import '../datasources/lesson_remote_datasource.dart';
-import '../models/lesson_model.dart';
+import '../../../../shared/models/catalog/lesson_model.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../shared/models/content_item_extensions.dart';
 import '../../../../shared/repositories/content_seed_loader.dart';
@@ -359,7 +359,14 @@ class LessonRepositoryImpl implements LessonRepository {
                 userId: effectiveUserId,
                 lessonId: id,
               );
-            } catch (_) {}
+            } catch (e, stack) {
+              AppLogger.warning(
+                'Invalidating a forbidden cached lesson failed',
+                name: 'LessonRepository',
+                error: e,
+                stackTrace: stack,
+              );
+            }
             return const Left(
               AuthFailure(message: 'Access denied to protected lesson.'),
             );
@@ -384,7 +391,12 @@ class LessonRepositoryImpl implements LessonRepository {
               !cachedEntry.lesson.isLocked) {
             return Right(cachedEntry.lesson.toEntity());
           }
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.debug(
+            'Reading the authorized lesson cache failed; trying bundled seed: $e',
+            name: 'LessonRepository',
+          );
+        }
 
         // Fallback to bundled seed lessons first, then static seed lessons
         try {
@@ -394,12 +406,19 @@ class LessonRepositoryImpl implements LessonRepository {
           );
           final found = bundled.where((l) => l.id == id).firstOrNull;
           if (found != null) return Right(found.toLessonEntity());
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.debug(
+            'Loading bundled seed lessons failed; trying static seed: $e',
+            name: 'LessonRepository',
+          );
+        }
 
         try {
           final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
           return Right(seed);
-        } catch (_) {}
+        } on StateError {
+          // Not in the static seed either; fall through to the failure below.
+        }
 
         if (e is ServerException) {
           return Left(ServerFailure(message: e.message, code: e.code));
@@ -453,7 +472,12 @@ class LessonRepositoryImpl implements LessonRepository {
       );
       final found = bundled.where((l) => l.id == id).firstOrNull;
       if (found != null) return Right(found.toLessonEntity());
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug(
+        'Loading bundled seed lessons failed: $e',
+        name: 'LessonRepository',
+      );
+    }
 
     try {
       final seed = _staticSeedLessons.firstWhere((l) => l.id == id);

@@ -16,6 +16,7 @@ import 'widgets/content_filter_bar.dart';
 import 'widgets/content_form_sheet.dart';
 import 'widgets/content_grid_section.dart';
 import 'widgets/content_list_section.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 
 /// A unified, highly-polished content administration screen.
 /// Parameterized by [ContentKind] to manage Letters, Numbers, Words, Sentences, Lessons, and Rhymes.

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/shared/utils/santali_numbers.dart';
+import 'package:itun/core/languages/santali_numbers.dart';
 
 void main() {
   test('Ol Chiki numerals use U+1C50 block for 0-100', () {

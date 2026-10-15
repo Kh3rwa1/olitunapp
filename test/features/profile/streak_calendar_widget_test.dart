@@ -7,7 +7,7 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/quizzes_provider.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 import 'package:itun/features/profile/presentation/widgets/streak_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

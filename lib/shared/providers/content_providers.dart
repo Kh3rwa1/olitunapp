@@ -11,7 +11,7 @@ import 'package:itun/core/offline/mutation_outbox_service.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 
-import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../core/auth/auth_providers.dart';
 import '../../core/languages/providers/target_language_provider.dart';
 
 final contentRepositoryProvider = Provider<ContentRepository>((ref) {

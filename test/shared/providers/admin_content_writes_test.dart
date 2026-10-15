@@ -9,12 +9,12 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/storage/cache_service.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
-import 'package:itun/features/rhymes/domain/rhyme_model.dart';
+import 'package:itun/core/auth/auth_providers.dart';
+import 'package:itun/shared/models/catalog/rhyme_model.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/banners_provider.dart';
 import 'package:itun/shared/providers/letters_provider.dart';
-import 'package:itun/shared/providers/rhymes_providers.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../helpers/fake_admin_worker.dart';

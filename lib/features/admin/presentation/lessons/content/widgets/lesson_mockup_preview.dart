@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/dynamic_block_builder.dart';
 
 class LessonMockupPreview extends StatelessWidget {

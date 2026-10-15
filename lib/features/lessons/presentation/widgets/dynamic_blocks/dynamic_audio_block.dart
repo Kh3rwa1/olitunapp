@@ -6,7 +6,7 @@ import '../../../../../core/audio/audio_cache_manager.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../content/presentation/providers/audio_playback_providers.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 
 class DynamicAudioBlock extends ConsumerWidget {
   const DynamicAudioBlock({

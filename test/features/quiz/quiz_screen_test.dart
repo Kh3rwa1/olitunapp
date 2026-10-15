@@ -8,13 +8,14 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 void main() {
   late SharedPreferences mockPrefs;

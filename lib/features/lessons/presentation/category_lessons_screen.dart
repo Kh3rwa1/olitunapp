@@ -15,7 +15,7 @@ import '../../../shared/providers/language_settings_providers.dart';
 import '../../../shared/providers/learner_content_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
-import '../../categories/domain/entities/category_entity.dart';
+import '../../../shared/models/catalog/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../domain/lesson_progression.dart';
 import 'providers/lesson_notifier.dart';

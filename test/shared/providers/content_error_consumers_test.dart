@@ -7,7 +7,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/features/home/presentation/providers/home_prefetch_provider.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';

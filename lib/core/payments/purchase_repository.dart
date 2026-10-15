@@ -172,7 +172,12 @@ class PurchaseRepository {
     Object? body;
     try {
       body = res.statusCode == 200 ? jsonDecode(res.body) : null;
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug(
+        'Purchased-categories body is not valid JSON; treating as empty: $e',
+        name: 'PurchaseRepository',
+      );
+    }
     if (body is! Map || body['ok'] != true || body['categoryIds'] is! List) {
       AppLogger.debug('Entitlements fetch HTTP ${res.statusCode}');
       return const EntitlementResult(

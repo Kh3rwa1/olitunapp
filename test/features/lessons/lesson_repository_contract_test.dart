@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:itun/core/error/failures.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
 
 class _MockLessonRepository extends Mock implements LessonRepository {}

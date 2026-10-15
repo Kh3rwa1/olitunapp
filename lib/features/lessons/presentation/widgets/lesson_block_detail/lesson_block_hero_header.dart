@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/full_bleed_hero_media.dart';
 import 'package:itun/shared/utils/media_type_resolver.dart';
 

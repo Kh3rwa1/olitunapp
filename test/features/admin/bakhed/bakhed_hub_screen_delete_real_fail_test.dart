@@ -6,8 +6,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/bakhed_hub_screen.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/features/rhymes/domain/rhyme_category_model.dart';
-import 'package:itun/shared/providers/rhymes_providers.dart';
+import 'package:itun/shared/models/catalog/rhyme_category_model.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/core/error/failures.dart';
 

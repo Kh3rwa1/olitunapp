@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/theme/admin_tokens.dart';
-import '../../../../../shared/providers/providers.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 
 class BakhedCategoryField extends ConsumerWidget {
   final String? initialValue;

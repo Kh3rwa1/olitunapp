@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/home/presentation/providers/home_prefetch_provider.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 

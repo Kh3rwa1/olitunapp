@@ -1,5 +1,5 @@
-import 'rhyme_category_model.dart';
-import 'rhyme_model.dart';
+import '../../../shared/models/catalog/rhyme_category_model.dart';
+import '../../../shared/models/catalog/rhyme_model.dart';
 
 /// Result of splitting a filtered catalogue into the featured hero and the
 /// remaining grid items.

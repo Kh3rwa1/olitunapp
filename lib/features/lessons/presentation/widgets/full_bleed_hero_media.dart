@@ -7,8 +7,8 @@ import '../../../../core/media/authorized_media.dart';
 import '../../../../core/media/olitun_image_cache.dart';
 import '../../../../shared/widgets/authorized_media_display.dart';
 import '../../../../shared/utils/media_type_resolver.dart';
-import 'platform_view_stub.dart'
-    if (dart.library.js_interop) 'platform_view_web.dart';
+import '../../../../shared/widgets/platform_view_stub.dart'
+    if (dart.library.js_interop) '../../../../shared/widgets/platform_view_web.dart';
 import '../../../../shared/widgets/lottie_display.dart';
 import '../../../../shared/widgets/animated_svg_display.dart';
 import '../../../../l10n/generated/app_localizations.dart';

@@ -10,7 +10,7 @@ import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/core/motion/pressable_scale.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/audio/playback_controller.dart';

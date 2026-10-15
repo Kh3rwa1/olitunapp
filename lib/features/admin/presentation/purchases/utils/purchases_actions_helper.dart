@@ -5,7 +5,7 @@ import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/features/admin/presentation/analytics/admin_analytics_csv_exporter.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/features/admin/presentation/purchases/providers/admin_purchases_provider.dart';
 
 /// Dialog that records a gateway-issued refund through the protected
 /// server function. The operation key is derived deterministically from

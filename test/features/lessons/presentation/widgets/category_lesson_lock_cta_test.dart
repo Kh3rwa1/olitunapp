@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/category_lessons/category_lesson_card.dart';
 
 void main() {

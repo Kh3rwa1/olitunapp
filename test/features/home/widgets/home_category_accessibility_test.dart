@@ -8,7 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/motion/pressable_scale.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/home/presentation/widgets/home_content_grid.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';

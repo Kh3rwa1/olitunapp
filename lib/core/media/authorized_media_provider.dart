@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../auth/auth_providers.dart';
 import '../api/appwrite_functions_service.dart';
 import '../config/cloudflare_config.dart';
 import 'authorized_media.dart';

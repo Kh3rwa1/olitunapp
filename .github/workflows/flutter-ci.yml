@@ -43,6 +43,8 @@ jobs:
         run: node scripts/check_sheets_above_nav.mjs
       - name: Enforce Architecture Boundaries Gate
         run: node scripts/check_architecture_boundaries.mjs
+      - name: Unit Test Architecture Boundaries Gate
+        run: node --test scripts/check_architecture_boundaries.test.mjs
       - name: Enforce Appwrite Auth-Only Gate
         run: node scripts/check_appwrite_auth_only.mjs
       - name: Unit Test Appwrite Auth-Only Gate

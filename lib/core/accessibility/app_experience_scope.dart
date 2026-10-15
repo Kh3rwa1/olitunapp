@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../shared/providers/local_settings_provider.dart';
+import 'reduce_motion_providers.dart';
 
 /// Propagates the learner's motion preference without overriding OS text size.
 class AppExperienceScope extends ConsumerWidget {

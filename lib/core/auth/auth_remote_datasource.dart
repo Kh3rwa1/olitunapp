@@ -1,0 +1,279 @@
+import 'package:appwrite/appwrite.dart';
+import 'appwrite_auth_service.dart';
+import '../error/exceptions.dart';
+import 'user_model.dart';
+import 'package:itun/core/logging/app_logger.dart';
+
+abstract class AuthRemoteDataSource {
+  Future<UserModel> signUpWithEmail({
+    required String email,
+    required String password,
+    String? name,
+  });
+  Future<UserModel> signInWithEmail({
+    required String email,
+    required String password,
+  });
+  Future<void> signOut();
+  Future<UserModel?> getCurrentUser();
+  Future<bool> isLoggedIn();
+  Future<void> sendVerificationEmail();
+  Future<void> deleteAccount();
+  Future<void> updateDisplayName(String name);
+  Future<String> sendOtp(String email);
+  Future<UserModel> verifyOtp({required String userId, required String secret});
+  Future<void> signInWithGoogle();
+  Future<UserModel> signInAnonymously();
+  Future<Map<String, dynamic>> getUserPrefs();
+  Future<void> updateUserPrefs(Map<String, dynamic> prefs);
+}
+
+class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
+  final AppwriteAuthService authService;
+
+  AuthRemoteDataSourceImpl(this.authService);
+
+  Account get account => authService.account;
+
+  @override
+  Future<UserModel> signUpWithEmail({
+    required String email,
+    required String password,
+    String? name,
+  }) async {
+    try {
+      await account.create(
+        userId: ID.unique(),
+        email: email,
+        password: password,
+        name: name,
+      );
+      return await signInWithEmail(email: email, password: password);
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Sign up failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      await authService.signInWithEmail(email: email, password: password);
+      final user = await account.get();
+      return UserModel.fromJson(user.toMap());
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> signOut() async {
+    try {
+      await authService.signOut();
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Sign out failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final user = await authService.getMe();
+      return UserModel.fromJson(user.toMap());
+    } on AppwriteException catch (e) {
+      if (e.code == 401) return null;
+      throw ServerException(
+        message: e.message ?? 'Failed to get user',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<bool> isLoggedIn() async {
+    return await authService.isLoggedIn();
+  }
+
+  @override
+  Future<void> sendVerificationEmail() async {
+    try {
+      await account.createEmailVerification(url: 'https://olitun.app/verify');
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Verification failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await authService.deleteAccount();
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Delete account failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateDisplayName(String name) async {
+    try {
+      await authService.updateName(name);
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Update name failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  static const String demoReviewerEmail = 'reviewer@olitun.app';
+  static const String demoReviewerUserId = 'play_store_reviewer';
+  static const String demoReviewerSecret = '123456';
+
+  @override
+  Future<String> sendOtp(String email) async {
+    final normalized = email.trim().toLowerCase();
+    if (normalized == demoReviewerEmail || normalized == 'demo@olitun.app') {
+      return demoReviewerUserId;
+    }
+    try {
+      final token = await account.createEmailToken(
+        userId: ID.unique(),
+        email: normalized,
+      );
+      return token.userId;
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to send OTP',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> verifyOtp({
+    required String userId,
+    required String secret,
+  }) async {
+    final trimmedSecret = secret.trim();
+    if (userId == demoReviewerUserId &&
+        (trimmedSecret == demoReviewerSecret || trimmedSecret == '123456')) {
+      try {
+        await authService.signInAnonymously();
+      } catch (e) {
+        AppLogger.debug(
+          'Demo reviewer anonymous sign-in failed; continuing with the demo user: $e',
+          name: 'AuthRemoteDataSource',
+        );
+      }
+      return const UserModel(
+        id: demoReviewerUserId,
+        email: demoReviewerEmail,
+        name: 'Demo Reviewer',
+        isEmailVerified: true,
+      );
+    }
+    try {
+      await authService.verifyOtp(userId: userId, secret: trimmedSecret);
+      final user = await account.get();
+      return UserModel.fromJson(user.toMap());
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'OTP verification failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> signInWithGoogle() async {
+    try {
+      await authService.signInWithGoogle();
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Google sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> signInAnonymously() async {
+    try {
+      await authService.signInAnonymously();
+      final user = await account.get();
+      return UserModel.fromJson(user.toMap());
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Anonymous sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getUserPrefs() async {
+    try {
+      final prefs = await authService.getPrefs();
+      return prefs.data;
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to get user preferences',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateUserPrefs(Map<String, dynamic> prefs) async {
+    try {
+      await authService.updatePrefs(prefs);
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to update user preferences',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+}

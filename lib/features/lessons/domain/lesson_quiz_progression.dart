@@ -1,5 +1,5 @@
 import '../../quiz/domain/quiz_scoring_rules.dart';
-import 'entities/lesson_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 
 /// Validates the lesson context attached to a quiz route before progression is
 /// recorded. This prevents a forged query parameter from completing an

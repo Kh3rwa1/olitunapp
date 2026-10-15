@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/error/failures.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/core/auth/auth_repository.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';

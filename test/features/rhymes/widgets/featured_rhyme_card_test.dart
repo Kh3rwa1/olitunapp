@@ -8,7 +8,7 @@ import 'package:video_player_platform_interface/video_player_platform_interface.
 import 'package:cached_network_image/cached_network_image.dart';
 
 import 'package:itun/features/rhymes/presentation/widgets/featured_rhyme_card.dart';
-import 'package:itun/features/rhymes/domain/rhyme_model.dart';
+import 'package:itun/shared/models/catalog/rhyme_model.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';

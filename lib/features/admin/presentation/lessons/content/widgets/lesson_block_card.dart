@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../../../../shared/widgets/lottie_display.dart';
 import '../../../../../../shared/widgets/animated_svg_display.dart';
 import '../../../../domain/content_badge_resolver.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/features/profile/domain/entities/profile_avatar.dart';
 import 'package:itun/features/profile/presentation/providers/profile_account_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';

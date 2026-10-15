@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_corpus_identity.dart';

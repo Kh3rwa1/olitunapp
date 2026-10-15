@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/providers/app_settings_provider.dart';
+import 'app_settings_provider.dart';
 
 // Remote/env-driven feature flags for the multilingual audio rollout.
 //

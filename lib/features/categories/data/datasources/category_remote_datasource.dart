@@ -12,7 +12,7 @@ import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/config/cloudflare_config.dart';
 import '../../../../core/error/exceptions.dart';
-import '../models/category_model.dart';
+import '../../../../shared/models/catalog/category_model.dart';
 
 abstract class CategoryRemoteDataSource {
   Future<List<CategoryModel>> getCategories();

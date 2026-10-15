@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/features/categories/data/models/category_model.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_model.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 
 void main() {
   group('Category Model & Entity Coverage Tests', () {

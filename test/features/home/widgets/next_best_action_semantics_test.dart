@@ -9,6 +9,7 @@ import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart'
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 /// Mid-journey learner so the card takes its default "continue" path.
 class _MidJourneyStats extends UserStatsNotifier {

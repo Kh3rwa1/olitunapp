@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_local_datasource.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
-import 'package:itun/features/lessons/data/models/lesson_model.dart';
+import 'package:itun/shared/models/catalog/lesson_model.dart';
 import 'package:itun/features/lessons/data/repositories/lesson_repository_impl.dart';
 
 class _MockRemote extends Mock implements LessonRemoteDataSource {}

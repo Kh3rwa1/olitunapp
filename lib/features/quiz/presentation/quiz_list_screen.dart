@@ -6,13 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import 'widgets/quiz_list_cards.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class QuizListScreen extends ConsumerWidget {
   const QuizListScreen({super.key});

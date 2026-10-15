@@ -6,9 +6,9 @@ import 'package:itun/core/ads/ad_state.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/admin/presentation/admin_settings_screen.dart';
 import 'package:itun/features/admin/presentation/settings/controllers/admin_settings_controller.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
-import 'package:itun/shared/providers/app_settings_provider.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/core/auth/auth_providers.dart';
+import 'package:itun/core/config/app_settings_provider.dart';
+import 'package:itun/core/payments/purchased_categories_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../helpers/fake_admin_worker.dart';

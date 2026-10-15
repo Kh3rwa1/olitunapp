@@ -14,7 +14,7 @@ import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/models/content_models.dart';
-import '../../../../shared/widgets/state_widgets.dart';
+import 'package:itun/features/profile/presentation/widgets/offline_status_banner.dart';
 import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../../domain/quiz_option_equivalence.dart';
 import '../providers/quiz_session_notifier.dart';

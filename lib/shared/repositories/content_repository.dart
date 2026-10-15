@@ -295,16 +295,14 @@ class ContentRepository {
             : bundledItems;
 
         if (kind != ContentKind.lesson) {
-          // One batched write, not awaited: the caller already has fresh
-          // data, and on web per-item IndexedDB writes outlasted the list
-          // timeout and turned a good response into an error screen.
-          final json = [for (final item in resolvedItems) item.toJson()];
+          // Cache only the list, in the background. Offline detail lookups
+          // read items out of this list, so per-item copies are not needed;
+          // on web they meant ~800 sequential IndexedDB writes at startup
+          // that queued every other cache write (e.g. Bakhed) behind them.
           unawaited(
-            CacheService.setAll({
-              cacheKey: json,
-              for (var i = 0; i < resolvedItems.length; i++)
-                _cacheItemKey(kind, resolvedItems[i].id): json[i],
-            }),
+            CacheService.set(cacheKey, [
+              for (final item in resolvedItems) item.toJson(),
+            ]),
           );
         }
 
@@ -414,6 +412,14 @@ class ContentRepository {
       if (cached != null) {
         return right(cached);
       }
+
+      // Lists are cached whole; find the item in its kind's full list.
+      final cachedList = await CacheService.getList<ContentItem>(
+        _cacheListKey(kind, null),
+        (data) => ContentItem.fromJson(data, null, kind),
+      );
+      final listed = cachedList?.where((item) => item.id == id).firstOrNull;
+      if (listed != null) return right(listed);
 
       // Check bundled seed items
       final bundled = await _loadBundledSeedItems(kind, null);

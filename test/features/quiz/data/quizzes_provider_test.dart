@@ -325,10 +325,13 @@ void main() {
         final container = createContainer(backend);
         addTearDown(container.dispose);
 
-        // Wait specifically for the dynamic hybrid quizzes to be compiled
+        // Wait specifically for the dynamic hybrid quizzes to be compiled.
+        // Bounded by wall time, not a fixed tick count: the compile path does
+        // cache IO whose event-loop turns vary under load (was flaky).
         AsyncValue<List<QuizModel>> state = const AsyncValue.loading();
-        for (var i = 0; i < 20; i++) {
-          await Future.delayed(Duration.zero);
+        final deadline = DateTime.now().add(const Duration(seconds: 10));
+        while (DateTime.now().isBefore(deadline)) {
+          await Future.delayed(const Duration(milliseconds: 1));
           container.read(quizzesProvider);
           state = container.read(quizzesProvider);
           if (state.value?.any((q) => q.id == 'quiz_dynamic_hybrid_beginner') ??

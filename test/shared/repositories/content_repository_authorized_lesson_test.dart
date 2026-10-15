@@ -120,6 +120,51 @@ void main() {
     verifyZeroInteractions(remote);
   });
 
+  test('category lesson lists drop lessons from other categories', () async {
+    when(
+      () => functions.execute(
+        'getAuthorizedLesson',
+        body: {
+          'action': 'list_lessons',
+          'limit': 100,
+          'categoryId': 'cat_secure_remote_only',
+        },
+        usePost: true,
+      ),
+    ).thenAnswer(
+      (_) async => _execution({
+        'ok': true,
+        // An older Worker ignored categoryId and returned every lesson.
+        'lessons': [
+          {
+            ..._lessonMetadata(locked: false),
+            'id': 'other_category_first',
+            'categoryId': 'cat_numbers',
+            'order': 0,
+          },
+          _lessonMetadata(locked: false),
+        ],
+        'hasMore': false,
+        'nextCursor': null,
+      }),
+    );
+    final repository = ContentRepository(
+      remoteDataSource: remote,
+      networkInfo: _OnlineNetworkInfo(),
+      functionsService: functions,
+    );
+
+    final result = await repository.list(
+      ContentKind.lesson,
+      categoryId: 'cat_secure_remote_only',
+    );
+
+    result.fold(
+      (failure) => fail('Expected authorized lesson metadata: $failure'),
+      (items) => expect(items.map((item) => item.id), ['secure_shared_lesson']),
+    );
+  });
+
   test('learner lesson detail uses only the authorization function', () async {
     when(
       () => functions.execute(

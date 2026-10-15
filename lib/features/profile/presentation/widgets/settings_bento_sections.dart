@@ -391,7 +391,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
         title: l10n.privacyPolicy,
         subtitle: l10n.privacyPolicySubtitle,
         isDark: isDark,
-        onTap: () => context.go('/privacy'),
+        onTap: () => context.push('/privacy'),
       ),
       const SizedBox(height: 10),
       SettingTile(
@@ -399,7 +399,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
         title: l10n.termsOfUse,
         subtitle: l10n.termsOfUseSubtitle,
         isDark: isDark,
-        onTap: () => context.go('/terms'),
+        onTap: () => context.push('/terms'),
       ),
       const SizedBox(height: 10),
       SettingTile(

@@ -52,8 +52,10 @@ void main() {
     expect(find.text('Santali AI Voice'), findsWidgets);
     expect(find.text('CREATE VOICE'), findsOneWidget);
     // Santali-first voices are hero picks.
-    expect(find.text('Phulmani • Female'), findsOneWidget);
-    expect(find.text('Sibu • Male'), findsOneWidget);
+    expect(find.text('Phulmani'), findsOneWidget);
+    expect(find.text('Female'), findsOneWidget);
+    expect(find.text('Sibu'), findsOneWidget);
+    expect(find.text('Male'), findsOneWidget);
     // Neutral style default is visible in the style rail.
     expect(find.text('Neutral'), findsOneWidget);
   });

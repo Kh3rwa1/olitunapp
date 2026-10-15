@@ -1,69 +1,23 @@
 import 'dart:async';
-import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/sharing/growth_share_service.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_typography.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/ai_spark_assistant.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
 import '../data/studio_recorder.dart';
+import 'ai_studio_input.dart';
+import 'ai_studio_layout.dart';
+import 'ai_studio_result.dart';
+import 'ai_studio_session.dart';
+import 'ai_studio_status.dart';
 import 'studio_passage_dialog.dart';
-
-part 'ai_studio_status.dart';
-part 'ai_studio_layout.dart';
-part 'ai_studio_input.dart';
-part 'ai_studio_input_tools.dart';
-part 'ai_studio_result.dart';
-
-enum _Tool {
-  transcribe('Transcribe', Icons.graphic_eq_rounded),
-  translate('Translate', Icons.translate_rounded),
-  scan('Scan', Icons.document_scanner_outlined);
-
-  const _Tool(this.label, this.icon);
-  final String label;
-  final IconData icon;
-
-  String localizedLabel(AppLocalizations l10n) => switch (this) {
-    _Tool.transcribe => l10n.aiStudioToolTranscribe,
-    _Tool.translate => l10n.aiStudioToolTranslate,
-    _Tool.scan => l10n.aiStudioToolScan,
-  };
-}
-
-class _Draft {
-  _Draft({this.language = 'hi-IN'});
-
-  final result = TextEditingController();
-  String language;
-  String resultLanguage = 'hi-IN';
-  StudioInput? input;
-  StudioJob? job;
-  String? error;
-  bool edited = false;
-  bool busy = false;
-  bool selecting = false;
-  // Realtime automation: runs by itself as soon as input is ready.
-  bool auto = true;
-  // Monotonic request id; stale responses that lose the race are dropped.
-  int seq = 0;
-  // Set when input changed while a request was in flight.
-  bool pendingAuto = false;
-
-  void dispose() => result.dispose();
-}
-
-enum _LiveState { listening, thinking, live, ready, idle }
 
 /// Private, review-first AAA+ AI workspace.
 class AiStudioScreen extends ConsumerStatefulWidget {
@@ -82,15 +36,15 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
 
   final _source = TextEditingController();
   final _drafts = {
-    _Tool.transcribe: _Draft(language: 'sat-IN'),
-    _Tool.translate: _Draft(),
-    _Tool.scan: _Draft(language: 'sat-IN'),
+    StudioTool.transcribe: StudioDraft(language: 'sat-IN'),
+    StudioTool.translate: StudioDraft(),
+    StudioTool.scan: StudioDraft(language: 'sat-IN'),
   };
   final _flip = FlipCardController();
   final _flipKey = GlobalKey();
   bool _flipBusy = false;
   final _share = const GrowthShareService();
-  _Tool _tool = _Tool.transcribe;
+  StudioTool _tool = StudioTool.transcribe;
   int _generation = 0;
   bool _recording = false;
   int _recordingSeconds = 0;
@@ -99,34 +53,28 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
   Timer? _poll;
   int _pollAttempts = 0;
   late final AnimationController _pulse;
-  _Draft get _draft => _drafts[_tool]!;
+  StudioDraft get _draft => _drafts[_tool]!;
   bool _sparkDismissed = false;
 
   bool get _isProcessing =>
       _draft.busy ||
-      (_tool == _Tool.scan &&
+      (_tool == StudioTool.scan &&
           _draft.job != null &&
           !_draft.job!.isTerminal &&
           _draft.result.text.trim().isEmpty);
 
   void _restoreSpark() => setState(() => _sparkDismissed = false);
 
-  String _sparkStatus(AppLocalizations l10n) => switch (_tool) {
-    _Tool.transcribe => '${l10n.aiStudioToolTranscribe}…',
-    _Tool.translate => '${l10n.aiStudioToolTranslate}…',
-    _Tool.scan => 'Scanning & OCR converting…',
-  };
-
-  String _sparkSubhead() => switch (_tool) {
-    _Tool.transcribe => 'Transcribing speech to text… Tap spark ✨',
-    _Tool.translate => 'Translating text into Santali… Tap spark ✨',
-    _Tool.scan =>
-      _draft.job != null
-          ? 'Scan status: ${_draft.job!.status} • Job: ${_draft.job!.id}'
-          : 'Extracting text from document… Tap spark ✨',
-  };
-
-  void _setState(VoidCallback fn) => setState(fn);
+  /// The pulse animation only runs while recording or thinking so idle
+  /// frames (and widget-test pumps) always settle.
+  void _syncPulse() {
+    final active = _recording || _drafts.values.any((draft) => draft.busy);
+    if (active && !_pulse.isAnimating) {
+      _pulse.repeat();
+    } else if (!active && _pulse.isAnimating) {
+      _pulse.stop();
+    }
+  }
 
   @override
   void initState() {
@@ -187,7 +135,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     StudioInput? picked;
     try {
       final picker = ref.read(studioInputPickerProvider);
-      picked = tool == _Tool.transcribe
+      picked = tool == StudioTool.transcribe
           ? await picker.pickAudio()
           : camera
           ? await picker.capturePage()
@@ -213,7 +161,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
   }
 
   Future<void> _toggleRecording() async {
-    if (_tool != _Tool.transcribe || _draft.busy || _draft.selecting) return;
+    if (_tool != StudioTool.transcribe || _draft.busy || _draft.selecting) {
+      return;
+    }
     final draft = _draft;
     final recorder = ref.read(studioRecorderProvider);
     final generation = _generation;
@@ -278,7 +228,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     }
   }
 
-  void _selectTool(_Tool tool) {
+  void _selectTool(StudioTool tool) {
     if (_tool == tool) return;
     _debounce?.cancel();
     _poll?.cancel();
@@ -329,22 +279,24 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     if (!service.configured || !_validInput) return;
     // Realtime translate waits for a word-ish input to spare paid calls;
     // the manual button still accepts a single character.
-    if (tool == _Tool.translate && _source.text.trim().length < 2) return;
+    if (tool == StudioTool.translate && _source.text.trim().length < 2) return;
     // A running scan owns its own auto-poll loop.
-    if (tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal) {
+    if (tool == StudioTool.scan &&
+        draft.job != null &&
+        !draft.job!.isTerminal) {
       return;
     }
     if (draft.busy) {
       draft.pendingAuto = true;
       return;
     }
-    unawaited(_process(flipOnStart: tool != _Tool.translate));
+    unawaited(_process(flipOnStart: tool != StudioTool.translate));
   }
 
   void _onSourceChanged() {
     _debounce?.cancel();
     setState(() {});
-    if (_tool != _Tool.translate) return;
+    if (_tool != StudioTool.translate) return;
     _debounce = Timer(_autoDebounce, () {
       if (mounted) _maybeAutoRun();
     });
@@ -353,13 +305,15 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
   void _schedulePoll() {
     _poll?.cancel();
     final generation = _generation;
-    if (_tool != _Tool.scan) return;
+    if (_tool != StudioTool.scan) return;
     final draft = _draft;
     final job = draft.job;
     if (job == null || job.isTerminal) return;
     final jobId = job.id;
     _poll = Timer(_pollInterval, () {
-      if (!mounted || generation != _generation || _tool != _Tool.scan) return;
+      if (!mounted || generation != _generation || _tool != StudioTool.scan) {
+        return;
+      }
       final current = _draft;
       if (current.job?.id != jobId || current.job!.isTerminal) return;
       if (current.busy) {
@@ -403,7 +357,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
         _tool == tool &&
         draft.seq == seq;
     try {
-      if (tool == _Tool.scan) {
+      if (tool == StudioTool.scan) {
         final job = checkStatus
             ? await service.pollOcr(draft.job!.id)
             : await service.startOcr(draft.input!, draft.language);
@@ -415,7 +369,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
         });
         unawaited(_flipTo(showResult: true));
       } else {
-        final text = tool == _Tool.translate
+        final text = tool == StudioTool.translate
             ? await service.translate(_source.text.trim(), draft.language)
             : await service.transcribe(draft.input!, draft.language);
         if (!alive()) return;
@@ -448,7 +402,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     if (!mounted || generation != _generation) return;
     setState(() {});
     if (draft.seq != seq || _tool != tool) return;
-    if (tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal) {
+    if (tool == StudioTool.scan &&
+        draft.job != null &&
+        !draft.job!.isTerminal) {
       _schedulePoll();
     } else if (draft.pendingAuto) {
       draft.pendingAuto = false;
@@ -456,7 +412,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     }
   }
 
-  bool get _validInput => _tool == _Tool.translate
+  bool get _validInput => _tool == StudioTool.translate
       ? _source.text.trim().isNotEmpty &&
             _source.text.trim().runes.length <= 2000
       : _draft.input != null;
@@ -481,7 +437,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     } else {
       setState(() {
         _source.text = passage;
-        _tool = _Tool.translate;
+        _tool = StudioTool.translate;
         _draft.language = sourceLanguage == 'sat-IN' ? 'hi-IN' : sourceLanguage;
         _draft.error = null;
       });
@@ -503,17 +459,73 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                 : box.localToGlobal(Offset.zero) & box.size,
           );
     if (!mounted || generation != _generation) return;
-    final message = switch (outcome) {
-      ShareOutcome.copiedToClipboard => 'Text copied to clipboard.',
-      ShareOutcome.shared => 'Share sheet opened.',
-      ShareOutcome.cancelled => 'Sharing cancelled.',
-      ShareOutcome.downloaded => 'Text downloaded.',
-      ShareOutcome.failed =>
-        'Could not copy or share. Select the text to copy it manually.',
-    };
+    final message = studioShareMessage(outcome);
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _statusBadge(bool configured) => StudioStatusBadge(
+    state: studioLiveState(
+      recording: _recording,
+      draft: _draft,
+      configured: configured,
+      validInput: _validInput,
+    ),
+    recordingSeconds: _recordingSeconds,
+    pulse: _pulse,
+  );
+
+  Widget _inputPanel(bool configured, {required bool isMobile}) {
+    final draft = _draft;
+    return StudioInputPanel(
+      tool: _tool,
+      draft: draft,
+      source: _source,
+      configured: configured,
+      validInput: _validInput,
+      recording: _recording,
+      recordingSeconds: _recordingSeconds,
+      pulse: _pulse,
+      flex: true,
+      isMobile: isMobile,
+      onLanguageChanged: (value) {
+        setState(() => draft.language = value);
+        _maybeAutoRun();
+      },
+      onProcess: () => unawaited(_process()),
+      onToggleAuto: () {
+        setState(() => draft.auto = !draft.auto);
+        if (draft.auto) _maybeAutoRun();
+      },
+      onRestoreSpark: _restoreSpark,
+      onToggleRecording: _toggleRecording,
+      onPick: (camera) => _pick(camera: camera),
+      onSourceChanged: _onSourceChanged,
+    );
+  }
+
+  Widget _resultPanel(bool configured, {required bool isMobile}) {
+    final draft = _draft;
+    return StudioResultPanel(
+      tool: _tool,
+      draft: draft,
+      configured: configured,
+      translateBusy: _drafts[StudioTool.translate]!.busy,
+      statusBadge: _statusBadge(configured),
+      flex: true,
+      isMobile: isMobile,
+      onRestoreSpark: _restoreSpark,
+      onCheckStatus: () => _process(checkStatus: true),
+      onReplaceWithScan: () => setState(() {
+        draft.result.text = draft.job!.text;
+        draft.edited = false;
+      }),
+      onEdited: () => setState(() => draft.edited = true),
+      onShare: (copy) => _shareResult(copy: copy),
+      onSend: (voice) => _sendResult(voice: voice),
+      onEditSource: () => unawaited(_flipTo(showResult: false)),
+    );
   }
 
   @override
@@ -531,27 +543,31 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
       backgroundColor: isDark
           ? AppColors.translatorDarkBg
           : AppColors.studioLightBg,
-      appBar: _buildAppBar(l10n, isDark),
+      appBar: StudioAppBar(statusBadge: _statusBadge(service.configured)),
       body: Stack(
         children: [
-          _buildAtmosphere(isDark),
+          const StudioAtmosphere(),
           SafeArea(
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 820;
-
-                if (!isWide) {
-                  return _buildMobileSingleScreenBody(
+                final isWide = constraints.maxWidth >= _wideBreakpoint;
+                return StudioWorkspaceBody(
+                  isWide: isWide,
+                  configured: service.configured,
+                  toolSwitcher: StudioToolSwitcher(
+                    selected: _tool,
+                    onSelect: _selectTool,
+                  ),
+                  inputPanel: _inputPanel(
                     service.configured,
-                    l10n,
-                    isDark,
-                  );
-                }
-
-                return _buildDesktopSingleScreenBody(
-                  service.configured,
-                  l10n,
-                  isDark,
+                    isMobile: !isWide,
+                  ),
+                  resultPanel: _resultPanel(
+                    service.configured,
+                    isMobile: !isWide,
+                  ),
+                  flipKey: _flipKey,
+                  flipController: _flip,
                 );
               },
             ),
@@ -566,8 +582,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                 child: (_isProcessing && !_sparkDismissed)
                     ? AiSparkAssistant(
                         key: ValueKey('studio-fullscreen-spark-$_tool'),
-                        statusText: _sparkStatus(l10n),
-                        subheadText: _sparkSubhead(),
+                        statusText: studioSparkStatus(_tool, l10n),
+                        subheadText: studioSparkSubhead(_tool, _draft.job),
                         fullscreen: true,
                         light: isDark,
                         onDismiss: () => setState(() => _sparkDismissed = true),

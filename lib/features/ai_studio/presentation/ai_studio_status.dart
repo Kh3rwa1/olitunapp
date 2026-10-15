@@ -1,29 +1,26 @@
-part of 'ai_studio_screen.dart';
+import 'dart:math' as math;
 
-extension _AiStudioStatus on _AiStudioScreenState {
-  // ── Realtime Status ──────────────────────────────────────────────────
-  _LiveState _liveState(bool configured) {
-    if (_recording) return _LiveState.listening;
-    if (_draft.busy) return _LiveState.thinking;
-    if (configured && _draft.auto && _validInput) {
-      return _LiveState.live;
-    }
-    if (_draft.result.text.trim().isNotEmpty) return _LiveState.ready;
-    return _LiveState.idle;
-  }
+import 'package:flutter/material.dart';
 
-  /// The pulse animation only runs while recording or thinking so idle
-  /// frames (and widget-test pumps) always settle.
-  void _syncPulse() {
-    final active = _recording || _drafts.values.any((draft) => draft.busy);
-    if (active && !_pulse.isAnimating) {
-      _pulse.repeat();
-    } else if (!active && _pulse.isAnimating) {
-      _pulse.stop();
-    }
-  }
+import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import 'ai_studio_session.dart';
 
-  Widget _pulseDot(Color color, {required bool animate}) {
+/// Status dot; pulses with [pulse] when [animate] is set.
+class StudioPulseDot extends StatelessWidget {
+  const StudioPulseDot({
+    super.key,
+    required this.color,
+    required this.animate,
+    required this.pulse,
+  });
+
+  final Color color;
+  final bool animate;
+  final Animation<double> pulse;
+
+  @override
+  Widget build(BuildContext context) {
     if (!animate) {
       return Container(
         width: 5,
@@ -32,9 +29,9 @@ extension _AiStudioStatus on _AiStudioScreenState {
       );
     }
     return AnimatedBuilder(
-      animation: _pulse,
+      animation: pulse,
       builder: (_, _) {
-        final wave = math.sin(_pulse.value * 2 * math.pi);
+        final wave = math.sin(pulse.value * 2 * math.pi);
         return Container(
           width: 5 + 2.5 * (0.5 + 0.5 * wave),
           height: 5 + 2.5 * (0.5 + 0.5 * wave),
@@ -52,28 +49,43 @@ extension _AiStudioStatus on _AiStudioScreenState {
       },
     );
   }
+}
 
-  Widget _statusBadge(AppLocalizations l10n, bool configured) {
+/// Live-region badge describing the realtime [state].
+class StudioStatusBadge extends StatelessWidget {
+  const StudioStatusBadge({
+    super.key,
+    required this.state,
+    required this.recordingSeconds,
+    required this.pulse,
+  });
+
+  final StudioLiveState state;
+  final int recordingSeconds;
+  final Animation<double> pulse;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final state = _liveState(configured);
     final (label, color, animate) = switch (state) {
-      _LiveState.listening => (
-        '00:${_recordingSeconds.toString().padLeft(2, '0')}',
+      StudioLiveState.listening => (
+        '00:${recordingSeconds.toString().padLeft(2, '0')}',
         AppColors.studioRecordingRed,
         true,
       ),
-      _LiveState.thinking => (
+      StudioLiveState.thinking => (
         l10n.aiStudioThinking.toUpperCase(),
         AppColors.amberEmber,
         true,
       ),
-      _LiveState.live => (
+      StudioLiveState.live => (
         l10n.aiStudioLive.toUpperCase(),
         AppColors.primary,
         false,
       ),
-      _LiveState.ready => ('READY', AppColors.primary, false),
-      _LiveState.idle => (
+      StudioLiveState.ready => ('READY', AppColors.primary, false),
+      StudioLiveState.idle => (
         'IDLE',
         isDark ? Colors.white54 : Colors.black45,
         false,
@@ -92,12 +104,12 @@ extension _AiStudioStatus on _AiStudioScreenState {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _pulseDot(color, animate: animate),
+            StudioPulseDot(color: color, animate: animate, pulse: pulse),
             const SizedBox(width: 5),
             Text(
               label,
               style: TextStyle(
-                color: state == _LiveState.idle
+                color: state == StudioLiveState.idle
                     ? (isDark ? Colors.white54 : Colors.black45)
                     : color,
                 fontSize: 8.5,
@@ -110,14 +122,22 @@ extension _AiStudioStatus on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  Widget _waveform() {
+/// Animated recording level bars driven by [pulse].
+class StudioWaveform extends StatelessWidget {
+  const StudioWaveform({super.key, required this.pulse});
+
+  final Animation<double> pulse;
+
+  @override
+  Widget build(BuildContext context) {
     return Semantics(
       label: 'Recording audio levels',
       child: AnimatedBuilder(
-        animation: _pulse,
+        animation: pulse,
         builder: (_, _) {
-          final t = _pulse.value * 2 * math.pi;
+          final t = pulse.value * 2 * math.pi;
           return Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -141,18 +161,24 @@ extension _AiStudioStatus on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  Widget _autoPill(_Draft draft, bool isDark) {
-    final on = draft.auto;
+/// Toggle for realtime automation ("Auto").
+class StudioAutoPill extends StatelessWidget {
+  const StudioAutoPill({super.key, required this.on, required this.onToggle});
+
+  final bool on;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       color: Colors.transparent,
       child: InkWell(
         key: const Key('studio-auto'),
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          _setState(() => draft.auto = !draft.auto);
-          if (draft.auto) _maybeAutoRun();
-        },
+        onTap: onToggle,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),

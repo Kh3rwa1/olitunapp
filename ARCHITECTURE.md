@@ -157,13 +157,16 @@ node scripts/check_hardcoded_strings.mjs --json > scripts/hardcoded_strings_base
 
 ### AI Studio presentation layout
 
-`lib/features/ai_studio/presentation/ai_studio_screen.dart` is the library entry and holds
-the state class, core session logic, and `build`. UI sections live in same-library part
-files exposed as extensions on `_AiStudioScreenState` so private state stays shared while
-each file stays under the 600-line cap:
+`lib/features/ai_studio/presentation/ai_studio_screen.dart` holds the state class
+(session logic: recording, auto-run, polling, flip, share/hand-off) and `build`. The
+UI is composed from standalone widget libraries (no `part` files) that receive the
+session through explicit parameters and callbacks:
 
-- `ai_studio_status.dart` — live status, pulse, waveform, auto pill
-- `ai_studio_layout.dart` — atmosphere, app bar, tool switcher, viewport bodies, notice
+- `ai_studio_session.dart` — `StudioTool`, `StudioDraft` (per-tool mutable session),
+  `StudioLiveState` and pure status/spark/share-message helpers
+- `ai_studio_status.dart` — status badge, pulse dot, waveform, auto pill
+- `ai_studio_layout.dart` — atmosphere, app bar, tool switcher, workspace body
+  (desktop columns / mobile flip card), card and notice
 - `ai_studio_input.dart` / `ai_studio_input_tools.dart` — input panel and tool forms
 - `ai_studio_result.dart` — result panel and editor
 

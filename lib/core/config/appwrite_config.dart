@@ -62,8 +62,9 @@ class AppwriteConfig {
   /// Razorpay public key ID used for checkout.
   static const String razorpayKeyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
-  /// Translate Appwrite Function URL. The function itself remains separately
-  /// deployed and versioned; this value only selects its environment endpoint.
+  /// Optional translate endpoint override. Release builds default to the
+  /// Worker's `/api/v1/translate` (see `AiConfig`), so it is only required
+  /// when a build sets `REQUIRE_TRANSLATE_URL`.
   static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
 
   static const Set<String> _knownEnvironments = {
@@ -137,8 +138,7 @@ class AppwriteConfig {
       );
     }
 
-    final needsTranslateUrl = productionLike || requireTranslateUrl;
-    if (needsTranslateUrl && translateUrl.trim().isEmpty) {
+    if (requireTranslateUrl && translateUrl.trim().isEmpty) {
       throw StateError(
         'TRANSLATE_URL is required for $normalizedEnvironment builds.',
       );

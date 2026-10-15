@@ -1,7 +1,9 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/testing.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/features/auth/domain/entities/user_entity.dart';
@@ -290,15 +292,15 @@ void main() {
             paginate: any(named: 'paginate'),
           ),
         ).thenAnswer((_) async => []);
-        final mockAuthService = MockAppwriteAuthService();
-        when(
-          () => mockAuthService.client,
-        ).thenThrow(AppwriteException('unreachable', 503));
+        // The Worker cannot be reached: every request fails at transport.
+        final unreachable = AppwriteFunctionsService(
+          httpClient: MockClient((_) async => throw Exception('unreachable')),
+        );
         final container = ProviderContainer(
           overrides: [
             appwriteDbServiceProvider.overrideWithValue(mockDb),
             purchaseRepositoryProvider.overrideWithValue(mockRepo),
-            appwriteAuthServiceProvider.overrideWithValue(mockAuthService),
+            appwriteFunctionsServiceProvider.overrideWithValue(unreachable),
             isAuthenticatedProvider.overrideWith((ref) async => true),
             currentUserProvider.overrideWith((ref) async => testAdminUser),
           ],

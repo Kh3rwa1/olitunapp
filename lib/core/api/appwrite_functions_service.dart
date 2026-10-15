@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../auth/appwrite_auth_service.dart';
 import '../auth/edge_auth.dart';
 import '../config/cloudflare_config.dart';
 import '../logging/app_logger.dart';
@@ -47,23 +44,18 @@ class FunctionExecutionResult {
   }
 }
 
-/// Unified serverless functions service.
+/// Serverless function calls, served by the Cloudflare Worker.
 ///
-/// Dispatches requests to Cloudflare Workers edge API for high performance
-/// and 0ms cold starts, with transparent fallback to Appwrite Functions.
+/// Each legacy function id maps to a Worker route. Appwrite is used only for
+/// authentication: the request carries the session JWT and the Worker
+/// derives the caller from it. There is no Appwrite Functions fallback.
 class AppwriteFunctionsService {
-  final Functions _functions;
   final http.Client _httpClient;
   final EdgeAuth? _edgeAuth;
 
-  AppwriteFunctionsService(
-    Client client, {
-    http.Client? httpClient,
-    Functions? functions,
-    EdgeAuth? edgeAuth,
-  }) : _functions = functions ?? Functions(client),
-       _httpClient = httpClient ?? http.Client(),
-       _edgeAuth = edgeAuth;
+  AppwriteFunctionsService({http.Client? httpClient, EdgeAuth? edgeAuth})
+    : _httpClient = httpClient ?? http.Client(),
+      _edgeAuth = edgeAuth;
 
   static String? _cloudflareEndpointFor(String functionId) {
     switch (functionId) {
@@ -111,85 +103,75 @@ class AppwriteFunctionsService {
     }
   }
 
-  /// Executes [functionId] with an optional JSON [body].
+  /// Executes [functionId] on the Worker with an optional JSON [body].
   ///
-  /// Prefers Cloudflare Worker endpoints for sub-millisecond edge execution,
-  /// with automatic fallback to Appwrite Functions.
+  /// A 401 retries once with a fresh JWT (the cached one may have expired).
+  /// Network failures surface as a `failed` result with status code 0.
   Future<FunctionExecutionResult> execute(
     String functionId, {
     Map<String, dynamic> body = const {},
     bool usePost = false,
   }) async {
-    // 1. Try Cloudflare Worker endpoint first (Edge execution, zero Appwrite function cost)
-    final cfEndpoint = _cloudflareEndpointFor(functionId);
-    if (cfEndpoint != null) {
-      try {
-        final uri = Uri.parse(cfEndpoint);
-        // The Worker identifies the caller only from this verified JWT.
-        final headers = <String, String>{
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...?await _edgeAuth?.headers(),
-        };
-
-        final isGet =
-            !usePost &&
-            body.isEmpty &&
-            (functionId == 'reviewContent' || functionId == 'getUserMistakes');
-
-        final http.Response res;
-        if (isGet) {
-          res = await _httpClient
-              .get(uri, headers: headers)
-              .timeout(const Duration(seconds: 15));
-        } else {
-          res = await _httpClient
-              .post(uri, headers: headers, body: jsonEncode(body))
-              .timeout(const Duration(seconds: 15));
-        }
-
-        // 401 means the edge could not verify this session (e.g. a stale
-        // JWT): drop the token and let Appwrite authenticate the session.
-        if (res.statusCode == 401) _edgeAuth?.clear();
-        if (res.statusCode >= 200 &&
-            res.statusCode < 500 &&
-            res.statusCode != 401) {
-          return FunctionExecutionResult(
-            status: res.statusCode < 300 ? 'completed' : 'failed',
-            statusCode: res.statusCode,
-            responseBody: res.body,
-          );
-        }
-      } catch (e) {
-        AppLogger.debug(
-          'Cloudflare function $functionId failed: $e, falling back to Appwrite',
-          name: 'AppwriteFunctionsService',
-        );
-      }
+    final endpoint = _cloudflareEndpointFor(functionId);
+    if (endpoint == null) {
+      AppLogger.warning(
+        'No Worker route for function $functionId',
+        name: 'AppwriteFunctionsService',
+      );
+      return const FunctionExecutionResult(
+        status: 'failed',
+        statusCode: 501,
+        responseBody: '{"ok":false,"error":"NOT_IMPLEMENTED"}',
+      );
     }
 
-    // 2. Fallback to Appwrite Functions
-    final response = await _functions.createExecution(
-      functionId: functionId,
-      body: body.isEmpty ? '{}' : jsonEncode(body),
-      xasync: false,
-      method: usePost ? ExecutionMethod.pOST : ExecutionMethod.gET,
-    );
-    return FunctionExecutionResult(
-      status: response.status.name,
-      statusCode: response.responseStatusCode,
-      responseBody: response.responseBody,
-    );
+    final isGet =
+        !usePost &&
+        body.isEmpty &&
+        (functionId == 'reviewContent' || functionId == 'getUserMistakes');
+
+    Future<http.Response> send() async {
+      // The Worker identifies the caller only from this verified JWT.
+      final headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...?await _edgeAuth?.headers(),
+      };
+      final uri = Uri.parse(endpoint);
+      final request = isGet
+          ? _httpClient.get(uri, headers: headers)
+          : _httpClient.post(uri, headers: headers, body: jsonEncode(body));
+      return request.timeout(const Duration(seconds: 15));
+    }
+
+    try {
+      var res = await send();
+      if (res.statusCode == 401 && _edgeAuth != null) {
+        _edgeAuth.clear();
+        res = await send();
+      }
+      return FunctionExecutionResult(
+        status: res.statusCode >= 200 && res.statusCode < 300
+            ? 'completed'
+            : 'failed',
+        statusCode: res.statusCode,
+        responseBody: res.body,
+      );
+    } catch (e) {
+      AppLogger.debug(
+        'Worker function $functionId failed: $e',
+        name: 'AppwriteFunctionsService',
+      );
+      return const FunctionExecutionResult(
+        status: 'failed',
+        statusCode: 0,
+        responseBody: '{"ok":false,"error":"NETWORK_ERROR"}',
+      );
+    }
   }
 }
 
 // Provider
-final appwriteFunctionsServiceProvider = Provider<AppwriteFunctionsService>((
-  ref,
-) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
-  return AppwriteFunctionsService(
-    authService.client,
-    edgeAuth: EdgeAuth.instance,
-  );
-});
+final appwriteFunctionsServiceProvider = Provider<AppwriteFunctionsService>(
+  (ref) => AppwriteFunctionsService(edgeAuth: EdgeAuth.instance),
+);

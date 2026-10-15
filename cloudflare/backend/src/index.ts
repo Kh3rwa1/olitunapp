@@ -7,7 +7,6 @@ import {
   requireUser,
   timingSafeEqualStr,
   type AuthEnv,
-  type AuthVariables,
 } from './auth';
 import {
   AllKeysFailedError,
@@ -15,22 +14,10 @@ import {
   classifyBodhanFailure,
   withKeyRotation,
 } from './key_rotation';
+import { getRequestUserId, stableId, type App, type AppEnv, type Bindings } from './env';
+import { registerRoutes } from './routes';
 
-type Bindings = AuthEnv & {
-  DB: D1Database;
-  ASSETS: R2Bucket;
-  AI: any;
-  // Secrets (wrangler secret put). Never hardcode provider keys here.
-  BODHAN_API_KEYS?: string; // comma-separated
-  SARVAM_API_KEY?: string;
-  RAZORPAY_KEY_ID?: string;
-  RAZORPAY_KEY_SECRET?: string;
-  RAZORPAY_WEBHOOK_SECRET?: string;
-  RAZORPAY_API_BASE?: string; // test override only; defaults to Razorpay
-  BODHAN_API_BASE?: string; // test override only; defaults to Bodhan
-};
-
-const app = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>();
+const app: App = new Hono<AppEnv>();
 
 // Global CORS middleware for Flutter Web & Mobile
 app.use('*', cors());
@@ -837,19 +824,6 @@ app.all('/api/v1/translate', async (c) => {
     }, 500);
   }
 });
-
-// The caller's user id, as verified by the auth middleware. Empty for
-// anonymous requests on optionalUser routes.
-function getRequestUserId(c: any, _body?: any): string {
-  return c.get('userId') || '';
-}
-
-async function stableId(value: string): Promise<string> {
-  const msgUint8 = new TextEncoder().encode(value);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
-}
 
 // 9. Record Mistake (replaces Appwrite recordMistake function)
 app.post('/api/v1/mistakes/record', async (c) => {
@@ -2528,6 +2502,8 @@ app.post('/api/v1/user/delete', async (c) => {
 // ==========================================
 // SPA & STATIC ASSETS PROXY (CLOUDFLARE PAGES)
 // ==========================================
+registerRoutes(app);
+
 app.notFound(async (c) => {
   const url = new URL(c.req.url);
   // Explicit API 404

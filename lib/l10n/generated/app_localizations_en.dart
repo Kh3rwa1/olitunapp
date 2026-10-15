@@ -2074,4 +2074,15 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get contentLoadFailed =>
       'Content could not be loaded. Please try again.';
+
+  @override
+  String get copiedToClipboard => 'Copied to clipboard!';
+
+  @override
+  String coursePackPreviewNotice(String name, String scriptName) {
+    return '$name ($scriptName) course packs are in preview. Foundational learning content is active.';
+  }
+
+  @override
+  String get aiAssistantActive => 'AI ASSISTANT ACTIVE';
 }

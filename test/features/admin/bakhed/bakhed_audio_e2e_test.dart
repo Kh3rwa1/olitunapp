@@ -16,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/admin/data/gamification_cms_api.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
 import 'package:itun/shared/models/content_item.dart';

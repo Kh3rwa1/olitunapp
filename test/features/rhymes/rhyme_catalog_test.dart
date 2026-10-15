@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/rhymes/domain/rhyme_catalog.dart';
-import 'package:itun/features/rhymes/domain/rhyme_model.dart';
+import 'package:itun/shared/models/catalog/rhyme_model.dart';
 
 RhymeModel _rhyme(
   String id, {

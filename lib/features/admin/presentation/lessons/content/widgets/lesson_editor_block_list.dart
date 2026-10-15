@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'lesson_block_card.dart';
 
 class LessonEditorBlockList extends StatelessWidget {

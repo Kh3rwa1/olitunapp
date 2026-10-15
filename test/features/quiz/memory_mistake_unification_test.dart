@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';

@@ -3,8 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../shared/models/content_models.dart' hide CategoryModel;
-import '../../../../../categories/domain/entities/category_entity.dart';
-import '../../../../../../shared/providers/providers.dart';
+import '../../../../../../shared/models/catalog/category_entity.dart';
 import 'quiz_form_header.dart';
 import 'quiz_basic_info_section.dart';
 import 'quiz_questions_section.dart';
@@ -12,6 +11,8 @@ import 'quiz_form_actions.dart';
 import 'question_editor.dart';
 import 'quiz_validation.dart';
 import '../../../widgets/common/admin_modal_sheet.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class QuizFormSheet extends ConsumerStatefulWidget {
   final QuizModel? quiz;

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
 import 'motion_tokens.dart';
-import '../../shared/providers/local_settings_provider.dart';
+import '../accessibility/reduce_motion_providers.dart';
 
 /// One-shot confetti burst (CustomPainter, no asset/package). Renders
 /// nothing when reduce-motion is on.

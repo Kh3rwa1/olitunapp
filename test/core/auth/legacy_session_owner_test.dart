@@ -7,7 +7,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/core/auth/auth_repository.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
 
 class _Client extends Mock implements Client {}

@@ -16,6 +16,7 @@ import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class _RecordingAnalyticsService extends LearningAnalyticsService {
   final recordedEvents = <Map<String, dynamic>>[];

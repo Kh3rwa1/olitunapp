@@ -15,8 +15,9 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/main/presentation/main_shell/main_shell_screen.dart';
-import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:itun/core/auth/auth_repository.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 

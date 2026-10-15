@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/motion/page_transitions.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../core/auth/auth_providers.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';

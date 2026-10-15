@@ -14,6 +14,7 @@ import '../../domain/quiz_scoring_rules.dart';
 import '../../domain/quiz_memory_resolver.dart';
 import '../../domain/quiz_option_equivalence.dart';
 import 'mistake_provider.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 export '../../domain/quiz_memory_resolver.dart';
 

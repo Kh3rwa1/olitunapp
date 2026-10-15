@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/core/theme/admin_tokens.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/shared/models/content_item.dart';
 import '../multilingual_preview_box.dart';
 import 'content_form_card.dart';

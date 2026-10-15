@@ -5,10 +5,10 @@ import 'package:itun/core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../shared/providers/providers.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import 'admin_brand_mark.dart';
 import 'admin_nav_item.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 part 'admin_sidebar_nav_groups.dart';
 
 class AdminSidebar extends ConsumerWidget {

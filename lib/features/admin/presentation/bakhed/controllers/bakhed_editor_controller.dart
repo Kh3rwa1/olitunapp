@@ -5,7 +5,7 @@ import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../admin/data/gamification_cms_api.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
 import 'bakhed_lyrics_editor_controller.dart';
 import 'bakhed_notes_editor_controller.dart';

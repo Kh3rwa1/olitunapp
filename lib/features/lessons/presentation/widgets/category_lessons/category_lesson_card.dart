@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/utils/localized_content.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryLessonCard extends StatefulWidget {

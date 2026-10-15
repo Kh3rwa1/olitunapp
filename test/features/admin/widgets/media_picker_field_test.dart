@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/core/version/build_version_checker.dart';
 import 'package:itun/core/version/build_version_status.dart';
 import 'package:itun/features/admin/presentation/widgets/media_picker_field.dart';

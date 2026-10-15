@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/quizzes/widgets/quiz_form_sheet.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
-import 'package:itun/shared/providers/quizzes_provider.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class _FakeCategoryNotifier extends CategoryNotifier {
   @override

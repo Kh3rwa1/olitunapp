@@ -205,7 +205,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
         try {
           await _restoreWebSession();
           await _account.deleteSession(sessionId: 'current');
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.debug(
+            'No current web session to delete before OAuth: $e',
+            name: 'AppwriteAuthService',
+          );
+        }
         await _clearLocalSessionState(preserveAccount: true);
         final oauthUrl = buildWebGoogleOAuthUrl(
           endpoint: AppwriteConfig.endpoint,
@@ -218,7 +223,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
         // backend doesn't reject session creation with a 401/409 session conflict.
         try {
           await _account.deleteSession(sessionId: 'current');
-        } catch (_) {}
+        } catch (e) {
+          AppLogger.debug(
+            'No current session to delete before OAuth: $e',
+            name: 'AppwriteAuthService',
+          );
+        }
 
         final oauthUrl = buildMobileGoogleOAuthUrl(
           endpoint: AppwriteConfig.endpoint,
@@ -297,7 +307,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
               );
               try {
                 await _account.deleteSession(sessionId: 'current');
-              } catch (_) {}
+              } catch (e) {
+                AppLogger.debug(
+                  'Deleting conflicting session before OAuth retry failed: $e',
+                  name: 'AppwriteAuthService',
+                );
+              }
               session = await _account.createSession(
                 userId: userId,
                 secret: secret,

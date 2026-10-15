@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import '../../../shared/utils/santali_number_names.dart';
-import '../../../shared/utils/santali_numbers.dart';
+import '../../../core/languages/santali_number_names.dart';
+import '../../../core/languages/santali_numbers.dart';
 
 /// Centralized semantic equivalence and option-building logic for quiz questions.
 ///

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
-import '../../../../shared/providers/purchases_provider.dart';
+import 'providers/admin_purchases_provider.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_section_header.dart';
 import 'utils/purchases_actions_helper.dart';

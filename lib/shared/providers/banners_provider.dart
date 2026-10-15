@@ -8,7 +8,7 @@ import '../../core/api/admin_content_client.dart';
 import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../core/storage/cache_service.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../core/auth/auth_providers.dart';
 import '../models/content_models.dart';
 
 /// HTTP client for banners Worker reads (overridable in tests).

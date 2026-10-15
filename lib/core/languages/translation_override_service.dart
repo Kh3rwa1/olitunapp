@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 /// Singleton service that stores and retrieves manual translation and
 /// transliteration overrides configured through the Admin Panel.
@@ -130,6 +131,13 @@ class TranslationOverrideService {
       final p = prefs ?? await SharedPreferences.getInstance();
       await p.setString(_meaningsKey, jsonEncode(_meanings));
       await p.setString(_pronsKey, jsonEncode(_pronunciations));
-    } catch (_) {}
+    } catch (e, stack) {
+      AppLogger.warning(
+        'Persisting translation overrides failed',
+        name: 'TranslationOverrideService',
+        error: e,
+        stackTrace: stack,
+      );
+    }
   }
 }

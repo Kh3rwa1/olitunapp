@@ -13,7 +13,7 @@ import 'package:itun/core/audio/playback_controller.dart';
 import 'package:itun/core/config/feature_flags.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
@@ -23,6 +23,8 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
 
 import '../../test_utils.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 /// Phase 7: the `listening_quiz_<lessonId>` flow end-to-end — flag-off
 /// keeps the classic quiz experience, flag-on renders the listening card

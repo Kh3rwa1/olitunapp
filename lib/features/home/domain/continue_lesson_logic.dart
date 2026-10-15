@@ -1,5 +1,5 @@
-import '../../categories/domain/entities/category_entity.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../../shared/models/catalog/category_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 import '../../lessons/domain/lesson_progression.dart';
 
 /// Pure logic for selecting the next playable lesson for the learner.

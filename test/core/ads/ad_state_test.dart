@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:itun/core/ads/ad_state.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/core/payments/purchased_categories_provider.dart';
 
 void main() {
   group('AdState and AdStateNotifier Tests', () {

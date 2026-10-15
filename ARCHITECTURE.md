@@ -29,12 +29,14 @@ Olitun follows **Clean Architecture** with feature-first module organization.
 lib/
 ├── main.dart
 ├── app/
-│   └── router/                  # GoRouter config, route guards, deferred admin loader
+│   ├── router/                  # GoRouter config, route guards, deferred admin loader
+│   └── sync/                    # ContentRealtimeSync (realtime → cache/provider invalidation)
 ├── core/                        # App-agnostic infrastructure + design system
 │   ├── api/                     # AppwriteDbService, AppwriteFunctionsService,
 │   │                            #   RealtimeChangeFeed, DbQuery, ContentRemoteDataSource
-│   ├── auth/                    # AppwriteAuthService (singleton), session helpers
-│   ├── config/                  # AppwriteConfig (build-time validation)
+│   ├── auth/                    # AppwriteAuthService (singleton), session helpers,
+│   │                            #   AuthRepository + auth/current-user providers
+│   ├── config/                  # AppwriteConfig (build-time validation), remote app settings
 │   ├── error/                   # Sealed Failure + Exception classes, error classifier
 │   ├── logging/ observability/  # AppLogger (Sentry forwarding), CrashReporting
 │   ├── offline/                 # MutationOutboxService (generic durable write queue)
@@ -52,13 +54,14 @@ lib/
 │   ├── main/ onboarding/ practice/ profile/ quiz/ review/ rhymes/ voice/
 │   │                            # each: data/ (SDK impls + di/), domain/, presentation/
 └── shared/                      # Cross-feature, content-aware code
-    ├── models/                  # Content DTOs (ContentItem, *Model)
-    ├── providers/               # Cross-feature providers (content lists, quizzes,
-    │                            #   banners, rhymes, waitlist, purchases, settings…)
+    ├── media/                   # MediaUploader (content-aware upload pipeline)
+    ├── models/                  # Content DTOs (ContentItem, *Model); catalog/ holds
+    │                            #   Category/Lesson/Rhyme entities + models
+    ├── providers/               # Cross-feature providers (content lists, banners,
+    │                            #   waitlist, language/local settings…)
     ├── quiz_engine/             # Dynamic quiz compilation
     ├── repositories/            # ContentRepository (seed + Hive + remote) and
     │                            #   ContentMutationReplay (drains the outbox)
-    ├── sync/                    # ContentRealtimeSync (realtime → cache/provider invalidation)
     ├── security/ utils/
     └── widgets/                 # Reusable UI components (shimmer, buttons, media…)
 ```
@@ -66,15 +69,22 @@ lib/
 ### Layering rule: core vs shared vs features
 
 - **`core/`** is app-agnostic infrastructure and design-system primitives. It
-  must not import `shared/` or `features/` (existing exceptions are legacy
-  and must not grow). Generic mechanisms live here (e.g. the mutation outbox).
+  must not import `shared/` or `features/`. Generic mechanisms live here (e.g.
+  the mutation outbox, auth session providers, reduce-motion state, the
+  playback controller). When core needs feature behaviour, invert it with a
+  small provider the app root overrides (e.g. `rewardStarsGranterProvider`).
 - **`shared/`** is code reused by several features that *knows about Olitun
   content* (models, content repository, cross-feature providers, widgets).
-  It may import `core/`. Content-specific offline logic (outbox replay) lives
-  beside the repository it drives in `shared/repositories/`.
+  It may import `core/` but never `features/`. Content-specific offline logic
+  (outbox replay) lives beside the repository it drives in
+  `shared/repositories/`. The `shared/providers/providers.dart` barrel only
+  re-exports core/shared providers; import feature providers directly.
 - **`features/<name>/`** own their screens and data. A feature may import
-  `core/`, `shared/`, and another feature's `domain/` (avoid importing another
-  feature's `presentation/`).
+  `core/`, `shared/`, and another feature's `domain/`/`data/`. A feature's
+  `data/`/`domain/` code must never import another feature's `presentation/`
+  (presentation → presentation is tolerated but should be rare).
+- **`app/`** is the composition root (router, app-wide sync orchestration) and
+  may import anything; `main.dart` wires root provider overrides.
 - Reusable widgets go in `shared/widgets/`; `core/motion/` and
   `core/presentation/` hold only low-level motion/layout primitives.
 
@@ -105,9 +115,13 @@ Architecture boundaries are validated in CI (`.github/workflows/flutter-ci.yml`)
 node scripts/check_architecture_boundaries.mjs
 ```
 It scans **every** Dart file under `lib/` and fails on any `package:appwrite`
-import/export outside `lib/core/**` and `lib/features/*/data/**`, and on any
-new `lib/core/**` import of `lib/shared/**` or `lib/features/**` (legacy
-exceptions are baselined in the script and may only shrink).
+import/export outside `lib/core/**` and `lib/features/*/data/**`, on any
+`lib/core/**` import of `lib/shared/**` or `lib/features/**`, on any
+`lib/shared/**` import of `lib/features/**`, and on feature `data/`/`domain/`
+code importing another feature's `presentation/` (URIs are resolved, so
+relative, `package:` and conditional imports are all covered). The allow-list
+in the script is empty; `scripts/check_architecture_boundaries.test.mjs`
+covers the checker itself.
 
 ## Quality Gates
 
@@ -118,7 +132,7 @@ CI (`.github/workflows/flutter-ci.yml`) enforces repository standards on every P
 | File length | `node scripts/check_file_length.mjs` | Hand-written Dart files ≤ 600 lines (no grandfathered files) |
 | Localization parity | `node scripts/check_l10n_parity.mjs` | All ARB locales share the same keys and placeholder signatures |
 | Hardcoded strings | `node scripts/check_hardcoded_strings.mjs` | No user-facing `Text`/`Toast` literals outside `lib/features/admin/**` (grandfathered baseline in `scripts/hardcoded_strings_baseline.json`) |
-| Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | `package:appwrite` only in `lib/core/**` and `lib/features/*/data/**` |
+| Architecture boundaries | `node scripts/check_architecture_boundaries.mjs` | `package:appwrite` only in `lib/core/**` and `lib/features/*/data/**`; core ↛ shared/features; shared ↛ features; feature data/domain ↛ other features' presentation |
 | Appwrite deployability | `node scripts/check_appwrite_deployable.mjs` | Sites use `scripts/build_web.sh` and do not ignore `scripts/` |
 | Appwrite manifest parity | `node scripts/verify_function_deployment.mjs` | `appwrite.json` and `appwrite.config.json` agree on functions, buckets, sites, and projectId; least-privilege scope checks |
 | Function packaging smoke | `node scripts/smoke_package_functions.mjs` | Each function has `package.json`, lockfile, entrypoint, and a syntax-valid entry |

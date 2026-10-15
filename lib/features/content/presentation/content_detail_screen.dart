@@ -16,7 +16,7 @@ import 'package:itun/features/profile/presentation/providers/profile_providers.d
 import 'package:itun/features/quiz/domain/lesson_quiz_recommender.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/quizzes_provider.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';

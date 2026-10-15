@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import '../../../../categories/presentation/providers/category_notifier.dart';
 import '../../widgets/admin_form_widgets.dart';
 

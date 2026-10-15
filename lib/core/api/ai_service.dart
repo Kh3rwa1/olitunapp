@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
-import '../../shared/providers/app_settings_provider.dart';
+import '../config/app_settings_provider.dart';
 import '../auth/edge_auth.dart';
 
 /// Translation API configuration.

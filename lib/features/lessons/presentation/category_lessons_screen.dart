@@ -15,7 +15,7 @@ import '../../../shared/providers/language_settings_providers.dart';
 import '../../../shared/providers/learner_content_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
-import '../../categories/domain/entities/category_entity.dart';
+import '../../../shared/models/catalog/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../domain/lesson_progression.dart';
 import 'providers/lesson_notifier.dart';
@@ -228,7 +228,12 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${manifest.name} (${manifest.scriptName}) course packs are in preview. Foundational learning content is active.',
+                            AppLocalizations.of(
+                              context,
+                            )!.coursePackPreviewNotice(
+                              manifest.name,
+                              manifest.scriptName,
+                            ),
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,

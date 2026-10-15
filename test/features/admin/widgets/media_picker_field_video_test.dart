@@ -6,7 +6,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:video_player/video_player.dart';
 // ignore: depend_on_referenced_packages
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/core/version/build_version_checker.dart';
 import 'package:itun/core/version/build_version_status.dart';
 import 'package:itun/features/admin/presentation/widgets/media_picker_field.dart';

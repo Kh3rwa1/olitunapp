@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/presentation/lessons/content/widgets/lesson_block_card.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/admin/presentation/widgets/content_type_badge.dart';
 import 'package:itun/features/admin/domain/content_badge_resolver.dart';
 

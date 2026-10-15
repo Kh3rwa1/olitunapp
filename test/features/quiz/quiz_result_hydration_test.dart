@@ -7,10 +7,11 @@ import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/languages/language_registry.dart';
 import 'package:itun/core/languages/providers/target_language_provider.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
 
 /// The lesson catalog is intentionally metadata-only (blocks empty); the
 /// full body arrives through [learnerLessonDetailProvider]. Quiz generation

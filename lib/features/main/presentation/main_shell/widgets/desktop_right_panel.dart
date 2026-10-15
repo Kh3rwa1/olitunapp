@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
-import '../../../../../shared/providers/providers.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class DesktopRightPanel extends ConsumerWidget {
   final bool isDark;

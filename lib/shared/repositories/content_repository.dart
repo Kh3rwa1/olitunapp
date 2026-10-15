@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/api/content_remote_datasource.dart';
@@ -287,13 +289,17 @@ class ContentRepository {
             : bundledItems;
 
         if (kind != ContentKind.lesson) {
-          final cachedData = resolvedItems
-              .map((item) => item.toJson())
-              .toList();
-          await CacheService.set(cacheKey, cachedData);
-          for (final item in resolvedItems) {
-            await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
-          }
+          // One batched write, not awaited: the caller already has fresh
+          // data, and on web per-item IndexedDB writes outlasted the list
+          // timeout and turned a good response into an error screen.
+          final json = [for (final item in resolvedItems) item.toJson()];
+          unawaited(
+            CacheService.setAll({
+              cacheKey: json,
+              for (var i = 0; i < resolvedItems.length; i++)
+                _cacheItemKey(kind, resolvedItems[i].id): json[i],
+            }),
+          );
         }
 
         return right(resolvedItems);

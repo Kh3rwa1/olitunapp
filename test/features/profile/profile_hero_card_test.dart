@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lottie/lottie.dart';
@@ -127,7 +128,7 @@ void main() {
   ) async {
     await tester.pumpWidget(_wrap());
     await tester.pumpAndSettle();
-    expect(find.text('Leaderboard · #2 · 75 pts'), findsOneWidget);
+    expect(find.text('#2 · 75 pts'), findsOneWidget);
     expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
     expect(find.text('Beginner'), findsNothing);
   });
@@ -136,6 +137,7 @@ void main() {
     tester,
   ) async {
     final leaderboard = _leaderboard(rank: 123456, points: 987654321);
+    final shortLabel = leaderboard.shortBadgeLabel;
     final label = leaderboard.badgeLabel;
 
     await tester.pumpWidget(_wrap(cardWidth: 320, leaderboard: leaderboard));
@@ -148,7 +150,7 @@ void main() {
     expect(tester.takeException(), isNull);
 
     final collapsedSize = tester.getSize(chip);
-    final collapsedLabel = tester.widget<Text>(find.text(label));
+    final collapsedLabel = tester.widget<Text>(find.text(shortLabel));
     expect(collapsedLabel.maxLines, 1);
     expect(collapsedLabel.overflow, TextOverflow.ellipsis);
 
@@ -168,7 +170,7 @@ void main() {
       _wrap(leaderboard: _leaderboard(rank: null, points: 0)),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Leaderboard · Unranked'), findsOneWidget);
+    expect(find.text('Unranked'), findsOneWidget);
     expect(find.textContaining('#'), findsNothing);
   });
 
@@ -177,8 +179,25 @@ void main() {
   ) async {
     await tester.pumpWidget(_wrap(leaderboardError: true));
     await tester.pumpAndSettle();
-    expect(find.text('Leaderboard unavailable'), findsOneWidget);
+    expect(find.text('Unavailable'), findsOneWidget);
     expect(find.textContaining('pts'), findsNothing);
+  });
+
+  testWidgets('fits the guest name and leaderboard chip on a phone', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(cardWidth: 358, leaderboard: _leaderboard(rank: null, points: 0)),
+    );
+    await tester.pumpAndSettle();
+    final name = find.text('Learner');
+    final chip = find.text('Unranked');
+    expect(name, findsOneWidget);
+    expect(chip, findsOneWidget);
+    for (final finder in [name, chip]) {
+      final paragraph = tester.renderObject<RenderParagraph>(finder);
+      expect(paragraph.didExceedMaxLines, isFalse);
+    }
   });
 
   testWidgets('hides the Since line when creation date is unknown', (

@@ -9,9 +9,9 @@ const directives = cspDirectives(headers['Content-Security-Policy']);
 const api = ['https://olitun.in', 'https://olitun-api.dulalkisku0.workers.dev'];
 const appwrite = 'https://sgp.cloud.appwrite.io';
 
-test('the Worker API and Appwrite sign-in are the only backend origins', () => {
+test('the Worker API and Appwrite sign-in are the only backend origins (plus web fonts)', () => {
   assert.deepEqual(directives.get('connect-src'), [
-    "'self'", ...api, appwrite,
+    "'self'", 'https://fonts.gstatic.com', ...api, appwrite,
     'https://*.sentry.io', 'https://*.ingest.sentry.io', 'https://*.ingest.us.sentry.io',
     'https://api.razorpay.com',
   ]);

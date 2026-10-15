@@ -143,6 +143,36 @@ class CacheService {
     }
   }
 
+  /// Write several entries in one batch. On web each [set] is its own
+  /// IndexedDB transaction, so a list plus its items is far faster this way.
+  static Future<bool> setAll(
+    Map<String, dynamic> entries, {
+    Duration? ttl,
+  }) async {
+    if (entries.isEmpty) return true;
+    try {
+      final box = await _getBox();
+      final createdAtMs = DateTime.now().millisecondsSinceEpoch;
+      final ttlMs = (ttl ?? defaultTtl).inMilliseconds;
+      await box.putAll({
+        for (final e in entries.entries)
+          e.key: jsonEncode(
+            CacheEntry(
+              data: e.value,
+              schemaVersion: cacheSchemaVersion,
+              createdAtMs: createdAtMs,
+              ttlMs: ttlMs,
+            ).toJson(),
+          ),
+      });
+      return true;
+    } catch (e) {
+      AppLogger.debug('[Cache] batch write error (${entries.length}): $e');
+      _handleCacheError(e);
+      return false;
+    }
+  }
+
   /// Read a cached object. By default [allowStale] is true (stale-while-revalidate),
   /// returning cached content immediately even past TTL unless schema mismatches.
   static Future<T?> get<T>(

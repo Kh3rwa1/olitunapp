@@ -8,7 +8,9 @@
 # connect-src/img-src/media-src: the Cloudflare Worker API (olitun.in and its
 # workers.dev origin; media is served from R2 through the Worker) and Appwrite
 # (sign-in only; also the target of the Worker's legacy-storage redirect for
-# media not yet copied to R2).
+# media not yet copied to R2). connect-src also allows fonts.gstatic.com:
+# Flutter web fetch()es its fallback fonts (symbols, music notes) from there,
+# and blocking it renders those glyphs as empty boxes.
 
 /*
   X-Content-Type-Options: nosniff
@@ -16,7 +18,7 @@
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(self), microphone=(self), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.razorpay.com; media-src 'self' blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io; connect-src 'self' https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://api.razorpay.com; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; worker-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.razorpay.com; media-src 'self' blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io; connect-src 'self' https://fonts.gstatic.com https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://api.razorpay.com; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; worker-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
 
 /sw.js
   Service-Worker-Allowed: /

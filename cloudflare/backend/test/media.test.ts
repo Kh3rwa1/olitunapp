@@ -152,7 +152,7 @@ describe('public assets', () => {
     const res = await call(`/api/v1/assets/${key}`);
     expect(res.status).toBe(404);
     // Encoded variants of the same key must not slip past the prefix check.
-    for (const variant of [key.replace('_', '%5F'), key.replace('/', '%2F'), `images/../${key}`, `images/%2e%2e/${key}`]) {
+    for (const variant of [key.replaceAll('_', '%5F'), key.replaceAll('/', '%2F'), `images/../${key}`, `images/%2e%2e/${key}`]) {
       expect((await call(`/api/v1/assets/${variant}`)).status, variant).toBe(404);
     }
   });

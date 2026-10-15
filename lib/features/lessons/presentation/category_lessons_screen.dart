@@ -228,7 +228,12 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            '${manifest.name} (${manifest.scriptName}) course packs are in preview. Foundational learning content is active.',
+                            AppLocalizations.of(
+                              context,
+                            )!.coursePackPreviewNotice(
+                              manifest.name,
+                              manifest.scriptName,
+                            ),
                             style: TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.w600,

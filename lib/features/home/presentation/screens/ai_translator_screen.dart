@@ -64,24 +64,25 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
     setState(() => _isCopied = true);
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    final copiedLabel = AppLocalizations.of(context)!.copiedToClipboard;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         content: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.check_circle_rounded,
               color: Colors.greenAccent,
               size: 20,
             ),
-            SizedBox(width: 8),
-            Text('Copied to clipboard!'),
+            const SizedBox(width: 8),
+            Text(copiedLabel),
           ],
         ),
         behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
+        duration: const Duration(seconds: 2),
         backgroundColor: Colors.black87,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),

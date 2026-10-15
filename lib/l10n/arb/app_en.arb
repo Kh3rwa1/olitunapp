@@ -1205,5 +1205,18 @@
     "progressLoadFailed": "Your saved progress is still safe. Try refreshing this view.",
     "couldNotLoadProgress": "Could not load progress",
     "couldNotLoadQuizzes": "Could not load quizzes",
-    "contentLoadFailed": "Content could not be loaded. Please try again."
+    "contentLoadFailed": "Content could not be loaded. Please try again.",
+    "copiedToClipboard": "Copied to clipboard!",
+    "coursePackPreviewNotice": "{name} ({scriptName}) course packs are in preview. Foundational learning content is active.",
+    "@coursePackPreviewNotice": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "scriptName": {
+                "type": "String"
+            }
+        }
+    },
+    "aiAssistantActive": "AI ASSISTANT ACTIVE"
 }

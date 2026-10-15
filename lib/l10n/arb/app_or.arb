@@ -1205,5 +1205,8 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "copiedToClipboard": "କ୍ଲିପବୋର୍ଡକୁ କପି ହେଲା!",
+    "coursePackPreviewNotice": "{name} ({scriptName}) କୋର୍ସ ପ୍ୟାକ୍ ପ୍ରିଭ୍ୟୁରେ ଅଛି। ମୌଳିକ ଶିକ୍ଷଣ ବିଷୟବସ୍ତୁ ସକ୍ରିୟ ଅଛି।",
+    "aiAssistantActive": "AI ସହାୟକ ସକ୍ରିୟ"
 }

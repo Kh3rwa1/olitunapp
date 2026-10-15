@@ -1205,5 +1205,8 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "copiedToClipboard": "ক্লিপবোর্ডে কপি হয়েছে!",
+    "coursePackPreviewNotice": "{name} ({scriptName}) কোর্স প্যাক প্রিভিউতে আছে। মৌলিক শেখার বিষয়বস্তু চালু আছে।",
+    "aiAssistantActive": "AI সহকারী সক্রিয়"
 }

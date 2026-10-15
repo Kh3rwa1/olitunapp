@@ -2072,4 +2072,15 @@ class AppLocalizationsOr extends AppLocalizations {
   @override
   String get contentLoadFailed =>
       'ବିଷୟବସ୍ତୁ ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ। ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।';
+
+  @override
+  String get copiedToClipboard => 'କ୍ଲିପବୋର୍ଡକୁ କପି ହେଲା!';
+
+  @override
+  String coursePackPreviewNotice(String name, String scriptName) {
+    return '$name ($scriptName) କୋର୍ସ ପ୍ୟାକ୍ ପ୍ରିଭ୍ୟୁରେ ଅଛି। ମୌଳିକ ଶିକ୍ଷଣ ବିଷୟବସ୍ତୁ ସକ୍ରିୟ ଅଛି।';
+  }
+
+  @override
+  String get aiAssistantActive => 'AI ସହାୟକ ସକ୍ରିୟ';
 }

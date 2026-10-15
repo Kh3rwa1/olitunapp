@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
@@ -15,6 +15,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../test_utils.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class _QuizzesNotifier extends QuizzesNotifier {
   _QuizzesNotifier(this.initial);

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/auth/account_scope.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/observability/crash_reporting.dart';
-import '../../../auth/domain/repositories/auth_repository.dart';
+import '../../../../core/auth/auth_repository.dart';
 import '../../domain/entities/profile_avatar.dart';
 import '../../domain/entities/user_stats_entity.dart';
 import '../../domain/repositories/profile_repository.dart';

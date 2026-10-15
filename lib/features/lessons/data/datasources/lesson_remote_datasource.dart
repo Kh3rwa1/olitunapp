@@ -3,7 +3,7 @@ import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/error/exceptions.dart';
-import '../models/lesson_model.dart';
+import '../../../../shared/models/catalog/lesson_model.dart';
 
 abstract class LessonRemoteDataSource {
   Future<List<LessonModel>> getLessons();

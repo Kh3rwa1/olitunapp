@@ -5,6 +5,8 @@ import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../providers/admin_auth_provider.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
 
 class DashboardHeader extends ConsumerWidget {
   final bool isDark;

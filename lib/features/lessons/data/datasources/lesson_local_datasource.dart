@@ -1,6 +1,6 @@
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/storage/cache_service.dart';
-import '../models/lesson_model.dart';
+import '../../../../shared/models/catalog/lesson_model.dart';
 
 abstract class LessonLocalDataSource {
   Future<List<LessonModel>> getLessons();

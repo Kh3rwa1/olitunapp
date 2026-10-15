@@ -20,6 +20,7 @@ import 'widgets/quiz_active_view.dart';
 import 'widgets/quiz_complete_screen.dart';
 import 'widgets/quiz_out_of_hearts_screen.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;

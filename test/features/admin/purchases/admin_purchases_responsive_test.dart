@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/api/admin_purchases_api.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/presentation/purchases/admin_purchases_screen.dart';
-import 'package:itun/features/auth/domain/entities/user_entity.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/user_entity.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _FakePurchasesApi extends Fake implements AdminPurchasesApi {

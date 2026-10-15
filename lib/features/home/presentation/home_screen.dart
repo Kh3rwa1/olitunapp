@@ -17,6 +17,7 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/state_widgets.dart';
+import 'package:itun/features/profile/presentation/widgets/offline_status_banner.dart';
 import '../../../core/motion/motion.dart';
 import '../domain/continue_lesson_logic.dart';
 import 'widgets/next_best_action_card.dart';
@@ -28,6 +29,8 @@ import 'widgets/learning_path_card.dart';
 import 'widgets/santali_voice_promo_card.dart';
 import 'widgets/ai_studio_promo_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 
 export '../domain/continue_lesson_logic.dart';
 

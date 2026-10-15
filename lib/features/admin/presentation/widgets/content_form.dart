@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:itun/core/logging/app_logger.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/features/admin/data/tracing_templates.dart';
 import 'package:itun/features/admin/presentation/widgets/media_picker_field.dart';
 import 'package:itun/features/admin/presentation/widgets/tracing_stroke_editor.dart';
@@ -14,6 +14,7 @@ import 'package:itun/shared/providers/providers.dart';
 import 'content_form/content_block_list_section.dart';
 import 'content_form/content_form_card.dart';
 import 'content_form/content_form_identity_section.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 
 class ContentForm extends ConsumerStatefulWidget {
   final ContentKind kind;

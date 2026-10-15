@@ -236,7 +236,14 @@ class MutationOutboxService {
         mutation.status = MutationStatus.completed;
         await box.put(key, jsonEncode(mutation.toJson()));
         return;
-      } catch (_) {}
+      } catch (e, stack) {
+        AppLogger.warning(
+          'Marking mutation completed failed; falling back',
+          name: 'MutationOutbox',
+          error: e,
+          stackTrace: stack,
+        );
+      }
     }
     // Record durable completed stub if original record was not found
     final stub = PendingMutation(
@@ -263,7 +270,14 @@ class MutationOutboxService {
         mutation.status = MutationStatus.cancelled;
         await box.put(key, jsonEncode(mutation.toJson()));
         return;
-      } catch (_) {}
+      } catch (e, stack) {
+        AppLogger.warning(
+          'Marking mutation cancelled failed; falling back',
+          name: 'MutationOutbox',
+          error: e,
+          stackTrace: stack,
+        );
+      }
     }
     final stub = PendingMutation(
       operationId: operationId,

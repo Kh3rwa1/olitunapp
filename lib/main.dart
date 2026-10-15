@@ -22,15 +22,17 @@ import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'shared/repositories/content_mutation_replay.dart';
-import 'shared/sync/content_change_sync.dart';
+import 'app/sync/content_change_sync.dart';
 import 'features/review/data/review_sync_init.dart';
 import 'core/notifications/notification_tap_router.dart';
 import 'l10n/generated/app_localizations.dart';
 import 'core/ads/ad_service.dart';
 import 'core/ads/consent_manager.dart';
+import 'core/ads/rewarded_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
 import 'core/languages/translation_override_service.dart';
 import 'features/home/presentation/providers/daily_missions_observer.dart';
+import 'features/profile/presentation/providers/user_stats_provider.dart';
 
 @visibleForTesting
 Locale appLocaleForLanguage(String languageCode) {
@@ -152,7 +154,14 @@ Future<void> _startApplication() async {
 
     runApp(
       ProviderScope(
-        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          rewardStarsGranterProvider.overrideWith(
+            (ref) =>
+                (amount) =>
+                    ref.read(userStatsProvider.notifier).addStars(amount),
+          ),
+        ],
         observers: const [DailyMissionsObserver(), AppProviderObserver()],
         child: PostFrameStartup(
           onStart: () => unawaited(_startOptionalTasks(optionalTasks)),

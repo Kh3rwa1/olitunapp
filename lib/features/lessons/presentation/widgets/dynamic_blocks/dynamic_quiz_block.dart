@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/presentation/animations/scale_button.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
 /// Quiz CTA block that navigates to the quiz screen.

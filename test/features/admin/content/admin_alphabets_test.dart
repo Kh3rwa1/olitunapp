@@ -9,11 +9,12 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/admin/presentation/content/admin_content_list_screen.dart';
 import 'package:itun/features/admin/presentation/categories/widgets/category_card.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form.dart';
-import 'package:itun/features/categories/data/models/category_model.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_model.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/domain/repositories/category_repository.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/features/categories/presentation/providers/category_providers.dart';
 
 class MockContentRepository extends Mock implements ContentRepository {}
 

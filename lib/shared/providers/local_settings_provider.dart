@@ -1,10 +1,11 @@
-import 'dart:ui' show PlatformDispatcher;
-import 'package:flutter/widgets.dart'
-    show WidgetsBinding, WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../core/storage/hive_service.dart';
 import 'language_settings_providers.dart';
+
+// Reduce-motion state lives in core so core motion primitives can read it;
+// re-exported here so existing imports keep working.
+export '../../core/accessibility/reduce_motion_providers.dart';
 
 // ============== APP SETTINGS ==============
 // These are global app settings, not specific to the user profile stats.
@@ -21,57 +22,6 @@ final learnerLevelProvider = StateProvider<LearnerLevel>((ref) {
 
 final dailyGoalMinutesProvider = StateProvider<int>((ref) {
   return ref.read(sharedPreferencesProvider).getInt('daily_goal_minutes') ?? 5;
-});
-
-final userReduceVisualEffectsProvider = StateProvider<bool>((ref) {
-  return ref.read(sharedPreferencesProvider).getBool('reduce_visual_effects') ??
-      false;
-});
-
-class SystemReduceMotionNotifier extends Notifier<bool>
-    with WidgetsBindingObserver {
-  bool _observing = false;
-
-  void _updateState() {
-    try {
-      state =
-          PlatformDispatcher.instance.accessibilityFeatures.disableAnimations;
-    } catch (_) {
-      // Accessibility features may be unreadable before binding init or in
-      // tests; treating it as "no reduce-motion" is the safe default.
-      state = false;
-    }
-  }
-
-  @override
-  bool build() {
-    if (!_observing) {
-      WidgetsBinding.instance.addObserver(this);
-      _observing = true;
-    }
-    ref.onDispose(() {
-      WidgetsBinding.instance.removeObserver(this);
-      _observing = false;
-    });
-    _updateState();
-    return state;
-  }
-
-  @override
-  void didChangeAccessibilityFeatures() {
-    _updateState();
-  }
-}
-
-final systemReduceMotionProvider =
-    NotifierProvider<SystemReduceMotionNotifier, bool>(
-      SystemReduceMotionNotifier.new,
-    );
-
-final reduceVisualEffectsProvider = Provider<bool>((ref) {
-  final userPref = ref.watch(userReduceVisualEffectsProvider);
-  final systemPref = ref.watch(systemReduceMotionProvider);
-  return userPref || systemPref;
 });
 
 final shellTabIndexProvider = StateProvider<int>((ref) => 0);
@@ -180,14 +130,6 @@ void updateLearnerLevel(WidgetRef ref, LearnerLevel level) {
 void updateDailyGoalMinutes(WidgetRef ref, int minutes) {
   ref.read(sharedPreferencesProvider).setInt('daily_goal_minutes', minutes);
   ref.read(dailyGoalMinutesProvider.notifier).state = minutes;
-}
-
-void toggleReduceVisualEffects(WidgetRef ref) {
-  final current = ref.read(userReduceVisualEffectsProvider);
-  ref
-      .read(sharedPreferencesProvider)
-      .setBool('reduce_visual_effects', !current);
-  ref.read(userReduceVisualEffectsProvider.notifier).state = !current;
 }
 
 // ============== LESSON LAYOUT MODE SETTINGS ==============

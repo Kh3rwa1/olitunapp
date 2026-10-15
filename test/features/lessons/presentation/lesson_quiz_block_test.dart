@@ -6,12 +6,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 /// Concrete overrides (not mocktail stubs) because the central
 /// PlaybackController subscribes to these streams in its constructor.

@@ -5,9 +5,11 @@ import '../../../core/error/failures.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/providers.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 import '../domain/lesson_quiz_generator.dart';
 import '../domain/listening_quiz_generator.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class QuizRepository {
   final Ref _ref;

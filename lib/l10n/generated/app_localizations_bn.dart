@@ -2064,4 +2064,15 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get contentLoadFailed =>
       'কন্টেন্ট লোড করা যায়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get copiedToClipboard => 'ক্লিপবোর্ডে কপি হয়েছে!';
+
+  @override
+  String coursePackPreviewNotice(String name, String scriptName) {
+    return '$name ($scriptName) কোর্স প্যাক প্রিভিউতে আছে। মৌলিক শেখার বিষয়বস্তু চালু আছে।';
+  }
+
+  @override
+  String get aiAssistantActive => 'AI সহকারী সক্রিয়';
 }

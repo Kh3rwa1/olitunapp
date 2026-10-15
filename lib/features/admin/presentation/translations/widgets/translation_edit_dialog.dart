@@ -5,11 +5,12 @@ import '../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../../../core/languages/translation_override_service.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../features/lessons/domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../widgets/multilingual_preview_box.dart';
 import '../models/translation_entry.dart';
 import '../providers/translation_entries_provider.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
 
 part 'translation_edit_dialog_inputs.dart';
 

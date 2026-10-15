@@ -7,10 +7,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../presentation/controllers/auth_controller.dart';
-import '../presentation/providers/auth_providers.dart';
+import '../../../core/auth/auth_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import 'widgets/oauth_failure_notice.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -331,7 +332,12 @@ class WelcomeScreen extends ConsumerWidget {
             HapticFeedback.lightImpact();
             try {
               await ref.read(authControllerProvider).signInAnonymously();
-            } catch (_) {}
+            } catch (e) {
+              AppLogger.debug(
+                'Guest sign-in failed: $e',
+                name: 'WelcomeScreen',
+              );
+            }
             if (!context.mounted) return;
             // Refresh the cached auth state before navigating: the router
             // guard reads isAuthenticatedProvider, which still holds the
@@ -341,7 +347,12 @@ class WelcomeScreen extends ConsumerWidget {
             try {
               authed = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);
-            } catch (_) {}
+            } catch (e) {
+              AppLogger.debug(
+                'Refreshing auth state after guest sign-in failed: $e',
+                name: 'WelcomeScreen',
+              );
+            }
             if (!context.mounted) return;
             if (!authed) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -429,7 +440,12 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
             try {
               final _ = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);
-            } catch (_) {}
+            } catch (e) {
+              AppLogger.debug(
+                'Refreshing auth state after sign-in failed: $e',
+                name: 'WelcomeScreen',
+              );
+            }
             if (!mounted) return;
             setState(() => _isLoading = false);
             final showOnboarding = ref.read(onboardingProvider);

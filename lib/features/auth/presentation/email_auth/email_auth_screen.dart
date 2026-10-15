@@ -5,9 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../onboarding/providers/onboarding_provider.dart';
 import '../controllers/auth_controller.dart';
-import '../providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import 'widgets/email_request_form.dart';
 import 'widgets/otp_verify_form.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 class EmailAuthScreen extends ConsumerStatefulWidget {
   const EmailAuthScreen({super.key});
@@ -142,7 +143,12 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             try {
               final _ = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);
-            } catch (_) {}
+            } catch (e) {
+              AppLogger.debug(
+                'Refreshing auth state after OTP sign-in failed: $e',
+                name: 'EmailAuthScreen',
+              );
+            }
             if (!mounted) return;
             setState(() => _isLoading = false);
             final showOnboarding = ref.read(onboardingProvider);

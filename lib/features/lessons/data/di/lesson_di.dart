@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/network/network_info.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../datasources/lesson_local_datasource.dart';
 import '../datasources/lesson_remote_datasource.dart';
 import '../repositories/lesson_repository_impl.dart';

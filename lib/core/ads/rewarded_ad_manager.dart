@@ -4,7 +4,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
 
-import '../../features/profile/presentation/providers/profile_providers.dart';
 import '../analytics/analytics_service.dart';
 import '../logging/app_logger.dart';
 import '../observability/crash_reporting.dart';
@@ -311,7 +310,7 @@ class RewardedAdManager with WidgetsBindingObserver {
     try {
       switch (type) {
         case RewardType.stars:
-          await _ref.read(userStatsProvider.notifier).addStars(amount);
+          await _ref.read(rewardStarsGranterProvider)(amount);
           AppLogger.debug('RewardedAdManager: Credited $amount stars to user');
           break;
         case RewardType.quizAttempt:
@@ -350,6 +349,19 @@ class RewardedAdManager with WidgetsBindingObserver {
     }
   }
 }
+
+/// Credits stars earned from a rewarded ad to the learner's stats.
+typedef RewardStarsGranter = Future<void> Function(int amount);
+
+/// Core cannot depend on the profile feature, so the app root
+/// (`lib/main.dart`) overrides this with the user-stats notifier. Without an
+/// override, granting stars fails and is logged by `_grantReward`.
+final rewardStarsGranterProvider = Provider<RewardStarsGranter>(
+  (ref) =>
+      (_) => throw StateError(
+        'rewardStarsGranterProvider must be overridden at the app root',
+      ),
+);
 
 final rewardedAdManagerProvider = Provider<RewardedAdManager>((ref) {
   final manager = RewardedAdManager(ref);

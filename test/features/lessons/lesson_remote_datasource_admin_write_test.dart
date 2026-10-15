@@ -7,7 +7,7 @@ import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
-import 'package:itun/features/lessons/data/models/lesson_model.dart';
+import 'package:itun/shared/models/catalog/lesson_model.dart';
 
 const _lesson = LessonModel(
   id: 'lesson_1',

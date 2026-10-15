@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 // The gate requires the shared re-export surface itself to be exercised.
 import 'package:itun/shared/models/content/category_model.dart';
 

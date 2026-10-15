@@ -9,10 +9,10 @@ import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
-import 'package:itun/features/auth/domain/entities/user_entity.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/user_entity.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/features/admin/presentation/purchases/providers/admin_purchases_provider.dart';
 import 'package:mocktail/mocktail.dart';
 
 typedef _PageHandler = Future<AdminPurchasePage> Function(_PageRequest request);

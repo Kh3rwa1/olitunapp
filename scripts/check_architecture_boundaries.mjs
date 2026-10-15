@@ -12,9 +12,14 @@
  * `lib/shared/**`, `lib/app/**`, `lib/main.dart`, …) must go through those
  * seams instead.
  *
- * Layering rule: `lib/core/**` is app-agnostic and must not import
- * `lib/shared/**` or `lib/features/**`. Pre-existing exceptions are listed in
- * CORE_UPWARD_IMPORT_BASELINE and may only shrink.
+ * Layering rules (see ARCHITECTURE.md):
+ *   - `lib/core/**` is app-agnostic infrastructure and must not import
+ *     `lib/shared/**` or `lib/features/**`.
+ *   - `lib/shared/**` must not import `lib/features/**`.
+ *   - `lib/features/<a>/{data,domain}/**` must not import another feature's
+ *     `presentation/` layer (use that feature's `data`/`domain` API).
+ * Every import/export URI (including conditional `if (...) '...'` URIs and
+ * multi-line directives) is resolved to a `lib/` path before classifying.
  *
  * Exit code 0 if all boundaries are respected.
  * Exit code 1 with list of violations if any forbidden import is found.
@@ -26,29 +31,28 @@ import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const root = path.resolve(__dirname, '..');
-const libDir = path.join(root, 'lib');
+const repoRoot = path.resolve(__dirname, '..');
 
-// Matches import/export directives (including multi-line conditional ones
-// whose first URI sits on the directive line).
-const FORBIDDEN_IMPORT_REGEX = /^\s*(import|export)\s+['"]package:appwrite\//;
+const PACKAGE_NAME = 'itun';
 
-const CORE_UPWARD_IMPORT_REGEX =
-  /^\s*(import|export)\s+['"](package:itun\/(shared|features)\/|(\.\.\/)+(shared|features)\/)/;
+/**
+ * Explicit, reviewed exceptions: `{ 'lib/path.dart': ['rule-id', …] }`, each
+ * with a comment giving the reason. Keep it empty — fix the dependency
+ * (move code down a layer, or invert it) instead of adding entries. Stale
+ * entries fail the check.
+ */
+export const ALLOW_LIST = {};
 
-// Legacy core → shared/features imports. Remove entries as they are fixed;
-// never add new ones.
-const CORE_UPWARD_IMPORT_BASELINE = new Set([
-  'lib/core/accessibility/app_experience_scope.dart',
-  'lib/core/ads/ad_state.dart',
-  'lib/core/ads/rewarded_ad_manager.dart',
-  'lib/core/api/ai_service.dart',
-  'lib/core/config/feature_flags.dart',
-  'lib/core/languages/ol_chiki_multilingual_helper.dart',
-  'lib/core/media/authorized_media_provider.dart',
-  'lib/core/motion/confetti_overlay.dart',
-  'lib/core/storage/media_uploader.dart',
-]);
+export const RULES = {
+  'appwrite-sdk':
+    'package:appwrite/ may only be imported from lib/core/** or lib/features/*/data/** (use the core/api seams)',
+  'core-upward':
+    'lib/core/** must not import lib/shared/** or lib/features/** (move the code down or invert the dependency)',
+  'shared-upward':
+    'lib/shared/** must not import lib/features/** (move the code down into shared/core, or move the consumer into the feature)',
+  'feature-presentation':
+    "lib/features/*/{data,domain}/** must not import another feature's presentation/ layer (use its data/domain API)",
+};
 
 /** Returns true when `relativePath` may import package:appwrite. */
 export function isAllowedAppwriteImporter(relativePath) {
@@ -56,86 +60,142 @@ export function isAllowedAppwriteImporter(relativePath) {
   return /^lib\/features\/[^/]+\/data\//.test(relativePath);
 }
 
-function walkDir(dir) {
-  let files = [];
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files = files.concat(walkDir(fullPath));
-    } else if (entry.isFile() && entry.name.endsWith('.dart')) {
-      files.push(fullPath);
+/**
+ * Resolves a directive URI to a repo-relative `lib/...` path, or returns
+ * `null` for SDK/third-party URIs. Like Dart, `..` never climbs above the
+ * package root (`lib/`).
+ */
+export function resolveUri(fromRelativePath, uri) {
+  if (uri.startsWith(`package:${PACKAGE_NAME}/`)) {
+    return `lib/${path.posix.normalize(uri.slice(PACKAGE_NAME.length + 9))}`;
+  }
+  if (/^[a-z][a-z0-9+.-]*:/i.test(uri)) return null;
+  if (!fromRelativePath.startsWith('lib/')) return null;
+  const segments = path.posix.dirname(fromRelativePath.slice(4)).split('/').filter((s) => s && s !== '.');
+  for (const part of uri.split('/')) {
+    if (part === '..') segments.pop();
+    else if (part !== '.' && part !== '') segments.push(part);
+  }
+  return `lib/${segments.join('/')}`;
+}
+
+/** Extracts `{ uri, line }` for every import/export/part URI in `source`. */
+export function directiveUris(source) {
+  const results = [];
+  const directive = /^[ \t]*(?:import|export|part)\b[^;]*;/gm;
+  let match;
+  while ((match = directive.exec(source)) !== null) {
+    const startLine = source.slice(0, match.index).split('\n').length;
+    const uriRegex = /(['"])([^'"\n]+)\1/g;
+    let uriMatch;
+    while ((uriMatch = uriRegex.exec(match[0])) !== null) {
+      const line = startLine + match[0].slice(0, uriMatch.index).split('\n').length - 1;
+      results.push({ uri: uriMatch[2], line });
     }
+  }
+  return results;
+}
+
+function featureOf(libPath) {
+  const m = /^lib\/features\/([^/]+)\//.exec(libPath);
+  return m ? m[1] : null;
+}
+
+/** Returns the rule id violated by `from` importing `target`, or null. */
+export function layerViolation(from, target) {
+  if (from.startsWith('lib/core/')) {
+    if (target.startsWith('lib/shared/') || target.startsWith('lib/features/')) return 'core-upward';
+  }
+  if (from.startsWith('lib/shared/') && target.startsWith('lib/features/')) return 'shared-upward';
+  if (/^lib\/features\/[^/]+\/(data|domain)\//.test(from)) {
+    const targetFeature = featureOf(target);
+    if (
+      targetFeature &&
+      targetFeature !== featureOf(from) &&
+      /^lib\/features\/[^/]+\/presentation\//.test(target)
+    ) {
+      return 'feature-presentation';
+    }
+  }
+  return null;
+}
+
+/** Scans one Dart source file (repo-relative path) for violations. */
+export function scanSource(relativePath, source) {
+  const violations = [];
+  for (const { uri, line } of directiveUris(source)) {
+    if (uri.startsWith('package:appwrite/') && !isAllowedAppwriteImporter(relativePath)) {
+      violations.push({ file: relativePath, line, rule: 'appwrite-sdk', code: uri });
+      continue;
+    }
+    const target = resolveUri(relativePath, uri);
+    if (!target) continue;
+    const rule = layerViolation(relativePath, target);
+    if (rule) violations.push({ file: relativePath, line, rule, code: uri });
+  }
+  return violations;
+}
+
+function walkDir(dir) {
+  if (!fs.existsSync(dir)) return [];
+  let files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) files = files.concat(walkDir(fullPath));
+    else if (entry.isFile() && entry.name.endsWith('.dart')) files.push(fullPath);
   }
   return files;
 }
 
-function checkArchitectureBoundaries() {
-  const dartFiles = walkDir(libDir);
+/**
+ * Checks every Dart file under `<root>/lib`. Returns violations not covered
+ * by `allowList`, the allowed ones, and allow-list entries that no longer
+ * match anything.
+ */
+export function checkTree(root, allowList = ALLOW_LIST) {
+  const files = walkDir(path.join(root, 'lib'));
   const violations = [];
-
-  for (const file of dartFiles) {
-    const relativePath = path.relative(root, file).replace(/\\/g, '/');
-    const content = fs.readFileSync(file, 'utf8');
-    const lines = content.split('\n');
-    const checkUpward =
-      relativePath.startsWith('lib/core/') &&
-      !CORE_UPWARD_IMPORT_BASELINE.has(relativePath);
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (checkUpward && CORE_UPWARD_IMPORT_REGEX.test(line)) {
-        violations.push({
-          file: relativePath,
-          line: i + 1,
-          rule: 'lib/core/** must not import lib/shared/** or lib/features/** (move the code down or invert the dependency)',
-          code: line.trim(),
-        });
-      }
-      if (isAllowedAppwriteImporter(relativePath)) continue;
-      if (FORBIDDEN_IMPORT_REGEX.test(line)) {
-        violations.push({
-          file: relativePath,
-          line: i + 1,
-          rule:
-            'package:appwrite/ may only be imported from lib/core/** or lib/features/*/data/** (use the core/api seams)',
-          code: line.trim(),
-        });
+  const allowed = [];
+  const used = new Set();
+  for (const file of files) {
+    const relativePath = path.relative(root, file).split(path.sep).join('/');
+    for (const v of scanSource(relativePath, fs.readFileSync(file, 'utf8'))) {
+      if ((allowList[v.file] ?? []).includes(v.rule)) {
+        allowed.push(v);
+        used.add(`${v.file}\u0000${v.rule}`);
+      } else {
+        violations.push(v);
       }
     }
   }
-
-  for (const baselined of CORE_UPWARD_IMPORT_BASELINE) {
-    const full = path.join(root, baselined);
-    const stillViolates =
-      fs.existsSync(full) &&
-      fs
-        .readFileSync(full, 'utf8')
-        .split('\n')
-        .some((line) => CORE_UPWARD_IMPORT_REGEX.test(line));
-    if (!stillViolates) {
-      violations.push({
-        file: baselined,
-        line: 0,
-        rule: 'Stale CORE_UPWARD_IMPORT_BASELINE entry: remove it from scripts/check_architecture_boundaries.mjs',
-        code: '',
-      });
+  const staleAllowEntries = [];
+  for (const [file, rules] of Object.entries(allowList)) {
+    for (const rule of rules) {
+      if (!used.has(`${file}\u0000${rule}`)) staleAllowEntries.push({ file, rule });
     }
   }
+  return { fileCount: files.length, violations, allowed, staleAllowEntries };
+}
 
-  if (violations.length > 0) {
-    console.error(`❌ Architecture boundary check failed with ${violations.length} violation(s):\n`);
+function main() {
+  const { fileCount, violations, staleAllowEntries } = checkTree(repoRoot);
+  if (violations.length > 0 || staleAllowEntries.length > 0) {
+    console.error(
+      `❌ Architecture boundary check failed with ${violations.length} violation(s) and ${staleAllowEntries.length} stale allow-list entr(ies):\n`,
+    );
     for (const v of violations) {
       console.error(`  - ${v.file}:${v.line}`);
-      console.error(`    Rule: ${v.rule}`);
+      console.error(`    Rule: ${RULES[v.rule]}`);
       console.error(`    Code: ${v.code}\n`);
+    }
+    for (const s of staleAllowEntries) {
+      console.error(`  - Stale ALLOW_LIST entry ${s.file} (${s.rule}): remove it from scripts/check_architecture_boundaries.mjs`);
     }
     process.exit(1);
   }
-
-  console.log(`✅ Architecture boundary check passed: ${dartFiles.length} Dart files checked, 0 violations.`);
+  console.log(`✅ Architecture boundary check passed: ${fileCount} Dart files checked, 0 violations.`);
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
-  checkArchitectureBoundaries();
+  main();
 }

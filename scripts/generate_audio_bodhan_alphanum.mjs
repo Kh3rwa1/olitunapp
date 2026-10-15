@@ -61,7 +61,7 @@ if (!BODHAN_API_KEY && !LIST_ONLY) {
   process.exit(1);
 }
 
-// ---- Santali numbers (mirrors lib/shared/utils/santali_numbers.dart) ----
+// ---- Santali numbers (mirrors lib/core/languages/santali_numbers.dart) ----
 const _olDigits = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
 const _unitLat = { 0: 'Sunya', 1: 'Mit', 2: 'Bar', 3: 'Pe', 4: 'Pun', 5: 'Mone', 6: 'Turui', 7: 'Eae', 8: 'Iral', 9: 'Are' };
 const _unitOl = { 0: 'ᱥᱩᱱᱭᱟ', 1: 'ᱢᱤᱫ', 2: 'ᱵᱟᱨ', 3: 'ᱯᱮ', 4: 'ᱯᱩᱱ', 5: 'ᱢᱚᱬᱮ', 6: 'ᱛᱩᱨᱩᱭ', 7: 'ᱮᱭᱟᱭ', 8: 'ᱤᱨᱟᱹᱞ', 9: 'ᱟᱨᱮ' };

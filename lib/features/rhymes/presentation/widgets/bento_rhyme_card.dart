@@ -8,7 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/glass_card.dart';
-import '../../domain/rhyme_model.dart';
+import '../../../../shared/models/catalog/rhyme_model.dart';
 import '../../../../shared/widgets/cover_thumbnail.dart';
 import 'enchanted_visualizer.dart';
 

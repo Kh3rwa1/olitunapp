@@ -17,7 +17,7 @@ import 'package:itun/features/profile/domain/progress_origin_identity.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
 
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/widgets/state_widgets.dart';
 

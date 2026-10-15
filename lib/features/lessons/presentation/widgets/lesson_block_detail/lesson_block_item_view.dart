@@ -6,7 +6,7 @@ import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/presentation/layout/responsive_layout.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
@@ -15,6 +15,7 @@ import 'package:itun/shared/providers/providers.dart';
 import 'lesson_block_card_content.dart';
 import 'lesson_block_hero_header.dart';
 import 'lesson_block_quiz_cta.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 /// Single item view within the lesson block PageView.
 class LessonBlockItemView extends ConsumerWidget {

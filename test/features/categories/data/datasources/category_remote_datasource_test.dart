@@ -7,7 +7,7 @@ import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/features/categories/data/datasources/category_remote_datasource.dart';
-import 'package:itun/features/categories/data/models/category_model.dart';
+import 'package:itun/shared/models/catalog/category_model.dart';
 
 void main() {
   late List<Uri> requests;

@@ -11,9 +11,9 @@ import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/models/content_item_extensions.dart';
 import '../../../../../shared/providers/content_providers.dart';
 import '../../../../../shared/providers/learner_content_providers.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import '../../../../categories/presentation/providers/category_notifier.dart';
-import '../../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../../lessons/presentation/providers/lesson_notifier.dart';
 import 'controllers/block_reorder_controller.dart';
 import 'widgets/lesson_content_top_bar.dart';
@@ -21,6 +21,7 @@ import 'widgets/lesson_editor_block_list.dart';
 import 'widgets/lesson_mockup_preview.dart';
 import 'widgets/lesson_summary_banner.dart';
 import 'widgets/universal_block_sheet.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
 
 class AdminLessonContentScreen extends ConsumerStatefulWidget {
   final String lessonId;

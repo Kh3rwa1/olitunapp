@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:itun/core/theme/admin_tokens.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/shared/utils/santali_numbers.dart';
+import 'package:itun/core/languages/santali_numbers.dart';
 
 /// Quick preset helper and auto-fill toolbar for the 100 Numbers admin form.
 class OlChikiNumberHelper extends StatelessWidget {

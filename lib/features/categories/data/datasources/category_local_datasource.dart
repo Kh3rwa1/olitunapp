@@ -1,6 +1,6 @@
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/storage/cache_service.dart';
-import '../models/category_model.dart';
+import '../../../../shared/models/catalog/category_model.dart';
 
 abstract class CategoryLocalDataSource {
   Future<List<CategoryModel>> getCategories();

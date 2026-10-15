@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/features/lessons/data/models/lesson_model.dart';
+import 'package:itun/shared/models/catalog/lesson_model.dart';
 import 'package:itun/features/quiz/domain/lesson_quiz_generator.dart';
 import 'package:itun/features/quiz/domain/quiz_option_equivalence.dart';
 

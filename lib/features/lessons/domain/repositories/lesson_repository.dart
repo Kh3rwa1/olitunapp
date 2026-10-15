@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/lesson_entity.dart';
+import '../../../../shared/models/catalog/lesson_entity.dart';
 
 abstract class LessonRepository {
   Future<Either<Failure, List<LessonEntity>>> getLessons();

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/analytics/analytics_service.dart';
-import '../../domain/entities/lesson_entity.dart';
+import '../../../../shared/models/catalog/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
 import 'lesson_providers.dart';
 import '../../../../shared/models/content_item.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:itun/features/admin/presentation/purchases/utils/purchases_actions_helper.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/features/admin/presentation/purchases/providers/admin_purchases_provider.dart';
 
 void main() {
   group('adminRefundOperationKey', () {

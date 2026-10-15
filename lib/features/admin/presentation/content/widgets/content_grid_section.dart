@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:itun/features/admin/domain/content_badge_resolver.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'content_grid_card.dart';
 

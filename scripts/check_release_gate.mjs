@@ -5,8 +5,7 @@ import { fileURLToPath } from 'node:url';
 export const requiredJobs = Object.freeze([
   'format-and-analyze',
   'flutter-unit-widget-tests',
-  'node-backend-tests',
-  'permission-and-schema-tests',
+  'node-script-tests',
   'web-integration-tests',
   'android-emulator-e2e',
   'web-release-build',

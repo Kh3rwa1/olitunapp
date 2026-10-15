@@ -6,7 +6,8 @@
 // reconnect replay, process death between enqueue and acknowledgement)
 // never applies the same recall twice.
 //
-// Rules enforced here and in `functions/mutateReviewState`:
+// Rules enforced here and in the Worker
+// (`cloudflare/backend/src/routes/review.ts`):
 // 1. The local scheduler applies the operation optimistically.
 // 2. The operation is persisted to the durable outbox before UI success
 //    depends on cloud state.

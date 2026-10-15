@@ -1,8 +1,0 @@
-{
-  "name": "verifyCoursePurchase",
-  "version": "1.0.0",
-  "description": "Appwrite function to verify Razorpay course purchases with guarded state transitions",
-  "main": "src/main.js",
-  "type": "module",
-  "dependencies": { "node-appwrite": "25.1.0" }
-}

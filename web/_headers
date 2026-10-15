@@ -1,16 +1,35 @@
-# Custom HTTP headers for Cloudflare Pages
+# Custom HTTP headers for Cloudflare Pages.
+#
+# Cloudflare joins the values of a header set by more than one matching rule,
+# so each header is set by exactly one rule: security headers on /*, caching
+# on the specific paths. Tested by test/web/csp_policy_test.mjs and
+# test/web/permissions_policy_test.mjs.
+#
+# connect-src/img-src/media-src: the Cloudflare Worker API (olitun.in and its
+# workers.dev origin; media is served from R2 through the Worker) and Appwrite
+# (sign-in only; also the target of the Worker's legacy-storage redirect for
+# media not yet copied to R2).
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(self), microphone=(self), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.razorpay.com; media-src 'self' blob: https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io; connect-src 'self' https://olitun.in https://olitun-api.dulalkisku0.workers.dev https://sgp.cloud.appwrite.io https://*.sentry.io https://*.ingest.sentry.io https://*.ingest.us.sentry.io https://api.razorpay.com; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; worker-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'
 
 /sw.js
   Service-Worker-Allowed: /
   Cache-Control: no-cache, must-revalidate
 
+/flutter_service_worker.js
+  Cache-Control: no-cache
+
 /index.html
   Cache-Control: no-cache, must-revalidate
-  X-Content-Type-Options: nosniff
 
 /offline.html
   Cache-Control: no-cache, must-revalidate
-  X-Content-Type-Options: nosniff
 
 /flutter_bootstrap.js
   Cache-Control: no-cache, must-revalidate

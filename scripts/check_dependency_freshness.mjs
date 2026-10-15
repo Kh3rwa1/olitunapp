@@ -101,26 +101,12 @@ function checkNpmVulnerabilities() {
 
   const auditTargets = [];
 
-  // Check scripts/
-  const scriptsDir = path.join(repoRoot, "scripts");
-  if (fs.existsSync(path.join(scriptsDir, "package.json"))) {
-    auditTargets.push({ name: "scripts", dir: scriptsDir });
-  }
-
-  // Check functions/* excluding functions/translator
-  const functionsDir = path.join(repoRoot, "functions");
-  if (fs.existsSync(functionsDir)) {
-    const entries = fs.readdirSync(functionsDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name === "translator") {
-        console.log("ℹ️  Skipping version-frozen \"functions/translator\" per hard repository constraints.");
-        continue;
-      }
-      const dirPath = path.join(functionsDir, entry.name);
-      if (fs.existsSync(path.join(dirPath, "package-lock.json"))) {
-        auditTargets.push({ name: `functions/${entry.name}`, dir: dirPath });
-      }
+  // Every npm package with a lockfile: the Cloudflare Worker and the
+  // Cloudflare AI gateway.
+  for (const rel of ["cloudflare/backend", "cloudflare/ai-gateway"]) {
+    const dirPath = path.join(repoRoot, rel);
+    if (fs.existsSync(path.join(dirPath, "package-lock.json"))) {
+      auditTargets.push({ name: rel, dir: dirPath });
     }
   }
 
@@ -128,7 +114,7 @@ function checkNpmVulnerabilities() {
   const auditSkipped = [];
 
   // Fast-fail probe: if the registry itself is unreachable, per-target
-  // audits would each burn their full timeout (24 targets). One bounded
+  // audits would each burn their full timeout (every target). One bounded
   // probe decides for all of them.
   const ping = spawnSync("npm", ["ping"], {
     encoding: "utf8",
@@ -142,7 +128,7 @@ function checkNpmVulnerabilities() {
     return true;
   }
 
-  // Global deadline: even with per-target caps, 24 stalled targets must
+  // Global deadline: even with per-target caps, stalled targets must
   // never exceed the CI job budget. Stop starting new audits past it.
   const auditDeadline = Date.now() + 12 * 60 * 1000;
 

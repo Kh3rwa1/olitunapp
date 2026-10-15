@@ -288,7 +288,7 @@ Symbol and provider declaration count in `lib/`:
 | `4dbf9da7bc` | **7.1 MB** | `build/web/canvaskit/canvaskit.wasm` |
 | `d6665c6976` | **4.1 MB** | `assets/videos/onboarding.mp4` |
 
-*Note: Historical commits containing `build/*.dill`, `mapping.txt`, and release archives account for ~420 MB of the 481 MB `.git` directory. Script `scripts/clean_history_remove_build_artifacts.sh` exists in repo but requires owner approval prior to execution.*
+*Note: Historical commits containing `build/*.dill`, `mapping.txt`, and release archives account for ~420 MB of the 481 MB `.git` directory. Script `scripts/oneoff/clean_history_remove_build_artifacts.sh` exists in repo but requires owner approval prior to execution.*
 
 ### Top 5 Largest Currently Tracked Files
 1. `assets/images/bakhed/*.jpg` (13 images, ~1.1 MB–1.33 MB each)

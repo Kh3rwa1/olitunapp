@@ -58,7 +58,7 @@ git commit -m "chore: normalize line endings"
 
 ## 3. Rewriting history to drop the blobs (maintainer-run, deliberate)
 
-Use [`scripts/clean_history_remove_build_artifacts.sh`](../scripts/clean_history_remove_build_artifacts.sh).
+Use [`scripts/oneoff/clean_history_remove_build_artifacts.sh`](../scripts/oneoff/clean_history_remove_build_artifacts.sh).
 
 ```bash
 # 1. install git-filter-repo without touching system Python
@@ -66,10 +66,10 @@ python3 -m venv /tmp/gfr && /tmp/gfr/bin/pip install git-filter-repo
 export PATH="/tmp/gfr/bin:$PATH"
 
 # 2. preview (makes no changes)
-scripts/clean_history_remove_build_artifacts.sh
+scripts/oneoff/clean_history_remove_build_artifacts.sh
 
 # 3. perform the rewrite (makes a backup bundle first)
-scripts/clean_history_remove_build_artifacts.sh --apply
+scripts/oneoff/clean_history_remove_build_artifacts.sh --apply
 ```
 
 The script refuses to run on a dirty working tree, writes a full backup bundle

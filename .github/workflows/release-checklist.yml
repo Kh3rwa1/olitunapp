@@ -16,8 +16,12 @@ permissions:
   actions: read
 
 env:
-  APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-  APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+  # Appwrite is used only for sign-in; its endpoint and project id are public
+  # client values (same as deploy-web.yml). Every other backend call goes to
+  # the Cloudflare Worker at CLOUDFLARE_API_URL.
+  APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1' }}
+  APPWRITE_PROJECT_ID: ${{ vars.APPWRITE_PROJECT_ID || '699495910038e39622c5' }}
+  CLOUDFLARE_API_URL: https://olitun.in
   ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
   ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
   ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -26,7 +30,7 @@ env:
 
 jobs:
   staging-acceptance:
-    name: Required live staging verification
+    name: Required live backend health check
     uses: ./.github/workflows/staging-health.yml
     secrets: inherit
 
@@ -51,8 +55,6 @@ jobs:
       - name: Check required secrets
         run: |
           MISSING=""
-          [ -z "$APPWRITE_ENDPOINT" ] && MISSING="$MISSING APPWRITE_ENDPOINT"
-          [ -z "$APPWRITE_PROJECT_ID" ] && MISSING="$MISSING APPWRITE_PROJECT_ID"
           [ -z "$ANDROID_KEYSTORE_BASE64" ] && MISSING="$MISSING ANDROID_KEYSTORE_BASE64"
           [ -z "$ANDROID_KEY_ALIAS" ] && MISSING="$MISSING ANDROID_KEY_ALIAS"
           [ -z "$ANDROID_KEY_PASSWORD" ] && MISSING="$MISSING ANDROID_KEY_PASSWORD"
@@ -125,13 +127,9 @@ jobs:
             --enforce-after=2026-06-21
 
       - name: Build Web
-        run: |
-          flutter build web --release --no-web-resources-cdn \
-            --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
-            --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
-            --dart-define=CLOUDFLARE_API_URL=https://olitun.in
-          node scripts/patch_service_worker.mjs
-          node scripts/verify_service_worker_patch.mjs
+        env:
+          APP_ENV: production
+        run: bash scripts/build_web.sh
 
       - name: Check Web performance budget
         run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=tool/performance_budgets.json --max-growth=5
@@ -149,9 +147,10 @@ jobs:
       - name: Build Android Release APK
         run: |
           flutter build apk --release \
+            --dart-define=APP_ENV=production \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
-            --dart-define=CLOUDFLARE_API_URL=https://olitun.in
+            --dart-define=CLOUDFLARE_API_URL="$CLOUDFLARE_API_URL"
           bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
 
@@ -242,7 +241,7 @@ jobs:
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Environment | ✅ Validated |" >> $GITHUB_STEP_SUMMARY
           echo "| Canonical CI and security | ✅ Passed for selected commit |" >> $GITHUB_STEP_SUMMARY
-          echo "| Live staging | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Live backend health | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           echo "| Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           echo "| Critical-learning coverage | ✅ ≥70% (selected paths) |" >> $GITHUB_STEP_SUMMARY
           echo "| Web Build | ✅ Built |" >> $GITHUB_STEP_SUMMARY

@@ -1,4 +1,8 @@
-name: Staging & Infrastructure Health Check
+name: Backend Health Check
+
+# Read-only liveness probe of the production backend: the Cloudflare Worker
+# (all app data, D1 + R2) and Appwrite (sign-in only). Release Checklist calls
+# it as a gate, so a failing probe blocks tagging.
 
 on:
   schedule:
@@ -10,91 +14,24 @@ permissions:
   contents: read
 
 jobs:
-  staging-health:
-    name: Staging Health & Real Appwrite Concurrency
+  backend-health:
+    name: Worker & Appwrite auth health
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL || 'https://olitun-api.dulalkisku0.workers.dev' }}
+      APPWRITE_ENDPOINT: ${{ vars.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1' }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Setup Node.js
-        uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
-        with:
-          node-version: 22
-          cache: npm
-      - name: Setup Flutter
-        uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
-        with:
-          channel: stable
-          cache: true
-      - name: Require an isolated staging project and credentials
-        id: staging_guard
-        env:
-          STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
-          STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
-          STAGING_APPWRITE_API_KEY: ${{ secrets.STAGING_APPWRITE_API_KEY }}
+      - name: Worker /health
         run: |
-          node --input-type=module - <<'JS'
-          import fs from 'node:fs';
-          const required = ['STAGING_APPWRITE_ENDPOINT', 'STAGING_APPWRITE_PROJECT_ID', 'STAGING_APPWRITE_API_KEY'];
-          const missing = required.filter((key) => !process.env[key]);
-          const out = process.env.GITHUB_OUTPUT;
-          // Release and manual runs must fail closed: live staging
-          // verification is a release gate (see release-checklist.yml), so a
-          // missing staging project can never read as success there.
-          // The scheduled monitor instead reports BLOCKED (neutral) so a
-          // known-unprovisioned staging does not page as a health regression.
-          const mustFailClosed = process.env.GITHUB_EVENT_NAME !== 'schedule';
-          if (missing.length > 0) {
-            const message = `Staging verification BLOCKED — missing configuration: ${missing.join(', ')}. Provision per docs/STAGING_SETUP.md.`;
-            if (mustFailClosed) throw new Error(message);
-            console.log(`::warning::${message}`);
-            fs.appendFileSync(out, 'configured=false\n');
-            process.exit(0);
-          }
-          const production = JSON.parse(fs.readFileSync('appwrite.json', 'utf8')).projectId;
-          if (process.env.STAGING_APPWRITE_PROJECT_ID === production) {
-            throw new Error('A separate non-production Appwrite project is required');
-          }
-          fs.appendFileSync(out, 'configured=true\n');
-          JS
-      - name: Install dependencies
-        if: steps.staging_guard.outputs.configured == 'true'
+          body=$(curl --fail --silent --show-error --max-time 20 --retry 3 --retry-all-errors "$API_BASE_URL/health")
+          echo "$body"
+          echo "$body" | jq -e '.status == "ok"' > /dev/null
+      - name: Worker serves learner content from D1
         run: |
-          npm ci
-          npm ci --prefix functions/translator
-          flutter pub get
-      - name: Staging Appwrite Smoke Test
-        if: steps.staging_guard.outputs.configured == 'true'
-        env:
-          STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
-          STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
+          curl --fail --silent --show-error --max-time 20 --retry 3 --retry-all-errors \
+            "$API_BASE_URL/api/v1/categories" | jq -e 'type == "array" or type == "object"' > /dev/null
+      - name: Appwrite auth endpoint
         run: |
-          flutter test test/integration/appwrite_staging_smoke_test.dart \
-            --dart-define=STAGING_APPWRITE_ENDPOINT="$STAGING_APPWRITE_ENDPOINT" \
-            --dart-define=STAGING_APPWRITE_PROJECT_ID="$STAGING_APPWRITE_PROJECT_ID"
-      - name: Required real Appwrite concurrency verification
-        if: steps.staging_guard.outputs.configured == 'true'
-        env:
-          STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
-          STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
-          STAGING_APPWRITE_API_KEY: ${{ secrets.STAGING_APPWRITE_API_KEY }}
-          CI_STAGING_MANDATORY: 'true'
-        run: node --test functions/translator/test/appwrite_staging_concurrency.test.js
-      - name: Required staging schema drift detection
-        if: steps.staging_guard.outputs.configured == 'true'
-        env:
-          APPWRITE_API_KEY: ${{ secrets.STAGING_APPWRITE_API_KEY }}
-          APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
-          APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
-        run: |
-          node scripts/snapshot_appwrite_schema.mjs
-          git diff --exit-code test/fixtures/schema/
-      - name: Staging verification status
-        if: always()
-        run: |
-          if [ "${{ steps.staging_guard.outputs.configured }}" = "true" ]; then
-            echo "Staging live verification ran (see steps above)."
-          else
-            echo "Staging live verification BLOCKED — no isolated staging project is configured. See docs/STAGING_SETUP.md. Release flows calling this workflow still fail closed."
-          fi
+          curl --fail --silent --show-error --max-time 20 --retry 3 --retry-all-errors \
+            "$APPWRITE_ENDPOINT/health/version" | jq -e '.version' > /dev/null

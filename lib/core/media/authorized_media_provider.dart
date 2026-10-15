@@ -2,15 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../api/appwrite_functions_service.dart';
-import '../config/appwrite_config.dart';
+import '../config/cloudflare_config.dart';
 import 'authorized_media.dart';
 
 final authorizedMediaServiceProvider = Provider<AuthorizedMediaService>((ref) {
   ref.watch(currentUserProvider.select((state) => state.valueOrNull?.id));
   final functions = ref.watch(appwriteFunctionsServiceProvider);
   return AuthorizedMediaService(
-    endpoint: AppwriteConfig.endpoint,
-    projectId: AppwriteConfig.projectId,
+    endpoint: CloudflareConfig.baseUrl,
     execute: (body) async {
       final result = await functions.execute(
         'getAuthorizedLesson',

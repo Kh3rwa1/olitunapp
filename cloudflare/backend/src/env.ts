@@ -13,6 +13,7 @@ export type Bindings = AuthEnv & {
   RAZORPAY_WEBHOOK_SECRET?: string;
   RAZORPAY_API_BASE?: string; // test override only; defaults to Razorpay
   BODHAN_API_BASE?: string; // test override only; defaults to Bodhan
+  MEDIA_SIGNING_SECRET?: string; // HMAC key for paid media URLs
 };
 
 export type AppEnv = { Bindings: Bindings; Variables: AuthVariables };

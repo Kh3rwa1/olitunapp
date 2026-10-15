@@ -16,6 +16,7 @@ import {
 } from './key_rotation';
 import { getRequestUserId, stableId, type App, type AppEnv, type Bindings } from './env';
 import { registerRoutes } from './routes';
+import { issuePaidMediaLease } from './routes/paid_media';
 
 const app: App = new Hono<AppEnv>();
 
@@ -1409,6 +1410,13 @@ app.all('/api/v1/lessons/authorize', async (c) => {
       const isPurchased = purchasedCategoryIds.has(lessonRow.category_id);
       const isPreview = Boolean(parsed.isPreview);
       const isUnlocked = isFree || isPurchased || isPreview;
+
+      if (action === 'get_media') {
+        if (parsed.isActive === false) {
+          return c.json({ ok: false, error: 'lesson_not_found', message: 'Lesson not found' }, 404);
+        }
+        return issuePaidMediaLease(c, { lesson: parsed, unlocked: isUnlocked, userId, body });
+      }
 
       if (!isUnlocked) {
         return c.json({

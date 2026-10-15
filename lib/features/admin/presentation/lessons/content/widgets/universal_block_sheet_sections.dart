@@ -1,10 +1,15 @@
-part of 'universal_block_sheet.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../../../core/theme/admin_tokens.dart';
+import '../../../../../../core/theme/app_colors.dart';
+import '../../../widgets/admin_form_widgets.dart';
+import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 
 // ── Private sub-widgets ────────────────────────────────────────────────────
 
-class _DragHandle extends StatelessWidget {
+class BlockSheetDragHandle extends StatelessWidget {
   final bool isDark;
-  const _DragHandle({required this.isDark});
+  const BlockSheetDragHandle({super.key, required this.isDark});
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -20,13 +25,14 @@ class _DragHandle extends StatelessWidget {
   );
 }
 
-class _SheetHeader extends StatelessWidget {
+class BlockSheetHeader extends StatelessWidget {
   final bool isEditing;
   final String inferredType;
   final VoidCallback onClose;
   final bool isDark;
 
-  const _SheetHeader({
+  const BlockSheetHeader({
+    super.key,
     required this.isEditing,
     required this.inferredType,
     required this.onClose,
@@ -73,12 +79,17 @@ class _SheetHeader extends StatelessWidget {
   );
 }
 
-class _SectionLabel extends StatelessWidget {
+class BlockSheetSectionLabel extends StatelessWidget {
   final String text;
   final String? subtitle;
   final bool isDark;
 
-  const _SectionLabel(this.text, {this.subtitle, required this.isDark});
+  const BlockSheetSectionLabel(
+    this.text, {
+    super.key,
+    this.subtitle,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) => Column(
@@ -94,12 +105,13 @@ class _SectionLabel extends StatelessWidget {
   );
 }
 
-class _SheetFooter extends StatelessWidget {
+class BlockSheetFooter extends StatelessWidget {
   final bool isDark;
   final VoidCallback onCancel;
   final VoidCallback onSave;
 
-  const _SheetFooter({
+  const BlockSheetFooter({
+    super.key,
     required this.isDark,
     required this.onCancel,
     required this.onSave,
@@ -148,13 +160,14 @@ class _SheetFooter extends StatelessWidget {
   }
 }
 
-class _BlockTranslationLangTabs extends StatelessWidget {
+class BlockSheetTranslationLangTabs extends StatelessWidget {
   final String currentLang;
   final bool isDark;
   final ValueChanged<String> onSelect;
   final Map<String, bool> hasCustomMap;
 
-  const _BlockTranslationLangTabs({
+  const BlockSheetTranslationLangTabs({
+    super.key,
     required this.currentLang,
     required this.isDark,
     required this.onSelect,
@@ -238,7 +251,7 @@ class _BlockTranslationLangTabs extends StatelessWidget {
   }
 }
 
-class _BlockActiveTranslationInputs extends StatelessWidget {
+class BlockSheetActiveTranslationInputs extends StatelessWidget {
   final bool isDark;
   final String currentLang;
   final String olChiki;
@@ -254,7 +267,8 @@ class _BlockActiveTranslationInputs extends StatelessWidget {
   final TextEditingController pronCtrl;
   final VoidCallback onStateChange;
 
-  const _BlockActiveTranslationInputs({
+  const BlockSheetActiveTranslationInputs({
+    super.key,
     required this.isDark,
     required this.currentLang,
     required this.olChiki,

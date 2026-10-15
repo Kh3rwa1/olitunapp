@@ -1,0 +1,69 @@
+name: Worker CI
+
+on:
+  pull_request:
+    paths:
+      - 'cloudflare/backend/**'
+      - '.github/workflows/worker-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'cloudflare/backend/**'
+      - '.github/workflows/worker-ci.yml'
+  # deploy-worker.yml runs this as its gate before touching production.
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-ci:
+    name: Typecheck, test, dry-run deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: cloudflare/backend
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node
+        uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cloudflare/backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests (Workers runtime, local D1/R2, mocked Appwrite/Razorpay/Bodhan)
+        run: npm test
+
+      - name: Build (wrangler deploy --dry-run)
+        run: npx wrangler deploy --dry-run --outdir "$RUNNER_TEMP/worker-dist"
+
+      - name: schema.sql is idempotent (applied twice to a local D1)
+        run: |
+          set -euo pipefail
+          persist="$RUNNER_TEMP/d1-schema-check"
+          dump() {
+            npx wrangler d1 execute olitun-db --local --persist-to "$persist" --json \
+              --command "SELECT type, name, tbl_name, sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY type, name" \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);process.stdout.write(JSON.stringify(r[0].results,null,1))})'
+          }
+          npx wrangler d1 execute olitun-db --local --persist-to "$persist" --file=./schema.sql -y > /dev/null
+          dump > "$RUNNER_TEMP/schema-pass1.json"
+          npx wrangler d1 execute olitun-db --local --persist-to "$persist" --file=./schema.sql -y > /dev/null
+          dump > "$RUNNER_TEMP/schema-pass2.json"
+          diff -u "$RUNNER_TEMP/schema-pass1.json" "$RUNNER_TEMP/schema-pass2.json"
+          tables=$(node -e 'console.log(require(process.argv[1]).filter(o=>o.type==="table").length)' "$RUNNER_TEMP/schema-pass2.json")
+          echo "schema.sql applied twice cleanly ($tables tables)"
+          test "$tables" -gt 0

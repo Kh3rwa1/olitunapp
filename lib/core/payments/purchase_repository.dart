@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 import '../api/appwrite_db_service.dart';
 import '../api/appwrite_functions_service.dart';
+import '../auth/edge_auth.dart';
 import '../config/cloudflare_config.dart';
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
@@ -48,8 +49,10 @@ final entitlementRevisionProvider = StateProvider.family<int, String>(
 class PurchaseRepository {
   final Ref ref;
   final http.Client? _httpClient;
-  PurchaseRepository(this.ref, {http.Client? httpClient})
-    : _httpClient = httpClient;
+  final EdgeAuth? _edgeAuth;
+  PurchaseRepository(this.ref, {http.Client? httpClient, EdgeAuth? edgeAuth})
+    : _httpClient = httpClient,
+      _edgeAuth = edgeAuth;
   final Set<String> _revokedUsers = {};
   final Map<String, int> _generations = {};
   bool _disposed = false;
@@ -132,22 +135,22 @@ class PurchaseRepository {
 
     // 1. Try Cloudflare Workers Edge API first (D1 course_purchases)
     try {
-      final uri = Uri.parse(
-        '${CloudflareConfig.paymentsEntitlementsEndpoint}?userId=${Uri.encodeComponent(userId)}',
-      );
+      // The Worker reads verified purchases from Appwrite for the user in the
+      // JWT; it never trusts a client-supplied user id.
+      final authHeaders = await _edgeAuth?.headers() ?? const {};
       final res = await _client
           .get(
-            uri,
-            headers: {
-              'x-appwrite-user-id': userId,
-              'Accept': 'application/json',
-            },
+            Uri.parse(CloudflareConfig.paymentsEntitlementsEndpoint),
+            headers: {...authHeaders, 'Accept': 'application/json'},
           )
           .timeout(const Duration(seconds: 4));
 
       if (res.statusCode == 200) {
         final body = jsonDecode(res.body);
-        if (body is Map && body['ok'] == true && body['categoryIds'] is List) {
+        if (body is Map &&
+            body['ok'] == true &&
+            body['userId'] == userId &&
+            body['categoryIds'] is List) {
           final categoryIds = (body['categoryIds'] as List)
               .map((e) => e.toString())
               .where((id) => id.isNotEmpty)
@@ -206,11 +209,6 @@ class PurchaseRepository {
       await CacheService.set(userCacheKey, {
         'ids': categoryIds.toList(),
       }, ttl: entitlementTtl);
-
-      // Async sync to Cloudflare D1 so future reads hit Edge
-      if (categoryIds.isNotEmpty) {
-        _syncEntitlementsToCloudflare(userId, categoryIds);
-      }
 
       return EntitlementResult(
         categoryIds: categoryIds,
@@ -285,32 +283,6 @@ class PurchaseRepository {
             'Service temporarily unavailable. Please try again later.',
       );
     }
-  }
-
-  void _syncEntitlementsToCloudflare(String userId, Set<String> categoryIds) {
-    if (userId.isEmpty || categoryIds.isEmpty) return;
-    unawaited(() async {
-      try {
-        final uri = Uri.parse(
-          CloudflareConfig.paymentsEntitlementsSyncEndpoint,
-        );
-        await _client
-            .post(
-              uri,
-              headers: {
-                'Content-Type': 'application/json',
-                'x-appwrite-user-id': userId,
-              },
-              body: jsonEncode({
-                'userId': userId,
-                'categoryIds': categoryIds.toList(),
-              }),
-            )
-            .timeout(const Duration(seconds: 4));
-      } catch (_) {
-        // Silently ignore background sync failures
-      }
-    }());
   }
 
   void _triggerRevalidation(
@@ -433,7 +405,7 @@ class PurchaseRepository {
 }
 
 final purchaseRepositoryProvider = Provider<PurchaseRepository>((ref) {
-  final repo = PurchaseRepository(ref);
+  final repo = PurchaseRepository(ref, edgeAuth: EdgeAuth.instance);
   ref.onDispose(repo.dispose);
   return repo;
 });

@@ -1,0 +1,25 @@
+# Historical Bodhan/Sarvam keys hardcoded in cloudflare/backend/src/index.ts
+# before they moved to Worker secrets (2026-10-15). These keys must be revoked
+# at the provider; they stay in public git history, so ignoring the old
+# commits here only keeps the weekly full-history scan meaningful.
+
+56a64968631361e1f59cdbdd3e5a66a51f46ddb5:cloudflare/backend/src/index.ts:sarvam-api-key:1988
+56a64968631361e1f59cdbdd3e5a66a51f46ddb5:cloudflare/backend/src/index.ts:sarvam-api-key:2053
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1671
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1672
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1673
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1674
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1675
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1676
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1677
+cdd1542b25bb3d668a4656d15e76815164cebeb9:cloudflare/backend/src/index.ts:bodhan-api-key:1678
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1671
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1672
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1673
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1674
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1675
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1676
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1677
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:bodhan-api-key:1678
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:sarvam-api-key:1988
+f491c867359ddf73e37ba79fc545f8b3b1e1b60a:cloudflare/backend/src/index.ts:sarvam-api-key:2053

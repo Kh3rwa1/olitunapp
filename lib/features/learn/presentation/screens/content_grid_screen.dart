@@ -32,15 +32,47 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
   // Captured in initState because ref must not be used in dispose.
   late final PlaybackController _playback;
 
+  /// Single audio-precache trigger: fires for already-resolved items and on
+  /// every later list update (kept out of `build`).
+  ProviderSubscription<AsyncValue<List<ContentItem>>>? _precacheSub;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _playback = ref.read(playbackControllerProvider);
+    _listenForPrecache();
+  }
+
+  @override
+  void didUpdateWidget(covariant ContentGridScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.kind != widget.kind ||
+        oldWidget.subcategoryId != widget.subcategoryId) {
+      _listenForPrecache();
+    }
+  }
+
+  void _listenForPrecache() {
+    _precacheSub?.close();
+    _precacheSub = ref.listenManual<AsyncValue<List<ContentItem>>>(
+      contentListProvider((widget.kind, widget.subcategoryId)),
+      (_, next) {
+        final items = next.valueOrNull;
+        if (items == null || items.isEmpty) return;
+        final audioUrls = items
+            .map((i) => i.effectiveAudioUrl)
+            .whereType<String>()
+            .where((url) => url.isNotEmpty);
+        ref.read(audioCacheManagerProvider).precache(audioUrls);
+      },
+      fireImmediately: true,
+    );
   }
 
   @override
   void dispose() {
+    _precacheSub?.close();
     WidgetsBinding.instance.removeObserver(this);
     _playback.stop();
     super.dispose();
@@ -74,48 +106,33 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
     }
   }
 
+  static String? _categoryTitle(
+    List<CategoryEntity>? categories,
+    String categoryId,
+  ) {
+    if (categories == null) return null;
+    for (final cat in categories) {
+      if (cat.id == categoryId) return cat.titleLatin;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final listAsync = ref.watch(
       contentListProvider((widget.kind, widget.subcategoryId)),
     );
 
-    ref.listen<AsyncValue<List<ContentItem>>>(
-      contentListProvider((widget.kind, widget.subcategoryId)),
-      (_, next) {
-        final items = next.valueOrNull;
-        if (items != null && items.isNotEmpty) {
-          final audioUrls = items
-              .map((i) => i.effectiveAudioUrl)
-              .whereType<String>()
-              .where((url) => url.isNotEmpty);
-          ref.read(audioCacheManagerProvider).precache(audioUrls);
-        }
-      },
-    );
-
-    // Initial pre-caching for already-resolved items
-    final resolvedItems = listAsync.valueOrNull;
-    if (resolvedItems != null && resolvedItems.isNotEmpty) {
-      final audioUrls = resolvedItems
-          .map((i) => i.effectiveAudioUrl)
-          .whereType<String>()
-          .where((url) => url.isNotEmpty);
-      ref.read(audioCacheManagerProvider).precache(audioUrls);
-    }
-
-    final categories = ref.watch(categoryNotifierProvider).valueOrNull ?? [];
-    CategoryEntity? category;
-    if (widget.subcategoryId != null) {
-      for (final cat in categories) {
-        if (cat.id == widget.subcategoryId) {
-          category = cat;
-          break;
-        }
-      }
-    }
-
-    final categoryTitle = category?.titleLatin;
+    final subcategoryId = widget.subcategoryId;
+    // Only the matching category's title is used: rebuild when it changes,
+    // not on every catalog refresh.
+    final categoryTitle = subcategoryId == null
+        ? null
+        : ref.watch(
+            categoryNotifierProvider.select(
+              (async) => _categoryTitle(async.valueOrNull, subcategoryId),
+            ),
+          );
 
     final String defaultTitle = widget.kind == ContentKind.letter
         ? 'Alphabets'
@@ -183,7 +200,7 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
             );
           }
 
-          final width = MediaQuery.of(context).size.width;
+          final width = MediaQuery.sizeOf(context).width;
           final int crossAxisCount;
           final double childAspectRatio;
           final double maxWidth;

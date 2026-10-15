@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/features/learn/presentation/screens/content_grid_screen.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
+import 'package:itun/core/audio/audio_cache_manager.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/auth/auth_providers.dart';
@@ -55,6 +56,22 @@ class MockAudioService extends AudioService {
 
   @override
   Stream<bool> get isPlayingStream => const Stream.empty();
+}
+
+class _CountingAudioCacheManager implements AudioCacheManager {
+  final calls = <List<String>>[];
+
+  @override
+  Future<void> precache(Iterable<String> urls) async => calls.add([...urls]);
+
+  @override
+  Future<Uri> getPlayableUri(String url) async => Uri.parse(url);
+
+  @override
+  Future<bool> isCached(String url) async => false;
+
+  @override
+  Future<void> clearCache() async {}
 }
 
 void main() {
@@ -676,4 +693,50 @@ void main() {
       expect(find.byType(ContentGridScreen), findsNothing);
     },
   );
+
+  testWidgets('precaches tile audio once per list emission, not per build', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    tester.view.physicalSize = const Size(400, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+    final cache = _CountingAudioCacheManager();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
+          audioServiceProvider.overrideWithValue(MockAudioService()),
+          audioCacheManagerProvider.overrideWithValue(cache),
+          contentListProvider((ContentKind.letter, null)).overrideWith(
+            (ref) => [
+              mockLetterItemWithAudioAndTracing,
+              mockLetterItemSilentNoTracing,
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: ContentGridScreen(kind: ContentKind.letter),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Force extra rebuilds (e.g. MediaQuery change) without new data.
+    tester.view.physicalSize = const Size(420, 820);
+    await tester.pumpAndSettle();
+
+    expect(cache.calls, [
+      ['https://example.com/audio/a.mp3'],
+    ]);
+  });
 }

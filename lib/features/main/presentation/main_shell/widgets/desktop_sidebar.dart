@@ -25,7 +25,9 @@ class DesktopSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final isCurrentlyDark = Theme.of(context).brightness == Brightness.dark;
-    final streak = ref.watch(userStatsProvider).value?.currentStreak ?? 0;
+    final streak = ref.watch(
+      userStatsProvider.select((stats) => stats.value?.currentStreak ?? 0),
+    );
 
     return Container(
       width: ResponsiveLayout.leftSidebarWidth,

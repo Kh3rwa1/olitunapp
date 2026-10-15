@@ -19,12 +19,22 @@ class NextBestActionCard extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    // Watch statistics and learning status
-    final statsAsync = ref.watch(userStatsProvider);
-    final mistakes = ref.watch(mistakeProvider);
+    // Watch only the stats fields this card decides on, so unrelated stats
+    // updates (XP, quiz history, sync flags) don't rebuild it.
+    final stats = ref.watch(
+      userStatsProvider.select((async) {
+        final s = async.value;
+        return (
+          streak: s?.currentStreak ?? 0,
+          lessons: s?.completedLessons,
+          totalStars: s?.totalStars ?? 0,
+          alphabetProgress: s?.alphabetProgress ?? 0.0,
+        );
+      }),
+    );
+    final mistakeCount = ref.watch(mistakeProvider.select((m) => m.length));
 
-    final stats = statsAsync.value;
-    final streak = stats?.currentStreak ?? 0;
+    final streak = stats.streak;
 
     // Determine the state and copy
     String badgeText = l10n.continueLearning;
@@ -34,15 +44,13 @@ class NextBestActionCard extends ConsumerWidget {
     VoidCallback onTap = () {};
     IconData icon = Icons.star_rounded;
 
-    final lessons = stats?.completedLessons;
+    final lessons = stats.lessons;
     final hasAnyProgress =
-        (lessons?.isNotEmpty ?? false) ||
-        streak > 0 ||
-        (stats?.totalStars ?? 0) > 0;
+        (lessons?.isNotEmpty ?? false) || streak > 0 || stats.totalStars > 0;
     final completedAlphabet =
         lessons != null && lessons.any((id) => id.contains('alphabet'));
     final hasCompletedAlphabet =
-        (stats?.alphabetProgress ?? 0) >= 1 || completedAlphabet;
+        stats.alphabetProgress >= 1 || completedAlphabet;
 
     final lastOpenedId = ref.watch(lastOpenedLessonIdProvider)?.trim();
     final isResumingIncompleteLesson =
@@ -77,11 +85,11 @@ class NextBestActionCard extends ConsumerWidget {
           context.push('/letter/standalone/all');
         }
       };
-    } else if (mistakes.isNotEmpty) {
+    } else if (mistakeCount > 0) {
       // 3. User has quiz mistakes to review.
       badgeText = l10n.nbaBadgeMistakes;
       title = l10n.nbaTitleMistakes;
-      subtitle = l10n.nbaSubMistakes(mistakes.length);
+      subtitle = l10n.nbaSubMistakes(mistakeCount);
       ctaText = l10n.nbaCtaReviewMistakes;
       icon = Icons.psychology_rounded;
       onTap = () {

@@ -6,9 +6,11 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
     LessonBlockEntity currentBlock,
     int safeIndex,
   ) {
-    final settings = ref.watch(typingPracticeSettingsProvider);
+    final typingEnabled = ref.watch(
+      typingPracticeSettingsProvider.select((s) => s.enabled),
+    );
     final isCurrentEligible =
-        settings.enabled &&
+        typingEnabled &&
         (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
         currentBlock.type != 'rhyme' &&
         currentBlock.type != 'rhymes' &&
@@ -25,10 +27,14 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
         meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
         contentType: currentBlock.type,
       );
-      final typingState = ref.watch(
-        typingPracticeControllerProvider(typingPracticeArgs),
+      // Only the idle/active flag matters here; per-keystroke typing
+      // updates must not rebuild the whole lesson screen.
+      final isTypingActive = ref.watch(
+        typingPracticeControllerProvider(
+          typingPracticeArgs,
+        ).select((s) => s.phase != TypingPhase.idle),
       );
-      if (typingState.phase != TypingPhase.idle) {
+      if (isTypingActive) {
         return const NeverScrollableScrollPhysics();
       }
     }
@@ -43,9 +49,11 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
     bool isDark,
     LessonEntity lesson,
   ) {
-    final settings = ref.watch(typingPracticeSettingsProvider);
+    final typingEnabled = ref.watch(
+      typingPracticeSettingsProvider.select((s) => s.enabled),
+    );
     final isCurrentEligible =
-        settings.enabled &&
+        typingEnabled &&
         (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
         currentBlock.type != 'rhyme' &&
         currentBlock.type != 'rhymes' &&
@@ -64,12 +72,14 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
           )
         : null;
 
-    final typingState = isCurrentEligible && typingPracticeArgs != null
-        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
-        : null;
-
     final isTypingActive =
-        typingState != null && typingState.phase != TypingPhase.idle;
+        isCurrentEligible &&
+        typingPracticeArgs != null &&
+        ref.watch(
+          typingPracticeControllerProvider(
+            typingPracticeArgs,
+          ).select((s) => s.phase != TypingPhase.idle),
+        );
 
     return LessonBlockTopNavBar(
       totalSteps: totalSteps,
@@ -92,7 +102,7 @@ extension _LessonBlockDetailNav on _LessonBlockDetailScreenState {
               ref
                   .read(
                     typingPracticeControllerProvider(
-                      typingPracticeArgs!,
+                      typingPracticeArgs,
                     ).notifier,
                   )
                   .tryAgain();

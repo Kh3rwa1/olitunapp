@@ -8,7 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:itun/core/storage/cache_service.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/shared/providers/banners_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

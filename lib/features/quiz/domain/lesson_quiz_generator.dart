@@ -1,7 +1,7 @@
 import '../../../core/languages/ol_chiki_multilingual_helper.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/utils/santali_numbers.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../../core/languages/santali_numbers.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 import 'quiz_generation_diagnostics.dart';
 import 'quiz_identity_validation.dart';
 import 'quiz_option_equivalence.dart';

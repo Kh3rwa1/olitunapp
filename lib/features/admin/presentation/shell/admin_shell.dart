@@ -9,6 +9,10 @@ import 'package:itun/core/version/build_version_status.dart';
 import 'widgets/admin_brand_mark.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/admin_top_bar.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 
 class AdminShell extends ConsumerWidget {
   final Widget child;

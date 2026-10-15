@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/admin_tokens.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import '../../widgets/admin_glass_card.dart';
 
 class CategoryCard extends StatelessWidget {

@@ -7,7 +7,7 @@ import '../../../../../core/accessibility/learning_semantics.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 
 /// Robust fuzzy matching for Ol Chiki text against entity labels.
 bool isFuzzyMatch(String target, String entityText) {

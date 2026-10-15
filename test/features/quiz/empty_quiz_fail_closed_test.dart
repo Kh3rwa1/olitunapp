@@ -12,7 +12,7 @@ import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
@@ -20,6 +20,8 @@ import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class MockPlaybackController extends Mock implements PlaybackController {}
 

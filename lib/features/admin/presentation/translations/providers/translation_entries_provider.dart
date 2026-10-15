@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../models/translation_entry.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 
 final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
   final entries = <TranslationEntry>[];

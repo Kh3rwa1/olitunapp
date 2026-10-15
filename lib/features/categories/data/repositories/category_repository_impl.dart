@@ -3,11 +3,12 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/observability/crash_reporting.dart';
-import '../../domain/entities/category_entity.dart';
+import '../../../../shared/models/catalog/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/category_local_datasource.dart';
 import '../datasources/category_remote_datasource.dart';
-import '../models/category_model.dart';
+import '../../../../shared/models/catalog/category_model.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
   final CategoryRemoteDataSource remoteDataSource;
@@ -97,7 +98,12 @@ class CategoryRepositoryImpl implements CategoryRepository {
       if (cached.isNotEmpty) {
         return Right(cached.map((m) => m.toEntity()).toList());
       }
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug(
+        'Reading cached categories failed; using static seed: $e',
+        name: 'CategoryRepository',
+      );
+    }
     return const Right(_staticSeedCategories);
   }
 
@@ -123,7 +129,12 @@ class CategoryRepositoryImpl implements CategoryRepository {
       final categories = await localDataSource.getCategories();
       final match = categories.where((c) => c.id == id).firstOrNull;
       if (match != null) return Right(match.toEntity());
-    } catch (_) {}
+    } catch (e) {
+      AppLogger.debug(
+        'Reading cached category failed; using static seed: $e',
+        name: 'CategoryRepository',
+      );
+    }
     final seed = _staticSeedCategories.where((c) => c.id == id).firstOrNull;
     if (seed != null) return Right(seed);
     if (e != null) return Left(_recordedServerFailure(e));

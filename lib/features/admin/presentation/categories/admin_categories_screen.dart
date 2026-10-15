@@ -4,12 +4,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../shared/providers/providers.dart';
-import '../../../categories/domain/entities/category_entity.dart';
+import '../../../../shared/models/catalog/category_entity.dart';
 import '../widgets/admin_section_header.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_form_widgets.dart';
 import 'widgets/category_card.dart';
 import 'widgets/category_form_sheet.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/admin/presentation/seeding/seed_provider.dart';
 
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});

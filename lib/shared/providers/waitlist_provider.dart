@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+import 'package:itun/core/auth/auth_providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 
 /// Thrown when the waitlist service rejects a submission; the message is

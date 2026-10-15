@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/core/storage/upload_service.dart';
 import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/shared/models/content_item.dart';

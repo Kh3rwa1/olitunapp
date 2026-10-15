@@ -11,10 +11,11 @@ import 'package:itun/features/admin/presentation/content/widgets/number_discover
 import 'package:itun/features/admin/presentation/categories/widgets/category_card.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form/ol_chiki_number_helper.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/domain/repositories/category_repository.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/features/categories/presentation/providers/category_providers.dart';
 
 class MockContentRepository extends Mock implements ContentRepository {}
 

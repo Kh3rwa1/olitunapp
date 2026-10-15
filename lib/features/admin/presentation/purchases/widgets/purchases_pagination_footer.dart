@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:itun/core/theme/admin_tokens.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/features/admin/presentation/purchases/providers/admin_purchases_provider.dart';
 
 class PurchasesFreshnessHeader extends StatelessWidget {
   final DateTime lastRefreshed;

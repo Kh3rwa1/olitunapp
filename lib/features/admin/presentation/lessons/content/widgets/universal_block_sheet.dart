@@ -5,11 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../shared/utils/media_type_resolver.dart';
-import '../../../../../../shared/providers/providers.dart';
-import '../../../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 import '../../../widgets/multilingual_preview_box.dart';
 import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 part 'universal_block_sheet_sections.dart';
 part 'universal_block_sheet_advanced.dart';
 

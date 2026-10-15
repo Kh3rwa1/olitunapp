@@ -1,5 +1,5 @@
 import '../../../shared/models/content_models.dart';
-import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../../shared/models/catalog/lesson_entity.dart';
 
 import 'lesson_quiz_generator.dart';
 import 'quiz_identity_validation.dart';

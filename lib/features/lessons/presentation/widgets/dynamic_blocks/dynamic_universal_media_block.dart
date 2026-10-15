@@ -7,7 +7,7 @@ import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../../../shared/utils/media_type_resolver.dart';
-import '../../../domain/entities/lesson_entity.dart';
+import '../../../../../shared/models/catalog/lesson_entity.dart';
 import '../full_bleed_hero_media.dart';
 
 String? blockVisualMediaUrl(LessonBlockEntity block) {

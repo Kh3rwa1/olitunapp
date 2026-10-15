@@ -6,15 +6,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/models/catalog/category_entity.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
-import 'package:itun/shared/utils/santali_numbers.dart';
+import 'package:itun/core/languages/santali_numbers.dart';
+import 'package:itun/features/lessons/data/learner_lesson_detail_provider.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
   final List<CategoryEntity> _initial;

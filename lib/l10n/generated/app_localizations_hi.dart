@@ -2070,4 +2070,15 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get contentLoadFailed =>
       'सामग्री लोड नहीं हो सकी। कृपया पुनः प्रयास करें।';
+
+  @override
+  String get copiedToClipboard => 'क्लिपबोर्ड पर कॉपी हो गया!';
+
+  @override
+  String coursePackPreviewNotice(String name, String scriptName) {
+    return '$name ($scriptName) कोर्स पैक प्रीव्यू में हैं। बुनियादी सीखने की सामग्री उपलब्ध है।';
+  }
+
+  @override
+  String get aiAssistantActive => 'AI सहायक सक्रिय';
 }

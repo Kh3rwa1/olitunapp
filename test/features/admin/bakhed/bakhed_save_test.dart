@@ -11,7 +11,7 @@ import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
 import 'package:itun/shared/models/content_models.dart';
 
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
 
 // ── Mocks ──────────────────────────────────────────────────

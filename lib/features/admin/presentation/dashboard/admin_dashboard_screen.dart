@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/providers.dart';
 import '../widgets/dashboard_header.dart';
 import 'widgets/dashboard_bento_grid.dart';
 import 'widgets/dashboard_analytics_panel.dart';
 import 'widgets/dashboard_activity_panel.dart';
+import 'package:itun/features/admin/presentation/seeding/seed_provider.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});

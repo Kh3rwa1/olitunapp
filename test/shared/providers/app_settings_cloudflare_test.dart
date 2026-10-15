@@ -7,8 +7,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
-import 'package:itun/shared/providers/app_settings_provider.dart';
+import 'package:itun/core/auth/auth_providers.dart';
+import 'package:itun/core/config/app_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

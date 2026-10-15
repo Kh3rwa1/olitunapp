@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../../core/languages/models/language_manifest.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../shared/utils/localized_content.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
+import '../../../../../shared/models/catalog/category_entity.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
 class CategoryHeroHeader extends StatelessWidget {

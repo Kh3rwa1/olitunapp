@@ -9,7 +9,7 @@ import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/core/languages/providers/target_language_provider.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/shared/providers/providers.dart';
 import '../lesson_block_widgets.dart';

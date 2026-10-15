@@ -5,13 +5,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/providers.dart';
 import '../../../../shared/models/content_models.dart' hide CategoryModel;
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_form_widgets.dart';
 import 'widgets/quiz_card.dart';
 import 'widgets/quiz_form_sheet.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class AdminQuizzesScreen extends ConsumerStatefulWidget {
   const AdminQuizzesScreen({super.key});

@@ -7,7 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/waitlist_provider.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
 class BintiGuruFormSheet extends ConsumerStatefulWidget {

@@ -3,8 +3,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../domain/entities/user_entity.dart';
-import '../providers/auth_providers.dart';
+import '../../../../core/auth/user_entity.dart';
+import '../../../../core/auth/auth_providers.dart';
 
 /// Presentation-facing facade over [AuthRepository].
 ///

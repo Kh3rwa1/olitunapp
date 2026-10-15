@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../models/content_models.dart';
-import '../utils/santali_numbers.dart';
+import '../../core/languages/santali_numbers.dart';
 import 'seeded_content_list_notifier.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')

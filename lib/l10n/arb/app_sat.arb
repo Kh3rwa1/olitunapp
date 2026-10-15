@@ -1205,5 +1205,18 @@
                 "type": "String"
             }
         }
-    }
+    },
+    "copiedToClipboard": "ᱠᱞᱤᱯᱵᱳᱨᱰ ᱨᱮ ᱠᱚᱯᱤ ᱦᱚᱭᱮᱱᱟ!",
+    "coursePackPreviewNotice": "{name} ({scriptName}) course packs are in preview. Foundational learning content is active.",
+    "@coursePackPreviewNotice": {
+        "placeholders": {
+            "name": {
+                "type": "String"
+            },
+            "scriptName": {
+                "type": "String"
+            }
+        }
+    },
+    "aiAssistantActive": "AI ASSISTANT ACTIVE"
 }

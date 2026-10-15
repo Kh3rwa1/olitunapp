@@ -4,11 +4,5 @@
     "line": 65,
     "rule": "text-literal",
     "literal": "Retry Startup"
-  },
-  {
-    "file": "lib/features/ai_studio/presentation/ai_studio_input.dart",
-    "line": 172,
-    "rule": "text-literal",
-    "literal": "${l10n.aiStudioThinking}$dots"
   }
 ]

@@ -6,7 +6,7 @@ import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../core/utils/oauth_sanitizer.dart';
 import '../../../../app/router/route_guards.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../../providers/onboarding_provider.dart';
 
 class SplashController {
@@ -72,7 +72,12 @@ class SplashController {
             try {
               final _ = await ref.refresh(isAuthenticatedProvider.future);
               ref.invalidate(currentUserProvider);
-            } catch (_) {}
+            } catch (e) {
+              AppLogger.debug(
+                'Refreshing auth state after OAuth exchange failed: $e',
+                name: 'Splash',
+              );
+            }
             // Respect first-run onboarding instead of silently completing it:
             // new web users must see /onboarding like every other flow.
             final showOnboarding = ref.read(onboardingProvider);
@@ -107,7 +112,9 @@ class SplashController {
           try {
             final _ = await ref.refresh(isAuthenticatedProvider.future);
             ref.invalidate(currentUserProvider);
-          } catch (_) {}
+          } catch (e) {
+            AppLogger.debug('Refreshing auth state failed: $e', name: 'Splash');
+          }
           ref.read(onboardingProvider.notifier).completeOnboarding();
           targetLocation = '/';
         } else {

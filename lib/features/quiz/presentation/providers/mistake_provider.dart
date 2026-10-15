@@ -8,7 +8,7 @@ import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../core/logging/app_logger.dart';
 
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
 import '../../../review/data/review_store.dart';
 import '../../../review/data/review_store_notifier.dart';
 import '../../../review/domain/review_item.dart';

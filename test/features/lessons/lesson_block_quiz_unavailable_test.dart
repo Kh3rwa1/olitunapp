@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_item_view.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import 'package:itun/shared/models/content/quiz_model.dart';
-import 'package:itun/shared/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 const _lesson = LessonEntity(
   id: 'lesson_1',

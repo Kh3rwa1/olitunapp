@@ -11,6 +11,7 @@ import '../widgets/admin_empty_state.dart';
 import '../../domain/content_badge_resolver.dart';
 import '../widgets/content_type_badge.dart';
 import '../../../../shared/widgets/cover_thumbnail.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 part 'bakhed_hub_sections.dart';
 
 class BakhedHubScreen extends ConsumerStatefulWidget {

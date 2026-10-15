@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/shared/models/catalog/lesson_entity.dart';
 
 class LessonContentTopBar extends StatelessWidget {
   final LessonEntity? lesson;

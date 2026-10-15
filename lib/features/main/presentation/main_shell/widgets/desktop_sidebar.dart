@@ -7,6 +7,7 @@ import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/providers/providers.dart';
 import 'sidebar_avatar_icon.dart';
 import 'theme_toggle_switch.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class DesktopSidebar extends ConsumerWidget {
   final int selectedIndex;

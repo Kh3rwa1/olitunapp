@@ -6,10 +6,10 @@ import 'package:fpdart/fpdart.dart';
 import 'package:itun/features/admin/presentation/bakhed/bakhed_editor_screen.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
-import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/shared/media/media_uploader.dart';
 import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/features/admin/presentation/widgets/media_picker_field.dart';
-import 'package:itun/shared/providers/rhymes_providers.dart';
+import 'package:itun/features/rhymes/data/rhymes_providers.dart';
 import 'package:itun/core/version/build_version_checker.dart';
 import 'package:itun/core/version/build_version_status.dart';
 

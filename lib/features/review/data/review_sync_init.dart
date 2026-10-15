@@ -18,7 +18,7 @@ import '../../../core/offline/mutation_outbox_service.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/storage/hive_service.dart';
-import '../../auth/presentation/providers/auth_providers.dart';
+import '../../../core/auth/auth_providers.dart';
 import '../domain/review_corpus_identity.dart';
 import 'review_cloudflare_repository.dart';
 import 'review_state_migration.dart';

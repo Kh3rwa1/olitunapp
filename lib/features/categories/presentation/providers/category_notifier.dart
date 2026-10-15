@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/category_entity.dart';
+import '../../../../shared/models/catalog/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import 'category_providers.dart';
 
-import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../../core/auth/auth_providers.dart';
+import '../../../../shared/providers/language_settings_providers.dart';
 
 final categoryNotifierProvider =
     NotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>(
@@ -21,6 +22,8 @@ class CategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>> {
     ref.onDispose(() => _disposed = true);
     // Re-create the notifier when the auth state changes.
     ref.watch(isAuthenticatedProvider);
+    // Re-create it when the teaching language changes (catalog is localized).
+    ref.watch(teachingLanguageRevisionProvider);
     // Deferred: `state` may not be read or written inside build().
     Future.microtask(loadCategories);
     return const AsyncValue.loading();

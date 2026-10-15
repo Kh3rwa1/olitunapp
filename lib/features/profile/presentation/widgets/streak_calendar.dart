@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../../shared/providers/quizzes_provider.dart';
+import '../../../quiz/data/quizzes_provider.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/widgets/sharing/share_card_payload.dart';
 import '../../../../shared/widgets/sharing/social_share_modal.dart';

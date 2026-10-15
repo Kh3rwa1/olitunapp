@@ -95,7 +95,7 @@ All cover assignments are stored in the `rhymes` database collection under a sin
 
 ## 🧪 Testing and Verification
 
-- Unit tests for the synchronous duration prober reside in [media_uploader_duration_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/storage/media_uploader_duration_test.dart).
+- Unit tests for the synchronous duration prober reside in [media_uploader_duration_test.dart](file:///Users/dulorai/olitun/olitunapp/test/shared/media/media_uploader_duration_test.dart).
 - Test suites in `test/features/admin/bakhed/` simulate the canonical picker-controller flow using `notifier.setUploadInProgress` and `notifier.updateAudio` to verify race condition guards.
 - Stale client detector stream and HTTP mock tests reside in [build_version_checker_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/version/build_version_checker_test.dart).
 - Widget destructive actions guard and reload dialog verification reside in [media_picker_field_test.dart](file:///Users/dulorai/olitun/olitunapp/test/features/admin/widgets/media_picker_field_test.dart).

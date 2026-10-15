@@ -120,27 +120,39 @@ class _LegalSection {
 
 const _privacyDocument = _LegalDocument(
   title: 'Privacy Policy',
-  updated: 'Last updated: May 5, 2026',
+  updated: 'Last updated: 15 October 2026',
   sections: [
     _LegalSection(
       'What Olitun Collects',
-      'Olitun stores account details needed for sign-in, learner progress, app preferences, and content created through admin tools. Translation requests may be processed by the translator function so the app can return learning support in the selected language.',
+      'Sign-in and your account record (account ID, email or Google name and email, display name, sessions) are handled by Appwrite in its Singapore region. Signed-in accounts also store onboarding choices and a copy of progress statistics in Appwrite account preferences. Guest use creates an anonymous account with no email.',
+    ),
+    _LegalSection(
+      'Data Stored On Cloudflare',
+      'Other data is stored on Cloudflare (Workers, the D1 database and R2 storage): review states, quiz mistakes, Bakhed listening progress, badges and rewards, learning analytics events, Binti waitlist submissions (name, phone number, ceremony type, city, state, optional date and notes), and purchase records (Razorpay order and payment IDs, amount, status).',
     ),
     _LegalSection(
       'How Data Is Used',
-      'Data is used to keep the learning experience working across sessions, sync approved educational content, protect admin areas, improve reliability, and respond to account or support requests.',
+      'Data is used to sign you in, sync progress across devices, run review, badges and leaderboards, unlock purchased content, contact waitlist applicants, understand feature use, prevent abuse, and fix errors.',
+    ),
+    _LegalSection(
+      'Service Providers',
+      'Translations use Google Translate and Cloudflare Workers AI. AI Studio speech-to-text uses Sarvam AI. Santali voice uses Bodhan. Payments use Razorpay; card, UPI and bank details go directly to Razorpay and are never stored by Olitun. Android and iOS apps show Google AdMob ads, with a consent form where required. Builds with crash reporting send scrubbed error reports to Sentry.',
+    ),
+    _LegalSection(
+      'Retention',
+      'Learning data is kept until you delete your account. A cleanup job deletes raw analytics events older than 90 days. Translation and voice caches are shared, not linked to your account, and not deleted on a fixed schedule. AI Studio audio and documents are not stored by Olitun. Purchase records are kept for financial records.',
     ),
     _LegalSection(
       'Local And Offline Data',
-      'The app keeps some progress and settings on the device for offline use. Clearing local app data or deleting an account may remove this local learning state.',
+      'The app keeps progress, settings, cached content and queued requests on the device for offline use. This storage relies on the operating system sandbox. Resetting progress or uninstalling the app removes local learning data.',
     ),
     _LegalSection(
-      'Third-Party Services',
-      'Olitun uses Appwrite for authentication, database, storage, and server functions. Optional crash reporting can be enabled for production diagnostics. Translation requests may use an external translation provider through the server-side function.',
+      'Deleting Your Account',
+      'Delete Account removes your Cloudflare files and every database row linked to your account, keeps purchase records with your account ID replaced by an anonymous marker, and then deletes your Appwrite account, or permanently blocks its sign-in if it cannot be deleted directly. A record of the deletion request is kept with its status.',
     ),
     _LegalSection(
-      'Your Choices',
-      'You can reset local progress in settings, delete your account from the app, or contact the project owner to request help with data access or removal.',
+      'Contact',
+      'For privacy questions or data removal requests, contact the project maintainers through the GitHub repository at github.com/Kh3rwa1/olitunapp.',
     ),
   ],
 );

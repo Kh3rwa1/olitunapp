@@ -333,7 +333,15 @@ class _BentoCategoryCard extends ConsumerWidget {
                       color: gradientColors[0].withValues(alpha: 0.18),
                     ),
                   ),
-                  child: Icon(_getIcon(), color: gradientColors[0], size: 21),
+                  child: Icon(
+                    _getIcon(),
+                    // Lighten in dark mode: deep accents (the purple ABC)
+                    // nearly vanished on the dark card.
+                    color: isDark
+                        ? Color.lerp(gradientColors[0], Colors.white, 0.35)
+                        : gradientColors[0],
+                    size: 21,
+                  ),
                 ),
                 const Spacer(),
                 Icon(

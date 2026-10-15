@@ -164,75 +164,97 @@ class _VoicePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelected = selected == voice.name;
-    return PressableScale(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onSelect(voice.name);
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? const LinearGradient(
-                  colors: [AppColors.accentPurpleDark, AppColors.indigoVivid],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          color: isSelected
-              ? null
-              : (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
+    return Semantics(
+      selected: isSelected,
+      button: true,
+      child: PressableScale(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onSelect(voice.name);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [AppColors.accentPurpleDark, AppColors.indigoVivid],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
             color: isSelected
-                ? Colors.white.withValues(alpha: 0.35)
+                ? null
                 : (isDark ? Colors.white : Colors.black).withValues(
-                    alpha: 0.12,
+                    alpha: 0.05,
                   ),
-          ),
-          boxShadow: isSelected
-              ? const [
-                  BoxShadow(
-                    color: AppColors.violetGlow,
-                    blurRadius: 16,
-                    offset: Offset(0, 6),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              voice.isFemale ? Icons.face_3_rounded : Icons.face_rounded,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
               color: isSelected
-                  ? Colors.white
-                  : (isDark ? Colors.white70 : Colors.black54),
-              size: 20,
+                  ? Colors.white.withValues(alpha: 0.35)
+                  : (isDark ? Colors.white : Colors.black).withValues(
+                      alpha: 0.12,
+                    ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                '${voice.name} • ${voice.genderLabel}',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: isSelected
-                      ? Colors.white
-                      : (isDark ? Colors.white : Colors.black),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 14,
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: AppColors.violetGlow,
+                      blurRadius: 16,
+                      offset: Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                voice.isFemale ? Icons.face_3_rounded : Icons.face_rounded,
+                color: isSelected
+                    ? Colors.white
+                    : (isDark ? Colors.white70 : Colors.black54),
+                size: 20,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                // Name and gender on two lines: "Phulmani • Female" on one
+                // line was cut off on phones.
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      voice.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white
+                            : (isDark ? Colors.white : Colors.black),
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      voice.genderLabel,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isSelected
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : (isDark ? Colors.white60 : Colors.black54),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.5,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
-          ],
+              // No check icon: the gradient already marks the selection, and
+              // the icon cut "Phulmani • Female" short on phones.
+            ],
+          ),
         ),
       ),
     );

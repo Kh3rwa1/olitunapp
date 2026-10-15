@@ -280,7 +280,7 @@
     "nbaCtaPracticeNumbers": "Practice Numbers",
     "nbaBadgeMistakes": "PRACTICE NEEDED",
     "nbaTitleMistakes": "Transform mistakes into wisdom",
-    "nbaSubMistakes": "You have {count} question(s) to review and master.",
+    "nbaSubMistakes": "{count, plural, =1{You have 1 question to review and master.} other{You have {count} questions to review and master.}}",
     "@nbaSubMistakes": {
         "placeholders": {
             "count": {

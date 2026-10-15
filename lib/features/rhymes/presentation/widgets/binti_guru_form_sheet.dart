@@ -247,67 +247,66 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
               ),
               const SizedBox(height: 18),
 
-              // Ceremony Dropdown & Date Picker Row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              // Ceremony type and date stacked: side by side, the half-width
+              // dropdown cut "Wedding (Bapla)" short.
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('CEREMONY TYPE'),
-                        DropdownButtonFormField<String>(
-                          initialValue: _selectedCeremony,
-                          items: _ceremonyTypes
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c['value'],
-                                  child: Text(
-                                    c['label']!,
-                                    style: const TextStyle(fontSize: 13),
-                                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('CEREMONY TYPE'),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedCeremony,
+                        // Long labels ("Wedding (Bapla)") ran into the arrow.
+                        isExpanded: true,
+                        items: _ceremonyTypes
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c['value'],
+                                child: Text(
+                                  c['label']!,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 13),
                                 ),
-                              )
-                              .toList(),
-                          onChanged: (val) {
-                            if (val != null) {
-                              setState(() {
-                                _selectedCeremony = val;
-                              });
-                            }
-                          },
-                          decoration: _buildInputDecoration(''),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildLabel('EVENT DATE'),
-                        InkWell(
-                          onTap: _selectDate,
-                          child: InputDecorator(
-                            decoration: _buildInputDecoration('Select Date'),
-                            child: Text(
-                              _eventDate == null
-                                  ? 'Choose Date'
-                                  : DateFormat(
-                                      'dd MMM yyyy',
-                                    ).format(_eventDate!),
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: _eventDate == null
-                                    ? Colors.grey
-                                    : (isDark ? Colors.white : Colors.black),
                               ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          if (val != null) {
+                            setState(() {
+                              _selectedCeremony = val;
+                            });
+                          }
+                        },
+                        decoration: _buildInputDecoration(''),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildLabel('EVENT DATE'),
+                      InkWell(
+                        onTap: _selectDate,
+                        child: InputDecorator(
+                          decoration: _buildInputDecoration('Select Date'),
+                          child: Text(
+                            _eventDate == null
+                                ? 'Choose Date'
+                                : DateFormat('dd MMM yyyy').format(_eventDate!),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: _eventDate == null
+                                  ? Colors.grey
+                                  : (isDark ? Colors.white : Colors.black),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),

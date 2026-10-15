@@ -1,6 +1,7 @@
 import type { App } from '../env';
 import { base64ToBytes } from '../base64';
 import { translateWithGoogle } from '../lib/translate';
+import { OcrError, ocrStatus, startOcr } from '../lib/sarvam_ocr';
 
 async function transcribeWithSarvam(
   audioBytes: Uint8Array<ArrayBuffer>,
@@ -159,30 +160,34 @@ export function registerStudioRoutes(app: App): void {
         });
       }
 
-      if (action === 'ocr' || action === 'ocrstart') {
-        const jobId = 'ocr_' + Date.now().toString(36);
-        return c.json({
-          ok: true,
-          success: true,
-          data: {
-            jobId,
-            status: 'completed',
-            text: 'ᱚᱞ ᱪᱤᱠᱤ ᱥᱟᱠᱟᱢ ᱯᱟᱲᱦᱟᱣ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ᱾ ᱥᱟᱱᱛᱟᱲᱤ ᱥᱟᱶᱦᱮᱫ ᱫᱚ ᱟᱹᱰᱤ ᱠᱤᱥᱟᱹᱬ ᱜᱮᱭᱟ᱾',
-          },
-        });
-      }
-
-      if (action === 'ocrstatus') {
-        const jobId = String(body.jobId || 'ocr_done');
-        return c.json({
-          ok: true,
-          success: true,
-          data: {
-            jobId,
-            status: 'completed',
-            text: 'ᱚᱞ ᱪᱤᱠᱤ ᱥᱟᱠᱟᱢ ᱯᱟᱲᱦᱟᱣ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ᱾ ᱥᱟᱱᱛᱟᱲᱤ ᱥᱟᱶᱦᱮᱫ ᱫᱚ ᱟᱹᱰᱤ ᱠᱤᱥᱟᱹᱬ ᱜᱮᱭᱟ᱾',
-          },
-        });
+      if (action === 'ocr' || action === 'ocrstart' || action === 'ocrstatus') {
+        const apiKey = c.env.SARVAM_API_KEY || '';
+        const secret = c.env.MEDIA_SIGNING_SECRET || '';
+        if (!apiKey || !secret) {
+          return c.json({ ok: false, success: false, error: 'PROVIDER_UNAVAILABLE', message: 'OCR is not configured.' }, 503);
+        }
+        const deps = { apiKey, secret, userId: String(c.get('userId') || '') };
+        try {
+          if (action === 'ocrstatus') {
+            const job = await ocrStatus(deps, String(body.jobId || ''));
+            return c.json({ ok: true, success: true, data: job });
+          }
+          const rawFile = String(body.fileBase64 || '').trim();
+          let bytes: Uint8Array;
+          try {
+            bytes = base64ToBytes(rawFile);
+          } catch {
+            return c.json({ ok: false, success: false, error: 'INVALID_FILE', message: 'Failed to decode file' }, 400);
+          }
+          const language = String(body.language || '').trim();
+          const job = await startOcr(deps, { bytes, name: String(body.fileName || '') }, language);
+          return c.json({ ok: true, success: true, data: job });
+        } catch (err) {
+          if (err instanceof OcrError) {
+            return c.json({ ok: false, success: false, error: err.code, message: err.message }, err.status as any);
+          }
+          throw err;
+        }
       }
 
       return c.json({

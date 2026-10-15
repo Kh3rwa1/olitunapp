@@ -1085,7 +1085,7 @@ abstract class AppLocalizations {
   /// No description provided for @nbaSubMistakes.
   ///
   /// In en, this message translates to:
-  /// **'You have {count} question(s) to review and master.'**
+  /// **'{count, plural, =1{You have 1 question to review and master.} other{You have {count} questions to review and master.}}'**
   String nbaSubMistakes(int count);
 
   /// No description provided for @nbaCtaReviewMistakes.

@@ -536,7 +536,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String nbaSubMistakes(int count) {
-    return 'You have $count question(s) to review and master.';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'You have $count questions to review and master.',
+      one: 'You have 1 question to review and master.',
+    );
+    return '$_temp0';
   }
 
   @override

@@ -5,7 +5,7 @@ import '../../../core/logging/app_logger.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
 import '../../models/content_models.dart' hide CategoryModel, LessonModel;
-import '../../../core/api/appwrite_db_service.dart';
+import 'seed_existence.dart';
 import '../providers.dart';
 
 class AlphabetSeeder {
@@ -26,10 +26,7 @@ class AlphabetSeeder {
       ),
     );
 
-    final lettersRows = await ref
-        .read(appwriteDbServiceProvider)
-        .listDocuments('letters');
-    if (lettersRows.isEmpty) {
+    if (!await ref.read(seedExistenceCheckerProvider).hasLetters()) {
       try {
         final jsonString = await rootBundle.loadString(
           'assets/seed/letters.json',

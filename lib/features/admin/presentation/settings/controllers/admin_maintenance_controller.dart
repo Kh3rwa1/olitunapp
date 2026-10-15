@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../../core/api/appwrite_functions_service.dart';
 import '../../../../../core/auth/admin_restore_client.dart';
-import '../../../../../core/config/appwrite_config.dart';
+import '../../../../../core/config/cloudflare_config.dart';
 import '../../../../../core/error/exceptions.dart';
 
 import '../../../../../core/auth/appwrite_auth_service.dart';
@@ -30,12 +30,15 @@ class AdminMaintenanceController {
     final prefs = await SharedPreferences.getInstance();
     final client = AdminRestoreClient(
       prefs: prefs,
-      projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
+      // Backups now live in the Worker's R2 bucket; keying pending restores
+      // by the Worker URL keeps old Appwrite restore ids from being resumed.
+      projectId: 'cf|${CloudflareConfig.baseUrl}',
       execute: (payload) async {
         final execution = await functionsService.execute(
           'admin-maintenance',
           body: payload,
           usePost: true,
+          timeout: AdminFunctionsMixin.maintenanceTimeout,
         );
         return parseAdminRestoreResponse(
           statusCode: execution.statusCode,
@@ -78,12 +81,15 @@ class AdminMaintenanceController {
     final prefs = await SharedPreferences.getInstance();
     final client = AdminRestoreClient(
       prefs: prefs,
-      projectId: '${AppwriteConfig.endpoint}|${AppwriteConfig.projectId}',
+      // Backups now live in the Worker's R2 bucket; keying pending restores
+      // by the Worker URL keeps old Appwrite restore ids from being resumed.
+      projectId: 'cf|${CloudflareConfig.baseUrl}',
       execute: (payload) async {
         final execution = await functionsService.execute(
           'admin-maintenance',
           body: payload,
           usePost: true,
+          timeout: AdminFunctionsMixin.maintenanceTimeout,
         );
         return parseAdminRestoreResponse(
           statusCode: execution.statusCode,

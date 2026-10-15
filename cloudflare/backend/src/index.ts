@@ -1577,8 +1577,14 @@ app.post('/api/v1/payments/webhook', async (c) => {
             c.env.DB.prepare(
               'UPDATE payment_orders SET status = "paid", payment_id = ?, updated_at = ? WHERE order_id = ?'
             ).bind(paymentId || '', now, orderId),
+            // A redelivered webhook for an order an admin already refunded
+            // must not restore access; a new order (repurchase) still does.
             c.env.DB.prepare(
-              'INSERT OR REPLACE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              `INSERT INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, category_id = excluded.category_id, course_id = excluded.course_id,
+                 amount_in_cents = excluded.amount_in_cents, currency = excluded.currency, status = excluded.status,
+                 order_id = excluded.order_id, payment_id = excluded.payment_id, created_at = excluded.created_at
+               WHERE NOT (course_purchases.status = 'refunded' AND course_purchases.order_id = excluded.order_id)`
             ).bind(purchaseId, orderRow.user_id, orderRow.category_id, orderRow.category_id, orderRow.amount, 'INR', 'completed', orderId, paymentId || '', now),
           ]);
         }
@@ -2080,92 +2086,6 @@ app.post('/api/v1/studio/process', async (c) => {
 // GROUP 5: ADMIN, REVIEW & MAINTENANCE
 // ==========================================
 
-// 24. Review Content & Queue (replaces Appwrite reviewContent function)
-app.get('/api/v1/admin/review/queue', async (c) => {
-  try {
-    const pendingTracks: any = await c.env.DB.prepare(
-      'SELECT id, title, language, category, audio_url, status, created_at FROM audio_tracks WHERE status = "pending_review" LIMIT 50'
-    ).all().catch(() => ({ results: [] }));
-
-    const pendingLocalized: any = await c.env.DB.prepare(
-      'SELECT id, content_key, locale, translated_text, status, created_at FROM localized_contents WHERE status = "pending_review" LIMIT 50'
-    ).all().catch(() => ({ results: [] }));
-
-    return c.json({
-      ok: true,
-      queue: {
-        audioTracks: pendingTracks.results || [],
-        localizedContents: pendingLocalized.results || [],
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Unable to load review queue' }, 500);
-  }
-});
-
-// 25. Mutate Review State (replaces Appwrite mutateReviewState function)
-app.post('/api/v1/admin/review/state', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const targetType = String(body.targetType || 'audio').toLowerCase();
-    const targetId = String(body.targetId || '').trim();
-    const action = String(body.action || 'approve').toLowerCase(); // approve or reject
-    const reviewedBy = getRequestUserId(c, body) || 'admin';
-    const now = new Date().toISOString();
-
-    if (!targetId) {
-      return c.json({ ok: false, message: 'Missing targetId' }, 400);
-    }
-
-    const nextStatus = action === 'approve' ? 'approved' : 'rejected';
-
-    if (targetType === 'audio') {
-      await c.env.DB.prepare(
-        'UPDATE audio_tracks SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?'
-      ).bind(nextStatus, reviewedBy, now, targetId).run();
-    } else {
-      await c.env.DB.prepare(
-        'UPDATE localized_contents SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?'
-      ).bind(nextStatus, reviewedBy, now, targetId).run();
-    }
-
-    return c.json({ ok: true, targetId, status: nextStatus, reviewedAt: now });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Failed to mutate review state' }, 500);
-  }
-});
-
-// 26. Admin Maintenance (replaces Appwrite admin-maintenance function)
-app.post('/api/v1/admin/maintenance', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const action = String(body.action || 'status').toLowerCase();
-
-    if (action === 'purge_cache') {
-      await c.env.DB.prepare('DELETE FROM translation_cache').run().catch(() => {});
-      await c.env.DB.prepare('DELETE FROM leaderboard_cache').run().catch(() => {});
-      return c.json({ ok: true, message: 'Edge caches purged' });
-    }
-
-    // Health report
-    const categoryCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM categories').first().catch(() => ({ count: 0 }));
-    const lessonCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM lessons').first().catch(() => ({ count: 0 }));
-    const wordsCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM words').first().catch(() => ({ count: 0 }));
-
-    return c.json({
-      ok: true,
-      database: {
-        categories: categoryCount?.count || 0,
-        lessons: lessonCount?.count || 0,
-        words: wordsCount?.count || 0,
-      },
-      status: 'operational',
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Maintenance failed' }, 500);
-  }
-});
-
 // 27. Manage Admin Access & Audit (replaces Appwrite manageAdminAccess function)
 app.get('/api/v1/admin/audit', async (c) => {
   try {
@@ -2258,41 +2178,8 @@ app.post('/api/v1/admin/deletions/reconcile', async (c) => {
   }
 });
 
-// 31. Backup Collections (replaces Appwrite backupCollections function)
-app.post('/api/v1/admin/backup', async (c) => {
-  try {
-    const categories: any = await c.env.DB.prepare('SELECT * FROM categories').all().catch(() => ({ results: [] }));
-    const lessons: any = await c.env.DB.prepare('SELECT * FROM lessons').all().catch(() => ({ results: [] }));
-    const words: any = await c.env.DB.prepare('SELECT * FROM words').all().catch(() => ({ results: [] }));
-
-    const backupPayload = {
-      timestamp: new Date().toISOString(),
-      categories: categories.results || [],
-      lessons: lessons.results || [],
-      words: words.results || [],
-    };
-
-    const backupKey = `backups/olitun-backup-${Date.now()}.json`;
-    if (c.env.ASSETS) {
-      await c.env.ASSETS.put(backupKey, JSON.stringify(backupPayload, null, 2), {
-        httpMetadata: { contentType: 'application/json' },
-      }).catch(() => {});
-    }
-
-    return c.json({
-      ok: true,
-      backupKey,
-      counts: {
-        categories: (categories.results || []).length,
-        lessons: (lessons.results || []).length,
-        words: (words.results || []).length,
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Backup failed' }, 500);
-  }
-});
-
+// 24-26 (review queue/state, maintenance) and 31 (backup): see
+// routes/admin_review.ts and routes/admin_maintenance.ts.
 // 32. Delete Account: see routes/account.ts
 
 // ==========================================

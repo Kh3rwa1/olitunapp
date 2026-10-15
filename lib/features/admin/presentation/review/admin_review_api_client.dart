@@ -1,4 +1,6 @@
-/// Phase 5 — API client for the `reviewContent` Appwrite Function.
+/// Phase 5 — API client for the admin review queue, served by the Worker
+/// (`POST /api/v1/admin/review/queue` over the D1 learner content tables;
+/// legacy function id `reviewContent`).
 ///
 /// Follows the repo's `executeAdminMaintenance` convention: execute
 /// with POST semantics, then parse responseStatusCode + responseBody.

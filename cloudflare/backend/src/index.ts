@@ -488,7 +488,22 @@ app.get('/api/v1/lessons', async (c) => {
       stmt = c.env.DB.prepare('SELECT raw_json FROM lessons ORDER BY order_index ASC');
     }
     const result = await stmt.all();
-    const lessons = (result.results || []).map((r: any) => JSON.parse(r.raw_json));
+    // This list is public and cached, so paid lessons are listed without
+    // their content; /lessons/authorize serves bodies after an entitlement
+    // check.
+    const categories: any = await c.env.DB.prepare('SELECT id, unlock_mode FROM categories').all();
+    const freeCategoryIds = new Set(
+      (categories.results || [])
+        .filter((cat: any) => !cat.unlock_mode || cat.unlock_mode === 'free')
+        .map((cat: any) => cat.id),
+    );
+    const lessons = (result.results || []).map((r: any) => {
+      const lesson = JSON.parse(r.raw_json);
+      const categoryOf = lesson.categoryId || lesson.category;
+      if (freeCategoryIds.has(categoryOf) || lesson.isPreview) return lesson;
+      const { blocks: _b, data: _d, heroMediaUrl: _h, ...meta } = lesson;
+      return { ...meta, blocks: [], isLocked: true };
+    });
     return cachedJson(c, { ok: true, total: lessons.length, lessons });
   } catch (err: any) {
     return c.json({ ok: false, error: err.message }, 500);

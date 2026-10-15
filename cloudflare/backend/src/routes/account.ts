@@ -121,6 +121,111 @@ async function setRequestState(db: D1Database, requestId: string, status: string
     .bind(status, lastError, new Date().toISOString(), requestId).run();
 }
 
+const deletionRequestId = async (userId: string) => `del_${await stableId(`deletion:${userId}`)}`;
+
+// The real id is kept only while the request is open (so an interrupted run
+// can be resumed) and anonymised on completion.
+async function openRequest(db: D1Database, requestId: string, userId: string): Promise<void> {
+  const now = new Date().toISOString();
+  await db.prepare(
+    `INSERT INTO deletion_requests (id, user_id, status, last_error, created_at, updated_at)
+     VALUES (?, ?, 'in_progress', NULL, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, status = 'in_progress', last_error = NULL, updated_at = excluded.updated_at`
+  ).bind(requestId, userId, now, now).run();
+}
+
+/**
+ * Purges every per-user R2 object and D1 row (financial records are
+ * anonymised), then verifies nothing is left. Throws DeletionError on any
+ * failure. Safe to repeat; does not touch the Appwrite login.
+ */
+async function purgeUserData(env: Bindings, userId: string): Promise<void> {
+  const db = env.DB;
+  // 1. R2 objects under per-user prefixes.
+  await purgeR2(env.ASSETS, userId);
+
+  // 2. D1 rows, atomically.
+  const discovered = await discoverUserTables(db);
+  const missing = REQUIRED_PURGE_TABLES.filter((t) => !discovered.includes(t));
+  if (missing.length > 0) throw new DeletionError('COLLECTION_QUERY_FAILED');
+
+  const purge = discovered.filter((t) => t !== BOOKKEEPING_TABLE && !ANONYMIZE_TABLES.includes(t));
+  const anonymize = discovered.filter((t) => ANONYMIZE_TABLES.includes(t));
+  await db.batch([
+    ...purge.map((t) => db.prepare(`DELETE FROM "${t}" WHERE user_id = ?`).bind(userId)),
+    ...anonymize.map((t) => db.prepare(`UPDATE "${t}" SET user_id = ? WHERE user_id = ?`).bind(ANONYMIZED_USER_ID, userId)),
+  ]);
+
+  // 3. Zero-record verification before the login is removed.
+  const checks = await db.batch(
+    [...purge, ...anonymize].map((t) => db.prepare(`SELECT COUNT(*) AS n FROM "${t}" WHERE user_id = ?`).bind(userId))
+  );
+  if (checks.some((r) => Number((r.results?.[0] as any)?.n || 0) > 0)) {
+    throw new DeletionError('VERIFICATION_FAILED');
+  }
+}
+
+/**
+ * Re-runs only the data purge for an open request, for callers with neither
+ * a user session nor the server key. On success the request is left at
+ * `cleanup_complete` (data gone, login still present) so it is never
+ * reported as completed; a later run with the server key finishes it.
+ */
+async function purgeUserDataForRequest(env: Bindings, userId: string): Promise<boolean> {
+  const db = env.DB;
+  const requestId = await deletionRequestId(userId);
+  try {
+    await openRequest(db, requestId, userId);
+    await purgeUserData(env, userId);
+    await setRequestState(db, requestId, 'cleanup_complete', null);
+    return true;
+  } catch (err: any) {
+    const code = err instanceof DeletionError ? err.code : 'DOCUMENT_DELETE_FAILED';
+    console.error(`account deletion purge failed: ${code}`);
+    await setRequestState(db, requestId, 'cleanup_failed', code).catch(() => {});
+    return false;
+  }
+}
+
+export type DeletionReconcileResult = { scanned: number; completed: number; purged: number; failed: number };
+
+/**
+ * Resumes interrupted deletion requests not updated for [staleMs]. With the
+ * Appwrite server key the full deletion (data + login) is re-run; without it
+ * only the data purge is, and `cleanup_complete` requests (data already
+ * gone, login pending) are left alone since nothing more can be done.
+ */
+export async function reconcileDeletions(
+  env: Bindings,
+  opts: { staleMs: number; limit?: number; now?: Date },
+): Promise<DeletionReconcileResult> {
+  const now = opts.now || new Date();
+  const staleBefore = new Date(now.getTime() - opts.staleMs).toISOString();
+  const canDeleteLogin = Boolean(env.APPWRITE_API_KEY && env.APPWRITE_ENDPOINT && env.APPWRITE_PROJECT_ID);
+  const statuses = canDeleteLogin
+    ? ['pending', 'in_progress', 'cleanup_failed', 'cleanup_complete']
+    : ['pending', 'in_progress', 'cleanup_failed'];
+  const pending = await env.DB.prepare(
+    `SELECT id, user_id FROM deletion_requests WHERE status IN (${statuses.map(() => '?').join(', ')}) AND updated_at < ? AND user_id != ? LIMIT ?`
+  ).bind(...statuses, staleBefore, ANONYMIZED_USER_ID, opts.limit ?? 20).all<{ id: string; user_id: string }>();
+
+  const result: DeletionReconcileResult = { scanned: 0, completed: 0, purged: 0, failed: 0 };
+  for (const req of pending.results || []) {
+    if (!req.user_id) continue;
+    result.scanned++;
+    if (canDeleteLogin) {
+      const outcome = await deleteUserAccount(env, req.user_id);
+      if (outcome.status === 200) result.completed++;
+      else result.failed++;
+    } else if (await purgeUserDataForRequest(env, req.user_id)) {
+      result.purged++;
+    } else {
+      result.failed++;
+    }
+  }
+  return result;
+}
+
 /**
  * Runs the full deletion for [userId]. Used by the user route and by the
  * admin reconcile job for interrupted requests.
@@ -136,17 +241,9 @@ export async function deleteUserAccount(env: Bindings, userId: string, jwt = '')
   }
 
   const db = env.DB;
-  const requestId = `del_${await stableId(`deletion:${userId}`)}`;
-  const now = new Date().toISOString();
-
+  const requestId = await deletionRequestId(userId);
   try {
-    // The real id is kept only while the request is open (so an interrupted
-    // run can be resumed) and anonymised on completion.
-    await db.prepare(
-      `INSERT INTO deletion_requests (id, user_id, status, last_error, created_at, updated_at)
-       VALUES (?, ?, 'in_progress', NULL, ?, ?)
-       ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, status = 'in_progress', last_error = NULL, updated_at = excluded.updated_at`
-    ).bind(requestId, userId, now, now).run();
+    await openRequest(db, requestId, userId);
   } catch (_) {
     return {
       status: 500,
@@ -156,28 +253,8 @@ export async function deleteUserAccount(env: Bindings, userId: string, jwt = '')
 
   let loginBlocked = false;
   try {
-    // 1. R2 objects under per-user prefixes.
-    await purgeR2(env.ASSETS, userId);
-
-    // 2. D1 rows, atomically.
-    const discovered = await discoverUserTables(db);
-    const missing = REQUIRED_PURGE_TABLES.filter((t) => !discovered.includes(t));
-    if (missing.length > 0) throw new DeletionError('COLLECTION_QUERY_FAILED');
-
-    const purge = discovered.filter((t) => t !== BOOKKEEPING_TABLE && !ANONYMIZE_TABLES.includes(t));
-    const anonymize = discovered.filter((t) => ANONYMIZE_TABLES.includes(t));
-    await db.batch([
-      ...purge.map((t) => db.prepare(`DELETE FROM "${t}" WHERE user_id = ?`).bind(userId)),
-      ...anonymize.map((t) => db.prepare(`UPDATE "${t}" SET user_id = ? WHERE user_id = ?`).bind(ANONYMIZED_USER_ID, userId)),
-    ]);
-
-    // 3. Zero-record verification before the login is removed.
-    const checks = await db.batch(
-      [...purge, ...anonymize].map((t) => db.prepare(`SELECT COUNT(*) AS n FROM "${t}" WHERE user_id = ?`).bind(userId))
-    );
-    if (checks.some((r) => Number((r.results?.[0] as any)?.n || 0) > 0)) {
-      throw new DeletionError('VERIFICATION_FAILED');
-    }
+    // 1-3. R2 objects, D1 rows, zero-record verification.
+    await purgeUserData(env, userId);
     await setRequestState(db, requestId, 'cleanup_complete', null);
 
     // 4. The Appwrite login, last: hard delete, or block when the server key

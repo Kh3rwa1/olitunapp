@@ -395,6 +395,9 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
               : 'Processing failed. Check your connection, sign-in and usage allowance. '
                     'Your input is still here. Retrying may use paid processing again.';
         });
+        // The error sits with the input; don't leave the learner looking at
+        // an empty result card.
+        if (!checkStatus) unawaited(_flipTo(showResult: false));
       }
     } finally {
       if (draft.seq == seq) draft.busy = false;

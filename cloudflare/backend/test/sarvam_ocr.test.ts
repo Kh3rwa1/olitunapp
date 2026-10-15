@@ -19,6 +19,9 @@ type Step = { status: number; body: unknown };
 function sarvam(routes: Record<string, Step[]>) {
   const calls: { method: string; path: string; key: string | null; form?: FormData }[] = [];
   const fetchImpl = (async (input: any, init: any = {}) => {
+    // Building a real Request applies the Workers runtime's option checks
+    // (e.g. it rejects redirect: 'error'), which a bare stub would miss.
+    new Request(String(input), init);
     const url = new URL(String(input));
     const path = url.pathname + url.search;
     calls.push({

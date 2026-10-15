@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../../../core/auth/account_scope.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/auth/edge_auth.dart';
 import '../../../core/config/appwrite_config.dart';
 import '../../../core/config/cloudflare_config.dart';
 
@@ -55,7 +56,7 @@ class StudioException implements Exception {
   String get userMessage => switch (code) {
     'UNAUTHENTICATED' || 'LOGIN_REQUIRED' || 'SESSION_REQUIRED' =>
       'Please sign in again, then retry. Your input is still here.',
-    'QUOTA_EXCEEDED' =>
+    'QUOTA_EXCEEDED' || 'RATE_LIMITED' =>
       'The AI processing allowance is temporarily reached. Please try later.',
     'INVALID_INPUT' || 'INVALID_FILE' || 'INVALID_TEXT' =>
       'Check the selected language, file format and input limits.',
@@ -158,7 +159,7 @@ class AiStudioService {
 
 final aiStudioServiceProvider = Provider<AiStudioService>((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
-  final transport = _StudioTransport(auth);
+  final transport = _StudioTransport(auth, EdgeAuth.instance);
   final subscription = AccountScope.changes.listen((_) {
     transport.active = false;
     ref.invalidateSelf();
@@ -182,8 +183,9 @@ const _studioFunctionId = String.fromEnvironment(
 const _inputBucket = 'ai_studio_inputs';
 
 class _StudioTransport {
-  _StudioTransport(this.auth);
+  _StudioTransport(this.auth, this.edgeAuth);
   final AppwriteAuthService auth;
+  final EdgeAuth edgeAuth;
   bool active = true;
 
   void _check() {
@@ -210,10 +212,12 @@ class _StudioTransport {
         payload['fileBase64'] = base64Encode(input.bytes);
         payload['fileName'] = input.name;
       }
+      final authHeaders = await edgeAuth.headers();
+      _check();
       final res = await http
           .post(
             Uri.parse(cfUrl),
-            headers: {'Content-Type': 'application/json'},
+            headers: {'Content-Type': 'application/json', ...authHeaders},
             body: jsonEncode(payload),
           )
           .timeout(const Duration(seconds: 30));

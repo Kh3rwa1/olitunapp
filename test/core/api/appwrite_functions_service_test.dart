@@ -6,6 +6,7 @@ import 'package:appwrite/models.dart' as models;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/api/appwrite_functions_service.dart';
+import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -302,7 +303,118 @@ void main() {
       },
     );
   });
+
+  group('AppwriteFunctionsService edge authentication', () {
+    late MockFunctions mockFunctions;
+    late MockHttpClient mockHttp;
+    late MockAccount mockAccount;
+    late AppwriteFunctionsService service;
+
+    setUpAll(() {
+      registerFallbackValue(ExecutionMethod.gET);
+      registerFallbackValue(Uri.parse('https://example.com'));
+    });
+
+    setUp(() {
+      mockFunctions = MockFunctions();
+      mockHttp = MockHttpClient();
+      mockAccount = MockAccount();
+      when(
+        () => mockAccount.createJWT(),
+      ).thenAnswer((_) async => models.Jwt(jwt: 'session-jwt'));
+      service = AppwriteFunctionsService(
+        MockClient(),
+        httpClient: mockHttp,
+        functions: mockFunctions,
+        edgeAuth: EdgeAuth(mockAccount),
+      );
+    });
+
+    void stubAppwrite(String body) {
+      final execution = MockExecution();
+      when(() => execution.status).thenReturn(ExecutionStatus.completed);
+      when(() => execution.responseStatusCode).thenReturn(200);
+      when(() => execution.responseBody).thenReturn(body);
+      when(
+        () => mockFunctions.createExecution(
+          functionId: any(named: 'functionId'),
+          body: any(named: 'body'),
+          xasync: any(named: 'xasync'),
+          method: any(named: 'method'),
+        ),
+      ).thenAnswer((_) async => execution);
+    }
+
+    test('sends a bearer JWT and never a client-asserted user id', () async {
+      when(
+        () => mockHttp.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer((_) async => http.Response('{"ok":true}', 200));
+
+      await service.execute('recordMistake', body: {'itemId': 'a'});
+
+      final captured = verify(
+        () => mockHttp.post(
+          any(),
+          headers: captureAny(named: 'headers'),
+          body: captureAny(named: 'body'),
+        ),
+      ).captured;
+      final headers = captured[0] as Map<String, String>;
+      expect(headers['Authorization'], 'Bearer session-jwt');
+      expect(headers.containsKey('x-appwrite-user-id'), isFalse);
+      expect(jsonDecode(captured[1] as String), {'itemId': 'a'});
+    });
+
+    test('falls back to Appwrite when the edge rejects the JWT', () async {
+      when(
+        () => mockHttp.post(
+          any(),
+          headers: any(named: 'headers'),
+          body: any(named: 'body'),
+        ),
+      ).thenAnswer((_) async => http.Response('{"ok":false}', 401));
+      stubAppwrite('{"fromAppwrite":true}');
+
+      final result = await service.execute('recordMistake', usePost: true);
+
+      expect(result.bodyJson!['fromAppwrite'], isTrue);
+    });
+
+    for (final entry in {
+      'createRazorpayOrder': CloudflareConfig.paymentsOrderEndpoint,
+      'verifyCoursePurchase': CloudflareConfig.paymentsVerifyEndpoint,
+    }.entries) {
+      test('${entry.key} runs on the edge with the session JWT', () async {
+        when(
+          () => mockHttp.post(
+            any(),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+          ),
+        ).thenAnswer((_) async => http.Response('{"ok":true}', 200));
+
+        await service.execute(entry.key, body: {'x': 1}, usePost: true);
+
+        final headers =
+            verify(
+                  () => mockHttp.post(
+                    Uri.parse(entry.value),
+                    headers: captureAny(named: 'headers'),
+                    body: any(named: 'body'),
+                  ),
+                ).captured.single
+                as Map<String, String>;
+        expect(headers['Authorization'], 'Bearer session-jwt');
+      });
+    }
+  });
 }
+
+class MockAccount extends Mock implements Account {}
 
 class MockClient extends Mock implements Client {}
 

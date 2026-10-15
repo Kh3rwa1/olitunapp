@@ -48,8 +48,6 @@ class CloudflareConfig {
       '$baseUrl/api/v1/payments/verify';
   static const String paymentsEntitlementsEndpoint =
       '$baseUrl/api/v1/payments/entitlements';
-  static const String paymentsEntitlementsSyncEndpoint =
-      '$baseUrl/api/v1/payments/entitlements/sync';
   static const String voiceSynthesizeEndpoint =
       '$baseUrl/api/v1/voice/synthesize';
   static const String audioGenerateEndpoint = '$baseUrl/api/v1/audio/generate';

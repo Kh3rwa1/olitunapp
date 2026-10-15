@@ -5,10 +5,9 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../auth/account_scope.dart';
 import '../auth/appwrite_auth_service.dart';
+import '../auth/edge_auth.dart';
 import '../config/cloudflare_config.dart';
 import '../logging/app_logger.dart';
 
@@ -55,13 +54,16 @@ class FunctionExecutionResult {
 class AppwriteFunctionsService {
   final Functions _functions;
   final http.Client _httpClient;
+  final EdgeAuth? _edgeAuth;
 
   AppwriteFunctionsService(
     Client client, {
     http.Client? httpClient,
     Functions? functions,
+    EdgeAuth? edgeAuth,
   }) : _functions = functions ?? Functions(client),
-       _httpClient = httpClient ?? http.Client();
+       _httpClient = httpClient ?? http.Client(),
+       _edgeAuth = edgeAuth;
 
   static String? _cloudflareEndpointFor(String functionId) {
     switch (functionId) {
@@ -111,19 +113,6 @@ class AppwriteFunctionsService {
     }
   }
 
-  Future<String?> _resolveUserId(Map<String, dynamic> body) async {
-    final bodyUser = body['userId'];
-    if (bodyUser is String && bodyUser.trim().isNotEmpty) {
-      return bodyUser.trim();
-    }
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final id = AccountScope.capture(prefs).userId;
-      if (id != null && id.isNotEmpty) return id;
-    } catch (_) {}
-    return null;
-  }
-
   /// Executes [functionId] with an optional JSON [body].
   ///
   /// Prefers Cloudflare Worker endpoints for sub-millisecond edge execution,
@@ -138,15 +127,12 @@ class AppwriteFunctionsService {
     if (cfEndpoint != null) {
       try {
         final uri = Uri.parse(cfEndpoint);
+        // The Worker identifies the caller only from this verified JWT.
         final headers = <String, String>{
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          ...?await _edgeAuth?.headers(),
         };
-
-        final userId = await _resolveUserId(body);
-        if (userId != null && userId.isNotEmpty) {
-          headers['x-appwrite-user-id'] = userId;
-        }
 
         final isGet =
             !usePost &&
@@ -159,18 +145,17 @@ class AppwriteFunctionsService {
               .get(uri, headers: headers)
               .timeout(const Duration(seconds: 15));
         } else {
-          final payload = Map<String, dynamic>.from(body);
-          if (userId != null &&
-              userId.isNotEmpty &&
-              !payload.containsKey('userId')) {
-            payload['userId'] = userId;
-          }
           res = await _httpClient
-              .post(uri, headers: headers, body: jsonEncode(payload))
+              .post(uri, headers: headers, body: jsonEncode(body))
               .timeout(const Duration(seconds: 15));
         }
 
-        if (res.statusCode >= 200 && res.statusCode < 500) {
+        // 401 means the edge could not verify this session (e.g. a stale
+        // JWT): drop the token and let Appwrite authenticate the session.
+        if (res.statusCode == 401) _edgeAuth?.clear();
+        if (res.statusCode >= 200 &&
+            res.statusCode < 500 &&
+            res.statusCode != 401) {
           return FunctionExecutionResult(
             status: res.statusCode < 300 ? 'completed' : 'failed',
             statusCode: res.statusCode,
@@ -205,5 +190,8 @@ final appwriteFunctionsServiceProvider = Provider<AppwriteFunctionsService>((
   ref,
 ) {
   final authService = ref.watch(appwriteAuthServiceProvider);
-  return AppwriteFunctionsService(authService.client);
+  return AppwriteFunctionsService(
+    authService.client,
+    edgeAuth: EdgeAuth.instance,
+  );
 });

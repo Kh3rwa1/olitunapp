@@ -19,6 +19,7 @@ import { registerRoutes } from './routes';
 import { issuePaidMediaLease } from './routes/paid_media';
 import { ANONYMIZED_USER_ID, deleteUserAccount } from './routes/account';
 import { serveAsset } from './routes/media';
+import { base64ToBytes } from './base64';
 
 const app: App = new Hono<AppEnv>();
 
@@ -1887,7 +1888,7 @@ app.post('/api/v1/audio/generate', async (c) => {
 });
 
 async function transcribeWithSarvam(
-  audioBytes: Uint8Array,
+  audioBytes: Uint8Array<ArrayBuffer>,
   language: string,
   apiKey: string
 ): Promise<{ text: string; language: string; provider: string }> {
@@ -1941,7 +1942,7 @@ async function transcribeWithSarvam(
 app.post('/api/v1/studio/transcribe', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
-    let audioBytes: Uint8Array | null = null;
+    let audioBytes: Uint8Array<ArrayBuffer> | null = null;
     let language = 'sat-IN';
 
     if (contentType.includes('application/octet-stream') || contentType.includes('audio/')) {
@@ -1952,8 +1953,7 @@ app.post('/api/v1/studio/transcribe', async (c) => {
       language = String(body.language || 'sat-IN').trim();
       const rawBase64 = String(body.audioBase64 || body.fileBase64 || '').trim();
       if (rawBase64) {
-        const buffer = Buffer.from(rawBase64, 'base64');
-        audioBytes = new Uint8Array(buffer);
+        audioBytes = base64ToBytes(rawBase64);
       }
     }
 
@@ -2012,11 +2012,10 @@ app.post('/api/v1/studio/process', async (c) => {
       const language = String(body.language || 'sat').trim();
       const rawAudioBase64 = String(body.audioBase64 || body.fileBase64 || '').trim();
       
-      let audioBytes: Uint8Array | null = null;
+      let audioBytes: Uint8Array<ArrayBuffer> | null = null;
       if (rawAudioBase64) {
         try {
-          const buffer = Buffer.from(rawAudioBase64, 'base64');
-          audioBytes = new Uint8Array(buffer);
+          audioBytes = base64ToBytes(rawAudioBase64);
         } catch (e) {
           return c.json({ ok: false, success: false, error: 'INVALID_AUDIO', message: 'Failed to decode audio' }, 400);
         }

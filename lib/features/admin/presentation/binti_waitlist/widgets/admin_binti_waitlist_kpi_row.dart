@@ -1,7 +1,8 @@
-part of '../admin_binti_waitlist_screen.dart';
+import 'package:flutter/material.dart';
+import '../../widgets/admin_glass_card.dart';
 
 // KPI summary row for the waitlist screen.
-class _BintiWaitlistKpiRow extends StatelessWidget {
+class BintiWaitlistKpiRow extends StatelessWidget {
   final bool isDark;
   final bool isWide;
   final int total;
@@ -9,7 +10,8 @@ class _BintiWaitlistKpiRow extends StatelessWidget {
   final int contacted;
   final int converted;
 
-  const _BintiWaitlistKpiRow({
+  const BintiWaitlistKpiRow({
+    super.key,
     required this.isDark,
     required this.isWide,
     required this.total,

@@ -1,18 +1,28 @@
-part of '../admin_binti_waitlist_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/admin_tokens.dart';
+import '../../../../../shared/models/content_models.dart';
+import '../../../../../shared/providers/providers.dart';
 
 // Bottom sheet showing one waitlist entry with contact actions and status updates.
-class _WaitlistDetailsSheet extends ConsumerStatefulWidget {
+class WaitlistDetailsSheet extends ConsumerStatefulWidget {
   final WaitlistModel entry;
   final WidgetRef parentRef;
 
-  const _WaitlistDetailsSheet({required this.entry, required this.parentRef});
+  const WaitlistDetailsSheet({
+    super.key,
+    required this.entry,
+    required this.parentRef,
+  });
 
   @override
-  ConsumerState<_WaitlistDetailsSheet> createState() =>
+  ConsumerState<WaitlistDetailsSheet> createState() =>
       _WaitlistDetailsSheetState();
 }
 
-class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
+class _WaitlistDetailsSheetState extends ConsumerState<WaitlistDetailsSheet> {
   late String _status;
   bool _updating = false;
 

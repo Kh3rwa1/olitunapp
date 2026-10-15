@@ -1,25 +1,14 @@
 import 'dart:math' as math;
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:itun/core/theme/app_typography.dart';
 
-import '../../../../../core/theme/app_colors.dart';
-import '../../../../core/storage/worker_media_api.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
-import '../../../rhymes/presentation/widgets/cover_hero.dart';
-import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
-import '../providers/audio_playback_providers.dart';
-import '../../../../l10n/generated/app_localizations.dart';
-
-part 'premium_bakhed_body_content.dart';
-part 'premium_bakhed_body_fullscreen.dart';
-part 'premium_bakhed_body_layouts.dart';
+import 'premium_bakhed/premium_bakhed_layouts.dart';
+import 'premium_bakhed/premium_bakhed_view_data.dart';
 
 /// Premium Bakhed immersive player & learning hub (lyrics / vocabulary /
 /// cultural notes). Owns its sub-tab selection state.
@@ -37,28 +26,13 @@ class PremiumBakhedBody extends ConsumerStatefulWidget {
 }
 
 class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
-  static const _speedCycle = <double>[1.0, 1.25, 1.5, 0.75];
-
   int _activeSubTab = 0; // 0 = Lyrics, 1 = Vocab, 2 = Cultural Notes
-  late final ScrollController _lyricScrollController;
-  int _lastActiveIndex = -1;
-
-  @override
-  void initState() {
-    super.initState();
-    _lyricScrollController = ScrollController();
-  }
+  final _lyricScroll = PremiumBakhedLyricScroll();
 
   @override
   void dispose() {
-    _lyricScrollController.dispose();
+    _lyricScroll.dispose();
     super.dispose();
-  }
-
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
   }
 
   void _onSelectSubTab(int index) {
@@ -75,240 +49,6 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
       widget.item,
       isDark,
       widget.accentColor,
-    );
-  }
-
-  Widget _buildDesktopLayout({
-    required BuildContext context,
-    required ContentItem item,
-    required Color accentColor,
-    required RhymeAudioState audioState,
-    required AsyncValue<BakhedLearningContent?> learningContentAsync,
-    required bool isPlaying,
-    required int durationMs,
-    required int positionMs,
-    required bool hasValidDuration,
-    required double maxSliderVal,
-    required double currentSliderVal,
-    required bool hasLyrics,
-    required bool hasVocab,
-    required bool hasNotes,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Left Column: Player Deck
-        SizedBox(
-          width: 440,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 20, 24, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Top Bar
-                _buildTopBar(context, item, accentColor),
-                const SizedBox(height: 18),
-
-                // Artwork Card
-                Center(
-                  child: _buildArtworkCard(
-                    item,
-                    accentColor,
-                    isPlaying,
-                    maxHeight: 240,
-                  ),
-                ),
-                const Spacer(),
-
-                // Scrubber
-                _buildSliderSection(
-                  accentColor,
-                  maxSliderVal,
-                  currentSliderVal,
-                  hasValidDuration,
-                  positionMs,
-                  durationMs,
-                  isPlaying,
-                ),
-                const SizedBox(height: 14),
-
-                // Playback Controls Row
-                _buildControlsRow(
-                  item,
-                  accentColor,
-                  isPlaying,
-                  positionMs,
-                  durationMs,
-                  audioState.speed,
-                ),
-                const Spacer(),
-              ],
-            ),
-          ),
-        ),
-
-        // Vertical divider line
-        Container(width: 1, color: Colors.white.withValues(alpha: 0.06)),
-
-        // Right Column: Learning Surface
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(28, 20, 28, 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildSubTabsBar(
-                  hasLyrics: hasLyrics,
-                  hasVocab: hasVocab,
-                  hasNotes: hasNotes,
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.02),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: _buildContentSurface(
-                      learningContentAsync,
-                      item,
-                      isPlaying,
-                      positionMs,
-                      accentColor,
-                      hasLyrics: hasLyrics,
-                      hasVocab: hasVocab,
-                      hasNotes: hasNotes,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileLayout({
-    required BuildContext context,
-    required ContentItem item,
-    required Color accentColor,
-    required RhymeAudioState audioState,
-    required AsyncValue<BakhedLearningContent?> learningContentAsync,
-    required bool isPlaying,
-    required int durationMs,
-    required int positionMs,
-    required bool hasValidDuration,
-    required double maxSliderVal,
-    required double currentSliderVal,
-    required BoxConstraints constraints,
-    required bool hasLyrics,
-    required bool hasVocab,
-    required bool hasNotes,
-  }) {
-    final double artMaxHeight = (constraints.maxHeight * 0.24).clamp(
-      150.0,
-      200.0,
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Top Bar
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: _buildTopBar(context, item, accentColor, isCompact: true),
-        ),
-
-        // Artwork Card
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: Center(
-            child: _buildArtworkCard(
-              item,
-              accentColor,
-              isPlaying,
-              maxHeight: artMaxHeight,
-            ),
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        // Scrubber
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: _buildSliderSection(
-            accentColor,
-            maxSliderVal,
-            currentSliderVal,
-            hasValidDuration,
-            positionMs,
-            durationMs,
-            isPlaying,
-          ),
-        ),
-
-        // Playback Controls Row
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          child: _buildControlsRow(
-            item,
-            accentColor,
-            isPlaying,
-            positionMs,
-            durationMs,
-            audioState.speed,
-            isCompact: true,
-          ),
-        ),
-
-        const SizedBox(height: 10),
-
-        // SubTabs Switcher
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: _buildSubTabsBar(
-            hasLyrics: hasLyrics,
-            hasVocab: hasVocab,
-            hasNotes: hasNotes,
-            isCompact: true,
-          ),
-        ),
-
-        const SizedBox(height: 10),
-
-        // Expanded Scrolling Content Surface
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.02),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(28),
-                topRight: Radius.circular(28),
-              ),
-              border: Border(
-                top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: _buildContentSurface(
-              learningContentAsync,
-              item,
-              isPlaying,
-              positionMs,
-              accentColor,
-              hasLyrics: hasLyrics,
-              hasVocab: hasVocab,
-              hasNotes: hasNotes,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -407,71 +147,47 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               builder: (context, constraints) {
                 final isDesktop = constraints.maxWidth >= 840;
 
+                final playback = PremiumBakhedPlaybackView(
+                  item: item,
+                  accentColor: accentColor,
+                  speed: audioState.speed,
+                  isPlaying: isPlaying,
+                  durationMs: durationMs,
+                  positionMs: positionMs,
+                  hasValidDuration: hasValidDuration,
+                  maxSliderVal: maxSliderVal,
+                  currentSliderVal: currentSliderVal,
+                );
+
                 if (!hasAnyContent) {
                   return isDesktop
-                      ? _buildFullScreenDesktopLayout(
-                          context: context,
-                          item: item,
-                          accentColor: accentColor,
-                          audioState: audioState,
-                          isPlaying: isPlaying,
-                          durationMs: durationMs,
-                          positionMs: positionMs,
-                          hasValidDuration: hasValidDuration,
-                          maxSliderVal: maxSliderVal,
-                          currentSliderVal: currentSliderVal,
-                        )
-                      : _buildFullScreenMobileLayout(
-                          context: context,
-                          item: item,
-                          accentColor: accentColor,
-                          audioState: audioState,
-                          isPlaying: isPlaying,
-                          durationMs: durationMs,
-                          positionMs: positionMs,
-                          hasValidDuration: hasValidDuration,
-                          maxSliderVal: maxSliderVal,
-                          currentSliderVal: currentSliderVal,
+                      ? PremiumBakhedFullScreenDesktopLayout(playback: playback)
+                      : PremiumBakhedFullScreenMobileLayout(
+                          playback: playback,
                           constraints: constraints,
                         );
                 }
 
-                if (isDesktop) {
-                  return _buildDesktopLayout(
-                    context: context,
-                    item: item,
-                    accentColor: accentColor,
-                    audioState: audioState,
-                    learningContentAsync: learningContentAsync,
-                    isPlaying: isPlaying,
-                    durationMs: durationMs,
-                    positionMs: positionMs,
-                    hasValidDuration: hasValidDuration,
-                    maxSliderVal: maxSliderVal,
-                    currentSliderVal: currentSliderVal,
-                    hasLyrics: hasLyrics,
-                    hasVocab: hasVocab,
-                    hasNotes: hasNotes,
-                  );
-                } else {
-                  return _buildMobileLayout(
-                    context: context,
-                    item: item,
-                    accentColor: accentColor,
-                    audioState: audioState,
-                    learningContentAsync: learningContentAsync,
-                    isPlaying: isPlaying,
-                    durationMs: durationMs,
-                    positionMs: positionMs,
-                    hasValidDuration: hasValidDuration,
-                    maxSliderVal: maxSliderVal,
-                    currentSliderVal: currentSliderVal,
-                    constraints: constraints,
-                    hasLyrics: hasLyrics,
-                    hasVocab: hasVocab,
-                    hasNotes: hasNotes,
-                  );
-                }
+                final learning = PremiumBakhedLearningView(
+                  learningContentAsync: learningContentAsync,
+                  hasLyrics: hasLyrics,
+                  hasVocab: hasVocab,
+                  hasNotes: hasNotes,
+                  activeSubTab: _activeSubTab,
+                  onSelectSubTab: _onSelectSubTab,
+                  lyricScroll: _lyricScroll,
+                );
+
+                return isDesktop
+                    ? PremiumBakhedDesktopLayout(
+                        playback: playback,
+                        learning: learning,
+                      )
+                    : PremiumBakhedMobileLayout(
+                        playback: playback,
+                        learning: learning,
+                        constraints: constraints,
+                      );
               },
             ),
           ),

@@ -25,6 +25,9 @@ class WeeklyLeaderboardEntity extends Equatable {
       ? 'Leaderboard · #$rank · $points pts'
       : 'Leaderboard · Unranked';
 
+  /// Chip text next to the trophy icon, which already says "leaderboard".
+  String get shortBadgeLabel => isRanked ? '#$rank · $points pts' : 'Unranked';
+
   factory WeeklyLeaderboardEntity.fromJson(Map<String, dynamic> json) {
     int readNonNegativeInt(String key) {
       final value = json[key];

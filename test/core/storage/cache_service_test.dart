@@ -89,6 +89,27 @@ void main() {
       expect(result!['name'], 'Olitun');
     });
 
+    test('setAll writes every entry in one batch', () async {
+      final ok = await CacheService.setAll({
+        'batch_list': [
+          {'id': 'a'},
+          {'id': 'b'},
+        ],
+        'batch_item_a': {'id': 'a'},
+      });
+      expect(ok, isTrue);
+      final list = await CacheService.getList<Map<String, dynamic>>(
+        'batch_list',
+        (json) => json,
+      );
+      expect(list?.map((e) => e['id']), ['a', 'b']);
+      final item = await CacheService.get<Map<String, dynamic>>(
+        'batch_item_a',
+        (json) => json,
+      );
+      expect(item?['id'], 'a');
+    });
+
     test('strictly fresh lookup on expired entry returns null', () async {
       await CacheService.set('expired_key', {
         'name': 'old',

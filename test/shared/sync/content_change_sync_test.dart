@@ -415,4 +415,36 @@ void main() {
     expect(page.changes.single.table, 'words');
     expect(page.changes.single.rowId, 'w1');
   });
+
+  test('parses the field names the Worker actually emits', () async {
+    // routes/admin_content.ts serializes {seq, table, id, op, changedAt}.
+    final source = EdgeContentChangeSource(
+      MockClient(
+        (_) async => http.Response(
+          jsonEncode({
+            'ok': true,
+            'changes': [
+              {
+                'seq': 3,
+                'table': 'letters',
+                'id': 'l1',
+                'op': 'upsert',
+                'changedAt': '2026-10-15T00:00:00Z',
+              },
+              {'seq': 4, 'table': 'lessons', 'id': '*', 'op': 'restore'},
+            ],
+            'latest': 4,
+            'hasMore': false,
+          }),
+          200,
+        ),
+      ),
+    );
+
+    final page = await source.fetch(2);
+
+    expect(page.changes.map((c) => c.table), ['letters', 'lessons']);
+    expect(page.changes.first.rowId, 'l1');
+    expect(page.changes.last.isBulk, isTrue);
+  });
 }

@@ -26,13 +26,15 @@ class ContentChange {
   bool get isBulk => rowId.isEmpty || rowId == '*';
 
   static ContentChange? fromJson(Map<String, dynamic> json) {
+    // The Worker sends `table`/`id`; `table_name`/`row_id` are the raw D1
+    // column names, accepted too so either shape keeps working.
     final seq = json['seq'];
-    final table = json['table_name'];
+    final table = json['table'] ?? json['table_name'];
     if (seq is! num || table is! String || table.isEmpty) return null;
     return ContentChange(
       seq: seq.toInt(),
       table: table,
-      rowId: json['row_id']?.toString() ?? '*',
+      rowId: (json['id'] ?? json['row_id'])?.toString() ?? '*',
       op: json['op']?.toString() ?? '',
     );
   }

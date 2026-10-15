@@ -7,6 +7,7 @@ import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/languages/providers/target_language_provider.dart';
 import '../../../core/motion/motion.dart';
+import '../../../core/payments/purchased_categories_provider.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/models/content_item.dart';
@@ -16,6 +17,7 @@ import '../../../shared/providers/learner_content_providers.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../../shared/models/catalog/category_entity.dart';
+import '../../../shared/widgets/paywall/paywall_bottom_sheet.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../domain/lesson_progression.dart';
 import 'providers/lesson_notifier.dart';
@@ -96,6 +98,13 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     }
   }
 
+  Future<void> _openPaywall(CategoryEntity category, String lessonId) async {
+    final result = await PaywallBottomSheet.show(context, category: category);
+    if (result != PaywallResult.unlocked || !mounted) return;
+    await _onRefresh();
+    if (mounted) context.push('/lesson/$lessonId');
+  }
+
   LinearGradient _getGradient(String preset) {
     switch (preset) {
       case 'skyBlue':
@@ -173,6 +182,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final completedLessonIds = ref.watch(completedLessonIdsProvider);
+    final ownedCategoryIds =
+        ref.watch(purchasedCategoriesProvider).valueOrNull ?? const <String>{};
     final scriptMode = ref.watch(effectiveScriptModeProvider);
     final manifest = ref.watch(activeLanguageManifestProvider);
     ref.watch(effectiveTeachingLanguageProvider);
@@ -370,7 +381,13 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         completedLessonIds: completedLessonIds,
                         lessonId: lesson.id,
                       );
+                      final requiresPurchase = lessonRequiresPurchase(
+                        lesson: lesson,
+                        category: category,
+                        ownedCategoryIds: ownedCategoryIds,
+                      );
                       final isLocked =
+                          requiresPurchase ||
                           progressStatus == LessonProgressStatus.locked;
                       final isCompleted =
                           progressStatus == LessonProgressStatus.completed;
@@ -412,6 +429,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         isLocked: isLocked,
                         isCompleted: isCompleted,
                         onTap: () {
+                          if (requiresPurchase) {
+                            _openPaywall(category, lesson.id);
+                            return;
+                          }
                           if (isLocked) {
                             _showLockedLessonOverlay(
                               blockingLessonTitle: blockingLessonTitle,

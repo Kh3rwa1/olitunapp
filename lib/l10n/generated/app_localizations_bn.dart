@@ -2075,4 +2075,27 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get aiAssistantActive => 'AI সহকারী সক্রিয়';
+
+  @override
+  String get paywallPaymentCancelled =>
+      'পেমেন্ট বাতিল হয়েছে। আপনি যেকোনো সময় আবার চেষ্টা করতে পারেন।';
+
+  @override
+  String get paywallPaymentFailed =>
+      'পেমেন্ট সম্পন্ন হয়নি। অনুগ্রহ করে আবার চেষ্টা করুন।';
+
+  @override
+  String get paywallNotConfigured =>
+      'এই মুহূর্তে কেনাকাটা উপলব্ধ নয়। অনুগ্রহ করে পরে আবার চেষ্টা করুন।';
+
+  @override
+  String get paywallVerificationPending =>
+      'পেমেন্ট পাওয়া গেছে। আমরা শীঘ্রই আপনার আনলক নিশ্চিত করব।';
+
+  @override
+  String get paywallAndroidOnly => 'কেনাকাটা Olitun Android অ্যাপে উপলব্ধ।';
+
+  @override
+  String get paywallLockedLessonMessage =>
+      'এই পাঠটি একটি পেইড কোর্সের অংশ। চালিয়ে যেতে কোর্সটি আনলক করুন।';
 }

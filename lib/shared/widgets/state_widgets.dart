@@ -262,7 +262,7 @@ class AppErrorState extends ConsumerWidget {
                 style: AppTypography.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : AppColors.primaryDark,
+                  color: isDark ? Colors.white : AppColors.webInk,
                 ),
               ),
               const SizedBox(height: 8),

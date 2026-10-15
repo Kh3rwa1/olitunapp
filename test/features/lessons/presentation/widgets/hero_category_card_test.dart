@@ -101,7 +101,7 @@ void main() {
         iconName: 'alphabet',
       ),
     );
-    expect(find.byIcon(Icons.translate_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.abc_rounded), findsOneWidget);
   });
 
   testWidgets('falls back to school icon for unknown icon names', (

@@ -1330,6 +1330,10 @@ class AppLocalizationsSat extends AppLocalizations {
       'ᱡᱥᱟᱱᱟᱛ ᱠᱷᱚᱱ ᱡᱟᱦᱚᱨ ᱢᱮ — ᱠᱩᱞᱟᱹᱨ ᱠᱚ, ᱫᱩᱭᱟᱹ ᱫᱩᱭᱟᱹ.';
 
   @override
+  String get homeNewcomerSubtitle =>
+      'Start with your first letters — small steps, every day.';
+
+  @override
   String get aiTranslatorTitle => 'AI Translator';
 
   @override

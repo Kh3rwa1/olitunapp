@@ -1333,6 +1333,10 @@ class AppLocalizationsOr extends AppLocalizations {
       'ଯେଉଁଠି ଛାଡ଼ିଥିଲେ ସେଠାରୁ ଆରମ୍ଭ — ଛୋଟ ପଦକ୍ଷେପ, ପ୍ରତିଦିନ।';
 
   @override
+  String get homeNewcomerSubtitle =>
+      'ପ୍ରଥମ ଅକ୍ଷରରୁ ଆରମ୍ଭ କରନ୍ତୁ — ଛୋଟ ପଦକ୍ଷେପ, ପ୍ରତିଦିନ।';
+
+  @override
   String get aiTranslatorTitle => 'AI Translator';
 
   @override

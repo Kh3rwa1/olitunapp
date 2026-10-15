@@ -88,36 +88,41 @@ class _HomeBannersCarouselState extends ConsumerState<HomeBannersCarousel> {
           });
         }
 
-        return Column(
-          children: [
-            SizedBox(
-              height: 148,
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: banners.length,
-                onPageChanged: (i) => setState(() => _currentPage = i),
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: _BannerSlide(
-                      banner: banners[index],
-                      gradient: _gradient(banners[index].gradientPreset),
-                      isDark: widget.isDark,
-                      index: index,
-                    ),
-                  );
-                },
+        // The carousel owns the space below it, so an empty banner list
+        // leaves no gap above Discover on the home screen.
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24),
+          child: Column(
+            children: [
+              SizedBox(
+                height: 148,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: banners.length,
+                  onPageChanged: (i) => setState(() => _currentPage = i),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2),
+                      child: _BannerSlide(
+                        banner: banners[index],
+                        gradient: _gradient(banners[index].gradientPreset),
+                        isDark: widget.isDark,
+                        index: index,
+                      ),
+                    );
+                  },
+                ),
               ),
-            ),
-            if (banners.length > 1) ...[
-              const SizedBox(height: 12),
-              _DotIndicator(
-                count: banners.length,
-                current: _currentPage,
-                isDark: widget.isDark,
-              ),
+              if (banners.length > 1) ...[
+                const SizedBox(height: 12),
+                _DotIndicator(
+                  count: banners.length,
+                  current: _currentPage,
+                  isDark: widget.isDark,
+                ),
+              ],
             ],
-          ],
+          ),
         ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.06, end: 0);
       },
     );

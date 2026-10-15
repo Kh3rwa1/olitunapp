@@ -1334,6 +1334,10 @@ class AppLocalizationsHi extends AppLocalizations {
       'जहाँ छोड़ा था वहीं से जारी रखें — छोटे कदम, हर दिन।';
 
   @override
+  String get homeNewcomerSubtitle =>
+      'पहले अक्षरों से शुरू करें — छोटे कदम, हर दिन।';
+
+  @override
   String get aiTranslatorTitle => 'AI Translator';
 
   @override

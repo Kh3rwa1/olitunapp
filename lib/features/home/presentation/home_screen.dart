@@ -184,7 +184,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // (2) Header: Johar + user name only
-        _buildHeader(userName: displayUserName, isDark: isDark)
+        _buildHeader(
+              userName: displayUserName,
+              isDark: isDark,
+              isNewcomer:
+                  !statsLoading &&
+                  completedIds.isEmpty &&
+                  (lastOpenedLessonId == null || lastOpenedLessonId.isEmpty),
+            )
             .animate()
             .fadeIn(duration: 500.ms, curve: Curves.easeOutCubic)
             .slideY(
@@ -231,7 +238,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // (5) Secondary content lives BELOW the learning actions:
         // banners carousel (explore/discover context).
         HomeBannersCarousel(isDark: isDark),
-        const SizedBox(height: 24),
 
         // (6) Guest CTA banner (thin, only if isGuest) - 48dp banner
         if (isGuest) ...[
@@ -305,24 +311,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    isDesktop ? l10n.homeExploreHint : l10n.homeSwipeHint,
-                    style: const TextStyle(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.primary,
+                // The grid scrolls vertically on phones, so a "SWIPE" hint
+                // there was misleading; only desktop shows an explore hint.
+                if (isDesktop)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      l10n.homeExploreHint,
+                      style: const TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -393,7 +402,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildHeader({required String userName, required bool isDark}) {
+  Widget _buildHeader({
+    required String userName,
+    required bool isDark,
+    required bool isNewcomer,
+  }) {
     final l10n = AppLocalizations.of(context)!;
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final now = DateTime.now();
@@ -481,7 +494,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    AppLocalizations.of(context)!.homePickupSubtitle,
+                    isNewcomer
+                        ? l10n.homeNewcomerSubtitle
+                        : l10n.homePickupSubtitle,
                     style: TextStyle(
                       fontSize: isDesktop ? 15 : 14,
                       height: 1.5,

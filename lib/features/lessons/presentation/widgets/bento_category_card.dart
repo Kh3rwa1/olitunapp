@@ -24,7 +24,7 @@ class BentoCategoryCard extends StatelessWidget {
   ];
 
   static const List<IconData> _icons = [
-    Icons.translate_rounded,
+    Icons.abc_rounded,
     Icons.calculate_rounded,
     Icons.forum_rounded,
     Icons.auto_stories_rounded,
@@ -35,7 +35,7 @@ class BentoCategoryCard extends StatelessWidget {
   IconData _getIcon() {
     switch (category.iconName) {
       case 'alphabet':
-        return Icons.translate_rounded;
+        return Icons.abc_rounded;
       case 'numbers':
         return Icons.calculate_rounded;
       case 'words':

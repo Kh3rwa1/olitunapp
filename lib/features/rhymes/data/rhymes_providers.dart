@@ -152,7 +152,10 @@ class RhymesNotifier extends AsyncNotifier<List<RhymeModel>> {
       }
 
       if (rhymes.isEmpty) return _seedRhymes;
-      await CacheService.set(_cacheKey, rhymes.map((e) => e.toJson()).toList());
+      // Not awaited: on web a busy cache queue must not hold the list back.
+      unawaited(
+        CacheService.set(_cacheKey, rhymes.map((e) => e.toJson()).toList()),
+      );
       return rhymes;
     } catch (e, stack) {
       AppLogger.error(

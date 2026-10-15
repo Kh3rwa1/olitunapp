@@ -40,7 +40,10 @@ class RhymeSegmentedControl extends StatelessWidget {
                   : Colors.black.withValues(alpha: 0.04),
             ),
           ),
+          // expand: a loose Stack let the label row hug the top while the
+          // selection pill filled the height, so labels sat high.
           child: Stack(
+            fit: StackFit.expand,
             children: [
               AnimatedAlign(
                 alignment: currentTab == 0

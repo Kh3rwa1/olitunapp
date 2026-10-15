@@ -123,4 +123,21 @@ void main() {
       verifyZeroInteractions(remote);
     });
   });
+
+  group('ContentRepository.get offline behaviour', () {
+    test('finds an item inside the cached list', () async {
+      // Lists are cached whole (no per-item copies), so an offline detail
+      // lookup must find the item in its kind's list.
+      final item = _buildItem();
+      await CacheService.set('content_list_word_all', [item.toJson()]);
+      final repo = ContentRepository(
+        remoteDataSource: _MockRemote(),
+        networkInfo: _FakeNetworkInfo(connected: false),
+      );
+
+      final result = await repo.get(ContentKind.word, item.id);
+
+      expect(result.getOrElse((f) => fail('$f')).title, 'Offline Edit');
+    });
+  });
 }

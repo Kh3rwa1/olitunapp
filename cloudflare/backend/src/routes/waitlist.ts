@@ -3,7 +3,7 @@ import { getRequestUserId, stableId, type App } from '../env';
 
 // Binti / ceremony waitlist (replaces the Appwrite bintiWaitlist function and
 // direct reads of the binti_guru_waitlist collection). Validation and dedupe
-// rules mirror functions/bintiWaitlist/src/main.js.
+// rules mirror the former Appwrite bintiWaitlist function.
 
 const ALLOWED_CEREMONY_TYPES = new Set(['wedding', 'karam', 'sohrai', 'baha', 'naming', 'funeral', 'other']);
 const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,19}$/;

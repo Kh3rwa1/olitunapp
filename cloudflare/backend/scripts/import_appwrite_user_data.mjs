@@ -83,19 +83,19 @@ export function d1DeletionRequestId(userId) {
   return `del_${stableId(`deletion:${userId}`)}`;
 }
 
-/** Appwrite delete-account pseudonymous id (functions/_shared/delete_account_core.js). */
+/** Appwrite delete-account pseudonymous id (former Appwrite delete_account_core). */
 export function appwritePseudonymousId(userId, secret) {
   return createHmac('sha256', secret).update(userId).digest('hex').substring(0, 32);
 }
 
 const derivedKeys = new Map();
-/** getDerivedKey in functions/_shared/delete_account_core.js (cached: PBKDF2 is slow). */
+/** getDerivedKey in the former Appwrite delete_account_core (cached: PBKDF2 is slow). */
 function deletionKey(secret) {
   if (!derivedKeys.has(secret)) derivedKeys.set(secret, pbkdf2Sync(secret, 'olitun_deletion_v1', 100000, 32, 'sha256'));
   return derivedKeys.get(secret);
 }
 
-/** Mirrors decryptUserId in functions/_shared/delete_account_core.js. */
+/** Mirrors decryptUserId in the former Appwrite delete_account_core. */
 export function decryptAppwriteUserId(payload, secrets) {
   if (!payload) return null;
   let parsed;

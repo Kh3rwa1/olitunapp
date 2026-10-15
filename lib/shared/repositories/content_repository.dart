@@ -258,7 +258,13 @@ class ContentRepository {
       try {
         final List<ContentItem> remoteItems;
         if (kind == ContentKind.lesson) {
-          remoteItems = await _listAuthorizedLessons(categoryId);
+          // Filter here too: a Worker that ignores categoryId returns every
+          // lesson, and the path then ranks another category's first lesson
+          // ahead of this one and shows it as locked.
+          final authorized = await _listAuthorizedLessons(categoryId);
+          remoteItems = categoryId == null || categoryId.isEmpty
+              ? authorized
+              : authorized.where((l) => l.categoryId == categoryId).toList();
         } else {
           final remoteDataSource = _remoteDataSource;
           if (remoteDataSource == null) {

@@ -31,6 +31,23 @@ describe('public learner routes', () => {
     expect(single.body.lesson.blocks).toEqual([]);
   });
 
+  it('/lessons/authorize list_lessons honors categoryId', async () => {
+    const numbers = await insertCategory();
+    const alphabet = await insertCategory();
+    const numbersLesson = await insertLesson(numbers);
+    const alphabetLesson = await insertLesson(alphabet);
+    const { body } = await callJson('/api/v1/lessons/authorize', {
+      json: { action: 'list_lessons', categoryId: alphabet },
+    });
+    const ids = body.lessons.map((l: any) => l.id);
+    expect(ids).toContain(alphabetLesson);
+    expect(ids).not.toContain(numbersLesson);
+    const all = await callJson('/api/v1/lessons/authorize');
+    expect(all.body.lessons.map((l: any) => l.id)).toEqual(
+      expect.arrayContaining([numbersLesson, alphabetLesson]),
+    );
+  });
+
   it('/categories lists active categories only', async () => {
     const active = await insertCategory();
     const inactive = await insertCategory({ isActive: false });

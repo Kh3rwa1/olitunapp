@@ -36,9 +36,14 @@ export function registerLessonAuthorizeRoutes(app: App): void {
       }
 
       if (action === 'list_lessons') {
-        const lessonsResult: any = await c.env.DB.prepare(
-          'SELECT id, category_id, title_ol_chiki, title_latin, lesson_type, order_index, raw_json FROM lessons ORDER BY order_index ASC'
-        ).all().catch(() => ({ results: [] }));
+        // A category's learning path must contain only that category's
+        // lessons; mixing in others made its first lesson look locked.
+        const categoryId = String(body.categoryId || c.req.query('categoryId') || '').trim();
+        const columns = 'id, category_id, title_ol_chiki, title_latin, lesson_type, order_index, raw_json';
+        const lessonsQuery = categoryId
+          ? c.env.DB.prepare(`SELECT ${columns} FROM lessons WHERE category_id = ? ORDER BY order_index ASC`).bind(categoryId)
+          : c.env.DB.prepare(`SELECT ${columns} FROM lessons ORDER BY order_index ASC`);
+        const lessonsResult: any = await lessonsQuery.all().catch(() => ({ results: [] }));
 
         const lessons = (lessonsResult.results || []).map((row: any) => {
           let meta: any = {};

@@ -42,6 +42,8 @@ app.*.map.json
 
 # --- Security ----------------------------------------------------------------
 .env
+.dev.vars
+.dev.vars.*
 cookies.txt
 *.cookies
 *cookie*.txt

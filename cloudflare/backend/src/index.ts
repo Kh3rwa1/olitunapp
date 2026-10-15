@@ -1910,19 +1910,70 @@ app.post('/api/v1/audio/generate', async (c) => {
   }
 });
 
+async function transcribeWithSarvam(
+  audioBytes: Uint8Array,
+  language: string,
+  apiKey: string
+): Promise<{ text: string; language: string; provider: string }> {
+  const form = new FormData();
+  form.set('file', new Blob([audioBytes], { type: 'audio/wav' }), 'input.wav');
+
+  let langCode = language.trim();
+  if (!langCode.includes('-')) {
+    const map: Record<string, string> = {
+      sat: 'sat-IN',
+      hi: 'hi-IN',
+      bn: 'bn-IN',
+      od: 'od-IN',
+      as: 'as-IN',
+      en: 'en-IN',
+    };
+    langCode = map[langCode.toLowerCase()] || 'sat-IN';
+  }
+
+  form.set('language_code', langCode);
+  form.set('model', 'saaras:v3');
+  form.set('mode', 'transcribe');
+
+  const res = await fetch('https://api.sarvam.ai/speech-to-text', {
+    method: 'POST',
+    headers: {
+      'api-subscription-key': apiKey,
+    },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`Sarvam STT failed (${res.status}): ${errText}`);
+  }
+
+  const data: any = await res.json();
+  const transcript = String(data?.transcript || '').trim();
+  if (!transcript) {
+    throw new Error('No speech recognized');
+  }
+
+  return {
+    text: transcript,
+    language: langCode,
+    provider: 'sarvam-saaras-v3',
+  };
+}
+
 // 23. AI Studio Speech-to-Text & Processing (replaces Appwrite aiStudio function)
 app.post('/api/v1/studio/transcribe', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     let audioBytes: Uint8Array | null = null;
-    let language = 'sat';
+    let language = 'sat-IN';
 
     if (contentType.includes('application/octet-stream') || contentType.includes('audio/')) {
       const audioBuffer = await c.req.arrayBuffer();
       audioBytes = new Uint8Array(audioBuffer);
     } else {
       const body = await c.req.json().catch(() => ({}));
-      language = String(body.language || 'sat').trim();
+      language = String(body.language || 'sat-IN').trim();
       const rawBase64 = String(body.audioBase64 || body.fileBase64 || '').trim();
       if (rawBase64) {
         const buffer = Buffer.from(rawBase64, 'base64');
@@ -1934,40 +1985,23 @@ app.post('/api/v1/studio/transcribe', async (c) => {
       return c.json({ ok: false, success: false, error: 'INVALID_AUDIO', message: 'No audio provided' }, 400);
     }
 
-    const langShort = language.replace(/-IN$/i, '').toLowerCase();
-    const whisperInput: any = {
-      audio: [...audioBytes],
-    };
-    if (langShort && langShort !== 'sat' && langShort !== 'auto' && langShort.length === 2) {
-      whisperInput.language = langShort;
+    const sarvamApiKey = c.env.SARVAM_API_KEY || c.req.header('api-subscription-key') || c.req.header('x-sarvam-api-key') || 'sk_uweorajc_pjnZbrqTs597FnxMT9xRpUtP';
+    if (!sarvamApiKey) {
+      return c.json({ ok: false, success: false, error: 'SARVAM_KEY_MISSING', message: 'SARVAM_API_KEY is not configured.' }, 503);
     }
 
-    let aiResponse: any = await c.env.AI.run('@cf/openai/whisper-large-v3-turbo', whisperInput)
-      .catch(() => null);
-
-    if (!aiResponse || !aiResponse.text) {
-      aiResponse = await c.env.AI.run('@cf/openai/whisper', whisperInput)
-        .catch((err: any) => {
-          console.error('Whisper STT error:', err);
-          return null;
-        });
-    }
-
-    let transcribedText = String(aiResponse?.text || '').trim();
-    if (!transcribedText) {
-      return c.json({ ok: false, success: false, error: 'EMPTY_RESULT', message: 'No speech recognized' }, 422);
-    }
+    const result = await transcribeWithSarvam(audioBytes, language, sarvamApiKey);
 
     return c.json({
       ok: true,
       success: true,
-      text: transcribedText,
+      text: result.text,
       data: {
-        text: transcribedText,
-        language,
+        text: result.text,
+        language: result.language,
+        provider: result.provider,
       },
-      vtt: aiResponse?.vtt || '',
-      provider: 'cloudflare-workers-ai-whisper',
+      provider: result.provider,
     });
   } catch (err: any) {
     return c.json({ ok: false, success: false, error: 'REQUEST_FAILED', message: err.message || 'Studio transcription failed' }, 500);
@@ -2016,38 +2050,20 @@ app.post('/api/v1/studio/process', async (c) => {
         return c.json({ ok: false, success: false, error: 'INVALID_AUDIO', message: 'No audio provided' }, 400);
       }
 
-      const langShort = language.replace(/-IN$/i, '').toLowerCase();
-      const whisperInput: any = {
-        audio: [...audioBytes],
-      };
-      if (langShort && langShort !== 'sat' && langShort !== 'auto' && langShort.length === 2) {
-        whisperInput.language = langShort;
+      const sarvamApiKey = c.env.SARVAM_API_KEY || c.req.header('api-subscription-key') || c.req.header('x-sarvam-api-key') || 'sk_uweorajc_pjnZbrqTs597FnxMT9xRpUtP';
+      if (!sarvamApiKey) {
+        return c.json({ ok: false, success: false, error: 'SARVAM_KEY_MISSING', message: 'SARVAM_API_KEY is not configured.' }, 503);
       }
 
-      let aiResponse: any = await c.env.AI.run('@cf/openai/whisper-large-v3-turbo', whisperInput)
-        .catch(() => null);
-
-      if (!aiResponse || !aiResponse.text) {
-        aiResponse = await c.env.AI.run('@cf/openai/whisper', whisperInput)
-          .catch((err: any) => {
-            console.error('Whisper STT error in process:', err);
-            return null;
-          });
-      }
-
-      let transcribedText = String(aiResponse?.text || '').trim();
-
-      if (!transcribedText) {
-        return c.json({ ok: false, success: false, error: 'EMPTY_RESULT', message: 'No speech recognized' }, 422);
-      }
+      const result = await transcribeWithSarvam(audioBytes, language, sarvamApiKey);
 
       return c.json({
         ok: true,
         success: true,
         data: {
-          text: transcribedText,
-          language,
-          provider: 'cloudflare-workers-ai-whisper',
+          text: result.text,
+          language: result.language,
+          provider: result.provider,
         },
       });
     }

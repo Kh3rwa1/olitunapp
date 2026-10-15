@@ -103,6 +103,7 @@ jobs:
             --allow-invisible=_web.dart \
             --allow-invisible=_html.dart \
             --allow-invisible=/domain/repositories/ \
+            --allow-invisible=lib/core/auth/auth_repository.dart \
             --allow-invisible=lib/app/router/route_names.dart \
             --allow-invisible=lib/app/router/url_strategy.dart \
             --allow-invisible=lib/core/auth/web_redirect.dart \

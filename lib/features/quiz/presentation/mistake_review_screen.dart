@@ -12,11 +12,12 @@ import '../presentation/providers/mistake_provider.dart';
 import '../presentation/widgets/quiz_option_tile.dart';
 import '../presentation/widgets/quiz_feedback_panel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
-import '../../../features/profile/presentation/providers/user_stats_provider.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../shared/providers/providers.dart';
 import '../../review/data/review_store_notifier.dart';
 import '../../review/domain/review_item.dart';
 import '../domain/quiz_memory_resolver.dart';
+import '../domain/mistake_question_localizer.dart';
 
 class MistakeReviewScreen extends ConsumerStatefulWidget {
   const MistakeReviewScreen({super.key});
@@ -39,6 +40,13 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
   Widget build(BuildContext context) {
     final mistakes = ref.watch(mistakeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+    final words = ref.watch(learnerWordsProvider).valueOrNull ?? const [];
+    final sentences =
+        ref.watch(learnerSentencesProvider).valueOrNull ?? const [];
+    final compiledQuizzes =
+        ref.watch(quizzesByIdProvider).valueOrNull ?? const {};
+    final lessons = ref.watch(learnerLessonsProvider).valueOrNull ?? const [];
 
     if (_sessionMistakes.isEmpty && mistakes.isNotEmpty && !_isComplete) {
       _sessionMistakes.addAll(mistakes);
@@ -253,7 +261,15 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
 
     final currentMistake =
         reviewMistakes[_currentIndex.clamp(0, reviewMistakes.length - 1)];
-    final question = currentMistake.question;
+    final question = localizeMistakeQuestion(
+      currentMistake.question,
+      teachingLanguage: teachingLanguage,
+      words: words,
+      sentences: sentences,
+      compiledQuizzes: compiledQuizzes,
+      lessons: lessons,
+      quizId: currentMistake.quizId,
+    );
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,

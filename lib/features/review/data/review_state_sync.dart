@@ -1,11 +1,11 @@
-// Review state sync orchestrator: local cache <-> Appwrite.
+// Review state sync orchestrator: local cache <-> Cloudflare Worker.
 //
 // Architecture (offline-first):
 //  - READ path: Home/Today's Review reads the local ReviewStore only —
 //    zero network on home open. Cloud sync never blocks learning.
 //  - WRITE path: every local mutation enqueues a durable outbox mutation
 //    (MutationOutboxService, backoff + dead-letter). A replay loop pushes
-//    queued writes to Appwrite — online it drains in seconds; offline it
+//    queued writes to the Worker — online it drains in seconds; offline it
 //    stays queued and drains on reconnect.
 //  - PULL path: startup/login/connectivity pulls the user's server rows
 //    and merges per item via [ReviewStateMergePolicy] (deterministic

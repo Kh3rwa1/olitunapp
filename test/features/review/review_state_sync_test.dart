@@ -7,7 +7,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
-import 'package:itun/features/review/data/review_appwrite_repository.dart';
+import 'package:itun/features/review/data/review_cloudflare_repository.dart';
 import 'package:itun/features/review/data/review_state_sync.dart';
 import 'package:itun/features/review/data/review_sync_outbox.dart';
 import 'package:itun/features/review/data/review_store.dart';
@@ -1024,7 +1024,7 @@ void main() {
       final allIds = [...words, ...sentences];
       final seenRowIds = <String>{};
       for (final id in allIds) {
-        final rowId = ReviewAppwriteRepository.rowIdFor('user-1', id);
+        final rowId = ReviewCloudflareRepository.rowIdFor('user-1', id);
         final added = seenRowIds.add(rowId);
         expect(
           added,

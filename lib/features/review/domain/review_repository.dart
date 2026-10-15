@@ -2,7 +2,7 @@
 //
 // The memory engine (MemoryScheduler) stays the domain authority; this
 // interface keeps local cache <-> cloud persistence as implementation
-// details. Implementations: Appwrite (production) / fakes (tests).
+// details. Implementations: Cloudflare Worker (production) / fakes (tests).
 
 import 'review_item.dart';
 

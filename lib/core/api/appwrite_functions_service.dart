@@ -98,8 +98,6 @@ class AppwriteFunctionsService {
         return '${CloudflareConfig.baseUrl}/api/v1/admin/maintenance';
       case 'reviewContent':
         return '${CloudflareConfig.baseUrl}/api/v1/admin/review/queue';
-      case 'mutateReviewState':
-        return '${CloudflareConfig.baseUrl}/api/v1/admin/review/state';
       case 'backupCollections':
         return '${CloudflareConfig.baseUrl}/api/v1/admin/backup';
       case 'reconcileOrphanedDeletions':

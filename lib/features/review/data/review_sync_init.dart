@@ -12,16 +12,15 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/api/appwrite_db_service.dart';
-import '../../../core/api/appwrite_functions_service.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/auth/edge_auth.dart';
 import '../../../core/offline/mutation_outbox_service.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../domain/review_corpus_identity.dart';
-import 'review_appwrite_repository.dart';
+import 'review_cloudflare_repository.dart';
 import 'review_state_migration.dart';
 import 'review_state_sync.dart';
 import 'review_store.dart';
@@ -32,10 +31,7 @@ final reviewStateSyncProvider = Provider<ReviewStateSync>((ref) {
   final store = ref.watch(reviewStoreProvider.notifier);
   final corpusMap = ref.watch(corpusIdentityMapProvider).valueOrNull;
   final sync = ReviewStateSync(
-    repository: ReviewAppwriteRepository(
-      ref.watch(appwriteDbServiceProvider),
-      ref.watch(appwriteFunctionsServiceProvider),
-    ),
+    repository: ReviewCloudflareRepository(edgeAuth: EdgeAuth.instance),
     outbox: MutationOutboxAdapter(ref.watch(mutationOutboxProvider)),
     resolveUserId: () async {
       try {

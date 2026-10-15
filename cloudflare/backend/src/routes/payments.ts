@@ -1,5 +1,6 @@
 import { timingSafeEqualStr } from '../auth';
 import { getRequestUserId, stableId, type App, type Bindings } from '../env';
+import { reconcilePaymentOrders } from '../lib/maintenance';
 
 // Razorpay checkout runs entirely on the Worker with D1 as the purchase
 // ledger. Prices come from D1, never the client; access is granted only after
@@ -301,19 +302,8 @@ export function registerPaymentRoutes(app: App): void {
   // 20. Reconcile Payment Attempts (replaces Appwrite reconcilePaymentAttempts function)
   app.post('/api/v1/payments/reconcile', async (c) => {
     try {
-      const oneHourAgo = new Date(Date.now() - 3600 * 1000).toISOString();
-      const expiredOrdersResult: any = await c.env.DB.prepare(
-        'SELECT order_id FROM payment_orders WHERE status = "created" AND created_at < ? LIMIT 50'
-      ).bind(oneHourAgo).all().catch(() => ({ results: [] }));
-
-      const expiredIds = (expiredOrdersResult.results || []).map((o: any) => o.order_id);
-      for (const orderId of expiredIds) {
-        await c.env.DB.prepare(
-          'UPDATE payment_orders SET status = "abandoned", updated_at = ? WHERE order_id = ?'
-        ).bind(new Date().toISOString(), orderId).run();
-      }
-
-      return c.json({ ok: true, reconciledCount: expiredIds.length });
+      const { reconciledCount } = await reconcilePaymentOrders(c.env.DB);
+      return c.json({ ok: true, reconciledCount });
     } catch (err: any) {
       return c.json({ ok: false, message: err.message || 'Reconciliation failed' }, 500);
     }

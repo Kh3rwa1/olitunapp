@@ -4,6 +4,7 @@ import { aiRateLimit, optionalUser, requireAdmin, requireUser } from './auth';
 import type { App, AppEnv } from './env';
 import { registerRoutes } from './routes';
 import { proxyToPages } from './lib/pages';
+import { scheduled } from './scheduled';
 
 const app: App = new Hono<AppEnv>();
 
@@ -68,4 +69,10 @@ app.notFound(async (c) => {
   return proxyToPages(c);
 });
 
-export default app;
+// The Hono app handles fetch; Cron Triggers (wrangler.json) go to scheduled.
+// `app` is exported too so tests can call app.fetch directly.
+export { app };
+export default {
+  fetch: app.fetch,
+  scheduled,
+} satisfies ExportedHandler<AppEnv['Bindings']>;

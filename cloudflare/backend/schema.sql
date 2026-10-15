@@ -462,3 +462,14 @@ CREATE TABLE IF NOT EXISTS cms_rows (
 );
 CREATE INDEX IF NOT EXISTS idx_cms_rows_collection ON cms_rows(collection, order_index);
 CREATE INDEX IF NOT EXISTS idx_cms_rows_parent ON cms_rows(parent_id, collection);
+
+-- Content change feed: one row per admin content/settings mutation, written
+-- in the same batch as the change (routes/admin_content.ts). Clients poll
+-- GET /api/v1/content/changes?since=<seq>.
+CREATE TABLE IF NOT EXISTS content_changes (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  table_name TEXT NOT NULL,
+  row_id TEXT NOT NULL,
+  op TEXT NOT NULL,
+  changed_at TEXT NOT NULL
+);

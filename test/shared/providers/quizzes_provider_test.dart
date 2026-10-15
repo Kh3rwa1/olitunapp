@@ -10,12 +10,15 @@ import 'package:hive/hive.dart';
 
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
+import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/quiz_engine/quiz_engine.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
+
+import '../../helpers/fake_admin_worker.dart';
 
 /// Concrete lightweight fake implementation of AppwriteDbService to supply test data.
 class FakeAppwriteDbService implements AppwriteDbService {
@@ -29,9 +32,6 @@ class FakeAppwriteDbService implements AppwriteDbService {
   /// Direct Appwrite reads of the quizzes collection (must stay 0 for
   /// learner loads; only the admin seed backfill reads it).
   int appwriteQuizReads = 0;
-  int createRequests = 0;
-  int updateRequests = 0;
-  int deleteRequests = 0;
 
   @override
   Future<List<Map<String, dynamic>>> listDocuments(
@@ -52,37 +52,6 @@ class FakeAppwriteDbService implements AppwriteDbService {
   }
 
   @override
-  Future<void> createDocument(
-    String collectionId,
-    String documentId,
-    Map<String, dynamic> data, {
-    List<String>? permissions,
-  }) async {
-    createRequests++;
-    quizzesData.add({...data, 'id': documentId});
-  }
-
-  @override
-  Future<void> updateDocument(
-    String collectionId,
-    String documentId,
-    Map<String, dynamic> data, {
-    List<String>? permissions,
-  }) async {
-    updateRequests++;
-    final index = quizzesData.indexWhere((doc) => doc['id'] == documentId);
-    if (index >= 0) {
-      quizzesData[index] = {...data, 'id': documentId};
-    }
-  }
-
-  @override
-  Future<void> deleteDocument(String collectionId, String documentId) async {
-    deleteRequests++;
-    quizzesData.removeWhere((doc) => doc['id'] == documentId);
-  }
-
-  @override
   Future<List<Map<String, dynamic>>> listAllDocuments(
     String collectionId, {
     List<String>? queries,
@@ -96,6 +65,7 @@ class FakeAppwriteDbService implements AppwriteDbService {
 void main() {
   group('Dynamic Hybrid Quizzes Generator Tests', () {
     late FakeAppwriteDbService fakeDb;
+    late FakeAdminWorker worker;
     late SharedPreferences prefs;
 
     setUpAll(() async {
@@ -111,6 +81,7 @@ void main() {
 
     setUp(() async {
       fakeDb = FakeAppwriteDbService();
+      worker = FakeAdminWorker();
       await CacheService.clear();
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
@@ -329,6 +300,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           appwriteDbServiceProvider.overrideWithValue(fakeDb),
+          adminContentClientProvider.overrideWithValue(worker.adminClient),
           quizzesHttpClientProvider.overrideWithValue(
             MockClient((request) async {
               if (!request.url.path.endsWith('/api/v1/quizzes')) {
@@ -528,7 +500,14 @@ void main() {
         await notifier.add(
           QuizModel(id: 'new_quiz', categoryId: 'custom', title: 'New Quiz'),
         );
-        expect(fakeDb.createRequests, 1);
+        final created = worker.requestsWith('PUT').single;
+        expect(created.url.path, '/api/v1/admin/content/quizzes/new_quiz');
+        expect(
+          created.headers['Authorization'],
+          'Bearer ${FakeAdminWorker.jwt}',
+        );
+        expect(worker.bodyOf(created)['title'], 'New Quiz');
+        expect(worker.bodyOf(created)['questions'], isA<String>());
         expect(fakeDb.quizListRequests, 1);
         expect(
           container
@@ -545,7 +524,8 @@ void main() {
             title: 'Updated Quiz',
           ),
         );
-        expect(fakeDb.updateRequests, 1);
+        expect(worker.requestsWith('PUT'), hasLength(2));
+        expect(worker.rows['quizzes']!['new_quiz']!['title'], 'Updated Quiz');
         expect(fakeDb.quizListRequests, 1);
         expect(
           container
@@ -557,7 +537,11 @@ void main() {
         );
 
         await notifier.delete('new_quiz');
-        expect(fakeDb.deleteRequests, 1);
+        expect(
+          worker.requestsWith('DELETE').single.url.path,
+          '/api/v1/admin/content/quizzes/new_quiz',
+        );
+        expect(worker.rows['quizzes'], isNot(contains('new_quiz')));
         expect(fakeDb.quizListRequests, 1);
         expect(fakeDb.appwriteQuizReads, 0);
         expect(
@@ -588,5 +572,23 @@ void main() {
         }
       },
     );
+
+    test('a failed Worker write rolls back and rethrows', () async {
+      final container = createContainer(fakeDb);
+      addTearDown(container.dispose);
+      await waitForQuizzes(container);
+      worker.failStatus = 403;
+
+      await expectLater(
+        container
+            .read(quizzesProvider.notifier)
+            .add(QuizModel(id: 'denied', categoryId: 'custom', title: 'No')),
+        throwsA(isA<Exception>()),
+      );
+      expect(
+        container.read(quizzesProvider).value!.any((q) => q.id == 'denied'),
+        isFalse,
+      );
+    });
   });
 }

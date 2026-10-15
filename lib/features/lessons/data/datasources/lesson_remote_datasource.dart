@@ -1,12 +1,8 @@
 import 'dart:convert';
-import 'package:appwrite/appwrite.dart';
-import 'package:http/http.dart' as http;
+import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/api/appwrite_functions_service.dart';
 import '../../../../core/api/edge_json_client.dart';
-import '../../../../core/config/appwrite_config.dart';
-import '../../../../core/config/cloudflare_config.dart';
 import '../../../../core/error/exceptions.dart';
-import '../../../../shared/security/premium_content_policy.dart';
 import '../models/lesson_model.dart';
 
 abstract class LessonRemoteDataSource {
@@ -20,20 +16,15 @@ abstract class LessonRemoteDataSource {
 }
 
 class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
-  static const Duration _readTimeout = Duration(seconds: 6);
-  static const Duration _writeTimeout = Duration(seconds: 15);
   static const int _authorizedListPageSize = 100;
   static const int _maxAuthorizedListPages = 100;
 
-  final TablesDB tablesDB;
   final AppwriteFunctionsService? functionsService;
-  final http.Client _edgeClient;
 
-  LessonRemoteDataSourceImpl(
-    this.tablesDB, {
-    this.functionsService,
-    http.Client? edgeClient,
-  }) : _edgeClient = edgeClient ?? http.Client();
+  /// Admin writes go to the Worker (`/api/v1/admin/content/lessons`).
+  final AdminContentClient? adminClient;
+
+  LessonRemoteDataSourceImpl({this.functionsService, this.adminClient});
 
   Future<List<LessonModel>> _getAuthorizedLessonList({
     String? categoryId,
@@ -179,129 +170,50 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
     return getAuthorizedLesson(id);
   }
 
-  Future<PublicationDecision> _publicationDecisionFor(
-    LessonModel lesson,
-  ) async {
-    if (lesson.categoryId.trim().isEmpty) {
-      return PremiumContentPolicy.forContentItem(
-        isPremium: lesson.data?['isPremium'] == true,
-        categoryResolved: false,
-      );
+  AdminContentClient get _admin {
+    final client = adminClient;
+    if (client == null) {
+      throw ServerException(message: 'Admin content service unavailable');
     }
+    return client;
+  }
 
+  /// Lesson document as the admin CMS has always stored it: `blocks` is a
+  /// JSON string and null fields are omitted (they keep their stored value).
+  static Map<String, dynamic> _lessonDocument(LessonModel lesson) {
+    final data = lesson.toJson()..remove('id');
+    data['blocks'] = jsonEncode(data['blocks']);
+    data.removeWhere((key, value) => value == null);
+    return data;
+  }
+
+  Future<void> _write(String action, Future<void> Function() write) async {
     try {
-      // Category premium settings come from the Worker (D1), never Appwrite.
-      final body = await EdgeJsonClient.getJson(
-        _edgeClient,
-        Uri.parse(
-          '${CloudflareConfig.categoriesEndpoint}/'
-          '${Uri.encodeComponent(lesson.categoryId)}',
-        ),
-        timeout: _readTimeout,
-      );
-      final category = body['category'];
-      if (category is! Map) {
-        throw const EdgeApiException('Category payload missing');
-      }
-      return PremiumContentPolicy.forContentItem(
-        isPremium: lesson.data?['isPremium'] == true,
-        categoryUnlockMode: category['unlockMode'] as String?,
-        lessonOrder: lesson.order,
-        previewLessonCount: category['previewLessonCount'] as int? ?? 0,
-        isPreview: lesson.isPreview,
-      );
-    } catch (_) {
-      return PremiumContentPolicy.forContentItem(
-        isPremium: lesson.data?['isPremium'] == true,
-        categoryResolved: false,
-      );
+      await write();
+    } on EdgeApiException catch (e) {
+      throw ServerException(message: e.message, code: e.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(message: 'Failed to $action lesson: $e');
     }
   }
 
-  List<String> _readPermissions(PublicationDecision decision) =>
-      decision.allowAnonymousRead
-      ? [
-          Permission.read(Role.any()),
-          Permission.read(Role.team(AppwriteConfig.adminTeamId)),
-          Permission.update(Role.team(AppwriteConfig.adminTeamId)),
-          Permission.delete(Role.team(AppwriteConfig.adminTeamId)),
-        ]
-      : const [];
+  // Create and update are the same Worker upsert; create kept its old
+  // fall-through-to-update behaviour for existing ids.
+  @override
+  Future<void> createLesson(LessonModel lesson) => _write(
+    'create',
+    () => _admin.upsert('lessons', lesson.id, _lessonDocument(lesson)),
+  );
 
   @override
-  Future<void> createLesson(LessonModel lesson) async {
-    try {
-      final data = lesson.toJson()..remove('id');
-      data['blocks'] = jsonEncode(data['blocks']);
-      data.removeWhere((key, value) => value == null);
-      final decision = await _publicationDecisionFor(lesson);
-
-      await tablesDB
-          .createRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'lessons',
-            rowId: lesson.id,
-            data: data,
-            permissions: _readPermissions(decision),
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      if (e.code == 409) {
-        return updateLesson(lesson);
-      }
-      throw ServerException(
-        message: e.message ?? 'Failed to create lesson',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
+  Future<void> updateLesson(LessonModel lesson) => _write(
+    'update',
+    () => _admin.upsert('lessons', lesson.id, _lessonDocument(lesson)),
+  );
 
   @override
-  Future<void> updateLesson(LessonModel lesson) async {
-    try {
-      final data = lesson.toJson()..remove('id');
-      data['blocks'] = jsonEncode(data['blocks']);
-      data.removeWhere((key, value) => value == null);
-      final decision = await _publicationDecisionFor(lesson);
-
-      await tablesDB
-          .updateRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'lessons',
-            rowId: lesson.id,
-            data: data,
-            permissions: _readPermissions(decision),
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to update lesson',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
-
-  @override
-  Future<void> deleteLesson(String id) async {
-    try {
-      await tablesDB
-          .deleteRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'lessons',
-            rowId: id,
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to delete lesson',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
+  Future<void> deleteLesson(String id) =>
+      _write('delete', () => _admin.delete('lessons', id));
 }

@@ -7,10 +7,9 @@
 //
 // DO NOT add Bakhed-only categories to this collection. They will leak
 // onto the Learn tab. The historical "Sohrai" leak was caused by this.
-import 'package:appwrite/appwrite.dart';
 import 'package:http/http.dart' as http;
+import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/api/edge_json_client.dart';
-import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/config/cloudflare_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/category_model.dart';
@@ -25,15 +24,17 @@ abstract class CategoryRemoteDataSource {
 
 class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   static const Duration _readTimeout = Duration(seconds: 6);
-  static const Duration _writeTimeout = Duration(seconds: 15);
 
-  final TablesDB tablesDB;
   final http.Client _client;
+  final AdminContentClient _admin;
 
-  /// Reads come only from the Cloudflare Worker; [tablesDB] is used for
-  /// admin writes.
-  CategoryRemoteDataSourceImpl(this.tablesDB, {http.Client? httpClient})
-    : _client = httpClient ?? http.Client();
+  /// Learner reads use the public Worker routes; admin writes use the
+  /// Worker admin routes (`/api/v1/admin/content/categories`).
+  CategoryRemoteDataSourceImpl({
+    http.Client? httpClient,
+    AdminContentClient? adminClient,
+  }) : _client = httpClient ?? http.Client(),
+       _admin = adminClient ?? AdminContentClient(httpClient ?? http.Client());
 
   @override
   Future<List<CategoryModel>> getCategories() async {
@@ -76,70 +77,32 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
     }
   }
 
-  @override
-  Future<void> createCategory(CategoryModel category) async {
+  static Map<String, dynamic> _categoryDocument(CategoryModel category) =>
+      category.toJson()
+        ..remove('id')
+        ..removeWhere((key, value) => value == null);
+
+  Future<void> _write(Future<void> Function() write) async {
     try {
-      final data = category.toJson()..remove('id');
-      data.removeWhere((key, value) => value == null);
-      await tablesDB
-          .createRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: category.id,
-            data: data,
-            permissions: [Permission.read(Role.any())],
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to create category',
-        code: e.code,
-      );
+      await write();
+    } on EdgeApiException catch (e) {
+      throw ServerException(message: e.message, code: e.statusCode);
     } catch (e) {
       throw ServerException(message: e.toString());
     }
   }
 
   @override
-  Future<void> updateCategory(CategoryModel category) async {
-    try {
-      final data = category.toJson()..remove('id');
-      data.removeWhere((key, value) => value == null);
-      await tablesDB
-          .updateRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: category.id,
-            data: data,
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to update category',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
+  Future<void> createCategory(CategoryModel category) => _write(
+    () => _admin.upsert('categories', category.id, _categoryDocument(category)),
+  );
 
   @override
-  Future<void> deleteCategory(String id) async {
-    try {
-      await tablesDB
-          .deleteRow(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: 'categories',
-            rowId: id,
-          )
-          .timeout(_writeTimeout);
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Failed to delete category',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
-  }
+  Future<void> updateCategory(CategoryModel category) => _write(
+    () => _admin.upsert('categories', category.id, _categoryDocument(category)),
+  );
+
+  @override
+  Future<void> deleteCategory(String id) =>
+      _write(() => _admin.delete('categories', id));
 }

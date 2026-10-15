@@ -1,13 +1,10 @@
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
 import 'package:mocktail/mocktail.dart';
-
-class _MockDatabases extends Mock implements TablesDB {}
 
 class _MockFunctionsService extends Mock implements AppwriteFunctionsService {}
 
@@ -42,17 +39,12 @@ Map<String, dynamic> _metadata(
 }
 
 void main() {
-  late _MockDatabases mockDatabases;
   late _MockFunctionsService mockFunctions;
   late LessonRemoteDataSourceImpl dataSource;
 
   setUp(() {
-    mockDatabases = _MockDatabases();
     mockFunctions = _MockFunctionsService();
-    dataSource = LessonRemoteDataSourceImpl(
-      mockDatabases,
-      functionsService: mockFunctions,
-    );
+    dataSource = LessonRemoteDataSourceImpl(functionsService: mockFunctions);
   });
 
   test(
@@ -85,7 +77,6 @@ void main() {
       expect(lessons.first.isLocked, isFalse);
       expect(lessons.last.isLocked, isTrue);
       expect(lessons.every((lesson) => lesson.blocks.isEmpty), isTrue);
-      verifyNoMoreInteractions(mockDatabases);
     },
   );
 
@@ -159,7 +150,6 @@ void main() {
     final lessons = await dataSource.getLessonsByCategory('cat_secure');
 
     expect(lessons.single.id, 'category_lesson');
-    verifyNoMoreInteractions(mockDatabases);
   });
 
   test('malformed pagination fails closed instead of looping', () async {
@@ -187,7 +177,7 @@ void main() {
   });
 
   test('list methods never fall back to direct database reads', () async {
-    final unavailable = LessonRemoteDataSourceImpl(mockDatabases);
+    final unavailable = LessonRemoteDataSourceImpl();
 
     expect(
       unavailable.getLessons,
@@ -201,6 +191,5 @@ void main() {
         isA<ServerException>().having((error) => error.code, 'code', 503),
       ),
     );
-    verifyNoMoreInteractions(mockDatabases);
   });
 }

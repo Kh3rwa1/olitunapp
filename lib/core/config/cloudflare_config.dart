@@ -61,6 +61,11 @@ class CloudflareConfig {
   static const String adminCmsRowsEndpoint = '$baseUrl/api/v1/admin/cms/rows';
   static const String adminCmsBakhedEndpoint =
       '$baseUrl/api/v1/admin/cms/bakhed';
+  // Admin CMS (D1): content rows, app settings, and the public change feed.
+  static const String adminContentEndpoint = '$baseUrl/api/v1/admin/content';
+  static const String adminSettingsEndpoint = '$baseUrl/api/v1/admin/settings';
+  static const String contentChangesEndpoint =
+      '$baseUrl/api/v1/content/changes';
 
   // Learner analytics ingest
   static const String analyticsEventsEndpoint =

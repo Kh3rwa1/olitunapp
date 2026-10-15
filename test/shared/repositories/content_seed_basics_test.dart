@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -11,14 +11,14 @@ import 'package:itun/shared/models/content_item_extensions.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/shared/repositories/content_seed_loader.dart';
 
-class _Databases extends Mock implements TablesDB {}
+class _MockRemote extends Mock implements ContentRemoteDataSource {}
 
 class _Network extends Mock implements NetworkInfo {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late Directory directory;
-  late _Databases tablesDB;
+  late _MockRemote remote;
   late _Network network;
   late ContentRepository repository;
 
@@ -26,9 +26,12 @@ void main() {
     directory = await Directory.systemTemp.createTemp('olitun_basic_seeds_');
     Hive.init(directory.path);
     CacheService.resetForTesting();
-    tablesDB = _Databases();
+    remote = _MockRemote();
     network = _Network();
-    repository = ContentRepository(tablesDB: tablesDB, networkInfo: network);
+    repository = ContentRepository(
+      remoteDataSource: remote,
+      networkInfo: network,
+    );
   });
 
   tearDown(() async {
@@ -59,7 +62,7 @@ void main() {
             expect(ContentItem.fromJson(item.toJson(), null, entry.key), item);
           }
         });
-        verifyZeroInteractions(tablesDB);
+        verifyZeroInteractions(remote);
         verifyZeroInteractions(network);
       },
     );
@@ -90,7 +93,7 @@ void main() {
         expect(item.toNumberModel().numeral, '᱓');
         expect(item.toNumberModel().nameLatin, 'Pe');
       });
-      verifyZeroInteractions(tablesDB);
+      verifyZeroInteractions(remote);
     },
   );
 
@@ -139,7 +142,7 @@ void main() {
           updated.title,
         );
       });
-      verifyZeroInteractions(tablesDB);
+      verifyZeroInteractions(remote);
       verifyZeroInteractions(network);
     },
   );
@@ -154,7 +157,7 @@ void main() {
       (await repository.get(ContentKind.letter, 'missing-letter')).isLeft(),
       isTrue,
     );
-    verifyZeroInteractions(tablesDB);
+    verifyZeroInteractions(remote);
   });
 
   test(

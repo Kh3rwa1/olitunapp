@@ -105,18 +105,26 @@ typedef MediaExecute =
     Future<Map<String, dynamic>> Function(Map<String, dynamic> body);
 
 /// No token cache, disk writes, URL logging or binary downloads. Each call is
-/// reauthorized using the current Appwrite session, including every refresh.
+/// reauthorized by the Cloudflare Worker using the current session JWT,
+/// including every refresh. The lease is a short-lived HMAC-signed URL to the
+/// Worker's own paid media route (bytes served from R2).
 class AuthorizedMediaService {
   AuthorizedMediaService({
     required this.execute,
     required this.endpoint,
-    required this.projectId,
     DateTime Function()? clock,
   }) : clock = clock ?? DateTime.now;
 
+  static const protocolVersion = 3;
+  static const transport = 'edge-signed-url';
+  static const maxLeaseLifetime = Duration(minutes: 5);
+  static const _minLeaseLifetime = Duration(seconds: 30);
+  static const _leaseQueryKeys = {'exp', 'uid', 'sig'};
+
   final MediaExecute execute;
+
+  /// Worker base URL (CloudflareConfig.baseUrl); leases must point here.
   final String endpoint;
-  final String projectId;
   final DateTime Function() clock;
 
   Future<MediaLease> resolve(String source) async {
@@ -129,32 +137,34 @@ class AuthorizedMediaService {
     try {
       final body = await execute({
         'action': 'get_media',
-        'protocolVersion': 2,
+        'protocolVersion': protocolVersion,
         'lessonId': lessonId,
         'bucketId': reference.bucketId,
         'fileId': reference.fileId,
       }).timeout(const Duration(seconds: 15));
       final url = Uri.parse(body['url'] as String);
-      final expected = Uri.parse(
-        '${endpoint.replaceFirst(RegExp(r'/$'), '')}/storage/buckets/'
-        '${reference.bucketId}/files/${reference.fileId}/view',
-      );
+      final base = Uri.parse(endpoint.replaceFirst(RegExp(r'/+$'), ''));
+      final expectedPath = '${base.path}/api/v1/media/paid/${reference.fileId}';
       final expires = DateTime.parse(body['expiresAt'] as String).toUtc();
       final remaining = expires.difference(clock().toUtc());
+      final query = url.queryParameters;
+      final exp = int.tryParse(query['exp'] ?? '');
       if (body['ok'] != true ||
-          body['protocolVersion'] != 2 ||
-          body['transport'] != 'appwrite-file-token' ||
+          body['protocolVersion'] != protocolVersion ||
+          body['transport'] != transport ||
           body['bucketId'] != reference.bucketId ||
           body['fileId'] != reference.fileId ||
-          url.scheme != 'https' ||
-          url.origin != expected.origin ||
-          url.path != expected.path ||
+          !_secureScheme(url, base) ||
+          url.origin != base.origin ||
+          url.path != expectedPath ||
           url.userInfo.isNotEmpty ||
           url.hasFragment ||
-          url.queryParameters['project'] != projectId ||
-          (url.queryParameters['token']?.isEmpty ?? true) ||
-          remaining <= const Duration(seconds: 30) ||
-          remaining > const Duration(minutes: 5)) {
+          query.length != _leaseQueryKeys.length ||
+          !_leaseQueryKeys.every((k) => query[k]?.isNotEmpty ?? false) ||
+          exp == null ||
+          exp != expires.millisecondsSinceEpoch ~/ 1000 ||
+          remaining <= _minLeaseLifetime ||
+          remaining > maxLeaseLifetime) {
         throw const MediaAccessException();
       }
       return MediaLease(
@@ -166,5 +176,14 @@ class AuthorizedMediaService {
       // SDK and player errors may carry bearer URLs: keep failures sanitized.
       throw const MediaAccessException();
     }
+  }
+
+  /// HTTPS only, except a plain-HTTP Worker on loopback during local dev.
+  static bool _secureScheme(Uri url, Uri base) {
+    if (url.scheme == 'https') return true;
+    const loopback = {'localhost', '127.0.0.1', '10.0.2.2'};
+    return url.scheme == 'http' &&
+        base.scheme == 'http' &&
+        loopback.contains(base.host);
   }
 }

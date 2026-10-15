@@ -77,13 +77,17 @@ class ProfileHeroCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final leaderboardLabel = ref
-        .watch(weeklyLeaderboardProvider)
-        .when(
-          data: (leaderboard) => leaderboard.badgeLabel,
-          error: (_, _) => 'Leaderboard unavailable',
-          loading: () => 'Leaderboard · Loading…',
-        );
+    final leaderboard = ref.watch(weeklyLeaderboardProvider);
+    final leaderboardLabel = leaderboard.when(
+      data: (leaderboard) => leaderboard.badgeLabel,
+      error: (_, _) => 'Leaderboard unavailable',
+      loading: () => 'Leaderboard · Loading…',
+    );
+    final leaderboardShortLabel = leaderboard.when(
+      data: (leaderboard) => leaderboard.shortBadgeLabel,
+      error: (_, _) => 'Unavailable',
+      loading: () => 'Loading…',
+    );
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final compact = MediaQuery.sizeOf(context).width < 380;
     final avatarSize = compact ? 92.0 : 108.0;
@@ -226,10 +230,12 @@ class ProfileHeroCard extends ConsumerWidget {
                               child: Text(
                                 userName,
                                 style: AppTypography.inter(
-                                  fontSize: compact ? 24 : 30,
+                                  fontSize: compact ? 22 : 26,
                                   fontWeight: FontWeight.w800,
+                                  height: 1.15,
                                   color: isDark ? Colors.white : Colors.black,
                                 ),
+                                maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -259,6 +265,7 @@ class ProfileHeroCard extends ConsumerWidget {
                           children: [
                             _ExpandableLeaderboardBadge(
                               label: leaderboardLabel,
+                              shortLabel: leaderboardShortLabel,
                               level: level,
                               color: levelColor,
                               maxWidth: detailsConstraints.maxWidth,
@@ -346,6 +353,7 @@ class ProfileHeroCard extends ConsumerWidget {
 class _ExpandableLeaderboardBadge extends StatefulWidget {
   const _ExpandableLeaderboardBadge({
     required this.label,
+    required this.shortLabel,
     required this.level,
     required this.color,
     required this.maxWidth,
@@ -353,6 +361,7 @@ class _ExpandableLeaderboardBadge extends StatefulWidget {
   });
 
   final String label;
+  final String shortLabel;
   final String level;
   final Color color;
   final double maxWidth;
@@ -432,7 +441,7 @@ class _ExpandableLeaderboardBadgeState
                       color: widget.color,
                     ),
                     child: Text(
-                      widget.label,
+                      _expanded ? widget.label : widget.shortLabel,
                       maxLines: _expanded ? null : 1,
                       overflow: _expanded
                           ? TextOverflow.visible

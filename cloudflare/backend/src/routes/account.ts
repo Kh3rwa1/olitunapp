@@ -2,7 +2,7 @@ import { requireUser } from '../auth';
 import { getRequestUserId, stableId, type App, type Bindings } from '../env';
 
 // Account deletion (replaces the Appwrite delete-account function). Mirrors
-// functions/_shared/delete_account_core.js: purge every per-user D1 row and
+// the former Appwrite delete_account_core (now removed): purge every per-user D1 row and
 // R2 object, anonymise financial records, verify nothing is left, then delete
 // the Appwrite login. Success is reported only after both halves succeed, and
 // every step is safe to repeat.

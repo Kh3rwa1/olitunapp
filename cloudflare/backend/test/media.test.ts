@@ -157,6 +157,14 @@ describe('public assets', () => {
     }
   });
 
+  it.each(['images', 'audio', 'videos'])('returns 404 (no Appwrite redirect) for a missing public %s object', async (bucket) => {
+    for (const method of ['GET', 'HEAD']) {
+      const res = await call(`/api/v1/assets/${bucket}/${uid('missing')}`, { method });
+      expect(res.status, method).toBe(404);
+      expect(res.headers.get('location'), method).toBeNull();
+    }
+  });
+
   it('sandboxes active content', async () => {
     const key = `images/${uid('svg')}`;
     await env.ASSETS.put(key, '<svg/>', { httpMetadata: { contentType: 'image/svg+xml' } });

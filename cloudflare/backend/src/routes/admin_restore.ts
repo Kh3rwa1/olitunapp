@@ -12,7 +12,7 @@ import {
 } from './admin_backup';
 
 // Resumable content restore from an R2 backup (port of
-// functions/admin-maintenance/src/resumable_restore.js to D1).
+// the former Appwrite admin-maintenance resumable restore to D1).
 //
 // - dryRun validates the backup and reports counts without writing.
 // - A real restore first takes a deterministic safety backup, then replaces

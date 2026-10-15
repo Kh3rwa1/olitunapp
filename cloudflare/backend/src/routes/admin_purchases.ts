@@ -5,8 +5,8 @@ import { adminUserId, clampInt } from './admin_common';
 // Appwrite reads of course_purchases and the admin-maintenance
 // `record_refund` action).
 //
-// Refund semantics follow functions/admin-maintenance (executeAdminRefund)
-// and functions/_shared/payment_state.js (`admin.refund`):
+// Refund semantics follow the former Appwrite admin-maintenance function
+// (executeAdminRefund, `admin.refund` payment state; now removed):
 // - a durable operationKey is required; the claim id is derived from it, so
 //   retries converge on one operation and reusing a key with different
 //   parameters is a 409 "Idempotency conflict";

@@ -3,7 +3,7 @@ import { requireUser } from '../auth';
 import { getRequestUserId, type App, type AppEnv } from '../env';
 
 // Learner spaced-repetition (SRS) sync. Ports the Appwrite Function
-// `mutateReviewState` (functions/mutateReviewState/src/main.js) to D1:
+// `mutateReviewState` (since removed from the repo) to D1:
 //
 // - Ownership is server-derived from the verified JWT. A body `userId` that
 //   differs from the caller is rejected with 403, never trusted.

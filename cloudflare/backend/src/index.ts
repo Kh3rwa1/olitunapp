@@ -1942,27 +1942,20 @@ app.post('/api/v1/studio/transcribe', async (c) => {
       whisperInput.language = langShort;
     }
 
-    const aiResponse: any = await c.env.AI.run('@cf/openai/whisper', whisperInput)
-      .catch((err: any) => {
-        console.error('Whisper STT error:', err);
-        return null;
-      });
+    let aiResponse: any = await c.env.AI.run('@cf/openai/whisper-large-v3-turbo', whisperInput)
+      .catch(() => null);
+
+    if (!aiResponse || !aiResponse.text) {
+      aiResponse = await c.env.AI.run('@cf/openai/whisper', whisperInput)
+        .catch((err: any) => {
+          console.error('Whisper STT error:', err);
+          return null;
+        });
+    }
 
     let transcribedText = String(aiResponse?.text || '').trim();
     if (!transcribedText) {
       return c.json({ ok: false, success: false, error: 'EMPTY_RESULT', message: 'No speech recognized' }, 422);
-    }
-
-    if (langShort === 'sat') {
-      const hasOlChiki = /[\u1C50-\u1C7F]/.test(transcribedText);
-      if (!hasOlChiki) {
-        try {
-          const tr = await translateWithGoogle(transcribedText, 'auto', 'sat');
-          if (tr && tr.translation && tr.translation.trim().length > 0) {
-            transcribedText = tr.translation.trim();
-          }
-        } catch (_) {}
-      }
     }
 
     return c.json({
@@ -2031,31 +2024,21 @@ app.post('/api/v1/studio/process', async (c) => {
         whisperInput.language = langShort;
       }
 
-      const aiResponse: any = await c.env.AI.run('@cf/openai/whisper', whisperInput)
-        .catch((err: any) => {
-          console.error('Whisper STT error in process:', err);
-          return null;
-        });
+      let aiResponse: any = await c.env.AI.run('@cf/openai/whisper-large-v3-turbo', whisperInput)
+        .catch(() => null);
+
+      if (!aiResponse || !aiResponse.text) {
+        aiResponse = await c.env.AI.run('@cf/openai/whisper', whisperInput)
+          .catch((err: any) => {
+            console.error('Whisper STT error in process:', err);
+            return null;
+          });
+      }
 
       let transcribedText = String(aiResponse?.text || '').trim();
 
       if (!transcribedText) {
         return c.json({ ok: false, success: false, error: 'EMPTY_RESULT', message: 'No speech recognized' }, 422);
-      }
-
-      // If user selected Santali, translate to Ol Chiki if not already in Ol Chiki
-      if (langShort === 'sat') {
-        const hasOlChiki = /[\u1C50-\u1C7F]/.test(transcribedText);
-        if (!hasOlChiki) {
-          try {
-            const tr = await translateWithGoogle(transcribedText, 'auto', 'sat');
-            if (tr && tr.translation && tr.translation.trim().length > 0) {
-              transcribedText = tr.translation.trim();
-            }
-          } catch (_) {
-            // Keep original transcribed text if translation fails
-          }
-        }
       }
 
       return c.json({

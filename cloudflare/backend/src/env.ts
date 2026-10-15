@@ -1,6 +1,8 @@
 import type { Hono } from 'hono';
 import type { AuthEnv, AuthVariables } from './auth';
 
+export type RateLimit = { limit(options: { key: string }): Promise<{ success: boolean }> };
+
 export type Bindings = AuthEnv & {
   DB: D1Database;
   ASSETS: R2Bucket;
@@ -14,6 +16,11 @@ export type Bindings = AuthEnv & {
   RAZORPAY_API_BASE?: string; // test override only; defaults to Razorpay
   BODHAN_API_BASE?: string; // test override only; defaults to Bodhan
   MEDIA_SIGNING_SECRET?: string; // HMAC key for paid media URLs
+  // Appwrite server key with users.write, used only to delete the login
+  // during account deletion.
+  APPWRITE_API_KEY?: string;
+  ANALYTICS_LIMITER?: RateLimit;
+  WAITLIST_LIMITER?: RateLimit;
 };
 
 export type AppEnv = { Bindings: Bindings; Variables: AuthVariables };

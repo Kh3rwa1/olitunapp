@@ -231,6 +231,23 @@ CREATE TABLE IF NOT EXISTS learning_analytics_events (
 CREATE INDEX IF NOT EXISTS idx_analytics_date_event ON learning_analytics_events(date_key, event_name);
 CREATE INDEX IF NOT EXISTS idx_analytics_user ON learning_analytics_events(user_id);
 
+-- Per-event context (session, platform, metadata) for learning_analytics_events.
+-- user_id is '' for guests.
+CREATE TABLE IF NOT EXISTS learning_analytics_event_details (
+  event_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  date_key TEXT NOT NULL,
+  session_id TEXT,
+  source TEXT,
+  learner_level TEXT,
+  script_mode TEXT,
+  platform TEXT,
+  event_version INTEGER DEFAULT 1,
+  metadata_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_details_user ON learning_analytics_event_details(user_id);
+CREATE INDEX IF NOT EXISTS idx_analytics_details_date ON learning_analytics_event_details(date_key);
+
 -- Waitlist
 CREATE TABLE IF NOT EXISTS binti_waitlist (
   id TEXT PRIMARY KEY,
@@ -246,6 +263,7 @@ CREATE TABLE IF NOT EXISTS binti_waitlist (
   status TEXT DEFAULT 'new'
 );
 CREATE INDEX IF NOT EXISTS idx_binti_waitlist_phone ON binti_waitlist(phone_number, ceremony_type);
+CREATE INDEX IF NOT EXISTS idx_binti_waitlist_user ON binti_waitlist(user_id, submitted_at);
 
 -- Course Purchases & Entitlements
 CREATE TABLE IF NOT EXISTS course_purchases (

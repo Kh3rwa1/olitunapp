@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:itun/core/auth/account_scope.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,8 +13,6 @@ class MockClient extends Mock implements Client {}
 class MockAccount extends Mock implements Account {}
 
 class MockFunctions extends Mock implements Functions {}
-
-class MockExecution extends Mock implements models.Execution {}
 
 class MockSession extends Mock implements models.Session {
   MockSession() {
@@ -707,22 +704,15 @@ void main() {
           'olitun_has_local_session': true,
         });
 
-        final mockExecution = MockExecution();
-        when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
-        when(() => mockExecution.responseStatusCode).thenReturn(500);
-        when(() => mockExecution.responseBody).thenReturn(
-          '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
-        );
-
-        when(
-          () => mockFunctions.createExecution(functionId: 'delete-account'),
-        ).thenAnswer((_) async => mockExecution);
-
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
           functions: mockFunctions,
           isWebOverride: true,
+          accountDeletionRequest: () async => const AccountDeletionResponse(
+            500,
+            '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
+          ),
         );
 
         await expectLater(
@@ -743,22 +733,15 @@ void main() {
           'olitun_has_local_session': true,
         });
 
-        final mockExecution = MockExecution();
-        when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
-        when(() => mockExecution.responseStatusCode).thenReturn(500);
-        when(() => mockExecution.responseBody).thenReturn(
-          '{"ok":false,"authDeleted":false,"message":"Server error"}',
-        );
-
-        when(
-          () => mockFunctions.createExecution(functionId: 'delete-account'),
-        ).thenAnswer((_) async => mockExecution);
-
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
           functions: mockFunctions,
           isWebOverride: true,
+          accountDeletionRequest: () async => const AccountDeletionResponse(
+            500,
+            '{"ok":false,"authDeleted":false,"message":"Server error"}',
+          ),
         );
 
         await expectLater(
@@ -777,22 +760,15 @@ void main() {
           'olitun_has_local_session': true,
         });
 
-        final mockExecution = MockExecution();
-        when(() => mockExecution.status).thenReturn(ExecutionStatus.completed);
-        when(() => mockExecution.responseStatusCode).thenReturn(200);
-        when(
-          () => mockExecution.responseBody,
-        ).thenReturn('{"ok":true,"authDeleted":true}');
-
-        when(
-          () => mockFunctions.createExecution(functionId: 'delete-account'),
-        ).thenAnswer((_) async => mockExecution);
-
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
           functions: mockFunctions,
           isWebOverride: true,
+          accountDeletionRequest: () async => const AccountDeletionResponse(
+            200,
+            '{"ok":true,"authDeleted":true}',
+          ),
         );
 
         await service.deleteAccount();

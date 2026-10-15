@@ -1,10 +1,13 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/utils/oauth_sanitizer.dart';
+import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/auth/auth_providers.dart';
+import '../../../../core/storage/hive_service.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 /// Displays a one-time SnackBar notice when an OAuth error query parameter
@@ -58,17 +61,49 @@ class _OAuthFailureNoticeState extends ConsumerState<OAuthFailureNotice> {
       // Keep the default message when the payload is not JSON.
     }
 
+    OAuthSanitizer.clearOAuthError();
     if (isConflict) {
-      try {
-        ref.read(authRepositoryProvider).signOut();
-      } catch (e) {
-        AppLogger.debug(
-          'Signing out after an OAuth session conflict failed: $e',
-          name: 'OAuthFailureNotice',
-        );
-      }
+      // A leftover session (usually a guest) made Appwrite try to attach
+      // Google to the wrong user. Clear it and retry Google once before
+      // asking the user to switch to email.
+      unawaited(_recoverFromConflict(message));
+      return;
     }
+    _showError(message, isConflict: false);
+  }
 
+  static const _retryKey = 'oauth_conflict_retry_at';
+  static const _retryWindow = Duration(minutes: 2);
+
+  Future<void> _recoverFromConflict(String message) async {
+    final prefs = ref.read(sharedPreferencesProvider);
+    final lastRetry = prefs.getInt(_retryKey) ?? 0;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final alreadyRetried = now - lastRetry < _retryWindow.inMilliseconds;
+
+    var signedOut = false;
+    try {
+      signedOut = await ref
+          .read(appwriteAuthServiceProvider)
+          .clearSessionsForOAuth();
+    } catch (e) {
+      AppLogger.debug(
+        'Clearing sessions after an OAuth conflict failed: $e',
+        name: 'OAuthFailureNotice',
+      );
+    }
+    if (!mounted) return;
+
+    if (signedOut && !alreadyRetried) {
+      await prefs.setInt(_retryKey, now);
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+      return;
+    }
+    await prefs.remove(_retryKey);
+    if (mounted) _showError(message, isConflict: true);
+  }
+
+  void _showError(String message, {required bool isConflict}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
@@ -84,7 +119,6 @@ class _OAuthFailureNoticeState extends ConsumerState<OAuthFailureNotice> {
             : null,
       ),
     );
-    OAuthSanitizer.clearOAuthError();
   }
 
   @override

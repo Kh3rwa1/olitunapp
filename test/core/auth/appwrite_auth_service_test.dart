@@ -21,6 +21,8 @@ class MockSession extends Mock implements models.Session {
 
 class MockToken extends Mock implements models.Token {}
 
+class MockUser extends Mock implements models.User {}
+
 class MockSharedPreferences extends Mock implements SharedPreferences {
   MockSharedPreferences() {
     when(() => setString(any(), any())).thenAnswer((_) async => true);
@@ -878,9 +880,20 @@ void main() {
       () async {
         SharedPreferences.setMockInitialValues({});
         final mockSession = MockSession();
-        when(
-          () => mockAccount.deleteSession(sessionId: 'current'),
-        ).thenAnswer((_) async => {});
+        // A dangling signed-in session that is gone after the delete.
+        final danglingUser = MockUser();
+        when(() => danglingUser.email).thenReturn('learner@example.com');
+        var signedIn = true;
+        when(() => mockAccount.get()).thenAnswer((_) async {
+          if (signedIn) return danglingUser;
+          throw AppwriteException('signed out', 401);
+        });
+        when(() => mockAccount.deleteSession(sessionId: 'current')).thenAnswer((
+          _,
+        ) async {
+          signedIn = false;
+          return {};
+        });
         when(
           () => mockAccount.createSession(
             userId: any(named: 'userId'),

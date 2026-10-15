@@ -58,8 +58,9 @@ android/app/upload_certificate.pem
 docs/maintainability/PROD_ENV_AUDIT.md
 .audit/
 
-# `node_modules/` matches at any depth, so the nested overrides are redundant.
-node_modules/
+# `node_modules` matches at any depth, so the nested overrides are redundant.
+# No trailing slash, so a node_modules symlink (not a directory) is ignored too.
+node_modules
 .wrangler/
 
 # --- Agent / AI --------------------------------------------------------------

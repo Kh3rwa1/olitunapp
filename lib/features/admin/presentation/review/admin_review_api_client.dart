@@ -1,4 +1,6 @@
-/// Phase 5 — API client for the `reviewContent` Appwrite Function.
+/// Phase 5 — API client for the admin review queue, served by the Worker
+/// (`POST /api/v1/admin/review/queue` over the D1 learner content tables;
+/// legacy function id `reviewContent`).
 ///
 /// Follows the repo's `executeAdminMaintenance` convention: execute
 /// with POST semantics, then parse responseStatusCode + responseBody.
@@ -28,7 +30,7 @@ class AdminReviewExecution {
 /// `data` object. Implemented against the core
 /// [AppwriteFunctionsService]; fakes in tests return canned responses.
 abstract class AdminReviewExecutor {
-  Future<AdminReviewExecution> createExecution(
+  Future<AdminReviewExecution> execute(
     String functionId, {
     required String body,
   });
@@ -40,7 +42,7 @@ class _FunctionsExecutor implements AdminReviewExecutor {
   final AppwriteFunctionsService _functions;
 
   @override
-  Future<AdminReviewExecution> createExecution(
+  Future<AdminReviewExecution> execute(
     String functionId, {
     required String body,
   }) async {
@@ -83,7 +85,7 @@ class AdminReviewApiClient {
   final AdminReviewExecutor _executor;
 
   Future<Map<String, dynamic>> _execute(Map<String, dynamic> payload) async {
-    final execution = await _executor.createExecution(
+    final execution = await _executor.execute(
       functionId,
       body: jsonEncode(payload),
     );

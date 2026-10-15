@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_content_client.dart';
+import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/shared/providers/seeded_content_list_notifier.dart';
-import 'package:mocktail/mocktail.dart';
 
-class _MockDbService extends Mock implements AppwriteDbService {}
+import '../../helpers/fake_admin_worker.dart';
 
 class _Item {
   final String id;
@@ -68,17 +68,13 @@ Future<void> _flush() async {
 void main() {
   const seed = [_Item('s_2', 2), _Item('s_1', 1)];
 
-  late _MockDbService db;
+  late FakeAdminWorker worker;
   late List<Map<String, dynamic>> edgeRows;
   late int edgeStatus;
   late List<Uri> edgeRequests;
 
-  setUpAll(() {
-    registerFallbackValue(<String>[]);
-  });
-
   setUp(() {
-    db = _MockDbService();
+    worker = FakeAdminWorker();
     edgeRows = const [];
     edgeStatus = 200;
     edgeRequests = [];
@@ -87,7 +83,7 @@ void main() {
   Future<(ProviderContainer, _Provider)> harness(_TestNotifier notifier) async {
     final container = ProviderContainer(
       overrides: [
-        appwriteDbServiceProvider.overrideWithValue(db),
+        adminContentClientProvider.overrideWithValue(worker.adminClient),
         seededContentHttpClientProvider.overrideWithValue(
           MockClient((request) async {
             edgeRequests.add(request.url);
@@ -114,9 +110,7 @@ void main() {
     expect(container.read(p).value, isEmpty);
     expect(notifier.loadListCalls, 1);
     expect(edgeRequests.single.path, '/api/v1/words');
-    verifyNever(
-      () => db.listAllDocuments(any(), queries: any(named: 'queries')),
-    );
+    expect(worker.requests, isEmpty);
   });
 
   test('fetchRemote maps documents and emits them sorted by order', () async {
@@ -135,9 +129,7 @@ void main() {
 
     final value = container.read(p).value!;
     expect(value.map((e) => e.id), ['r_3', 'r_9']);
-    verifyNever(
-      () => db.listAllDocuments(any(), queries: any(named: 'queries')),
-    );
+    expect(worker.requests, isEmpty);
   });
 
   test('loadList falls back to the seed when the Worker fetch fails', () async {
@@ -153,11 +145,7 @@ void main() {
     expect(container.read(p).value!.map((e) => e.id), ['s_2', 's_1']);
   });
 
-  test('add writes through to the collection and reloads', () async {
-    when(
-      () => db.createDocument('words', any(), any()),
-    ).thenAnswer((_) async {});
-
+  test('add PUTs to the Worker admin route and reloads', () async {
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
     addTearDown(container.dispose);
@@ -166,18 +154,17 @@ void main() {
 
     await container.read(p.notifier).add(const _Item('n_1', 5));
 
-    verify(
-      () => db.createDocument('words', 'n_1', {'id': 'n_1', 'order': 5}),
-    ).called(1);
+    final put = worker.requestsWith('PUT').single;
+    expect(put.url.path, '/api/v1/admin/content/words/n_1');
+    expect(put.headers['Authorization'], 'Bearer ${FakeAdminWorker.jwt}');
+    expect(worker.bodyOf(put), {'order': 5});
     expect(notifier.loadListCalls, greaterThanOrEqualTo(2));
   });
 
   test('update and delete target the item id and reload', () async {
-    when(
-      () => db.updateDocument('words', any(), any()),
-    ).thenAnswer((_) async {});
-    when(() => db.deleteDocument('words', any())).thenAnswer((_) async {});
-
+    worker.rows['words'] = {
+      's_2': {'id': 's_2', 'order': 2},
+    };
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
     addTearDown(container.dispose);
@@ -187,10 +174,15 @@ void main() {
     await container.read(p.notifier).updateItem(const _Item('s_1', 1));
     await container.read(p.notifier).delete('s_2');
 
-    verify(
-      () => db.updateDocument('words', 's_1', {'id': 's_1', 'order': 1}),
-    ).called(1);
-    verify(() => db.deleteDocument('words', 's_2')).called(1);
+    expect(
+      worker.requestsWith('PUT').single.url.path,
+      '/api/v1/admin/content/words/s_1',
+    );
+    expect(
+      worker.requestsWith('DELETE').single.url.path,
+      '/api/v1/admin/content/words/s_2',
+    );
+    expect(worker.rows['words']!.keys, ['s_1']);
   });
 
   test(
@@ -198,10 +190,7 @@ void main() {
     () async {
       final notifier = _TestNotifier(seed);
       expect(notifier.rethrowCrudErrors, isTrue);
-
-      when(
-        () => db.deleteDocument('words', any()),
-      ).thenThrow(Exception('denied'));
+      worker.failStatus = 403;
 
       final (container, p) = await harness(notifier);
       addTearDown(container.dispose);
@@ -210,21 +199,18 @@ void main() {
 
       await expectLater(
         container.read(p.notifier).delete('s_2'),
-        throwsA(isA<Exception>()),
+        throwsA(
+          isA<EdgeApiException>().having((e) => e.statusCode, 'status', 403),
+        ),
       );
     },
   );
 
   test('seed backfills only the ids missing remotely', () async {
-    when(
-      () => db.createDocument('words', any(), any()),
-    ).thenAnswer((_) async {});
-    // seed() is an admin backfill and still lists the Appwrite collection.
-    when(() => db.listAllDocuments('words')).thenAnswer(
-      (_) async => [
-        const {'id': 's_1', 'order': 1},
-      ],
-    );
+    // seed() is an admin backfill: it lists the full admin table.
+    worker.rows['words'] = {
+      's_1': {'id': 's_1', 'order': 1},
+    };
 
     final notifier = _TestNotifier(seed);
     final (container, p) = await harness(notifier);
@@ -235,7 +221,12 @@ void main() {
     await container.read(p.notifier).seed();
 
     // s_1 already exists remotely; only s_2 is backfilled.
-    verify(() => db.createDocument('words', 's_2', any())).called(1);
-    verifyNever(() => db.createDocument('words', 's_1', any()));
+    expect(
+      worker.requestsWith('GET').single.url.path,
+      '/api/v1/admin/content/words',
+    );
+    expect(worker.requestsWith('PUT').map((r) => r.url.path), [
+      '/api/v1/admin/content/words/s_2',
+    ]);
   });
 }

@@ -4,12 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/shared/providers/seeded_content_list_notifier.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 class _TestWord {
   final String id;
@@ -58,12 +54,6 @@ final _testWordProvider =
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockAppwriteDbService mockDb;
-
-  setUp(() {
-    mockDb = MockAppwriteDbService();
-  });
-
   test(
     'SeededContentListNotifier fetches words from Cloudflare Edge without hitting Appwrite',
     () async {
@@ -87,7 +77,6 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           seededContentHttpClientProvider.overrideWithValue(mockHttpClient),
         ],
       );
@@ -98,18 +87,12 @@ void main() {
       expect(words[0].id, 'w1');
       expect(words[0].word, 'ᱥᱟᱱᱛᱟᱲᱤ');
       expect(words[1].id, 'w2');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
   ProviderContainer containerWith(http.Client client) {
     final container = ProviderContainer(
-      overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
-        seededContentHttpClientProvider.overrideWithValue(client),
-      ],
+      overrides: [seededContentHttpClientProvider.overrideWithValue(client)],
     );
     addTearDown(container.dispose);
     return container;
@@ -125,9 +108,6 @@ void main() {
 
     final words = await container.read(_testWordProvider.future);
     expect(words, isEmpty);
-    verifyNever(
-      () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-    );
   });
 
   test(
@@ -140,9 +120,6 @@ void main() {
       await expectLater(
         container.read(_testWordProvider.future),
         throwsA(isA<EdgeApiException>()),
-      );
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
       );
     },
   );

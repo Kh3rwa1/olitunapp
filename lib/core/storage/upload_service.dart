@@ -1,19 +1,19 @@
 import 'package:itun/core/logging/app_logger.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../auth/appwrite_auth_service.dart';
-import '../config/appwrite_config.dart';
 import '../observability/crash_reporting.dart';
 import 'upload_rules.dart';
+import 'worker_media_api.dart';
 
-class AppwriteStorageUploadService {
-  AppwriteStorageUploadService(this._client) : _storage = Storage(_client);
+/// Admin uploads (admin media library, settings, AdminMediaField) to R2 via
+/// the Cloudflare Worker. Returns the public Worker asset URL stored in
+/// content.
+class MediaUploadService {
+  MediaUploadService(this._api);
 
-  final Client _client;
-  final Storage _storage;
+  final WorkerMediaApi _api;
 
   static const Map<String, UploadTarget> _targetsByExtension = {
     'mp3': UploadTarget('audio', 'audio/mpeg', UploadCategory.audio),
@@ -61,32 +61,17 @@ class AppwriteStorageUploadService {
       }
 
       final filename = _storageFilename(file.name, folder);
-      final inputFile = file.bytes != null
-          ? InputFile.fromBytes(
-              bytes: file.bytes!,
-              filename: filename,
-              contentType: target.contentType,
-            )
-          : InputFile.fromPath(
-              path: file.path!,
-              filename: filename,
-              contentType: target.contentType,
-            );
 
       AppLogger.debug(
-        'Appwrite upload: ${file.name} (${file.size} bytes) '
-        '→ ${target.bucketId}/$filename',
+        'Worker upload: ${file.name} (${file.size} bytes) '
+        '→ ${target.bucketId} as ${target.contentType}',
       );
 
-      AppLogger.debug(
-        'Resolved upload target: bucketId=${target.bucketId}, contentType=${target.contentType}, filename=$filename',
-      );
-
-      final uploaded = await _storage.createFile(
+      final uploaded = await _api.uploadFile(
+        file: file,
         bucketId: target.bucketId,
-        fileId: ID.unique(),
-        file: inputFile,
-        permissions: [Permission.read(Role.any())],
+        contentType: target.contentType,
+        filename: filename,
       );
 
       CrashReporting.addUploadBreadcrumb(
@@ -95,7 +80,7 @@ class AppwriteStorageUploadService {
         sizeBytes: file.size,
       );
 
-      return fileViewUrl(target.bucketId, uploaded.$id);
+      return uploaded.url;
     } catch (e) {
       CrashReporting.addUploadBreadcrumb(
         filename: file.name,
@@ -104,7 +89,7 @@ class AppwriteStorageUploadService {
         error: e.toString(),
         sizeBytes: file.size,
       );
-      AppLogger.debug('AppwriteStorageUploadService error: $e');
+      AppLogger.debug('MediaUploadService error: $e');
       rethrow;
     }
   }
@@ -149,10 +134,8 @@ class AppwriteStorageUploadService {
     return '${sanitizeFolder(folder)}-$timestamp-${sanitizeFilename(filename)}';
   }
 
-  String fileViewUrl(String bucketId, String fileId) {
-    return '${_client.endPoint}/storage/buckets/$bucketId/files/$fileId/view'
-        '?project=${AppwriteConfig.projectId}';
-  }
+  String fileViewUrl(String bucketId, String fileId) =>
+      workerAssetUrl(bucketId, fileId);
 }
 
 class UploadTarget {
@@ -163,7 +146,6 @@ class UploadTarget {
   final UploadCategory category;
 }
 
-final uploadServiceProvider = Provider((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
-  return AppwriteStorageUploadService(authService.client);
-});
+final uploadServiceProvider = Provider(
+  (ref) => MediaUploadService(ref.watch(workerMediaApiProvider)),
+);

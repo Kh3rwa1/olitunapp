@@ -87,16 +87,16 @@ capabilities exclusively through these anti-corruption seams:
 
 | Seam | Location | Purpose |
 | --- | --- | --- |
-| `AppwriteDbService` | `core/api/appwrite_db_service.dart` | All TablesDB reads/writes (retry, breadcrumbs). `listAllDocuments` pages with `Query.cursorAfter`; `listDocuments(paginate: false)` for intentionally capped reads |
-| `AppwriteFunctionsService` | `core/api/appwrite_functions_service.dart` | Serverless function RPCs; returns neutral `FunctionExecutionResult` |
-| `RealtimeChangeFeed` | `core/api/realtime_change_feed.dart` | Realtime subscriptions as neutral `RealtimeChangeEvent`s |
-| `ContentRemoteDataSource` | `core/api/content_remote_datasource.dart` | Remote datasource abstraction isolating Appwrite TablesDB from shared repositories |
-| `DbQuery` / `DbId` | `core/api/appwrite_query_builders.dart` | Query-string builders (filters, order, cursor, `or`/`and`) + unique ID generation |
+| `AppwriteFunctionsService` | `core/api/appwrite_functions_service.dart` | Legacy function ids mapped to Cloudflare Worker routes; returns neutral `FunctionExecutionResult` |
+| `ContentRemoteDataSource` | `core/api/content_remote_datasource.dart` | Remote content reads + admin CRUD, served by the Cloudflare Worker (D1) |
 | `AppwriteErrorClassifier` | `core/error/appwrite_error_classifier.dart` | Exception → neutral error-info mapping (e.g. 404 detection) |
 | `data/di/*.dart` | `features/*/data/di/` | Datasource/repository provider wiring beside the impls it constructs |
 
-Never hand-roll `Query.limit(500)` reads: use `listAllDocuments` so large
-collections are never silently truncated.
+Appwrite is used **only for authentication** (Account, sessions, JWT,
+OAuth, Teams for the admin check). Content, storage, functions and change
+feeds all go to the Cloudflare Worker; `scripts/check_appwrite_auth_only.mjs`
+fails CI on any Appwrite TablesDB/Databases/Storage/Realtime/Functions usage
+in `lib/`.
 
 ### Boundary Enforcement
 

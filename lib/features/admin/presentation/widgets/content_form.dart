@@ -317,22 +317,18 @@ class _ContentFormState extends ConsumerState<ContentForm> {
             fileId: fileId,
             checks: const [
               ReferenceCheck(
-                databaseId: 'olitun_db',
                 collectionId: 'lessons',
                 fieldNames: ['thumbnailUrl', 'heroMediaUrl'],
               ),
               ReferenceCheck(
-                databaseId: 'olitun_db',
                 collectionId: 'rhymes',
                 fieldNames: ['audioFileId', 'thumbnailUrl'],
               ),
               ReferenceCheck(
-                databaseId: 'olitun_db',
                 collectionId: 'letters',
                 fieldNames: ['audioUrl', 'imageUrl'],
               ),
               ReferenceCheck(
-                databaseId: 'olitun_db',
                 collectionId: 'numbers',
                 fieldNames: ['audioUrl', 'imageUrl'],
               ),

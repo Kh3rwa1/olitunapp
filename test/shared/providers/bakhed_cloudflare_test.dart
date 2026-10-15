@@ -7,19 +7,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/providers/bakhed_content_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/storage/cache_service.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MockAppwriteDbService mockDb;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -36,7 +30,6 @@ void main() {
     CacheService.resetForTesting();
     SharedPreferences.setMockInitialValues({});
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
   });
 
   tearDown(() async {
@@ -89,7 +82,6 @@ void main() {
 
       final container = ProviderContainer(
         overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           bakhedContentHttpClientProvider.overrideWithValue(mockHttpClient),
         ],
       );
@@ -104,9 +96,6 @@ void main() {
       expect(content.vocabulary[0].latin, 'Sereng');
       expect(content.culturalNotes.length, 1);
       expect(content.culturalNotes[0].title, 'Sohrai');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
@@ -115,7 +104,6 @@ void main() {
     () async {
       final container = ProviderContainer(
         overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           bakhedContentHttpClientProvider.overrideWithValue(
             MockClient((request) async => http.Response('Edge error', 500)),
           ),
@@ -127,9 +115,6 @@ void main() {
         bakhedLearningContentProvider('bakhed_test_2').future,
       );
       expect(content.isEmpty, isTrue);
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 }

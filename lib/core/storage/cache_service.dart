@@ -234,6 +234,22 @@ class CacheService {
     }
   }
 
+  /// Deletes every entry whose key starts with [prefix].
+  static Future<bool> deleteByPrefix(String prefix) async {
+    try {
+      final box = await _getBox();
+      final keys = box.keys
+          .where((key) => key is String && key.startsWith(prefix))
+          .toList();
+      if (keys.isNotEmpty) await box.deleteAll(keys);
+      return true;
+    } catch (e) {
+      AppLogger.debug('[Cache] deleteByPrefix error ($prefix): $e');
+      _handleCacheError(e);
+      return false;
+    }
+  }
+
   static Future<bool> clear() async {
     try {
       final box = await _getBox();

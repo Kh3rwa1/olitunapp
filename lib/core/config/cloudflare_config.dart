@@ -29,6 +29,9 @@ class CloudflareConfig {
   static const String avatarsEndpoint = '$baseUrl/api/v1/avatars';
   static const String assetsEndpoint = '$baseUrl/api/v1/assets';
 
+  // Admin media storage (R2): PUT/DELETE /<bucket>/<fileId>, GET /references
+  static const String adminMediaEndpoint = '$baseUrl/api/v1/admin/media';
+
   // Gamification, Mistakes & Progress
   static const String mistakesEndpoint = '$baseUrl/api/v1/mistakes';
   static const String mistakesRecordEndpoint =
@@ -53,6 +56,16 @@ class CloudflareConfig {
   static const String waitlistEndpoint = '$baseUrl/api/v1/waitlist/join';
   static const String waitlistMineEndpoint = '$baseUrl/api/v1/waitlist/mine';
   static const String adminWaitlistEndpoint = '$baseUrl/api/v1/admin/waitlist';
+
+  // Admin gamification / Bakhed CMS (D1 cms_rows + rhymes)
+  static const String adminCmsRowsEndpoint = '$baseUrl/api/v1/admin/cms/rows';
+  static const String adminCmsBakhedEndpoint =
+      '$baseUrl/api/v1/admin/cms/bakhed';
+  // Admin CMS (D1): content rows, app settings, and the public change feed.
+  static const String adminContentEndpoint = '$baseUrl/api/v1/admin/content';
+  static const String adminSettingsEndpoint = '$baseUrl/api/v1/admin/settings';
+  static const String contentChangesEndpoint =
+      '$baseUrl/api/v1/content/changes';
 
   // Learner analytics ingest
   static const String analyticsEventsEndpoint =

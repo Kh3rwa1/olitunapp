@@ -1,27 +1,19 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/error/exceptions.dart';
 import 'package:itun/features/lessons/data/datasources/lesson_remote_datasource.dart';
 
-class _MockDatabases extends Mock implements TablesDB {}
-
 class _MockFunctionsService extends Mock implements AppwriteFunctionsService {}
 
 void main() {
-  late _MockDatabases mockDatabases;
   late _MockFunctionsService mockFunctions;
   late LessonRemoteDataSourceImpl dataSource;
 
   setUp(() {
-    mockDatabases = _MockDatabases();
     mockFunctions = _MockFunctionsService();
-    dataSource = LessonRemoteDataSourceImpl(
-      mockDatabases,
-      functionsService: mockFunctions,
-    );
+    dataSource = LessonRemoteDataSourceImpl(functionsService: mockFunctions);
   });
 
   group('LessonRemoteDataSource.getAuthorizedLesson', () {
@@ -155,7 +147,7 @@ void main() {
     test(
       'throws ServerException with code 503 when functionsService is null without bypassing',
       () async {
-        final unauthDataSource = LessonRemoteDataSourceImpl(mockDatabases);
+        final unauthDataSource = LessonRemoteDataSourceImpl();
 
         expect(
           () => unauthDataSource.getAuthorizedLesson('lesson_any'),

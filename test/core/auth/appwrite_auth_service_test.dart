@@ -12,8 +12,6 @@ class MockClient extends Mock implements Client {}
 
 class MockAccount extends Mock implements Account {}
 
-class MockFunctions extends Mock implements Functions {}
-
 class MockSession extends Mock implements models.Session {
   MockSession() {
     when(() => userId).thenReturn('test_user_id');
@@ -337,12 +335,10 @@ void main() {
   group('AppwriteAuthService Comprehensive Invariants', () {
     late MockClient mockClient;
     late MockAccount mockAccount;
-    late MockFunctions mockFunctions;
 
     setUp(() {
       mockClient = MockClient();
       mockAccount = MockAccount();
-      mockFunctions = MockFunctions();
 
       when(() => mockClient.setSession(any())).thenReturn(mockClient);
       when(() => mockClient.setEndpoint(any())).thenReturn(mockClient);
@@ -361,7 +357,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         isWebOverride: true,
       );
 
@@ -384,7 +379,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         isWebOverride: true,
       );
 
@@ -408,7 +402,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -436,7 +429,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -460,7 +452,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         isWebOverride: true,
       );
 
@@ -485,7 +476,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -514,7 +504,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -541,7 +530,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         isWebOverride: true,
       );
 
@@ -576,7 +564,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         isWebOverride: true,
       );
 
@@ -600,7 +587,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -631,7 +617,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -654,7 +639,6 @@ void main() {
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
         account: mockAccount,
-        functions: mockFunctions,
         prefs: mockPrefs,
         isWebOverride: true,
       );
@@ -682,7 +666,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           prefs: mockPrefs,
           isWebOverride: true,
         );
@@ -707,7 +690,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
           accountDeletionRequest: () async => const AccountDeletionResponse(
             500,
@@ -736,7 +718,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
           accountDeletionRequest: () async => const AccountDeletionResponse(
             500,
@@ -763,7 +744,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
           accountDeletionRequest: () async => const AccountDeletionResponse(
             200,
@@ -793,7 +773,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -833,7 +812,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: true,
         );
 
@@ -864,7 +842,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: false,
           browserAuthenticate: ({required url, required callbackUrlScheme}) async {
             browserUrl = url;
@@ -914,7 +891,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: false,
           browserAuthenticate: ({required url, required callbackUrlScheme}) async {
             return 'appwrite-callback-${AppwriteConfig.projectId}://success?userId=user_1&secret=session-secret';
@@ -956,7 +932,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: false,
         );
 
@@ -988,7 +963,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: false,
         );
 
@@ -1025,7 +999,6 @@ void main() {
         final service = AppwriteAuthService.forTesting(
           client: mockClient,
           account: mockAccount,
-          functions: mockFunctions,
           isWebOverride: false,
         );
 

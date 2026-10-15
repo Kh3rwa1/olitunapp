@@ -1,9 +1,7 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/appwrite_functions_service.dart';
-import '../../../../core/api/edge_json_client.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/api/admin_content_client.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../datasources/lesson_local_datasource.dart';
@@ -12,16 +10,12 @@ import '../repositories/lesson_repository_impl.dart';
 import '../../domain/repositories/lesson_repository.dart';
 
 // Data-layer DI wiring for the lessons feature. Lives beside the
-// datasources/repositories it constructs so `package:appwrite` never
-// leaks into presentation.
+// datasources/repositories it constructs.
 
 final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
-  final client = ref.watch(appwriteAuthServiceProvider).client;
-  final functions = ref.watch(appwriteFunctionsServiceProvider);
   return LessonRemoteDataSourceImpl(
-    TablesDB(client),
-    functionsService: functions,
-    edgeClient: ref.watch(edgeHttpClientProvider),
+    functionsService: ref.watch(appwriteFunctionsServiceProvider),
+    adminClient: ref.watch(adminContentClientProvider),
   );
 });
 

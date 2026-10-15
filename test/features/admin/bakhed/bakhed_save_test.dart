@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
@@ -18,11 +18,11 @@ import 'package:itun/core/error/failures.dart';
 
 class MockBakhedRepository extends Mock implements BakhedRepository {}
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+class MockGamificationCmsApi extends Mock implements GamificationCmsApi {}
 
 class MockNetworkInfo extends Mock implements NetworkInfo {}
 
-class MockStorage extends Mock implements Storage {}
+class MockMedia extends Mock implements WorkerMediaApi {}
 
 class FakeContentItem extends Fake implements ContentItem {}
 
@@ -64,7 +64,7 @@ void main() {
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(Uint8List(0));
     registerFallbackValue(
-      const ReferenceCheck(databaseId: '', collectionId: '', fieldNames: []),
+      const ReferenceCheck(collectionId: '', fieldNames: []),
     );
   });
 
@@ -183,21 +183,21 @@ void main() {
   // Group 2: Repository upsert payload verification
   // ────────────────────────────────────────────────────────────
   group('BakhedRepository.upsert payload', () {
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late MockNetworkInfo mockNetworkInfo;
     late BakhedRepository repository;
 
     setUp(() {
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
       mockNetworkInfo = MockNetworkInfo();
       repository = BakhedRepository(
-        dbService: mockDbService,
-        storage: MockStorage(),
+        api: mockCms,
+        media: MockMedia(),
         networkInfo: mockNetworkInfo,
       );
     });
 
-    test('upsert sends audioUrl in the payload to Appwrite', () async {
+    test('upsert sends audioUrl in the payload to the Worker', () async {
       final item = _makeRhyme(
         audioUrl: 'https://cdn.example.com/audio.mp3',
         audioFileId: 'file_abc',
@@ -207,11 +207,12 @@ void main() {
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
 
       Map<String, dynamic>? capturedPayload;
-      when(() => mockDbService.updateDocument(any(), any(), any())).thenAnswer((
+      when(() => mockCms.upsertBakhed(any(), any())).thenAnswer((
         invocation,
       ) async {
+        expect(invocation.positionalArguments[0], item.id);
         capturedPayload =
-            invocation.positionalArguments[2] as Map<String, dynamic>;
+            invocation.positionalArguments[1] as Map<String, dynamic>;
       });
 
       final result = await repository.upsert(item);
@@ -229,11 +230,12 @@ void main() {
       when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
 
       Map<String, dynamic>? capturedPayload;
-      when(() => mockDbService.updateDocument(any(), any(), any())).thenAnswer((
+      when(() => mockCms.upsertBakhed(any(), any())).thenAnswer((
         invocation,
       ) async {
+        expect(invocation.positionalArguments[0], item.id);
         capturedPayload =
-            invocation.positionalArguments[2] as Map<String, dynamic>;
+            invocation.positionalArguments[1] as Map<String, dynamic>;
       });
 
       final result = await repository.upsert(item);
@@ -253,12 +255,12 @@ void main() {
   // ────────────────────────────────────────────────────────────
   group('Audio upload/save race condition', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
     });
 
     tearDown(() {
@@ -281,7 +283,7 @@ void main() {
       final c = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
@@ -451,12 +453,12 @@ void main() {
   // ────────────────────────────────────────────────────────────
   group('Optimistic concurrency', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
     });
 
     tearDown(() {
@@ -489,7 +491,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
@@ -540,7 +542,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
@@ -681,13 +683,13 @@ void main() {
   // ────────────────────────────────────────────────────────────
   group('Deferred storage deletions (Pattern A)', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late MockMediaUploader mockMediaUploader;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
       mockMediaUploader = MockMediaUploader();
     });
 
@@ -708,7 +710,7 @@ void main() {
       final c = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(mockMediaUploader),
         ],
       );
@@ -971,12 +973,12 @@ void main() {
   // ────────────────────────────────────────────────────────────
   group('New Rhyme 404 Load & isNewDraft', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
     });
 
     tearDown(() {
@@ -997,7 +999,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1030,7 +1032,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1056,7 +1058,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
@@ -1089,7 +1091,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1116,12 +1118,12 @@ void main() {
 
   group('BakhedEditorNotifier string-based category updates', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
     });
 
     tearDown(() {
@@ -1140,7 +1142,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1182,7 +1184,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1224,7 +1226,7 @@ void main() {
         container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -1241,12 +1243,12 @@ void main() {
 
   group('BakhedEditorNotifier cover media switching tests', () {
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
     late ProviderContainer container;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
     });
 
     tearDown(() {
@@ -1260,7 +1262,7 @@ void main() {
       container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );

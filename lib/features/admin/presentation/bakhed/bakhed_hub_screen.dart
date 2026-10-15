@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/api/appwrite_query_builders.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../data/bakhed_repository.dart';
+import '../../data/gamification_cms_api.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_empty_state.dart';
 import '../../domain/content_badge_resolver.dart';
@@ -61,7 +61,7 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                   ElevatedButton.icon(
                     onPressed: () {
                       // Navigate to the editor with a fresh unique ID
-                      final newId = DbId.unique();
+                      final newId = GamificationCmsApi.newRowId();
                       context.go('/admin/bakhed/editor/$newId');
                     },
                     icon: const Icon(Icons.add_rounded, color: Colors.white),

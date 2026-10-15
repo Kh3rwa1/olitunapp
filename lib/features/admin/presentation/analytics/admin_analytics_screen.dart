@@ -1,9 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/logging/app_logger.dart';
-import '../../../../core/api/appwrite_db_service.dart';
-import '../../../../core/api/appwrite_query_builders.dart';
+import '../../../../core/api/admin_dashboard_api.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/admin_page_header.dart';
@@ -88,7 +86,7 @@ final adminAnalyticsDensityProvider = StateProvider<AdminAnalyticsDensity>(
 
 final adminAnalyticsSnapshotProvider =
     FutureProvider.autoDispose<AdminAnalyticsSnapshot>((ref) async {
-      final db = ref.read(appwriteDbServiceProvider);
+      final api = ref.read(adminDashboardApiProvider);
       final range = ref.watch(adminAnalyticsRangeProvider);
       final now = DateTime.now().toUtc();
       final start = range.startFor(now);
@@ -96,36 +94,11 @@ final adminAnalyticsSnapshotProvider =
       final startKey = formatDateKey(start);
       final endKey = formatDateKey(end);
 
-      final rollups = await db.listAllDocuments(
-        'learning_analytics_daily_rollups',
-        queries: [
-          DbQuery.greaterThanEqual('dateKey', startKey),
-          DbQuery.lessThanEqual('dateKey', endKey),
-          DbQuery.orderDesc('dateKey'),
-        ],
-      );
-
-      var events = <Map<String, dynamic>>[];
-      try {
-        events = await db.listAllDocuments(
-          'learning_analytics_events',
-          queries: [
-            DbQuery.greaterThanEqual('dateKey', startKey),
-            DbQuery.lessThanEqual('dateKey', endKey),
-            DbQuery.orderDesc('dateKey'),
-          ],
-        );
-      } catch (e, stack) {
-        // Rollups still power the product dashboard when raw event reads are
-        // restricted. DAU/retention gracefully drop to zero instead of failing
-        // the whole admin page.
-        AppLogger.warning(
-          'AdminAnalytics: raw event read failed; DAU/retention fall back to 0',
-          name: 'AdminAnalytics',
-          error: e,
-          stackTrace: stack,
-        );
-      }
+      // The Worker computes per-day/per-event rollups (with source and
+      // platform breakdowns) and distinct actor-days from D1 events.
+      final data = await api.analytics(startKey: startKey, endKey: endKey);
+      final rollups = data.rollups;
+      final events = data.events;
 
       return AdminAnalyticsSnapshot.fromRows(
         rollups: rollups,
@@ -133,6 +106,8 @@ final adminAnalyticsSnapshotProvider =
         now: now,
         startDate: start,
         endDate: end,
+        isSampled: data.eventsTruncated,
+        eventsComplete: !data.eventsTruncated,
       );
     });
 

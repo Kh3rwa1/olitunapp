@@ -5,37 +5,41 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:just_audio/just_audio.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/core/logging/app_logger.dart';
-import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
-import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/video_web_helper.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 
 /// CANONICAL upload path for ALL audio/image/video media in the app.
 ///
-/// - Uploads to Appwrite storage with read("any") permission.
+/// - Uploads to R2 through the Cloudflare Worker (admin JWT); public buckets
+///   are served at `/api/v1/assets/<bucket>/<fileId>`.
 /// - For audio MIME types, probes duration synchronously via just_audio
 ///   before returning. Result includes durationMs.
 /// - Reports upload state via MediaPickerField's onUploadStateChanged
 ///   callback so editors can block Save during in-flight uploads.
 /// - DO NOT create parallel upload utilities — extend this instead.
 ///
-/// See docs/storage.md for rationale on why the audio bucket has
-/// encryption: false (Range-request-to-disk-offset mapping requires
-/// it for HTML5 audio seek/duration to work correctly).
+/// The Worker serves assets with byte-range support, which HTML5 audio needs
+/// for seek/duration.
 class MediaUploader {
-  final Client _client;
-  final Storage _storage;
-  final AppwriteDbService? _dbService;
+  final WorkerMediaApi _api;
 
-  MediaUploader(this._client, [this._dbService]) : _storage = Storage(_client);
+  MediaUploader(this._api);
 
-  /// Picks a file and uploads it to Appwrite Storage, returning `Either<Failure, ContentMedia>`.
+  /// Buckets tried, in order, when [delete] is called without a bucket.
+  static const List<String> deleteFallbackBuckets = [
+    'images',
+    'videos',
+    'audio',
+    'animations',
+    'cover_videos',
+  ];
+
+  /// Picks a file and uploads it to R2 via the Worker, returning `Either<Failure, ContentMedia>`.
   /// If [allowedExtensions] is provided, it filters the file picker.
   Future<Either<Failure, ContentMedia>> pickAndUpload({
     required ContentMediaKind kind,
@@ -64,13 +68,14 @@ class MediaUploader {
 
       final bucketId = _getBucketId(kind, file.name);
       final filename = _storageFilename(file.name, folder);
-
-      InputFile inputFile;
-      if (file.bytes != null) {
-        inputFile = InputFile.fromBytes(bytes: file.bytes!, filename: filename);
-      } else if (file.path != null) {
-        inputFile = InputFile.fromPath(path: file.path!, filename: filename);
-      } else {
+      final contentType =
+          mediaContentTypes[file.name.split('.').last.toLowerCase()];
+      if (contentType == null) {
+        return left(
+          ValidationFailure(message: 'Unsupported file type: ${file.name}'),
+        );
+      }
+      if (file.bytes == null && file.path == null) {
         return left(
           const ValidationFailure(
             message:
@@ -79,11 +84,11 @@ class MediaUploader {
         );
       }
 
-      final uploaded = await _storage.createFile(
+      final uploaded = await _api.uploadFile(
+        file: file,
         bucketId: bucketId,
-        fileId: ID.unique(),
-        file: inputFile,
-        permissions: [Permission.read(Role.any())],
+        contentType: contentType,
+        filename: filename,
       );
 
       int? durationMs = probedDurationMs;
@@ -96,11 +101,9 @@ class MediaUploader {
         durationMs = await _probeAudioDurationMs(file);
       }
 
-      final viewUrl = _constructViewUrl(bucketId, uploaded.$id);
-
       final media = ContentMedia(
-        url: viewUrl,
-        fileId: uploaded.$id,
+        url: workerAssetUrl(bucketId, uploaded.fileId),
+        fileId: uploaded.fileId,
         kind: kind,
         durationMs: durationMs,
       );
@@ -111,30 +114,18 @@ class MediaUploader {
     }
   }
 
-  /// Deletes a file from Appwrite Storage.
+  /// Deletes a file from R2 via the Worker. Without [bucketId], tries
+  /// [deleteFallbackBuckets] until one held the file.
   Future<Either<Failure, Unit>> delete(
     String fileId, [
     String? bucketId,
   ]) async {
     try {
-      // If bucketId is not provided, try to delete from all common buckets
       if (bucketId != null) {
-        await _storage.deleteFile(bucketId: bucketId, fileId: fileId);
+        await _api.delete(bucketId, fileId);
       } else {
-        final buckets = [
-          'images',
-          'videos',
-          'audio',
-          'animations',
-          'cover_videos',
-        ];
-        for (final bucket in buckets) {
-          try {
-            await _storage.deleteFile(bucketId: bucket, fileId: fileId);
-            break;
-          } catch (_) {
-            // Continue trying other buckets
-          }
+        for (final bucket in deleteFallbackBuckets) {
+          if (await _api.delete(bucket, fileId)) break;
         }
       }
       return right(unit);
@@ -143,8 +134,10 @@ class MediaUploader {
     }
   }
 
-  /// Deletes a file from Appwrite Storage ONLY if it is not actively referenced by any database documents.
-  /// Refuses deletion and logs a warning if references are found or if the query fails (fail-safe).
+  /// Deletes a file ONLY if no D1 content row references it (checked by the
+  /// Worker across all content tables; [checks] name the expected referrers
+  /// for logging). Refuses deletion if references are found or the check
+  /// fails (fail-safe).
   Future<Either<Failure, Unit>> deleteIfUnreferenced({
     required String fileId,
     required List<ReferenceCheck> checks,
@@ -154,51 +147,25 @@ class MediaUploader {
       return right(unit);
     }
 
-    if (_dbService == null) {
-      AppLogger.warning(
-        'Refusing to delete file $fileId: AppwriteDbService is not available',
+    final bool referenced;
+    try {
+      referenced = await _api.isReferenced(fileId);
+    } catch (e) {
+      AppLogger.error(
+        'Reference check failed for $fileId: $e. Refusing deletion as a fail-safe.',
         name: 'MediaUploader',
       );
-      return right(unit); // Fail-safe no-op success
+      return right(unit); // Refuse deletion, return successful no-op
     }
-
-    try {
-      // 1. Perform reference checks across all provided collections
-      for (final check in checks) {
-        for (final field in check.fieldNames) {
-          try {
-            // Query documents where field equals fileId
-            final docs = await _dbService.listDocuments(
-              check.collectionId,
-              queries: [Query.equal(field, fileId), Query.limit(1)],
-              paginate: false, // We only need to find if at least one exists
-            );
-
-            if (docs.isNotEmpty) {
-              final docId =
-                  docs.first['id'] ?? docs.first['\$id'] ?? 'unknown_id';
-              AppLogger.warning(
-                'Refusing to delete actively-referenced file $fileId, referenced by ${check.collectionId}/$docId',
-                name: 'MediaUploader',
-              );
-              return right(unit); // Refuse deletion, return successful no-op
-            }
-          } catch (e) {
-            // Fail-safe: if any query fails, refuse deletion to protect references
-            AppLogger.error(
-              'Database reference check failed for collection ${check.collectionId}: $e. Refusing deletion as a fail-safe.',
-              name: 'MediaUploader',
-            );
-            return right(unit); // Refuse deletion, return successful no-op
-          }
-        }
-      }
-
-      // 2. If no references were found, proceed with deletion using the existing delete path
-      return await delete(fileId, bucketId);
-    } catch (e) {
-      return left(ServerFailure(message: 'Storage deletion failed: $e'));
+    if (referenced) {
+      AppLogger.warning(
+        'Refusing to delete actively-referenced file $fileId '
+        '(checked: ${checks.map((c) => c.collectionId).join(', ')})',
+        name: 'MediaUploader',
+      );
+      return right(unit); // Refuse deletion, return successful no-op
     }
+    return delete(fileId, bucketId);
   }
 
   FileType _getFileType(ContentMediaKind kind) {
@@ -246,11 +213,6 @@ class MediaUploader {
       case ContentMediaKind.lottie:
         return 'animations';
     }
-  }
-
-  String _constructViewUrl(String bucketId, String fileId) {
-    return '${_client.endPoint}/storage/buckets/$bucketId/files/$fileId/view'
-        '?project=${AppwriteConfig.projectId}';
   }
 
   String _storageFilename(String filename, String folder) {
@@ -402,19 +364,12 @@ class _BytesAudioSource extends StreamAudioSource {
 }
 
 class ReferenceCheck {
-  final String databaseId;
   final String collectionId;
   final List<String> fieldNames; // e.g., ['audioFileId', 'coverFileId']
 
-  const ReferenceCheck({
-    required this.databaseId,
-    required this.collectionId,
-    required this.fieldNames,
-  });
+  const ReferenceCheck({required this.collectionId, required this.fieldNames});
 }
 
-final mediaUploaderProvider = Provider<MediaUploader>((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
-  final dbService = ref.watch(appwriteDbServiceProvider);
-  return MediaUploader(authService.client, dbService);
-});
+final mediaUploaderProvider = Provider<MediaUploader>(
+  (ref) => MediaUploader(ref.watch(workerMediaApiProvider)),
+);

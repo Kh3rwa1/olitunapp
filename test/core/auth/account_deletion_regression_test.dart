@@ -15,8 +15,6 @@ class DeletionClient extends Mock implements Client {}
 
 class DeletionAccount extends Mock implements Account {}
 
-class DeletionFunctions extends Mock implements Functions {}
-
 class DeletionJwt extends Mock implements models.Jwt {}
 
 void main() {
@@ -82,7 +80,6 @@ void main() {
 
   group('Deletion service regression', () {
     late DeletionClient client;
-    late DeletionFunctions functions;
     late SharedPreferences prefs;
     late AppwriteAuthService service;
     late AccountDeletionRequest request;
@@ -96,14 +93,12 @@ void main() {
       });
       prefs = await SharedPreferences.getInstance();
       client = DeletionClient();
-      functions = DeletionFunctions();
       when(() => client.setSession(any())).thenReturn(client);
       requests = 0;
       request = () async => throw StateError('no response configured');
       service = AppwriteAuthService.forTesting(
         client: client,
         account: DeletionAccount(),
-        functions: functions,
         prefs: prefs,
         isWebOverride: false,
         accountDeletionRequest: () {
@@ -121,7 +116,6 @@ void main() {
       execution(200, '{"ok":true,"code":"account_deleted","authDeleted":true}');
       await service.deleteAccount();
       expect(requests, 1);
-      verifyZeroInteractions(functions);
     });
 
     test('transport 401 requires sign-in and never returns success', () async {

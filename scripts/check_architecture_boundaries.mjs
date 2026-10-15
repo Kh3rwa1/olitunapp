@@ -4,8 +4,9 @@
  *
  * SDK isolation rule: the Appwrite SDK (`package:appwrite/`) may only be
  * imported from
- *   - `lib/core/**`            (anti-corruption seams: AppwriteDbService,
- *                               AppwriteFunctionsService, RealtimeChangeFeed…)
+ *   - `lib/core/**`            (auth seams: AppwriteAuthService, EdgeAuth…;
+ *                               Appwrite is auth-only, see
+ *                               scripts/check_appwrite_auth_only.mjs)
  *   - `lib/features/<feature>/data/**` (repository/datasource impls + DI)
  * Every other Dart file under `lib/` (presentation, domain, providers,
  * `lib/shared/**`, `lib/app/**`, `lib/main.dart`, …) must go through those

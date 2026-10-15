@@ -7,18 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/app_settings_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MockAppwriteDbService mockDb;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -33,7 +27,6 @@ void main() {
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    mockDb = MockAppwriteDbService();
   });
 
   tearDownAll(() async {
@@ -64,7 +57,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           appSettingsHttpClientProvider.overrideWithValue(mockHttpClient),
         ],
       );
@@ -77,7 +69,6 @@ void main() {
       );
       expect(settings['razorpay_key_id'], 'rzp_edge_123');
       expect(settings['translation_engine'], 'google');
-      verifyNever(() => mockDb.listDocuments(any()));
     },
   );
 
@@ -85,7 +76,6 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         isAuthenticatedProvider.overrideWith((ref) => true),
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
         appSettingsHttpClientProvider.overrideWithValue(client),
       ],
     );
@@ -105,7 +95,6 @@ void main() {
 
     final settings = await container.read(appSettingsProvider.future);
     expect(settings, isEmpty);
-    verifyNever(() => mockDb.listDocuments(any()));
   });
 
   test(
@@ -117,7 +106,6 @@ void main() {
 
       final settings = await container.read(appSettingsProvider.future);
       expect(settings, isEmpty);
-      verifyNever(() => mockDb.listDocuments(any()));
     },
   );
 }

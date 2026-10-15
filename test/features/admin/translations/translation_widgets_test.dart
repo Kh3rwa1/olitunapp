@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/features/admin/presentation/translations/models/translation_entry.dart';
 import 'package:itun/features/admin/presentation/translations/widgets/translation_edit_dialog.dart';
 import 'package:itun/features/admin/presentation/translations/widgets/translation_engine_card.dart';
 import 'package:itun/features/admin/presentation/translations/widgets/translation_stats_card.dart';
+
+import '../../../helpers/fake_admin_worker.dart';
 
 TranslationEntry _entry({Map<String, String>? translations}) =>
     TranslationEntry(
@@ -145,9 +148,15 @@ void main() {
     testWidgets('renders both IndicTrans2 and Google Translate choices', (
       tester,
     ) async {
+      // The card's settings controller loads from the Worker admin route.
       await tester.pumpWidget(
-        const ProviderScope(
-          child: MaterialApp(
+        ProviderScope(
+          overrides: [
+            adminContentClientProvider.overrideWithValue(
+              FakeAdminWorker().adminClient,
+            ),
+          ],
+          child: const MaterialApp(
             home: Scaffold(
               body: SingleChildScrollView(
                 child: TranslationEngineCard(isDark: false),

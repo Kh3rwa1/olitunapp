@@ -1,8 +1,11 @@
-import 'package:appwrite/appwrite.dart';
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_purchases_api.dart';
+import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
@@ -12,18 +15,53 @@ import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+typedef _PageHandler = Future<AdminPurchasePage> Function(_PageRequest request);
+
+class _PageRequest {
+  _PageRequest(this.filter, this.search, this.cursor, this.limit, this.export);
+  final String filter;
+  final String search;
+  final String? cursor;
+  final int limit;
+  final bool export;
+}
+
+/// Worker purchases API stand-in: records requests, answers via [handler].
+class _FakePurchasesApi extends Fake implements AdminPurchasesApi {
+  _PageHandler handler = (_) async =>
+      const AdminPurchasePage(items: [], hasMore: false);
+  final requests = <_PageRequest>[];
+
+  @override
+  Future<AdminPurchasePage> list({
+    required String filter,
+    String search = '',
+    String? cursor,
+    int limit = 50,
+    bool export = false,
+  }) {
+    final request = _PageRequest(filter, search, cursor, limit, export);
+    requests.add(request);
+    return handler(request);
+  }
+}
+
+AdminPurchasePage _page(
+  List<Map<String, dynamic>> items, {
+  bool hasMore = false,
+  String? next,
+}) => AdminPurchasePage(items: items, hasMore: hasMore, nextCursor: next);
 
 class MockPurchaseRepository extends Mock implements PurchaseRepository {}
 
 class MockAppwriteAuthService extends Mock implements AppwriteAuthService {}
 
 void main() {
-  late MockAppwriteDbService mockDb;
+  late _FakePurchasesApi api;
   late MockPurchaseRepository mockRepo;
 
   setUp(() {
-    mockDb = MockAppwriteDbService();
+    api = _FakePurchasesApi();
     mockRepo = MockPurchaseRepository();
   });
 
@@ -37,7 +75,7 @@ void main() {
   ProviderContainer createContainer({UserEntity? operator = testAdminUser}) {
     final container = ProviderContainer(
       overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        adminPurchasesApiProvider.overrideWithValue(api),
         purchaseRepositoryProvider.overrideWithValue(mockRepo),
         isAuthenticatedProvider.overrideWith((ref) async => true),
         currentUserProvider.overrideWith((ref) async => operator),
@@ -78,18 +116,26 @@ void main() {
     };
   }
 
-  group('AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix', () {
-    test(
-      'Case 1: initial load loads first page and computes metrics',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer(
-          (_) async => [
+  List<Map<String, dynamic>> docs(String prefix, int count) => List.generate(
+    count,
+    (i) => makePurchaseDoc(
+      id: '${prefix}_$i',
+      userId: 'u_$i',
+      categoryId: 'santali_basics',
+      unlockMethod: 'razorpay',
+      amountPaidInr: 299,
+      status: 'verified',
+      paymentId: 'pay_$i',
+    ),
+  );
+
+  group(
+    'AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix',
+    () {
+      test(
+        'Case 1: initial load reads the Worker list and computes metrics',
+        () async {
+          api.handler = (_) async => _page([
             makePurchaseDoc(
               id: 'p1',
               userId: 'u1',
@@ -107,151 +153,119 @@ void main() {
               amountPaidInr: 0,
               status: 'verified',
             ),
-          ],
-        );
+          ]);
 
+          final container = createContainer();
+          addTearDown(container.dispose);
+          await waitForInitialLoad(container);
+
+          final state = container.read(adminPurchasesProvider);
+          expect(state.isLoading, isFalse);
+          expect(state.hasInitialError, isFalse);
+          expect(state.hasLoadMoreError, isFalse);
+          expect(state.items.length, 2);
+          expect(state.hasMore, isFalse);
+          expect(state.isSampledOrPartial, isFalse);
+          expect(state.metrics.grossCollectedInr, 299);
+          expect(state.metrics.netRevenueInr, 299);
+          expect(state.metrics.activePaidCount, 1);
+          expect(state.metrics.reviewUnlockCount, 1);
+          final first = api.requests.single;
+          expect(first.filter, 'all');
+          expect(first.cursor, isNull);
+          expect(first.limit, AdminPurchasesNotifier.pageSize);
+          expect(first.export, isFalse);
+        },
+      );
+
+      test('filters and search are sent to the Worker', () async {
+        final container = createContainer();
+        addTearDown(container.dispose);
+        await waitForInitialLoad(container);
+
+        await container
+            .read(adminPurchasesProvider.notifier)
+            .loadPurchases(filter: 'refunded', search: '  santali ');
+
+        final last = api.requests.last;
+        expect(last.filter, 'refunded');
+        expect(last.search, 'santali');
+      });
+
+      test(
+        'Case 2: loadNextPage follows the server cursor and hasMore flag',
+        () async {
+          api.handler = (request) async => request.cursor == null
+              ? _page(docs('p', 50), hasMore: true, next: 'cursor-1')
+              : _page([...docs('q', 1)]);
+
+          final container = createContainer();
+          addTearDown(container.dispose);
+          await waitForInitialLoad(container);
+          final notifier = container.read(adminPurchasesProvider.notifier);
+
+          var state = container.read(adminPurchasesProvider);
+          expect(state.items.length, 50);
+          expect(state.hasMore, isTrue);
+          expect(state.isSampledOrPartial, isTrue);
+          expect(state.nextCursor, 'cursor-1');
+
+          await notifier.loadNextPage();
+
+          state = container.read(adminPurchasesProvider);
+          expect(api.requests.last.cursor, 'cursor-1');
+          expect(state.items.length, 51);
+          expect(state.hasMore, isFalse);
+          expect(state.isSampledOrPartial, isFalse);
+          expect(state.hasLoadMoreError, isFalse);
+        },
+      );
+
+      test(
+        'Case 3: loadNextPage preserves items, sets loadMoreFailure, keeps hasMore on error',
+        () async {
+          api.handler = (request) async {
+            if (request.cursor != null) {
+              throw const EdgeApiException('Request timed out');
+            }
+            return _page(docs('p', 50), hasMore: true, next: 'c1');
+          };
+
+          final container = createContainer();
+          addTearDown(container.dispose);
+          await waitForInitialLoad(container);
+          final notifier = container.read(adminPurchasesProvider.notifier);
+
+          expect(container.read(adminPurchasesProvider).items.length, 50);
+
+          await notifier.loadNextPage();
+
+          final state = container.read(adminPurchasesProvider);
+          expect(state.items.length, 50); // Preserved!
+          expect(state.isLoadingMore, isFalse);
+          expect(state.hasLoadMoreError, isTrue);
+          expect(state.hasInitialError, isFalse);
+          expect(state.hasMore, isTrue); // Stays true so user can retry!
+        },
+      );
+
+      test('a 403 from the Worker is an initial permission failure', () async {
+        api.handler = (_) async => throw const EdgeApiException(
+          'Admin access required',
+          statusCode: 403,
+        );
         final container = createContainer();
         addTearDown(container.dispose);
         await waitForInitialLoad(container);
 
         final state = container.read(adminPurchasesProvider);
-        expect(state.isLoading, isFalse);
-        expect(state.hasInitialError, isFalse);
-        expect(state.hasLoadMoreError, isFalse);
-        expect(state.items.length, 2);
-        expect(state.hasMore, isFalse);
-        expect(state.isSampledOrPartial, isFalse);
-        expect(state.metrics.grossCollectedInr, 299);
-        expect(state.metrics.netRevenueInr, 299);
-        expect(state.metrics.activePaidCount, 1);
-        expect(state.metrics.reviewUnlockCount, 1);
-      },
-    );
+        expect(state.hasInitialError, isTrue);
+        expect(state.failure!.userMessage, contains('permission'));
+      });
 
-    test(
-      'Case 2: loadNextPage appends records, updates nextCursor, and recomputes isSampledOrPartial',
-      () async {
-        final page1 = List.generate(
-          50,
-          (i) => makePurchaseDoc(
-            id: 'p_$i',
-            userId: 'u_$i',
-            categoryId: 'santali_basics',
-            unlockMethod: 'razorpay',
-            amountPaidInr: 299,
-            status: 'verified',
-            paymentId: 'pay_$i',
-          ),
-        );
-
-        final page2 = [
-          makePurchaseDoc(
-            id: 'p_50',
-            userId: 'u_50',
-            categoryId: 'santali_basics',
-            unlockMethod: 'razorpay',
-            amountPaidInr: 299,
-            status: 'verified',
-            paymentId: 'pay_50',
-          ),
-        ];
-
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((invocation) async {
-          final queries =
-              invocation.namedArguments[const Symbol('queries')]
-                  as List<String>? ??
-              [];
-          final hasCursor = queries.any((q) => q.contains('cursorAfter'));
-          return hasCursor ? page2 : page1;
-        });
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-
-        var state = container.read(adminPurchasesProvider);
-        expect(state.items.length, 50);
-        expect(state.hasMore, isTrue);
-        expect(state.isSampledOrPartial, isTrue);
-        expect(state.nextCursor, 'p_49');
-
-        await notifier.loadNextPage();
-
-        state = container.read(adminPurchasesProvider);
-        expect(state.items.length, 51);
-        expect(state.hasMore, isFalse);
-        expect(state.isSampledOrPartial, isFalse);
-        expect(state.hasLoadMoreError, isFalse);
-      },
-    );
-
-    test(
-      'Case 3: loadNextPage preserves existing items, sets loadMoreFailure, and keeps hasMore true on error',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((invocation) async {
-          final queries =
-              invocation.namedArguments[const Symbol('queries')]
-                  as List<String>? ??
-              [];
-          final hasCursor = queries.any((q) => q.contains('cursorAfter'));
-          if (hasCursor) {
-            throw AppwriteException('Network timeout', 0, 'network_timeout');
-          }
-          return List.generate(
-            50,
-            (i) => makePurchaseDoc(
-              id: 'p_$i',
-              userId: 'u_$i',
-              categoryId: 'santali_basics',
-              unlockMethod: 'razorpay',
-              amountPaidInr: 299,
-              status: 'verified',
-              paymentId: 'pay_$i',
-            ),
-          );
-        });
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-
-        expect(container.read(adminPurchasesProvider).items.length, 50);
-
-        await notifier.loadNextPage();
-
-        final state = container.read(adminPurchasesProvider);
-        expect(state.items.length, 50); // Preserved!
-        expect(state.isLoadingMore, isFalse);
-        expect(state.hasLoadMoreError, isTrue);
-        expect(state.hasInitialError, isFalse);
-        expect(state.hasMore, isTrue); // Stays true so user can retry!
-      },
-    );
-
-    for (final status in ['verified', 'refunded', 'failed', 'disputed']) {
-      test('client refund fails closed for $status', () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer(
-          (_) async => [
+      for (final status in ['verified', 'refunded', 'failed', 'disputed']) {
+        test('client refund fails closed for $status', () async {
+          api.handler = (_) async => _page([
             makePurchaseDoc(
               id: 'p_refund_target',
               userId: 'u_target',
@@ -260,195 +274,181 @@ void main() {
               amountPaidInr: 499,
               status: status,
             ),
-          ],
-        );
-        final container = createContainer();
-        addTearDown(container.dispose);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        // Without an operation identity the call fails before any I/O,
-        // regardless of the purchase status.
-        final outcome = await notifier.recordExternalRefund('p_refund_target');
-        expect(outcome, RefundResult.failed);
-        expect(
-          container.read(adminPurchasesProvider).items.single.status,
-          status,
-        );
-        verifyNever(() => mockDb.getDocument('course_purchases', any()));
-        verifyNever(
-          () => mockDb.updateDocument('course_purchases', any(), any()),
-        );
-        verifyNever(() => mockRepo.clearUserEntitlementCache(any()));
-      });
-    }
-
-    test(
-      'client refund fails closed when the function service is unreachable',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((_) async => []);
-        // The Worker cannot be reached: every request fails at transport.
-        final unreachable = AppwriteFunctionsService(
-          httpClient: MockClient((_) async => throw Exception('unreachable')),
-        );
-        final container = ProviderContainer(
-          overrides: [
-            appwriteDbServiceProvider.overrideWithValue(mockDb),
-            purchaseRepositoryProvider.overrideWithValue(mockRepo),
-            appwriteFunctionsServiceProvider.overrideWithValue(unreachable),
-            isAuthenticatedProvider.overrideWith((ref) async => true),
-            currentUserProvider.overrideWith((ref) async => testAdminUser),
-          ],
-        );
-        addTearDown(container.dispose);
-        container.listen(adminPurchasesProvider, (previous, next) {});
-        container.read(adminPurchasesProvider.notifier);
-        await waitForInitialLoad(container);
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        final outcome = await notifier.recordExternalRefund(
-          'p_refund_target',
-          operationKey: 'op_unreachable_1',
-        );
-        expect(outcome, RefundResult.failed);
-        expect(await notifier.refundPurchase('p_refund_target'), isFalse);
-        verifyNever(() => mockDb.getDocument('course_purchases', any()));
-        verifyNever(
-          () => mockDb.updateDocument('course_purchases', any(), any()),
-        );
-      },
-    );
-
-    test(
-      'Case 7: fetchAllMatchingPurchases loops through all pages via cursor and returns completed status',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((invocation) async {
-          final queries =
-              invocation.namedArguments[const Symbol('queries')]
-                  as List<String>? ??
-              [];
-          final hasCursor = queries.any((q) => q.contains('cursorAfter'));
-          if (!hasCursor) {
-            return List.generate(
-              50,
-              (i) => makePurchaseDoc(
-                id: 'p_a_$i',
-                userId: 'u_$i',
-                categoryId: 'santali_basics',
-                unlockMethod: 'razorpay',
-                amountPaidInr: 299,
-                status: 'verified',
-              ),
-            );
-          } else {
-            return List.generate(
-              30,
-              (i) => makePurchaseDoc(
-                id: 'p_b_$i',
-                userId: 'u_${i + 50}',
-                categoryId: 'santali_basics',
-                unlockMethod: 'razorpay',
-                amountPaidInr: 299,
-                status: 'verified',
-              ),
-            );
-          }
-        });
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        final result = await notifier.fetchAllMatchingPurchases();
-
-        expect(result.status, PurchaseExportStatus.completed);
-        expect(result.items.length, 80);
-        expect(result.isTruncated, isFalse);
-      },
-    );
-
-    test(
-      'Case 8: fetchAllMatchingPurchases respects safety threshold and returns truncated status',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((invocation) async {
-          return List.generate(
-            50,
-            (i) => makePurchaseDoc(
-              id: 'p_${DateTime.now().microsecondsSinceEpoch}_$i',
-              userId: 'u_$i',
-              categoryId: 'santali_basics',
-              unlockMethod: 'razorpay',
-              amountPaidInr: 299,
-              status: 'verified',
-            ),
+          ]);
+          final container = createContainer();
+          addTearDown(container.dispose);
+          await waitForInitialLoad(container);
+          final notifier = container.read(adminPurchasesProvider.notifier);
+          final requestsBefore = api.requests.length;
+          // Without an operation identity the call fails before any I/O,
+          // regardless of the purchase status.
+          final outcome = await notifier.recordExternalRefund(
+            'p_refund_target',
           );
-        });
-
-        final container = createContainer();
-        addTearDown(container.dispose);
-
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        final result = await notifier.fetchAllMatchingPurchases(
-          safetyLimit: 100, // Explicit safety limit for test
-        );
-
-        expect(result.status, PurchaseExportStatus.truncated);
-        expect(result.items.length, 100);
-        expect(result.isTruncated, isTrue);
-        expect(result.hasMore, isTrue);
-      },
-    );
-
-    test(
-      'Case 9: fetchAllMatchingPurchases handles cancellation cleanly',
-      () async {
-        when(
-          () => mockDb.listDocuments(
-            'course_purchases',
-            queries: any(named: 'queries'),
-            paginate: any(named: 'paginate'),
-          ),
-        ).thenAnswer((invocation) async {
-          return List.generate(
-            50,
-            (i) => makePurchaseDoc(
-              id: 'p_$i',
-              userId: 'u_$i',
-              categoryId: 'santali_basics',
-              unlockMethod: 'razorpay',
-              amountPaidInr: 299,
-              status: 'verified',
-            ),
+          expect(outcome, RefundResult.failed);
+          expect(
+            container.read(adminPurchasesProvider).items.single.status,
+            status,
           );
+          expect(api.requests.length, requestsBefore);
+          verifyNever(() => mockRepo.clearUserEntitlementCache(any()));
         });
+      }
 
-        final container = createContainer();
-        addTearDown(container.dispose);
+      test(
+        'client refund fails closed when the function service is unreachable',
+        () async {
+          // The Worker cannot be reached: every request fails at transport.
+          final unreachable = AppwriteFunctionsService(
+            httpClient: MockClient((_) async => throw Exception('unreachable')),
+          );
+          final container = ProviderContainer(
+            overrides: [
+              adminPurchasesApiProvider.overrideWithValue(api),
+              purchaseRepositoryProvider.overrideWithValue(mockRepo),
+              appwriteFunctionsServiceProvider.overrideWithValue(unreachable),
+              isAuthenticatedProvider.overrideWith((ref) async => true),
+              currentUserProvider.overrideWith((ref) async => testAdminUser),
+            ],
+          );
+          addTearDown(container.dispose);
+          container.listen(adminPurchasesProvider, (previous, next) {});
+          container.read(adminPurchasesProvider.notifier);
+          await waitForInitialLoad(container);
+          final notifier = container.read(adminPurchasesProvider.notifier);
+          final outcome = await notifier.recordExternalRefund(
+            'p_refund_target',
+            operationKey: 'op_unreachable_1',
+          );
+          expect(outcome, RefundResult.failed);
+          expect(await notifier.refundPurchase('p_refund_target'), isFalse);
+        },
+      );
 
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        final result = await notifier.fetchAllMatchingPurchases(
-          isCancelled: () => true, // Cancel immediately
-        );
+      test(
+        'record_refund posts to the Worker maintenance route and reloads',
+        () async {
+          late Uri url;
+          late Map<String, dynamic> sent;
+          final worker = AppwriteFunctionsService(
+            httpClient: MockClient((request) async {
+              url = request.url;
+              sent = jsonDecode(request.body) as Map<String, dynamic>;
+              return http.Response(
+                jsonEncode({'success': true, 'alreadyRefunded': false}),
+                200,
+              );
+            }),
+          );
+          final container = ProviderContainer(
+            overrides: [
+              adminPurchasesApiProvider.overrideWithValue(api),
+              purchaseRepositoryProvider.overrideWithValue(mockRepo),
+              appwriteFunctionsServiceProvider.overrideWithValue(worker),
+              isAuthenticatedProvider.overrideWith((ref) async => true),
+              currentUserProvider.overrideWith((ref) async => testAdminUser),
+            ],
+          );
+          addTearDown(container.dispose);
+          container.listen(adminPurchasesProvider, (previous, next) {});
+          await waitForInitialLoad(container);
+          final listCalls = api.requests.length;
 
-        expect(result.status, PurchaseExportStatus.cancelled);
-        expect(result.items.isEmpty, isTrue);
-      },
-    );
-  });
+          final outcome = await container
+              .read(adminPurchasesProvider.notifier)
+              .recordExternalRefund(
+                'p1',
+                operationKey: adminRefundOperationKey('p1', 5000),
+                amountPaise: 5000,
+                externalRefundId: 'rfnd_1',
+              );
+
+          expect(outcome, RefundResult.completed);
+          expect(url.path, '/api/v1/admin/maintenance');
+          expect(sent, {
+            'action': 'record_refund',
+            'purchaseId': 'p1',
+            'operationKey': 'admin-record:p1:5000',
+            'gatewayRefundId': 'rfnd_1',
+            'amountPaise': 5000,
+          });
+          expect(api.requests.length, listCalls + 1);
+        },
+      );
+
+      test(
+        'Case 7: fetchAllMatchingPurchases loops through export pages via cursor',
+        () async {
+          api.handler = (request) async {
+            if (!request.export) return _page([]);
+            return request.cursor == null
+                ? _page(docs('a', 50), hasMore: true, next: 'c-a')
+                : _page(docs('b', 30));
+          };
+
+          final container = createContainer();
+          addTearDown(container.dispose);
+
+          final notifier = container.read(adminPurchasesProvider.notifier);
+          final result = await notifier.fetchAllMatchingPurchases(
+            filter: 'razorpay',
+          );
+
+          expect(result.status, PurchaseExportStatus.completed);
+          expect(result.items.length, 80);
+          expect(result.isTruncated, isFalse);
+          final exports = api.requests.where((r) => r.export).toList();
+          expect(exports.map((r) => r.cursor), [null, 'c-a']);
+          expect(exports.every((r) => r.filter == 'razorpay'), isTrue);
+          expect(exports.first.limit, AdminPurchasesNotifier.exportPageSize);
+        },
+      );
+
+      test(
+        'Case 8: fetchAllMatchingPurchases respects safety threshold and returns truncated status',
+        () async {
+          var n = 0;
+          api.handler = (request) async {
+            n++;
+            return _page(
+              docs('p$n', request.limit),
+              hasMore: true,
+              next: 'c$n',
+            );
+          };
+
+          final container = createContainer();
+          addTearDown(container.dispose);
+
+          final notifier = container.read(adminPurchasesProvider.notifier);
+          final result = await notifier.fetchAllMatchingPurchases(
+            safetyLimit: 100, // Explicit safety limit for test
+          );
+
+          expect(result.status, PurchaseExportStatus.truncated);
+          expect(result.items.length, 100);
+          expect(result.isTruncated, isTrue);
+          expect(result.hasMore, isTrue);
+        },
+      );
+
+      test(
+        'Case 9: fetchAllMatchingPurchases handles cancellation cleanly',
+        () async {
+          api.handler = (_) async => _page(docs('p', 50), hasMore: true);
+
+          final container = createContainer();
+          addTearDown(container.dispose);
+
+          final notifier = container.read(adminPurchasesProvider.notifier);
+          final result = await notifier.fetchAllMatchingPurchases(
+            isCancelled: () => true, // Cancel immediately
+          );
+
+          expect(result.status, PurchaseExportStatus.cancelled);
+          expect(result.items.isEmpty, isTrue);
+        },
+      );
+    },
+  );
 }

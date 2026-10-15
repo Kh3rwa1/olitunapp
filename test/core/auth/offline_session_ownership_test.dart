@@ -12,8 +12,6 @@ class _Client extends Mock implements Client {}
 
 class _Account extends Mock implements Account {}
 
-class _Functions extends Mock implements Functions {}
-
 class _Session extends Mock implements models.Session {}
 
 void main() {
@@ -38,7 +36,6 @@ void main() {
     service = AppwriteAuthService.forTesting(
       client: client,
       account: account,
-      functions: _Functions(),
       prefs: prefs,
       isWebOverride: true,
     );

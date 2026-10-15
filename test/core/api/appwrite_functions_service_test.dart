@@ -215,6 +215,23 @@ void main() {
       expect(result.statusCode, 0);
     });
 
+    test('a request slower than the timeout is a failed result', () async {
+      stubPost(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+        return http.Response('{"ok":true}', 200);
+      });
+
+      final result = await service.execute(
+        'admin-maintenance',
+        body: {'action': 'backup_content'},
+        usePost: true,
+        timeout: const Duration(milliseconds: 20),
+      );
+
+      expect(result.isCompleted, isFalse);
+      expect(result.statusCode, 0);
+    });
+
     test('an unmapped function never leaves the device', () async {
       final result = await service.execute('customUnmappedFunction');
 
@@ -231,6 +248,11 @@ void main() {
     for (final entry in {
       'createRazorpayOrder': CloudflareConfig.paymentsOrderEndpoint,
       'verifyCoursePurchase': CloudflareConfig.paymentsVerifyEndpoint,
+      'admin-maintenance':
+          '${CloudflareConfig.baseUrl}/api/v1/admin/maintenance',
+      'manageAdminAccess': '${CloudflareConfig.baseUrl}/api/v1/admin/access',
+      // reviewContent actions POST to the queue route (GET only lists).
+      'reviewContent': '${CloudflareConfig.baseUrl}/api/v1/admin/review/queue',
     }.entries) {
       test('${entry.key} runs on the Worker', () async {
         stubPost(() async => http.Response('{"ok":true}', 200));

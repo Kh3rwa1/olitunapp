@@ -53,8 +53,6 @@ class AppwriteConfig {
         !placeholderProjectIds.contains(normalizedProjectId);
   }
 
-  static const String databaseId = 'olitun_db';
-
   /// ID of the Appwrite Team that grants admin access.
   static const String adminTeamId = String.fromEnvironment(
     'ADMIN_TEAM_ID',

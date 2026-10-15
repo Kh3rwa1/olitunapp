@@ -151,6 +151,20 @@ List<RouteBase> buildAdminRoutes({
           builder: (context, state) =>
               _deferred(() => admin.gamificationScreen('config')),
         ),
+        for (final entry in const {
+          'bravo-messages': 'bravo_messages',
+          'missions': 'mission_templates',
+          'reward-messages': 'reward_messages',
+          'quiz-feedback': 'quiz_feedback_messages',
+          'bakhed/lyrics': 'bakhed_lyrics',
+          'bakhed/vocabulary': 'bakhed_vocabulary',
+          'bakhed/cultural-notes': 'bakhed_notes',
+        }.entries)
+          adminRoute(
+            path: '/admin/gamification/${entry.key}',
+            builder: (context, state) =>
+                _deferred(() => admin.gamificationScreen(entry.value)),
+          ),
         adminRoute(
           path: '/admin/audit-logs',
           builder: (context, state) =>

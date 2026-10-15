@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/api/appwrite_db_service.dart';
-import '../../../../core/api/appwrite_query_builders.dart';
-import '../../../../core/logging/app_logger.dart';
+import '../../data/gamification_cms_api.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_modal_sheet.dart';
@@ -32,6 +30,8 @@ class _AdminGamificationScreenState
   String _search = '';
   String _status = 'all';
   int _reload = 0;
+  String? _rowsKey;
+  Future<List<Map<String, dynamic>>>? _rows;
 
   GamificationSection? get _section => gamificationSections[widget.section];
 
@@ -53,7 +53,14 @@ class _AdminGamificationScreenState
     }
 
     final isWide = MediaQuery.of(context).size.width > 860;
-    final future = _loadRows(section, _reload);
+    // Refetch only when the section or the reload counter changes, not on
+    // every keystroke in the search field.
+    final loadKey = '${section.key}#$_reload';
+    if (_rowsKey != loadKey || _rows == null) {
+      _rowsKey = loadKey;
+      _rows = _loadRows(section);
+    }
+    final future = _rows!;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: future,
@@ -211,18 +218,26 @@ class _AdminGamificationScreenState
     );
   }
 
-  Future<List<Map<String, dynamic>>> _loadRows(
-    GamificationSection section,
-    int reload,
-  ) async {
-    final db = ref.read(appwriteDbServiceProvider);
-    final queries = <String>[];
-    if (section.collectionId == 'admin_audit_logs') {
-      queries.add(DbQuery.orderDesc('createdAt'));
-    } else if (section.editableFields.contains('sortOrder')) {
-      queries.add(DbQuery.orderAsc('sortOrder'));
+  Future<List<Map<String, dynamic>>> _loadRows(GamificationSection section) {
+    // The Worker returns rows in display order (sortOrder / lineIndex, and
+    // newest first for audit logs).
+    return ref.read(gamificationCmsApiProvider).listRows(section.collectionId);
+  }
+
+  /// Runs a CMS write; on failure shows the Worker's message instead of
+  /// failing silently. Returns whether the write succeeded.
+  Future<bool> _write(Future<void> Function(GamificationCmsApi api) op) async {
+    try {
+      await op(ref.read(gamificationCmsApiProvider));
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      }
+      return false;
     }
-    return db.listAllDocuments(section.collectionId, queries: queries);
   }
 
   List<Map<String, dynamic>> _filterRows(List<Map<String, dynamic>> rows) {
@@ -258,13 +273,12 @@ class _AdminGamificationScreenState
       section.idField: id,
       'version': 1,
       'createdAt': now,
-      'updatedAt': now,
     };
 
-    await ref
-        .read(appwriteDbServiceProvider)
-        .createDocument(section.collectionId, id, draft);
-    await _audit('${section.key}_created', section.collectionId, id, draft);
+    final saved = await _write(
+      (api) => api.upsertRow(section.collectionId, id, draft, createOnly: true),
+    );
+    if (!saved) return;
     HapticFeedback.selectionClick();
     setState(() => _reload++);
   }
@@ -278,15 +292,12 @@ class _AdminGamificationScreenState
     if (id == null || id.isEmpty) return;
     final payload = section.collectionId == 'bakhed_cultural_notes'
         ? {'isPublished': status == 'published'}
-        : {
-            'status': status,
-            'isActive': status == 'published',
-            'updatedAt': DateTime.now().toUtc().toIso8601String(),
-          };
-    await ref
-        .read(appwriteDbServiceProvider)
-        .updateDocument(section.collectionId, id, payload);
-    await _audit('${section.key}_$status', section.collectionId, id, payload);
+        : {'status': status, 'isActive': status == 'published'};
+    if (!await _write(
+      (api) => api.upsertRow(section.collectionId, id, payload),
+    )) {
+      return;
+    }
     setState(() => _reload++);
   }
 
@@ -354,18 +365,10 @@ class _AdminGamificationScreenState
                         oldValue,
                       );
                     }
-                    payload['updatedAt'] = DateTime.now()
-                        .toUtc()
-                        .toIso8601String();
-                    await ref
-                        .read(appwriteDbServiceProvider)
-                        .updateDocument(section.collectionId, id, payload);
-                    await _audit(
-                      '${section.key}_updated',
-                      section.collectionId,
-                      id,
-                      payload,
+                    final saved = await _write(
+                      (api) => api.upsertRow(section.collectionId, id, payload),
                     );
+                    if (!saved) return;
                     if (!context.mounted) return;
                     Navigator.pop(context);
                     if (mounted) setState(() => _reload++);
@@ -389,36 +392,6 @@ class _AdminGamificationScreenState
     if (oldValue is bool) return value.toLowerCase() == 'true';
     if (oldValue is int) return int.tryParse(value) ?? oldValue;
     return value;
-  }
-
-  Future<void> _audit(
-    String action,
-    String targetType,
-    String targetId,
-    Map<String, dynamic> metadata,
-  ) async {
-    try {
-      final now = DateTime.now().toUtc().toIso8601String();
-      await ref
-          .read(appwriteDbServiceProvider)
-          .createDocument('admin_audit_logs', DbId.unique(), {
-            'action': action,
-            'targetType': targetType,
-            'targetId': targetId,
-            'metadata': jsonEncode(metadata),
-            'success': true,
-            'createdAt': now,
-          });
-    } catch (e, stack) {
-      // Do not block the admin operation if audit logging is unavailable,
-      // but the missed audit entry is a real gap — surface it in logs.
-      AppLogger.warning(
-        'AdminGamificationScreen: failed to write audit log for "$action"',
-        name: 'AdminGamificationScreen',
-        error: e,
-        stackTrace: stack,
-      );
-    }
   }
 
   void _showPreview(GamificationSection section, Map<String, dynamic> row) {

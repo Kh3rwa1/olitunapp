@@ -12,6 +12,10 @@ class GamificationOverviewView extends StatelessWidget {
     return switch (key) {
       'badges' => '/admin/gamification/badges',
       'config' => '/admin/gamification/config',
+      'bravo_messages' => '/admin/gamification/bravo-messages',
+      'mission_templates' => '/admin/gamification/missions',
+      'reward_messages' => '/admin/gamification/reward-messages',
+      'quiz_feedback_messages' => '/admin/gamification/quiz-feedback',
       'bakhed_lyrics' => '/admin/gamification/bakhed/lyrics',
       'bakhed_vocabulary' => '/admin/gamification/bakhed/vocabulary',
       'bakhed_notes' => '/admin/gamification/bakhed/cultural-notes',

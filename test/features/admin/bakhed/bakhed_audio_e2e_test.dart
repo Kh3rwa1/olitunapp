@@ -15,7 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
@@ -23,7 +23,7 @@ import 'package:itun/shared/models/content_item.dart';
 
 class MockBakhedRepository extends Mock implements BakhedRepository {}
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+class MockGamificationCmsApi extends Mock implements GamificationCmsApi {}
 
 class MockMediaUploader extends Mock implements MediaUploader {}
 
@@ -43,14 +43,14 @@ void main() {
     const durationMs = 180000;
 
     late MockBakhedRepository mockRepository;
-    late MockAppwriteDbService mockDbService;
+    late MockGamificationCmsApi mockCms;
 
     /// The "server state" — starts with no audio, gets updated on save.
     late ContentItem serverState;
 
     setUp(() {
       mockRepository = MockBakhedRepository();
-      mockDbService = MockAppwriteDbService();
+      mockCms = MockGamificationCmsApi();
 
       // Initial server state: no audio
       serverState = ContentItem(
@@ -88,7 +88,7 @@ void main() {
         final container1 = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -128,7 +128,7 @@ void main() {
         final container2 = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
@@ -159,7 +159,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          gamificationCmsApiProvider.overrideWithValue(mockCms),
           mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
@@ -202,7 +202,7 @@ void main() {
         final container = ProviderContainer(
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
-            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            gamificationCmsApiProvider.overrideWithValue(mockCms),
             mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );

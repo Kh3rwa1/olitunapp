@@ -443,3 +443,22 @@ CREATE TABLE IF NOT EXISTS story_segments (
   raw_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments(story_id, order_index);
+
+-- Gamification + Bakhed CMS rows (replaces the Appwrite collections
+-- bravo_messages, badges, mission_templates, reward_messages,
+-- quiz_feedback_messages, gamification_config, bakhed_lyrics,
+-- bakhed_vocabulary, bakhed_cultural_notes). parent_id is the Bakhed (rhyme)
+-- id for the bakhed_* child collections, used for filtering and cascade delete.
+CREATE TABLE IF NOT EXISTS cms_rows (
+  collection TEXT NOT NULL,
+  id TEXT NOT NULL,
+  parent_id TEXT,
+  order_index INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'draft',
+  is_active INTEGER DEFAULT 1,
+  raw_json TEXT NOT NULL,
+  updated_at TEXT,
+  PRIMARY KEY (collection, id)
+);
+CREATE INDEX IF NOT EXISTS idx_cms_rows_collection ON cms_rows(collection, order_index);
+CREATE INDEX IF NOT EXISTS idx_cms_rows_parent ON cms_rows(parent_id, collection);

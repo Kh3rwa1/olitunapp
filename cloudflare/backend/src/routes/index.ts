@@ -5,6 +5,7 @@ import { registerAccountRoutes } from './account';
 import { registerAnalyticsRoutes } from './analytics';
 import { registerWaitlistRoutes } from './waitlist';
 import { registerLearnerContentRoutes } from './learner_content';
+import { registerGamificationCmsRoutes } from './gamification_cms';
 
 // Feature route modules. Each module applies its own auth middleware
 // (requireUser / optionalUser / requireAdmin from ../auth) before its
@@ -16,4 +17,5 @@ export function registerRoutes(app: App): void {
   registerWaitlistRoutes(app);
   registerAccountRoutes(app);
   registerLearnerContentRoutes(app);
+  registerGamificationCmsRoutes(app);
 }

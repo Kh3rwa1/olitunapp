@@ -1,66 +1,88 @@
 # Olitun Privacy Policy
 
-**Last updated:** September 17, 2026
+**Last updated:** 15 October 2026
 
-Olitun is an educational platform for learning Ol Chiki and Santali language and culture. This privacy policy transparently details how data is handled across our offline-first Flutter application, backend serverless functions, and persistence layers.
+Olitun is an educational app for learning Ol Chiki and Santali language and culture. This policy describes what data the Olitun app and its backend collect, why, where it is stored, who processes it, how long it is kept, and how you can delete it.
+
+Olitun uses two backend systems:
+
+- **Appwrite** (Appwrite Cloud, Singapore region) for sign-in and your account record.
+- **Cloudflare** (Cloudflare Workers, the D1 database, and R2 file storage) for everything else. Cloudflare operates a global network; our D1 database currently runs in Cloudflare's Asia-Pacific region.
 
 ---
 
-## 1. Data Collection, Retention & Purpose
+## 1. What We Collect, Why, and Where It Is Stored
 
-| Data Category | Purpose | Storage Location | Retention / Deletion Policy |
+| Data | Purpose | Stored in | Retention |
 | :--- | :--- | :--- | :--- |
-| **Account Credentials** | Sign-in, session maintenance, cross-device sync | Appwrite Auth | Purged immediately upon account deletion. |
-| **Learning Progress & Streaks** | Offline lesson tracking, quiz scores, mistake reviews | Local Hive Storage & Appwrite DB | Retained while active; wiped on account deletion or local cache clear. |
-| **Translation Requests** | English-to-Santali & multi-lingual translation | Appwrite Cache (`translation_cache`) | Keyed strictly by SHA-256 hash. Text is retained for 90 days for cache acceleration; never linked to user profiles. |
-| **AI Studio Inputs** | Uploaded audio/documents for transcription & OCR | Appwrite Storage & DB (`ai_studio_inputs`) | Auto-pruned after **24 hours** by scheduled cleanup; deleted immediately on account deletion. |
-| **AI Studio Jobs & Reviews** | OCR and translation job metadata and review progress | Appwrite DB (`ai_studio_jobs`, `review_states`) | Auto-pruned after **30 days**; purged on account deletion. |
-| **Santali Voice Audio Cache** | Audio clips synthesized with Bodhan TTS | Appwrite DB (`tts_cache`) & Storage (`voice_clips`) | Keyed strictly by SHA-256 parameter hash without user identity. Retained for **90 days** for shared cache acceleration across learners; pruned after 90 days. Not per-user deletable because clips are impersonal. |
-| **Santali Voice Quota Claims** | Durable quota reservations & abuse prevention | Appwrite DB (`voice_claims`) | Auto-pruned after **7 days**; purged on account deletion. |
-| **Learning Analytics Events** | Feature usage telemetry & progress rollups | Appwrite DB (`learning_analytics_events`) | Raw events auto-pruned after **90 days**; aggregated into daily statistics. Purged on account deletion. |
-| **Rate Limiting Telemetry** | Preventing DDoS & quota exhaustion | Appwrite DB (`rate_limits`) | Cryptographic HMAC hashes only (`usr_<hash>`, `net_<hash>`). Expired windows auto-pruned after 2 hours. |
-| **Payment Records** | Premium content purchases | Razorpay & Appwrite DB (`course_purchases`) | Anonymized (`anonymized_deleted_user`) on account deletion for statutory audit & 7-year fiscal records. |
-| **Binti Guru Waitlist** | Matching learners with cultural recitation experts | Appwrite DB (`binti_waitlist`) | Deleted upon request or after booking completion. |
-| **Crash & Diagnostic Logs** | Error tracking and bug resolution | Local Logger & optional Sentry | Sanitized of all PII, tokens, and secrets via `RedactionHelper`. Raw telemetry purged after 90 days. |
+| **Account and sign-in data**: account ID; email address (email one-time-code sign-in, or the email and name shared by Google when you choose Google sign-in); display name; session records. Guest use creates an anonymous Appwrite account with no email. | Signing in, keeping you signed in, identifying your data on our servers | Appwrite (Singapore) | Until your account is deleted (see Section 5) |
+| **Learner profile in account preferences**: onboarding choices (interface and teaching language, Santali proficiency, lesson audio mode, learning goals, daily goal minutes) and a copy of your progress statistics (completed lessons, practised letters, quiz history, stars, streaks, learning minutes, activity dates) | Syncing your profile and progress across devices | Appwrite account preferences (signed-in, non-guest accounts) | Until your account is deleted |
+| **Learning progress**: word and sentence review states, quiz mistakes and mistake-review sessions, Bakhed listening progress, badges and reward events | Spaced review, mistake practice, resuming audio, badges and stars | Cloudflare D1, linked to your account ID | Until you delete it in the app (where offered) or delete your account |
+| **Learning analytics events**: event name, event ID, content/source identifier, session ID, learner level, script mode, platform, timestamps, and event details such as content type, scores, attempt counts and stars awarded | Understanding feature use, daily usage totals, weekly leaderboard points | Cloudflare D1, linked to your account ID (including guest accounts) | Our server includes a cleanup job that deletes raw events older than 90 days. Daily totals (event counts and number of unique users) contain no account IDs. Weekly leaderboard scores derived from these events are cached by account ID. |
+| **Binti / ceremony waitlist submissions**: full name, phone number, ceremony type, city, state, optional event date, optional notes, submission time, status; your account ID if you were signed in | Contacting you about ceremony recitation requests | Cloudflare D1 | Until deleted on request, or on account deletion for submissions linked to your account |
+| **Purchases**: order ID, Razorpay payment ID and signature, amount, currency, status, receipt reference, purchased course category, refund records | Unlocking paid content, verifying payments, refunds, financial records | Cloudflare D1 | Kept for financial record-keeping; detached from your account ID on account deletion (see Section 5) |
+| **Translation requests**: the text you submit, the source and target languages, the translation, and the engine used | Returning translations; caching repeat requests | Cloudflare D1 translation cache, keyed by a SHA-256 hash of the request. Not linked to your account ID. | Not deleted on a fixed schedule; administrators can clear the cache |
+| **Santali voice (text-to-speech)**: text you ask to be spoken, voice, style | Generating Santali audio | The text is sent to Bodhan for synthesis. The generated audio is stored in Cloudflare R2 under a hash-based name, with a cache record (hash, voice, audio URL, duration). Neither is linked to your account ID, and the text itself is not stored in the cache record. | Not deleted on a fixed schedule; shared across learners and not deletable per user |
+| **AI Studio audio** (speech-to-text) | Transcribing your recording | Sent through our server to Sarvam AI for transcription. We do not store the audio or the transcript. | Not stored by us |
+| **AI Studio documents** (scan / OCR) | Document scanning feature | Sent to our server. We do not store the file and do not forward it to an external provider. | Not stored by us |
+| **Rate-limit keys**: your account ID or your IP address (hashed for waitlist submissions) | Preventing abuse of paid AI, analytics and waitlist services | Cloudflare's rate-limiting service (short-lived counters, 60-second windows) | Short-lived counters only; not written to our database |
+| **Account deletion requests**: request ID, status, timestamps, error code | Making sure deletion completes, resuming interrupted deletions | Cloudflare D1 | Kept with its status; your account ID is replaced with an anonymous marker once deletion completes (see Section 5) |
+| **Crash and error reports** (release builds where crash reporting is configured) | Finding and fixing bugs | Sentry | Per Sentry's retention settings |
+| **Server request logs** | Operating and securing the service | Cloudflare Workers logs | Per Cloudflare's log retention |
+
+Administrators with authorised access can view and manage content, purchases, waitlist submissions and audit records through the admin tools. Administrator actions are recorded in an audit log.
 
 ---
 
-## 2. AI Translation, Studio & Voice Synthesis Privacy
+## 2. Service Providers (Processors)
 
-When you use Olitun's AI-assisted features:
-- **Encrypted Transmission:** All AI requests transmit over TLS directly to serverless backends; external AI provider credentials never reach user devices.
-- **Translation Cache:** Queries are indexed using impersonal SHA-256 cryptographic hashes (`sha256(JSON.stringify({ from, to, text }))`). Text is never associated with user profiles, email, or device identifiers.
-- **AI Studio Lifecycle:** Source documents, camera captures, and microphone audio uploaded to AI Studio are retained for a maximum of **24 hours** before being permanently expunged by daily retention pruning jobs (`cleanupAnalyticsEvents`). Scan jobs and review drafts are retained for **30 days**.
-- **Voice Synthesis Cache (`tts_cache`):** Synthesized speech is keyed by SHA-256 hash of synthesis parameters (`text`, `voice`, `speed`, `style`). Audio clips in the `voice_clips` storage bucket and `tts_cache` collection are retained for **90 days** to provide instant replays without re-billing. Because cache entries contain no user identifier, they are shared across learners and are not per-user deletable.
+We share data with these providers only to run the features described above:
 
----
-
-## 3. Rate Limiting Privacy & Network Safety
-
-To protect backend translation and voice synthesis infrastructure against abuse:
-- Rate limits and quotas are tracked using domain-separated HMAC-SHA256 digests (`translator-rate-limit:user:v1:` for verified users; `translator-rate-limit:network:v1:` for anonymous networks) and durable voice claims (`usr_<hash>_<timestamp>`).
-- Raw IP addresses and user credentials are never stored in rate limit tables or printed in logs.
-
----
-
-## 4. Offline Storage & Local Data Ownership
-
-Olitun operates offline-first:
-- **Local Application Sandbox:** All offline lesson progress, quiz attempts, vocabulary cache, and mutation outboxes reside locally in Hive boxes within the operating-system-protected application sandbox.
-- **Encryption at Rest:** Local Hive storage is unencrypted at rest by default, relying on the host operating system's sandbox isolation (Android, iOS, macOS, Windows, Linux).
-- **User Control:** You can clear local data and cache at any time from app **Settings > Storage & Cache**, or by uninstalling the application.
+- **Appwrite**: authentication, sessions, account record and account preferences (Singapore region). Appwrite keeps session records, which may include information such as IP address and device or browser details.
+- **Cloudflare**: Workers (API), D1 (database), R2 (file storage), rate limiting, request logs, hosting of the web app, and **Cloudflare Workers AI** for some translations (IndicTrans2, M2M100 and Llama models running on Cloudflare).
+- **Google Translate**: the default translation engine, and the translation engine for AI Studio. The text to translate and the language codes are sent from our server.
+- **Sarvam AI**: speech-to-text for AI Studio. Your audio recording is sent from our server.
+- **Bodhan**: Santali text-to-speech. The text to be spoken is sent from our server.
+- **Razorpay**: payments. Your card, UPI or bank details are entered directly into Razorpay's checkout and are handled by Razorpay; we never receive or store them. When we create an order, we send Razorpay the amount, a receipt reference, your account ID and the course category ID.
+- **Google sign-in**: if you choose it, Google shares your name and email address with Appwrite to create your account.
+- **Google AdMob** (Android and iOS apps only, not the web app): shows ads. AdMob may collect device identifiers and usage data under Google's policies. Where required (for example in the EEA and UK), the app asks for your ad consent through Google's consent tool, and you can change it later in **Settings > Ad Privacy Choices**.
+- **Sentry**: crash and error reporting, only in builds configured with a Sentry key. Reports are sent with Sentry's default personal data collection turned off; before sending, the app removes user ID, email, username and IP address, request headers and cookies, URL query strings, and values that look like emails, tokens, passwords or IP addresses. Reports include error details, stack traces and a sample of performance traces.
+- **timeapi.io / worldtimeapi.org**: the app requests the current time from these public services to check daily missions. No account data is sent, but these services receive your IP address as part of the request.
 
 ---
 
-## 5. Account Deletion & Rights
+## 3. Data on Your Device
 
-You have the unconditional right to delete your account:
-- Navigating to **Profile > Settings > Delete Account** triggers our multi-collection cascade deletion engine (`functions/delete-account` and `delete_account_core.js`).
-- **Complete Deletion Inventory:** All user-associated documents across `user_preferences`, `user_mistakes`, `mistake_review_sessions`, `bakhed_listening_progress`, `user_assets`, `learning_analytics_events`, `ai_studio_jobs`, `review_states`, and `voice_claims` are permanently deleted, along with any user-uploaded files in `ai_studio_inputs` and `user_assets`.
-- **Statutory & Impersonal Exceptions:** For statutory tax and fiscal reporting compliance, purchase receipts in `course_purchases` retain only anonymized order identifiers. Impersonal SHA-256 audio and translation caches (`tts_cache`, `translation_cache`) expire on their standard 90-day retention schedule.
+Olitun works offline. Lesson progress, settings, profile choices, cached content, downloaded audio and queued requests (such as analytics events waiting to be sent) are stored on your device using the app's local storage. This storage is not encrypted by the app; it relies on your operating system's app sandbox. You can reset your progress in **Settings**, and uninstalling the app removes this data. Daily reminders are scheduled locally on your device.
 
 ---
 
-## 6. Contact & Support
+## 4. Children
 
-For privacy inquiries or data removal requests, contact the project maintainers via the GitHub repository: https://github.com/Kh3rwa1/olitunapp
+Olitun does not ask for your age. Ad requests are not currently marked as directed at children.
+
+---
+
+## 5. Account Deletion and Your Choices
+
+You can delete your account in **Settings > Delete Account**. When you do, our server:
+
+1. Deletes all files stored under your account in Cloudflare R2.
+2. Deletes every row linked to your account ID in our D1 database, including review states, mistakes, review sessions, Bakhed listening progress, badges, reward events, analytics events and their details, and waitlist submissions linked to your account.
+3. Keeps purchase and payment-order records for financial record-keeping, but replaces your account ID in them with an anonymous marker.
+4. Checks that no rows linked to your account ID remain.
+5. Deletes your Appwrite account, including your account preferences. If the server cannot delete the account directly, it permanently blocks the account so it can no longer sign in; the blocked account record (including its email, name and preferences) stays in Appwrite until it is deleted later.
+
+A record of the deletion request is kept with its status. When deletion fully completes, your account ID in that record is replaced with an anonymous marker; if the account was blocked instead of deleted, the account ID is kept so the account can be deleted later. Interrupted deletions are retried.
+
+Data not linked to your account ID is not removed by account deletion: the shared translation and voice caches, daily analytics totals, weekly leaderboard caches, and waitlist submissions you made without signing in. To ask for removal of a waitlist submission, contact us (Section 6).
+
+On the device, deleting your account also clears the app's local session data.
+
+---
+
+## 6. Contact
+
+For privacy questions or data removal requests, contact the project maintainers through the GitHub repository: https://github.com/Kh3rwa1/olitunapp
+
+We may update this policy as the app changes. The date at the top shows when it was last updated.

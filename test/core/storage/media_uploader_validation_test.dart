@@ -1,21 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/error/failures.dart';
 
-class MockClient extends Mock implements Client {}
+class MockWorkerMediaApi extends Mock implements WorkerMediaApi {}
 
 void main() {
   group('MediaUploader Video Validation Tests', () {
     late MediaUploader uploader;
-    late MockClient mockClient;
+    late MockWorkerMediaApi mockApi;
 
     setUp(() {
-      mockClient = MockClient();
-      uploader = MediaUploader(mockClient);
+      mockApi = MockWorkerMediaApi();
+      uploader = MediaUploader(mockApi);
     });
 
     test('1. Reject 11 MB video file with size error', () async {

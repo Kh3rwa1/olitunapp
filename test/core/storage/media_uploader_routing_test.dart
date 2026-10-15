@@ -1,19 +1,19 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/shared/models/content_item.dart';
 
-class MockClient extends Mock implements Client {}
+class MockWorkerMediaApi extends Mock implements WorkerMediaApi {}
 
 void main() {
   group('MediaUploader Bucket Routing Tests', () {
     late MediaUploader uploader;
-    late MockClient mockClient;
+    late MockWorkerMediaApi mockApi;
 
     setUp(() {
-      mockClient = MockClient();
-      uploader = MediaUploader(mockClient);
+      mockApi = MockWorkerMediaApi();
+      uploader = MediaUploader(mockApi);
     });
 
     test('Video uploads correctly route to cover_videos bucket', () {

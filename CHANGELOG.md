@@ -5,6 +5,13 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.3.4] (2026-10-14)
+
+### Bug Fixes
+
+* **admin:** resolve deferred routing tear-off crash causing blank login screen on web
+* **build:** add Google Play Store release bundle automated build script with edge and AI configurations
+
 ## [1.3.3] (2026-10-14)
 
 ### Features

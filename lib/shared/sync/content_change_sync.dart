@@ -34,7 +34,9 @@ class ContentChangeSync with WidgetsBindingObserver {
     NetworkInfo? networkInfo,
     ContentChangeSource? source,
     ContentChangeCursorStore? cursorStore,
-    this.pollInterval = const Duration(seconds: 60),
+    // Content changes only when admins edit; 5 minutes keeps Worker load
+    // modest at 10K+ users while foreground/reconnect checks stay instant.
+    this.pollInterval = const Duration(minutes: 5),
     this.maxBackoff = const Duration(minutes: 15),
     this.onInvalidated,
     this.onSyncAll,

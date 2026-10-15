@@ -205,7 +205,7 @@ export async function serveAsset(c: Ctx): Promise<Response> {
     }
 
     const meta = await c.env.ASSETS.head(key);
-    if (!meta) return legacyStorageRedirect(c, key) ?? c.text('Asset Not Found', 404);
+    if (!meta) return c.text('Asset Not Found', 404);
 
     const contentType = normalizeContentType(meta.httpMetadata?.contentType) || 'application/octet-stream';
     const headers = new Headers();
@@ -240,21 +240,6 @@ export async function serveAsset(c: Ctx): Promise<Response> {
   } catch (e: any) {
     return c.json({ ok: false, error: e?.message || 'asset_error' }, 500);
   }
-}
-
-// Until scripts/copy_appwrite_storage_to_r2.mjs has copied a file, it still
-// lives only in Appwrite Storage (which serves public files today). Point the
-// player there instead of failing; not cached, so it stops once R2 has it.
-// Remove after the migration has run.
-function legacyStorageRedirect(c: Ctx, key: string): Response | null {
-  const [bucket, fileId, ...rest] = key.split('/');
-  const rule = MEDIA_BUCKETS[bucket];
-  if (rest.length || !rule?.isPublic || !FILE_ID_PATTERN.test(fileId || '')) return null;
-  const endpoint = (c.env.APPWRITE_ENDPOINT || '').replace(/\/+$/, '');
-  const project = c.env.APPWRITE_PROJECT_ID || '';
-  if (!/^https?:\/\//.test(endpoint) || !project) return null;
-  const target = `${endpoint}/storage/buckets/${bucket}/files/${encodeURIComponent(fileId)}/view?project=${encodeURIComponent(project)}`;
-  return new Response(null, { status: 302, headers: { Location: target, 'Cache-Control': 'no-store' } });
 }
 
 export function registerMediaRoutes(app: App): void {

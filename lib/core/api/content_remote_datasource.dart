@@ -1,11 +1,9 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../api/edge_json_client.dart';
-import '../auth/appwrite_auth_service.dart';
-import '../config/appwrite_config.dart';
 import '../config/cloudflare_config.dart';
+import 'admin_content_client.dart';
+import 'edge_json_client.dart';
 
 /// Clean-architecture data representation of a row returned by [ContentRemoteDataSource].
 class ContentRowData {
@@ -15,10 +13,9 @@ class ContentRowData {
   const ContentRowData({required this.id, required this.data});
 }
 
-/// Abstract contract for remote content CRUD operations against Appwrite TablesDB.
-///
-/// Keeps `package:appwrite` behind the core API boundary so domain and repository
-/// layers remain backend-agnostic.
+/// Abstract contract for remote content reads and admin CRUD, all served by
+/// the Cloudflare Worker (D1). Keeps transport details behind the core API
+/// boundary so domain and repository layers remain backend-agnostic.
 abstract class ContentRemoteDataSource {
   Future<List<ContentRowData>> listRows({
     required String tableId,
@@ -28,6 +25,7 @@ abstract class ContentRemoteDataSource {
     int limit = 500,
   });
 
+  /// Full-body admin read (inactive and premium rows included).
   Future<ContentRowData> getRow({
     required String tableId,
     required String rowId,
@@ -48,26 +46,24 @@ abstract class ContentRemoteDataSource {
     required String tableId,
     required String rowId,
     required Map<String, dynamic> data,
-    required bool allowAnonymousRead,
   });
 
   Future<void> deleteRow({required String tableId, required String rowId});
 }
 
-/// Default implementation of [ContentRemoteDataSource] backed by Cloudflare Edge API and Appwrite [TablesDB].
+/// Default implementation of [ContentRemoteDataSource]: learner reads from
+/// the public Worker routes, admin reads/writes through [AdminContentClient].
 class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
   static const Duration _listTimeout = Duration(seconds: 6);
 
-  final TablesDB _tablesDB;
   final http.Client _client;
+  final AdminContentClient _admin;
 
-  /// Learner reads ([listRows], [getCategory]) come only from the Cloudflare
-  /// Worker; [tablesDB] backs the admin CMS row reads and writes.
   ContentRemoteDataSourceImpl({
-    required TablesDB tablesDB,
     http.Client? httpClient,
-  }) : _tablesDB = tablesDB,
-       _client = httpClient ?? http.Client();
+    AdminContentClient? adminClient,
+  }) : _client = httpClient ?? http.Client(),
+       _admin = adminClient ?? AdminContentClient(httpClient ?? http.Client());
 
   String? _cloudflareEndpointFor(String tableId, {String? categoryId}) {
     final queryParam = (categoryId != null && categoryId.isNotEmpty)
@@ -126,15 +122,6 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     }
   }
 
-  List<String> _readPermissions(bool allowAnonymousRead) => allowAnonymousRead
-      ? [
-          Permission.read(Role.any()),
-          Permission.read(Role.team(AppwriteConfig.adminTeamId)),
-          Permission.update(Role.team(AppwriteConfig.adminTeamId)),
-          Permission.delete(Role.team(AppwriteConfig.adminTeamId)),
-        ]
-      : const [];
-
   @override
   Future<List<ContentRowData>> listRows({
     required String tableId,
@@ -165,12 +152,8 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     required String tableId,
     required String rowId,
   }) async {
-    final row = await _tablesDB.getRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: tableId,
-      rowId: rowId,
-    );
-    return ContentRowData(id: row.$id, data: row.data);
+    final data = await _admin.get(tableId, rowId);
+    return ContentRowData(id: data['id']?.toString() ?? rowId, data: data);
   }
 
   @override
@@ -230,63 +213,21 @@ class ContentRemoteDataSourceImpl implements ContentRemoteDataSource {
     required String tableId,
     required String rowId,
     required Map<String, dynamic> data,
-    required bool allowAnonymousRead,
   }) async {
-    final permissions = _readPermissions(allowAnonymousRead);
-    try {
-      final row = await _tablesDB.createRow(
-        databaseId: AppwriteConfig.databaseId,
-        tableId: tableId,
-        rowId: rowId,
-        data: data,
-        permissions: permissions,
-      );
-      return ContentRowData(id: row.$id, data: row.data);
-    } on AppwriteException catch (ae) {
-      if (ae.code == 409) {
-        final row = await _tablesDB.updateRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: tableId,
-          rowId: rowId,
-          data: data,
-          permissions: permissions,
-        );
-        return ContentRowData(id: row.$id, data: row.data);
-      }
-      rethrow;
-    }
+    final stored = await _admin.upsert(tableId, rowId, data);
+    return ContentRowData(id: stored['id']?.toString() ?? rowId, data: stored);
   }
 
   @override
-  Future<void> deleteRow({
-    required String tableId,
-    required String rowId,
-  }) async {
-    await _tablesDB.deleteRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: tableId,
-      rowId: rowId,
-    );
-  }
-}
-
-/// Helper factory enabling backward compatibility with legacy tests passing `tablesDB`.
-class ContentRemoteDataSourceFactory {
-  static ContentRemoteDataSource? fromDynamic(dynamic tablesDB) {
-    if (tablesDB == null) return null;
-    if (tablesDB is TablesDB) {
-      return ContentRemoteDataSourceImpl(tablesDB: tablesDB);
-    }
-    return null;
-  }
+  Future<void> deleteRow({required String tableId, required String rowId}) =>
+      _admin.delete(tableId, rowId);
 }
 
 final contentRemoteDataSourceProvider = Provider<ContentRemoteDataSource>((
   ref,
 ) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
   return ContentRemoteDataSourceImpl(
-    tablesDB: TablesDB(authService.client),
     httpClient: ref.watch(edgeHttpClientProvider),
+    adminClient: ref.watch(adminContentClientProvider),
   );
 });

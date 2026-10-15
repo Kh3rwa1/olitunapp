@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
@@ -21,7 +21,7 @@ final seededContentHttpClientProvider = Provider<http.Client>(
 /// own load policy via [loadList]; the provider lifecycle, remote fetch, CRUD,
 /// and seed backfill live here exactly once.
 abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
-  /// Appwrite collection backing this list.
+  /// Worker content table backing this list.
   String get collectionId;
 
   /// Human-readable noun used in log messages ('word', 'letter', ...).
@@ -122,8 +122,9 @@ abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
 
   Future<void> add(T item) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument(collectionId, itemId(item), _encode(item));
+      await ref
+          .read(adminContentClientProvider)
+          .upsert(collectionId, itemId(item), _encode(item), dropNulls: true);
       await reload();
     } catch (e, stack) {
       AppLogger.error(
@@ -138,8 +139,9 @@ abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
 
   Future<void> updateItem(T item) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.updateDocument(collectionId, itemId(item), _encode(item));
+      await ref
+          .read(adminContentClientProvider)
+          .upsert(collectionId, itemId(item), _encode(item), dropNulls: true);
       await reload();
     } catch (e, stack) {
       AppLogger.error(
@@ -154,8 +156,7 @@ abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
 
   Future<void> delete(String id) async {
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.deleteDocument(collectionId, id);
+      await ref.read(adminContentClientProvider).delete(collectionId, id);
       await reload();
     } catch (e, stack) {
       AppLogger.error(
@@ -171,15 +172,20 @@ abstract class SeededContentListNotifier<T> extends AsyncNotifier<List<T>> {
   /// Backfills missing bundled seed rows into the remote collection, then
   /// reloads. Skips ids that already exist remotely.
   Future<void> seed() async {
-    final db = ref.read(appwriteDbServiceProvider);
+    final admin = ref.read(adminContentClientProvider);
     final seedItems = await loadSeed();
-    final existingDocs = await db.listAllDocuments(collectionId);
-    final existingIds = existingDocs.map((doc) => doc['id'] as String).toSet();
+    final existingDocs = await admin.list(collectionId);
+    final existingIds = existingDocs.map((doc) => '${doc['id']}').toSet();
     var seededCount = 0;
     for (final item in seedItems) {
       if (existingIds.contains(itemId(item))) continue;
       try {
-        await db.createDocument(collectionId, itemId(item), _encode(item));
+        await admin.upsert(
+          collectionId,
+          itemId(item),
+          _encode(item),
+          dropNulls: true,
+        );
         seededCount++;
       } catch (e, stack) {
         AppLogger.warning(

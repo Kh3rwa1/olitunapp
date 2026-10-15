@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_content_client.dart';
 import 'package:itun/core/ads/ad_state.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/admin/presentation/admin_settings_screen.dart';
@@ -9,20 +9,16 @@ import 'package:itun/features/admin/presentation/settings/controllers/admin_sett
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/app_settings_provider.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+import '../../../helpers/fake_admin_worker.dart';
 
 void main() {
-  late MockAppwriteDbService mockDb;
+  late FakeAdminWorker worker;
   late SharedPreferences prefs;
 
   setUp(() async {
-    mockDb = MockAppwriteDbService();
-    when(
-      () => mockDb.listDocuments('app_settings'),
-    ).thenAnswer((_) async => []);
+    worker = FakeAdminWorker();
     SharedPreferences.setMockInitialValues({
       // Empty badge names keep the screen's controller-sync no-op so the
       // success path can render without triggering mid-build provider writes.
@@ -36,7 +32,7 @@ void main() {
   Widget buildScreen() {
     return ProviderScope(
       overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        adminContentClientProvider.overrideWithValue(worker.adminClient),
         sharedPreferencesProvider.overrideWithValue(prefs),
         isAuthenticatedProvider.overrideWith((ref) async => true),
         appSettingsProvider.overrideWith((ref) async => <String, dynamic>{}),

@@ -443,3 +443,14 @@ CREATE TABLE IF NOT EXISTS story_segments (
   raw_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments(story_id, order_index);
+
+-- Content change feed: one row per admin content/settings mutation, written
+-- in the same batch as the change (routes/admin_content.ts). Clients poll
+-- GET /api/v1/content/changes?since=<seq>.
+CREATE TABLE IF NOT EXISTS content_changes (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  table_name TEXT NOT NULL,
+  row_id TEXT NOT NULL,
+  op TEXT NOT NULL,
+  changed_at TEXT NOT NULL
+);

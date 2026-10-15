@@ -54,6 +54,12 @@ class CloudflareConfig {
   static const String waitlistMineEndpoint = '$baseUrl/api/v1/waitlist/mine';
   static const String adminWaitlistEndpoint = '$baseUrl/api/v1/admin/waitlist';
 
+  // Admin CMS (D1): content rows, app settings, and the public change feed.
+  static const String adminContentEndpoint = '$baseUrl/api/v1/admin/content';
+  static const String adminSettingsEndpoint = '$baseUrl/api/v1/admin/settings';
+  static const String contentChangesEndpoint =
+      '$baseUrl/api/v1/content/changes';
+
   // Learner analytics ingest
   static const String analyticsEventsEndpoint =
       '$baseUrl/api/v1/analytics/events';

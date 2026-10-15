@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'dart:async';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/storage/cache_service.dart';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -29,7 +29,7 @@ class FakeNetworkInfo implements NetworkInfo {
       const Stream.empty();
 }
 
-class MockOfflineDatabases extends Mock implements TablesDB {}
+class MockOfflineRemote extends Mock implements ContentRemoteDataSource {}
 
 class FailingOutbox extends MutationOutboxService {
   @override
@@ -74,7 +74,7 @@ void main() {
     () async {
       for (final outbox in <MutationOutboxService?>[null, FailingOutbox()]) {
         final repository = ContentRepository(
-          tablesDB: MockOfflineDatabases(),
+          remoteDataSource: MockOfflineRemote(),
           networkInfo: FakeNetworkInfo(connected: false),
           mutationOutbox: outbox,
         );
@@ -88,7 +88,7 @@ void main() {
     'replay cannot acknowledge an offline re-enqueue as a server success',
     () async {
       final repository = ContentRepository(
-        tablesDB: MockOfflineDatabases(),
+        remoteDataSource: MockOfflineRemote(),
         networkInfo: FakeNetworkInfo(connected: false),
         mutationOutbox: MutationOutboxService(),
       );
@@ -109,7 +109,7 @@ void main() {
   test('durable edit survives Hive close and reopen before replay', () async {
     final outbox = MutationOutboxService();
     final repository = ContentRepository(
-      tablesDB: MockOfflineDatabases(),
+      remoteDataSource: MockOfflineRemote(),
       networkInfo: FakeNetworkInfo(connected: false),
       mutationOutbox: outbox,
     );

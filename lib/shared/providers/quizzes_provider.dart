@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/admin_content_client.dart';
 import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../core/storage/cache_service.dart';
@@ -208,7 +208,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
     );
   }
 
-  Map<String, dynamic> _toAppwritePayload(QuizModel quiz) {
+  Map<String, dynamic> _toDocument(QuizModel quiz) {
     final payload = Map<String, dynamic>.from(quiz.toJson())..remove('id');
     payload['questions'] = jsonEncode(
       quiz.questions.map((question) => question.toMap()).toList(),
@@ -223,8 +223,8 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
     await _applyOptimistic([..._baseQuizzes, item]);
     try {
       await ref
-          .read(appwriteDbServiceProvider)
-          .createDocument(_collectionId, item.id, _toAppwritePayload(item));
+          .read(adminContentClientProvider)
+          .upsert(_collectionId, item.id, _toDocument(item));
     } catch (e, stack) {
       await _applyOptimistic(previous);
       AppLogger.error(
@@ -246,8 +246,8 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
     ]);
     try {
       await ref
-          .read(appwriteDbServiceProvider)
-          .updateDocument(_collectionId, item.id, _toAppwritePayload(item));
+          .read(adminContentClientProvider)
+          .upsert(_collectionId, item.id, _toDocument(item));
     } catch (e, stack) {
       await _applyOptimistic(previous);
       AppLogger.error(
@@ -267,9 +267,7 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
         if (quiz.id != id) quiz,
     ]);
     try {
-      await ref
-          .read(appwriteDbServiceProvider)
-          .deleteDocument(_collectionId, id);
+      await ref.read(adminContentClientProvider).delete(_collectionId, id);
     } catch (e, stack) {
       await _applyOptimistic(previous);
       AppLogger.error(
@@ -312,26 +310,22 @@ class QuizzesNotifier extends AsyncNotifier<List<QuizModel>> {
   Future<void> seedToAppwrite() async {
     state = const AsyncValue.loading();
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listAllDocuments(_collectionId);
-      final existingIds = data.map((doc) => doc['id'] as String).toSet();
+      final admin = ref.read(adminContentClientProvider);
+      final data = await admin.list(_collectionId);
+      final existingIds = data.map((doc) => '${doc['id']}').toSet();
 
       var seededCount = 0;
       for (final quiz in QuizCatalog.defaultQuizzes) {
         if (existingIds.contains(quiz.id)) continue;
-        await db.createDocument(
-          _collectionId,
-          quiz.id,
-          _toAppwritePayload(quiz),
-        );
+        await admin.upsert(_collectionId, quiz.id, _toDocument(quiz));
         seededCount++;
       }
-      AppLogger.debug('Seeded $seededCount new quizzes to Appwrite.');
+      AppLogger.debug('Seeded $seededCount new quizzes to the Worker.');
       ref.invalidateSelf();
       await future;
     } catch (e, stack) {
       AppLogger.error(
-        'Failed to seed default quizzes to Appwrite',
+        'Failed to seed default quizzes',
         name: 'QuizzesNotifier',
         error: e,
         stackTrace: stack,

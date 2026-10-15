@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/ads/ad_state.dart';
-import '../../../../../core/api/appwrite_db_service.dart';
+import '../../../../../core/api/admin_content_client.dart';
 import '../../../../../core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -172,7 +172,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
   /// (e.g. validation results written after the load was scheduled).
   int _loadSeq = 0;
 
-  /// Loads all remote app settings from Appwrite.
+  /// Loads all remote app settings from the Worker (D1, uncached).
   Future<void> loadSettings() async {
     final seq = ++_loadSeq;
     state = state.copyWith(
@@ -188,8 +188,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
     // while build() is still running.
     await Future<void>.value();
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final docs = await db.listDocuments('app_settings');
+      final docs = await ref.read(adminContentClientProvider).listSettings();
       if (seq != _loadSeq) return;
 
       final settings = <String, dynamic>{};
@@ -305,7 +304,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
     }
   }
 
-  /// Saves a single setting key-value pair to Appwrite DB using strict 404 create fallback.
+  /// Saves a single setting key-value pair through the Worker upsert route.
   Future<bool> saveSetting(String key, String value) async {
     if (state.isSaving(key)) return false;
     ++_loadSeq;
@@ -329,22 +328,8 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
       clearFailure: true,
     );
 
-    final db = ref.read(appwriteDbServiceProvider);
-    final data = {'settingKey': key, 'settingValue': value};
-
     try {
-      try {
-        await db.updateDocument('app_settings', key, data);
-      } catch (err) {
-        final classified = AdminFailure.fromException(err);
-        // ONLY create when Appwrite confirms document not found (404)
-        if (classified is AdminNotFoundFailure) {
-          await db.createDocument('app_settings', key, data);
-        } else {
-          // Re-throw non-404 errors (network, permission 401/403, 500, etc.)
-          throw classified;
-        }
-      }
+      await ref.read(adminContentClientProvider).putSetting(key, value);
 
       // Update state upon confirmed backend persistence
       AdminSettingsState updated = state.copyWith(

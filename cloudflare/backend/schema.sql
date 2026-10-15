@@ -355,3 +355,37 @@ CREATE TABLE IF NOT EXISTS provider_key_rotation (
   state_json TEXT NOT NULL DEFAULT '{}',
   updated_at TEXT NOT NULL
 );
+
+-- Learner spaced-repetition state (replaces Appwrite review_states).
+-- id = 'r_' + sha256('usr:<len>:<userId>:item:<len>:<itemId>')[0:31], the
+-- same deterministic id the Appwrite rows use, so (user_id, item_id) is
+-- unique by construction. version/write_token back optimistic concurrency
+-- for applyRecall.
+CREATE TABLE IF NOT EXISTS review_states (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  item_type TEXT NOT NULL CHECK (item_type IN ('word', 'sentence')),
+  state_json TEXT NOT NULL,
+  next_review_at TEXT NOT NULL,
+  last_reviewed_at TEXT,
+  schema_version INTEGER NOT NULL DEFAULT 3,
+  version INTEGER NOT NULL DEFAULT 1,
+  write_token TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_review_states_user ON review_states(user_id, id);
+CREATE INDEX IF NOT EXISTS idx_review_states_user_next ON review_states(user_id, next_review_at);
+
+-- Idempotency ledger for applyRecall: one row per (user, operationId).
+-- id = 'op_' + sha256('usr:<len>:<userId>:op:<len>:<operationId>')[0:30].
+CREATE TABLE IF NOT EXISTS review_operations (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  operation_id TEXT NOT NULL,
+  item_id TEXT NOT NULL,
+  occurred_at TEXT NOT NULL,
+  applied_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_review_operations_user_op ON review_operations(user_id, operation_id);
+CREATE INDEX IF NOT EXISTS idx_review_operations_user_item ON review_operations(user_id, item_id);

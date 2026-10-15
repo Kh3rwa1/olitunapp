@@ -37,6 +37,10 @@ class CloudflareConfig {
   static const String gamificationContentEndpoint =
       '$baseUrl/api/v1/gamification/content';
 
+  // Learner spaced-repetition (review) sync
+  static const String reviewStatesEndpoint = '$baseUrl/api/v1/review/states';
+  static const String reviewMutateEndpoint = '$baseUrl/api/v1/review/mutate';
+
   // Waitlist & Authorization
   static const String waitlistEndpoint = '$baseUrl/api/v1/waitlist/join';
   static const String lessonsAuthorizeEndpoint =

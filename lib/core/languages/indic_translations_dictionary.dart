@@ -262,6 +262,9 @@ class IndicTranslationsDictionary {
     'ten': {'bn': 'দশ (১০)', 'hi': 'दस (१०)', 'or': 'ଦଶ (୧୦)', 'en': 'Ten'},
   };
 
+  /// Read-only access to curated core vocabulary.
+  static Map<String, Map<String, String>> get vocabulary => _vocabulary;
+
   /// Lookup translation from aggregated datasets.
   static String? lookup(String key, String targetLang) {
     final lower = key.toLowerCase().trim();

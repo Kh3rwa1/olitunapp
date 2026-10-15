@@ -22,7 +22,7 @@ class MockCategoryNotifier extends CategoryNotifier {
   MockCategoryNotifier(this._initial);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+  List<CategoryEntity> build() => _initial;
   @override
   Future<void> loadCategories() async {}
 }
@@ -345,7 +345,7 @@ void main() {
               ).overrideWith((ref) => Future.value(overriddenNumberLesson)),
               effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier(),
+                TargetLanguageNotifier.new,
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
             ],
@@ -385,7 +385,7 @@ void main() {
               ).overrideWith((ref) => Future.value(numberLesson)),
               effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier(),
+                TargetLanguageNotifier.new,
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
             ],
@@ -425,7 +425,7 @@ void main() {
               ).overrideWith((ref) => Future.value(numberLesson)),
               effectiveTeachingLanguageProvider.overrideWith((ref) => 'or'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier(),
+                TargetLanguageNotifier.new,
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
             ],
@@ -465,7 +465,7 @@ void main() {
               ).overrideWith((ref) => Future.value(numberLesson)),
               effectiveTeachingLanguageProvider.overrideWith((ref) => 'hi'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier(),
+                TargetLanguageNotifier.new,
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
             ],

@@ -27,7 +27,7 @@ class _Categories extends CategoryNotifier {
   final List<CategoryEntity> _items;
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_items);
+  List<CategoryEntity> build() => _items;
 }
 
 CategoryEntity _category({required bool paid}) => CategoryEntity(

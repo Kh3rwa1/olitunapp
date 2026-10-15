@@ -16,15 +16,13 @@ import 'package:itun/shared/providers/local_settings_provider.dart';
 
 class _ProfileCategories extends CategoryNotifier {
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(
-    List.generate(
-      200,
-      (index) => CategoryEntity(
-        id: 'profile_$index',
-        titleLatin: 'Learning path $index',
-        titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-        iconName: 'words',
-      ),
+  List<CategoryEntity> build() => List.generate(
+    200,
+    (index) => CategoryEntity(
+      id: 'profile_$index',
+      titleLatin: 'Learning path $index',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+      iconName: 'words',
     ),
   );
 }

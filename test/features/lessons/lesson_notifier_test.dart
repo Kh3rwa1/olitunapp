@@ -163,6 +163,47 @@ void main() {
     });
   });
 
+  group('LessonNotifier (AsyncNotifier lifecycle)', () {
+    test('build de-duplicates by id and category+title', () async {
+      when(() => mockRepo.getLessons()).thenAnswer(
+        (_) async => Right([
+          ...sampleLessons,
+          sampleLessons.first,
+          const LessonEntity(
+            id: 'l3',
+            categoryId: 'alphabets',
+            titleOlChiki: '',
+            titleLatin: ' vowels ',
+          ),
+        ]),
+      );
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+
+      final lessons = await container.read(lessonNotifierProvider.future);
+      expect(lessons.map((l) => l.id), ['l1', 'l2']);
+    });
+
+    test('refresh failure is reflected in state without throwing', () async {
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      container.listen(lessonNotifierProvider, (_, _) {});
+      await container.read(lessonNotifierProvider.future);
+
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => const Left(ServerFailure(message: 'timeout')));
+      await container.read(lessonNotifierProvider.notifier).refresh();
+
+      final state = container.read(lessonNotifierProvider);
+      expect(state.hasError, isTrue);
+      expect(state.error.toString(), contains('timeout'));
+    });
+  });
+
   group('lessonsByCategoryProvider', () {
     test('filters lessons by categoryId', () async {
       final container = ProviderContainer(

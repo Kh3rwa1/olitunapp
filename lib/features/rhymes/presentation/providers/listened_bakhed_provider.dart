@@ -12,24 +12,17 @@ const String _prefsKey = 'listened_bakhed_ids';
 /// Deliberately device-local (no sync): it powers a lightweight "heard"
 /// affordance, not progress that must survive device loss.
 class ListenedBakhedNotifier extends Notifier<Set<String>> {
-  bool _disposed = false;
-
+  /// SharedPreferences is already loaded at the root, so the saved ids are
+  /// read synchronously here. (Writing `state` from inside `build()` is
+  /// discarded by Riverpod, which previously left the set empty.)
   @override
   Set<String> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    _load();
-    return {};
-  }
-
-  Future<void> _load() async {
     try {
       final prefs = ref.read(sharedPreferencesProvider);
-      final ids = prefs.getStringList(_prefsKey) ?? const [];
-      if (_disposed) return;
-      state = Set<String>.from(ids);
+      return Set<String>.from(prefs.getStringList(_prefsKey) ?? const []);
     } catch (_) {
       // Badge data is best-effort; never block the catalogue on it.
+      return {};
     }
   }
 

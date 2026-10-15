@@ -16,14 +16,14 @@ import 'package:itun/l10n/generated/app_localizations.dart';
 
 class _CategoryNotifier extends CategoryNotifier {
   @override
-  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([
+  List<CategoryEntity> build() => const [
     CategoryEntity(
       id: 'category_1',
       titleOlChiki: 'Path',
       titleLatin: 'Learning Path',
       totalLessons: 2,
     ),
-  ]);
+  ];
 
   @override
   Future<void> loadCategories() async {}

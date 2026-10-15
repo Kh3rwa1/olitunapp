@@ -1,47 +1,51 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/catalog/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import 'category_providers.dart';
 
 import '../../../../core/auth/auth_providers.dart';
+import '../../../../shared/providers/content_providers.dart'
+    show FailureException;
 import '../../../../shared/providers/language_settings_providers.dart';
 
 final categoryNotifierProvider =
-    NotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>(
+    AsyncNotifierProvider<CategoryNotifier, List<CategoryEntity>>(
       CategoryNotifier.new,
     );
 
-class CategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>> {
-  bool _disposed = false;
-
+/// Localized category catalog. `build()` performs the fetch directly and
+/// re-runs when the auth state or teaching language changes.
+class CategoryNotifier extends AsyncNotifier<List<CategoryEntity>> {
   CategoryRepository get _repository => ref.read(categoryRepositoryProvider);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Re-create the notifier when the auth state changes.
+  FutureOr<List<CategoryEntity>> build() {
+    // Rebuild when the auth state changes.
     ref.watch(isAuthenticatedProvider);
-    // Re-create it when the teaching language changes (catalog is localized).
+    // Rebuild when the teaching language changes (catalog is localized).
     ref.watch(teachingLanguageRevisionProvider);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadCategories);
-    return const AsyncValue.loading();
+    return _fetch();
   }
 
-  Future<void> loadCategories() async {
-    if (_disposed) return;
-    if (!state.hasValue) {
-      state = const AsyncValue.loading();
-    }
+  Future<List<CategoryEntity>> _fetch() async {
     final result = await _repository.getCategories();
-    if (_disposed) return;
-    result.fold(
-      (failure) =>
-          state = AsyncValue.error(failure.message, StackTrace.current),
-      (categories) =>
-          state = AsyncValue.data(_deduplicateCategories(categories)),
+    return result.fold(
+      (failure) => throw FailureException(failure),
+      _deduplicateCategories,
     );
+  }
+
+  /// Re-fetches the catalog. Previously loaded data stays visible while the
+  /// request is in flight; a failure is surfaced through [state], not thrown.
+  Future<void> loadCategories() async {
+    ref.invalidateSelf();
+    try {
+      await future;
+    } catch (_) {
+      // Already reflected in `state` as AsyncError.
+    }
   }
 
   /// Remove duplicate categories. Dedup by document ID first, then by
@@ -67,29 +71,20 @@ class CategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> addCategory(CategoryEntity category) async {
     final result = await _repository.createCategory(category);
-    if (_disposed) return;
-    result.fold(
-      (failure) => null, // Handle error
-      (_) => loadCategories(),
-    );
+    // Failures are ignored here (as before); the form surfaces its own errors.
+    if (result.isRight()) await loadCategories();
   }
 
   Future<void> updateCategory(CategoryEntity category) async {
     final result = await _repository.updateCategory(category);
-    if (_disposed) return;
-    result.fold(
-      (failure) => null, // Handle error
-      (_) => loadCategories(),
-    );
+    // Failures are ignored here (as before); the form surfaces its own errors.
+    if (result.isRight()) await loadCategories();
   }
 
   Future<void> deleteCategory(String id) async {
     final result = await _repository.deleteCategory(id);
-    if (_disposed) return;
-    result.fold(
-      (failure) => null, // Handle error
-      (_) => loadCategories(),
-    );
+    // Failures are ignored here (as before); the form surfaces its own errors.
+    if (result.isRight()) await loadCategories();
   }
 
   Future<void> reorderCategories(int oldIndex, int newIndex) async {
@@ -98,7 +93,7 @@ class CategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>> {
     final list = List<CategoryEntity>.from(current);
     final item = list.removeAt(oldIndex);
     list.insert(newIndex, item);
-    state = AsyncValue.data(list);
+    state = AsyncData(list);
   }
 
   Future<void> seed() async {

@@ -13,29 +13,39 @@ export '../../data/voice_download_service.dart';
 const _voicePrefKey = 'santali_voice_name';
 const _stylePrefKey = 'santali_voice_style';
 
-final santaliVoiceNameProvider =
-    StateNotifierProvider<VoicePrefNotifier, String>(
-      (_) => VoicePrefNotifier(_voicePrefKey, defaultVoiceName),
-    );
+final santaliVoiceNameProvider = NotifierProvider<VoicePrefNotifier, String>(
+  () => VoicePrefNotifier(_voicePrefKey, defaultVoiceName),
+);
 
-final santaliVoiceStyleProvider =
-    StateNotifierProvider<VoicePrefNotifier, String>(
-      (_) => VoicePrefNotifier(_stylePrefKey, neutralStyle.apiValue),
-    );
+final santaliVoiceStyleProvider = NotifierProvider<VoicePrefNotifier, String>(
+  () => VoicePrefNotifier(_stylePrefKey, neutralStyle.apiValue),
+);
 
-class VoicePrefNotifier extends StateNotifier<String> {
-  VoicePrefNotifier(this._key, super.initial);
+class VoicePrefNotifier extends Notifier<String> {
+  VoicePrefNotifier(this._key, this._initial);
 
   final String _key;
+  final String _initial;
+
+  /// Bumped on dispose so a preference read that resolves afterwards is
+  /// dropped (replaces StateNotifier's `mounted`).
+  int _generation = 0;
+
+  @override
+  String build() {
+    ref.onDispose(() => _generation++);
+    return _initial;
+  }
 
   Future<void> load() async {
+    final generation = _generation;
     try {
       final prefs = await SharedPreferences.getInstance();
       final saved = prefs.getString(_key);
       if (saved == null) return;
       if (_key == _voicePrefKey && !isKnownVoice(saved)) return;
       if (_key == _stylePrefKey && !isKnownStyle(saved)) return;
-      if (mounted && saved != state) state = saved;
+      if (generation == _generation && saved != state) state = saved;
     } catch (_) {
       // Preference restore must never break the studio.
     }

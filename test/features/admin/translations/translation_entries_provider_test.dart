@@ -40,8 +40,8 @@ class FakeLessonNotifier extends LessonNotifier {
   final bool loading;
 
   @override
-  AsyncValue<List<LessonEntity>> build() =>
-      loading ? const AsyncValue.loading() : AsyncValue.data(items);
+  FutureOr<List<LessonEntity>> build() =>
+      loading ? Completer<List<LessonEntity>>().future : items;
 }
 
 class FakeCategoryNotifier extends CategoryNotifier {
@@ -50,8 +50,8 @@ class FakeCategoryNotifier extends CategoryNotifier {
   final bool loading;
 
   @override
-  AsyncValue<List<CategoryEntity>> build() =>
-      loading ? const AsyncValue.loading() : AsyncValue.data(items);
+  FutureOr<List<CategoryEntity>> build() =>
+      loading ? Completer<List<CategoryEntity>>().future : items;
 }
 
 class FakeRhymesNotifier extends RhymesNotifier {

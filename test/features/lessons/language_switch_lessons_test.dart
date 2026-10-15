@@ -28,7 +28,7 @@ class MockCategoryNotifier extends CategoryNotifier {
   MockCategoryNotifier(this._initial);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+  List<CategoryEntity> build() => _initial;
   @override
   Future<void> loadCategories() async {}
 }
@@ -103,7 +103,7 @@ void main() {
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier(),
+                TargetLanguageNotifier.new,
               ),
             ],
             child: const MaterialApp(
@@ -145,7 +145,7 @@ void main() {
               ),
               effectiveScriptModeProvider.overrideWith((ref) => 'both'),
               targetLanguageCodeProvider.overrideWith(
-                (ref) => TargetLanguageNotifier('hoc'),
+                () => TargetLanguageNotifier('hoc'),
               ),
             ],
             child: const MaterialApp(
@@ -216,7 +216,7 @@ void main() {
               'lesson_test_1',
             ).overrideWith((ref) => Future.value(lesson)),
             targetLanguageCodeProvider.overrideWith(
-              (ref) => TargetLanguageNotifier('hoc'),
+              () => TargetLanguageNotifier('hoc'),
             ),
             effectiveTeachingLanguageProvider.overrideWith((ref) => 'en'),
             effectiveScriptModeProvider.overrideWith((ref) => 'both'),

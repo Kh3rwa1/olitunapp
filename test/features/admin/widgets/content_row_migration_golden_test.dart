@@ -13,14 +13,14 @@ import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
-class MockCategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>>
+class MockCategoryNotifier extends AsyncNotifier<List<CategoryEntity>>
     implements CategoryNotifier {
   final List<CategoryEntity> _initial;
 
   MockCategoryNotifier(this._initial);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+  List<CategoryEntity> build() => _initial;
 
   @override
   Future<void> loadCategories() async {}

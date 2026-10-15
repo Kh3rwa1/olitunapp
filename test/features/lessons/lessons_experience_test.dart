@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -31,7 +33,7 @@ class _Categories extends CategoryNotifier {
   int refreshes = 0;
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => initial;
+  FutureOr<List<CategoryEntity>> build() => _fromAsyncValue(initial);
 
   @override
   Future<void> refresh() async {
@@ -203,3 +205,9 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
   });
 }
+
+FutureOr<List<T>> _fromAsyncValue<T>(AsyncValue<List<T>> value) => value.when(
+  data: (items) => items,
+  error: Error.throwWithStackTrace,
+  loading: () => Completer<List<T>>().future,
+);

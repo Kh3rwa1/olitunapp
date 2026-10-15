@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/catalog/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
@@ -9,7 +12,7 @@ import '../../../../shared/providers/content_providers.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lessonNotifierProvider =
-    NotifierProvider<LessonNotifier, AsyncValue<List<LessonEntity>>>(
+    AsyncNotifierProvider<LessonNotifier, List<LessonEntity>>(
       LessonNotifier.new,
     );
 
@@ -27,32 +30,32 @@ final lessonsByCategoryProvider =
       );
     });
 
-class LessonNotifier extends Notifier<AsyncValue<List<LessonEntity>>> {
-  bool _disposed = false;
-
+/// Admin/legacy lesson list. `build()` performs the fetch directly so
+/// loading/error/data come from Riverpod; mutations write remotely and then
+/// re-run `build()` via [loadLessons].
+class LessonNotifier extends AsyncNotifier<List<LessonEntity>> {
   LessonRepository get _repository => ref.read(lessonRepositoryProvider);
 
   @override
-  AsyncValue<List<LessonEntity>> build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    // Deferred: `state` may not be read or written inside build().
-    Future.microtask(loadLessons);
-    return const AsyncValue.loading();
+  FutureOr<List<LessonEntity>> build() => _fetch();
+
+  Future<List<LessonEntity>> _fetch() async {
+    final result = await _repository.getLessons();
+    return result.fold(
+      (failure) => throw FailureException(failure),
+      _deduplicateLessons,
+    );
   }
 
+  /// Re-fetches the list. Previously loaded data stays visible while the
+  /// request is in flight; a failure is surfaced through [state], not thrown.
   Future<void> loadLessons() async {
-    if (_disposed) return;
-    if (!state.hasValue) {
-      state = const AsyncValue.loading();
+    ref.invalidateSelf();
+    try {
+      await future;
+    } catch (_) {
+      // Already reflected in `state` as AsyncError.
     }
-    final result = await _repository.getLessons();
-    if (_disposed) return;
-    result.fold(
-      (failure) =>
-          state = AsyncValue.error(failure.message, StackTrace.current),
-      (lessons) => state = AsyncValue.data(_deduplicateLessons(lessons)),
-    );
   }
 
   List<LessonEntity> _deduplicateLessons(List<LessonEntity> lessons) {
@@ -98,26 +101,22 @@ class LessonNotifier extends Notifier<AsyncValue<List<LessonEntity>>> {
 
   Future<void> addLesson(LessonEntity lesson) async {
     final result = await _repository.createLesson(lesson);
-    await result.fold<Future<void>>((failure) async {
-      state = AsyncValue.error(failure.message, StackTrace.current);
-      throw StateError(failure.message);
-    }, (_) => loadLessons());
+    await result.fold<Future<void>>(_failMutation, (_) => loadLessons());
   }
 
   Future<void> updateLesson(LessonEntity lesson) async {
     final result = await _repository.updateLesson(lesson);
-    await result.fold<Future<void>>((failure) async {
-      state = AsyncValue.error(failure.message, StackTrace.current);
-      throw StateError(failure.message);
-    }, (_) => loadLessons());
+    await result.fold<Future<void>>(_failMutation, (_) => loadLessons());
   }
 
   Future<void> deleteLesson(String id) async {
     final result = await _repository.deleteLesson(id);
-    await result.fold<Future<void>>((failure) async {
-      state = AsyncValue.error(failure.message, StackTrace.current);
-      throw StateError(failure.message);
-    }, (_) => loadLessons());
+    await result.fold<Future<void>>(_failMutation, (_) => loadLessons());
+  }
+
+  Future<void> _failMutation(Failure failure) async {
+    state = AsyncValue.error(FailureException(failure), StackTrace.current);
+    throw StateError(failure.message);
   }
 
   Future<void> seed() async {

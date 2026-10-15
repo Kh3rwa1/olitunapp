@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -7,7 +6,18 @@ import '../../../../../core/theme/app_typography.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 import '../../../../../shared/widgets/minimum_tap_target.dart';
 
+/// Floating "glass" bottom navigation.
+///
+/// Persistent and always on screen, so it deliberately avoids a
+/// `BackdropFilter`: a full-width blur re-samples everything behind the bar
+/// on every frame the page scrolls or animates. The shell already paints a
+/// readability scrim beneath the bar, so a denser translucent surface keeps
+/// the frosted look at a fraction of the cost.
 class GlassicBottomNav extends StatelessWidget {
+  /// Surface opacity; raised from the blurred variant's 0.6 to compensate
+  /// for the missing blur so page content stays legible behind the bar.
+  static const double surfaceOpacity = 0.86;
+
   final int selectedIndex;
   final ValueChanged<int> onItemTapped;
   final bool isDark;
@@ -29,7 +39,7 @@ class GlassicBottomNav extends StatelessWidget {
         isTablet ? 32 : 24,
         0,
         isTablet ? 32 : 24,
-        MediaQuery.of(context).viewPadding.bottom + (isTablet ? 20 : 15),
+        MediaQuery.viewPaddingOf(context).bottom + (isTablet ? 20 : 15),
       ),
       height: 80,
       decoration: BoxDecoration(
@@ -42,41 +52,32 @@ class GlassicBottomNav extends StatelessWidget {
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-          child: Container(
-            decoration: BoxDecoration(
-              color: (isDark ? Colors.black : Colors.white).withValues(
-                alpha: 0.6,
-              ),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: (isDark ? Colors.white : Colors.black).withValues(
-                  alpha: 0.15,
-                ),
-                width: 1.5,
-              ),
+      child: RepaintBoundary(
+        child: Container(
+          decoration: BoxDecoration(
+            color: (isDark ? Colors.black : Colors.white).withValues(
+              alpha: surfaceOpacity,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(context, 0, Icons.school_rounded, l10n.navLearn),
-                _buildNavItem(
-                  context,
-                  1,
-                  Icons.music_note_rounded,
-                  l10n.navBakhed,
-                ),
-                _buildNavItem(
-                  context,
-                  2,
-                  Icons.person_rounded,
-                  l10n.navProfile,
-                ),
-              ],
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: (isDark ? Colors.white : Colors.black).withValues(
+                alpha: 0.15,
+              ),
+              width: 1.5,
             ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(context, 0, Icons.school_rounded, l10n.navLearn),
+              _buildNavItem(
+                context,
+                1,
+                Icons.music_note_rounded,
+                l10n.navBakhed,
+              ),
+              _buildNavItem(context, 2, Icons.person_rounded, l10n.navProfile),
+            ],
           ),
         ),
       ),

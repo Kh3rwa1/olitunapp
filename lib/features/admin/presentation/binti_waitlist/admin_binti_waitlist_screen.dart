@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../shared/models/content_models.dart';
@@ -8,11 +7,10 @@ import '../../../../shared/providers/providers.dart';
 import '../widgets/admin_section_header.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_data_table.dart';
-import '../widgets/admin_glass_card.dart';
 import '../analytics/admin_analytics_csv_exporter.dart';
 import '../widgets/common/admin_modal_sheet.dart';
-part 'widgets/admin_binti_waitlist_details_sheet.dart';
-part 'widgets/admin_binti_waitlist_kpi_row.dart';
+import 'widgets/admin_binti_waitlist_details_sheet.dart';
+import 'widgets/admin_binti_waitlist_kpi_row.dart';
 
 class AdminBintiWaitlistScreen extends ConsumerStatefulWidget {
   const AdminBintiWaitlistScreen({super.key});
@@ -123,7 +121,7 @@ class _AdminBintiWaitlistScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // KPI Row
-                  _BintiWaitlistKpiRow(
+                  BintiWaitlistKpiRow(
                     isDark: isDark,
                     isWide: isWideScreen,
                     total: totalBookings,
@@ -324,7 +322,7 @@ class _AdminBintiWaitlistScreenState
     showAdminBottomSheet(
       context: context,
       builder: (ctx) {
-        return _WaitlistDetailsSheet(entry: entry, parentRef: ref);
+        return WaitlistDetailsSheet(entry: entry, parentRef: ref);
       },
     );
   }

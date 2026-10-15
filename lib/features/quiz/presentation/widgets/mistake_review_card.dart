@@ -24,10 +24,12 @@ class MistakeReviewCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mistakes = mistakeCount == null ? ref.watch(mistakeProvider) : null;
+    final watchedCount = mistakeCount == null
+        ? ref.watch(mistakeProvider.select((m) => m.length))
+        : null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final count = mistakeCount ?? mistakes!.length;
+    final count = mistakeCount ?? watchedCount!;
 
     if (count <= 0) return const SizedBox.shrink();
 

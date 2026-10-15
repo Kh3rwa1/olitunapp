@@ -126,19 +126,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final userName = ref.watch(userNameProvider);
-    final isAuthAsync = ref.watch(isAuthenticatedProvider);
-    final isGuest = isAuthAsync.value == false;
+    final isGuest = ref.watch(
+      isAuthenticatedProvider.select((auth) => auth.value == false),
+    );
     // One persona everywhere: the profile screen's default is 'Learner',
     // so the home greeting must not invent a second identity for guests.
     final displayUserName = userName;
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
-    // Watch prefetch provider to trigger rebuilds or updates
-    ref.watch(homePrefetchProvider);
+    // Keep the prefetcher subscribed for this screen's lifetime. Its state
+    // (isPrefetching / timestamps) is not rendered, so don't rebuild on it;
+    // refreshed data arrives through the category/content providers.
+    ref.watch(homePrefetchProvider.select((_) => true));
     final dueReviews = ref.watch(dueReviewCountProvider);
 
-    final statsAsync = ref.watch(userStatsProvider);
-    final completedIds = statsAsync.value?.completedLessons ?? {};
+    // Only the loading flag and completed-lesson ids are used here; stars/XP
+    // updates must not rebuild the whole home screen.
+    final statsLoading = ref.watch(
+      userStatsProvider.select((stats) => stats.isLoading),
+    );
+    final completedIds =
+        ref.watch(
+          userStatsProvider.select((stats) => stats.value?.completedLessons),
+        ) ??
+        {};
     final lessonsAsync = ref.watch(learnerLessonsProvider);
     final allLessons = lessonsAsync.valueOrNull ?? [];
     final lastOpenedLessonId = ref.watch(lastOpenedLessonIdProvider)?.trim();
@@ -191,7 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
 
         // (4) CONTINUE LEARNING — NextBestActionCard
-        statsAsync.isLoading
+        statsLoading
             ? _buildStatsSkeleton(isDark)
             : Column(
                 children: [
@@ -207,7 +218,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   // Phase 7 (spec §15): proficiency-based path card, gated on
                   // the audio-quizzes flag so flag-off keeps home identical.
-                  if (ref.watch(featureFlagsProvider).audioQuizzesEnabled) ...[
+                  if (ref.watch(
+                    featureFlagsProvider.select((f) => f.audioQuizzesEnabled),
+                  )) ...[
                     const SizedBox(height: 16),
                     const RepaintBoundary(child: LearningPathCard()),
                   ],

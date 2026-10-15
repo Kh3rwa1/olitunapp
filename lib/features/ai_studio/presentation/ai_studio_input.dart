@@ -1,25 +1,73 @@
-part of 'ai_studio_screen.dart';
+import 'package:flutter/material.dart';
 
-extension _AiStudioInput on _AiStudioScreenState {
-  // ── Input Panel ──────────────────────────────────────────────────────
-  Widget _inputPanel(
-    bool configured,
-    AppLocalizations l10n,
-    bool isDark, {
-    required bool flex,
-    required bool isMobile,
-  }) {
-    final draft = _draft;
-    final locked = draft.busy || draft.selecting || _recording;
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/ai_spark_assistant.dart';
+import '../data/ai_studio_service.dart';
+import 'ai_studio_input_tools.dart';
+import 'ai_studio_layout.dart';
+import 'ai_studio_session.dart';
+import 'ai_studio_status.dart';
+
+/// Input side of the studio: language picker, the active tool's form, and
+/// the auto / process footer. All mutations go through callbacks.
+class StudioInputPanel extends StatelessWidget {
+  const StudioInputPanel({
+    super.key,
+    required this.tool,
+    required this.draft,
+    required this.source,
+    required this.configured,
+    required this.validInput,
+    required this.recording,
+    required this.recordingSeconds,
+    required this.pulse,
+    required this.flex,
+    required this.isMobile,
+    required this.onLanguageChanged,
+    required this.onProcess,
+    required this.onToggleAuto,
+    required this.onRestoreSpark,
+    required this.onToggleRecording,
+    required this.onPick,
+    required this.onSourceChanged,
+  });
+
+  final StudioTool tool;
+  final StudioDraft draft;
+  final TextEditingController source;
+  final bool configured;
+  final bool validInput;
+  final bool recording;
+  final int recordingSeconds;
+  final Animation<double> pulse;
+  final bool flex;
+  final bool isMobile;
+  final ValueChanged<String> onLanguageChanged;
+  final VoidCallback onProcess;
+  final VoidCallback onToggleAuto;
+  final VoidCallback onRestoreSpark;
+  final VoidCallback onToggleRecording;
+
+  /// Called with `camera: true` for page capture.
+  final void Function(bool camera) onPick;
+  final VoidCallback onSourceChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final locked = draft.busy || draft.selecting || recording;
     final scanPending =
-        _tool == _Tool.scan && draft.job != null && !draft.job!.isTerminal;
+        tool == StudioTool.scan && draft.job != null && !draft.job!.isTerminal;
     final languages = studioLanguages.entries.where(
-      (entry) => _tool != _Tool.translate || entry.key != 'sat-IN',
+      (entry) => tool != StudioTool.translate || entry.key != 'sat-IN',
     );
-    final panelTitle = switch (_tool) {
-      _Tool.translate => l10n.aiStudioYourText,
-      _Tool.transcribe => l10n.aiStudioYourAudio,
-      _Tool.scan => l10n.aiStudioYourDocument,
+    final panelTitle = switch (tool) {
+      StudioTool.translate => l10n.aiStudioYourText,
+      StudioTool.transcribe => l10n.aiStudioYourAudio,
+      StudioTool.scan => l10n.aiStudioYourDocument,
     };
 
     final header = LayoutBuilder(
@@ -45,7 +93,7 @@ extension _AiStudioInput on _AiStudioScreenState {
           width: compact ? double.infinity : (isMobile ? 136 : 154),
           height: 36,
           child: DropdownButtonFormField<String>(
-            key: ValueKey('language-${_tool.name}-${draft.language}'),
+            key: ValueKey('language-${tool.name}-${draft.language}'),
             initialValue: draft.language,
             isExpanded: true,
             dropdownColor: isDark ? AppColors.studioDropdownDark : Colors.white,
@@ -96,10 +144,7 @@ extension _AiStudioInput on _AiStudioScreenState {
             onChanged: locked || scanPending
                 ? null
                 : (value) {
-                    if (value != null) {
-                      _setState(() => draft.language = value);
-                      _maybeAutoRun();
-                    }
+                    if (value != null) onLanguageChanged(value);
                   },
           ),
         );
@@ -122,25 +167,32 @@ extension _AiStudioInput on _AiStudioScreenState {
     );
 
     Widget body;
-    if (_tool == _Tool.translate) {
-      body = _buildTranslateInput(
-        configured,
-        locked,
-        draft,
-        l10n,
-        isDark,
-        isMobile,
+    if (tool == StudioTool.translate) {
+      body = StudioTranslateInput(
+        controller: source,
+        enabled: !locked,
+        canSubmit: configured && !locked && validInput,
+        isMobile: isMobile,
+        onSubmit: onProcess,
+        onChanged: onSourceChanged,
       );
-    } else if (_tool == _Tool.transcribe) {
-      body = _buildTranscribeInput(locked, draft, l10n, isDark, isMobile);
+    } else if (tool == StudioTool.transcribe) {
+      body = StudioTranscribeInput(
+        draft: draft,
+        locked: locked,
+        recording: recording,
+        recordingSeconds: recordingSeconds,
+        pulse: pulse,
+        isMobile: isMobile,
+        onToggleRecording: onToggleRecording,
+        onPick: () => onPick(false),
+      );
     } else {
-      body = _buildScanInput(
-        locked,
-        scanPending,
-        draft,
-        l10n,
-        isDark,
-        isMobile,
+      body = StudioScanInput(
+        draft: draft,
+        enabled: !(locked || scanPending),
+        isMobile: isMobile,
+        onPick: onPick,
       );
     }
 
@@ -149,7 +201,11 @@ extension _AiStudioInput on _AiStudioScreenState {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (draft.error != null) ...[
-          _notice(draft.error!, error: true, icon: Icons.error_outline_rounded),
+          StudioNotice(
+            draft.error!,
+            error: true,
+            icon: Icons.error_outline_rounded,
+          ),
           const SizedBox(height: 8),
         ],
         if (draft.busy) ...[
@@ -169,7 +225,7 @@ extension _AiStudioInput on _AiStudioScreenState {
               subheadText: 'Tap to view full screen spark ✨',
               compact: true,
               size: 28,
-              onTap: _restoreSpark,
+              onTap: onRestoreSpark,
             ),
           ),
           const SizedBox(height: 8),
@@ -178,7 +234,7 @@ extension _AiStudioInput on _AiStudioScreenState {
           const SizedBox(height: 8),
           Row(
             children: [
-              _autoPill(draft, isDark),
+              StudioAutoPill(on: draft.auto, onToggle: onToggleAuto),
               const SizedBox(width: 8),
               Expanded(
                 child: FilledButton(
@@ -202,20 +258,20 @@ extension _AiStudioInput on _AiStudioScreenState {
                     ),
                     elevation: 0,
                   ),
-                  onPressed: configured && !locked && _validInput
-                      ? () => unawaited(_process())
+                  onPressed: configured && !locked && validInput
+                      ? onProcess
                       : null,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(_tool.icon, size: 16),
+                      Icon(tool.icon, size: 16),
                       const SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           draft.busy
                               ? l10n.aiStudioProcessing
                               : l10n.aiStudioProcessWithAi(
-                                  _tool.localizedLabel(l10n),
+                                  tool.localizedLabel(l10n),
                                 ),
                           style: TextStyle(
                             fontWeight: FontWeight.w800,
@@ -235,24 +291,43 @@ extension _AiStudioInput on _AiStudioScreenState {
       ],
     );
 
-    return _studioCard(
+    return StudioCard(
       header: header,
       body: body,
       footer: footer,
-      isDark: isDark,
       flex: flex,
       isMobile: isMobile,
     );
   }
+}
 
-  // ── Tool 1: Transcribe Input ─────────────────────────────────────────
-  Widget _buildTranscribeInput(
-    bool locked,
-    _Draft draft,
-    AppLocalizations l10n,
-    bool isDark,
-    bool isMobile,
-  ) {
+/// Tool 1: record or upload audio for transcription.
+class StudioTranscribeInput extends StatelessWidget {
+  const StudioTranscribeInput({
+    super.key,
+    required this.draft,
+    required this.locked,
+    required this.recording,
+    required this.recordingSeconds,
+    required this.pulse,
+    required this.isMobile,
+    required this.onToggleRecording,
+    required this.onPick,
+  });
+
+  final StudioDraft draft;
+  final bool locked;
+  final bool recording;
+  final int recordingSeconds;
+  final Animation<double> pulse;
+  final bool isMobile;
+  final VoidCallback onToggleRecording;
+  final VoidCallback onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -268,7 +343,7 @@ extension _AiStudioInput on _AiStudioScreenState {
             ),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: _recording
+              color: recording
                   ? AppColors.primary.withValues(alpha: 0.5)
                   : (isDark ? Colors.white : Colors.black).withValues(
                       alpha: 0.06,
@@ -279,32 +354,32 @@ extension _AiStudioInput on _AiStudioScreenState {
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
-                onTap: draft.busy || draft.selecting ? null : _toggleRecording,
+                onTap: draft.busy || draft.selecting ? null : onToggleRecording,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   width: isMobile ? 64 : 70,
                   height: isMobile ? 64 : 70,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: _recording
+                    color: recording
                         ? AppColors.studioRecordingRed
                         : AppColors.primary,
                     boxShadow: [
                       BoxShadow(
                         color:
-                            (_recording
+                            (recording
                                     ? AppColors.studioRecordingRed
                                     : AppColors.primary)
                                 .withValues(alpha: 0.35),
-                        blurRadius: _recording ? 20 : 12,
-                        spreadRadius: _recording ? 3 : 0,
+                        blurRadius: recording ? 20 : 12,
+                        spreadRadius: recording ? 3 : 0,
                       ),
                     ],
                   ),
                   child: Icon(
-                    _recording ? Icons.stop_rounded : Icons.mic_rounded,
+                    recording ? Icons.stop_rounded : Icons.mic_rounded,
                     size: isMobile ? 28 : 32,
-                    color: _recording
+                    color: recording
                         ? Colors.white
                         : AppColors.elevatedButtonFg,
                   ),
@@ -314,10 +389,10 @@ extension _AiStudioInput on _AiStudioScreenState {
               FilledButton.tonal(
                 key: const Key('studio-record'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: _recording
+                  backgroundColor: recording
                       ? AppColors.studioRecordingRed.withValues(alpha: 0.15)
                       : AppColors.primary.withValues(alpha: 0.12),
-                  foregroundColor: _recording
+                  foregroundColor: recording
                       ? AppColors.studioRecordingRed
                       : AppColors.primary,
                   padding: const EdgeInsets.symmetric(
@@ -330,11 +405,11 @@ extension _AiStudioInput on _AiStudioScreenState {
                 ),
                 onPressed: draft.busy || draft.selecting
                     ? null
-                    : _toggleRecording,
+                    : onToggleRecording,
                 child: Text(
-                  _recording
+                  recording
                       ? l10n.aiStudioStopRecording(
-                          _recordingSeconds.toString().padLeft(2, '0'),
+                          recordingSeconds.toString().padLeft(2, '0'),
                         )
                       : l10n.aiStudioRecordVoice,
                   style: const TextStyle(
@@ -343,9 +418,9 @@ extension _AiStudioInput on _AiStudioScreenState {
                   ),
                 ),
               ),
-              if (_recording) ...[
+              if (recording) ...[
                 const SizedBox(height: 10),
-                _waveform(),
+                StudioWaveform(pulse: pulse),
                 const SizedBox(height: 8),
                 Semantics(
                   liveRegion: true,
@@ -418,7 +493,7 @@ extension _AiStudioInput on _AiStudioScreenState {
                 borderRadius: BorderRadius.circular(10),
               ),
             ),
-            onPressed: locked ? null : _pick,
+            onPressed: locked ? null : onPick,
             icon: const Icon(Icons.upload_file_outlined, size: 15),
             label: Text(
               draft.selecting

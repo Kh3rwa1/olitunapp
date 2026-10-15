@@ -19,7 +19,7 @@ class MockCategoryNotifier extends CategoryNotifier {
   MockCategoryNotifier(this._initial);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+  List<CategoryEntity> build() => _initial;
 
   @override
   Future<void> loadCategories() async {}

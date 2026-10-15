@@ -1,63 +1,24 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 import '../../../../core/storage/hive_service.dart';
 
-Future<String> fetchServerDate() async {
-  try {
-    final uri1 = Uri.parse(
-      'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
-    );
-    final response1 = await http.get(uri1).timeout(const Duration(seconds: 3));
-    if (response1.statusCode == 200) {
-      final data = jsonDecode(response1.body);
-      if (data is Map && data['dateTime'] != null) {
-        return (data['dateTime'] as String).substring(0, 10);
-      }
-    }
-  } catch (e) {
-    AppLogger.debug('ServerTime: Failed timeapi.io: $e');
-  }
-
-  try {
-    final uri2 = Uri.parse('https://worldtimeapi.org/api/timezone/Etc/UTC');
-    final response2 = await http.get(uri2).timeout(const Duration(seconds: 3));
-    if (response2.statusCode == 200) {
-      final data = jsonDecode(response2.body);
-      if (data is Map && data['datetime'] != null) {
-        return (data['datetime'] as String).substring(0, 10);
-      }
-    }
-  } catch (e) {
-    AppLogger.debug('ServerTime: Failed worldtimeapi.org: $e');
-  }
-
-  // Timezone-safe fallback to UTC date (ignoring local manipulation)
-  return DateTime.now().toUtc().toIso8601String().substring(0, 10);
-}
-
-final currentDateProvider = NotifierProvider<CurrentDateNotifier, String>(
-  CurrentDateNotifier.new,
+/// Clock used for the daily-mission date. Overridable in tests.
+final missionClockProvider = Provider<DateTime Function()>(
+  (ref) => DateTime.now,
 );
 
-class CurrentDateNotifier extends Notifier<String> {
-  bool _disposed = false;
-
-  @override
-  String build() {
-    _disposed = false;
-    ref.onDispose(() => _disposed = true);
-    syncDate();
-    return DateTime.now().toUtc().toIso8601String().substring(0, 10);
-  }
-
-  Future<void> syncDate() async {
-    final serverDate = await fetchServerDate();
-    if (_disposed) return;
-    state = serverDate;
-  }
-}
+/// Today's UTC date (`yyyy-MM-dd`) for the daily-mission flags.
+///
+/// This is the **device clock** (converted to UTC); it is not tamper-proof —
+/// a learner who changes the device date can re-open a mission. That is
+/// acceptable because missions are a local nudge, not a reward authority
+/// (rewards and streaks are server-authoritative). No third-party time API
+/// is called: those were blocked by the web CSP, and the Worker exposes no
+/// server time. Evaluated once per provider lifetime, as before.
+final currentDateProvider = Provider<String>((ref) {
+  final now = ref.watch(missionClockProvider)();
+  return now.toUtc().toIso8601String().substring(0, 10);
+});
 
 /// Base for the daily-practice flags (lesson / quiz / bakhed completed
 /// today). These drive NextBestActionCard decisions and the

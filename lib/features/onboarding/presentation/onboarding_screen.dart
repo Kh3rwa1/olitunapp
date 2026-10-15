@@ -17,9 +17,12 @@ import '../providers/onboarding_draft.dart';
 import '../providers/onboarding_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 
-part 'onboarding_steps.dart';
-part 'onboarding_goals_step.dart';
-part 'onboarding_language_steps.dart';
+import 'onboarding_daily_goal_step.dart';
+import 'onboarding_goals_step.dart';
+import 'onboarding_language_steps.dart';
+import 'onboarding_level_step.dart';
+import 'onboarding_script_step.dart';
+import 'onboarding_value_prop_step.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -360,28 +363,28 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         controller: _pageController,
                         physics: const NeverScrollableScrollPhysics(),
                         children: [
-                          _ValuePropStep(isDark: isDark),
-                          _TeachingLanguageStep(
+                          OnboardingValuePropStep(isDark: isDark),
+                          OnboardingTeachingLanguageStep(
                             isDark: isDark,
                             selectedLanguage: _selectedTeachingLanguage,
                             onSelected: _selectTeachingLanguage,
                           ),
-                          _LevelStep(
+                          OnboardingLevelStep(
                             isDark: isDark,
                             selectedLevel: _selectedLevel,
                             onSelected: _selectLevel,
                           ),
-                          _ScriptStep(
+                          OnboardingScriptStep(
                             isDark: isDark,
                             selectedScriptMode: _selectedScriptMode,
                             onSelected: _selectScriptMode,
                           ),
-                          _DailyGoalStep(
+                          OnboardingDailyGoalStep(
                             isDark: isDark,
                             selectedDailyGoal: _selectedDailyGoal,
                             onSelected: _selectDailyGoal,
                           ),
-                          _GoalsStep(
+                          OnboardingGoalsStep(
                             isDark: isDark,
                             selectedGoals: _selectedGoals,
                             onToggleGoal: _toggleGoal,

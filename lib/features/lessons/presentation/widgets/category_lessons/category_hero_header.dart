@@ -38,7 +38,7 @@ class CategoryHeroHeader extends StatelessWidget {
         builder: (context, constraints) {
           final top = constraints.biggest.height;
           final isCollapsed =
-              top <= kToolbarHeight + MediaQuery.of(context).padding.top;
+              top <= kToolbarHeight + MediaQuery.paddingOf(context).top;
 
           return FlexibleSpaceBar(
             centerTitle: true,
@@ -168,7 +168,7 @@ class CategoryHeroHeader extends StatelessWidget {
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(
                           isDesktop ? 44 : 20,
-                          MediaQuery.of(context).padding.top + 56,
+                          MediaQuery.paddingOf(context).top + 56,
                           isDesktop ? 44 : 20,
                           24,
                         ),

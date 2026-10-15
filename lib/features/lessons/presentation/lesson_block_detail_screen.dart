@@ -248,11 +248,13 @@ class _LessonBlockDetailScreenState
 
         // Paid category the learner does not own: offer the paywall instead
         // of loading a body the Worker withholds. Free categories skip this.
-        final category = ref
-            .watch(categoryNotifierProvider)
-            .valueOrNull
-            ?.where((c) => c.id == listedLesson.categoryId)
-            .firstOrNull;
+        final category = ref.watch(
+          categoryNotifierProvider.select(
+            (async) => async.valueOrNull
+                ?.where((c) => c.id == listedLesson.categoryId)
+                .firstOrNull,
+          ),
+        );
         final ownedCategoryIds =
             ref.watch(purchasedCategoriesProvider).valueOrNull ??
             const <String>{};
@@ -372,7 +374,9 @@ class _LessonBlockDetailScreenState
         final hasAuthoredQuiz = rawBlocks.any((b) => b.type == 'quiz');
         final injectListeningQuiz =
             !hasAuthoredQuiz &&
-            ref.watch(featureFlagsProvider).audioQuizzesEnabled &&
+            ref.watch(
+              featureFlagsProvider.select((f) => f.audioQuizzesEnabled),
+            ) &&
             ListeningQuizGenerator.canGenerate(lesson);
         final contentBlocks = hasAuthoredQuiz
             ? rawBlocks
@@ -556,7 +560,7 @@ class _LessonBlockDetailScreenState
                         ),
                       ),
                     Positioned(
-                      top: MediaQuery.of(context).padding.top + 8,
+                      top: MediaQuery.paddingOf(context).top + 8,
                       left: 0,
                       right: 0,
                       child: _buildTopNav(

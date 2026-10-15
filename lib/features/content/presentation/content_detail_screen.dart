@@ -2,22 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
-import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/shared/widgets/content_hero.dart';
-import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/quiz/domain/lesson_quiz_recommender.dart';
-import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/features/quiz/data/quizzes_provider.dart';
-import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
@@ -27,13 +21,11 @@ import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 
-import 'providers/audio_playback_providers.dart';
-import 'widgets/audio_controls_bar.dart';
-import 'widgets/inline_media_players.dart';
+import 'widgets/content_block_renderer.dart';
+import 'widgets/content_completion_sheet.dart';
+import 'widgets/content_detail_footer.dart';
 import 'widgets/story_player_body.dart';
 import '../../../l10n/generated/app_localizations.dart';
-
-part 'widgets/content_detail_sections.dart';
 
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -267,7 +259,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     final block = blocks[index];
                     final blockWidget = Padding(
                       padding: const EdgeInsets.only(bottom: 24.0),
-                      child: _ContentBlockRenderer(
+                      child: ContentBlockRenderer(
                         item: item,
                         block: block,
                         accentColor: accentColor,
@@ -305,7 +297,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _ContentDetailFooter(
+            child: ContentDetailFooter(
               item: item,
               accentColor: accentColor,
               isDark: isDark,
@@ -396,153 +388,14 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     ContentItem item, {
     LessonQuizRecommendation? recommendation,
   }) {
-    showModalBottomSheet(
-      useRootNavigator: true,
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
-        final recommendedQuiz = recommendation?.quiz;
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.quizDarkCardAlt : Colors.white,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(32),
-              topRight: Radius.circular(32),
-            ),
-            boxShadow: AppColors.largeShadow,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: const Icon(
-                  Icons.emoji_events_rounded,
-                  color: AppColors.primary,
-                  size: 44,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                recommendedQuiz == null
-                    ? 'Practice Complete!'
-                    : 'Ready for a Quiz?',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                recommendedQuiz == null
-                    ? 'Superb! You finished this module successfully.'
-                    : recommendation!.isRetake
-                    ? 'Nice work. Retake "${recommendedQuiz.title ?? 'this quiz'}" now to sharpen your score.'
-                    : 'Great finish. Start "${recommendedQuiz.title ?? 'this quiz'}" now while the lesson is fresh.',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 15),
-              ),
-              if (recommendation != null) ...[
-                const SizedBox(height: 10),
-                Text(
-                  recommendation.reason,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDark ? Colors.white54 : Colors.black45,
-                  ),
-                ),
-              ],
-              const SizedBox(height: 24),
-              if (recommendedQuiz != null) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(sheetContext);
-                      context.push('/quiz/${recommendedQuiz.id}');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    icon: const Icon(Icons.quiz_rounded),
-                    label: Text(
-                      AppLocalizations.of(context)!.startQuiz2,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton(
-                  onPressed: () {
-                    // Close sheet and step back to the lesson screen.
-                    final detailContext = this.context;
-                    Navigator.pop(sheetContext); // close sheet
-                    if (detailContext.canPop()) {
-                      detailContext.pop();
-                    } else {
-                      final lessonId = widget.lessonId;
-                      if (lessonId != null && lessonId.isNotEmpty) {
-                        detailContext.go(
-                          '/lesson/$lessonId/block/${widget.blockIndex}',
-                        );
-                      } else {
-                        detailContext.go('/');
-                      }
-                    }
-                  },
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: isDark ? Colors.white : Colors.black87,
-                    side: BorderSide(
-                      color: isDark ? Colors.white24 : Colors.black12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    recommendedQuiz == null ? 'Back to Lessons' : 'Maybe Later',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+    unawaited(
+      showContentCompletionSheet(
+        context,
+        recommendation: recommendation,
+        onStartQuiz: (quizId) => context.push('/quiz/$quizId'),
+        // Same one-step-back rule as the header back button.
+        onStepBack: _handleBack,
+      ),
     );
   }
-
-  // ============== PREMIUM BAKHED AUDIO PLAYER & LEARNING HUB ==============
 }
-
-// Inline video player adapter

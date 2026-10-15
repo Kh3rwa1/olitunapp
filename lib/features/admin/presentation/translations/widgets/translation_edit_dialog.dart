@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/languages/indic_translations_dictionary.dart';
-import '../../../../../core/languages/ol_chiki_multilingual_helper.dart';
-import '../../../../../core/languages/translation_override_service.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../../shared/models/catalog/lesson_entity.dart';
-import '../../../../../shared/providers/providers.dart';
 import '../../widgets/multilingual_preview_box.dart';
 import '../models/translation_entry.dart';
-import '../providers/translation_entries_provider.dart';
-import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
-
-part 'translation_edit_dialog_inputs.dart';
+import 'translation_edit_actions.dart';
+import 'translation_edit_dialog_inputs.dart';
 
 class TranslationEditDialog extends ConsumerStatefulWidget {
   final TranslationEntry entry;
@@ -103,7 +96,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
     final query = _meaningEnCtrl.text.trim().isNotEmpty
         ? _meaningEnCtrl.text.trim()
         : _latinCtrl.text.trim();
-    _suggestTranslationMeaning(
+    suggestTranslationMeaning(
       context: context,
       query: query,
       lang: lang,
@@ -129,7 +122,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
   }
 
   void _transliterateScript(String lang) {
-    _autoTransliterateOlChiki(
+    autoTransliterateOlChiki(
       context: context,
       olChiki: _olChikiCtrl.text.trim(),
       lang: lang,
@@ -155,7 +148,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
     setState(() => _isSaving = true);
 
     try {
-      await _saveTranslationEntry(
+      await saveTranslationEntry(
         ref: ref,
         entry: widget.entry,
         bnMeaning: _meaningBnCtrl.text.trim(),
@@ -354,7 +347,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
                       const SizedBox(height: 18),
 
                       // Language Tabs
-                      _TranslationEditLangTabs(
+                      TranslationEditLangTabs(
                         currentLang: _currentLang,
                         isDark: isDark,
                         onSelect: (lang) => setState(() => _currentLang = lang),
@@ -473,7 +466,7 @@ class _TranslationEditDialogState extends ConsumerState<TranslationEditDialog> {
         break;
     }
 
-    return _TranslationEditActiveInputs(
+    return TranslationEditActiveInputs(
       isDark: isDark,
       currentLang: _currentLang,
       meaningCtrl: meaningCtrl,

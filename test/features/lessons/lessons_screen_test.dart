@@ -18,7 +18,7 @@ class MockCategoryNotifier extends CategoryNotifier {
   MockCategoryNotifier(this._initial);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+  List<CategoryEntity> build() => _initial;
 
   @override
   Future<void> loadCategories() async {}
@@ -38,8 +38,7 @@ class MockCategoryNotifier extends CategoryNotifier {
 
 class ErroringCategoryNotifier extends CategoryNotifier {
   @override
-  AsyncValue<List<CategoryEntity>> build() =>
-      AsyncValue.error(StateError('boom'), StackTrace.current);
+  List<CategoryEntity> build() => throw StateError('boom');
 
   @override
   Future<void> loadCategories() async {}

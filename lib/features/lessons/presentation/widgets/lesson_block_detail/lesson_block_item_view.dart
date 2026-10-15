@@ -154,9 +154,11 @@ class LessonBlockItemView extends ConsumerWidget {
           );
     }
 
-    final settings = ref.watch(typingPracticeSettingsProvider);
+    final typingEnabled = ref.watch(
+      typingPracticeSettingsProvider.select((s) => s.enabled),
+    );
     final bool isEligible =
-        settings.enabled &&
+        typingEnabled &&
         (block.type == 'word' || block.type == 'sentence') &&
         block.type != 'rhyme' &&
         block.type != 'rhymes' &&
@@ -175,9 +177,16 @@ class LessonBlockItemView extends ConsumerWidget {
           )
         : null;
 
-    final typingState = isEligible && typingPracticeArgs != null
-        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
-        : null;
+    // Only the idle/active flag is used; the typing view watches the full
+    // state itself, so keystrokes don't rebuild this item.
+    final isTypingActive =
+        isEligible &&
+        typingPracticeArgs != null &&
+        ref.watch(
+          typingPracticeControllerProvider(
+            typingPracticeArgs,
+          ).select((s) => s.phase != TypingPhase.idle),
+        );
 
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
@@ -222,9 +231,7 @@ class LessonBlockItemView extends ConsumerWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (isEligible &&
-            typingState != null &&
-            typingState.phase != TypingPhase.idle) {
+        if (isTypingActive) {
           return SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: Center(
@@ -235,13 +242,13 @@ class LessonBlockItemView extends ConsumerWidget {
                 ),
                 child: Padding(
                   padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).padding.top + 80,
+                    top: MediaQuery.paddingOf(context).top + 80,
                     left: 20,
                     right: 20,
                     bottom: 40,
                   ),
                   child: TypingPracticePanel(
-                    args: typingPracticeArgs!,
+                    args: typingPracticeArgs,
                     audioUrl: block.audioUrl,
                   ),
                 ),

@@ -10,7 +10,7 @@ class MockCategoryNotifier extends CategoryNotifier {
   int refreshCount = 0;
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([]);
+  List<CategoryEntity> build() => const [];
 
   @override
   Future<void> refresh() async {

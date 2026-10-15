@@ -45,13 +45,16 @@ class QuizListScreen extends ConsumerWidget {
                   onRetry: () => ref.invalidate(quizzesProvider),
                 ),
                 data: (quizzes) {
-                  final statsAsync = ref.watch(userStatsProvider);
-                  final stats = statsAsync.value;
+                  // Only per-category mastery gates the list.
+                  final categoryMastery = ref.watch(
+                    userStatsProvider.select(
+                      (stats) => stats.value?.categoryMastery,
+                    ),
+                  );
 
                   final activeQuizzes = quizzes.where((q) {
                     if (!q.isActive || q.questions.isEmpty) return false;
-                    final currentMastery =
-                        stats?.categoryMastery[q.categoryId] ?? 0;
+                    final currentMastery = categoryMastery?[q.categoryId] ?? 0;
                     final quizLevelValue = _getLevelValue(q.level);
                     return quizLevelValue <= currentMastery;
                   }).toList();

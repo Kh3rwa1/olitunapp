@@ -1,58 +1,52 @@
-part of 'premium_bakhed_body.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/theme/app_typography.dart';
 
-/// Lyrics / vocabulary / cultural-notes panel builders for
-/// [_PremiumBakhedBodyState], extracted into this library part.
-extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
-  int _getEffectiveSubTab({
-    required bool hasLyrics,
-    required bool hasVocab,
-    required bool hasNotes,
-  }) {
-    if (_activeSubTab == 0 && hasLyrics) return 0;
-    if (_activeSubTab == 1 && hasVocab) return 1;
-    if (_activeSubTab == 2 && hasNotes) return 2;
-    if (hasLyrics) return 0;
-    if (hasVocab) return 1;
-    if (hasNotes) return 2;
-    return 0;
-  }
+import '../../../../../core/storage/worker_media_api.dart';
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
+import '../../../../../shared/models/content_item.dart';
+import '../../../../../shared/providers/bakhed_content_provider.dart';
+import '../../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
+import '../../providers/audio_playback_providers.dart';
+import 'premium_bakhed_view_data.dart';
 
-  Widget _buildActiveSubTabContent(
-    BakhedLearningContent content,
-    ContentItem item,
-    bool isPlaying,
-    int positionMs,
-    Color accentColor, {
-    required int subTab,
-  }) {
-    switch (subTab) {
-      case 0:
-        return _buildSyncedLyrics(
-          content.lyrics,
-          item,
-          positionMs,
-          accentColor,
-        );
-      case 1:
-        return _buildVocabularyList(content.vocabulary, accentColor);
-      case 2:
-        return _buildCulturalNotes(content.culturalNotes);
-      default:
-        return const SizedBox.shrink();
-    }
-  }
+/// Resolves the requested sub-tab to one that actually has content.
+int effectiveBakhedSubTab(
+  int activeSubTab, {
+  required bool hasLyrics,
+  required bool hasVocab,
+  required bool hasNotes,
+}) {
+  if (activeSubTab == 0 && hasLyrics) return 0;
+  if (activeSubTab == 1 && hasVocab) return 1;
+  if (activeSubTab == 2 && hasNotes) return 2;
+  if (hasLyrics) return 0;
+  if (hasVocab) return 1;
+  if (hasNotes) return 2;
+  return 0;
+}
 
-  Widget _buildContentSurface(
-    AsyncValue<BakhedLearningContent?> learningContentAsync,
-    ContentItem item,
-    bool isPlaying,
-    int positionMs,
-    Color accentColor, {
-    required bool hasLyrics,
-    required bool hasVocab,
-    required bool hasNotes,
-  }) {
-    return learningContentAsync.when(
+/// Learning surface: loading / error / empty states, then the active panel.
+class PremiumBakhedContentSurface extends StatelessWidget {
+  const PremiumBakhedContentSurface({
+    super.key,
+    required this.learning,
+    required this.item,
+    required this.positionMs,
+    required this.accentColor,
+  });
+
+  final PremiumBakhedLearningView learning;
+  final ContentItem item;
+  final int positionMs;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return learning.learningContentAsync.when(
       data: (content) {
         if (content == null) {
           return Center(
@@ -62,19 +56,31 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
             ),
           );
         }
-        final subTab = _getEffectiveSubTab(
-          hasLyrics: hasLyrics,
-          hasVocab: hasVocab,
-          hasNotes: hasNotes,
+        final subTab = effectiveBakhedSubTab(
+          learning.activeSubTab,
+          hasLyrics: learning.hasLyrics,
+          hasVocab: learning.hasVocab,
+          hasNotes: learning.hasNotes,
         );
-        return _buildActiveSubTabContent(
-          content,
-          item,
-          isPlaying,
-          positionMs,
-          accentColor,
-          subTab: subTab,
-        );
+        switch (subTab) {
+          case 0:
+            return PremiumBakhedSyncedLyrics(
+              lyrics: content.lyrics,
+              item: item,
+              positionMs: positionMs,
+              accentColor: accentColor,
+              lyricScroll: learning.lyricScroll,
+            );
+          case 1:
+            return PremiumBakhedVocabularyList(
+              vocabulary: content.vocabulary,
+              accentColor: accentColor,
+            );
+          case 2:
+            return PremiumBakhedCulturalNotes(notes: content.culturalNotes);
+          default:
+            return const SizedBox.shrink();
+        }
       },
       loading: () => const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
@@ -90,8 +96,16 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
       ),
     );
   }
+}
 
-  Widget _buildCulturalNotes(List<BakhedCulturalNote> notes) {
+/// Published cultural notes rendered as markdown cards.
+class PremiumBakhedCulturalNotes extends StatelessWidget {
+  const PremiumBakhedCulturalNotes({super.key, required this.notes});
+
+  final List<BakhedCulturalNote> notes;
+
+  @override
+  Widget build(BuildContext context) {
     final publishedNotes = notes.where((n) => n.isPublished).toList();
     if (publishedNotes.isEmpty) {
       return Center(
@@ -169,11 +183,21 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
       },
     );
   }
+}
 
-  Widget _buildVocabularyList(
-    List<BakhedVocabularyItem> vocabulary,
-    Color accentColor,
-  ) {
+/// Vocabulary cards with optional per-word audio.
+class PremiumBakhedVocabularyList extends ConsumerWidget {
+  const PremiumBakhedVocabularyList({
+    super.key,
+    required this.vocabulary,
+    required this.accentColor,
+  });
+
+  final List<BakhedVocabularyItem> vocabulary;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     if (vocabulary.isEmpty) {
       return Center(
         child: Text(
@@ -270,13 +294,28 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
       },
     );
   }
+}
 
-  Widget _buildSyncedLyrics(
-    List<BakhedLyricLine> lyrics,
-    ContentItem item,
-    int positionMs,
-    Color accentColor,
-  ) {
+/// Time-synced lyrics that auto-scroll to the active line (falls back to the
+/// item's text blocks when no synced lyrics exist).
+class PremiumBakhedSyncedLyrics extends ConsumerWidget {
+  const PremiumBakhedSyncedLyrics({
+    super.key,
+    required this.lyrics,
+    required this.item,
+    required this.positionMs,
+    required this.accentColor,
+    required this.lyricScroll,
+  });
+
+  final List<BakhedLyricLine> lyrics;
+  final ContentItem item;
+  final int positionMs;
+  final Color accentColor;
+  final PremiumBakhedLyricScroll lyricScroll;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     if (lyrics.isEmpty) {
       // Fallback: render the item's standard blocks (e.g. text/translation) in a premium way
       final textBlocks = item.blocks.whereType<TextBlock>().toList();
@@ -345,15 +384,15 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     }
 
     // Smooth auto-scroll to center
-    if (activeIndex != _lastActiveIndex) {
-      _lastActiveIndex = activeIndex;
+    if (activeIndex != lyricScroll.lastActiveIndex) {
+      lyricScroll.lastActiveIndex = activeIndex;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_lyricScrollController.hasClients && activeIndex >= 0) {
+        if (lyricScroll.controller.hasClients && activeIndex >= 0) {
           final targetOffset = (activeIndex * 105.0) - 100.0;
-          _lyricScrollController.animateTo(
+          lyricScroll.controller.animateTo(
             targetOffset.clamp(
               0.0,
-              _lyricScrollController.position.maxScrollExtent,
+              lyricScroll.controller.position.maxScrollExtent,
             ),
             duration: const Duration(milliseconds: 350),
             curve: Curves.easeInOutCubic,
@@ -363,7 +402,7 @@ extension _PremiumBakhedBodyContentPanels on _PremiumBakhedBodyState {
     }
 
     return ListView.builder(
-      controller: _lyricScrollController,
+      controller: lyricScroll.controller,
       physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
       itemCount: lyrics.length,

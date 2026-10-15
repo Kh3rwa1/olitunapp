@@ -28,12 +28,12 @@ import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class MockCategoryNotifier extends CategoryNotifier {
   @override
-  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([]);
+  List<CategoryEntity> build() => const [];
 }
 
 class MockLessonNotifier extends LessonNotifier {
   @override
-  AsyncValue<List<LessonEntity>> build() => const AsyncValue.data([]);
+  List<LessonEntity> build() => const [];
 }
 
 class MockQuizzesNotifier extends QuizzesNotifier {

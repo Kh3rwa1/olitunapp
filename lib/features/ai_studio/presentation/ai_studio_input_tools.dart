@@ -1,32 +1,52 @@
-part of 'ai_studio_screen.dart';
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-extension _AiStudioInputTools on _AiStudioScreenState {
-  // ── Tool 2: Translate Input ──────────────────────────────────────────
-  Widget _buildTranslateInput(
-    bool configured,
-    bool locked,
-    _Draft draft,
-    AppLocalizations l10n,
-    bool isDark,
-    bool isMobile,
-  ) {
+import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import 'ai_studio_session.dart';
+
+/// Tool 2: source text for translation (Ctrl/⌘+Enter submits).
+class StudioTranslateInput extends StatelessWidget {
+  const StudioTranslateInput({
+    super.key,
+    required this.controller,
+    required this.enabled,
+    required this.canSubmit,
+    required this.isMobile,
+    required this.onSubmit,
+    required this.onChanged,
+  });
+
+  final TextEditingController controller;
+  final bool enabled;
+  final bool canSubmit;
+  final bool isMobile;
+  final VoidCallback onSubmit;
+  final VoidCallback onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return CallbackShortcuts(
       bindings: {
         const SingleActivator(LogicalKeyboardKey.enter, control: true): () {
-          if (configured && !locked && _validInput) {
-            _process();
+          if (canSubmit) {
+            onSubmit();
           }
         },
         const SingleActivator(LogicalKeyboardKey.enter, meta: true): () {
-          if (configured && !locked && _validInput) {
-            _process();
+          if (canSubmit) {
+            onSubmit();
           }
         },
       },
       child: TextField(
         key: const Key('studio-source'),
-        controller: _source,
-        enabled: !locked,
+        controller: controller,
+        enabled: enabled,
         minLines: isMobile ? 4 : 5,
         maxLines: null,
         maxLength: 2000,
@@ -36,7 +56,7 @@ extension _AiStudioInputTools on _AiStudioScreenState {
           fontSize: isMobile ? 13.5 : 14,
           height: 1.45,
         ),
-        onChanged: (_) => _onSourceChanged(),
+        onChanged: (_) => onChanged(),
         decoration: InputDecoration(
           hintText: l10n.aiStudioTextPlaceholder,
           hintStyle: TextStyle(
@@ -70,7 +90,7 @@ extension _AiStudioInputTools on _AiStudioScreenState {
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
           ),
-          errorText: _source.text.trim().runes.length > 2000
+          errorText: controller.text.trim().runes.length > 2000
               ? l10n.aiStudioTextLimitError
               : null,
           helperText:
@@ -97,16 +117,29 @@ extension _AiStudioInputTools on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  // ── Tool 3: Scan Input ───────────────────────────────────────────────
-  Widget _buildScanInput(
-    bool locked,
-    bool scanPending,
-    _Draft draft,
-    AppLocalizations l10n,
-    bool isDark,
-    bool isMobile,
-  ) {
+/// Tool 3: choose or capture a document page to scan.
+class StudioScanInput extends StatelessWidget {
+  const StudioScanInput({
+    super.key,
+    required this.draft,
+    required this.enabled,
+    required this.isMobile,
+    required this.onPick,
+  });
+
+  final StudioDraft draft;
+  final bool enabled;
+  final bool isMobile;
+
+  /// Called with `camera: true` for page capture.
+  final void Function(bool camera) onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -212,7 +245,7 @@ extension _AiStudioInputTools on _AiStudioScreenState {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: locked || scanPending ? null : _pick,
+              onPressed: enabled ? () => onPick(false) : null,
               icon: const Icon(Icons.upload_file_outlined, size: 15),
               label: Text(
                 draft.selecting
@@ -241,9 +274,7 @@ extension _AiStudioInputTools on _AiStudioScreenState {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              onPressed: locked || scanPending
-                  ? null
-                  : () => _pick(camera: true),
+              onPressed: enabled ? () => onPick(true) : null,
               icon: const Icon(Icons.camera_alt_outlined, size: 15),
               label: Text(
                 l10n.aiStudioCapturePage,

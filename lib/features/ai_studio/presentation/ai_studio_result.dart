@@ -1,14 +1,59 @@
-part of 'ai_studio_screen.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 
-extension _AiStudioResult on _AiStudioScreenState {
-  // ── Result Panel ─────────────────────────────────────────────────────
-  Widget _resultPanel(
-    AppLocalizations l10n,
-    bool isDark, {
-    required bool flex,
-    required bool isMobile,
-  }) {
-    final draft = _draft;
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/ai_spark_assistant.dart';
+import 'ai_studio_layout.dart';
+import 'ai_studio_session.dart';
+
+/// Result side of the studio: processing spark, scan job status, the
+/// editable result and the copy / share / hand-off actions.
+class StudioResultPanel extends StatelessWidget {
+  const StudioResultPanel({
+    super.key,
+    required this.tool,
+    required this.draft,
+    required this.configured,
+    required this.translateBusy,
+    required this.statusBadge,
+    required this.flex,
+    required this.isMobile,
+    required this.onRestoreSpark,
+    required this.onCheckStatus,
+    required this.onReplaceWithScan,
+    required this.onEdited,
+    required this.onShare,
+    required this.onSend,
+    required this.onEditSource,
+  });
+
+  final StudioTool tool;
+  final StudioDraft draft;
+  final bool configured;
+
+  /// Whether the Translate tool's own draft is busy (blocks hand-off).
+  final bool translateBusy;
+  final Widget statusBadge;
+  final bool flex;
+  final bool isMobile;
+  final VoidCallback onRestoreSpark;
+  final VoidCallback onCheckStatus;
+  final VoidCallback onReplaceWithScan;
+  final VoidCallback onEdited;
+
+  /// `copy: true` copies, otherwise opens the share sheet.
+  final void Function(bool copy) onShare;
+
+  /// `voice: true` opens Voice Studio, otherwise hands off to Translate.
+  final void Function(bool voice) onSend;
+  final VoidCallback onEditSource;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final hasText = draft.result.text.trim().isNotEmpty;
     final job = draft.job;
 
@@ -29,32 +74,21 @@ extension _AiStudioResult on _AiStudioScreenState {
           ),
         ),
         const SizedBox(width: 8),
-        _statusBadge(l10n, ref.watch(aiStudioServiceProvider).configured),
+        statusBadge,
       ],
     );
 
     final isProcessing =
         draft.busy ||
-        (_tool == _Tool.scan &&
+        (tool == StudioTool.scan &&
             job != null &&
             !job.isTerminal &&
             job.text.isEmpty);
 
     Widget body;
     if (isProcessing) {
-      final status = switch (_tool) {
-        _Tool.transcribe => '${l10n.aiStudioToolTranscribe}…',
-        _Tool.translate => '${l10n.aiStudioToolTranslate}…',
-        _Tool.scan => 'Scanning & OCR converting…',
-      };
-      final subhead = switch (_tool) {
-        _Tool.transcribe => 'Transcribing speech to text… Tap spark ✨',
-        _Tool.translate => 'Translating text into Santali… Tap spark ✨',
-        _Tool.scan =>
-          job != null
-              ? 'Scan status: ${job.status} • Job: ${job.id}'
-              : 'Extracting text from document… Tap spark ✨',
-      };
+      final status = studioSparkStatus(tool, l10n);
+      final subhead = studioSparkSubhead(tool, job);
       body = Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: isMobile ? 18 : 32),
@@ -65,20 +99,16 @@ extension _AiStudioResult on _AiStudioScreenState {
                 statusText: status,
                 subheadText: subhead,
                 size: isMobile ? 180 : 220,
-                onTap: _restoreSpark,
+                onTap: onRestoreSpark,
               ),
-              if (_tool == _Tool.scan &&
+              if (tool == StudioTool.scan &&
                   job != null &&
                   !job.isTerminal &&
                   !draft.auto) ...[
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   key: const Key('studio-check-status'),
-                  onPressed:
-                      draft.busy ||
-                          !ref.watch(aiStudioServiceProvider).configured
-                      ? null
-                      : () => _process(checkStatus: true),
+                  onPressed: draft.busy || !configured ? null : onCheckStatus,
                   icon: const Icon(Icons.refresh_rounded, size: 15),
                   label: Text(
                     AppLocalizations.of(context)!.aiStudioCheckStatus,
@@ -90,11 +120,11 @@ extension _AiStudioResult on _AiStudioScreenState {
           ),
         ),
       );
-    } else if (_tool == _Tool.scan && job != null) {
+    } else if (tool == StudioTool.scan && job != null) {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _notice(
+          StudioNotice(
             job.isTerminal
                 ? 'Scan status: ${job.status}. Review any available text below.'
                 : (draft.auto
@@ -116,10 +146,7 @@ extension _AiStudioResult on _AiStudioScreenState {
           if (!job.isTerminal) ...[
             OutlinedButton.icon(
               key: const Key('studio-check-status'),
-              onPressed:
-                  draft.busy || !ref.watch(aiStudioServiceProvider).configured
-                  ? null
-                  : () => _process(checkStatus: true),
+              onPressed: draft.busy || !configured ? null : onCheckStatus,
               icon: const Icon(Icons.refresh_rounded, size: 15),
               label: Text(
                 AppLocalizations.of(context)!.aiStudioCheckStatus,
@@ -130,10 +157,7 @@ extension _AiStudioResult on _AiStudioScreenState {
           ],
           if (draft.edited && job.text.isNotEmpty) ...[
             TextButton(
-              onPressed: () => _setState(() {
-                draft.result.text = job.text;
-                draft.edited = false;
-              }),
+              onPressed: onReplaceWithScan,
               child: Text(
                 AppLocalizations.of(context)!.aiStudioReplaceWithScan,
                 style: const TextStyle(fontSize: 11),
@@ -141,7 +165,12 @@ extension _AiStudioResult on _AiStudioScreenState {
             ),
             const SizedBox(height: 6),
           ],
-          _buildResultEditor(draft, l10n, isDark, isMobile),
+          StudioResultEditor(
+            tool: tool,
+            draft: draft,
+            isMobile: isMobile,
+            onEdited: onEdited,
+          ),
         ],
       );
     } else if (!hasText && !draft.edited) {
@@ -195,7 +224,12 @@ extension _AiStudioResult on _AiStudioScreenState {
         ),
       );
     } else {
-      body = _buildResultEditor(draft, l10n, isDark, isMobile);
+      body = StudioResultEditor(
+        tool: tool,
+        draft: draft,
+        isMobile: isMobile,
+        onEdited: onEdited,
+      );
     }
 
     Widget? footer;
@@ -223,7 +257,7 @@ extension _AiStudioResult on _AiStudioScreenState {
                     borderRadius: BorderRadius.circular(9),
                   ),
                 ),
-                onPressed: hasText ? () => _shareResult(copy: true) : null,
+                onPressed: hasText ? () => onShare(true) : null,
                 icon: const Icon(Icons.copy_outlined, size: 14),
                 label: Text(
                   l10n.aiStudioCopy,
@@ -249,7 +283,7 @@ extension _AiStudioResult on _AiStudioScreenState {
                     borderRadius: BorderRadius.circular(9),
                   ),
                 ),
-                onPressed: hasText ? () => _shareResult(copy: false) : null,
+                onPressed: hasText ? () => onShare(false) : null,
                 icon: const Icon(
                   kIsWeb ? Icons.content_paste_outlined : Icons.share_outlined,
                   size: 14,
@@ -262,7 +296,7 @@ extension _AiStudioResult on _AiStudioScreenState {
                   ),
                 ),
               ),
-              if (_tool != _Tool.translate)
+              if (tool != StudioTool.translate)
                 OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
                     foregroundColor: isDark ? Colors.white70 : Colors.black87,
@@ -280,10 +314,8 @@ extension _AiStudioResult on _AiStudioScreenState {
                     ),
                   ),
                   onPressed:
-                      hasText &&
-                          draft.language != 'sat-IN' &&
-                          !_drafts[_Tool.translate]!.busy
-                      ? () => _sendResult(voice: false)
+                      hasText && draft.language != 'sat-IN' && !translateBusy
+                      ? () => onSend(false)
                       : null,
                   icon: const Icon(Icons.translate_rounded, size: 14),
                   label: Text(
@@ -306,7 +338,7 @@ extension _AiStudioResult on _AiStudioScreenState {
                     borderRadius: BorderRadius.circular(9),
                   ),
                 ),
-                onPressed: hasText ? () => _sendResult(voice: true) : null,
+                onPressed: hasText ? () => onSend(true) : null,
                 icon: const Icon(Icons.graphic_eq_rounded, size: 14),
                 label: Text(
                   l10n.aiStudioSendToVoiceStudio,
@@ -327,7 +359,7 @@ extension _AiStudioResult on _AiStudioScreenState {
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.zero,
                 ),
-                onPressed: () => unawaited(_flipTo(showResult: false)),
+                onPressed: onEditSource,
                 icon: const Icon(Icons.arrow_back_rounded, size: 13),
                 label: Text(
                   AppLocalizations.of(context)!.aiStudioEditSource,
@@ -346,7 +378,7 @@ extension _AiStudioResult on _AiStudioScreenState {
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
           ),
-          onPressed: () => unawaited(_flipTo(showResult: false)),
+          onPressed: onEditSource,
           icon: const Icon(Icons.arrow_back_rounded, size: 13),
           label: Text(
             AppLocalizations.of(context)!.aiStudioEditSource,
@@ -356,7 +388,7 @@ extension _AiStudioResult on _AiStudioScreenState {
       );
     }
 
-    return _studioCard(
+    return StudioCard(
       header: header,
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 280),
@@ -374,26 +406,39 @@ extension _AiStudioResult on _AiStudioScreenState {
         ),
         child: KeyedSubtree(
           key: ValueKey(
-            'result-${_tool.name}-$isProcessing-$hasText-${job?.status ?? 'none'}',
+            'result-${tool.name}-$isProcessing-$hasText-${job?.status ?? 'none'}',
           ),
           child: body,
         ),
       ),
       footer: footer,
-      isDark: isDark,
       flex: flex,
       isMobile: isMobile,
     );
   }
+}
 
-  Widget _buildResultEditor(
-    _Draft draft,
-    AppLocalizations l10n,
-    bool isDark,
-    bool isMobile,
-  ) {
+/// Editable OCR / transcription / translation result.
+class StudioResultEditor extends StatelessWidget {
+  const StudioResultEditor({
+    super.key,
+    required this.tool,
+    required this.draft,
+    required this.isMobile,
+    required this.onEdited,
+  });
+
+  final StudioTool tool;
+  final StudioDraft draft;
+  final bool isMobile;
+  final VoidCallback onEdited;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextField(
-      key: ValueKey('studio-result-${_tool.name}'),
+      key: ValueKey('studio-result-${tool.name}'),
       controller: draft.result,
       minLines: isMobile ? 5 : 6,
       maxLines: null,
@@ -403,7 +448,7 @@ extension _AiStudioResult on _AiStudioScreenState {
         fontSize: isMobile ? 14 : 15,
         height: 1.5,
       ),
-      onChanged: (_) => _setState(() => draft.edited = true),
+      onChanged: (_) => onEdited(),
       decoration: InputDecoration(
         hintText: l10n.aiStudioResultPlaceholder,
         filled: true,

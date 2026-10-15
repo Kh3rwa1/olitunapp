@@ -14,11 +14,16 @@ class DesktopRightPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(userStatsProvider);
-    final streak = statsAsync.value?.currentStreak ?? 0;
+    final streak = ref.watch(
+      userStatsProvider.select((stats) => stats.value?.currentStreak ?? 0),
+    );
     final stars = ref.watch(userStarsProvider);
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
-    final learningTime = statsAsync.value?.totalLearningMinutes ?? 0;
+    final learningTime = ref.watch(
+      userStatsProvider.select(
+        (stats) => stats.value?.totalLearningMinutes ?? 0,
+      ),
+    );
     final userName = ref.watch(userNameProvider);
     final displayName = userName.isEmpty ? 'Olitun' : userName;
 

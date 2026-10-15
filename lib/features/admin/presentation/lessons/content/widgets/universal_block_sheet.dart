@@ -4,14 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
-import '../../../../../../shared/utils/media_type_resolver.dart';
 import '../../../../../../shared/models/catalog/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 import '../../../widgets/multilingual_preview_box.dart';
-import '../../../../../../core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/features/quiz/data/quizzes_provider.dart';
-part 'universal_block_sheet_sections.dart';
-part 'universal_block_sheet_advanced.dart';
+import 'universal_block_form.dart';
+import 'universal_block_sheet_advanced.dart';
+import 'universal_block_sheet_sections.dart';
 
 /// One sheet to rule them all. Replaces AddBlockSheet + per-type EditBlockSheet
 /// variants. The block "type" is inferred from what the user actually fills in,
@@ -50,25 +49,9 @@ class UniversalBlockSheet extends ConsumerStatefulWidget {
 }
 
 class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
-  final _olChikiCtrl = TextEditingController();
-  final _latinCtrl = TextEditingController();
-  final _meaningEnCtrl = TextEditingController();
-  final _meaningBnCtrl = TextEditingController();
-  final _meaningHiCtrl = TextEditingController();
-  final _meaningOrCtrl = TextEditingController();
-  final _textBengaliCtrl = TextEditingController();
-  final _textHindiCtrl = TextEditingController();
-  final _textOdiaCtrl = TextEditingController();
-  final _pronCtrl = TextEditingController();
-  final _quizRefCtrl = TextEditingController();
+  final _form = UniversalBlockForm();
 
   String _translationLang = 'bn';
-  String? _mediaUrl;
-  String? _posterUrl;
-  String? _audioUrl;
-  String? _calloutVariant;
-  bool _tracingEnabled = false;
-  String? _themeColor;
   bool _advancedOpen = false;
   bool _showCustomQuizIdInput = false;
 
@@ -77,7 +60,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final currentValue = _quizRefCtrl.text.trim();
+      final currentValue = _form.quizRefCtrl.text.trim();
       if (currentValue.isNotEmpty) {
         final quizzes = ref.read(quizzesProvider).valueOrNull ?? [];
         if (!quizzes.any((q) => q.id == currentValue)) {
@@ -88,242 +71,22 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       }
     });
     final b = widget.existing;
-    if (b != null) {
-      _olChikiCtrl.text = b.textOlChiki ?? '';
-      _latinCtrl.text = b.textLatin ?? '';
-      _audioUrl = b.audioUrl;
-      final data = b.data ?? const {};
-      _pronCtrl.text = (data['pronunciation'] as String?) ?? '';
-
-      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(
-        b.textLatin ?? '',
-      );
-      _meaningEnCtrl.text =
-          (data['meaning_en'] as String?) ??
-          (data['meaning'] as String?) ??
-          parsed.meaningEnglish;
-      _meaningBnCtrl.text = (data['meaning_bn'] as String?) ?? '';
-      _meaningHiCtrl.text = (data['meaning_hi'] as String?) ?? '';
-      _meaningOrCtrl.text = (data['meaning_or'] as String?) ?? '';
-
-      _textBengaliCtrl.text =
-          b.textBengali ??
-          (data['textBengali'] as String?) ??
-          (data['pronunciation_bn'] as String?) ??
-          (data['transliteration_bn'] as String?) ??
-          '';
-      _textHindiCtrl.text =
-          b.textHindi ??
-          (data['textHindi'] as String?) ??
-          (data['pronunciation_hi'] as String?) ??
-          (data['transliteration_hi'] as String?) ??
-          '';
-      _textOdiaCtrl.text =
-          b.textOdia ??
-          (data['textOdia'] as String?) ??
-          (data['pronunciation_or'] as String?) ??
-          (data['transliteration_or'] as String?) ??
-          '';
-
-      _quizRefCtrl.text =
-          (data['quizId'] as String?) ?? (data['quizRefId'] as String?) ?? '';
-      _posterUrl = data['posterUrl'] as String?;
-      _calloutVariant = data['calloutVariant'] as String?;
-      _tracingEnabled = b.type == 'tracing';
-      _themeColor = data['themeColor'] as String?;
-
-      // Canonical media URL — prefer nested media map, then legacy fields
-      final mediaMap = data['media'];
-      if (mediaMap is Map && mediaMap['url'] is String) {
-        _mediaUrl = mediaMap['url'] as String;
-      } else {
-        _mediaUrl =
-            b.imageUrl ??
-            (data['mediaUrl'] as String?) ??
-            (data['videoUrl'] as String?) ??
-            (data['animationUrl'] as String?) ??
-            (data['heroMediaUrl'] as String?);
-      }
-    }
+    if (b != null) _form.load(b);
   }
 
   @override
   void dispose() {
-    _olChikiCtrl.dispose();
-    _latinCtrl.dispose();
-    _meaningEnCtrl.dispose();
-    _meaningBnCtrl.dispose();
-    _meaningHiCtrl.dispose();
-    _meaningOrCtrl.dispose();
-    _textBengaliCtrl.dispose();
-    _textHindiCtrl.dispose();
-    _textOdiaCtrl.dispose();
-    _pronCtrl.dispose();
-    _quizRefCtrl.dispose();
+    _form.dispose();
     super.dispose();
   }
 
-  // ── Type inference ─────────────────────────────────────────────────────────
-
-  String _resolveType() {
-    if (_tracingEnabled && widget._tracingAllowed) return 'tracing';
-    if (_quizRefCtrl.text.trim().isNotEmpty) return 'quiz';
-    if (_calloutVariant != null) return 'callout';
-    if (_mediaUrl != null && _mediaUrl!.isNotEmpty) {
-      switch (MediaTypeResolver.resolve(_mediaUrl)) {
-        case MediaKind.image:
-          return 'image';
-        case MediaKind.svg:
-          return 'svg';
-        case MediaKind.lottie:
-          return 'lottie';
-        case MediaKind.video:
-          return 'video';
-        case MediaKind.audio:
-          return 'audio';
-        case MediaKind.html:
-          return 'html';
-        case MediaKind.unknown:
-          return 'image';
-      }
-    }
-    return 'text';
-  }
-
-  MediaKind get _mediaKind => MediaTypeResolver.resolve(_mediaUrl);
-  bool get _mediaIsVideo => _mediaKind == MediaKind.video;
-
-  // ── Save ───────────────────────────────────────────────────────────────────
-
   void _save() {
-    final type = _resolveType();
-
-    final media = <String, dynamic>{};
-    if (_mediaUrl != null && _mediaUrl!.isNotEmpty) {
-      media['url'] = _mediaUrl;
-      media['kind'] = _mediaKind.name;
-    }
-
-    // Start from existing data so unknown/future keys aren't lost
-    final data = <String, dynamic>{
-      ...?widget.existing?.data?.cast<String, dynamic>(),
-      if (media.isNotEmpty) 'media': media,
-      if (_mediaIsVideo && (_posterUrl?.isNotEmpty ?? false))
-        'posterUrl': _posterUrl,
-      if (_calloutVariant != null) 'calloutVariant': _calloutVariant,
-      if (_themeColor != null) 'themeColor': _themeColor,
-    };
-
-    if (_pronCtrl.text.trim().isNotEmpty) {
-      data['pronunciation'] = _pronCtrl.text.trim();
-    } else {
-      data.remove('pronunciation');
-    }
-
-    if (_meaningEnCtrl.text.trim().isNotEmpty) {
-      data['meaning'] = _meaningEnCtrl.text.trim();
-      data['meaning_en'] = _meaningEnCtrl.text.trim();
-    } else {
-      data.remove('meaning');
-      data.remove('meaning_en');
-    }
-
-    if (_meaningBnCtrl.text.trim().isNotEmpty) {
-      data['meaning_bn'] = _meaningBnCtrl.text.trim();
-    } else {
-      data.remove('meaning_bn');
-    }
-
-    if (_meaningHiCtrl.text.trim().isNotEmpty) {
-      data['meaning_hi'] = _meaningHiCtrl.text.trim();
-    } else {
-      data.remove('meaning_hi');
-    }
-
-    if (_meaningOrCtrl.text.trim().isNotEmpty) {
-      data['meaning_or'] = _meaningOrCtrl.text.trim();
-    } else {
-      data.remove('meaning_or');
-    }
-
-    if (_textBengaliCtrl.text.trim().isNotEmpty) {
-      final val = _textBengaliCtrl.text.trim();
-      data['textBengali'] = val;
-      data['pronunciation_bn'] = val;
-      data['transliteration_bn'] = val;
-    } else {
-      data.remove('textBengali');
-      data.remove('pronunciation_bn');
-      data.remove('transliteration_bn');
-    }
-
-    if (_textHindiCtrl.text.trim().isNotEmpty) {
-      final val = _textHindiCtrl.text.trim();
-      data['textHindi'] = val;
-      data['pronunciation_hi'] = val;
-      data['transliteration_hi'] = val;
-    } else {
-      data.remove('textHindi');
-      data.remove('pronunciation_hi');
-      data.remove('transliteration_hi');
-    }
-
-    if (_textOdiaCtrl.text.trim().isNotEmpty) {
-      final val = _textOdiaCtrl.text.trim();
-      data['textOdia'] = val;
-      data['pronunciation_or'] = val;
-      data['transliteration_or'] = val;
-    } else {
-      data.remove('textOdia');
-      data.remove('pronunciation_or');
-      data.remove('transliteration_or');
-    }
-
-    if (_quizRefCtrl.text.trim().isNotEmpty) {
-      data['quizId'] = _quizRefCtrl.text.trim();
-    } else {
-      data.remove('quizId');
-    }
-    if (_audioUrl != null && _audioUrl!.isNotEmpty && type != 'audio') {
-      data['audioUrl'] = _audioUrl;
-    } else {
-      data.remove('audioUrl');
-    }
-    // Remove legacy keys we've now canonicalised
-    for (final k in const [
-      'mediaUrl',
-      'videoUrl',
-      'animationUrl',
-      'imageUrl',
-      'heroMediaUrl',
-      'quizRefId',
-    ]) {
-      data.remove(k);
-    }
-
-    final entity = LessonBlockEntity(
-      type: type,
-      textOlChiki: _olChikiCtrl.text.trim().isEmpty
-          ? null
-          : _olChikiCtrl.text.trim(),
-      textLatin: _latinCtrl.text.trim().isEmpty ? null : _latinCtrl.text.trim(),
-      textBengali: _textBengaliCtrl.text.trim().isEmpty
-          ? null
-          : _textBengaliCtrl.text.trim(),
-      textHindi: _textHindiCtrl.text.trim().isEmpty
-          ? null
-          : _textHindiCtrl.text.trim(),
-      textOdia: _textOdiaCtrl.text.trim().isEmpty
-          ? null
-          : _textOdiaCtrl.text.trim(),
-      imageUrl: (type == 'image' || type == 'svg' || type == 'lottie')
-          ? _mediaUrl
-          : (type == 'video' ? _posterUrl : null),
-      audioUrl: type == 'audio' ? _mediaUrl : _audioUrl,
-      data: data,
+    widget.onSubmit(
+      _form.toEntity(
+        existing: widget.existing,
+        tracingAllowed: widget._tracingAllowed,
+      ),
     );
-
-    widget.onSubmit(entity);
     Navigator.of(context).pop();
   }
 
@@ -332,7 +95,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inferred = _resolveType();
+    final inferred = _form.resolveType(tracingAllowed: widget._tracingAllowed);
     final quizzesAsync = ref.watch(quizzesProvider);
 
     return DraggableScrollableSheet(
@@ -348,8 +111,8 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
         ),
         child: Column(
           children: [
-            _DragHandle(isDark: isDark),
-            _SheetHeader(
+            BlockSheetDragHandle(isDark: isDark),
+            BlockSheetHeader(
               isEditing: widget.existing != null,
               inferredType: inferred,
               onClose: () => Navigator.of(context).pop(),
@@ -362,7 +125,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                 padding: const EdgeInsets.all(20),
                 children: [
                   // ── Headline & Script ────────────────────────────────────
-                  _SectionLabel(
+                  BlockSheetSectionLabel(
                     'Headline & Script',
                     subtitle: 'Ol Chiki target text and Romanized Santali',
                     isDark: isDark,
@@ -370,19 +133,19 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                   const SizedBox(height: 12),
                   AdminTextField(
                     label: 'Ol Chiki Script',
-                    controller: _olChikiCtrl,
+                    controller: _form.olChikiCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
                     label: 'Latin / Romanized Santali',
-                    controller: _latinCtrl,
+                    controller: _form.latinCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 12),
                   AdminTextField(
                     label: 'English / Base Meaning',
-                    controller: _meaningEnCtrl,
+                    controller: _form.meaningEnCtrl,
                     hint: 'e.g. What is this?',
                     onChanged: (_) => setState(() {}),
                   ),
@@ -390,72 +153,72 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                   const SizedBox(height: 24),
 
                   // ── Multilingual Translations ───────────────────────────
-                  _SectionLabel(
+                  BlockSheetSectionLabel(
                     'Language Translations & Pronunciations',
                     subtitle:
                         'Edit translated meaning and pronunciation guide per language',
                     isDark: isDark,
                   ),
-                  _BlockTranslationLangTabs(
+                  BlockSheetTranslationLangTabs(
                     currentLang: _translationLang,
                     isDark: isDark,
                     onSelect: (code) => setState(() => _translationLang = code),
                     hasCustomMap: {
                       'bn':
-                          _meaningBnCtrl.text.trim().isNotEmpty ||
-                          _textBengaliCtrl.text.trim().isNotEmpty,
+                          _form.meaningBnCtrl.text.trim().isNotEmpty ||
+                          _form.textBengaliCtrl.text.trim().isNotEmpty,
                       'hi':
-                          _meaningHiCtrl.text.trim().isNotEmpty ||
-                          _textHindiCtrl.text.trim().isNotEmpty,
+                          _form.meaningHiCtrl.text.trim().isNotEmpty ||
+                          _form.textHindiCtrl.text.trim().isNotEmpty,
                       'or':
-                          _meaningOrCtrl.text.trim().isNotEmpty ||
-                          _textOdiaCtrl.text.trim().isNotEmpty,
-                      'en': _meaningEnCtrl.text.trim().isNotEmpty,
+                          _form.meaningOrCtrl.text.trim().isNotEmpty ||
+                          _form.textOdiaCtrl.text.trim().isNotEmpty,
+                      'en': _form.meaningEnCtrl.text.trim().isNotEmpty,
                     },
                   ),
-                  _BlockActiveTranslationInputs(
+                  BlockSheetActiveTranslationInputs(
                     isDark: isDark,
                     currentLang: _translationLang,
-                    olChiki: _olChikiCtrl.text,
-                    baseEnglish: _meaningEnCtrl.text.trim().isNotEmpty
-                        ? _meaningEnCtrl.text.trim()
-                        : _latinCtrl.text.trim(),
-                    latinText: _latinCtrl.text,
-                    meaningBnCtrl: _meaningBnCtrl,
-                    textBengaliCtrl: _textBengaliCtrl,
-                    meaningHiCtrl: _meaningHiCtrl,
-                    textHindiCtrl: _textHindiCtrl,
-                    meaningOrCtrl: _meaningOrCtrl,
-                    textOdiaCtrl: _textOdiaCtrl,
-                    meaningEnCtrl: _meaningEnCtrl,
-                    pronCtrl: _pronCtrl,
+                    olChiki: _form.olChikiCtrl.text,
+                    baseEnglish: _form.meaningEnCtrl.text.trim().isNotEmpty
+                        ? _form.meaningEnCtrl.text.trim()
+                        : _form.latinCtrl.text.trim(),
+                    latinText: _form.latinCtrl.text,
+                    meaningBnCtrl: _form.meaningBnCtrl,
+                    textBengaliCtrl: _form.textBengaliCtrl,
+                    meaningHiCtrl: _form.meaningHiCtrl,
+                    textHindiCtrl: _form.textHindiCtrl,
+                    meaningOrCtrl: _form.meaningOrCtrl,
+                    textOdiaCtrl: _form.textOdiaCtrl,
+                    meaningEnCtrl: _form.meaningEnCtrl,
+                    pronCtrl: _form.pronCtrl,
                     onStateChange: () => setState(() {}),
                   ),
 
-                  if (_olChikiCtrl.text.isNotEmpty ||
-                      _latinCtrl.text.isNotEmpty ||
-                      _meaningEnCtrl.text.isNotEmpty) ...[
+                  if (_form.olChikiCtrl.text.isNotEmpty ||
+                      _form.latinCtrl.text.isNotEmpty ||
+                      _form.meaningEnCtrl.text.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     MultilingualPreviewBox(
-                      textOlChiki: _olChikiCtrl.text,
-                      textLatin: _latinCtrl.text,
+                      textOlChiki: _form.olChikiCtrl.text,
+                      textLatin: _form.latinCtrl.text,
                       meaningsByLang: {
-                        'bn': _meaningBnCtrl.text,
-                        'hi': _meaningHiCtrl.text,
-                        'or': _meaningOrCtrl.text,
-                        'en': _meaningEnCtrl.text,
+                        'bn': _form.meaningBnCtrl.text,
+                        'hi': _form.meaningHiCtrl.text,
+                        'or': _form.meaningOrCtrl.text,
+                        'en': _form.meaningEnCtrl.text,
                       },
                       transliterationsByLang: {
-                        'bn': _textBengaliCtrl.text,
-                        'hi': _textHindiCtrl.text,
-                        'or': _textOdiaCtrl.text,
-                        'en': _pronCtrl.text,
+                        'bn': _form.textBengaliCtrl.text,
+                        'hi': _form.textHindiCtrl.text,
+                        'or': _form.textOdiaCtrl.text,
+                        'en': _form.pronCtrl.text,
                       },
-                      textBengali: _textBengaliCtrl.text,
-                      textHindi: _textHindiCtrl.text,
-                      textOdia: _textOdiaCtrl.text,
-                      explicitMeaning: _meaningEnCtrl.text,
-                      explicitPronunciation: _pronCtrl.text,
+                      textBengali: _form.textBengaliCtrl.text,
+                      textHindi: _form.textHindiCtrl.text,
+                      textOdia: _form.textOdiaCtrl.text,
+                      explicitMeaning: _form.meaningEnCtrl.text,
+                      explicitPronunciation: _form.pronCtrl.text,
                       isDark: isDark,
                       initialLang: _translationLang,
                       onLanguageChanged: (lang) {
@@ -469,7 +232,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                   const SizedBox(height: 28),
 
                   // ── Media ─────────────────────────────────────────────────
-                  _SectionLabel(
+                  BlockSheetSectionLabel(
                     'Media',
                     subtitle:
                         'Image, video, audio, SVG, or Lottie — type auto-detected',
@@ -480,7 +243,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                     label: 'Attach media',
                     icon: Icons.attach_file_rounded,
                     accent: AppColors.primary,
-                    currentUrl: _mediaUrl,
+                    currentUrl: _form.mediaUrl,
                     uploadFolder: 'lesson-media',
                     // Always use custom so allowedExtensions is valid
                     fileType: FileType.custom,
@@ -503,49 +266,52 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                       'aac',
                       'html',
                     ],
-                    onUploaded: (url) => setState(() => _mediaUrl = url),
+                    onUploaded: (url) => setState(() => _form.mediaUrl = url),
                   ),
 
-                  if (_mediaIsVideo) ...[
+                  if (_form.mediaIsVideo) ...[
                     const SizedBox(height: 16),
                     AdminMediaField(
                       label: 'Poster image (optional)',
                       subtitle: 'Shown before the video plays',
                       icon: Icons.image_rounded,
                       accent: AppColors.accentCyan,
-                      currentUrl: _posterUrl,
+                      currentUrl: _form.posterUrl,
                       uploadFolder: 'lesson-media',
                       fileType: FileType.custom,
                       allowedExtensions: const ['png', 'jpg', 'jpeg', 'webp'],
-                      onUploaded: (url) => setState(() => _posterUrl = url),
+                      onUploaded: (url) =>
+                          setState(() => _form.posterUrl = url),
                     ),
                   ],
 
                   const SizedBox(height: 28),
 
                   // ── Advanced ──────────────────────────────────────────────
-                  _BlockAdvancedSection(
+                  BlockSheetAdvancedSection(
                     open: _advancedOpen,
                     onToggleOpen: () =>
                         setState(() => _advancedOpen = !_advancedOpen),
                     isDark: isDark,
-                    audioUrl: _audioUrl,
-                    onAudioUploaded: (url) => setState(() => _audioUrl = url),
-                    pronCtrl: _pronCtrl,
+                    audioUrl: _form.audioUrl,
+                    onAudioUploaded: (url) =>
+                        setState(() => _form.audioUrl = url),
+                    pronCtrl: _form.pronCtrl,
                     quizzesAsync: quizzesAsync,
-                    quizRefCtrl: _quizRefCtrl,
+                    quizRefCtrl: _form.quizRefCtrl,
                     showCustomQuizIdInput: _showCustomQuizIdInput,
                     onCustomQuizIdToggled: (show) =>
                         setState(() => _showCustomQuizIdInput = show),
-                    calloutVariant: _calloutVariant,
+                    calloutVariant: _form.calloutVariant,
                     onCalloutChanged: (v) =>
-                        setState(() => _calloutVariant = v),
+                        setState(() => _form.calloutVariant = v),
                     tracingAllowed: widget._tracingAllowed,
-                    tracingEnabled: _tracingEnabled,
+                    tracingEnabled: _form.tracingEnabled,
                     onTracingToggled: (v) =>
-                        setState(() => _tracingEnabled = v),
-                    themeColor: _themeColor,
-                    onThemeColorChanged: (c) => setState(() => _themeColor = c),
+                        setState(() => _form.tracingEnabled = v),
+                    themeColor: _form.themeColor,
+                    onThemeColorChanged: (c) =>
+                        setState(() => _form.themeColor = c),
                     onStateChange: () => setState(() {}),
                   ),
 
@@ -553,7 +319,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                 ],
               ),
             ),
-            _SheetFooter(
+            BlockSheetFooter(
               isDark: isDark,
               onCancel: () => Navigator.of(context).pop(),
               onSave: _save,

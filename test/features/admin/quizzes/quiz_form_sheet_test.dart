@@ -9,13 +9,13 @@ import 'package:itun/features/quiz/data/quizzes_provider.dart';
 
 class _FakeCategoryNotifier extends CategoryNotifier {
   @override
-  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([
+  List<CategoryEntity> build() => const [
     CategoryEntity(
       id: 'cat_1',
       titleOlChiki: 'ᱛᱚᱨᱡᱚᱢᱟ',
       titleLatin: 'Greetings',
     ),
-  ]);
+  ];
 }
 
 class _NoopQuizzesNotifier extends QuizzesNotifier {

@@ -9,24 +9,35 @@ const kTargetLanguagePrefKey = 'selected_target_language';
 const kDefaultTargetLanguage = 'sat';
 
 final targetLanguageCodeProvider =
-    StateNotifierProvider<TargetLanguageNotifier, String>((ref) {
-      return TargetLanguageNotifier();
-    });
+    NotifierProvider<TargetLanguageNotifier, String>(
+      TargetLanguageNotifier.new,
+    );
 
 final activeLanguageManifestProvider = Provider<LanguageManifest>((ref) {
   final code = ref.watch(targetLanguageCodeProvider);
   return LanguageRegistry.findByCode(code);
 });
 
-class TargetLanguageNotifier extends StateNotifier<String> {
-  TargetLanguageNotifier([super.initial = kDefaultTargetLanguage]) {
-    _loadFromStorage();
+class TargetLanguageNotifier extends Notifier<String> {
+  TargetLanguageNotifier([this._initial = kDefaultTargetLanguage]);
+
+  final String _initial;
+
+  /// Bumped on dispose so a storage read that resolves afterwards is dropped.
+  int _generation = 0;
+
+  @override
+  String build() {
+    ref.onDispose(() => _generation++);
+    _loadFromStorage(_generation);
+    return _initial;
   }
 
-  Future<void> _loadFromStorage() async {
+  Future<void> _loadFromStorage(int generation) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final savedCode = prefs.getString(kTargetLanguagePrefKey);
+      if (generation != _generation) return;
       if (savedCode != null && savedCode.isNotEmpty) {
         state = savedCode;
       }

@@ -1,8 +1,19 @@
-part of 'ai_studio_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_flip_card/flutter_flip_card.dart';
+import 'package:go_router/go_router.dart';
 
-extension _AiStudioLayout on _AiStudioScreenState {
-  // ── Atmospheric Background ───────────────────────────────────────────
-  Widget _buildAtmosphere(bool isDark) {
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_typography.dart';
+import '../../../l10n/generated/app_localizations.dart';
+import 'ai_studio_session.dart';
+
+/// Dark-mode atmospheric background. Must be a direct [Stack] child.
+class StudioAtmosphere extends StatelessWidget {
+  const StudioAtmosphere({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (!isDark) return const SizedBox.shrink();
     return Positioned.fill(
       child: DecoratedBox(
@@ -58,9 +69,22 @@ extension _AiStudioLayout on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  // ── Sleek Studio Navigation Header ────────────────────────────────────
-  PreferredSizeWidget _buildAppBar(AppLocalizations l10n, bool isDark) {
+/// Studio navigation header with back, title, [statusBadge] and the
+/// converter shortcut.
+class StudioAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const StudioAppBar({super.key, required this.statusBadge});
+
+  final Widget statusBadge;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(52);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AppBar(
       backgroundColor: isDark
           ? AppColors.translatorDarkBg.withValues(alpha: 0.95)
@@ -111,7 +135,7 @@ extension _AiStudioLayout on _AiStudioScreenState {
             ),
           ),
           const SizedBox(width: 8),
-          _statusBadge(l10n, ref.watch(aiStudioServiceProvider).configured),
+          statusBadge,
         ],
       ),
       actions: [
@@ -147,9 +171,22 @@ extension _AiStudioLayout on _AiStudioScreenState {
       ],
     );
   }
+}
 
-  // ── Tool Switcher Pill Capsule ───────────────────────────────────────
-  Widget _buildToolSwitcher(AppLocalizations l10n, bool isDark) {
+/// Pill capsule for switching between the studio tools.
+class StudioToolSwitcher extends StatelessWidget {
+  const StudioToolSwitcher({
+    super.key,
+    required this.selected,
+    required this.onSelect,
+  });
+
+  final StudioTool selected;
+  final ValueChanged<StudioTool> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Container(
         padding: const EdgeInsets.all(3),
@@ -167,21 +204,40 @@ extension _AiStudioLayout on _AiStudioScreenState {
           spacing: 4,
           runSpacing: 4,
           children: [
-            for (final tool in _Tool.values) _toolPill(tool, l10n, isDark),
+            for (final tool in StudioTool.values)
+              _StudioToolPill(
+                tool: tool,
+                selected: selected == tool,
+                onTap: () => onSelect(tool),
+              ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _toolPill(_Tool tool, AppLocalizations l10n, bool isDark) {
-    final selected = _tool == tool;
+class _StudioToolPill extends StatelessWidget {
+  const _StudioToolPill({
+    required this.tool,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final StudioTool tool;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
       key: Key('tool-${tool.name}'),
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(11),
-        onTap: () => _selectTool(tool),
+        onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 180),
           curve: Curves.easeOutCubic,
@@ -230,48 +286,60 @@ extension _AiStudioLayout on _AiStudioScreenState {
       ),
     );
   }
+}
+
+/// Single-screen viewport: two columns on wide layouts, a flip card (input
+/// front, result back) on mobile.
+class StudioWorkspaceBody extends StatelessWidget {
+  const StudioWorkspaceBody({
+    super.key,
+    required this.isWide,
+    required this.configured,
+    required this.toolSwitcher,
+    required this.inputPanel,
+    required this.resultPanel,
+    required this.flipKey,
+    required this.flipController,
+  });
+
+  final bool isWide;
+  final bool configured;
+  final Widget toolSwitcher;
+  final Widget inputPanel;
+  final Widget resultPanel;
+  final Key flipKey;
+  final FlipCardController flipController;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isWide ? _desktop(l10n, isDark) : _mobile(l10n, isDark);
+  }
 
   // ── Desktop Single Screen Viewport (Two Columns, Non-Scrollable) ──────
-  Widget _buildDesktopSingleScreenBody(
-    bool configured,
-    AppLocalizations l10n,
-    bool isDark,
-  ) {
+  Widget _desktop(AppLocalizations l10n, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildToolSwitcher(l10n, isDark),
+          toolSwitcher,
           const SizedBox(height: 12),
           if (!configured) ...[
-            _notice(l10n.aiStudioNotConfigured, icon: Icons.cloud_off_outlined),
+            StudioNotice(
+              l10n.aiStudioNotConfigured,
+              icon: Icons.cloud_off_outlined,
+            ),
             const SizedBox(height: 10),
           ],
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  flex: 5,
-                  child: _inputPanel(
-                    configured,
-                    l10n,
-                    isDark,
-                    flex: true,
-                    isMobile: false,
-                  ),
-                ),
+                Expanded(flex: 5, child: inputPanel),
                 const SizedBox(width: 16),
-                Expanded(
-                  flex: 6,
-                  child: _resultPanel(
-                    l10n,
-                    isDark,
-                    flex: true,
-                    isMobile: false,
-                  ),
-                ),
+                Expanded(flex: 6, child: resultPanel),
               ],
             ),
           ),
@@ -292,41 +360,29 @@ extension _AiStudioLayout on _AiStudioScreenState {
   }
 
   // ── Mobile Flip Viewport (Input front, Result back) ──────────────────
-  Widget _buildMobileSingleScreenBody(
-    bool configured,
-    AppLocalizations l10n,
-    bool isDark,
-  ) {
+  Widget _mobile(AppLocalizations l10n, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 6, 14, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildToolSwitcher(l10n, isDark),
+          toolSwitcher,
           const SizedBox(height: 8),
           if (!configured) ...[
-            _notice(l10n.aiStudioNotConfigured, icon: Icons.cloud_off_outlined),
+            StudioNotice(
+              l10n.aiStudioNotConfigured,
+              icon: Icons.cloud_off_outlined,
+            ),
             const SizedBox(height: 8),
           ],
           Expanded(
             child: FlipCard(
-              key: _flipKey,
-              controller: _flip,
+              key: flipKey,
+              controller: flipController,
               rotateSide: RotateSide.right,
               animationDuration: const Duration(milliseconds: 550),
-              frontWidget: _inputPanel(
-                configured,
-                l10n,
-                isDark,
-                flex: true,
-                isMobile: true,
-              ),
-              backWidget: _resultPanel(
-                l10n,
-                isDark,
-                flex: true,
-                isMobile: true,
-              ),
+              frontWidget: inputPanel,
+              backWidget: resultPanel,
             ),
           ),
           const SizedBox(height: 6),
@@ -344,16 +400,29 @@ extension _AiStudioLayout on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  // ── Glass Studio Workspace Card ──────────────────────────────────────
-  Widget _studioCard({
-    required Widget header,
-    required Widget body,
-    Widget? footer,
-    required bool isDark,
-    required bool flex,
-    required bool isMobile,
-  }) {
+/// Glass studio workspace card.
+class StudioCard extends StatelessWidget {
+  const StudioCard({
+    super.key,
+    required this.header,
+    required this.body,
+    this.footer,
+    required this.flex,
+    required this.isMobile,
+  });
+
+  final Widget header;
+  final Widget body;
+  final Widget? footer;
+  final bool flex;
+  final bool isMobile;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final footer = this.footer;
     return Container(
       decoration: BoxDecoration(
         color: isDark ? AppColors.studioCardDark : Colors.white,
@@ -389,13 +458,23 @@ extension _AiStudioLayout on _AiStudioScreenState {
       ),
     );
   }
+}
 
-  // ── Notice Banner ────────────────────────────────────────────────────
-  Widget _notice(
-    String text, {
-    IconData icon = Icons.info_outline,
-    bool error = false,
-  }) {
+/// Info / error notice banner (live region).
+class StudioNotice extends StatelessWidget {
+  const StudioNotice(
+    this.text, {
+    super.key,
+    this.icon = Icons.info_outline,
+    this.error = false,
+  });
+
+  final String text;
+  final IconData icon;
+  final bool error;
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = error
         ? (isDark

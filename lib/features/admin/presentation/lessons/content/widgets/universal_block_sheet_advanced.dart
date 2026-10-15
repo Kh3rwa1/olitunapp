@@ -1,11 +1,18 @@
-part of 'universal_block_sheet.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class _AdvancedToggle extends StatelessWidget {
+import '../../../../../../core/theme/admin_tokens.dart';
+import '../../../../../../core/theme/app_colors.dart';
+import '../../../widgets/admin_form_widgets.dart';
+
+class BlockSheetAdvancedToggle extends StatelessWidget {
   final bool open;
   final VoidCallback onTap;
   final bool isDark;
 
-  const _AdvancedToggle({
+  const BlockSheetAdvancedToggle({
+    super.key,
     required this.open,
     required this.onTap,
     required this.isDark,
@@ -31,12 +38,13 @@ class _AdvancedToggle extends StatelessWidget {
   );
 }
 
-class _CalloutPicker extends StatelessWidget {
+class BlockSheetCalloutPicker extends StatelessWidget {
   final String? value;
   final ValueChanged<String?> onChanged;
   final bool isDark;
 
-  const _CalloutPicker({
+  const BlockSheetCalloutPicker({
+    super.key,
     required this.value,
     required this.onChanged,
     required this.isDark,
@@ -74,12 +82,13 @@ class _CalloutPicker extends StatelessWidget {
   );
 }
 
-class _ThemeColorPicker extends StatelessWidget {
+class BlockSheetThemeColorPicker extends StatelessWidget {
   final String? value;
   final ValueChanged<String?> onChanged;
   final bool isDark;
 
-  const _ThemeColorPicker({
+  const BlockSheetThemeColorPicker({
+    super.key,
     required this.value,
     required this.onChanged,
     required this.isDark,
@@ -139,7 +148,7 @@ class _ThemeColorPicker extends StatelessWidget {
       );
 }
 
-class _BlockAdvancedSection extends StatelessWidget {
+class BlockSheetAdvancedSection extends StatelessWidget {
   final bool open;
   final VoidCallback onToggleOpen;
   final bool isDark;
@@ -159,7 +168,8 @@ class _BlockAdvancedSection extends StatelessWidget {
   final ValueChanged<String?> onThemeColorChanged;
   final VoidCallback onStateChange;
 
-  const _BlockAdvancedSection({
+  const BlockSheetAdvancedSection({
+    super.key,
     required this.open,
     required this.onToggleOpen,
     required this.isDark,
@@ -185,7 +195,11 @@ class _BlockAdvancedSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _AdvancedToggle(open: open, onTap: onToggleOpen, isDark: isDark),
+        BlockSheetAdvancedToggle(
+          open: open,
+          onTap: onToggleOpen,
+          isDark: isDark,
+        ),
         if (open) ...[
           const SizedBox(height: 16),
           AdminMediaField(
@@ -289,7 +303,7 @@ class _BlockAdvancedSection extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-          _CalloutPicker(
+          BlockSheetCalloutPicker(
             value: calloutVariant,
             onChanged: onCalloutChanged,
             isDark: isDark,
@@ -312,7 +326,7 @@ class _BlockAdvancedSection extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          _ThemeColorPicker(
+          BlockSheetThemeColorPicker(
             value: themeColor,
             onChanged: onThemeColorChanged,
             isDark: isDark,

@@ -49,9 +49,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    setState(() {
-      _isAppActive = state == AppLifecycleState.resumed;
-    });
+    final isActive = state == AppLifecycleState.resumed;
+    // Lifecycle fires several events per transition; only rebuild the
+    // whole shell when the active flag actually flips.
+    if (isActive == _isAppActive) return;
+    setState(() => _isAppActive = isActive);
   }
 
   void _onItemTapped(int index) {

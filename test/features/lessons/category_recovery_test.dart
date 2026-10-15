@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,7 +15,7 @@ class _Categories extends CategoryNotifier {
   _Categories(this.load);
 
   @override
-  AsyncValue<List<CategoryEntity>> build() => load();
+  FutureOr<List<CategoryEntity>> build() => _fromAsyncValue(load());
 }
 
 Future<void> _pump(
@@ -112,3 +114,9 @@ void main() {
     expect(find.text('All learning paths'), findsOneWidget);
   });
 }
+
+FutureOr<List<T>> _fromAsyncValue<T>(AsyncValue<List<T>> value) => value.when(
+  data: (items) => items,
+  error: Error.throwWithStackTrace,
+  loading: () => Completer<List<T>>().future,
+);

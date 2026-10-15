@@ -1,12 +1,41 @@
-part of 'premium_bakhed_body.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:itun/core/theme/app_typography.dart';
 
-extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
-  Widget _buildTopBar(
-    BuildContext context,
-    ContentItem item,
-    Color accentColor, {
-    bool isCompact = false,
-  }) {
+import '../../../../../core/theme/app_colors.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
+import '../../../../../shared/models/content_item.dart';
+import '../../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
+import '../../../../rhymes/presentation/widgets/cover_hero.dart';
+import '../../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+
+/// Playback speeds the speed chip cycles through.
+const premiumBakhedSpeedCycle = <double>[1.0, 1.25, 1.5, 0.75];
+
+/// `mm:ss` for the scrubber labels.
+String formatBakhedDuration(Duration d) {
+  final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+  final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+  return '$minutes:$seconds';
+}
+
+/// Back button, BAKHED badge, title and subtitle.
+class PremiumBakhedTopBar extends StatelessWidget {
+  const PremiumBakhedTopBar({
+    super.key,
+    required this.item,
+    required this.accentColor,
+    this.isCompact = false,
+  });
+
+  final ContentItem item;
+  final Color accentColor;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
         MouseRegion(
@@ -98,13 +127,25 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
       ],
     );
   }
+}
 
-  Widget _buildArtworkCard(
-    ContentItem item,
-    Color accentColor,
-    bool isPlaying, {
-    required double maxHeight,
-  }) {
+/// 16:9 cover artwork with the playback visualizer along the bottom edge.
+class PremiumBakhedArtworkCard extends StatelessWidget {
+  const PremiumBakhedArtworkCard({
+    super.key,
+    required this.item,
+    required this.accentColor,
+    required this.isPlaying,
+    required this.maxHeight,
+  });
+
+  final ContentItem item;
+  final Color accentColor;
+  final bool isPlaying;
+  final double maxHeight;
+
+  @override
+  Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
         maxHeight: maxHeight,
@@ -164,16 +205,31 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
       ),
     );
   }
+}
 
-  Widget _buildSliderSection(
-    Color accentColor,
-    double maxSliderVal,
-    double currentSliderVal,
-    bool hasValidDuration,
-    int positionMs,
-    int durationMs,
-    bool isPlaying,
-  ) {
+/// Seek slider with position / duration labels.
+class PremiumBakhedSliderSection extends ConsumerWidget {
+  const PremiumBakhedSliderSection({
+    super.key,
+    required this.accentColor,
+    required this.maxSliderVal,
+    required this.currentSliderVal,
+    required this.hasValidDuration,
+    required this.positionMs,
+    required this.durationMs,
+    required this.isPlaying,
+  });
+
+  final Color accentColor;
+  final double maxSliderVal;
+  final double currentSliderVal;
+  final bool hasValidDuration;
+  final int positionMs;
+  final int durationMs;
+  final bool isPlaying;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -210,7 +266,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                _formatDuration(Duration(milliseconds: positionMs)),
+                formatBakhedDuration(Duration(milliseconds: positionMs)),
                 style: AppTypography.inter(
                   fontSize: 11,
                   color: Colors.white60,
@@ -219,7 +275,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
               ),
               Text(
                 hasValidDuration
-                    ? _formatDuration(Duration(milliseconds: durationMs))
+                    ? formatBakhedDuration(Duration(milliseconds: durationMs))
                     : (isPlaying ? '--:--' : '00:00'),
                 style: AppTypography.inter(
                   fontSize: 11,
@@ -233,16 +289,31 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
       ],
     );
   }
+}
 
-  Widget _buildControlsRow(
-    ContentItem item,
-    Color accentColor,
-    bool isPlaying,
-    int positionMs,
-    int durationMs,
-    double speed, {
-    bool isCompact = false,
-  }) {
+/// Speed chip, ±10s skip and the play/pause button.
+class PremiumBakhedControlsRow extends ConsumerWidget {
+  const PremiumBakhedControlsRow({
+    super.key,
+    required this.item,
+    required this.accentColor,
+    required this.isPlaying,
+    required this.positionMs,
+    required this.durationMs,
+    required this.speed,
+    this.isCompact = false,
+  });
+
+  final ContentItem item;
+  final Color accentColor;
+  final bool isPlaying;
+  final int positionMs;
+  final int durationMs;
+  final double speed;
+  final bool isCompact;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -254,7 +325,7 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
             child: GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
-                const cycle = _PremiumBakhedBodyState._speedCycle;
+                const cycle = premiumBakhedSpeedCycle;
                 final nextSpeed =
                     cycle[(cycle.indexOf(speed) + 1) % cycle.length];
                 ref.read(rhymeAudioProvider.notifier).setSpeed(nextSpeed);
@@ -373,116 +444,6 @@ extension _PremiumBakhedBodyLayouts on _PremiumBakhedBodyState {
         // Symmetrical placeholder for speed button
         const SizedBox(width: 36),
       ],
-    );
-  }
-
-  Widget _buildSubTabButton(
-    int index,
-    IconData icon,
-    String label, {
-    bool isCompact = false,
-  }) {
-    final isSelected = _activeSubTab == index;
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.lightImpact();
-          _onSelectSubTab(index);
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? Colors.white.withValues(alpha: 0.09)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-            border: isSelected
-                ? Border.all(color: Colors.white.withValues(alpha: 0.12))
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: isCompact ? 16 : 18,
-                color: isSelected ? AppColors.primary : Colors.white38,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: AppTypography.inter(
-                  fontSize: isCompact ? 12 : 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  color: isSelected ? Colors.white : Colors.white54,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSubTabsBar({
-    required bool hasLyrics,
-    required bool hasVocab,
-    required bool hasNotes,
-    bool isCompact = false,
-  }) {
-    final tabs = <Widget>[];
-
-    if (hasLyrics) {
-      tabs.add(
-        Expanded(
-          child: _buildSubTabButton(
-            0,
-            Icons.lyrics_rounded,
-            'Lyrics',
-            isCompact: isCompact,
-          ),
-        ),
-      );
-    }
-    if (hasVocab) {
-      tabs.add(
-        Expanded(
-          child: _buildSubTabButton(
-            1,
-            Icons.menu_book_rounded,
-            'Vocabulary',
-            isCompact: isCompact,
-          ),
-        ),
-      );
-    }
-    if (hasNotes) {
-      tabs.add(
-        Expanded(
-          child: _buildSubTabButton(
-            2,
-            Icons.auto_stories_rounded,
-            'Notes',
-            isCompact: isCompact,
-          ),
-        ),
-      );
-    }
-
-    if (tabs.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      height: isCompact ? 46 : 50,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: Row(children: tabs),
     );
   }
 }

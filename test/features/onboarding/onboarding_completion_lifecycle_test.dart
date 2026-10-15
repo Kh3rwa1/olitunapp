@@ -82,7 +82,7 @@ void main() {
           reduceVisualEffectsProvider.overrideWithValue(true),
           authControllerProvider.overrideWithValue(auth),
           if (targetLanguage != null)
-            targetLanguageCodeProvider.overrideWith((ref) => targetLanguage),
+            targetLanguageCodeProvider.overrideWith(() => targetLanguage),
         ],
         child: MaterialApp.router(
           routerConfig: router,

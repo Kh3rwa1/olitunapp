@@ -1,8 +1,14 @@
-part of 'onboarding_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../../../core/theme/app_colors.dart';
+import '../../../shared/widgets/minimum_tap_target.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 // STEP: TEACHING / MOTHER TONGUE LANGUAGE (MANDATORY)
-class _TeachingLanguageStep extends StatelessWidget {
-  const _TeachingLanguageStep({
+class OnboardingTeachingLanguageStep extends StatelessWidget {
+  const OnboardingTeachingLanguageStep({
+    super.key,
     required this.isDark,
     required this.selectedLanguage,
     required this.onSelected,

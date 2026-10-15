@@ -7,20 +7,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/features/rhymes/domain/rhyme_model.dart';
 import 'package:itun/shared/providers/rhymes_providers.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  late MockAppwriteDbService mockDb;
 
   setUpAll(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -37,7 +31,6 @@ void main() {
     CacheService.resetForTesting();
     SharedPreferences.setMockInitialValues({});
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
   });
 
   tearDown(() async {
@@ -77,7 +70,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           rhymesProvider.overrideWith(
             () => RhymesNotifier(httpClient: mockHttpClient),
           ),
@@ -89,7 +81,6 @@ void main() {
       expect(rhymes, hasLength(1));
       expect(rhymes.first.id, 'cf_rhyme_1');
       expect(rhymes.first.titleLatin, 'Edge Sohrai');
-      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -100,7 +91,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           rhymesHttpClientProvider.overrideWithValue(
             MockClient((request) async {
               requests.add(request.url);
@@ -115,7 +105,6 @@ void main() {
       expect(requests.single.path, '/api/v1/rhymes');
       expect(rhymes, isNotEmpty);
       expect(rhymes.first.id, startsWith('seed_'));
-      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -129,7 +118,6 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           rhymesProvider.overrideWith(
             () => RhymesNotifier(httpClient: mockHttpClient),
           ),
@@ -140,7 +128,6 @@ void main() {
       final rhymes = await container.read(rhymesProvider.future);
       expect(rhymes, isNotEmpty);
       expect(rhymes.first.titleLatin, contains('Bakhed'));
-      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -160,7 +147,6 @@ void main() {
 
     final container = ProviderContainer(
       overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
         rhymesProvider.overrideWith(
           () => RhymesNotifier(httpClient: mockHttpClient),
         ),
@@ -170,6 +156,5 @@ void main() {
 
     final rhymes = await container.read(rhymesProvider.future);
     expect(rhymes.any((r) => r.id == 'cached_1'), isTrue);
-    verifyNever(() => mockDb.listAllDocuments(any()));
   });
 }

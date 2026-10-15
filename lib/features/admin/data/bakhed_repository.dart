@@ -1,256 +1,163 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/network/network_info.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/storage/worker_media_api.dart';
+import 'package:itun/features/admin/data/gamification_cms_api.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/bakhed_content_provider.dart';
 
+/// Bakhed (rhyme) admin data on the Cloudflare Worker: parents live in the D1
+/// `rhymes` table, lyrics / vocabulary / cultural notes in D1 `cms_rows`.
+
 class BakhedRepository {
-  final AppwriteDbService _dbService;
-  final Storage _storage;
+  final GamificationCmsApi _api;
+  final WorkerMediaApi _media;
   final NetworkInfo _networkInfo;
 
   BakhedRepository({
-    required AppwriteDbService dbService,
-    required Storage storage,
+    required GamificationCmsApi api,
+    required WorkerMediaApi media,
     required NetworkInfo networkInfo,
-  }) : _dbService = dbService,
-       _storage = storage,
+  }) : _api = api,
+       _media = media,
        _networkInfo = networkInfo;
 
-  /// List all rhymes/stories from the rhymes collection
+  /// List all rhymes/stories (Bakhed parents).
   Future<Either<Failure, List<ContentItem>>> list() async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final response = await _dbService.listAllDocuments('rhymes');
-        final items = response.map((data) {
-          final id = data['id'] as String;
-          return ContentItem.fromJson(data, id, ContentKind.rhyme);
-        }).toList();
-        return right(items);
-      } catch (e) {
-        return left(ServerFailure(message: 'Failed to list rhymes: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
-    }
-  }
-
-  /// Get a single rhyme by its document ID
-  Future<Either<Failure, ContentItem>> get(String id) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final data = await _dbService.getDocument('rhymes', id);
-        final item = ContentItem.fromJson(data, id, ContentKind.rhyme);
-        return right(item);
-      } on AppwriteException catch (e) {
-        return left(
-          ServerFailure(
-            message: 'Failed to fetch rhyme $id: ${e.message}',
-            code: e.code,
-          ),
-        );
-      } catch (e) {
-        return left(ServerFailure(message: 'Failed to fetch rhyme $id: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
-    }
-  }
-
-  /// Upsert (create or update) a rhyme/story metadata document
-  Future<Either<Failure, Unit>> upsert(ContentItem item) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final payload = item.toAppwriteAttributes();
-        try {
-          // Attempt update first
-          await _dbService.updateDocument('rhymes', item.id, payload);
-        } catch (e) {
-          // If update fails (e.g. document not found), attempt create
-          AppLogger.debug(
-            'BakhedRepository: update of ${item.id} failed ($e); creating',
-          );
-          await _dbService.createDocument('rhymes', item.id, payload);
-        }
-        return right(unit);
-      } catch (e) {
-        return left(
-          ServerFailure(message: 'Failed to save rhyme metadata: $e'),
-        );
-      }
-    } else {
-      return left(const NetworkFailure());
-    }
-  }
-
-  /// Cascade delete a rhyme along with its child subcollection records and audio file.
-  Future<Either<Failure, Unit>> delete(String id) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        // 1. Fetch document to read audioFileId
-        final rhymeRes = await get(id);
-        String? audioFileId;
-        rhymeRes.fold((_) {}, (item) => audioFileId = item.audioFileId);
-
-        // 2. Delete play-along audio file from storage (if exists)
-        if (audioFileId != null && audioFileId!.isNotEmpty) {
-          try {
-            await _storage.deleteFile(bucketId: 'audio', fileId: audioFileId!);
-          } catch (e, stack) {
-            // Log and continue — never block the cascade DB cleanup below.
-            AppLogger.warning(
-              'BakhedRepository: audio delete failed',
-              name: 'BakhedRepository',
-              error: e,
-              stackTrace: stack,
-            );
-          }
-        }
-
-        // 3. Cascade delete child documents from subcollections
-        await _cleanSubcollectionDocuments('bakhed_lyrics', id);
-        await _cleanSubcollectionDocuments('bakhed_vocabulary', id);
-        await _cleanSubcollectionDocuments('bakhed_cultural_notes', id);
-
-        // 4. Finally, delete the rhyme metadata document
-        await _dbService.deleteDocument('rhymes', id);
-
-        return right(unit);
-      } catch (e) {
-        return left(ServerFailure(message: 'Cascade delete failed: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
-    }
-  }
-
-  /// Helper to delete all documents matching bakhedId in a subcollection
-  Future<void> _cleanSubcollectionDocuments(
-    String collectionId,
-    String bakhedId,
-  ) async {
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
     try {
-      final response = await _dbService.listAllDocuments(
-        collectionId,
-        queries: [Query.equal('bakhedId', bakhedId)],
-      );
-      for (final doc in response) {
-        try {
-          await _dbService.deleteDocument(collectionId, doc['id'] as String);
-        } catch (e, stack) {
-          // Best-effort child delete: continue with the remaining docs, but
-          // a missed delete leaves an orphaned doc — surface it in logs.
-          AppLogger.warning(
-            'BakhedRepository: child delete failed in $collectionId '
-            '(doc ${doc['id']})',
-            name: 'BakhedRepository',
-            error: e,
-            stackTrace: stack,
-          );
-        }
-      }
-    } catch (e, stack) {
-      // A failed subcollection listing leaves orphaned child docs behind —
-      // surface it, but the parent cascade delete still proceeds.
-      AppLogger.warning(
-        'BakhedRepository: subcollection cleanup failed for $collectionId',
-        name: 'BakhedRepository',
-        error: e,
-        stackTrace: stack,
-      );
+      final response = await _api.listBakhed();
+      final items = response.map((data) {
+        final id = data['id'] as String;
+        return ContentItem.fromJson(data, id, ContentKind.rhyme);
+      }).toList();
+      return right(items);
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to list rhymes: $e'));
     }
   }
 
-  /// Fetch lyrics lines for a rhyme
+  /// Get a single rhyme by its id. A missing Bakhed is a [ServerFailure]
+  /// with code 404 (the editor treats it as a new draft).
+  Future<Either<Failure, ContentItem>> get(String id) async {
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    try {
+      final data = await _api.getBakhed(id);
+      return right(ContentItem.fromJson(data, id, ContentKind.rhyme));
+    } on CmsApiException catch (e) {
+      return left(
+        ServerFailure(
+          message: 'Failed to fetch rhyme $id: ${e.message}',
+          code: e.statusCode,
+        ),
+      );
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to fetch rhyme $id: $e'));
+    }
+  }
+
+  /// Upsert (create or update) a rhyme/story metadata document. The
+  /// item's [ContentItem.updatedAt] is stored as the concurrency token.
+  Future<Either<Failure, Unit>> upsert(ContentItem item) async {
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    try {
+      await _api.upsertBakhed(item.id, {
+        ...item.toAppwriteAttributes(),
+        'updatedAt': item.updatedAt.toUtc().toIso8601String(),
+      });
+      return right(unit);
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to save rhyme metadata: $e'));
+    }
+  }
+
+  /// Cascade delete a rhyme: the Worker removes its lyrics, vocabulary and
+  /// cultural notes together with the parent in one D1 batch. The play-along
+  /// audio file is then removed best-effort.
+  Future<Either<Failure, Unit>> delete(String id) async {
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    final Map<String, dynamic> result;
+    try {
+      result = await _api.deleteBakhed(id);
+    } catch (e) {
+      return left(ServerFailure(message: 'Cascade delete failed: $e'));
+    }
+
+    final audioFileId = result['audioFileId']?.toString() ?? '';
+    if (audioFileId.isNotEmpty) {
+      try {
+        await _media.delete('audio', audioFileId);
+      } catch (e, stack) {
+        // The DB cascade already succeeded; a leftover file is only storage.
+        AppLogger.warning(
+          'BakhedRepository: audio delete failed',
+          name: 'BakhedRepository',
+          error: e,
+          stackTrace: stack,
+        );
+      }
+    }
+    return right(unit);
+  }
+
+  /// Fetch lyrics lines for a rhyme, ordered by line index.
   Future<Either<Failure, List<BakhedLyricLine>>> getLyrics(
     String bakhedId,
   ) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final response = await _dbService.listAllDocuments(
-          'bakhed_lyrics',
-          queries: [
-            Query.equal('bakhedId', bakhedId),
-            Query.orderAsc('lineIndex'),
-          ],
-        );
-        final lines = response.map((data) {
-          return BakhedLyricLine.fromJson(data);
-        }).toList();
-        return right(lines);
-      } catch (e) {
-        return left(ServerFailure(message: 'Failed to load lyrics: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    try {
+      final rows = await _api.listRows('bakhed_lyrics', bakhedId: bakhedId);
+      final lines = rows.map(BakhedLyricLine.fromJson).toList()
+        ..sort((a, b) => a.lineIndex.compareTo(b.lineIndex));
+      return right(lines);
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to load lyrics: $e'));
     }
   }
 
-  /// Fetch vocabulary words for a rhyme
+  /// Fetch vocabulary words for a rhyme, ordered by sort order.
   Future<Either<Failure, List<BakhedVocabularyItem>>> getVocabulary(
     String bakhedId,
   ) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final response = await _dbService.listAllDocuments(
-          'bakhed_vocabulary',
-          queries: [
-            Query.equal('bakhedId', bakhedId),
-            Query.orderAsc('sortOrder'),
-          ],
-        );
-        final items = response.map((data) {
-          return BakhedVocabularyItem.fromJson(data);
-        }).toList();
-        return right(items);
-      } catch (e) {
-        return left(ServerFailure(message: 'Failed to load vocabulary: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    try {
+      final rows = await _api.listRows('bakhed_vocabulary', bakhedId: bakhedId);
+      final items = rows.map(BakhedVocabularyItem.fromJson).toList()
+        ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+      return right(items);
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to load vocabulary: $e'));
     }
   }
 
-  /// Fetch cultural notes for a rhyme
+  /// Fetch cultural notes for a rhyme.
   Future<Either<Failure, List<BakhedCulturalNote>>> getCulturalNotes(
     String bakhedId,
   ) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final response = await _dbService.listAllDocuments(
-          'bakhed_cultural_notes',
-          queries: [Query.equal('bakhedId', bakhedId)],
-        );
-        final notes = response.map((data) {
-          final map = Map<String, dynamic>.from(data);
-          map['noteId'] = data['id'];
-          return BakhedCulturalNote.fromJson(map);
-        }).toList();
-        return right(notes);
-      } catch (e) {
-        return left(
-          ServerFailure(message: 'Failed to load cultural notes: $e'),
-        );
-      }
-    } else {
-      return left(const NetworkFailure());
+    if (!await _networkInfo.isConnected) return left(const NetworkFailure());
+    try {
+      final rows = await _api.listRows(
+        'bakhed_cultural_notes',
+        bakhedId: bakhedId,
+      );
+      final notes = rows.map((data) {
+        return BakhedCulturalNote.fromJson({...data, 'noteId': data['id']});
+      }).toList();
+      return right(notes);
+    } catch (e) {
+      return left(ServerFailure(message: 'Failed to load cultural notes: $e'));
     }
   }
 }
 
 // Provider
 final bakhedRepositoryProvider = Provider<BakhedRepository>((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
-  final dbService = ref.watch(appwriteDbServiceProvider);
   final networkInfo = ref.watch(networkInfoProvider);
   return BakhedRepository(
-    dbService: dbService,
-    storage: Storage(authService.client),
+    api: ref.watch(gamificationCmsApiProvider),
+    media: ref.watch(workerMediaApiProvider),
     networkInfo: networkInfo,
   );
 });

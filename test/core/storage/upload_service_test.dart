@@ -2,52 +2,47 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/upload_service.dart';
 
 void main() {
-  group('AppwriteStorageUploadService', () {
-    test('maps supported media extensions to Appwrite buckets', () {
+  group('MediaUploadService', () {
+    test('maps supported media extensions to R2 buckets', () {
       expect(
-        AppwriteStorageUploadService.targetForFilename('sound.mp3').bucketId,
+        MediaUploadService.targetForFilename('sound.mp3').bucketId,
         'audio',
       );
       expect(
-        AppwriteStorageUploadService.targetForFilename('hero.PNG').bucketId,
+        MediaUploadService.targetForFilename('hero.PNG').bucketId,
         'images',
       );
       expect(
-        AppwriteStorageUploadService.targetForFilename('motion.json').bucketId,
+        MediaUploadService.targetForFilename('motion.json').bucketId,
         'animations',
       );
       expect(
-        AppwriteStorageUploadService.targetForFilename('intro.mov').bucketId,
+        MediaUploadService.targetForFilename('intro.mov').bucketId,
         'videos',
       );
       expect(
-        AppwriteStorageUploadService.targetForFilename(
-          'interactive.html',
-        ).bucketId,
+        MediaUploadService.targetForFilename('interactive.html').bucketId,
         'html',
       );
     });
 
     test('rejects unsupported file types before upload', () {
       expect(
-        () => AppwriteStorageUploadService.targetForFilename('notes.txt'),
+        () => MediaUploadService.targetForFilename('notes.txt'),
         throwsException,
       );
     });
 
-    test(
-      'sanitizes logical folder and file names for Appwrite storage names',
-      () {
-        final name = AppwriteStorageUploadService.storageFilename(
-          '../My Lesson Audio.mp3',
-          'Letters / Audio',
-        );
+    test('sanitizes logical folder and file names for upload names', () {
+      final name = MediaUploadService.storageFilename(
+        '../My Lesson Audio.mp3',
+        'Letters / Audio',
+      );
 
-        expect(name, contains('letters-audio-'));
-        expect(name, endsWith('My-Lesson-Audio.mp3'));
-        expect(name, isNot(contains('/')));
-        expect(name, isNot(contains('..')));
-      },
-    );
+      expect(name, contains('letters-audio-'));
+      expect(name, endsWith('My-Lesson-Audio.mp3'));
+      expect(name, isNot(contains('/')));
+      expect(name, isNot(contains('..')));
+    });
   });
 }

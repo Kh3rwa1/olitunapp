@@ -1,6 +1,5 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/api/appwrite_db_service.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
 import '../../features/lessons/domain/entities/lesson_entity.dart';
@@ -10,6 +9,7 @@ import 'seeders/alphabet_seeder.dart';
 import 'seeders/greeting_seeder.dart';
 import 'seeders/number_seeder.dart';
 import 'seeders/quiz_seeder.dart';
+import 'seeders/seed_existence.dart';
 import 'seeders/sentence_seeder.dart';
 import 'seeders/vocab_seeder.dart';
 
@@ -50,12 +50,11 @@ Future<void> seedAppContent(WidgetRef ref) async {
     return cat.id; // Return new ID
   }
 
-  final lessonRows = await ref
-      .read(appwriteDbServiceProvider)
-      .listDocuments('lessons');
-  final existingLessonIds = lessonRows
-      .map((row) => row['id'] as String)
-      .toSet();
+  // Existence comes from the Worker (D1). Writes go through the content
+  // notifiers, i.e. the admin content write path.
+  final existingLessonIds = await ref
+      .read(seedExistenceCheckerProvider)
+      .lessonIds();
 
   Future<void> addLessonIfNew(LessonEntity lesson) async {
     final exists = !existingLessonIds.add(lesson.id);

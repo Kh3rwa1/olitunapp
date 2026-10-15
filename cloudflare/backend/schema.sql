@@ -443,3 +443,80 @@ CREATE TABLE IF NOT EXISTS story_segments (
   raw_json TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_story_segments_story ON story_segments(story_id, order_index);
+
+-- Gamification + Bakhed CMS rows (replaces the Appwrite collections
+-- bravo_messages, badges, mission_templates, reward_messages,
+-- quiz_feedback_messages, gamification_config, bakhed_lyrics,
+-- bakhed_vocabulary, bakhed_cultural_notes). parent_id is the Bakhed (rhyme)
+-- id for the bakhed_* child collections, used for filtering and cascade delete.
+CREATE TABLE IF NOT EXISTS cms_rows (
+  collection TEXT NOT NULL,
+  id TEXT NOT NULL,
+  parent_id TEXT,
+  order_index INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'draft',
+  is_active INTEGER DEFAULT 1,
+  raw_json TEXT NOT NULL,
+  updated_at TEXT,
+  PRIMARY KEY (collection, id)
+);
+CREATE INDEX IF NOT EXISTS idx_cms_rows_collection ON cms_rows(collection, order_index);
+CREATE INDEX IF NOT EXISTS idx_cms_rows_parent ON cms_rows(parent_id, collection);
+
+-- Content change feed: one row per admin content/settings mutation, written
+-- in the same batch as the change (routes/admin_content.ts). Clients poll
+-- GET /api/v1/content/changes?since=<seq>.
+CREATE TABLE IF NOT EXISTS content_changes (
+  seq INTEGER PRIMARY KEY AUTOINCREMENT,
+  table_name TEXT NOT NULL,
+  row_id TEXT NOT NULL,
+  op TEXT NOT NULL,
+  changed_at TEXT NOT NULL
+);
+
+-- Admin refund bookkeeping (replaces the Appwrite refund_claims collection
+-- and the refund attributes on course_purchases). Kept beside
+-- course_purchases instead of ALTERing it so the migration stays additive.
+-- order_id binds the refund to one purchase of the category: a later
+-- repurchase reuses the purchase id but carries a new order.
+CREATE TABLE IF NOT EXISTS purchase_refunds (
+  purchase_id TEXT PRIMARY KEY,
+  order_id TEXT,
+  refund_status TEXT NOT NULL,
+  refunded_amount_paise INTEGER NOT NULL DEFAULT 0,
+  refund_epoch INTEGER NOT NULL DEFAULT 0,
+  last_refund_claim_id TEXT,
+  updated_at TEXT NOT NULL
+);
+
+-- One row per refund operation; id = stableId('refund:' + operationKey).
+-- refund_ref is the gateway refund id (or the operation key when none was
+-- given) and is unique, so one gateway refund is never recorded twice.
+CREATE TABLE IF NOT EXISTS refund_claims (
+  id TEXT PRIMARY KEY,
+  operation_key TEXT NOT NULL,
+  refund_ref TEXT NOT NULL,
+  purchase_id TEXT NOT NULL,
+  amount_paise INTEGER NOT NULL,
+  currency TEXT NOT NULL DEFAULT 'INR',
+  status TEXT NOT NULL,
+  actor_user_id TEXT NOT NULL,
+  reason TEXT,
+  claimed_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_refund_claims_ref ON refund_claims(refund_ref);
+CREATE INDEX IF NOT EXISTS idx_refund_claims_purchase ON refund_claims(purchase_id);
+CREATE INDEX IF NOT EXISTS idx_course_purchases_created ON course_purchases(created_at, id);
+
+-- Resumable content restore journal. id 'active' is the single-restore
+-- fence; every job also keeps a history row under its own id.
+CREATE TABLE IF NOT EXISTS admin_restore_jobs (
+  id TEXT PRIMARY KEY,
+  job_id TEXT NOT NULL,
+  file_id TEXT NOT NULL,
+  phase TEXT NOT NULL,
+  state_json TEXT NOT NULL,
+  actor_user_id TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+

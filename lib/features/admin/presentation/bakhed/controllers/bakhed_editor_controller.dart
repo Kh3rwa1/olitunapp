@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
-import '../../../../../core/api/appwrite_db_service.dart';
-import '../../../../../core/api/appwrite_query_builders.dart';
+import '../../../../admin/data/gamification_cms_api.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
 import 'bakhed_lyrics_editor_controller.dart';
@@ -280,7 +279,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
         return SaveResult.concurrencyConflict;
       }
 
-      final dbService = ref.read(appwriteDbServiceProvider);
+      final cms = ref.read(gamificationCmsApiProvider);
 
       // 2. Save Subcollections (Child-First Save with Diff-based writes)
 
@@ -310,10 +309,10 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
           }).toList();
 
           for (final line in toDelete) {
-            await dbService.deleteDocument('bakhed_lyrics', line.id);
+            await cms.deleteRow('bakhed_lyrics', line.id);
           }
           for (final line in toCreate) {
-            final docId = DbId.unique();
+            final docId = GamificationCmsApi.newRowId();
             final idx = lyricsState.currentLines.indexOf(line);
             final derivedEndMs = idx < lyricsState.currentLines.length - 1
                 ? lyricsState.currentLines[idx + 1].startMs
@@ -321,7 +320,12 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             final payload = line
                 .copyWith(id: docId, endMs: derivedEndMs)
                 .toJson(currentItem.id);
-            await dbService.createDocument('bakhed_lyrics', docId, payload);
+            await cms.upsertRow(
+              'bakhed_lyrics',
+              docId,
+              payload,
+              createOnly: true,
+            );
           }
           for (final line in toUpdate) {
             final idx = lyricsState.currentLines.indexOf(line);
@@ -331,7 +335,7 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
             final payload = line
                 .copyWith(endMs: derivedEndMs)
                 .toJson(currentItem.id);
-            await dbService.updateDocument('bakhed_lyrics', line.id, payload);
+            await cms.upsertRow('bakhed_lyrics', line.id, payload);
           }
         } catch (e) {
           state = state.copyWith(
@@ -370,18 +374,19 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
           }).toList();
 
           for (final itemVal in toDelete) {
-            await dbService.deleteDocument('bakhed_vocabulary', itemVal.id);
+            await cms.deleteRow('bakhed_vocabulary', itemVal.id);
           }
           for (final itemVal in toCreate) {
-            final docId = DbId.unique();
-            await dbService.createDocument(
+            final docId = GamificationCmsApi.newRowId();
+            await cms.upsertRow(
               'bakhed_vocabulary',
               docId,
               itemVal.copyWith(id: docId).toJson(currentItem.id),
+              createOnly: true,
             );
           }
           for (final itemVal in toUpdate) {
-            await dbService.updateDocument(
+            await cms.upsertRow(
               'bakhed_vocabulary',
               itemVal.id,
               itemVal.toJson(currentItem.id),
@@ -423,21 +428,19 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
           }).toList();
 
           for (final note in toDelete) {
-            await dbService.deleteDocument(
-              'bakhed_cultural_notes',
-              note.noteId,
-            );
+            await cms.deleteRow('bakhed_cultural_notes', note.noteId);
           }
           for (final note in toCreate) {
-            final docId = DbId.unique();
-            await dbService.createDocument(
+            final docId = GamificationCmsApi.newRowId();
+            await cms.upsertRow(
               'bakhed_cultural_notes',
               docId,
               note.copyWith(noteId: docId).toJson(currentItem.id),
+              createOnly: true,
             );
           }
           for (final note in toUpdate) {
-            await dbService.updateDocument(
+            await cms.upsertRow(
               'bakhed_cultural_notes',
               note.noteId,
               note.toJson(currentItem.id),
@@ -513,12 +516,10 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
                   fileId: fileId,
                   checks: const [
                     ReferenceCheck(
-                      databaseId: 'olitun_db',
                       collectionId: 'rhymes',
                       fieldNames: ['audioFileId'],
                     ),
                     ReferenceCheck(
-                      databaseId: 'olitun_db',
                       collectionId: 'bakhed_vocabulary',
                       fieldNames: ['audioFileId'],
                     ),

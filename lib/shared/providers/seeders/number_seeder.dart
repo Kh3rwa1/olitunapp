@@ -3,7 +3,7 @@ import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
 import '../../utils/santali_numbers.dart';
 import '../providers.dart';
-import '../../../core/api/appwrite_db_service.dart';
+import 'seed_existence.dart';
 
 class NumberSeeder {
   static LessonBlockModel _numberBlock(int value) {
@@ -68,10 +68,7 @@ class NumberSeeder {
       ),
     );
 
-    final numbersRows = await ref
-        .read(appwriteDbServiceProvider)
-        .listDocuments('numbers');
-    if (numbersRows.isEmpty) {
+    if (!await ref.read(seedExistenceCheckerProvider).hasNumbers()) {
       // Seed numbers (0-100)
       await numbersNotifier.seed();
     }

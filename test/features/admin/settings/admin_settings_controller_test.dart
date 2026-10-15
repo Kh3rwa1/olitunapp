@@ -1,8 +1,9 @@
 import 'dart:io';
-import 'package:appwrite/appwrite.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_content_client.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/admin/domain/admin_failure.dart';
 import 'package:itun/features/admin/presentation/settings/controllers/admin_settings_controller.dart';
@@ -10,20 +11,16 @@ import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/app_settings_provider.dart';
 import 'package:itun/core/ads/ad_state.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+import '../../../helpers/fake_admin_worker.dart';
 
 void main() {
-  late MockAppwriteDbService mockDb;
+  late FakeAdminWorker worker;
   late SharedPreferences prefs;
 
   setUp(() async {
-    mockDb = MockAppwriteDbService();
-    when(
-      () => mockDb.listDocuments('app_settings'),
-    ).thenAnswer((_) async => []);
+    worker = FakeAdminWorker();
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
   });
@@ -31,7 +28,7 @@ void main() {
   ProviderContainer createContainer() {
     final container = ProviderContainer(
       overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        adminContentClientProvider.overrideWithValue(worker.adminClient),
         sharedPreferencesProvider.overrideWithValue(prefs),
         isAuthenticatedProvider.overrideWith((ref) async => true),
         appSettingsProvider.overrideWith((ref) async => <String, dynamic>{}),
@@ -117,22 +114,11 @@ void main() {
 
   group('AdminSettingsController - Load & Save State Machine Matrix', () {
     test('Case 8: initial load success parses remote app_settings', () async {
-      when(() => mockDb.listDocuments('app_settings')).thenAnswer(
-        (_) async => [
-          {
-            'settingKey': 'onboarding_video_url',
-            'settingValue': 'https://example.com/video.mp4',
-          },
-          {
-            'settingKey': 'global_review_unlock_enabled',
-            'settingValue': 'true',
-          },
-          {
-            'settingKey': 'razorpay_key_id',
-            'settingValue': 'rzp_test_123456789012',
-          },
-        ],
-      );
+      worker.settings.addAll({
+        'onboarding_video_url': 'https://example.com/video.mp4',
+        'global_review_unlock_enabled': 'true',
+        'razorpay_key_id': 'rzp_test_123456789012',
+      });
 
       final container = createContainer();
       addTearDown(container.dispose);
@@ -150,14 +136,7 @@ void main() {
     test(
       'Case 9: initial load handles malformed goals JSON gracefully',
       () async {
-        when(() => mockDb.listDocuments('app_settings')).thenAnswer(
-          (_) async => [
-            {
-              'settingKey': 'onboarding_goals',
-              'settingValue': 'invalid-json-string{',
-            },
-          ],
-        );
+        worker.settings['onboarding_goals'] = 'invalid-json-string{';
 
         final container = createContainer();
         addTearDown(container.dispose);
@@ -170,10 +149,8 @@ void main() {
     );
 
     test('Case 10: initial load failure sets loadFailure state', () async {
-      when(
-        () => mockDb.listDocuments('app_settings'),
-      ).thenThrow(const SocketException('Failed host lookup'));
-
+      // Transport failure: the Worker cannot be reached.
+      worker.transportError = const SocketException('Failed host lookup');
       final container = createContainer();
       addTearDown(container.dispose);
 
@@ -187,98 +164,63 @@ void main() {
       expect(state.failure, isA<AdminNetworkFailure>());
     });
 
-    test('Case 11: save setting succeeds via updateDocument', () async {
-      when(
-        () => mockDb.updateDocument(
-          'app_settings',
-          'onboarding_video_url',
-          any(),
-        ),
-      ).thenAnswer((_) async => {});
-
-      final container = createContainer();
-      addTearDown(container.dispose);
-
-      final controller = container.read(
-        adminSettingsControllerProvider.notifier,
-      );
-      await controller.loadSettings();
-
-      final success = await controller.saveSetting(
-        'onboarding_video_url',
-        'https://olitun.org/demo.mp4',
-      );
-
-      expect(success, isTrue);
-      expect(
-        container.read(adminSettingsControllerProvider).onboardingVideoUrl,
-        'https://olitun.org/demo.mp4',
-      );
-    });
-
     test(
-      'Case 12: save setting creates document when update throws 404',
+      'Case 11: save setting PUTs to the Worker with the admin JWT',
       () async {
-        when(
-          () => mockDb.updateDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).thenThrow(
-          AppwriteException('Document not found', 404, 'document_not_found'),
-        );
-
-        when(
-          () => mockDb.createDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).thenAnswer((_) async => {});
-
         final container = createContainer();
         addTearDown(container.dispose);
-        await waitForLoaded(container);
+
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
+        await controller.loadSettings();
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
-          'https://olitun.org/demo2.mp4',
+          'https://olitun.org/demo.mp4',
         );
 
         expect(success, isTrue);
-        verify(
-          () => mockDb.createDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).called(1);
+        expect(
+          container.read(adminSettingsControllerProvider).onboardingVideoUrl,
+          'https://olitun.org/demo.mp4',
+        );
+        final put = worker.requestsWith('PUT').single;
+        expect(
+          put.url.toString(),
+          '${CloudflareConfig.adminSettingsEndpoint}/onboarding_video_url',
+        );
+        expect(put.headers['Authorization'], 'Bearer ${FakeAdminWorker.jwt}');
+        expect(worker.bodyOf(put), {
+          'settingValue': 'https://olitun.org/demo.mp4',
+        });
+        expect(worker.settings['onboarding_video_url'], isNotNull);
       },
     );
 
     test(
-      'Case 13: save setting does NOT create document on 401/403 permission error',
+      'Case 12: initial load reads the uncached admin settings route',
       () async {
-        when(
-          () => mockDb.updateDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).thenThrow(
-          AppwriteException('Unauthorized', 401, 'user_unauthorized'),
-        );
+        final container = createContainer();
+        addTearDown(container.dispose);
+        await waitForLoaded(container);
 
+        final get = worker.requestsWith('GET').first;
+        expect(get.url.toString(), CloudflareConfig.adminSettingsEndpoint);
+        expect(get.headers['Authorization'], 'Bearer ${FakeAdminWorker.jwt}');
+      },
+    );
+
+    test(
+      'Case 13: a 401/403 from the Worker is a permission failure',
+      () async {
         final container = createContainer();
         addTearDown(container.dispose);
         await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
+        worker.failStatus = 403;
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
@@ -286,7 +228,7 @@ void main() {
         );
 
         expect(success, isFalse);
-        verifyNever(() => mockDb.createDocument('app_settings', any(), any()));
+        expect(worker.settings, isEmpty);
         expect(
           container.read(adminSettingsControllerProvider).failure,
           isA<AdminPermissionFailure>(),
@@ -297,22 +239,13 @@ void main() {
     test(
       'Case 14: save setting handles 429 rate limiting with retry guidance',
       () async {
-        when(
-          () => mockDb.updateDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).thenThrow(
-          AppwriteException('Rate limit exceeded', 429, 'rate_limit_exceeded'),
-        );
-
         final container = createContainer();
         addTearDown(container.dispose);
         await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
+        worker.failStatus = 429;
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
@@ -329,14 +262,8 @@ void main() {
     test(
       'Case 15: save setting rolls back state to lastConfirmedState on 500 failure',
       () async {
-        when(() => mockDb.listDocuments('app_settings')).thenAnswer(
-          (_) async => [
-            {
-              'settingKey': 'onboarding_video_url',
-              'settingValue': 'https://olitun.org/initial.mp4',
-            },
-          ],
-        );
+        worker.settings['onboarding_video_url'] =
+            'https://olitun.org/initial.mp4';
 
         final container = createContainer();
         addTearDown(container.dispose);
@@ -350,14 +277,7 @@ void main() {
           'https://olitun.org/initial.mp4',
         );
 
-        when(
-          () => mockDb.updateDocument(
-            'app_settings',
-            'onboarding_video_url',
-            any(),
-          ),
-        ).thenThrow(AppwriteException('Server Error', 500, 'server_error'));
-
+        worker.failStatus = 500;
         final success = await controller.saveSetting(
           'onboarding_video_url',
           'https://olitun.org/failed-update.mp4',
@@ -367,6 +287,10 @@ void main() {
         expect(
           container.read(adminSettingsControllerProvider).onboardingVideoUrl,
           'https://olitun.org/initial.mp4',
+        );
+        expect(
+          container.read(adminSettingsControllerProvider).failure,
+          isA<AdminServerFailure>(),
         );
       },
     );
@@ -387,7 +311,7 @@ void main() {
         );
 
         expect(success, isFalse);
-        verifyNever(() => mockDb.updateDocument('app_settings', any(), any()));
+        expect(worker.requestsWith('PUT'), isEmpty);
         expect(
           container.read(adminSettingsControllerProvider).status,
           AdminSettingsStatus.validationFailure,

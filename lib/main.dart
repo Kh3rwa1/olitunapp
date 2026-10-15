@@ -22,7 +22,7 @@ import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'shared/repositories/content_mutation_replay.dart';
-import 'shared/sync/content_realtime_sync.dart';
+import 'shared/sync/content_change_sync.dart';
 import 'features/review/data/review_sync_init.dart';
 import 'core/notifications/notification_tap_router.dart';
 import 'l10n/generated/app_localizations.dart';
@@ -201,9 +201,9 @@ class OlitunApp extends ConsumerWidget {
     // Review-state cloud sync: same lifecycle (pull/merge at startup,
     // connectivity-regained sync, periodic outbox drain).
     ref.watch(reviewSyncInitProvider);
-    // Realtime content sync: Appwrite Realtime WebSocket keeps database changes
-    // instantly reflected across mobile learner views.
-    ref.watch(contentRealtimeSyncProvider);
+    // Content change sync: polls the Worker change feed (on start, foreground
+    // and every minute) so admin edits reach learner views.
+    ref.watch(contentChangeSyncProvider);
     // Review notification taps deep-link to Today's Review.
     ref.watch(notificationTapRouterProvider);
     final router = ref.watch(routerProvider);

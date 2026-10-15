@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
-import '../../core/api/appwrite_db_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/admin_dashboard_api.dart';
 import '../../core/theme/app_colors.dart';
 
 /// A single recent activity entry rendered in the admin dashboard
 /// "Recent changes" panel. Built from real `$createdAt`/`$updatedAt`
-/// timestamps on Appwrite documents.
+/// timestamps on the content documents stored in D1.
 class ActivityItem {
   final String title;
   final String subtitle;
@@ -164,34 +163,27 @@ DateTime? _parseDate(dynamic v) {
   return null;
 }
 
-/// Fetches the dashboard metrics from Appwrite. Auto-refreshes whenever the
+/// Fetches the dashboard metrics from the Worker (the 50 most recently
+/// changed rows per content table, from D1). Auto-refreshes whenever the
 /// provider is invalidated (e.g. via the dashboard's "Refresh" button or
 /// after a seeding operation).
 final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
-  final db = ref.watch(appwriteDbServiceProvider);
-
-  // Pull the most recent rows from each collection in parallel. We cap the
-  // per-collection result so the call stays cheap even when collections grow.
-  final results = await Future.wait(
-    _activitySpecs.map((spec) async {
-      try {
-        final rows = await db.listDocuments(
-          spec.id,
-          queries: [DbQuery.orderDesc(r'$updatedAt'), DbQuery.limit(50)],
-          paginate: false,
-        );
-        return MapEntry(spec, rows);
-      } catch (e, stack) {
-        AppLogger.warning(
-          'DashboardMetrics: failed to load collection ${spec.id}',
-          name: 'DashboardMetrics',
-          error: e,
-          stackTrace: stack,
-        );
-        return MapEntry(spec, const <Map<String, dynamic>>[]);
-      }
-    }),
-  );
+  var collections = const <String, List<Map<String, dynamic>>>{};
+  try {
+    collections = await ref.watch(adminDashboardApiProvider).recentActivity();
+  } catch (e, stack) {
+    // An empty dashboard beats a broken one; the failure is logged.
+    AppLogger.warning(
+      'DashboardMetrics: failed to load recent activity',
+      name: 'DashboardMetrics',
+      error: e,
+      stackTrace: stack,
+    );
+  }
+  final results = [
+    for (final spec in _activitySpecs)
+      MapEntry(spec, collections[spec.id] ?? const <Map<String, dynamic>>[]),
+  ];
 
   // ── Recent activity feed ────────────────────────────────────────────────
   final activity = <ActivityItem>[];

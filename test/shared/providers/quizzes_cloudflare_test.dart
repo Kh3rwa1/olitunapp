@@ -7,21 +7,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockAppwriteDbService mockDb;
   late SharedPreferences prefs;
 
   setUpAll(() async {
@@ -40,7 +35,6 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     prefs = await SharedPreferences.getInstance();
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
   });
 
   tearDown(() async {
@@ -91,7 +85,6 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
           learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
           learnerSentencesProvider.overrideWith(
             (ref) => const AsyncValue.data([]),
@@ -106,7 +99,6 @@ void main() {
       final quizzes = await container.read(quizzesProvider.future);
       expect(quizzes, isNotEmpty);
       expect(quizzes.any((q) => q.id == 'cf_quiz_1'), isTrue);
-      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -115,7 +107,6 @@ void main() {
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
         isAuthenticatedProvider.overrideWith((ref) => true),
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
         learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
         learnerSentencesProvider.overrideWith(
           (ref) => const AsyncValue.data([]),
@@ -141,9 +132,6 @@ void main() {
       final quizzes = await container.read(quizzesProvider.future);
       expect(quizzes, isNotEmpty);
       expect(requests.single.path, '/api/v1/quizzes');
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 
@@ -156,9 +144,6 @@ void main() {
 
       final quizzes = await container.read(quizzesProvider.future);
       expect(quizzes, isNotEmpty);
-      verifyNever(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      );
     },
   );
 }

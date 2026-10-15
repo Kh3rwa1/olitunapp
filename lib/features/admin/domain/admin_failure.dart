@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/core/error/appwrite_error_classifier.dart';
 
 /// Typed error classification for all admin operations.
@@ -17,7 +18,24 @@ sealed class AdminFailure {
 
     final context = actionContext != null ? '$actionContext: ' : '';
 
-    final appwriteInfo = AppwriteErrorClassifier.infoOf(error);
+    if (error is EdgeApiException && error.statusCode == null) {
+      return AdminNetworkFailure(
+        '${context}Network connection error. Please check your internet connection.',
+        technicalDetails: error.toString(),
+        cause: error,
+      );
+    }
+
+    // Worker (Cloudflare) HTTP errors classify like Appwrite status codes.
+    final appwriteInfo =
+        AppwriteErrorClassifier.infoOf(error) ??
+        (error is EdgeApiException
+            ? AppwriteErrorInfo(
+                code: error.statusCode ?? 0,
+                type: '',
+                message: error.message,
+              )
+            : null);
     if (appwriteInfo != null) {
       final code = appwriteInfo.code;
       final type = appwriteInfo.type;
@@ -77,6 +95,25 @@ sealed class AdminFailure {
       );
     }
 
+    if (error is EdgeApiException) {
+      final code = error.statusCode;
+      if (code != null) return _fromWorkerStatus(code, error, context);
+      if (error.message.contains('timed out')) {
+        return AdminTimeoutFailure(
+          '${context}The request timed out. Please check your connection.',
+          technicalDetails: error.message,
+          cause: error,
+        );
+      }
+      if (error.message.contains(' failed: ')) {
+        return AdminNetworkFailure(
+          '${context}Network connection error. Please check your internet connection.',
+          technicalDetails: error.message,
+          cause: error,
+        );
+      }
+    }
+
     if (error is TimeoutException) {
       return AdminTimeoutFailure(
         '${context}The request timed out. Please check your connection.',
@@ -106,6 +143,47 @@ sealed class AdminFailure {
       technicalDetails: error.toString(),
       cause: error,
     );
+  }
+
+  /// Classifies a Cloudflare Worker HTTP error the same way as Appwrite's.
+  static AdminFailure _fromWorkerStatus(
+    int code,
+    EdgeApiException error,
+    String context,
+  ) {
+    final details = 'Worker $code: ${error.message}';
+    return switch (code) {
+      404 => AdminNotFoundFailure(
+        '${context}Requested resource was not found.',
+        technicalDetails: details,
+        cause: error,
+      ),
+      401 || 403 => AdminPermissionFailure(
+        '${context}You do not have permission to perform this action.',
+        technicalDetails: details,
+        cause: error,
+      ),
+      409 => AdminConflictFailure(
+        '${context}A conflicting record already exists.',
+        technicalDetails: details,
+        cause: error,
+      ),
+      429 => AdminRateLimitFailure(
+        '${context}Too many requests. Please wait a moment before trying again.',
+        technicalDetails: details,
+        cause: error,
+      ),
+      400 || 413 => AdminValidationFailure(
+        '${context}The server rejected the submitted data.',
+        technicalDetails: details,
+        cause: error,
+      ),
+      _ => AdminServerFailure(
+        '${context}Server error encountered. Please try again later.',
+        technicalDetails: details,
+        cause: error,
+      ),
+    };
   }
 
   /// Whether this failure indicates a confirmed missing record (e.g. 404).

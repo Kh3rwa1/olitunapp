@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
+import 'package:itun/core/api/content_remote_datasource.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
@@ -12,7 +12,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class _MockDatabases extends Mock implements TablesDB {}
+class _MockRemote extends Mock implements ContentRemoteDataSource {}
 
 class _FakeNetworkInfo implements NetworkInfo {
   _FakeNetworkInfo({required bool connected}) : _connected = connected;
@@ -64,7 +64,7 @@ void main() {
     test('caches locally and queues a durable mutation when offline', () async {
       final outbox = MutationOutboxService();
       final repo = ContentRepository(
-        tablesDB: _MockDatabases(),
+        remoteDataSource: _MockRemote(),
         networkInfo: _FakeNetworkInfo(connected: false),
         mutationOutbox: outbox,
       );
@@ -90,9 +90,9 @@ void main() {
     });
 
     test('fails without an outbox and does not cache a phantom save', () async {
-      final tablesDB = _MockDatabases();
+      final remote = _MockRemote();
       final repo = ContentRepository(
-        tablesDB: tablesDB,
+        remoteDataSource: remote,
         networkInfo: _FakeNetworkInfo(connected: false),
       );
       final item = _buildItem();
@@ -120,7 +120,7 @@ void main() {
         ),
         isNull,
       );
-      verifyZeroInteractions(tablesDB);
+      verifyZeroInteractions(remote);
     });
   });
 }

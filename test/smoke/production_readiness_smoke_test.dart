@@ -1,34 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/config/appwrite_config.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 
 void main() {
   group('Production Readiness Invariant Smoke Suite', () {
-    test(
-      'AppwriteConfig exposes non-empty database and admin configuration',
-      () {
-        expect(AppwriteConfig.databaseId, isNotEmpty);
-        expect(AppwriteConfig.adminTeamId, isNotEmpty);
-      },
-    );
-
-    test(
-      'AppwriteDbService creates valid permission arrays for domain objects',
-      () {
-        const userId = 'user_prod_99';
-
-        const publicPerms = AppwriteDbService;
-        expect(publicPerms, isNotNull);
-
-        final ownerPrivatePerms = [
-          'read("user:$userId")',
-          'write("user:$userId")',
-        ];
-        expect(ownerPrivatePerms, contains('read("user:$userId")'));
-        expect(ownerPrivatePerms, contains('write("user:$userId")'));
-      },
-    );
+    test('AppwriteConfig exposes non-empty admin configuration', () {
+      expect(AppwriteConfig.adminTeamId, isNotEmpty);
+    });
 
     test('PendingMutation supports retry and deadLetter state boundaries', () {
       final mutation = PendingMutation(

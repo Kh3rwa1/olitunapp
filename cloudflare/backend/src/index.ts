@@ -18,6 +18,7 @@ import { getRequestUserId, stableId, type App, type AppEnv, type Bindings } from
 import { registerRoutes } from './routes';
 import { issuePaidMediaLease } from './routes/paid_media';
 import { ANONYMIZED_USER_ID, deleteUserAccount } from './routes/account';
+import { serveAsset } from './routes/media';
 
 const app: App = new Hono<AppEnv>();
 
@@ -383,7 +384,9 @@ app.get('/', async (c) => {
 app.get('/health', (c) => c.json({ status: 'ok', service: 'olitun-api', edge: true }));
 
 // Helper for edge-cached JSON responses (reduces database reads to practically zero)
-const cachedJson = (c: any, data: any, maxAge = 86400) => {
+// Content is now edited through the admin CMS, so lists must not stay stale
+// for long; clients also poll /content/changes for immediate refreshes.
+const cachedJson = (c: any, data: any, maxAge = 300) => {
   return c.json(data, 200, {
     'Cache-Control': `public, max-age=${maxAge}, stale-while-revalidate=3600`,
   });
@@ -488,7 +491,22 @@ app.get('/api/v1/lessons', async (c) => {
       stmt = c.env.DB.prepare('SELECT raw_json FROM lessons ORDER BY order_index ASC');
     }
     const result = await stmt.all();
-    const lessons = (result.results || []).map((r: any) => JSON.parse(r.raw_json));
+    // This list is public and cached, so paid lessons are listed without
+    // their content; /lessons/authorize serves bodies after an entitlement
+    // check.
+    const categories: any = await c.env.DB.prepare('SELECT id, unlock_mode FROM categories').all();
+    const freeCategoryIds = new Set(
+      (categories.results || [])
+        .filter((cat: any) => !cat.unlock_mode || cat.unlock_mode === 'free')
+        .map((cat: any) => cat.id),
+    );
+    const lessons = (result.results || []).map((r: any) => {
+      const lesson = JSON.parse(r.raw_json);
+      const categoryOf = lesson.categoryId || lesson.category;
+      if (freeCategoryIds.has(categoryOf) || lesson.isPreview) return lesson;
+      const { blocks: _b, data: _d, heroMediaUrl: _h, ...meta } = lesson;
+      return { ...meta, blocks: [], isLocked: true };
+    });
     return cachedJson(c, { ok: true, total: lessons.length, lessons });
   } catch (err: any) {
     return c.json({ ok: false, error: err.message }, 500);
@@ -540,7 +558,7 @@ app.get('/api/v1/settings', async (c) => {
         settings[key] = val;
       }
     }
-    return cachedJson(c, { ok: true, settings, documents }, 3600);
+    return cachedJson(c, { ok: true, settings, documents });
   } catch (err: any) {
     return c.json({ ok: false, error: err.message }, 500);
   }
@@ -586,114 +604,10 @@ app.get('/api/v1/quizzes', async (c) => {
   }
 });
 
-// 11. Gamification Content (Badges, bravo messages, mission templates, rewards, feedback, config)
-app.get('/api/v1/gamification/content', async (c) => {
-  try {
-    const result = await c.env.DB.prepare(
-      'SELECT raw_json FROM gamification_content WHERE id = ?'
-    ).bind('default').first();
-    
-    if (result && (result as any).raw_json) {
-      const data = JSON.parse((result as any).raw_json);
-      return cachedJson(c, { ok: true, ...data }, 3600);
-    }
+// 11-12. Gamification and Bakhed learning content: routes/gamification_cms.ts
 
-    const fallback = {
-      ok: true,
-      bravoMessages: [
-        {
-          messageId: 'fallback_lesson_completed',
-          trigger: 'lesson_completed',
-          title: 'Nice learning step',
-          body: 'You gave Santali practice real attention today.',
-          language: 'en',
-          scriptMode: 'both',
-          learnerLevel: 'all',
-          weight: 1,
-          status: 'published',
-          isActive: true
-        },
-        {
-          messageId: 'fallback_mistake_mastered',
-          trigger: 'mistake_mastered',
-          title: 'Second chance, stronger memory',
-          body: 'Mistakes are just lessons asking for a second chance.',
-          language: 'en',
-          scriptMode: 'both',
-          learnerLevel: 'all',
-          weight: 1,
-          status: 'published',
-          isActive: true
-        }
-      ],
-      badges: [
-        {
-          badgeId: 'first_lesson',
-          name: 'First Lesson',
-          description: 'Complete your first Santali learning step.',
-          category: 'learning',
-          icon: '🏆',
-          target: 1,
-          rewardStars: 10,
-          status: 'published',
-          isActive: true
-        }
-      ],
-      missionTemplates: [],
-      rewardMessages: [],
-      quizFeedbackMessages: [],
-      config: {}
-    };
-    return cachedJson(c, fallback, 3600);
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message }, 500);
-  }
-});
-
-// 12. Bakhed Learning Content (Lyrics, vocabulary, and cultural notes)
-app.get('/api/v1/bakhed/content', async (c) => {
-  try {
-    const id = c.req.query('id') || c.req.query('bakhedId') || '';
-    if (!id) {
-      return c.json({ ok: false, error: 'Bakhed ID is required' }, 400);
-    }
-    const result = await c.env.DB.prepare(
-      'SELECT raw_json FROM bakhed_content WHERE bakhed_id = ?'
-    ).bind(id).first();
-    
-    if (result && (result as any).raw_json) {
-      const data = JSON.parse((result as any).raw_json);
-      return cachedJson(c, { ok: true, bakhedId: id, ...data }, 3600);
-    }
-
-    return cachedJson(c, {
-      ok: true,
-      bakhedId: id,
-      lyrics: [],
-      vocabulary: [],
-      culturalNotes: []
-    }, 1800);
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message }, 500);
-  }
-});
-
-// 13. Assets stream from R2 (Zero egress fees, immutable caching)
-app.get('/api/v1/assets/*', async (c) => {
-  try {
-    const path = c.req.path.replace('/api/v1/assets/', '');
-    const object = await c.env.ASSETS.get(path);
-    if (!object) return c.text('Asset Not Found', 404);
-
-    const headers = new Headers();
-    object.writeHttpMetadata(headers);
-    headers.set('etag', object.httpEtag);
-    headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-    return new Response(object.body, { headers });
-  } catch (err: any) {
-    return c.json({ ok: false, error: err.message }, 500);
-  }
-});
+// 13. Assets stream from R2 (Range/HEAD, private prefixes blocked): routes/media.ts
+app.get('/api/v1/assets/*', serveAsset);
 
 // 8. Translation (AI IndicTrans2 via Workers AI + Instant Google Translate + D1 Caching)
 app.all('/api/v1/translate', async (c) => {
@@ -1663,8 +1577,14 @@ app.post('/api/v1/payments/webhook', async (c) => {
             c.env.DB.prepare(
               'UPDATE payment_orders SET status = "paid", payment_id = ?, updated_at = ? WHERE order_id = ?'
             ).bind(paymentId || '', now, orderId),
+            // A redelivered webhook for an order an admin already refunded
+            // must not restore access; a new order (repurchase) still does.
             c.env.DB.prepare(
-              'INSERT OR REPLACE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+              `INSERT INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(id) DO UPDATE SET user_id = excluded.user_id, category_id = excluded.category_id, course_id = excluded.course_id,
+                 amount_in_cents = excluded.amount_in_cents, currency = excluded.currency, status = excluded.status,
+                 order_id = excluded.order_id, payment_id = excluded.payment_id, created_at = excluded.created_at
+               WHERE NOT (course_purchases.status = 'refunded' AND course_purchases.order_id = excluded.order_id)`
             ).bind(purchaseId, orderRow.user_id, orderRow.category_id, orderRow.category_id, orderRow.amount, 'INR', 'completed', orderId, paymentId || '', now),
           ]);
         }
@@ -2166,92 +2086,6 @@ app.post('/api/v1/studio/process', async (c) => {
 // GROUP 5: ADMIN, REVIEW & MAINTENANCE
 // ==========================================
 
-// 24. Review Content & Queue (replaces Appwrite reviewContent function)
-app.get('/api/v1/admin/review/queue', async (c) => {
-  try {
-    const pendingTracks: any = await c.env.DB.prepare(
-      'SELECT id, title, language, category, audio_url, status, created_at FROM audio_tracks WHERE status = "pending_review" LIMIT 50'
-    ).all().catch(() => ({ results: [] }));
-
-    const pendingLocalized: any = await c.env.DB.prepare(
-      'SELECT id, content_key, locale, translated_text, status, created_at FROM localized_contents WHERE status = "pending_review" LIMIT 50'
-    ).all().catch(() => ({ results: [] }));
-
-    return c.json({
-      ok: true,
-      queue: {
-        audioTracks: pendingTracks.results || [],
-        localizedContents: pendingLocalized.results || [],
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Unable to load review queue' }, 500);
-  }
-});
-
-// 25. Mutate Review State (replaces Appwrite mutateReviewState function)
-app.post('/api/v1/admin/review/state', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const targetType = String(body.targetType || 'audio').toLowerCase();
-    const targetId = String(body.targetId || '').trim();
-    const action = String(body.action || 'approve').toLowerCase(); // approve or reject
-    const reviewedBy = getRequestUserId(c, body) || 'admin';
-    const now = new Date().toISOString();
-
-    if (!targetId) {
-      return c.json({ ok: false, message: 'Missing targetId' }, 400);
-    }
-
-    const nextStatus = action === 'approve' ? 'approved' : 'rejected';
-
-    if (targetType === 'audio') {
-      await c.env.DB.prepare(
-        'UPDATE audio_tracks SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?'
-      ).bind(nextStatus, reviewedBy, now, targetId).run();
-    } else {
-      await c.env.DB.prepare(
-        'UPDATE localized_contents SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?'
-      ).bind(nextStatus, reviewedBy, now, targetId).run();
-    }
-
-    return c.json({ ok: true, targetId, status: nextStatus, reviewedAt: now });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Failed to mutate review state' }, 500);
-  }
-});
-
-// 26. Admin Maintenance (replaces Appwrite admin-maintenance function)
-app.post('/api/v1/admin/maintenance', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const action = String(body.action || 'status').toLowerCase();
-
-    if (action === 'purge_cache') {
-      await c.env.DB.prepare('DELETE FROM translation_cache').run().catch(() => {});
-      await c.env.DB.prepare('DELETE FROM leaderboard_cache').run().catch(() => {});
-      return c.json({ ok: true, message: 'Edge caches purged' });
-    }
-
-    // Health report
-    const categoryCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM categories').first().catch(() => ({ count: 0 }));
-    const lessonCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM lessons').first().catch(() => ({ count: 0 }));
-    const wordsCount: any = await c.env.DB.prepare('SELECT count(*) as count FROM words').first().catch(() => ({ count: 0 }));
-
-    return c.json({
-      ok: true,
-      database: {
-        categories: categoryCount?.count || 0,
-        lessons: lessonCount?.count || 0,
-        words: wordsCount?.count || 0,
-      },
-      status: 'operational',
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Maintenance failed' }, 500);
-  }
-});
-
 // 27. Manage Admin Access & Audit (replaces Appwrite manageAdminAccess function)
 app.get('/api/v1/admin/audit', async (c) => {
   try {
@@ -2344,41 +2178,8 @@ app.post('/api/v1/admin/deletions/reconcile', async (c) => {
   }
 });
 
-// 31. Backup Collections (replaces Appwrite backupCollections function)
-app.post('/api/v1/admin/backup', async (c) => {
-  try {
-    const categories: any = await c.env.DB.prepare('SELECT * FROM categories').all().catch(() => ({ results: [] }));
-    const lessons: any = await c.env.DB.prepare('SELECT * FROM lessons').all().catch(() => ({ results: [] }));
-    const words: any = await c.env.DB.prepare('SELECT * FROM words').all().catch(() => ({ results: [] }));
-
-    const backupPayload = {
-      timestamp: new Date().toISOString(),
-      categories: categories.results || [],
-      lessons: lessons.results || [],
-      words: words.results || [],
-    };
-
-    const backupKey = `backups/olitun-backup-${Date.now()}.json`;
-    if (c.env.ASSETS) {
-      await c.env.ASSETS.put(backupKey, JSON.stringify(backupPayload, null, 2), {
-        httpMetadata: { contentType: 'application/json' },
-      }).catch(() => {});
-    }
-
-    return c.json({
-      ok: true,
-      backupKey,
-      counts: {
-        categories: (categories.results || []).length,
-        lessons: (lessons.results || []).length,
-        words: (words.results || []).length,
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Backup failed' }, 500);
-  }
-});
-
+// 24-26 (review queue/state, maintenance) and 31 (backup): see
+// routes/admin_review.ts and routes/admin_maintenance.ts.
 // 32. Delete Account: see routes/account.ts
 
 // ==========================================

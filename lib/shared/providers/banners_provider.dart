@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
 
-import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/admin_content_client.dart';
 import '../../core/api/edge_json_client.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../core/storage/cache_service.dart';
@@ -109,20 +109,20 @@ class BannersNotifier extends AsyncNotifier<List<FeaturedBannerModel>> {
   Future<void> add(FeaturedBannerModel item) => _mutate(
     'Add',
     () => ref
-        .read(appwriteDbServiceProvider)
-        .createDocument(_collectionId, item.id, item.toJson()),
+        .read(adminContentClientProvider)
+        .upsert(_collectionId, item.id, item.toJson(), dropNulls: true),
   );
 
   Future<void> updateItem(FeaturedBannerModel item) => _mutate(
     'Update',
     () => ref
-        .read(appwriteDbServiceProvider)
-        .updateDocument(_collectionId, item.id, item.toJson()),
+        .read(adminContentClientProvider)
+        .upsert(_collectionId, item.id, item.toJson(), dropNulls: true),
   );
 
   Future<void> delete(String id) => _mutate(
     'Delete',
-    () => ref.read(appwriteDbServiceProvider).deleteDocument(_collectionId, id),
+    () => ref.read(adminContentClientProvider).delete(_collectionId, id),
   );
 
   // Aliases for admin screens

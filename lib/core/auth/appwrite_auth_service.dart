@@ -26,6 +26,7 @@ import 'session_persistence.dart';
 import 'account_scope.dart';
 import 'admin_functions_client.dart';
 import 'edge_auth.dart';
+import '../api/appwrite_functions_service.dart';
 
 class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
@@ -45,7 +46,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
     }
 
     _account = Account(_client);
-    _functions = Functions(_client);
+    _edgeFunctions = AppwriteFunctionsService(edgeAuth: EdgeAuth.instance);
     _browserAuthenticate = FlutterWebAuth2.authenticate;
     _accountDeletionRequest = edgeAccountDeletionRequest(
       edgeAuth: EdgeAuth.instance,
@@ -57,7 +58,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
 
   late final Client _client;
   late final Account _account;
-  late final Functions _functions;
+  late final AppwriteFunctionsService _edgeFunctions;
   late final AccountDeletionRequest _accountDeletionRequest;
 
   SharedPreferences? _prefsOverride;
@@ -69,7 +70,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
   AppwriteAuthService.forTesting({
     required Client client,
     required Account account,
-    required Functions functions,
+    AppwriteFunctionsService? edgeFunctions,
     SharedPreferences? prefs,
     DateTime Function()? nowProvider,
     bool? isWebOverride,
@@ -82,7 +83,9 @@ class AppwriteAuthService with AdminFunctionsMixin {
     AccountDeletionRequest? accountDeletionRequest,
   }) : _client = client,
        _account = account,
-       _functions = functions,
+       _edgeFunctions =
+           edgeFunctions ??
+           AppwriteFunctionsService(edgeAuth: EdgeAuth(account)),
        _prefsOverride = prefs,
        _nowProvider = nowProvider,
        _isWebOverride = isWebOverride,
@@ -537,7 +540,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
   );
 
   @override
-  Functions get functions => _functions;
+  AppwriteFunctionsService get edgeFunctions => _edgeFunctions;
 
   @override
   Future<void> restoreWebSession() => _restoreWebSession();

@@ -9,7 +9,6 @@ import 'package:itun/core/storage/cache_service.dart';
 import 'package:uuid/uuid.dart';
 import 'content_seed_loader.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/security/premium_content_policy.dart';
 
 // Provider-level API lives in ../providers/content_providers.dart;
 // re-exported here for compatibility.
@@ -32,13 +31,10 @@ class ContentRepository {
 
   ContentRepository({
     ContentRemoteDataSource? remoteDataSource,
-    dynamic tablesDB,
     required NetworkInfo networkInfo,
     MutationOutboxService? mutationOutbox,
     AppwriteFunctionsService? functionsService,
-  }) : _remoteDataSource =
-           remoteDataSource ??
-           ContentRemoteDataSourceFactory.fromDynamic(tablesDB),
+  }) : _remoteDataSource = remoteDataSource,
        _networkInfo = networkInfo,
        _mutationOutbox = mutationOutbox,
        _functionsService = functionsService;
@@ -430,47 +426,9 @@ class ContentRepository {
     }
   }
 
-  Future<PublicationDecision> _publicationDecisionFor(ContentItem item) async {
-    if (item.kind != ContentKind.lesson) {
-      if (item.isPremium) {
-        return const PublicationDecision.protected('item-marked-premium');
-      }
-      return const PublicationDecision.public('non-lesson-content');
-    }
-
-    if (item.categoryId.trim().isEmpty) {
-      return PremiumContentPolicy.forContentItem(
-        isPremium: item.isPremium,
-        categoryResolved: false,
-      );
-    }
-
-    try {
-      final remoteDataSource = _remoteDataSource;
-      if (remoteDataSource == null) {
-        return PremiumContentPolicy.forContentItem(
-          isPremium: item.isPremium,
-          categoryResolved: false,
-        );
-      }
-      final categoryData = await remoteDataSource.getCategory(
-        categoryId: item.categoryId,
-      );
-      return PremiumContentPolicy.forContentItem(
-        isPremium: item.isPremium,
-        categoryUnlockMode: categoryData['unlockMode'] as String?,
-        lessonOrder: item.order,
-        previewLessonCount: categoryData['previewLessonCount'] as int? ?? 0,
-      );
-    } catch (_) {
-      return PremiumContentPolicy.forContentItem(
-        isPremium: item.isPremium,
-        categoryResolved: false,
-      );
-    }
-  }
-
-  /// Upserts a content item to Appwrite and updates the local cache.
+  /// Upserts a content item through the Worker admin route and updates the
+  /// local cache. Premium gating is enforced server-side when learners read
+  /// lessons (`/api/v1/lessons/authorize`), not by row permissions.
   Future<Either<Failure, ContentItem>> upsert(
     ContentItem item, {
     bool allowOfflineQueue = true,
@@ -492,14 +450,10 @@ class ContentRepository {
             const ServerFailure(message: 'Remote content source unavailable'),
           );
         }
-        final decision = await _publicationDecisionFor(item);
-        final appwritePayload = item.toAppwriteAttributes();
-
         final row = await remoteDataSource.upsertRow(
           tableId: tableId,
           rowId: item.id,
-          data: appwritePayload,
-          allowAnonymousRead: decision.allowAnonymousRead,
+          data: item.toAppwriteAttributes(),
         );
         final resultItem = ContentItem.fromJson(row.data, row.id, item.kind);
 
@@ -513,7 +467,7 @@ class ContentRepository {
       }
     } else {
       // Offline support: cache locally and queue a durable mutation so the
-      // edit replays to Appwrite automatically when connectivity returns.
+      // edit replays to the Worker automatically when connectivity returns.
       if (!allowOfflineQueue) {
         return left(
           const NetworkFailure(message: 'Connection lost during replay.'),

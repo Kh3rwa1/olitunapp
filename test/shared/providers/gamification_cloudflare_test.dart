@@ -106,39 +106,62 @@ void main() {
   );
 
   test(
-    'gamificationContentProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'gamificationContentProvider serves the bundled fallback when the Worker fails, never Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
-      ).thenAnswer((_) async => <Map<String, dynamic>>[]);
-      when(
-        () => mockDb.listDocuments(
-          any(),
-          queries: any(named: 'queries'),
-          paginate: any(named: 'paginate'),
-        ),
-      ).thenAnswer((_) async => <Map<String, dynamic>>[]);
-
       final container = ProviderContainer(
         overrides: [
           appwriteDbServiceProvider.overrideWithValue(mockDb),
-          gamificationHttpClientProvider.overrideWithValue(mockHttpClient),
+          gamificationHttpClientProvider.overrideWithValue(
+            MockClient((request) async => http.Response('Edge error', 500)),
+          ),
         ],
       );
       addTearDown(container.dispose);
 
       final content = await container.read(gamificationContentProvider.future);
-      expect(content, isNotNull);
-      verify(
-        () => mockDb.listAllDocuments(
-          'bravo_messages',
+      expect(content.badges.first['badgeId'], 'first_lesson');
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
+      verifyNever(
+        () => mockDb.listDocuments(
+          any(),
           queries: any(named: 'queries'),
+          paginate: any(named: 'paginate'),
         ),
-      ).called(1);
+      );
+    },
+  );
+
+  test(
+    'gamificationContentProvider accepts empty Worker lists as valid',
+    () async {
+      final container = ProviderContainer(
+        overrides: [
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          gamificationHttpClientProvider.overrideWithValue(
+            MockClient(
+              (request) async => http.Response(
+                jsonEncode({
+                  'ok': true,
+                  'bravoMessages': [],
+                  'badges': [],
+                  'missionTemplates': [],
+                  'rewardMessages': [],
+                  'quizFeedbackMessages': [],
+                  'config': {},
+                }),
+                200,
+              ),
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final content = await container.read(gamificationContentProvider.future);
+      expect(content.badges, isEmpty);
+      expect(content.loadedFromFallback, isFalse);
     },
   );
 }

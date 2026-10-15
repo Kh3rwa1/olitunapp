@@ -1,31 +1,40 @@
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:http/http.dart' as http;
 
+import '../../../../core/api/edge_json_client.dart';
+import '../../../../core/config/cloudflare_config.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../domain/entities/profile_avatar.dart';
 import 'remote_avatar_cache.dart';
 import 'remote_avatar_sources.dart';
 
-/// Syncs the live avatar set from the `profile_avatars` Appwrite Storage
-/// bucket into the local disk cache.
+/// Syncs the live avatar set (R2 objects under `avatars/`, listed by the
+/// Worker's `GET /api/v1/avatars` and served by `/api/v1/assets/*`) into the
+/// local disk cache.
 ///
 /// Resolution order (see `availableAvatarsProvider`): the bundled catalog is
 /// always shown instantly; synced entries merge in the background (remote
 /// wins on id conflicts) whenever this sync succeeds. Any failure keeps the
 /// bundled set, and previously cached files keep working offline.
 class RemoteAvatarDatasource {
-  RemoteAvatarDatasource(this._storage, [RemoteAvatarCache? cache])
+  RemoteAvatarDatasource(this._client, [RemoteAvatarCache? cache])
     : _cache = cache ?? createRemoteAvatarCache();
 
-  final Storage _storage;
+  static const Duration _timeout = Duration(seconds: 8);
+
+  final http.Client _client;
   final RemoteAvatarCache _cache;
+
+  /// Download URL per remote file id, from the latest listing.
+  final Map<String, Uri> _urls = {};
 
   /// In-memory memo so repeat views within a session never re-download.
   /// Matters most on web, where there is no disk cache and artwork otherwise
-  /// streams from Appwrite on every picker open.
+  /// streams from the Worker on every picker open.
   final Map<String, List<int>> _memoryBytes = {};
 
   static const String manifestName = 'manifest.json';
@@ -35,29 +44,36 @@ class RemoteAvatarDatasource {
   /// [ServerFailure] wrapped for the provider layer.
   Future<Either<Failure, List<ProfileAvatar>>> syncAvatars() async {
     try {
-      final listing = await _storage.listFiles(bucketId: remoteAvatarBucketId);
+      final listing = await EdgeJsonClient.getList(
+        _client,
+        Uri.parse(CloudflareConfig.avatarsEndpoint),
+        'avatars',
+      );
       final entries = <ProfileAvatar>[];
       final seenIds = <String, String>{};
 
-      for (final file in listing.files) {
-        if (!file.name.toLowerCase().endsWith('.json')) continue;
-        final id = remoteAvatarIdFromFilename(file.name);
-        if (id.isEmpty || seenIds.containsKey(file.$id)) continue;
-        seenIds[file.$id] = id;
+      for (final file in listing) {
+        final name = file['name']?.toString() ?? '';
+        final fileId = file['id']?.toString() ?? '';
+        final path = file['path']?.toString() ?? '';
+        if (!name.toLowerCase().endsWith('.json')) continue;
+        final id = remoteAvatarIdFromFilename(name);
+        if (id.isEmpty || fileId.isEmpty || path.isEmpty) continue;
+        if (seenIds.containsKey(fileId)) continue;
+        seenIds[fileId] = id;
+        final url = Uri.parse(CloudflareConfig.baseUrl).resolve(path);
+        _urls[fileId] = url;
+        final version = file['version']?.toString() ?? '';
 
-        final localName = '${file.$id}.json';
+        final localName = '$fileId.json';
         if (_cache.isSupported) {
-          final knownUpdatedAt = await _manifestValue(file.$id);
-          if (knownUpdatedAt != file.$updatedAt ||
-              !await _cache.exists(localName)) {
-            final bytes = await _storage.getFileDownload(
-              bucketId: remoteAvatarBucketId,
-              fileId: file.$id,
-            );
-            _assertValidLottie(bytes, file.name);
+          final knownVersion = await _manifestValue(fileId);
+          if (knownVersion != version || !await _cache.exists(localName)) {
+            final bytes = await _download(url);
+            _assertValidLottie(bytes, name);
             await _cache.writeBytes(localName, bytes);
-            _memoryBytes[file.$id] = bytes;
-            await _writeManifestValue(file.$id, file.$updatedAt);
+            _memoryBytes[fileId] = bytes;
+            await _writeManifestValue(fileId, version);
           }
         }
         // On web there is no disk cache: entries resolve while artwork
@@ -65,16 +81,16 @@ class RemoteAvatarDatasource {
         entries.add(
           ProfileAvatar(
             id: id,
-            assetFileName: file.name,
+            assetFileName: name,
             label: remoteAvatarLabelFromId(id),
-            remoteFileId: file.$id,
+            remoteFileId: fileId,
           ),
         );
       }
 
       await _pruneRemoved(seenIds.keys.toSet());
       return Right(List<ProfileAvatar>.unmodifiable(entries));
-    } on AppwriteException catch (e) {
+    } on EdgeApiException catch (e) {
       AppLogger.warning('Remote avatar sync failed: $e');
       return Left(_classify(e));
     } catch (e) {
@@ -94,16 +110,14 @@ class RemoteAvatarDatasource {
       _memoryBytes[fileId] = bytes;
       return Right(bytes);
     } catch (_) {
-      if (!_cache.isSupported) {
+      final url = _urls[fileId];
+      if (!_cache.isSupported && url != null) {
         try {
-          final bytes = await _storage.getFileDownload(
-            bucketId: remoteAvatarBucketId,
-            fileId: fileId,
-          );
+          final bytes = await _download(url);
           _assertValidLottie(bytes, fileId);
           _memoryBytes[fileId] = bytes;
           return Right(bytes);
-        } on AppwriteException catch (e) {
+        } on EdgeApiException catch (e) {
           return Left(_classify(e));
         } catch (e) {
           return Left(CacheFailure(message: e.toString()));
@@ -164,17 +178,31 @@ class RemoteAvatarDatasource {
     }
   }
 
-  Failure _classify(AppwriteException e) {
-    final message = e.message ?? e.toString();
-    if (e.code == 401 || e.code == 403) {
-      return AuthFailure(message: message);
+  Future<List<int>> _download(Uri url) async {
+    final http.Response response;
+    try {
+      response = await _client.get(url).timeout(_timeout);
+    } on TimeoutException {
+      throw EdgeApiException('Avatar download timed out: ${url.path}');
+    } catch (e) {
+      throw EdgeApiException('Avatar download failed: $e');
     }
-    if (e.code == 404) {
-      return CacheFailure(message: 'Avatar bucket not found: $message');
+    if (response.statusCode != 200) {
+      throw EdgeApiException(
+        'Avatar download failed: ${url.path}',
+        statusCode: response.statusCode,
+      );
     }
-    if (e.type == 'network_error' || message.contains('SocketException')) {
-      return NetworkFailure(message: message);
+    return response.bodyBytes;
+  }
+
+  Failure _classify(EdgeApiException e) {
+    final code = e.statusCode;
+    if (code == 401 || code == 403) return AuthFailure(message: e.message);
+    if (code == 404) {
+      return CacheFailure(message: 'Avatar file not found: ${e.message}');
     }
-    return ServerFailure(message: message);
+    if (code == null) return NetworkFailure(message: e.message);
+    return ServerFailure(message: e.message);
   }
 }

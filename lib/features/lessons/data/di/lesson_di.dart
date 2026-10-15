@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/api/appwrite_functions_service.dart';
+import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -20,6 +21,7 @@ final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
   return LessonRemoteDataSourceImpl(
     TablesDB(client),
     functionsService: functions,
+    edgeClient: ref.watch(edgeHttpClientProvider),
   );
 });
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/logging/app_logger.dart';
-import '../../core/api/appwrite_db_service.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/config/appwrite_config.dart';
 import '../../core/config/cloudflare_config.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
@@ -27,54 +27,41 @@ class OnboardingGoal {
   }
 }
 
-/// Injected HTTP client for testing app settings edge queries.
-final appSettingsHttpClientProvider = Provider<http.Client?>((ref) => null);
+/// HTTP client for app settings Worker reads (overridable in tests).
+final appSettingsHttpClientProvider = Provider<http.Client>(
+  (ref) => ref.watch(edgeHttpClientProvider),
+);
 
+/// Remote app settings from the Cloudflare Worker. An empty settings map is
+/// a valid result; a failed request yields an empty map so callers fall back
+/// to their defaults.
 final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   ref.watch(isAuthenticatedProvider);
-  final client = ref.watch(appSettingsHttpClientProvider) ?? http.Client();
-  final db = ref.read(appwriteDbServiceProvider);
+  final client = ref.watch(appSettingsHttpClientProvider);
 
-  // 1. Try Cloudflare Workers Edge API (Global edge caching, zero Appwrite reads)
   try {
-    final uri = Uri.parse(CloudflareConfig.settingsEndpoint);
-    final res = await client.get(uri).timeout(const Duration(seconds: 4));
-    if (res.statusCode == 200) {
-      final body = jsonDecode(res.body);
-      if (body is Map && body['ok'] == true) {
-        final settings = <String, dynamic>{};
-        if (body['settings'] is Map) {
-          final map = body['settings'] as Map;
-          for (final entry in map.entries) {
-            settings[entry.key.toString()] = entry.value;
-          }
-        }
-        if (body['documents'] is List) {
-          for (final doc in body['documents']) {
-            if (doc is Map) {
-              final key = doc['settingKey'] ?? doc['setting_key'];
-              final val = doc['settingValue'] ?? doc['setting_value'];
-              if (key != null && val != null) {
-                settings[key.toString()] = val;
-              }
-            }
-          }
-        }
-        if (settings.isNotEmpty) {
-          return settings;
-        }
+    final body = await EdgeJsonClient.getJson(
+      client,
+      Uri.parse(CloudflareConfig.settingsEndpoint),
+      timeout: const Duration(seconds: 4),
+    );
+    final settings = <String, dynamic>{};
+    if (body['settings'] is Map) {
+      final map = body['settings'] as Map;
+      for (final entry in map.entries) {
+        settings[entry.key.toString()] = entry.value;
       }
     }
-  } catch (e) {
-    AppLogger.debug('Cloudflare settings fetch bypassed: $e');
-  }
-
-  // 2. Resilient Appwrite DB fallback
-  try {
-    final docs = await db.listDocuments('app_settings');
-    final settings = <String, dynamic>{};
-    for (final doc in docs) {
-      settings[doc['settingKey'] as String] = doc['settingValue'];
+    if (body['documents'] is List) {
+      for (final doc in body['documents']) {
+        if (doc is Map) {
+          final key = doc['settingKey'] ?? doc['setting_key'];
+          final val = doc['settingValue'] ?? doc['setting_value'];
+          if (key != null && val != null) {
+            settings[key.toString()] = val;
+          }
+        }
+      }
     }
     return settings;
   } catch (e, stack) {

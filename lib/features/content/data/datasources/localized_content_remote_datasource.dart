@@ -1,24 +1,24 @@
-import 'package:appwrite/appwrite.dart';
-import 'package:itun/core/api/appwrite_databases_pagination.dart';
-import 'package:itun/core/config/appwrite_config.dart';
+import 'package:http/http.dart' as http;
+import 'package:itun/core/api/edge_json_client.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/error/exceptions.dart';
 
 import '../models/localized_content_model.dart';
 
-/// Read-only access to the `localized_contents` collection.
+/// Read-only access to learner localizations via the Cloudflare Worker
+/// (`GET /api/v1/localized-contents`, backed by D1 `content_localizations`).
 ///
-/// Learner queries must only surface approved rows; this datasource
-/// returns every row and the repository filters by reviewStatus so
-/// admin tooling (Phase 5) can still read drafts. Mobile clients
-/// never write localizations.
+/// The Worker only returns approved rows; the repository still filters by
+/// reviewStatus as a second line of defence. Mobile clients never write
+/// localizations.
 abstract class LocalizedContentRemoteDataSource {
-  /// All rows for [contentKind]:[contentId], any language, any status.
+  /// Approved rows for [contentKind]:[contentId], any language.
   Future<List<LocalizedContentModel>> getLocalizations({
     required String contentKind,
     required String contentId,
   });
 
-  /// Rows for one item + one language, any status.
+  /// Approved rows for one item + one language.
   Future<List<LocalizedContentModel>> getLocalizationsForLanguage({
     required String contentKind,
     required String contentId,
@@ -36,24 +36,22 @@ abstract class LocalizedContentRemoteDataSource {
 
 class LocalizedContentRemoteDataSourceImpl
     implements LocalizedContentRemoteDataSource {
-  static const Duration _readTimeout = Duration(seconds: 8);
+  /// The Worker accepts at most this many `contentId` values per request.
+  static const int maxIdsPerRequest = 100;
 
-  final TablesDB tablesDB;
+  final http.Client _client;
 
-  LocalizedContentRemoteDataSourceImpl(this.tablesDB);
+  LocalizedContentRemoteDataSourceImpl(this._client);
 
   @override
   Future<List<LocalizedContentModel>> getLocalizations({
     required String contentKind,
     required String contentId,
   }) {
-    return _list(
-      () => [
-        Query.equal('contentKind', contentKind),
-        Query.equal('contentId', contentId),
-        Query.limit(20),
-      ],
-    );
+    return _list({
+      'contentKind': contentKind,
+      'contentId': [contentId],
+    });
   }
 
   @override
@@ -62,14 +60,11 @@ class LocalizedContentRemoteDataSourceImpl
     required String contentId,
     required String languageCode,
   }) {
-    return _list(
-      () => [
-        Query.equal('contentKind', contentKind),
-        Query.equal('contentId', contentId),
-        Query.equal('languageCode', languageCode),
-        Query.limit(5),
-      ],
-    );
+    return _list({
+      'contentKind': contentKind,
+      'contentId': [contentId],
+      'languageCode': languageCode,
+    });
   }
 
   @override
@@ -79,41 +74,35 @@ class LocalizedContentRemoteDataSourceImpl
     required String languageCode,
   }) async {
     if (contentIds.isEmpty) return const <LocalizedContentModel>[];
-    // Query.equal supports up to 100 values; chunk larger batches.
     final results = <LocalizedContentModel>[];
-    for (var i = 0; i < contentIds.length; i += 100) {
-      final chunk = contentIds.skip(i).take(100).toList();
+    for (var i = 0; i < contentIds.length; i += maxIdsPerRequest) {
+      final chunk = contentIds.skip(i).take(maxIdsPerRequest).toList();
       results.addAll(
-        await _list(
-          () => [
-            Query.equal('contentKind', contentKind),
-            Query.equal('contentId', chunk),
-            Query.equal('languageCode', languageCode),
-            Query.limit(500),
-          ],
-        ),
+        await _list({
+          'contentKind': contentKind,
+          'contentId': chunk,
+          'languageCode': languageCode,
+        }),
       );
     }
     return results;
   }
 
-  Future<List<LocalizedContentModel>> _list(
-    List<String> Function() queries,
-  ) async {
+  Future<List<LocalizedContentModel>> _list(Map<String, dynamic> query) async {
     try {
-      final rows = await AppwriteDatabasesPagination.listRows(
-        tablesDB,
-        databaseId: AppwriteConfig.databaseId,
-        tableId: 'localized_contents',
-        queries: queries(),
-      ).timeout(_readTimeout);
+      final uri = Uri.parse(
+        CloudflareConfig.localizedContentsEndpoint,
+      ).replace(queryParameters: query);
+      final rows = await EdgeJsonClient.getList(_client, uri, 'localizations');
       return rows
-          .map((row) => LocalizedContentModel.fromJson(row.data, row.$id))
+          .map(
+            (row) => LocalizedContentModel.fromJson(row, '${row['id'] ?? ''}'),
+          )
           .toList();
-    } on AppwriteException catch (e) {
+    } on EdgeApiException catch (e) {
       throw ServerException(
-        message: e.message ?? 'Failed to load localizations',
-        code: e.code,
+        message: 'Failed to load localizations: ${e.message}',
+        code: e.statusCode,
       );
     } catch (e) {
       throw ServerException(message: e.toString());

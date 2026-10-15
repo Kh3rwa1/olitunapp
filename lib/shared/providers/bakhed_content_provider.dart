@@ -1,18 +1,15 @@
-import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:itun/core/config/cloudflare_config.dart';
 
-import '../../core/api/appwrite_db_service.dart';
-import '../../core/api/appwrite_query_builders.dart';
+import '../../core/api/edge_json_client.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/storage/cache_service.dart';
 
 /// HTTP client provider for Bakhed Content Edge API (overridable in tests).
 final bakhedContentHttpClientProvider = Provider<http.Client>(
-  (ref) => http.Client(),
+  (ref) => ref.watch(edgeHttpClientProvider),
 );
 
 class BakhedLyricLine extends Equatable {
@@ -299,74 +296,21 @@ class BakhedLearningContent {
 
 String _bakhedContentCacheKey(String bakhedId) => 'bakhed_content_$bakhedId';
 
-Future<BakhedLearningContent> _fetchBakhedLearningContent(
-  AppwriteDbService db,
-  String trimmedId,
-) async {
-  final results = await Future.wait([
-    db.listAllDocuments(
-      'bakhed_lyrics',
-      queries: [
-        DbQuery.equal('bakhedId', trimmedId),
-        DbQuery.orderAsc('lineIndex'),
-      ],
-    ),
-    db.listAllDocuments(
-      'bakhed_vocabulary',
-      queries: [
-        DbQuery.equal('bakhedId', trimmedId),
-        DbQuery.orderAsc('sortOrder'),
-      ],
-    ),
-    db.listAllDocuments(
-      'bakhed_cultural_notes',
-      queries: [
-        DbQuery.equal('bakhedId', trimmedId),
-        DbQuery.equal('isPublished', true),
-      ],
-    ),
-  ]);
-
-  return BakhedLearningContent(
-    lyrics: results[0].map(BakhedLyricLine.fromJson).toList(),
-    vocabulary: results[1].map(BakhedVocabularyItem.fromJson).toList(),
-    culturalNotes: results[2].map(BakhedCulturalNote.fromJson).toList(),
-  );
-}
-
+/// Loads lyrics, vocabulary and cultural notes from the Cloudflare Worker.
+/// An all-empty payload is a valid result; transport errors throw.
 Future<BakhedLearningContent> _fetchBakhedContent(
   Ref ref,
   String trimmedId,
 ) async {
-  // 1. Try Cloudflare Edge API first (edge-cached JSON)
-  try {
-    final client = ref.read(bakhedContentHttpClientProvider);
-    final uri = Uri.parse(
-      CloudflareConfig.bakhedContentEndpoint,
-    ).replace(queryParameters: {'id': trimmedId});
-    final response = await client
-        .get(uri, headers: const {'Accept': 'application/json'})
-        .timeout(const Duration(seconds: 4));
-
-    if (response.statusCode == 200) {
-      final body = jsonDecode(response.body);
-      if (body is Map<String, dynamic> && body['ok'] == true) {
-        final content = BakhedLearningContent.fromCacheJson(body);
-        if (!content.isEmpty) return content;
-      }
-    }
-  } catch (e, stack) {
-    AppLogger.warning(
-      'Bakhed content Cloudflare edge fetch failed for $trimmedId, falling back to Appwrite DB',
-      name: 'BakhedContent',
-      error: e,
-      stackTrace: stack,
-    );
-  }
-
-  // 2. Fall back to Appwrite DB
-  final db = ref.read(appwriteDbServiceProvider);
-  return _fetchBakhedLearningContent(db, trimmedId);
+  final uri = Uri.parse(
+    CloudflareConfig.bakhedContentEndpoint,
+  ).replace(queryParameters: {'id': trimmedId});
+  final body = await EdgeJsonClient.getJson(
+    ref.read(bakhedContentHttpClientProvider),
+    uri,
+    timeout: const Duration(seconds: 4),
+  );
+  return BakhedLearningContent.fromCacheJson(body);
 }
 
 final bakhedLearningContentProvider =

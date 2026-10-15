@@ -81,39 +81,43 @@ void main() {
     },
   );
 
+  ProviderContainer containerWith(http.Client client) {
+    final container = ProviderContainer(
+      overrides: [
+        isAuthenticatedProvider.overrideWith((ref) => true),
+        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        appSettingsHttpClientProvider.overrideWithValue(client),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  test('appSettingsProvider treats empty Worker settings as valid', () async {
+    final container = containerWith(
+      MockClient(
+        (request) async => http.Response(
+          jsonEncode({'ok': true, 'settings': {}, 'documents': []}),
+          200,
+        ),
+      ),
+    );
+
+    final settings = await container.read(appSettingsProvider.future);
+    expect(settings, isEmpty);
+    verifyNever(() => mockDb.listDocuments(any()));
+  });
+
   test(
-    'appSettingsProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'appSettingsProvider returns empty settings when the Worker fails, never Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(() => mockDb.listDocuments('app_settings')).thenAnswer(
-        (_) async => [
-          {
-            'settingKey': 'onboarding_video_url',
-            'settingValue': 'https://appwrite.video/welcome.mp4',
-          },
-          {'settingKey': 'razorpay_key_id', 'settingValue': 'rzp_appwrite_456'},
-        ],
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
       );
-
-      final container = ProviderContainer(
-        overrides: [
-          isAuthenticatedProvider.overrideWith((ref) => true),
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          appSettingsHttpClientProvider.overrideWithValue(mockHttpClient),
-        ],
-      );
-      addTearDown(container.dispose);
 
       final settings = await container.read(appSettingsProvider.future);
-      expect(
-        settings['onboarding_video_url'],
-        'https://appwrite.video/welcome.mp4',
-      );
-      expect(settings['razorpay_key_id'], 'rzp_appwrite_456');
-      verify(() => mockDb.listDocuments('app_settings')).called(1);
+      expect(settings, isEmpty);
+      verifyNever(() => mockDb.listDocuments(any()));
     },
   );
 }

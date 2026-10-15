@@ -97,69 +97,71 @@ void main() {
     },
   );
 
+  ProviderContainer containerWith(http.Client client) {
+    final container = ProviderContainer(
+      overrides: [
+        appwriteDbServiceProvider.overrideWithValue(mockDb),
+        lettersHttpClientProvider.overrideWithValue(client),
+      ],
+    );
+    addTearDown(container.dispose);
+    return container;
+  }
+
   test(
-    'lettersProvider falls back to Appwrite DB when Cloudflare edge fails',
+    'lettersProvider treats an empty Worker list as valid (seed default, no Appwrite)',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge error', 500);
-      });
-
-      when(
-        () =>
-            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
-      ).thenAnswer(
-        (_) async => [
-          {
-            'id': 'appwrite_letter_1',
-            'charOlChiki': 'ᱤ',
-            'transliterationLatin': 'Li',
-            'pronunciation': 'i',
-          },
-        ],
+      final container = containerWith(
+        MockClient(
+          (request) async =>
+              http.Response(jsonEncode({'ok': true, 'letters': []}), 200),
+        ),
       );
-
-      final container = ProviderContainer(
-        overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          lettersHttpClientProvider.overrideWithValue(mockHttpClient),
-        ],
-      );
-      addTearDown(container.dispose);
 
       final letters = await container.read(lettersProvider.future);
-      expect(letters.length, 1);
-      expect(letters[0].id, 'appwrite_letter_1');
-      expect(letters[0].charOlChiki, 'ᱤ');
-      verify(
-        () =>
-            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
-      ).called(1);
+      expect(letters.any((l) => l.charOlChiki == 'ᱚ'), isTrue);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 
   test(
-    'lettersProvider falls back to seed letters when both networks fail',
+    'lettersProvider falls back to cached letters when the Worker fails, never Appwrite',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge network failure', 500);
-      });
-
-      when(
-        () =>
-            mockDb.listAllDocuments('letters', queries: any(named: 'queries')),
-      ).thenThrow(Exception('Appwrite offline'));
-
-      final container = ProviderContainer(
-        overrides: [
-          appwriteDbServiceProvider.overrideWithValue(mockDb),
-          lettersHttpClientProvider.overrideWithValue(mockHttpClient),
-        ],
+      await CacheService.set('cached_letters', [
+        {
+          'id': 'cached_1',
+          'charOlChiki': 'ᱤ',
+          'transliterationLatin': 'Li',
+          'pronunciation': 'i',
+        },
+      ]);
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge error', 500)),
       );
-      addTearDown(container.dispose);
+
+      final letters = await container.read(lettersProvider.future);
+      expect(letters.single.id, 'cached_1');
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
+    },
+  );
+
+  test(
+    'lettersProvider falls back to seed letters when the Worker fails and nothing is cached',
+    () async {
+      final container = containerWith(
+        MockClient((request) async => http.Response('Edge failure', 500)),
+      );
 
       final letters = await container.read(lettersProvider.future);
       expect(letters.isNotEmpty, isTrue);
       expect(letters.any((l) => l.charOlChiki == 'ᱚ'), isTrue);
+      verifyNever(
+        () => mockDb.listAllDocuments(any(), queries: any(named: 'queries')),
+      );
     },
   );
 }

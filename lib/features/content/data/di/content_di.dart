@@ -1,7 +1,6 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/api/edge_json_client.dart';
 import '../../../../core/network/network_info.dart';
 import '../datasources/audio_track_remote_datasource.dart';
 import '../datasources/localized_content_remote_datasource.dart';
@@ -14,13 +13,12 @@ import '../../domain/repositories/localized_content_repository.dart';
 import '../../domain/repositories/story_segment_repository.dart';
 
 // Data-layer DI wiring for the content feature (audio tracks, localized
-// content, story segments). Lives beside the datasources/repositories it
-// constructs so `package:appwrite` never leaks into presentation.
+// content, story segments). All three read from the Cloudflare Worker and
+// share one HTTP client.
 
 final audioTrackRemoteDataSourceProvider = Provider<AudioTrackRemoteDataSource>(
   (ref) {
-    final client = ref.watch(appwriteAuthServiceProvider).client;
-    return AudioTrackRemoteDataSourceImpl(TablesDB(client));
+    return AudioTrackRemoteDataSourceImpl(ref.watch(edgeHttpClientProvider));
   },
 );
 
@@ -35,8 +33,9 @@ final audioTrackRepositoryProvider = Provider<AudioTrackRepository>((ref) {
 
 final localizedContentRemoteDataSourceProvider =
     Provider<LocalizedContentRemoteDataSource>((ref) {
-      final client = ref.watch(appwriteAuthServiceProvider).client;
-      return LocalizedContentRemoteDataSourceImpl(TablesDB(client));
+      return LocalizedContentRemoteDataSourceImpl(
+        ref.watch(edgeHttpClientProvider),
+      );
     });
 
 final localizedContentRepositoryProvider = Provider<LocalizedContentRepository>(
@@ -52,8 +51,9 @@ final localizedContentRepositoryProvider = Provider<LocalizedContentRepository>(
 
 final storySegmentRemoteDataSourceProvider =
     Provider<StorySegmentRemoteDataSource>((ref) {
-      final client = ref.watch(appwriteAuthServiceProvider).client;
-      return StorySegmentRemoteDataSourceImpl(TablesDB(client));
+      return StorySegmentRemoteDataSourceImpl(
+        ref.watch(edgeHttpClientProvider),
+      );
     });
 
 final storySegmentRepositoryProvider = Provider<StorySegmentRepository>((ref) {

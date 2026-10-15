@@ -94,53 +94,37 @@ void main() {
   );
 
   test(
-    'rhymesProvider falls back to Appwrite DB when Cloudflare fails',
+    'rhymesProvider treats an empty Worker list as valid (seed default, no Appwrite)',
     () async {
-      final mockHttpClient = MockClient((request) async {
-        return http.Response('Edge unavailable', 500);
-      });
-
-      when(() => mockDb.listAllDocuments('rhymes')).thenAnswer(
-        (_) async => [
-          {
-            '\$id': 'appwrite_rhyme_1',
-            'titleOlChiki': 'ᱵᱟᱦᱟ',
-            'titleLatin': 'Appwrite Baha',
-            'contentOlChiki': 'ᱡᱚᱦᱟᱨ',
-            'contentLatin': 'Johar',
-          },
-        ],
-      );
-
+      final requests = <Uri>[];
       final container = ProviderContainer(
         overrides: [
           isAuthenticatedProvider.overrideWith((ref) => true),
           appwriteDbServiceProvider.overrideWithValue(mockDb),
-          rhymesProvider.overrideWith(
-            () => RhymesNotifier(httpClient: mockHttpClient),
+          rhymesHttpClientProvider.overrideWithValue(
+            MockClient((request) async {
+              requests.add(request.url);
+              return http.Response(jsonEncode({'ok': true, 'rhymes': []}), 200);
+            }),
           ),
         ],
       );
       addTearDown(container.dispose);
 
       final rhymes = await container.read(rhymesProvider.future);
-      expect(rhymes, hasLength(1));
-      expect(rhymes.first.id, 'appwrite_rhyme_1');
-      expect(rhymes.first.titleLatin, 'Appwrite Baha');
-      verify(() => mockDb.listAllDocuments('rhymes')).called(1);
+      expect(requests.single.path, '/api/v1/rhymes');
+      expect(rhymes, isNotEmpty);
+      expect(rhymes.first.id, startsWith('seed_'));
+      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
   test(
-    'rhymesProvider falls back to seedRhymes when network and cache are unavailable',
+    'rhymesProvider falls back to seedRhymes when the Worker fails and nothing is cached',
     () async {
       final mockHttpClient = MockClient((request) async {
         return http.Response('Edge unavailable', 500);
       });
-
-      when(
-        () => mockDb.listAllDocuments('rhymes'),
-      ).thenThrow(Exception('Appwrite offline'));
 
       final container = ProviderContainer(
         overrides: [
@@ -156,6 +140,7 @@ void main() {
       final rhymes = await container.read(rhymesProvider.future);
       expect(rhymes, isNotEmpty);
       expect(rhymes.first.titleLatin, contains('Bakhed'));
+      verifyNever(() => mockDb.listAllDocuments(any()));
     },
   );
 
@@ -173,10 +158,6 @@ void main() {
     );
     await CacheService.set('cached_rhymes', [cachedRhyme.toJson()]);
 
-    when(
-      () => mockDb.listAllDocuments('rhymes'),
-    ).thenThrow(Exception('Appwrite offline'));
-
     final container = ProviderContainer(
       overrides: [
         appwriteDbServiceProvider.overrideWithValue(mockDb),
@@ -189,5 +170,6 @@ void main() {
 
     final rhymes = await container.read(rhymesProvider.future);
     expect(rhymes.any((r) => r.id == 'cached_1'), isTrue);
+    verifyNever(() => mockDb.listAllDocuments(any()));
   });
 }

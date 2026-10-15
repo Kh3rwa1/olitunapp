@@ -142,5 +142,30 @@ if (fs.existsSync(bakhedPath)) {
   }
 }
 
+// 13-15. Learner audio tracks, localizations, story segments (Appwrite
+// exports of audio_tracks / localized_contents / story_segments).
+function readSeed(name) {
+  const file = path.join(seedDir, name);
+  return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : [];
+}
+
+for (const t of readSeed('audio_tracks.json')) {
+  const id = t.id || t.$id;
+  if (!id || !t.contentKind || !t.contentId) continue;
+  sql += `INSERT OR REPLACE INTO content_audio_tracks (id, content_kind, content_id, segment_id, language_code, track_type, review_status, created_at, raw_json) VALUES (${escapeSql(id)}, ${escapeSql(t.contentKind)}, ${escapeSql(t.contentId)}, ${escapeSql(t.segmentId)}, ${escapeSql(t.languageCode || '')}, ${escapeSql(t.trackType || '')}, ${escapeSql(t.reviewStatus || 'needsReview')}, ${escapeSql(t.createdAt || t.$createdAt)}, ${escapeSql(JSON.stringify(t))});\n`;
+}
+
+for (const l of readSeed('localized_contents.json')) {
+  const id = l.id || l.$id;
+  if (!id || !l.contentKind || !l.contentId || !l.languageCode) continue;
+  sql += `INSERT OR REPLACE INTO content_localizations (id, content_kind, content_id, language_code, review_status, raw_json) VALUES (${escapeSql(id)}, ${escapeSql(l.contentKind)}, ${escapeSql(l.contentId)}, ${escapeSql(l.languageCode)}, ${escapeSql(l.reviewStatus || 'needsReview')}, ${escapeSql(JSON.stringify(l))});\n`;
+}
+
+for (const s of readSeed('story_segments.json')) {
+  const id = s.id || s.$id;
+  if (!id || !s.storyId) continue;
+  sql += `INSERT OR REPLACE INTO story_segments (id, story_id, order_index, raw_json) VALUES (${escapeSql(id)}, ${escapeSql(s.storyId)}, ${Number(s.order) || 0}, ${escapeSql(JSON.stringify(s))});\n`;
+}
+
 fs.writeFileSync(sqlFile, sql, 'utf8');
 console.log(`Generated ${sqlFile} (${(sql.length / 1024).toFixed(1)} KB)`);

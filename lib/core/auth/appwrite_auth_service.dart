@@ -21,6 +21,7 @@ export 'session_persistence.dart';
 
 import 'account_deletion_handler.dart';
 import 'oauth_helpers.dart';
+import 'oauth_session_cleanup.dart';
 import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
@@ -194,23 +195,21 @@ class AppwriteAuthService with AdminFunctionsMixin {
 
   // ─── Google OAuth ───
 
+  /// Signs this browser/device out of any Appwrite session before an OAuth
+  /// redirect; see [clearSessionsBeforeOAuth]. True when nobody is signed in.
+  Future<bool> clearSessionsForOAuth() => clearSessionsBeforeOAuth(
+    _account,
+    restoreWebSession: _isWeb ? _restoreWebSession : null,
+  );
+
   Future<void> signInWithGoogle() async {
     AppLogger.debug('Appwrite: Starting Google OAuth');
 
     try {
       if (kIsWeb) {
-        // Drop any stale or anonymous session first (mirrors mobile below):
-        // otherwise the backend tries to attach the Google identity to the
-        // wrong user and fails with 409 user_already_exists.
-        try {
-          await _restoreWebSession();
-          await _account.deleteSession(sessionId: 'current');
-        } catch (e) {
-          AppLogger.debug(
-            'No current web session to delete before OAuth: $e',
-            name: 'AppwriteAuthService',
-          );
-        }
+        // A session still active at the redirect makes Appwrite attach the
+        // Google identity to that user and fail with user_already_exists.
+        await clearSessionsForOAuth();
         await _clearLocalSessionState(preserveAccount: true);
         final oauthUrl = buildWebGoogleOAuthUrl(
           endpoint: AppwriteConfig.endpoint,
@@ -221,14 +220,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
       } else {
         // Clear any dangling guest/anonymous session before starting OAuth so the
         // backend doesn't reject session creation with a 401/409 session conflict.
-        try {
-          await _account.deleteSession(sessionId: 'current');
-        } catch (e) {
-          AppLogger.debug(
-            'No current session to delete before OAuth: $e',
-            name: 'AppwriteAuthService',
-          );
-        }
+        await clearSessionsForOAuth();
 
         final oauthUrl = buildMobileGoogleOAuthUrl(
           endpoint: AppwriteConfig.endpoint,

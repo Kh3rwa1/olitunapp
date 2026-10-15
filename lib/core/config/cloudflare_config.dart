@@ -43,6 +43,9 @@ class CloudflareConfig {
       '$baseUrl/api/v1/lessons/authorize';
 
   // Payments & Voice
+  static const String paymentsOrderEndpoint = '$baseUrl/api/v1/payments/order';
+  static const String paymentsVerifyEndpoint =
+      '$baseUrl/api/v1/payments/verify';
   static const String paymentsEntitlementsEndpoint =
       '$baseUrl/api/v1/payments/entitlements';
   static const String voiceSynthesizeEndpoint =

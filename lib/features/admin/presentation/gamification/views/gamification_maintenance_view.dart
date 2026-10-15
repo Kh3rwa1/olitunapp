@@ -1,11 +1,8 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/api/admin_dashboard_api.dart';
 import 'package:itun/core/theme/app_colors.dart';
-import '../../../../../core/api/appwrite_query_builders.dart';
 import '../../settings/controllers/admin_maintenance_controller.dart';
 import '../../widgets/admin_page_header.dart';
 
@@ -23,44 +20,9 @@ class _GamificationMaintenanceViewState
   bool _maintenanceBusy = false;
   String? _maintenanceMessage;
 
-  Future<Map<String, bool>> _loadSchemaHealth() async {
-    final requiredCollections = [
-      'bravo_messages',
-      'badges',
-      'user_badges',
-      'mission_templates',
-      'reward_messages',
-      'quiz_feedback_messages',
-      'gamification_config',
-      'admin_audit_logs',
-      'learning_analytics_events',
-      'learning_analytics_daily_rollups',
-      'reward_events',
-      'user_mistakes',
-      'mistake_review_sessions',
-      'bakhed_lyrics',
-      'bakhed_vocabulary',
-      'bakhed_cultural_notes',
-      'bakhed_listening_progress',
-    ];
-    final db = ref.read(appwriteDbServiceProvider);
-    final entries = <String, bool>{};
-    for (final collection in requiredCollections) {
-      try {
-        await db.listDocuments(
-          collection,
-          queries: [DbQuery.limit(1)],
-          paginate: false,
-        );
-        entries[collection] = true;
-      } catch (_) {
-        // Unreachable/missing collections are reported as unhealthy in the
-        // schema-health table — that IS the outcome of this probe.
-        entries[collection] = false;
-      }
-    }
-    return entries;
-  }
+  /// Which backing D1 tables exist, checked by the Worker.
+  Future<Map<String, bool>> _loadSchemaHealth() =>
+      ref.read(adminDashboardApiProvider).schemaHealth();
 
   Future<void> _createContentBackup() async {
     setState(() {
@@ -72,9 +34,6 @@ class _GamificationMaintenanceViewState
       setState(() {
         _maintenanceMessage = 'Backup created: ${fileId ?? 'completed'}';
       });
-      await _audit('backup_created', 'admin_backups', fileId ?? 'unknown', {
-        'source': 'maintenance_screen',
-      });
     } catch (e) {
       setState(() {
         _maintenanceMessage = 'Backup failed: $e';
@@ -83,36 +42,6 @@ class _GamificationMaintenanceViewState
       if (mounted) {
         setState(() => _maintenanceBusy = false);
       }
-    }
-  }
-
-  Future<void> _audit(
-    String action,
-    String targetType,
-    String targetId,
-    Map<String, dynamic> metadata,
-  ) async {
-    try {
-      final now = DateTime.now().toUtc().toIso8601String();
-      await ref
-          .read(appwriteDbServiceProvider)
-          .createDocument('admin_audit_logs', DbId.unique(), {
-            'action': action,
-            'targetType': targetType,
-            'targetId': targetId,
-            'metadata': jsonEncode(metadata),
-            'success': true,
-            'createdAt': now,
-          });
-    } catch (e, stack) {
-      // Do not block the admin operation if audit logging is unavailable,
-      // but the missed audit entry is a real gap — surface it in logs.
-      AppLogger.warning(
-        'GamificationMaintenanceView: failed to write audit log for "$action"',
-        name: 'GamificationMaintenanceView',
-        error: e,
-        stackTrace: stack,
-      );
     }
   }
 
@@ -173,7 +102,7 @@ class _GamificationMaintenanceViewState
                       subtitle: Text(
                         entry.value
                             ? 'Available'
-                            : 'Missing or not readable with current admin permissions',
+                            : 'Missing from the D1 schema',
                       ),
                     );
                   },

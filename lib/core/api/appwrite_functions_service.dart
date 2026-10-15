@@ -89,7 +89,10 @@ class AppwriteFunctionsService {
       case 'admin-maintenance':
         return '${CloudflareConfig.baseUrl}/api/v1/admin/maintenance';
       case 'reviewContent':
+        // GET: queue summary; POST {action, ...}: reviewContent actions.
         return '${CloudflareConfig.baseUrl}/api/v1/admin/review/queue';
+      case 'manageAdminAccess':
+        return '${CloudflareConfig.baseUrl}/api/v1/admin/access';
       case 'backupCollections':
         return '${CloudflareConfig.baseUrl}/api/v1/admin/backup';
       case 'reconcileOrphanedDeletions':
@@ -107,10 +110,12 @@ class AppwriteFunctionsService {
   ///
   /// A 401 retries once with a fresh JWT (the cached one may have expired).
   /// Network failures surface as a `failed` result with status code 0.
+  /// Long-running admin jobs (backup, restore) pass a longer [timeout].
   Future<FunctionExecutionResult> execute(
     String functionId, {
     Map<String, dynamic> body = const {},
     bool usePost = false,
+    Duration timeout = const Duration(seconds: 15),
   }) async {
     final endpoint = _cloudflareEndpointFor(functionId);
     if (endpoint == null) {
@@ -141,7 +146,7 @@ class AppwriteFunctionsService {
       final request = isGet
           ? _httpClient.get(uri, headers: headers)
           : _httpClient.post(uri, headers: headers, body: jsonEncode(body));
-      return request.timeout(const Duration(seconds: 15));
+      return request.timeout(timeout);
     }
 
     try {

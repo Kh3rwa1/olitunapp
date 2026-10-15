@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/api/admin_purchases_api.dart';
 import 'package:itun/core/api/appwrite_functions_service.dart';
-import 'package:itun/core/api/appwrite_query_builders.dart';
 import 'package:itun/core/error/appwrite_error_classifier.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
@@ -23,7 +22,7 @@ final purchasedCategoriesProvider = FutureProvider<Set<String>>((ref) async {
   return repo.fetchPurchasedCategoryIds(user.id);
 });
 
-/// Typed outcome for recording an external refund in Appwrite.
+/// Typed outcome for recording an external refund (Worker `record_refund`).
 enum RefundResult {
   completed,
   alreadyRefunded,
@@ -178,6 +177,7 @@ final adminPurchasesProvider =
 class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
   static const int pageSize = 50;
   static const int exportSafetyThreshold = 25000;
+  static const int exportPageSize = 500;
 
   /// Monotonic request id. Every request captures the value it was issued
   /// under and discards its response when a newer request (or a dispose,
@@ -203,17 +203,6 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
   /// Pure financial metrics calculated from current loaded items.
   PurchaseMetricsResult get currentMetrics => state.metrics;
 
-  /// Canonical provider wins; legacy values apply only to unmigrated rows.
-  String _providerFilter(String provider) {
-    return DbQuery.or([
-      DbQuery.equal('provider', provider),
-      DbQuery.and([
-        DbQuery.or([DbQuery.isNull('provider'), DbQuery.equal('provider', '')]),
-        DbQuery.equal('unlockMethod', provider),
-      ]),
-    ]);
-  }
-
   /// Loads initial page with optional server-side filter and search query.
   Future<void> loadPurchases({String? filter, String? search}) async {
     final gen = ++_generationCounter;
@@ -232,19 +221,25 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     await _fetchFirstPage(gen: gen, filter: newFilter, search: newSearch);
   }
 
-  /// Adds the server-side status/provider/search filters for [filter].
-  void _addFilterQueries(List<String> queries, String filter, String search) {
-    if (filter == 'razorpay') {
-      queries.add(_providerFilter('razorpay'));
-      queries.add(DbQuery.equal('status', 'verified'));
-    } else if (filter == 'review') {
-      queries.add(_providerFilter('play_store_review'));
-    } else if (filter == 'refunded') {
-      queries.add(DbQuery.equal('status', 'refunded'));
-    }
-    if (search.isNotEmpty) {
-      queries.add(DbQuery.search('categoryId', search));
-    }
+  /// Fetches one page from the Worker; filters (`razorpay` = verified
+  /// Razorpay captures, `review`, `refunded`) and the category search run
+  /// server-side over the D1 ledger.
+  Future<AdminPurchasePage> _fetchPage({
+    required String filter,
+    required String search,
+    String? cursor,
+    int limit = pageSize,
+    bool export = false,
+  }) {
+    return ref
+        .read(adminPurchasesApiProvider)
+        .list(
+          filter: filter,
+          search: search,
+          cursor: cursor,
+          limit: limit,
+          export: export,
+        );
   }
 
   /// Fetches the first page. Never touches [state] before its first await,
@@ -258,25 +253,14 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     // while build() is still running.
     await Future<void>.value();
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final queries = <String>[
-        DbQuery.orderDesc(r'$createdAt'),
-        DbQuery.limit(pageSize),
-      ];
-      _addFilterQueries(queries, filter, search);
-
-      final result = await db.listDocuments(
-        'course_purchases',
-        queries: queries,
-        paginate: false,
-      );
+      final page = await _fetchPage(filter: filter, search: search);
 
       // Stale response protection: a newer request (or dispose) superseded us.
       if (gen != _generationCounter) return;
 
-      final list = result.map(PurchaseModel.fromJson).toList();
-      final hasMoreRecords = list.length >= pageSize;
-      final nextCursor = list.isNotEmpty ? list.last.id : null;
+      final list = page.items.map(PurchaseModel.fromJson).toList();
+      final hasMoreRecords = page.hasMore;
+      final nextCursor = page.nextCursor;
 
       state = state.copyWith(
         items: list,
@@ -317,24 +301,17 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     state = state.copyWith(isLoadingMore: true, clearLoadMoreFailure: true);
 
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final queries = <String>[
-        DbQuery.orderDesc(r'$createdAt'),
-        DbQuery.cursorAfter(cursor),
-        DbQuery.limit(pageSize),
-      ];
-      _addFilterQueries(queries, state.activeFilter, state.searchQuery);
-
-      final result = await db.listDocuments(
-        'course_purchases',
-        queries: queries,
+      final page = await _fetchPage(
+        filter: state.activeFilter,
+        search: state.searchQuery,
+        cursor: cursor,
       );
 
       if (gen != _generationCounter) return;
 
-      final newItems = result.map(PurchaseModel.fromJson).toList();
-      final hasMoreRecords = newItems.length >= pageSize;
-      final nextCursor = newItems.isNotEmpty ? newItems.last.id : null;
+      final newItems = page.items.map(PurchaseModel.fromJson).toList();
+      final hasMoreRecords = page.hasMore;
+      final nextCursor = page.nextCursor;
 
       final existingIds = state.items.map((p) => p.id).toSet();
       final deduplicatedNew = newItems
@@ -371,8 +348,8 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     }
   }
 
-  /// Records an external (gateway-issued) refund through the protected
-  /// `admin-maintenance` server function (`record_refund` action).
+  /// Records an external (gateway-issued) refund through the Worker's
+  /// admin maintenance route (`record_refund` action, D1 ledger).
   ///
   /// This is bookkeeping only: it records a refund already issued in the
   /// payment dashboard. It never moves money and never writes the ledger
@@ -449,7 +426,8 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     }
   }
 
-  /// Fetches matching purchase records from Appwrite with continuous pagination, backoff, and safety limits.
+  /// Fetches matching purchase records from the Worker export route with
+  /// continuous pagination, backoff, and safety limits.
   Future<PurchaseExportResult> fetchAllMatchingPurchases({
     String? filter,
     String? search,
@@ -460,7 +438,6 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
     final startedAt = DateTime.now().toUtc();
     final effectiveFilter = filter ?? state.activeFilter;
     final effectiveSearch = (search ?? state.searchQuery).trim();
-    final db = ref.read(appwriteDbServiceProvider);
 
     final allItems = <PurchaseModel>[];
     final seenIds = <String>{};
@@ -488,23 +465,18 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         break;
       }
 
-      final queries = <String>[
-        DbQuery.orderDesc(r'$createdAt'),
-        DbQuery.limit(pageSize),
-        if (cursor != null) DbQuery.cursorAfter(cursor),
-      ];
-      _addFilterQueries(queries, effectiveFilter, effectiveSearch);
-
-      List<Map<String, dynamic>>? result;
+      AdminPurchasePage? result;
       int attempts = 0;
       const maxRetries = 3;
 
       while (attempts < maxRetries && result == null) {
         try {
-          result = await db.listDocuments(
-            'course_purchases',
-            queries: queries,
-            paginate: false,
+          result = await _fetchPage(
+            filter: effectiveFilter,
+            search: effectiveSearch,
+            cursor: cursor,
+            limit: (safetyLimit - allItems.length).clamp(1, exportPageSize),
+            export: true,
           );
         } catch (e, stack) {
           attempts++;
@@ -536,11 +508,14 @@ class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
         }
       }
 
-      if (result == null || result.isEmpty) break;
+      if (result == null || result.items.isEmpty) {
+        hasMore = false;
+        break;
+      }
 
-      final page = result.map(PurchaseModel.fromJson).toList();
-      cursor = page.last.id;
-      hasMore = page.length >= pageSize;
+      final page = result.items.map(PurchaseModel.fromJson).toList();
+      cursor = result.nextCursor;
+      hasMore = result.hasMore && cursor != null;
 
       for (final item in page) {
         if (!seenIds.contains(item.id)) {

@@ -34,6 +34,9 @@ class AdminAnalyticsSnapshot {
     DateTime? startDate,
     DateTime? endDate,
     bool isSampled = false,
+    // True when [events] is every actor-day in range (Worker snapshot), so
+    // a large count is not a sign of sampling.
+    bool eventsComplete = false,
   }) {
     final today = _dateOnly(now ?? DateTime.now().toUtc());
     final resolvedEnd = _dateOnly(endDate ?? today);
@@ -125,7 +128,8 @@ class AdminAnalyticsSnapshot {
 
     final completeness = (rollups.isEmpty && events.isEmpty)
         ? AnalyticsDataCompleteness.unavailable
-        : (isSampled || (rollups.isEmpty && events.length >= 1000)
+        : (isSampled ||
+                  (!eventsComplete && rollups.isEmpty && events.length >= 1000)
               ? AnalyticsDataCompleteness.partial
               : AnalyticsDataCompleteness.complete);
 
@@ -144,7 +148,7 @@ class AdminAnalyticsSnapshot {
       eventRows: events.length,
       startDate: resolvedStart,
       endDate: resolvedEnd,
-      isSampled: isSampled || events.length >= 1000,
+      isSampled: isSampled || (!eventsComplete && events.length >= 1000),
       completeness: completeness,
       lastAggregatedAt: today,
     );

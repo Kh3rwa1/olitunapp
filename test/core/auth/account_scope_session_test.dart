@@ -20,8 +20,6 @@ class _Client extends Mock implements Client {
 
 class _Account extends Mock implements Account {}
 
-class _Functions extends Mock implements Functions {}
-
 class _Session extends Mock implements models.Session {}
 
 class _Network extends Mock implements NetworkInfo {}
@@ -44,7 +42,6 @@ void main() {
     service = AppwriteAuthService.forTesting(
       client: _Client(),
       account: account,
-      functions: _Functions(),
       prefs: prefs,
       isWebOverride: false,
       connectivity: () async => [ConnectivityResult.none],
@@ -189,7 +186,6 @@ void main() {
     final guardedService = AppwriteAuthService.forTesting(
       client: _Client(),
       account: account,
-      functions: _Functions(),
       prefs: prefs,
       isWebOverride: false,
       connectivity: () => connectivity.future,
@@ -217,7 +213,6 @@ void main() {
       final online = AppwriteAuthService.forTesting(
         client: _Client(),
         account: account,
-        functions: _Functions(),
         prefs: prefs,
         isWebOverride: false,
         connectivity: () async => [ConnectivityResult.wifi],

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:itun/core/api/edge_json_client.dart';
 import 'package:itun/core/error/appwrite_error_classifier.dart';
 
 /// Typed error classification for all admin operations.
@@ -17,7 +18,24 @@ sealed class AdminFailure {
 
     final context = actionContext != null ? '$actionContext: ' : '';
 
-    final appwriteInfo = AppwriteErrorClassifier.infoOf(error);
+    if (error is EdgeApiException && error.statusCode == null) {
+      return AdminNetworkFailure(
+        '${context}Network connection error. Please check your internet connection.',
+        technicalDetails: error.toString(),
+        cause: error,
+      );
+    }
+
+    // Worker (Cloudflare) HTTP errors classify like Appwrite status codes.
+    final appwriteInfo =
+        AppwriteErrorClassifier.infoOf(error) ??
+        (error is EdgeApiException
+            ? AppwriteErrorInfo(
+                code: error.statusCode ?? 0,
+                type: '',
+                message: error.message,
+              )
+            : null);
     if (appwriteInfo != null) {
       final code = appwriteInfo.code;
       final type = appwriteInfo.type;

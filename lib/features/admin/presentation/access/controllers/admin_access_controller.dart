@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/error/appwrite_error_classifier.dart';
 import '../../../domain/admin_failure.dart';
 
 class AdminAccessState {
@@ -139,8 +140,7 @@ class AdminAccessController extends Notifier<AdminAccessState> {
       _applySummary(data);
       state = state.copyWith(message: () => successMessage);
     } catch (e) {
-      final failure = AdminFailure.fromException(e);
-      state = state.copyWith(message: () => failure.userMessage);
+      state = state.copyWith(message: () => adminAccessErrorMessage(e));
     } finally {
       state = state.copyWith(isBusy: false);
     }
@@ -199,6 +199,22 @@ class AdminAccessController extends Notifier<AdminAccessState> {
           : 'Password reset.',
     );
   }
+}
+
+/// User-facing message for a failed admin access call. Actions the Worker
+/// cannot perform without an Appwrite server key (add admin, reset
+/// password) come back as 501 with instructions, shown verbatim.
+String adminAccessErrorMessage(Object error) {
+  final info = AppwriteErrorClassifier.infoOf(error);
+  if (info != null &&
+      info.type == adminAccessUnavailableType &&
+      info.message.isNotEmpty) {
+    return info.message;
+  }
+  if (info != null && info.code == 403 && info.message.isNotEmpty) {
+    return info.message;
+  }
+  return AdminFailure.fromException(error).userMessage;
 }
 
 final adminAccessControllerProvider =

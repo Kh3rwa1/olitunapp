@@ -1,85 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:itun/core/logging/app_logger.dart';
-import '../../../../../core/api/appwrite_query_builders.dart';
+import 'package:itun/core/api/admin_dashboard_api.dart';
 import '../../widgets/admin_page_header.dart';
 import '../widgets/gamification_widgets.dart';
+
+/// Labels for the Worker's gamification metric ids, in display order.
+const gamificationMetricLabels = <String, String>{
+  'learningEventsToday': 'Learning events today',
+  'lessonsCompleted': 'Lessons completed',
+  'quizAttempts': 'Quiz attempts',
+  'streakMilestones': 'Streak milestones',
+  'dailyRollups': 'Daily analytics rollups',
+  'unlockedBadges': 'Unlocked badges',
+  'mistakeReviewsCompleted': 'Mistake reviews completed',
+  'mistakesNeedingPractice': 'Mistakes needing practice',
+  'bakhedCompletions': 'Bakhed 80% completions',
+  'bakhedLyricLines': 'Bakhed lyric lines',
+  'bakhedVocabularyWords': 'Bakhed vocabulary words',
+  'publishedCulturalNotes': 'Published cultural notes',
+};
+
+/// Maps Worker metric ids to labelled counts (missing ids count as 0).
+Map<String, int> labelGamificationMetrics(Map<String, int> metrics) => {
+  for (final entry in gamificationMetricLabels.entries)
+    entry.value: metrics[entry.key] ?? 0,
+};
 
 class GamificationAnalyticsView extends ConsumerWidget {
   final int reload;
 
   const GamificationAnalyticsView({super.key, required this.reload});
 
-  Future<Map<String, int>> _loadAnalyticsMetrics(WidgetRef ref) async {
-    final db = ref.read(appwriteDbServiceProvider);
-    Future<int> count(String collectionId, {List<String>? queries}) async {
-      try {
-        final rows = await db.listAllDocuments(
-          collectionId,
-          queries: [...?queries],
-        );
-        return rows.length;
-      } catch (e, stack) {
-        AppLogger.warning(
-          'GamificationAnalyticsView: count failed for $collectionId',
-          name: 'GamificationAnalyticsView',
-          error: e,
-          stackTrace: stack,
-        );
-        return 0;
-      }
-    }
-
-    final today = DateTime.now().toUtc().toIso8601String().substring(0, 10);
-    final values = await Future.wait<int>([
-      count(
-        'learning_analytics_events',
-        queries: [DbQuery.greaterThan('occurredAt', today)],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [DbQuery.equal('eventName', 'lesson_completed')],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [DbQuery.equal('eventName', 'quiz_attempted')],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [DbQuery.equal('eventName', 'streak_milestone')],
-      ),
-      count('learning_analytics_daily_rollups'),
-      count('user_badges', queries: [DbQuery.equal('isUnlocked', true)]),
-      count('mistake_review_sessions'),
-      count('user_mistakes', queries: [DbQuery.equal('isMastered', false)]),
-      count(
-        'bakhed_listening_progress',
-        queries: [DbQuery.equal('completed80Percent', true)],
-      ),
-      count('bakhed_lyrics'),
-      count('bakhed_vocabulary'),
-      count(
-        'bakhed_cultural_notes',
-        queries: [DbQuery.equal('isPublished', true)],
-      ),
-    ]);
-    return {
-      'Learning events today': values[0],
-      'Lessons completed': values[1],
-      'Quiz attempts': values[2],
-      'Streak milestones': values[3],
-      'Daily analytics rollups': values[4],
-      'Unlocked badges': values[5],
-      'Mistake reviews completed': values[6],
-      'Mistakes needing practice': values[7],
-      'Bakhed 80% completions': values[8],
-      'Bakhed lyric lines': values[9],
-      'Bakhed vocabulary words': values[10],
-      'Published cultural notes': values[11],
-    };
-  }
+  // Counts come from D1 through the Worker; a failure shows the error state
+  // instead of a grid of misleading zeros.
+  Future<Map<String, int>> _loadAnalyticsMetrics(WidgetRef ref) async =>
+      labelGamificationMetrics(
+        await ref.read(adminDashboardApiProvider).gamificationMetrics(),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

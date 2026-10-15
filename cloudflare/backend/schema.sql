@@ -347,3 +347,11 @@ CREATE TABLE IF NOT EXISTS deletion_requests (
   updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_deletion_requests_user ON deletion_requests(user_id);
+
+-- Round-robin rotation state for provider API keys (keys stored only as hashes)
+CREATE TABLE IF NOT EXISTS provider_key_rotation (
+  provider TEXT PRIMARY KEY,
+  cursor INTEGER NOT NULL DEFAULT 0,
+  state_json TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL
+);

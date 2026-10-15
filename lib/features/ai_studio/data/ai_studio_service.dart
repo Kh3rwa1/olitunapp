@@ -4,10 +4,12 @@ import 'dart:typed_data';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/enums.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:http/http.dart' as http;
 
 import '../../../core/auth/account_scope.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
 import '../../../core/config/appwrite_config.dart';
+import '../../../core/config/cloudflare_config.dart';
 
 const studioLanguages = {
   'hi-IN': 'Hindi',
@@ -168,7 +170,8 @@ final aiStudioServiceProvider = Provider<AiStudioService>((ref) {
   return AiStudioService(
     call: transport.call,
     configured:
-        _studioFunctionId.isNotEmpty && AppwriteConfig.isBackendConfigured,
+        (_studioFunctionId.isNotEmpty && AppwriteConfig.isBackendConfigured) ||
+        CloudflareConfig.baseUrl.isNotEmpty,
   );
 });
 
@@ -197,6 +200,45 @@ class _StudioTransport {
     StudioInput? input,
   ) async {
     _check();
+
+    // 1. Try Cloudflare Edge Studio endpoint first (zero cold starts, high-availability edge)
+    const cfUrl = '${CloudflareConfig.baseUrl}/api/v1/studio/process';
+    try {
+      final payload = Map<String, dynamic>.from(body);
+      if (input != null && input.bytes.isNotEmpty) {
+        payload['audioBase64'] = base64Encode(input.bytes);
+        payload['fileBase64'] = base64Encode(input.bytes);
+        payload['fileName'] = input.name;
+      }
+      final res = await http
+          .post(
+            Uri.parse(cfUrl),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(payload),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map &&
+            (decoded['success'] == true || decoded['ok'] == true) &&
+            decoded['data'] is Map) {
+          return Map<String, dynamic>.from(decoded['data'] as Map);
+        }
+      } else {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map && decoded['error'] is String) {
+          throw StudioException(decoded['error'] as String);
+        }
+      }
+    } on StudioException {
+      rethrow;
+    } catch (_) {
+      if (!AppwriteConfig.isBackendConfigured) {
+        throw const StudioException('REQUEST_FAILED');
+      }
+      // Fall through to Appwrite SDK execution
+    }
+
     // Keep the session stable until upload, execution and cleanup finish.
     // A second SDK client still shares cookies; adding setJWT to it causes
     // Appwrite's user_jwt_and_cookie_set rejection. Authenticate SDK requests

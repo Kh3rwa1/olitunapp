@@ -1,57 +1,23 @@
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
-import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/logging/app_logger.dart';
+
 import 'bodhan_voice_catalog.dart';
 
 /// Santali voice (Bodhan indic-speak) configuration.
 ///
-/// The Bodhan API keys NEVER live in the app. They are stored as documents
-/// in the Appwrite `bodhan_api_keys` collection and the `santaliVoice`
-/// function rotates through them server-side when a key runs out of
-/// credit. The client only needs the function's execution URL.
-///
-/// Provide it with:
-///   --dart-define=SANTALI_VOICE_URL=https://REGION.cloud.appwrite.io/v1/functions/FUNCTION_ID/executions
-/// or (recommended, authenticated calls):
-///   --dart-define=SANTALI_VOICE_FUNCTION_ID=FUNCTION_ID
+/// The Bodhan API keys never live in the app: the Cloudflare Worker holds
+/// them as secrets and rotates across accounts when one runs out of credit.
 class SantaliVoiceConfig {
-  static const String _envUrl = String.fromEnvironment('SANTALI_VOICE_URL');
-  static const String _envFunctionId = String.fromEnvironment(
-    'SANTALI_VOICE_FUNCTION_ID',
-    defaultValue: 'santaliVoice',
-  );
-
-  /// Max characters per generation (matches the function's cap and keeps
+  /// Max characters per generation (matches the Worker's cap and keeps
   /// each request inside Bodhan's ~30s audio guidance).
   static const int maxChars = 600;
-
-  static String get functionId =>
-      AppwriteConfig.isBackendConfigured ? _envFunctionId : '';
-
-  static String get executionUrl {
-    if (_envUrl.isNotEmpty) return _envUrl;
-    final fId = functionId;
-    if (fId.isNotEmpty) {
-      final endpoint = AppwriteConfig.endpoint.replaceAll(
-        RegExp(r'/v1/?$'),
-        '',
-      );
-      if (endpoint.isNotEmpty && !endpoint.contains('example.invalid')) {
-        return '$endpoint/v1/functions/$fId/executions';
-      }
-    }
-    return '';
-  }
 }
 
 /// A generated voice clip.
@@ -83,22 +49,15 @@ class VoiceFailure {
   final bool loginRequired;
 }
 
-/// Talks to the `santaliVoice` Appwrite Function. Mirrors [AiService]'s
-/// execution handling: SDK path with session auth when available, raw-HTTP
-/// fallback for web-cookie contexts.
+/// Talks to the Cloudflare Worker's `/voice/synthesize` route, signed with
+/// the user's session JWT.
 class SantaliTtsService {
-  SantaliTtsService({
-    http.Client? client,
-    this.functions,
-    this.auth,
-    this.edgeAuth,
-  }) : _client = client ?? http.Client();
+  SantaliTtsService({http.Client? client, this.edgeAuth})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
-  final Functions? functions;
-  final AppwriteAuthService? auth;
 
-  /// Signs Cloudflare Worker requests; the edge rejects anonymous calls.
+  /// Signs Worker requests; the edge rejects anonymous calls.
   final EdgeAuth? edgeAuth;
 
   Future<({VoiceClip? clip, VoiceFailure? failure})> synthesize({
@@ -132,136 +91,30 @@ class SantaliTtsService {
       'lang': lang,
       'style': style,
     };
-    final url = SantaliVoiceConfig.executionUrl;
-    if (SantaliVoiceConfig.functionId.isEmpty &&
-        url.isEmpty &&
-        CloudflareConfig.voiceSynthesizeEndpoint.isEmpty) {
-      return (
-        clip: null,
-        failure: const VoiceFailure(
-          'Voice service is not configured yet. Build with --dart-define=SANTALI_VOICE_FUNCTION_ID=<id>.',
-        ),
-      );
-    }
-
     try {
-      // 1. Preferred: Cloudflare Edge API for fast synthesized speech
-      const edgeUrl = CloudflareConfig.voiceSynthesizeEndpoint;
-      if (edgeUrl.isNotEmpty) {
-        try {
-          final authHeaders = await edgeAuth?.headers() ?? const {};
-          final res = await _client
-              .post(
-                Uri.parse(edgeUrl),
-                headers: {'Content-Type': 'application/json', ...authHeaders},
-                body: jsonEncode(body),
-              )
-              .timeout(const Duration(seconds: 15));
-          if (res.statusCode == 200 || res.statusCode == 201) {
-            final parsed = _parseFunctionPayload(res.body);
-            if (parsed.clip != null) return parsed;
-          }
-        } catch (e) {
-          AppLogger.debug('Cloudflare voice synthesize error: $e');
+      final authHeaders = await edgeAuth?.headers() ?? const {};
+      final res = await _client
+          .post(
+            Uri.parse(CloudflareConfig.voiceSynthesizeEndpoint),
+            headers: {'Content-Type': 'application/json', ...authHeaders},
+            body: jsonEncode(body),
+          )
+          .timeout(const Duration(seconds: 30));
+      if (res.statusCode != 200 && res.statusCode != 201) {
+        final parsed = _decodeObject(res.body);
+        final message = parsed?['message'];
+        if (res.statusCode != 401 && message is String && message.isNotEmpty) {
+          return (clip: null, failure: VoiceFailure(message));
         }
+        return (clip: null, failure: _httpFailure(res.statusCode));
       }
-
-      // 2. Fallback: SDK execution with the user's session.
-      final execMatch = RegExp(
-        r'/functions/([^/]+)/executions',
-      ).firstMatch(url);
-      final functionId = SantaliVoiceConfig.functionId.isNotEmpty
-          ? SantaliVoiceConfig.functionId
-          : (execMatch != null ? execMatch.group(1)! : '');
-      if (functions != null && functionId.isNotEmpty) {
-        return await _synthesizeViaSdk(functions!, functionId, body);
-      }
-      if (url.isEmpty) {
-        return (
-          clip: null,
-          failure: const VoiceFailure('Voice service is not configured yet.'),
-        );
-      }
-      final requestBody = url.contains('/executions')
-          ? jsonEncode({'body': jsonEncode(body), 'async': false})
-          : jsonEncode(body);
-      final response = await _client.post(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Appwrite-Project': AppwriteConfig.projectId,
-        },
-        body: requestBody,
-      );
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        return (clip: null, failure: _httpFailure(response.statusCode));
-      }
-      return _parseFunctionPayload(response.body);
+      return _parsePayload(res.body);
     } catch (e) {
       AppLogger.debug('SantaliTtsService error: $e');
       return (
         clip: null,
         failure: const VoiceFailure(
           'Connection error. Check your network and try again.',
-        ),
-      );
-    }
-  }
-
-  Future<({VoiceClip? clip, VoiceFailure? failure})> _synthesizeViaSdk(
-    Functions functions,
-    String functionId,
-    Map<String, dynamic> body,
-  ) async {
-    try {
-      Map<String, String>? headers;
-      try {
-        final token = await auth?.account.createJWT();
-        if (token != null && token.jwt.isNotEmpty) {
-          headers = {'Authorization': 'Bearer ${token.jwt}'};
-        }
-      } catch (_) {
-        // Fall back to session authentication
-      }
-      final execution = await functions.createExecution(
-        functionId: functionId,
-        body: jsonEncode(body),
-        xasync: false,
-        method: ExecutionMethod.pOST,
-        headers: headers,
-      );
-      if (execution.responseStatusCode == 401) {
-        return (
-          clip: null,
-          failure: const VoiceFailure(
-            'Sign in to create voice clips.',
-            loginRequired: true,
-          ),
-        );
-      }
-      if (execution.responseStatusCode != 200 &&
-          execution.responseStatusCode != 201) {
-        return (
-          clip: null,
-          failure: _httpFailure(execution.responseStatusCode),
-        );
-      }
-      return _parseFunctionPayload(execution.responseBody);
-    } on AppwriteException catch (e) {
-      AppLogger.debug('SantaliTtsService SDK error: ${e.message}');
-      if (e.code == 401) {
-        return (
-          clip: null,
-          failure: const VoiceFailure(
-            'Sign in to create voice clips.',
-            loginRequired: true,
-          ),
-        );
-      }
-      return (
-        clip: null,
-        failure: VoiceFailure(
-          'Voice service error (${e.code ?? 'unknown'}). Try again.',
         ),
       );
     }
@@ -285,8 +138,8 @@ class SantaliTtsService {
     return VoiceFailure('Voice service error ($status). Try again.');
   }
 
-  ({VoiceClip? clip, VoiceFailure? failure}) _parseFunctionPayload(String raw) {
-    final parsed = _unwrapExecution(raw);
+  ({VoiceClip? clip, VoiceFailure? failure}) _parsePayload(String raw) {
+    final parsed = _decodeObject(raw);
     if (parsed == null) {
       return (
         clip: null,
@@ -322,37 +175,19 @@ class SantaliTtsService {
   }
 
   @visibleForTesting
-  static Map<String, dynamic>? unwrapExecutionForTest(String body) =>
-      _unwrapExecution(body);
+  ({VoiceClip? clip, VoiceFailure? failure}) parsePayloadForTest(String raw) =>
+      _parsePayload(raw);
 }
 
-Map<String, dynamic>? _unwrapExecution(String body) {
+Map<String, dynamic>? _decodeObject(String body) {
   try {
     final raw = jsonDecode(body);
-    if (raw is! Map<String, dynamic>) return null;
-    if (raw.containsKey('responseBody') && raw.containsKey('status')) {
-      final inner = raw['responseBody'];
-      if (inner is String && inner.isNotEmpty) {
-        try {
-          final innerJson = jsonDecode(inner);
-          if (innerJson is Map<String, dynamic>) return innerJson;
-        } catch (_) {
-          return null;
-        }
-      }
-      return null;
-    }
-    return raw;
+    return raw is Map<String, dynamic> ? raw : null;
   } catch (_) {
     return null;
   }
 }
 
-final santaliTtsServiceProvider = Provider((ref) {
-  final auth = ref.watch(appwriteAuthServiceProvider);
-  return SantaliTtsService(
-    auth: auth,
-    functions: Functions(auth.client),
-    edgeAuth: EdgeAuth.instance,
-  );
-});
+final santaliTtsServiceProvider = Provider(
+  (ref) => SantaliTtsService(edgeAuth: EdgeAuth.instance),
+);

@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
-import '../api/appwrite_db_service.dart';
 import '../api/appwrite_functions_service.dart';
 import '../auth/edge_auth.dart';
 import '../config/cloudflare_config.dart';
@@ -133,149 +131,50 @@ class PurchaseRepository {
   ) async {
     final generation = _generations[userId] ?? 0;
 
-    // 1. Try Cloudflare Workers Edge API first (D1 course_purchases)
+    EntitlementResult discarded() => const EntitlementResult(
+      categoryIds: {},
+      status: EntitlementStatus.unauthenticated,
+    );
+
+    // The Worker answers for the user in the session JWT (D1 is the
+    // purchase ledger); it never trusts a client-supplied user id.
+    final http.Response res;
     try {
-      // The Worker reads verified purchases from Appwrite for the user in the
-      // JWT; it never trusts a client-supplied user id.
       final authHeaders = await _edgeAuth?.headers() ?? const {};
-      final res = await _client
+      res = await _client
           .get(
             Uri.parse(CloudflareConfig.paymentsEntitlementsEndpoint),
             headers: {...authHeaders, 'Accept': 'application/json'},
           )
-          .timeout(const Duration(seconds: 4));
-
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body is Map &&
-            body['ok'] == true &&
-            body['userId'] == userId &&
-            body['categoryIds'] is List) {
-          final categoryIds = (body['categoryIds'] as List)
-              .map((e) => e.toString())
-              .where((id) => id.isNotEmpty)
-              .toSet();
-
-          if (_disposed || generation != (_generations[userId] ?? 0)) {
-            return const EntitlementResult(
-              categoryIds: {},
-              status: EntitlementStatus.unauthenticated,
-            );
-          }
-          _revokedUsers.remove(userId);
-          await CacheService.set(userCacheKey, {
-            'ids': categoryIds.toList(),
-          }, ttl: entitlementTtl);
-
-          return EntitlementResult(
-            categoryIds: categoryIds,
-            status: EntitlementStatus.verified,
-          );
-        }
-      }
+          .timeout(const Duration(seconds: 6));
     } catch (e) {
-      AppLogger.debug('Cloudflare entitlements fetch bypassed: $e');
+      AppLogger.debug('Entitlements fetch failed: $e');
+      if (_disposed || generation != (_generations[userId] ?? 0)) {
+        return discarded();
+      }
+      return _offlineResult(userId, userCacheKey);
+    }
+    if (_disposed || generation != (_generations[userId] ?? 0)) {
+      return discarded();
     }
 
-    // 2. Fallback to Appwrite Database if Cloudflare is unreachable or unconfigured
+    if (res.statusCode == 401 || res.statusCode == 403) {
+      final firstDenial = _revokedUsers.add(userId);
+      await CacheService.delete(userCacheKey);
+      if (firstDenial) _notify(userId);
+      return const EntitlementResult(
+        categoryIds: {},
+        status: EntitlementStatus.permissionDenied,
+        sanitizedErrorMessage: 'Access denied to purchase records.',
+      );
+    }
+
+    Object? body;
     try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final result = await db.listDocuments(
-        'course_purchases',
-        queries: [
-          appwrite.Query.equal('userId', userId),
-          appwrite.Query.equal('status', 'verified'),
-        ],
-      );
-
-      final categoryIds = result
-          .map((doc) {
-            final raw = doc['categoryId'];
-            if (raw is String) return raw;
-            if (raw is Map) return (raw['\$id'] ?? raw['id'] ?? '') as String;
-            return '';
-          })
-          .where((id) => id.isNotEmpty)
-          .toSet();
-
-      if (_disposed || generation != (_generations[userId] ?? 0)) {
-        return const EntitlementResult(
-          categoryIds: {},
-          status: EntitlementStatus.unauthenticated,
-        );
-      }
-      _revokedUsers.remove(userId);
-      // Save user-scoped cache with 5 minute TTL
-      await CacheService.set(userCacheKey, {
-        'ids': categoryIds.toList(),
-      }, ttl: entitlementTtl);
-
-      return EntitlementResult(
-        categoryIds: categoryIds,
-        status: EntitlementStatus.verified,
-      );
-    } catch (e) {
-      AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
-
-      if (_disposed || generation != (_generations[userId] ?? 0)) {
-        return const EntitlementResult(
-          categoryIds: {},
-          status: EntitlementStatus.unauthenticated,
-        );
-      }
-      final errorStr = e.toString().toLowerCase();
-      final denied =
-          e is appwrite.AppwriteException && (e.code == 401 || e.code == 403) ||
-          errorStr.contains('401') ||
-          errorStr.contains('403') ||
-          errorStr.contains('unauthorized') ||
-          errorStr.contains('permission');
-      if (denied) {
-        final firstDenial = _revokedUsers.add(userId);
-        await CacheService.delete(userCacheKey);
-        if (firstDenial) _notify(userId);
-        return const EntitlementResult(
-          categoryIds: {},
-          status: EntitlementStatus.permissionDenied,
-          sanitizedErrorMessage: 'Access denied to purchase records.',
-        );
-      }
-      final isNetworkFailure =
-          e is TimeoutException ||
-          (e is appwrite.AppwriteException &&
-              (e.code == 0 || e.type == 'network_failure')) ||
-          errorStr.contains('socketexception') ||
-          errorStr.contains('network') ||
-          errorStr.contains('connection');
-      if (isNetworkFailure && !_revokedUsers.contains(userId)) {
-        final meta = await CacheService.getMeta(userCacheKey);
-        final age = meta == null
-            ? null
-            : DateTime.now().millisecondsSinceEpoch - meta.lastSyncAtMs;
-        if (age != null &&
-            age >= 0 &&
-            age <= offlineEntitlementGrace.inMilliseconds) {
-          final stale = await CacheService.getIgnoringTtl(
-            userCacheKey,
-            (json) => Set<String>.from(json['ids'] as List),
-          );
-          if (stale != null) {
-            return EntitlementResult(
-              categoryIds: stale,
-              status: EntitlementStatus.staleCached,
-              isFromCache: true,
-              sanitizedErrorMessage:
-                  'Offline access is limited to 24 hours since verification.',
-            );
-          }
-        }
-        return const EntitlementResult(
-          categoryIds: {},
-          status: EntitlementStatus.networkUnavailable,
-          sanitizedErrorMessage: 'Reconnect to verify your purchases.',
-        );
-      }
-
+      body = res.statusCode == 200 ? jsonDecode(res.body) : null;
+    } catch (_) {}
+    if (body is! Map || body['ok'] != true || body['categoryIds'] is! List) {
+      AppLogger.debug('Entitlements fetch HTTP ${res.statusCode}');
       return const EntitlementResult(
         categoryIds: {},
         status: EntitlementStatus.serverError,
@@ -283,6 +182,56 @@ class PurchaseRepository {
             'Service temporarily unavailable. Please try again later.',
       );
     }
+    // The session belongs to someone else (account switched mid-flight).
+    if (body['userId'] != userId) return discarded();
+
+    final categoryIds = (body['categoryIds'] as List)
+        .map((e) => e.toString())
+        .where((id) => id.isNotEmpty)
+        .toSet();
+    _revokedUsers.remove(userId);
+    await CacheService.set(userCacheKey, {
+      'ids': categoryIds.toList(),
+    }, ttl: entitlementTtl);
+    return EntitlementResult(
+      categoryIds: categoryIds,
+      status: EntitlementStatus.verified,
+    );
+  }
+
+  /// Offline: serve the last verified set for up to [offlineEntitlementGrace].
+  Future<EntitlementResult> _offlineResult(
+    String userId,
+    String userCacheKey,
+  ) async {
+    if (!_revokedUsers.contains(userId)) {
+      final meta = await CacheService.getMeta(userCacheKey);
+      final age = meta == null
+          ? null
+          : DateTime.now().millisecondsSinceEpoch - meta.lastSyncAtMs;
+      if (age != null &&
+          age >= 0 &&
+          age <= offlineEntitlementGrace.inMilliseconds) {
+        final stale = await CacheService.getIgnoringTtl(
+          userCacheKey,
+          (json) => Set<String>.from(json['ids'] as List),
+        );
+        if (stale != null) {
+          return EntitlementResult(
+            categoryIds: stale,
+            status: EntitlementStatus.staleCached,
+            isFromCache: true,
+            sanitizedErrorMessage:
+                'Offline access is limited to 24 hours since verification.',
+          );
+        }
+      }
+    }
+    return const EntitlementResult(
+      categoryIds: {},
+      status: EntitlementStatus.networkUnavailable,
+      sanitizedErrorMessage: 'Reconnect to verify your purchases.',
+    );
   }
 
   void _triggerRevalidation(

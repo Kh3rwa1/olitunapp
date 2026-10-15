@@ -5,16 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive/hive.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/core/storage/cache_service.dart';
-import 'package:itun/core/api/appwrite_db_service.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:flutter/services.dart';
 
-class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+import 'edge_entitlements_fake.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late MockAppwriteDbService mockDb;
+  late EdgeEntitlementsFake edge;
   late ProviderContainer container;
 
   setUpAll(() async {
@@ -31,10 +29,8 @@ void main() {
   setUp(() async {
     CacheService.resetForTesting();
     await CacheService.clear();
-    mockDb = MockAppwriteDbService();
-    container = ProviderContainer(
-      overrides: [appwriteDbServiceProvider.overrideWithValue(mockDb)],
-    );
+    edge = EdgeEntitlementsFake();
+    container = ProviderContainer(overrides: [edge.override]);
   });
 
   tearDown(() async {
@@ -53,21 +49,7 @@ void main() {
       const userId = 'user_123';
 
       // 1. Initial successful server fetch returns verified entitlement
-      when(
-        () => mockDb.listDocuments(
-          'course_purchases',
-          queries: any(named: 'queries'),
-        ),
-      ).thenAnswer(
-        (_) async => [
-          {
-            '\$id': 'p1',
-            'categoryId': 'cat_ol_chiki',
-            'userId': userId,
-            'status': 'verified',
-          },
-        ],
-      );
+      edge.answer(userId, ['cat_ol_chiki']);
 
       final initialResult = await repo.fetchEntitlements(userId);
       expect(initialResult.status, EntitlementStatus.verified);
@@ -94,12 +76,7 @@ void main() {
       expect(normalGet, isNull);
 
       // 3. Device goes offline / server throws exception
-      when(
-        () => mockDb.listDocuments(
-          'course_purchases',
-          queries: any(named: 'queries'),
-        ),
-      ).thenThrow(Exception('SocketException: Client error (offline)'));
+      edge.offline();
 
       // 4. Fetch entitlements again -> recovers stale cache and returns staleCached status
       final offlineResult = await repo.fetchEntitlements(userId);

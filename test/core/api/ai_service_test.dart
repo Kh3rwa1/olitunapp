@@ -40,40 +40,6 @@ void main() {
     });
   });
 
-  group('unwrapAppwriteExecution', () {
-    test('parses direct JSON body', () {
-      const body = '{"success":true,"data":{"translation":"hello"}}';
-      final parsed = AiService.unwrapAppwriteExecution(body);
-      expect(parsed, isNotNull);
-      expect(parsed!['success'], isTrue);
-      expect((parsed['data'] as Map)['translation'], 'hello');
-    });
-
-    test('unwraps Appwrite Execution responseBody', () {
-      const body =
-          '{"status":"completed","responseBody":"{\\"success\\":true,\\"data\\":{\\"translation\\":\\"hi\\"}}","\$id":"exec1"}';
-      final parsed = AiService.unwrapAppwriteExecution(body);
-      expect(parsed, isNotNull);
-      expect(parsed!['success'], isTrue);
-    });
-
-    test('returns null for non-map JSON', () {
-      final parsed = AiService.unwrapAppwriteExecution('[1,2,3]');
-      expect(parsed, isNull);
-    });
-
-    test('returns null for invalid JSON', () {
-      final parsed = AiService.unwrapAppwriteExecution('not json');
-      expect(parsed, isNull);
-    });
-
-    test('returns null for Execution with empty responseBody', () {
-      const body = '{"status":"completed","responseBody":"","\$id":"exec1"}';
-      final parsed = AiService.unwrapAppwriteExecution(body);
-      expect(parsed, isNull);
-    });
-  });
-
   group('AiService.translate', () {
     test('rejects text exceeding maxTranslationChars', () async {
       final service = AiService();
@@ -167,5 +133,17 @@ void main() {
         expect(result.provider, 'cloudflare-indictrans2-ai');
       },
     );
+
+    test('401 asks the user to sign in', () async {
+      final service = AiService(
+        client: MockClient((_) async => http.Response('{}', 401)),
+      );
+      final result = await service.translateFromUrlForTest(
+        CloudflareConfig.translateEndpoint,
+        {'text': 'hello'},
+      );
+      expect(result!.isError, isTrue);
+      expect(result.translation, contains('Sign in'));
+    });
   });
 }

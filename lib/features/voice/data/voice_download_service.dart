@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 
 import 'package:itun/core/logging/app_logger.dart';
+
 import 'download_io.dart'
     if (dart.library.js_interop) 'download_web.dart'
     as platform;

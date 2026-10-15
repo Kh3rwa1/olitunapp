@@ -204,13 +204,19 @@ class _StudioTransport {
     // 1. Try Cloudflare Edge Studio endpoint first (zero cold starts, high-availability edge)
     const cfUrl = '${CloudflareConfig.baseUrl}/api/v1/studio/process';
     try {
+      final payload = Map<String, dynamic>.from(body);
+      if (input != null && input.bytes.isNotEmpty) {
+        payload['audioBase64'] = base64Encode(input.bytes);
+        payload['fileBase64'] = base64Encode(input.bytes);
+        payload['fileName'] = input.name;
+      }
       final res = await http
           .post(
             Uri.parse(cfUrl),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode(body),
+            body: jsonEncode(payload),
           )
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 30));
       if (res.statusCode == 200) {
         final decoded = jsonDecode(res.body);
         if (decoded is Map &&
@@ -218,8 +224,18 @@ class _StudioTransport {
             decoded['data'] is Map) {
           return Map<String, dynamic>.from(decoded['data'] as Map);
         }
+      } else {
+        final decoded = jsonDecode(res.body);
+        if (decoded is Map && decoded['error'] is String) {
+          throw StudioException(decoded['error'] as String);
+        }
       }
+    } on StudioException {
+      rethrow;
     } catch (_) {
+      if (!AppwriteConfig.isBackendConfigured) {
+        throw const StudioException('REQUEST_FAILED');
+      }
       // Fall through to Appwrite SDK execution
     }
 

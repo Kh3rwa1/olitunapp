@@ -92,7 +92,7 @@ void main() {
   );
 
   test(
-    'falls back to Appwrite DB when Cloudflare Workers fails and triggers sync',
+    'falls back to Appwrite DB when Cloudflare Workers fails, without writing entitlements to the edge',
     () async {
       var syncCalled = false;
       final mockHttpClient = MockClient((request) async {
@@ -139,9 +139,54 @@ void main() {
         ),
       ).called(1);
 
-      // Allow async background sync microtask to execute
+      // Entitlements are written only by the Appwrite payment functions; the
+      // client must never push category ids to the edge.
       await Future<void>.delayed(const Duration(milliseconds: 50));
-      expect(syncCalled, isTrue);
+      expect(syncCalled, isFalse);
+    },
+  );
+
+  test(
+    'ignores an edge answer for a different user and falls back to Appwrite',
+    () async {
+      final mockHttpClient = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'ok': true,
+            'userId': 'someone_else',
+            'categoryIds': ['other_users_course'],
+          }),
+          200,
+        );
+      });
+      when(
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
+      ).thenAnswer((_) async => []);
+
+      final container = ProviderContainer(
+        overrides: [
+          appwriteDbServiceProvider.overrideWithValue(mockDb),
+          purchaseRepositoryProvider.overrideWith(
+            (ref) => PurchaseRepository(ref, httpClient: mockHttpClient),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final result = await container
+          .read(purchaseRepositoryProvider)
+          .fetchEntitlements('user_switched');
+
+      expect(result.categoryIds, isEmpty);
+      verify(
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
+      ).called(1);
     },
   );
 }

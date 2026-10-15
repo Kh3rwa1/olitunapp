@@ -19,7 +19,11 @@ try {
   const pos3 = `Set-Cookie: ${sessionCookieName}=${secretValue}`;
   const pos4 = `.example.com\tTRUE\t/\tFALSE\t1750000000\t${sessionCookieName}\t${secretValue}`;
 
-  const positiveFixtures = [pos1, pos2, pos3, pos4];
+  // Provider key shapes (Sarvam, Bodhan), assembled so no literal key exists.
+  const pos5 = `const key = '${['sk', 'abcd1234', 'Zq9mXr4TnB7kLp2WvY6cHs'].join('_')}';`;
+  const pos6 = `'${['sk', 'Q1w2E3r4T5y6U7i8O9p0Aa'].join('-')}',`;
+
+  const positiveFixtures = [pos1, pos2, pos3, pos4, pos5, pos6];
 
   const negativeFixtures = [
     "const String webSessionKey = 'olitun_appwrite_session_key';",

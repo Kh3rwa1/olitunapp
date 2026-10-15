@@ -12,6 +12,18 @@ description = "Appwrite Session Secret or Cookie"
 regex = '''(?i)(appwrite[_-]?session[_-]?secret\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{16,}['"]?|a_session_[a-z0-9_-]+\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{16,}['"]?|a_session_[a-z0-9_-]+\t+[a-zA-Z0-9_\-\.]{16,})'''
 keywords = ["appwrite_session_secret", "a_session_"]
 
+[[rules]]
+id = "sarvam-api-key"
+description = "Sarvam AI API subscription key"
+regex = '''\bsk_[a-z0-9]{8}_[A-Za-z0-9]{20,}\b'''
+keywords = ["sk_"]
+
+[[rules]]
+id = "bodhan-api-key"
+description = "Bodhan AI API key"
+regex = '''\bsk-[A-Za-z0-9_-]{22}\b'''
+keywords = ["sk-"]
+
 [allowlist]
 description = "Known non-secret token prefixes and build output paths"
 paths = [

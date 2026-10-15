@@ -8,6 +8,7 @@ import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import '../../shared/providers/app_settings_provider.dart';
 import '../auth/appwrite_auth_service.dart';
+import '../auth/edge_auth.dart';
 
 /// Translation API configuration.
 ///
@@ -56,8 +57,12 @@ class AiConfig {
 /// `functions/translator/`. The function wraps Google Translate and Cloudflare
 /// IndicTrans2 with caching + rate limiting (see that directory's README).
 class AiService {
-  AiService({http.Client? client, this.functions, this.defaultEngine})
-    : _client = client ?? http.Client();
+  AiService({
+    http.Client? client,
+    this.functions,
+    this.defaultEngine,
+    this.edgeAuth,
+  }) : _client = client ?? http.Client();
 
   final http.Client _client;
 
@@ -65,6 +70,9 @@ class AiService {
   /// session authenticates the call (the function requires `users` execute
   /// permission). Raw-HTTP fallback remains for web-cookie contexts.
   final Functions? functions;
+
+  /// Signs requests to the Cloudflare Worker, which rejects anonymous calls.
+  final EdgeAuth? edgeAuth;
 
   /// The default translation engine ('cloudflare' | 'google') configured in
   /// the app settings.
@@ -145,9 +153,13 @@ class AiService {
           ? jsonEncode({'body': jsonEncode(body), 'async': false})
           : jsonEncode(body);
 
+      final authHeaders = url.startsWith(CloudflareConfig.baseUrl)
+          ? await edgeAuth?.headers() ?? const <String, String>{}
+          : const <String, String>{};
       final response = await _client.post(
         Uri.parse(url),
         headers: {
+          ...authHeaders,
           'Content-Type': 'application/json',
           'X-Appwrite-Project': AppwriteConfig.projectId,
         },
@@ -315,5 +327,9 @@ class TranslateResult {
 final aiServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
   final engine = ref.watch(translationEngineProvider);
-  return AiService(functions: Functions(auth.client), defaultEngine: engine);
+  return AiService(
+    functions: Functions(auth.client),
+    defaultEngine: engine,
+    edgeAuth: EdgeAuth.instance,
+  );
 });

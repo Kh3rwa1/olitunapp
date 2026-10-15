@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/auth/edge_auth.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'bodhan_voice_catalog.dart';
 
@@ -86,12 +87,19 @@ class VoiceFailure {
 /// execution handling: SDK path with session auth when available, raw-HTTP
 /// fallback for web-cookie contexts.
 class SantaliTtsService {
-  SantaliTtsService({http.Client? client, this.functions, this.auth})
-    : _client = client ?? http.Client();
+  SantaliTtsService({
+    http.Client? client,
+    this.functions,
+    this.auth,
+    this.edgeAuth,
+  }) : _client = client ?? http.Client();
 
   final http.Client _client;
   final Functions? functions;
   final AppwriteAuthService? auth;
+
+  /// Signs Cloudflare Worker requests; the edge rejects anonymous calls.
+  final EdgeAuth? edgeAuth;
 
   Future<({VoiceClip? clip, VoiceFailure? failure})> synthesize({
     required String text,
@@ -141,10 +149,11 @@ class SantaliTtsService {
       const edgeUrl = CloudflareConfig.voiceSynthesizeEndpoint;
       if (edgeUrl.isNotEmpty) {
         try {
+          final authHeaders = await edgeAuth?.headers() ?? const {};
           final res = await _client
               .post(
                 Uri.parse(edgeUrl),
-                headers: {'Content-Type': 'application/json'},
+                headers: {'Content-Type': 'application/json', ...authHeaders},
                 body: jsonEncode(body),
               )
               .timeout(const Duration(seconds: 15));
@@ -341,5 +350,9 @@ Map<String, dynamic>? _unwrapExecution(String body) {
 
 final santaliTtsServiceProvider = Provider((ref) {
   final auth = ref.watch(appwriteAuthServiceProvider);
-  return SantaliTtsService(auth: auth, functions: Functions(auth.client));
+  return SantaliTtsService(
+    auth: auth,
+    functions: Functions(auth.client),
+    edgeAuth: EdgeAuth.instance,
+  );
 });

@@ -1,16 +1,66 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import {
+  aiRateLimit,
+  optionalUser,
+  requireAdmin,
+  requireUser,
+  timingSafeEqualStr,
+  type AuthEnv,
+  type AuthVariables,
+} from './auth';
+import { fetchVerifiedEntitlements, mirrorEntitlementsToD1 } from './entitlements';
 
-type Bindings = {
+type Bindings = AuthEnv & {
   DB: D1Database;
   ASSETS: R2Bucket;
   AI: any;
+  // Secrets (wrangler secret put). Never hardcode provider keys here.
+  BODHAN_API_KEYS?: string; // comma-separated
+  SARVAM_API_KEY?: string;
+  RAZORPAY_WEBHOOK_SECRET?: string;
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: AuthVariables }>();
 
 // Global CORS middleware for Flutter Web & Mobile
 app.use('*', cors());
+
+// --- Authentication -------------------------------------------------------
+// Every per-user route derives the user from a verified Appwrite JWT.
+for (const path of [
+  '/api/v1/mistakes',
+  '/api/v1/mistakes/record',
+  '/api/v1/mistakes/master',
+  '/api/v1/mistakes/review/complete',
+  '/api/v1/bakhed/progress',
+  '/api/v1/gamification/summary',
+  '/api/v1/payments/order',
+  '/api/v1/payments/verify',
+  '/api/v1/payments/entitlements',
+  '/api/v1/payments/entitlements/sync',
+  '/api/v1/user/delete',
+]) {
+  app.use(path, requireUser);
+}
+
+// Paid AI / TTS routes: signed-in users only, rate limited per user and IP.
+for (const path of [
+  '/api/v1/translate',
+  '/api/v1/voice/synthesize',
+  '/api/v1/audio/generate',
+  '/api/v1/studio/transcribe',
+  '/api/v1/studio/process',
+]) {
+  app.use(path, requireUser, aiRateLimit);
+}
+
+app.use('/api/v1/lessons/authorize', optionalUser);
+app.use('/api/v1/waitlist/join', optionalUser);
+
+app.use('/api/v1/admin/*', requireAdmin);
+app.use('/api/v1/analytics/*', requireAdmin);
+app.use('/api/v1/payments/reconcile', requireAdmin);
 
 // Language mappings for IndicTrans2 model
 const INDICTRANS2_TARGETS: Record<string, string> = {
@@ -779,20 +829,10 @@ app.all('/api/v1/translate', async (c) => {
   }
 });
 
-// Helper to extract authenticated or provided userId
-function getRequestUserId(c: any, body?: any): string {
-  const headerUser = c.req.header('x-appwrite-user-id') || c.req.header('x-user-id') || c.req.header('user-id');
-  if (headerUser && typeof headerUser === 'string' && headerUser.trim().length > 0) {
-    return headerUser.trim();
-  }
-  const queryUser = c.req.query('userId') || c.req.query('user_id');
-  if (queryUser && typeof queryUser === 'string' && queryUser.trim().length > 0) {
-    return queryUser.trim();
-  }
-  if (body?.userId && typeof body.userId === 'string' && body.userId.trim().length > 0) {
-    return body.userId.trim();
-  }
-  return '';
+// The caller's user id, as verified by the auth middleware. Empty for
+// anonymous requests on optionalUser routes.
+function getRequestUserId(c: any, _body?: any): string {
+  return c.get('userId') || '';
 }
 
 async function stableId(value: string): Promise<string> {
@@ -886,7 +926,7 @@ app.all('/api/v1/mistakes', async (c) => {
     if (c.req.method === 'POST') {
       body = await c.req.json().catch(() => ({}));
     }
-    const userId = getRequestUserId(c, body) || c.req.query('userId') || '';
+    const userId = getRequestUserId(c, body);
     if (!userId) {
       return c.json({ ok: false, message: 'Unauthenticated' }, 401);
     }
@@ -1068,7 +1108,7 @@ app.all('/api/v1/gamification/summary', async (c) => {
     if (c.req.method === 'POST') {
       body = await c.req.json().catch(() => ({}));
     }
-    const userId = getRequestUserId(c, body) || c.req.query('userId') || '';
+    const userId = getRequestUserId(c, body);
     if (!userId) {
       return c.json({ ok: false, message: 'Unauthenticated' }, 401);
     }
@@ -1311,19 +1351,18 @@ app.all('/api/v1/lessons/authorize', async (c) => {
     if (c.req.method === 'POST') {
       body = await c.req.json().catch(() => ({}));
     }
-    const userId = getRequestUserId(c, body) || c.req.query('userId') || '';
+    const userId = getRequestUserId(c, body);
     const action = String(body.action || c.req.query('action') || 'list_lessons').trim().toLowerCase();
     const lessonId = String(body.lessonId || c.req.query('lessonId') || '').trim();
 
-    // Query user purchases from D1
+    // Paid access comes from Appwrite's verified purchases, never from D1.
     let purchasedCategoryIds = new Set<string>();
     if (userId) {
-      const purchasesResult: any = await c.env.DB.prepare(
-        'SELECT category_id FROM course_purchases WHERE user_id = ? AND status = "completed"'
-      ).bind(userId).all().catch(() => ({ results: [] }));
-      for (const p of purchasesResult.results || []) {
-        if (p.category_id) purchasedCategoryIds.add(p.category_id);
+      const entitled = await fetchVerifiedEntitlements(c.env, c.get('jwt'), userId);
+      if (entitled === null) {
+        return c.json({ ok: false, error: 'ENTITLEMENTS_UNAVAILABLE', message: 'Could not verify purchases' }, 503);
       }
+      purchasedCategoryIds = new Set(entitled);
     }
 
     // Query category unlock modes
@@ -1438,175 +1477,75 @@ app.all('/api/v1/lessons/authorize', async (c) => {
 // GROUP 3: PAYMENTS & RAZORPAY INTEGRATION
 // ==========================================
 
-// 17. Create Razorpay Order (replaces Appwrite createRazorpayOrder function)
-app.post('/api/v1/payments/order', async (c) => {
+// 17-18. Razorpay order creation and purchase verification are handled only
+// by the Appwrite createRazorpayOrder / verifyCoursePurchase functions, which
+// price orders server-side and verify Razorpay signatures. The Worker used to
+// accept client-supplied amounts and unverified signatures, so these routes
+// now refuse instead of granting access.
+const paymentsMoved = (c: any) =>
+  c.json({
+    ok: false,
+    error: 'PAYMENTS_MOVED',
+    message: 'Payments are processed by the Appwrite payment functions.',
+  }, 410);
+app.post('/api/v1/payments/order', paymentsMoved);
+app.post('/api/v1/payments/verify', paymentsMoved);
+
+// 19. User Entitlements: read from Appwrite (source of truth) and refresh the
+// D1 mirror. The client can no longer write entitlements.
+const entitlementsHandler = async (c: any) => {
   try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-    if (!userId) {
-      return c.json({ ok: false, message: 'Unauthenticated' }, 401);
+    const userId = getRequestUserId(c);
+    const categoryIds = await fetchVerifiedEntitlements(c.env, c.get('jwt'), userId);
+    if (categoryIds === null) {
+      return c.json({ ok: false, message: 'Entitlements temporarily unavailable', categoryIds: [] }, 503);
     }
-
-    const categoryId = String(body.categoryId || body.courseId || '').trim();
-    if (!categoryId) {
-      return c.json({ ok: false, message: 'Missing categoryId' }, 400);
-    }
-
-    const amount = Number(body.amount) || 49900; // in paise (₹499)
-    const currency = 'INR';
-    const orderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const receipt = `rcpt_${userId.slice(0, 8)}_${Date.now()}`;
-    const now = new Date().toISOString();
-
-    await c.env.DB.prepare(
-      'INSERT INTO payment_orders (order_id, user_id, category_id, amount, currency, status, receipt, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(orderId, userId, categoryId, amount, currency, 'created', receipt, now, now).run();
-
-    return c.json({
-      ok: true,
-      orderId,
-      amount,
-      currency,
-      receipt,
-      categoryId,
-      order: {
-        id: orderId,
-        amount,
-        currency,
-        receipt,
-        categoryId,
-        status: 'created',
-      }
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Unable to create payment order' }, 500);
-  }
-});
-
-// 18. Verify Course Purchase (replaces Appwrite verifyCoursePurchase function)
-app.post('/api/v1/payments/verify', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-    if (!userId) {
-      return c.json({ ok: false, message: 'Unauthenticated' }, 401);
-    }
-
-    const orderId = String(body.orderId || '').trim();
-    const paymentId = String(body.paymentId || '').trim();
-    const signature = String(body.signature || '').trim();
-    const categoryId = String(body.categoryId || '').trim();
-
-    if (!orderId || !paymentId) {
-      return c.json({ ok: false, message: 'Missing orderId or paymentId' }, 400);
-    }
-
-    const now = new Date().toISOString();
-    const purchaseId = await stableId(`purch:${userId}:${categoryId || orderId}`);
-
-    // Update order status in D1
-    await c.env.DB.prepare(
-      'UPDATE payment_orders SET status = "paid", payment_id = ?, signature = ?, updated_at = ? WHERE order_id = ?'
-    ).bind(paymentId, signature, now, orderId).run().catch(() => {});
-
-    // Record entitlement in course_purchases
-    await c.env.DB.prepare(
-      'INSERT OR REPLACE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-    ).bind(purchaseId, userId, categoryId, categoryId, 49900, 'INR', 'completed', orderId, paymentId, now).run();
-
-    return c.json({
-      ok: true,
-      verified: true,
-      purchaseId,
-      categoryId,
-      message: 'Course purchase successfully verified and unlocked.'
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Verification failed' }, 500);
-  }
-});
-
-// 19. User Entitlements (replaces direct Appwrite DB reads on course_purchases)
-app.get('/api/v1/payments/entitlements', async (c) => {
-  try {
-    const userId = getRequestUserId(c, {});
-    if (!userId) {
-      return c.json({ ok: false, message: 'Unauthenticated', categoryIds: [] }, 401);
-    }
-
-    const result: any = await c.env.DB.prepare(
-      'SELECT category_id, status FROM course_purchases WHERE user_id = ? AND (status = "completed" OR status = "verified")'
-    ).bind(userId).all().catch(() => ({ results: [] }));
-
-    const categoryIds = (result.results || [])
-      .map((r: any) => r.category_id)
-      .filter((id: any) => typeof id === 'string' && id.trim().length > 0);
-
-    return c.json({
-      ok: true,
-      userId,
-      categoryIds: Array.from(new Set(categoryIds)),
-      total: categoryIds.length,
-    });
+    c.executionCtx.waitUntil(
+      mirrorEntitlementsToD1(c.env.DB, userId, categoryIds, stableId).catch((err) => {
+        console.error('entitlement mirror failed', err);
+      }),
+    );
+    return c.json({ ok: true, userId, categoryIds, total: categoryIds.length });
   } catch (err: any) {
     return c.json({ ok: false, message: err.message || 'Failed to fetch entitlements', categoryIds: [] }, 500);
   }
-});
+};
+app.get('/api/v1/payments/entitlements', entitlementsHandler);
+app.post('/api/v1/payments/entitlements', entitlementsHandler);
+// Kept for older app builds; any categoryIds in the body are ignored.
+app.post('/api/v1/payments/entitlements/sync', entitlementsHandler);
 
-app.post('/api/v1/payments/entitlements', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-    if (!userId) {
-      return c.json({ ok: false, message: 'Unauthenticated', categoryIds: [] }, 401);
-    }
+async function hmacSha256Hex(secret: string, payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
 
-    const result: any = await c.env.DB.prepare(
-      'SELECT category_id, status FROM course_purchases WHERE user_id = ? AND (status = "completed" OR status = "verified")'
-    ).bind(userId).all().catch(() => ({ results: [] }));
-
-    const categoryIds = (result.results || [])
-      .map((r: any) => r.category_id)
-      .filter((id: any) => typeof id === 'string' && id.trim().length > 0);
-
-    return c.json({
-      ok: true,
-      userId,
-      categoryIds: Array.from(new Set(categoryIds)),
-      total: categoryIds.length,
-    });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Failed to fetch entitlements', categoryIds: [] }, 500);
-  }
-});
-
-app.post('/api/v1/payments/entitlements/sync', async (c) => {
-  try {
-    const body = await c.req.json().catch(() => ({}));
-    const userId = getRequestUserId(c, body);
-    const categoryIds: string[] = Array.isArray(body.categoryIds) ? body.categoryIds : [];
-    if (!userId || categoryIds.length === 0) {
-      return c.json({ ok: true, synced: 0 });
-    }
-
-    const now = new Date().toISOString();
-    for (const catId of categoryIds) {
-      const purchaseId = await stableId(`purch:${userId}:${catId}`);
-      await c.env.DB.prepare(
-        'INSERT OR IGNORE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-      ).bind(purchaseId, userId, catId, catId, 49900, 'INR', 'completed', now).run().catch(() => {});
-    }
-
-    return c.json({ ok: true, synced: categoryIds.length });
-  } catch (err: any) {
-    return c.json({ ok: false, message: err.message || 'Failed to sync entitlements' }, 500);
-  }
-});
-
-// 20. Razorpay Webhook (replaces Appwrite razorpayWebhook function)
+// 20. Razorpay Webhook. Rejects anything not signed with
+// RAZORPAY_WEBHOOK_SECRET over the exact raw body.
 app.post('/api/v1/payments/webhook', async (c) => {
   try {
-    const body = await c.req.json().catch(() => ({}));
+    const secret = c.env.RAZORPAY_WEBHOOK_SECRET || '';
+    if (!secret) {
+      return c.json({ ok: false, message: 'Webhook secret not configured' }, 503);
+    }
+    const rawBody = await c.req.text();
+    const signature = (c.req.header('x-razorpay-signature') || '').trim().toLowerCase();
+    const expected = await hmacSha256Hex(secret, rawBody);
+    if (!signature || !timingSafeEqualStr(signature, expected)) {
+      return c.json({ ok: false, message: 'Invalid signature' }, 401);
+    }
+
+    let body: any = {};
+    try { body = JSON.parse(rawBody); } catch (_) {
+      return c.json({ ok: false, message: 'Invalid JSON' }, 400);
+    }
     const event = body.event || '';
     const payload = body.payload || {};
 
@@ -1617,20 +1556,22 @@ app.post('/api/v1/payments/webhook', async (c) => {
       const now = new Date().toISOString();
 
       if (orderId) {
-        // Find existing order in D1
         const orderRow: any = await c.env.DB.prepare(
           'SELECT user_id, category_id, amount FROM payment_orders WHERE order_id = ?'
-        ).bind(orderId).first().catch(() => null);
+        ).bind(orderId).first();
 
-        if (orderRow) {
-          await c.env.DB.prepare(
-            'UPDATE payment_orders SET status = "paid", payment_id = ?, updated_at = ? WHERE order_id = ?'
-          ).bind(paymentId || '', now, orderId).run();
-
+        // Only honour the payment if Razorpay captured the full order amount.
+        const paidAmount = Number(payment.amount ?? payload.order?.entity?.amount_paid ?? 0);
+        if (orderRow && paidAmount >= Number(orderRow.amount || 0) && Number(orderRow.amount || 0) > 0) {
           const purchaseId = await stableId(`purch:${orderRow.user_id}:${orderRow.category_id}`);
-          await c.env.DB.prepare(
-            'INSERT OR REPLACE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-          ).bind(purchaseId, orderRow.user_id, orderRow.category_id, orderRow.category_id, orderRow.amount || 49900, 'INR', 'completed', orderId, paymentId || '', now).run();
+          await c.env.DB.batch([
+            c.env.DB.prepare(
+              'UPDATE payment_orders SET status = "paid", payment_id = ?, updated_at = ? WHERE order_id = ?'
+            ).bind(paymentId || '', now, orderId),
+            c.env.DB.prepare(
+              'INSERT OR REPLACE INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            ).bind(purchaseId, orderRow.user_id, orderRow.category_id, orderRow.category_id, orderRow.amount, 'INR', 'completed', orderId, paymentId || '', now),
+          ]);
         }
       }
     }
@@ -1667,16 +1608,13 @@ app.post('/api/v1/payments/reconcile', async (c) => {
 // ==========================================
 
 // 21. Santali Voice Synthesis (replaces Appwrite santaliVoice function)
-const BODHAN_API_KEYS = [
-  'sk-Ysmtx8bk7QFI3PN-SZaWLQ',
-  'sk-oBA6mWBQLiX6zH4WjuhUgg',
-  'sk-zh_3LxzRrmaDP2P8eBzgDQ',
-  'sk-coTEjq2O_eeWDK1JU5CDIQ',
-  'sk-gYn16mzW2JsIu8WuWJMleA',
-  'sk-YUKnUzD1CJzMC4aGKw095A',
-  'sk-T9J9hR-F_ri86HJFemH4rA',
-  'sk-6YOJP-ozCD6Z9W6D-e1n5A',
-];
+// Bodhan keys live in the BODHAN_API_KEYS secret (comma-separated).
+function bodhanApiKeys(env: Bindings): string[] {
+  return String(env.BODHAN_API_KEYS || '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
+}
 
 // 21. Santali Voice Synthesis (Bodhan Indic-Speak TTS Engine with Edge R2 Caching)
 app.post('/api/v1/voice/synthesize', async (c) => {
@@ -1751,7 +1689,11 @@ app.post('/api/v1/voice/synthesize', async (c) => {
       ? [JSON.stringify({ lang: 'sat', style: validStyle }), JSON.stringify({ lang: 'sat' })]
       : [JSON.stringify({ lang: 'sat' })];
 
-    for (const key of BODHAN_API_KEYS) {
+    const bodhanKeys = bodhanApiKeys(c.env);
+    if (bodhanKeys.length === 0) {
+      return c.json({ ok: false, success: false, error: 'VOICE_KEY_MISSING', message: 'Voice service is not configured.' }, 503);
+    }
+    for (const key of bodhanKeys) {
       for (const instr of instructionVariants) {
         try {
           const bodhanRes = await fetch('https://api.bodhan.ai/v1/audio/speech', {
@@ -1985,7 +1927,7 @@ app.post('/api/v1/studio/transcribe', async (c) => {
       return c.json({ ok: false, success: false, error: 'INVALID_AUDIO', message: 'No audio provided' }, 400);
     }
 
-    const sarvamApiKey = c.env.SARVAM_API_KEY || c.req.header('api-subscription-key') || c.req.header('x-sarvam-api-key') || 'sk_uweorajc_pjnZbrqTs597FnxMT9xRpUtP';
+    const sarvamApiKey = c.env.SARVAM_API_KEY || '';
     if (!sarvamApiKey) {
       return c.json({ ok: false, success: false, error: 'SARVAM_KEY_MISSING', message: 'SARVAM_API_KEY is not configured.' }, 503);
     }
@@ -2050,7 +1992,7 @@ app.post('/api/v1/studio/process', async (c) => {
         return c.json({ ok: false, success: false, error: 'INVALID_AUDIO', message: 'No audio provided' }, 400);
       }
 
-      const sarvamApiKey = c.env.SARVAM_API_KEY || c.req.header('api-subscription-key') || c.req.header('x-sarvam-api-key') || 'sk_uweorajc_pjnZbrqTs597FnxMT9xRpUtP';
+      const sarvamApiKey = c.env.SARVAM_API_KEY || '';
       if (!sarvamApiKey) {
         return c.json({ ok: false, success: false, error: 'SARVAM_KEY_MISSING', message: 'SARVAM_API_KEY is not configured.' }, 503);
       }

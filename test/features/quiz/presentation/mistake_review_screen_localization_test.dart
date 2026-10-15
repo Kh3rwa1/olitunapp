@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/features/quiz/data/quizzes_provider.dart';
 import 'package:itun/features/quiz/presentation/mistake_review_screen.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -65,9 +66,13 @@ void main() {
           child: const MistakeReviewScreen(),
           overrides: [
             sharedPreferencesProvider.overrideWithValue(mockPrefs),
-            mistakeProvider.overrideWith(() => _MockMistakeNotifier([hindiMistake])),
+            mistakeProvider.overrideWith(
+              () => _MockMistakeNotifier([hindiMistake]),
+            ),
             effectiveTeachingLanguageProvider.overrideWith((ref) => 'bn'),
-            learnerWordsProvider.overrideWith((ref) => AsyncValue.data(mockWords)),
+            learnerWordsProvider.overrideWith(
+              (ref) => AsyncValue.data(mockWords),
+            ),
             quizzesByIdProvider.overrideWith(
               (ref) => const AsyncValue.data(<String, QuizModel>{}),
             ),
@@ -117,10 +122,7 @@ class _MockMistakeNotifier extends MistakeNotifier {
     required int questionIndex,
   }) async {
     state = state
-        .where(
-          (m) =>
-              !(m.quizId == quizId && m.questionIndex == questionIndex),
-        )
+        .where((m) => !(m.quizId == quizId && m.questionIndex == questionIndex))
         .toList();
   }
 }

@@ -55,29 +55,32 @@ void main() {
       expect(localized.explanation, equals('জল'));
     });
 
-    test('re-localizes LessonQuizGenerator-style prompt from Hindi to Bengali', () {
-      final hindiQuestion = QuizQuestion(
-        promptOlChiki: 'ᱫᱟᱜ',
-        promptLatin: 'Choose the correct Hindi meaning:',
-        optionsOlChiki: ['ᱫᱟᱜ', 'ᱫᱟᱠᱟ', 'ᱚᱲᱟᱜ', 'ᱫᱟᱨᱮ'],
-        optionsLatin: ['पानी', 'खाना', 'घर', 'पेड़'],
-        sourceWordId: 'w_water',
-      );
+    test(
+      're-localizes LessonQuizGenerator-style prompt from Hindi to Bengali',
+      () {
+        final hindiQuestion = QuizQuestion(
+          promptOlChiki: 'ᱫᱟᱜ',
+          promptLatin: 'Choose the correct Hindi meaning:',
+          optionsOlChiki: ['ᱫᱟᱜ', 'ᱫᱟᱠᱟ', 'ᱚᱲᱟᱜ', 'ᱫᱟᱨᱮ'],
+          optionsLatin: ['पानी', 'खाना', 'घर', 'पेड़'],
+          sourceWordId: 'w_water',
+        );
 
-      final localized = localizeMistakeQuestion(
-        hindiQuestion,
-        teachingLanguage: 'bn',
-        words: mockWords,
-        quizId: 'dynamic_quiz_lesson_1',
-      );
+        final localized = localizeMistakeQuestion(
+          hindiQuestion,
+          teachingLanguage: 'bn',
+          words: mockWords,
+          quizId: 'dynamic_quiz_lesson_1',
+        );
 
-      expect(
-        localized.promptLatin,
-        equals('Choose the correct Bengali meaning:'),
-      );
-      expect(localized.optionsLatin, equals(['জল', 'খাবার', 'বাড়ি', 'গাছ']));
-      expect(localized.correctIndex, equals(0));
-    });
+        expect(
+          localized.promptLatin,
+          equals('Choose the correct Bengali meaning:'),
+        );
+        expect(localized.optionsLatin, equals(['জল', 'খাবার', 'বাড়ি', 'গাছ']));
+        expect(localized.correctIndex, equals(0));
+      },
+    );
 
     test('re-localizes number question snapshot from Hindi to Bengali', () {
       final hindiNumberQ = QuizQuestion(
@@ -123,22 +126,25 @@ void main() {
       expect(localized.correctIndex, equals(0));
     });
 
-    test('falls back to dictionary reverse-lookup when word corpus is empty', () {
-      final orphanHindiQ = QuizQuestion(
-        promptOlChiki: 'ᱫᱟᱜ',
-        promptLatin: 'इस शब्द का सही अर्थ चुनें:',
-        optionsLatin: ['पानी', 'खाना', 'घर', 'पेड़'],
-      );
+    test(
+      'falls back to dictionary reverse-lookup when word corpus is empty',
+      () {
+        final orphanHindiQ = QuizQuestion(
+          promptOlChiki: 'ᱫᱟᱜ',
+          promptLatin: 'इस शब्द का सही अर्थ चुनें:',
+          optionsLatin: ['पानी', 'खाना', 'घर', 'पेड़'],
+        );
 
-      final localized = localizeMistakeQuestion(
-        orphanHindiQ,
-        teachingLanguage: 'bn',
-      );
+        final localized = localizeMistakeQuestion(
+          orphanHindiQ,
+          teachingLanguage: 'bn',
+        );
 
-      expect(localized.promptLatin, equals('এই শব্দটির সঠিক অর্থ বেছে নিন:'));
-      expect(localized.optionsLatin, equals(['জল', 'খাবার', 'বাড়ি', 'গাছ']));
-      expect(localized.correctIndex, equals(0));
-    });
+        expect(localized.promptLatin, equals('এই শব্দটির সঠিক অর্থ বেছে নিন:'));
+        expect(localized.optionsLatin, equals(['জল', 'খাবার', 'বাড়ি', 'গাছ']));
+        expect(localized.correctIndex, equals(0));
+      },
+    );
 
     test('re-localizes into Odia, Hindi, and English without regressions', () {
       final bengaliQ = QuizQuestion(

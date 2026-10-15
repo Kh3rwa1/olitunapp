@@ -14,10 +14,12 @@ import '../presentation/widgets/quiz_feedback_panel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../features/profile/presentation/providers/user_stats_provider.dart';
 import '../../review/data/review_store_notifier.dart';
 import '../../review/domain/review_item.dart';
 import '../domain/quiz_memory_resolver.dart';
 import '../domain/mistake_question_localizer.dart';
+import '../data/quizzes_provider.dart';
 
 class MistakeReviewScreen extends ConsumerStatefulWidget {
   const MistakeReviewScreen({super.key});

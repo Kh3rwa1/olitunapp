@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:itun/core/config/appwrite_config.dart';
+import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'bodhan_voice_catalog.dart';
@@ -124,7 +125,9 @@ class SantaliTtsService {
       'style': style,
     };
     final url = SantaliVoiceConfig.executionUrl;
-    if (SantaliVoiceConfig.functionId.isEmpty && url.isEmpty) {
+    if (SantaliVoiceConfig.functionId.isEmpty &&
+        url.isEmpty &&
+        CloudflareConfig.voiceSynthesizeEndpoint.isEmpty) {
       return (
         clip: null,
         failure: const VoiceFailure(
@@ -134,7 +137,27 @@ class SantaliTtsService {
     }
 
     try {
-      // Preferred: SDK execution with the user's session.
+      // 1. Preferred: Cloudflare Edge API for fast synthesized speech
+      const edgeUrl = CloudflareConfig.voiceSynthesizeEndpoint;
+      if (edgeUrl.isNotEmpty) {
+        try {
+          final res = await _client
+              .post(
+                Uri.parse(edgeUrl),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode(body),
+              )
+              .timeout(const Duration(seconds: 15));
+          if (res.statusCode == 200 || res.statusCode == 201) {
+            final parsed = _parseFunctionPayload(res.body);
+            if (parsed.clip != null) return parsed;
+          }
+        } catch (e) {
+          AppLogger.debug('Cloudflare voice synthesize error: $e');
+        }
+      }
+
+      // 2. Fallback: SDK execution with the user's session.
       final execMatch = RegExp(
         r'/functions/([^/]+)/executions',
       ).firstMatch(url);
@@ -261,7 +284,9 @@ class SantaliTtsService {
         failure: const VoiceFailure('Unexpected voice response. Try again.'),
       );
     }
-    if (parsed['success'] != true || parsed['data'] is! Map) {
+    final d = parsed['data'] is Map ? (parsed['data'] as Map) : parsed;
+    final audioUrl = d['audioUrl'] as String?;
+    if (audioUrl == null || audioUrl.isEmpty) {
       final code = parsed['error'] as String?;
       final message =
           parsed['message'] as String? ?? 'Voice generation failed.';
@@ -271,22 +296,7 @@ class SantaliTtsService {
           failure: VoiceFailure(message, loginRequired: true),
         );
       }
-      if (code == 'INPUT_TOO_LONG' ||
-          code == 'INVALID_INPUT' ||
-          code == 'UNSUPPORTED_VOICE' ||
-          code == 'UNSUPPORTED_STYLE' ||
-          code == 'UPSTREAM_REJECTED') {
-        return (clip: null, failure: VoiceFailure(message));
-      }
       return (clip: null, failure: VoiceFailure(message));
-    }
-    final d = parsed['data'] as Map;
-    final audioUrl = d['audioUrl'] as String?;
-    if (audioUrl == null || audioUrl.isEmpty) {
-      return (
-        clip: null,
-        failure: const VoiceFailure('Voice came back empty. Try again.'),
-      );
     }
     return (
       clip: VoiceClip(

@@ -37,6 +37,9 @@ class AppColors {
   static const Color accentOchreDark = santaliOchreDark;
   static const Color accentPurple = Color(0xFF8B5CF6);
   static const Color accentPurpleDark = Color(0xFF7C3AED);
+
+  /// Call-to-action button inside native ad templates.
+  static const Color adCallToAction = Color(0xFF6C5CE7);
   static const Color accentTerracotta = santaliTerracotta;
   static const Color accentTerracottaDark = santaliTerracottaDark;
   static const Color accentGold = Color(0xFFF59E0B);

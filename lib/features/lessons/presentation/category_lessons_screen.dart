@@ -481,10 +481,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 duration: 450.ms,
                               );
 
-                      // One inline ad every 3 lessons: an ad after every
-                      // lesson mostly loaded off-screen and was never seen.
-                      if (lessonIndex % 3 == 2 &&
-                          lessonIndex < orderedLessons.length - 1) {
+                      // A lesson-styled ad between every two lessons. Each
+                      // loads only as it nears the screen.
+                      if (lessonIndex < orderedLessons.length - 1) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

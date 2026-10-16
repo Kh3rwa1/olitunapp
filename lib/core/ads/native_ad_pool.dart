@@ -15,7 +15,7 @@ NativeTemplateStyle olitunNativeTemplateStyle({
   Color? backgroundColor,
   double cornerRadius = 20,
 }) {
-  final accent = accentColor ?? const Color(0xFF6C5CE7);
+  final accent = accentColor ?? AppColors.adCallToAction;
   return NativeTemplateStyle(
     templateType: templateType,
     mainBackgroundColor: olitunNativeBackground(isDark, backgroundColor),

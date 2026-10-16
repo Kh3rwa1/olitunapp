@@ -288,7 +288,6 @@ void main() {
       final harness = await AdHarness.mount(
         tester,
         service,
-        child: const SizedBox(),
         runtime: ControlledAdRuntime(),
       );
       final pool = harness.container.read(nativeAdPoolProvider);

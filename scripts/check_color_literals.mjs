@@ -32,7 +32,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/quiz/presentation/widgets/quiz_complete_mistakes_sheet.dart": 3,
   "lib/features/content/presentation/widgets/story_player_body_views.dart": 1,
   "lib/features/admin/presentation/lessons/content/widgets/lesson_block_card_sections.dart": 2,
-  "lib/core/ads/widgets/native_ad_widget.dart": 1,
   "lib/features/admin/presentation/analytics/widgets/admin_analytics_cards.dart": 2,
   "lib/features/admin/presentation/banners/widgets/banner_form_sheet.dart": 1,
   "lib/features/admin/presentation/categories/widgets/category_form_sheet.dart": 2,

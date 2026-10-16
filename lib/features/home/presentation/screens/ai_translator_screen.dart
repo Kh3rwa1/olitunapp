@@ -406,12 +406,14 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       curve: Curves.easeOutBack,
                     ),
 
-                  if (_result.isEmpty && !_isLoading) ...[
-                    const SizedBox(height: 16),
-                    const RepaintBoundary(
-                      child: NativeAdWidget(placement: 'translator_native'),
+                  // Always on screen: before translating it fills the blank
+                  // space, afterwards it sits below the result.
+                  const SizedBox(height: 16),
+                  const RepaintBoundary(
+                    child: NativeAdWidget.medium(
+                      placement: 'translator_native',
                     ),
-                  ],
+                  ),
                   const SizedBox(height: 90),
                 ],
               ),

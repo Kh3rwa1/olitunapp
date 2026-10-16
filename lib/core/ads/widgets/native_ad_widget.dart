@@ -278,7 +278,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     final generation = _generation;
     try {
       final banner = _adService.createBannerAd(
-        size: _isMedium ? AdSize.mediumRectangle : AdSize.largeBanner,
+        // 320x50 is the most widely bought size, so it fills best.
+        size: _isMedium ? AdSize.mediumRectangle : AdSize.banner,
         onLoaded: (ad) => _onAdLoaded(ad, generation, 'banner'),
         onFailed: (ad, error) {
           if (!_accepts(generation)) return;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   OcrError,
+  dropBlocks,
   decodeJobToken,
   encodeJobToken,
   ocrStatus,
@@ -167,6 +168,12 @@ describe('Sarvam OCR', () => {
     }) as typeof fetch;
     const job = await startOcr(deps(fetchImpl), file, 'sat-IN');
     expect(job.text).toBe('ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\nᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ\nᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ');
+  });
+
+  it('drops script and style blocks completely, even when nested or unterminated', () => {
+    expect(dropBlocks('a<script>x</script>b<STYLE>y</style >c', ['script', 'style'])).toBe('abc');
+    expect(dropBlocks('a<scr<script>ipt>evil</script>b', ['script', 'style'])).not.toMatch(/<script/i);
+    expect(dropBlocks('a<script>never closed', ['script'])).toBe('a');
   });
 
   it('turns Sarvam page HTML into plain lines', () => {

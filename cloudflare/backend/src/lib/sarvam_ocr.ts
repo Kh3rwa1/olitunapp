@@ -123,7 +123,33 @@ export function htmlBody(html: string): string {
   const open = html.search(/<body[\s>]/i);
   const close = html.search(/<\/body\s*>/i);
   const body = open >= 0 ? html.slice(html.indexOf('>', open) + 1, close > open ? close : undefined) : html;
-  return body.replace(/<(script|style)[\s\S]*?<\/\1\s*>/gi, '');
+  return dropBlocks(body, ['script', 'style']);
+}
+
+/**
+ * Removes whole <script>/<style> elements with a scanner rather than a
+ * regex (regex removal can leave fragments that re-form a tag). Each pass
+ * cuts from the opening tag through its closing tag, or to the end when it
+ * is unterminated, so no opening tag survives.
+ */
+export function dropBlocks(html: string, names: string[]): string {
+  let out = html;
+  for (;;) {
+    const lower = out.toLowerCase();
+    let start = -1;
+    let name = '';
+    for (const n of names) {
+      const at = lower.indexOf(`<${n}`);
+      if (at !== -1 && (start === -1 || at < start)) {
+        start = at;
+        name = n;
+      }
+    }
+    if (start === -1) return out;
+    const closeAt = lower.indexOf(`</${name}`, start);
+    const end = closeAt === -1 ? out.length : (lower.indexOf('>', closeAt) + 1 || out.length);
+    out = out.slice(0, start) + out.slice(end);
+  }
 }
 
 /** Plain text from a digitise result: pages in order, markup removed. */

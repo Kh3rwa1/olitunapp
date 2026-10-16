@@ -13,7 +13,7 @@ void main() {
 
     test('default frequency caps have reasonable limits', () {
       expect(AdConfig.defaultInterstitialIntervalMinutes, equals(2));
-      expect(AdConfig.defaultRewardedCooldownMinutes, equals(10));
+      expect(AdConfig.defaultRewardedCooldownMinutes, equals(3));
     });
 
     test('provides non-empty sample fallback ad unit IDs', () {

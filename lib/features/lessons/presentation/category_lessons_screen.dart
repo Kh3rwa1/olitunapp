@@ -61,10 +61,13 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   void _showLockedLessonOverlay({
     required String? blockingLessonTitle,
     required String? blockingLessonId,
+    required String lessonId,
   }) {
     try {
       LockedLessonOverlay.show(
         context,
+        unlockLessonId: lessonId,
+        onUnlocked: () => context.push('/lesson/$lessonId'),
         blockingLessonTitle: blockingLessonTitle,
         onStartBlockingLesson: () {
           if (blockingLessonId != null && blockingLessonId.isNotEmpty) {
@@ -182,6 +185,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final completedLessonIds = ref.watch(completedLessonIdsProvider);
+    final adUnlockedLessonIds = ref.watch(adUnlockedLessonIdsProvider);
     final ownedCategoryIds =
         ref.watch(purchasedCategoriesProvider).valueOrNull ?? const <String>{};
     final scriptMode = ref.watch(effectiveScriptModeProvider);
@@ -383,6 +387,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         orderedLessons: orderedLessons,
                         completedLessonIds: completedLessonIds,
                         lessonId: lesson.id,
+                        unlockedLessonIds: adUnlockedLessonIds,
                       );
                       final requiresPurchase = lessonRequiresPurchase(
                         lesson: lesson,
@@ -398,6 +403,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         orderedLessons: orderedLessons,
                         completedLessonIds: completedLessonIds,
                         lessonId: lesson.id,
+                        unlockedLessonIds: adUnlockedLessonIds,
                       );
 
                       final primaryTitle = primaryLocalizedText(
@@ -440,6 +446,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                             _showLockedLessonOverlay(
                               blockingLessonTitle: blockingLessonTitle,
                               blockingLessonId: blockingLesson?.id,
+                              lessonId: lesson.id,
                             );
                             return;
                           }

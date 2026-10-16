@@ -1225,5 +1225,9 @@
     "paywallNotConfigured": "ବର୍ତ୍ତମାନ କିଣିବା ଉପଲବ୍ଧ ନାହିଁ। ଦୟାକରି ପରେ ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।",
     "paywallVerificationPending": "ପେମେଣ୍ଟ ମିଳିଲା। ଆମେ ଶୀଘ୍ର ଆପଣଙ୍କ ଅନଲକ୍ ନିଶ୍ଚିତ କରିବୁ।",
     "paywallAndroidOnly": "କିଣିବା Olitun Android ଆପରେ ଉପଲବ୍ଧ।",
-    "paywallLockedLessonMessage": "ଏହି ପାଠ ଏକ ପେଡ୍ କୋର୍ସର ଅଂଶ। ଆଗକୁ ବଢ଼ିବା ପାଇଁ କୋର୍ସ ଅନଲକ୍ କରନ୍ତୁ।"
+    "paywallLockedLessonMessage": "ଏହି ପାଠ ଏକ ପେଡ୍ କୋର୍ସର ଅଂଶ। ଆଗକୁ ବଢ଼ିବା ପାଇଁ କୋର୍ସ ଅନଲକ୍ କରନ୍ତୁ।",
+    "watchAdUnlockLesson": "ଏବେ ଅନଲକ୍ କରିବାକୁ ଏକ ଛୋଟ ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ",
+    "lessonUnlockedByAd": "ପାଠ ଅନଲକ୍ ହେଲା! ଉପଭୋଗ କରନ୍ତୁ।",
+    "dailyBonusTitle": "ମାଗଣା ବୋନସ୍ ତାରା",
+    "dailyBonusBody": "ଏକ ଛୋଟ ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ ଏବଂ ୫୦ ତାରା ପାଆନ୍ତୁ।"
 }

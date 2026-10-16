@@ -241,5 +241,5 @@ class AdConfig {
   static const Duration noFillPause = Duration(seconds: 90);
 
   /// Default rewarded ad cooldown in minutes.
-  static const int defaultRewardedCooldownMinutes = 10;
+  static const int defaultRewardedCooldownMinutes = 3;
 }

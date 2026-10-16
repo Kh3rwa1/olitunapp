@@ -1225,5 +1225,9 @@
     "paywallNotConfigured": "এই মুহূর্তে কেনাকাটা উপলব্ধ নয়। অনুগ্রহ করে পরে আবার চেষ্টা করুন।",
     "paywallVerificationPending": "পেমেন্ট পাওয়া গেছে। আমরা শীঘ্রই আপনার আনলক নিশ্চিত করব।",
     "paywallAndroidOnly": "কেনাকাটা Olitun Android অ্যাপে উপলব্ধ।",
-    "paywallLockedLessonMessage": "এই পাঠটি একটি পেইড কোর্সের অংশ। চালিয়ে যেতে কোর্সটি আনলক করুন।"
+    "paywallLockedLessonMessage": "এই পাঠটি একটি পেইড কোর্সের অংশ। চালিয়ে যেতে কোর্সটি আনলক করুন।",
+    "watchAdUnlockLesson": "এখনই আনলক করতে একটি ছোট বিজ্ঞাপন দেখুন",
+    "lessonUnlockedByAd": "পাঠ আনলক হয়েছে! উপভোগ করুন।",
+    "dailyBonusTitle": "বিনামূল্যে বোনাস তারা",
+    "dailyBonusBody": "একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।"
 }

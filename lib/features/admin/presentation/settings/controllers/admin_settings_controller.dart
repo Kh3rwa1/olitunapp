@@ -40,7 +40,7 @@ class AdminSettingsState {
     this.adMobNativeIdOverride = '',
     this.adMobAppOpenIdOverride = '',
     this.adMobInterstitialCapMinutes = 3,
-    this.adMobRewardedCooldownMinutes = 10,
+    this.adMobRewardedCooldownMinutes = AdConfig.defaultRewardedCooldownMinutes,
     this.translationEngine = 'cloudflare',
     this.savingKey,
     this.failure,
@@ -258,7 +258,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
           int.tryParse(
             settings['admob_rewarded_cooldown_minutes']?.toString() ?? '',
           ) ??
-          10;
+          AdConfig.defaultRewardedCooldownMinutes;
 
       // Sync with global AdState
       applyAdRemoteSettings(ref.read(adStateProvider.notifier), settings);
@@ -373,7 +373,8 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         updated = updated.copyWith(adMobInterstitialCapMinutes: cap);
         ref.read(adStateProvider.notifier).setInterstitialIntervalMinutes(cap);
       } else if (key == 'admob_rewarded_cooldown_minutes') {
-        final cd = int.tryParse(value) ?? 10;
+        final cd =
+            int.tryParse(value) ?? AdConfig.defaultRewardedCooldownMinutes;
         updated = updated.copyWith(adMobRewardedCooldownMinutes: cd);
         ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(cd);
       } else if (key == 'translation_engine') {

@@ -2119,4 +2119,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get paywallLockedLessonMessage =>
       'This lesson is part of a paid course. Unlock the course to continue.';
+
+  @override
+  String get watchAdUnlockLesson => 'Watch a short ad to unlock now';
+
+  @override
+  String get lessonUnlockedByAd => 'Lesson unlocked! Enjoy.';
+
+  @override
+  String get dailyBonusTitle => 'Free bonus stars';
+
+  @override
+  String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
 }

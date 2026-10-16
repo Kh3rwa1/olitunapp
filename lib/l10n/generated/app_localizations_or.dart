@@ -2110,4 +2110,16 @@ class AppLocalizationsOr extends AppLocalizations {
   @override
   String get paywallLockedLessonMessage =>
       'ଏହି ପାଠ ଏକ ପେଡ୍ କୋର୍ସର ଅଂଶ। ଆଗକୁ ବଢ଼ିବା ପାଇଁ କୋର୍ସ ଅନଲକ୍ କରନ୍ତୁ।';
+
+  @override
+  String get watchAdUnlockLesson => 'ଏବେ ଅନଲକ୍ କରିବାକୁ ଏକ ଛୋଟ ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ';
+
+  @override
+  String get lessonUnlockedByAd => 'ପାଠ ଅନଲକ୍ ହେଲା! ଉପଭୋଗ କରନ୍ତୁ।';
+
+  @override
+  String get dailyBonusTitle => 'ମାଗଣା ବୋନସ୍ ତାରା';
+
+  @override
+  String get dailyBonusBody => 'ଏକ ଛୋଟ ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ ଏବଂ ୫୦ ତାରା ପାଆନ୍ତୁ।';
 }

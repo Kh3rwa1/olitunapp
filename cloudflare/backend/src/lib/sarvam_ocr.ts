@@ -72,7 +72,7 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}, raw = fa
   if (!res.ok) {
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, `Sarvam request failed (${res.status}).`);
   }
-  if (raw) return res.text();
+  if (raw) return new Uint8Array(await res.arrayBuffer());
   try {
     return await res.json();
   } catch {
@@ -179,6 +179,85 @@ export function resultText(result: any): string {
   return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
 }
 
+// ---- ZIP results -----------------------------------------------------------
+
+const MAX_UNZIPPED = 5 * 1024 * 1024;
+
+export function isZip(bytes: Uint8Array): boolean {
+  return bytes.length > 4 && bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
+}
+
+/**
+ * The text of the HTML (or Markdown) entry in a results ZIP. Reads the
+ * central directory (sizes in local headers may be zero when a data
+ * descriptor is used) and inflates with the runtime's DecompressionStream.
+ */
+export async function zipHtml(bytes: Uint8Array): Promise<string> {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  let eocd = -1;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 22 - 0xffff); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd < 0) throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam results archive is unreadable.');
+  const count = view.getUint16(eocd + 10, true);
+  let at = view.getUint32(eocd + 16, true);
+  const entries: { name: string; method: number; size: number; offset: number }[] = [];
+  for (let n = 0; n < count && at + 46 <= bytes.length; n++) {
+    if (view.getUint32(at, true) !== 0x02014b50) break;
+    const nameLen = view.getUint16(at + 28, true);
+    entries.push({
+      method: view.getUint16(at + 10, true),
+      size: view.getUint32(at + 20, true),
+      offset: view.getUint32(at + 42, true),
+      name: new TextDecoder().decode(bytes.subarray(at + 46, at + 46 + nameLen)),
+    });
+    at += 46 + nameLen + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+  }
+  const entry =
+    entries.find((e) => /\.html?$/i.test(e.name)) ?? entries.find((e) => /\.md$/i.test(e.name));
+  if (!entry) {
+    console.error(`Sarvam OCR results ZIP has no html/md entry: ${entries.map((e) => e.name).join(', ')}`);
+    throw new OcrError('EMPTY_RESULT', 422, 'No text was found in this document.');
+  }
+  const local = entry.offset;
+  if (view.getUint32(local, true) !== 0x04034b50) {
+    throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam results archive is unreadable.');
+  }
+  const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
+  const data = bytes.subarray(start, start + entry.size);
+  let out: Uint8Array;
+  if (entry.method === 0) {
+    out = data;
+  } else if (entry.method === 8) {
+    const stream = new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    const reader = stream.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.length;
+      if (total > MAX_UNZIPPED) {
+        await reader.cancel();
+        throw new OcrError('PROVIDER_UNAVAILABLE', 502, 'Sarvam result is too large.');
+      }
+      chunks.push(value);
+    }
+    out = new Uint8Array(total);
+    let o = 0;
+    for (const c of chunks) {
+      out.set(c, o);
+      o += c.length;
+    }
+  } else {
+    throw new OcrError('PROVIDER_UNAVAILABLE', 502, `Unsupported archive compression (${entry.method}).`);
+  }
+  return new TextDecoder().decode(out);
+}
+
 // ---- Job token -----------------------------------------------------------
 
 const SARVAM_ID = /^(\d{8})_([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})$/;
@@ -263,14 +342,15 @@ async function check(deps: Deps, sarvamId: string): Promise<{ status: string; te
   if (!SUCCESS.has(state)) {
     throw new OcrError('OCR_FAILED', 422, `Sarvam could not read this document (${state}).`);
   }
-  // format=html returns the page HTML itself; other shapes are JSON with
-  // documents[].pages[].content. Accept both.
-  const body: string = await sarvam(deps, `${path}/results?format=html`, {}, true);
+  // format=html returns a ZIP archive (document.html plus metadata); some
+  // responses are plain HTML or JSON with documents[].pages[].content.
+  const bytes: Uint8Array = await sarvam(deps, `${path}/results?format=html`, {}, true);
+  const body = isZip(bytes) ? await zipHtml(bytes) : new TextDecoder().decode(bytes);
   let parsed: any = null;
   try {
     parsed = JSON.parse(body);
   } catch {
-    // Not JSON: the HTML document itself.
+    // Not JSON: an HTML document.
   }
   const text = parsed && typeof parsed === 'object'
     ? resultText(parsed)

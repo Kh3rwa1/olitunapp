@@ -54,6 +54,8 @@ jobs:
             EOF
           fi
 
+      - name: Install Android NDK (with retries)
+        run: bash scripts/ci/install_android_ndk.sh
       - name: Build APK (Release)
         env:
           APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}

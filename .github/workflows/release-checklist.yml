@@ -144,6 +144,8 @@ jobs:
           storeFile=upload-keystore.jks
           EOF
 
+      - name: Install Android NDK (with retries)
+        run: bash scripts/ci/install_android_ndk.sh
       - name: Build Android Release APK
         run: |
           flutter build apk --release \

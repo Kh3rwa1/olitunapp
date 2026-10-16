@@ -53,7 +53,6 @@ void main() {
         AdState(
           consentAllowsAds: true,
           lastAppOpenShownAt: now.subtract(const Duration(minutes: 30)),
-          appOpenIntervalMinutes: 120,
         ).canShowAppOpen(),
         isFalse,
       );
@@ -68,7 +67,6 @@ void main() {
         AdState(
           consentAllowsAds: true,
           lastAppOpenShownAt: now.subtract(const Duration(hours: 3)),
-          appOpenIntervalMinutes: 120,
         ).canShowAppOpen(),
         isTrue,
       );

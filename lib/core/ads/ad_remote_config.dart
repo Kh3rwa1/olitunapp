@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../shared/providers/app_settings_provider.dart';
+import '../config/app_settings_provider.dart';
 import '../config/ad_config.dart';
 import 'ad_state.dart';
 

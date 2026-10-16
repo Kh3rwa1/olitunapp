@@ -190,7 +190,10 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                         child: Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: RepaintBoundary(
-                            child: BannerAdWidget(placement: 'rhymes_bottom'),
+                            child: BannerAdWidget(
+                              placement: 'rhymes_bottom',
+                              avoidSystemBar: false,
+                            ),
                           ),
                         ),
                       ),

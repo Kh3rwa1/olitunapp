@@ -186,7 +186,10 @@ class ProgressScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 24),
                         const RepaintBoundary(
-                          child: BannerAdWidget(placement: 'profile_bottom'),
+                          child: BannerAdWidget(
+                            placement: 'profile_bottom',
+                            avoidSystemBar: false,
+                          ),
                         ),
                         SizedBox(
                           height: isDesktop

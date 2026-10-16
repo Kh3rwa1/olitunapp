@@ -18,7 +18,16 @@ import 'near_viewport_loader.dart';
 class BannerAdWidget extends ConsumerStatefulWidget {
   final String placement;
 
-  const BannerAdWidget({super.key, this.placement = 'default_bottom'});
+  /// Pads the banner above the system navigation/gesture bar. On for
+  /// banners used as a Scaffold's bottom bar (edge-to-edge would otherwise
+  /// draw the ad under the gesture handle); off for banners inside content.
+  final bool avoidSystemBar;
+
+  const BannerAdWidget({
+    super.key,
+    this.placement = 'default_bottom',
+    this.avoidSystemBar = true,
+  });
 
   @override
   ConsumerState<BannerAdWidget> createState() => _BannerAdWidgetState();
@@ -318,9 +327,14 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final bottomInset = widget.avoidSystemBar
+        ? MediaQuery.viewPaddingOf(context).bottom
+        : 0.0;
+
     return Container(
       width: ad.size.width.toDouble(),
-      height: ad.size.height.toDouble(),
+      height: ad.size.height.toDouble() + bottomInset,
+      padding: EdgeInsets.only(bottom: bottomInset),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,

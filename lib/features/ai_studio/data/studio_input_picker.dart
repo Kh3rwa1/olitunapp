@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:itun/features/ai_studio/data/ai_studio_service.dart';
+import 'package:itun/core/ads/ad_service.dart';
 
 class StudioInputPicker {
   const StudioInputPicker();
@@ -17,6 +18,7 @@ class StudioInputPicker {
   Future<StudioInput?> capturePage() => _camera();
 
   Future<StudioInput?> _camera() async {
+    AdService.instance.skipNextAppOpen();
     final picked = await ImagePicker().pickImage(
       source: ImageSource.camera,
       maxWidth: 2480,
@@ -30,6 +32,7 @@ class StudioInputPicker {
     required FileType type,
     List<String>? allowedExtensions,
   }) async {
+    AdService.instance.skipNextAppOpen();
     final picked = await FilePicker.platform.pickFiles(
       type: type,
       allowedExtensions: allowedExtensions,

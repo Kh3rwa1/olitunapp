@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../logging/app_logger.dart';
+import 'package:itun/core/ads/ad_service.dart';
 
 enum ShareOutcome { shared, copiedToClipboard, downloaded, cancelled, failed }
 
@@ -59,6 +60,7 @@ class GrowthShareService {
       final file = File('${tempDir.path}/$sanitizedFilename');
       await file.writeAsBytes(imageBytes);
 
+      AdService.instance.skipNextAppOpen();
       final result = await SharePlus.instance.share(
         ShareParams(
           title: title,
@@ -95,6 +97,7 @@ class GrowthShareService {
     }
 
     try {
+      AdService.instance.skipNextAppOpen();
       final result = await SharePlus.instance.share(
         ShareParams(
           title: title,

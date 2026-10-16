@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
 import '../analytics/analytics_service.dart';
 import '../logging/app_logger.dart';
 import '../observability/crash_reporting.dart';
+import '../config/ad_config.dart';
 import 'ad_service.dart';
 import 'ad_state.dart';
 
@@ -21,6 +22,7 @@ class RewardedAdManager with WidgetsBindingObserver {
   Completer<bool>? _presentation;
 
   RewardedAd? _rewardedAd;
+  DateTime? _loadedAt;
   bool _isLoading = false;
 
   RewardedAdManager(this._ref) : _adService = _ref.read(adServiceProvider) {
@@ -54,6 +56,7 @@ class RewardedAdManager with WidgetsBindingObserver {
             return;
           }
           _rewardedAd = ad;
+          _loadedAt = DateTime.now();
           _ref.read(adStateProvider.notifier).resetErrors('rewarded');
         },
       );
@@ -118,6 +121,13 @@ class RewardedAdManager with WidgetsBindingObserver {
       return false;
     }
 
+    final loadedAt = _loadedAt;
+    if (_rewardedAd != null &&
+        loadedAt != null &&
+        DateTime.now().difference(loadedAt) > AdConfig.fullScreenAdTtl) {
+      clearCachedAd();
+    }
+
     if (_rewardedAd == null) {
       AppLogger.debug(
         'RewardedAdManager: Ad not ready for placement: $placement',
@@ -177,6 +187,7 @@ class RewardedAdManager with WidgetsBindingObserver {
       onAdDismissedFullScreenContent: (ad) async {
         if (ended) return;
         ended = true;
+        _adService.markFullScreenAdShowing(false);
         AppLogger.debug('RewardedAdManager: Ad dismissed ($placement)');
         _adService.releaseAd(ad);
         await showAccepted.future;
@@ -219,6 +230,7 @@ class RewardedAdManager with WidgetsBindingObserver {
       onAdFailedToShowFullScreenContent: (ad, error) {
         if (ended) return;
         ended = true;
+        _adService.markFullScreenAdShowing(false);
         showFailed = true;
         AppLogger.debug(
           'RewardedAdManager: Ad failed to show ($placement): ${error.message}',
@@ -264,6 +276,7 @@ class RewardedAdManager with WidgetsBindingObserver {
     );
 
     try {
+      _adService.markFullScreenAdShowing(true);
       await ad.show(
         onUserEarnedReward: (ad, reward) {
           if (_disposed || ended || showFailed) return;
@@ -296,6 +309,7 @@ class RewardedAdManager with WidgetsBindingObserver {
     } catch (error, stack) {
       showFailed = true;
       ended = true;
+      _adService.markFullScreenAdShowing(false);
       _adService.releaseAd(ad);
       if (!completer.isCompleted) completer.complete(false);
       CrashReporting.recordError(error, stack);

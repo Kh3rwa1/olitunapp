@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/ads/ad_remote_config.dart';
 import '../../../../../core/ads/ad_state.dart';
 import '../../../../../core/api/admin_content_client.dart';
+import '../../../../../core/config/ad_config.dart';
 import '../../../../../core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -36,6 +38,7 @@ class AdminSettingsState {
     this.adMobInterstitialIdOverride = '',
     this.adMobRewardedIdOverride = '',
     this.adMobNativeIdOverride = '',
+    this.adMobAppOpenIdOverride = '',
     this.adMobInterstitialCapMinutes = 3,
     this.adMobRewardedCooldownMinutes = 10,
     this.translationEngine = 'cloudflare',
@@ -58,6 +61,7 @@ class AdminSettingsState {
   final String adMobInterstitialIdOverride;
   final String adMobRewardedIdOverride;
   final String adMobNativeIdOverride;
+  final String adMobAppOpenIdOverride;
   final int adMobInterstitialCapMinutes;
   final int adMobRewardedCooldownMinutes;
   final String translationEngine;
@@ -89,6 +93,7 @@ class AdminSettingsState {
     String? adMobInterstitialIdOverride,
     String? adMobRewardedIdOverride,
     String? adMobNativeIdOverride,
+    String? adMobAppOpenIdOverride,
     int? adMobInterstitialCapMinutes,
     int? adMobRewardedCooldownMinutes,
     String? translationEngine,
@@ -119,6 +124,8 @@ class AdminSettingsState {
           adMobRewardedIdOverride ?? this.adMobRewardedIdOverride,
       adMobNativeIdOverride:
           adMobNativeIdOverride ?? this.adMobNativeIdOverride,
+      adMobAppOpenIdOverride:
+          adMobAppOpenIdOverride ?? this.adMobAppOpenIdOverride,
       adMobInterstitialCapMinutes:
           adMobInterstitialCapMinutes ?? this.adMobInterstitialCapMinutes,
       adMobRewardedCooldownMinutes:
@@ -241,11 +248,12 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
           settings['admob_interstitial_id'] as String? ?? '';
       final rewardedIdOverride = settings['admob_rewarded_id'] as String? ?? '';
       final nativeIdOverride = settings['admob_native_id'] as String? ?? '';
+      final appOpenIdOverride = settings['admob_app_open_id'] as String? ?? '';
       final interstitialCap =
           int.tryParse(
             settings['admob_interstitial_cap_minutes']?.toString() ?? '',
           ) ??
-          3;
+          AdConfig.defaultInterstitialIntervalMinutes;
       final rewardedCooldown =
           int.tryParse(
             settings['admob_rewarded_cooldown_minutes']?.toString() ?? '',
@@ -253,13 +261,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
           10;
 
       // Sync with global AdState
-      ref.read(adStateProvider.notifier).setGlobalAdsEnabled(isAdsEnabled);
-      ref
-          .read(adStateProvider.notifier)
-          .setInterstitialIntervalMinutes(interstitialCap);
-      ref
-          .read(adStateProvider.notifier)
-          .setRewardedCooldownMinutes(rewardedCooldown);
+      applyAdRemoteSettings(ref.read(adStateProvider.notifier), settings);
 
       final nextState = AdminSettingsState(
         status: AdminSettingsStatus.loaded,
@@ -276,6 +278,7 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         adMobInterstitialIdOverride: interstitialIdOverride,
         adMobRewardedIdOverride: rewardedIdOverride,
         adMobNativeIdOverride: nativeIdOverride,
+        adMobAppOpenIdOverride: appOpenIdOverride,
         adMobInterstitialCapMinutes: interstitialCap,
         adMobRewardedCooldownMinutes: rewardedCooldown,
         translationEngine:
@@ -362,8 +365,11 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         updated = updated.copyWith(adMobRewardedIdOverride: value);
       } else if (key == 'admob_native_id') {
         updated = updated.copyWith(adMobNativeIdOverride: value);
+      } else if (key == 'admob_app_open_id') {
+        updated = updated.copyWith(adMobAppOpenIdOverride: value);
       } else if (key == 'admob_interstitial_cap_minutes') {
-        final cap = int.tryParse(value) ?? 3;
+        final cap =
+            int.tryParse(value) ?? AdConfig.defaultInterstitialIntervalMinutes;
         updated = updated.copyWith(adMobInterstitialCapMinutes: cap);
         ref.read(adStateProvider.notifier).setInterstitialIntervalMinutes(cap);
       } else if (key == 'admob_rewarded_cooldown_minutes') {

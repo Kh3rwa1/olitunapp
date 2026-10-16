@@ -354,7 +354,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 20),
             // One optional ad, after the learning actions and content grid.
             const RepaintBoundary(
-              child: NativeAdWidget(placement: 'home_native_bottom'),
+              child: NativeAdWidget.medium(placement: 'home_native_bottom'),
             ),
             const SizedBox(height: 20),
             // Santali AI Voice studio promo — bottom of home, the viral

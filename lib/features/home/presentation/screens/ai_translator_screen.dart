@@ -11,6 +11,7 @@ import '../../../../core/motion/motion.dart';
 import '../../../../shared/widgets/ai_spark_assistant.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import '../../../../core/ads/interstitial_ad_manager.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
@@ -156,7 +157,12 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 color: isDark ? Colors.white : Colors.black,
               ),
               tooltip: 'Close translator',
-              onPressed: () => context.pop(),
+              onPressed: () async {
+                await ref
+                    .read(interstitialAdManagerProvider)
+                    .showIfAllowed(context, 'translator_exit');
+                if (context.mounted) context.pop();
+              },
             ),
           ),
         ),

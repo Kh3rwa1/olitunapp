@@ -13,6 +13,7 @@ import '../../theme/app_colors.dart';
 import '../ad_service.dart';
 import '../ad_state.dart';
 import 'ad_widget_runtime.dart';
+import 'near_viewport_loader.dart';
 
 class BannerAdWidget extends ConsumerStatefulWidget {
   final String placement;
@@ -24,12 +25,14 @@ class BannerAdWidget extends ConsumerStatefulWidget {
 }
 
 class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
-    with WidgetsBindingObserver {
+    with WidgetsBindingObserver, NearViewportLoader {
   BannerAd? _bannerAd;
   bool _isLoaded = false;
   bool _hasPersistentError = false;
   int _retryCount = 0;
   static const int _maxRetries = 3;
+  static const int _maxNoFillRetries = 2;
+  static const Duration _noFillRetryDelay = Duration(seconds: 60);
   Timer? _retryTimer;
   late final AdService _adService;
   late final AdWidgetRuntime _runtime;
@@ -45,7 +48,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
     _runtime = ref.read(adWidgetRuntimeProvider);
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadAd();
+      if (mounted) loadWhenNearViewport(_loadAd);
     });
   }
 
@@ -119,6 +122,13 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
     final width = MediaQuery.of(context).size.width.truncate();
     if (width <= 0) return;
 
+    // Banner demand is paused after repeated no-fills; come back later.
+    final wait = _adService.noFillWait('banner');
+    if (wait > Duration.zero) {
+      _scheduleNoFillRetry(wait);
+      return;
+    }
+
     _clearAd();
     final generation = _generation;
 
@@ -137,6 +147,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
             _releaseAfterFrame(ad);
             return;
           }
+          _adService.recordFill('banner');
           final previous = _bannerAd;
           if (previous != null && !identical(previous, ad)) {
             _releaseAfterFrame(previous);
@@ -189,9 +200,16 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
               'BannerAdWidget: failed to log load-fail event: $e',
             );
           }
-          _scheduleRetry();
+          if (AdService.isNoFill(error)) {
+            _adService.recordNoFill('banner');
+            _scheduleNoFillRetry(_noFillRetryDelay);
+          } else {
+            _scheduleRetry();
+          }
         },
         onClicked: (ad) {
+          // A click leaves the app; coming back is not a new visit.
+          _adService.skipNextAppOpen();
           if (!_accepts(generation)) return;
           try {
             ref
@@ -229,13 +247,31 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget>
     }
 
     _retryCount++;
-    final delaySeconds = 1 << (_retryCount - 1); // 1s, 2s, 4s
+    // Network/internal errors: 5s, 15s, 45s.
+    final delaySeconds = 5 * [1, 3, 9][_retryCount - 1];
     _retryTimer?.cancel();
     _retryTimer = Timer(Duration(seconds: delaySeconds), () {
       if (mounted && !_isLoaded) {
         _loadAd();
       }
     });
+  }
+
+  /// No ad available right now: try again later instead of hammering.
+  void _scheduleNoFillRetry(Duration delay) {
+    if (!mounted || !ref.read(adStateProvider).shouldShowAds) return;
+    if (_retryCount >= _maxNoFillRetries) {
+      setState(() => _hasPersistentError = true);
+      return;
+    }
+    _retryCount++;
+    _retryTimer?.cancel();
+    _retryTimer = Timer(
+      delay < _noFillRetryDelay ? _noFillRetryDelay : delay,
+      () {
+        if (mounted && !_isLoaded) _loadAd();
+      },
+    );
   }
 
   @override

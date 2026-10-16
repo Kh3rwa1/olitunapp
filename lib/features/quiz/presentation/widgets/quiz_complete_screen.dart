@@ -176,7 +176,7 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                                 const SizedBox(height: 8),
                                 const RepaintBoundary(
-                                  child: NativeAdWidget(
+                                  child: NativeAdWidget.medium(
                                     placement: 'quiz_complete_native',
                                   ),
                                 ),

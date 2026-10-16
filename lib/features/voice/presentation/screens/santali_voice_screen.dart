@@ -6,6 +6,8 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/ads/interstitial_ad_manager.dart';
+import '../../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../../core/audio/playback_controller.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
@@ -294,7 +296,12 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
                 size: 20,
               ),
               tooltip: l10n.closeVoiceStudio,
-              onPressed: () => context.pop(),
+              onPressed: () async {
+                await ref
+                    .read(interstitialAdManagerProvider)
+                    .showIfAllowed(context, 'voice_exit');
+                if (context.mounted) context.pop();
+              },
             ),
           ),
         ),
@@ -308,6 +315,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
         ),
         centerTitle: true,
       ),
+      bottomNavigationBar: const BannerAdWidget(placement: 'voice_bottom'),
       body: Stack(
         children: [
           StudioBackground(isDark: isDark),

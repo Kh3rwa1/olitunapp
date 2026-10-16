@@ -26,6 +26,7 @@ import 'widgets/progress_screen_sections.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import 'package:itun/core/ads/ad_service.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -242,6 +243,7 @@ class ProgressScreen extends ConsumerWidget {
     ].join('\n');
 
     try {
+      AdService.instance.skipNextAppOpen();
       await SharePlus.instance.share(
         ShareParams(
           title: 'Olitun progress',

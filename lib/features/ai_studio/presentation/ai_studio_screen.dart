@@ -5,6 +5,7 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/sharing/growth_share_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -529,6 +530,12 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     );
   }
 
+  /// The fullscreen spark overlay is up. Scan and transcribe jobs run long
+  /// enough for an ad to be seen there; translate runs as the learner types
+  /// and the overlay only flashes, so it gets no ad.
+  bool get _showsProcessingAd =>
+      _isProcessing && !_sparkDismissed && _tool != StudioTool.translate;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -545,6 +552,14 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
           ? AppColors.translatorDarkBg
           : AppColors.studioLightBg,
       appBar: StudioAppBar(statusBadge: _statusBadge(service.configured)),
+      // One ad on screen at a time: the bar steps aside while the
+      // processing overlay shows its own.
+      bottomNavigationBar: _showsProcessingAd
+          ? null
+          : const SafeArea(
+              top: false,
+              child: NativeAdWidget(placement: 'ai_studio_bottom'),
+            ),
       body: Stack(
         children: [
           const StudioAtmosphere(),
@@ -581,13 +596,38 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
                 duration: const Duration(milliseconds: 280),
                 curve: Curves.easeInOutCubic,
                 child: (_isProcessing && !_sparkDismissed)
-                    ? AiSparkAssistant(
-                        key: ValueKey('studio-fullscreen-spark-$_tool'),
-                        statusText: studioSparkStatus(_tool, l10n),
-                        subheadText: studioSparkSubhead(_tool, _draft.job),
-                        fullscreen: true,
-                        light: isDark,
-                        onDismiss: () => setState(() => _sparkDismissed = true),
+                    ? Stack(
+                        children: [
+                          Positioned.fill(
+                            child: AiSparkAssistant(
+                              key: ValueKey('studio-fullscreen-spark-$_tool'),
+                              statusText: studioSparkStatus(_tool, l10n),
+                              subheadText: studioSparkSubhead(
+                                _tool,
+                                _draft.job,
+                              ),
+                              fullscreen: true,
+                              light: isDark,
+                              onDismiss: () =>
+                                  setState(() => _sparkDismissed = true),
+                            ),
+                          ),
+                          // Seen while the learner waits for the result;
+                          // never delays it.
+                          if (_showsProcessingAd)
+                            const Align(
+                              alignment: Alignment.bottomCenter,
+                              child: SafeArea(
+                                top: false,
+                                child: Padding(
+                                  padding: EdgeInsets.only(bottom: 12),
+                                  child: NativeAdWidget(
+                                    placement: 'ai_studio_processing',
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       )
                     : const SizedBox.shrink(),
               ),

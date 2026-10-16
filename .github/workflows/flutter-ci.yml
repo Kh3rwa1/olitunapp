@@ -195,6 +195,8 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
+      - name: Install Android NDK (with retries)
+        run: bash scripts/ci/install_android_ndk.sh
       - name: Pre-warm adb server (avoids sporadic adb-connect boot flakes)
         run: adb start-server || true
       - name: Run Android E2E Tests on Headless Emulator
@@ -298,6 +300,8 @@ jobs:
           fi
           git fetch --no-tags --depth=1 origin "$BASE_REF" 2>/dev/null || true
           git show origin/"$BASE_REF":tool/performance_budgets.json > /tmp/base_performance_budgets.json 2>/dev/null || true
+      - name: Install Android NDK (with retries)
+        run: bash scripts/ci/install_android_ndk.sh
       - name: Build Android Release Verification (Debug-Signed)
         env:
           ALLOW_DEBUG_RELEASE_SIGNING: "true"

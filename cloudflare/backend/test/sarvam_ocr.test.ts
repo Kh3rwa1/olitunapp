@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   OcrError,
   dropBlocks,
+  isZip,
   decodeJobToken,
   encodeJobToken,
   ocrStatus,
@@ -153,6 +154,22 @@ describe('Sarvam OCR', () => {
       const api = sarvam({ '/doc-ai/v1/job/digitise': [{ status: httpStatus, body: {} }] });
       await expect(startOcr(deps(api.fetchImpl), file, 'sat-IN')).rejects.toMatchObject({ code });
     }
+  });
+
+  it('unzips the results archive Sarvam returns for format=html', async () => {
+    // A real deflate ZIP: document.html plus a metadata entry, like Sarvam's.
+    const zip = Uint8Array.from(atob('UEsDBBQAAAAIAGgzUF3ioLhPDAAAAAoAAAAkAAAAZG9jdW1lbnQuanBlZy9tZXRhZGF0YS9wYWdlXzAwMS5qc29uq1YqSExPVbIyrAUAUEsDBBQAAAAIAGgzUF00YqAafAAAALMAAAAbAAAAZG9jdW1lbnQuanBlZy9kb2N1bWVudC5odG1ss1FMyU8uqSxIVcgoyc2xs4GSqYkpdjbFJZU5qXYF1bU2+hCmjT5EIik/pRKoyNDu4caFDzfOf7hx2cON6x5u3KHwcONSMGsFmFwOVG9oZ1MAVLbo4cYlDzeuBipYD9awE6wGqHiJTVIRUH4rWHQFNnn9AqC9EBv1wa4DAFBLAQIUAxQAAAAIAGgzUF3ioLhPDAAAAAoAAAAkAAAAAAAAAAAAAACAAQAAAABkb2N1bWVudC5qcGVnL21ldGFkYXRhL3BhZ2VfMDAxLmpzb25QSwECFAMUAAAACABoM1BdNGKgGnwAAACzAAAAGwAAAAAAAAAAAAAAgAFOAAAAZG9jdW1lbnQuanBlZy9kb2N1bWVudC5odG1sUEsFBgAAAAACAAIAmwAAAAMBAAAAAA=='), (c) => c.charCodeAt(0));
+    expect(isZip(zip)).toBe(true);
+    const api = sarvam({
+      '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: JOB, status: 'pending' } }],
+      [`/doc-ai/v1/job/${JOB}/status`]: [status('completed')],
+    });
+    const fetchImpl = (async (input: any, init: any = {}) => {
+      if (String(input).includes('/results')) return new Response(zip, { status: 200, headers: { 'content-type': 'application/zip' } });
+      return api.fetchImpl(input, init);
+    }) as typeof fetch;
+    const job = await startOcr(deps(fetchImpl), file, 'sat-IN');
+    expect(job.text).toBe('ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\nᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ\nᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ');
   });
 
   it('reads a raw HTML results body', async () => {

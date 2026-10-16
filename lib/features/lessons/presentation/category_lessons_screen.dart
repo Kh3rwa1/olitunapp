@@ -258,12 +258,15 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                   ),
                 ),
               ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: RepaintBoundary(
                   child: NativeAdWidget(
                     placement: 'category_lessons_header_native',
+                    accentColor: themeColor,
+                    backgroundColor: _adSurface(isDark),
+                    cornerRadius: 24,
                   ),
                 ),
               ),
@@ -487,11 +490,18 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           children: [
                             timelineItem,
                             const SizedBox(height: 16),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 48, right: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 48,
+                                right: 8,
+                              ),
                               child: RepaintBoundary(
                                 child: NativeAdWidget(
                                   placement: 'category_lessons_inline',
+                                  height: 116,
+                                  accentColor: themeColor,
+                                  backgroundColor: _adSurface(isDark),
+                                  cornerRadius: 24,
                                 ),
                               ),
                             ),
@@ -564,6 +574,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       ),
     );
   }
+
+  /// Same surface as the lesson cards, so list ads read as part of the page.
+  Color _adSurface(bool isDark) =>
+      isDark ? AppColors.darkSurfaceElevated : Colors.white;
 
   CategoryEntity? _findCategory(List<CategoryEntity> categories, String id) {
     for (final category in categories) {

@@ -69,14 +69,3 @@ class StudioProcessingOverlay extends StatelessWidget {
     );
   }
 }
-
-/// Native ad pinned to the bottom of AI Studio.
-class StudioBottomAd extends StatelessWidget {
-  const StudioBottomAd({super.key});
-
-  @override
-  Widget build(BuildContext context) => const SafeArea(
-    top: false,
-    child: NativeAdWidget(placement: 'ai_studio_bottom'),
-  );
-}

@@ -409,6 +409,7 @@ class StudioCard extends StatelessWidget {
     required this.header,
     required this.body,
     this.footer,
+    this.filler,
     required this.flex,
     required this.isMobile,
   });
@@ -416,6 +417,10 @@ class StudioCard extends StatelessWidget {
   final Widget header;
   final Widget body;
   final Widget? footer;
+
+  /// Fills whatever height the body leaves free above the footer (flex
+  /// layout only). It is given exactly that height, or none.
+  final Widget? filler;
   final bool flex;
   final bool isMobile;
 
@@ -445,7 +450,16 @@ class StudioCard extends StatelessWidget {
           children: [
             header,
             SizedBox(height: isMobile ? 10 : 14),
-            if (flex)
+            if (flex && filler != null)
+              Expanded(
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(child: body),
+                    SliverFillRemaining(child: filler),
+                  ],
+                ),
+              )
+            else if (flex)
               Expanded(child: SingleChildScrollView(child: body))
             else
               body,

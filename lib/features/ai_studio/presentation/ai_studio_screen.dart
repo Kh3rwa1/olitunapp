@@ -502,6 +502,7 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
       onToggleRecording: _toggleRecording,
       onPick: (camera) => _pick(camera: camera),
       onSourceChanged: _onSourceChanged,
+      showAd: !_showsProcessingAd,
     );
   }
 
@@ -548,8 +549,6 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
           ? AppColors.translatorDarkBg
           : AppColors.studioLightBg,
       appBar: StudioAppBar(statusBadge: _statusBadge(service.configured)),
-      // One ad at a time: the bar steps aside while the overlay shows its own.
-      bottomNavigationBar: _showsProcessingAd ? null : const StudioBottomAd(),
       body: Stack(
         children: [
           const StudioAtmosphere(),

@@ -417,12 +417,20 @@ class LessonBlockCardContent extends ConsumerWidget {
                   ),
                 if (isDesktop) const SizedBox(height: 8),
 
-                // Native ad
-                if (index % 3 == 0)
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: NativeAdWidget(placement: 'lesson_block_card'),
+                // Native ad on every lesson page, dressed like the lesson
+                // card (accent CTA, card surface, 24px corners). The
+                // template keeps Google's "Ad" badge.
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: NativeAdWidget.medium(
+                    placement: 'lesson_block_card',
+                    accentColor: accentColor,
+                    backgroundColor: isDark
+                        ? AppColors.darkSurfaceElevated
+                        : Colors.white,
+                    cornerRadius: 24,
                   ),
+                ),
               ],
             ),
           ),

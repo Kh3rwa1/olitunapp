@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../../core/ads/widgets/fill_space_native_ad.dart';
 import '../../../../core/audio/playback_controller.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
@@ -493,7 +494,12 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
             VoicePillSelector(isDark: isDark, selected: voice),
             const SizedBox(height: 8),
             StyleRailSelector(isDark: isDark, selected: style),
-            const Spacer(),
+            // The blank space above the action carries a native ad. Short
+            // screens scroll, where a flex child is not allowed.
+            if (compact)
+              const Expanded(child: FillSpaceNativeAd(placement: 'voice_blank'))
+            else
+              const SizedBox(height: 12),
             DuoButton(
               text: _isLoading
                   ? l10n.creatingVoiceProgress

@@ -23,17 +23,31 @@ class NativeAdWidget extends ConsumerStatefulWidget {
   final double height;
   final TemplateType templateType;
 
+  /// Optional styling so the ad matches the surface it sits in (a lesson
+  /// card, a studio panel). The template keeps Google's "Ad" badge.
+  final Color? accentColor;
+  final Color? backgroundColor;
+  final double cornerRadius;
+
   const NativeAdWidget({
     super.key,
     this.placement = 'list_inline',
     this.height = 100,
     this.templateType = TemplateType.small,
+    this.accentColor,
+    this.backgroundColor,
+    this.cornerRadius = 20,
   });
 
   /// Larger template with a media view; earns more where there is room.
-  const NativeAdWidget.medium({super.key, required this.placement})
-    : height = 320,
-      templateType = TemplateType.medium;
+  const NativeAdWidget.medium({
+    super.key,
+    required this.placement,
+    this.accentColor,
+    this.backgroundColor,
+    this.cornerRadius = 20,
+  }) : height = 320,
+       templateType = TemplateType.medium;
 
   @override
   ConsumerState<NativeAdWidget> createState() => _NativeAdWidgetState();
@@ -183,15 +197,16 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
 
     try {
       final isDark = Theme.of(context).brightness == Brightness.dark;
+      final accent = widget.accentColor ?? const Color(0xFF6C5CE7);
       final templateStyle = NativeTemplateStyle(
         templateType: widget.templateType,
-        mainBackgroundColor: isDark
-            ? AppColors.darkSurfaceElevated
-            : AppColors.lightSurface,
-        cornerRadius: 16.0,
+        mainBackgroundColor: _background(isDark),
+        cornerRadius: widget.cornerRadius - 4,
         callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFF6C5CE7),
+          textColor: accent.computeLuminance() > 0.5
+              ? Colors.black87
+              : Colors.white,
+          backgroundColor: accent,
           style: NativeTemplateFontStyle.bold,
           size: 13.0,
         ),
@@ -245,6 +260,10 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
       if (_accepts(generation)) _scheduleRetry();
     }
   }
+
+  Color _background(bool isDark) =>
+      widget.backgroundColor ??
+      (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface);
 
   /// Fill the slot with a fixed-size banner when native has no ad.
   void _loadFallbackBanner() {
@@ -369,8 +388,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       height: widget.height,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(20),
+        color: _background(isDark),
+        borderRadius: BorderRadius.circular(widget.cornerRadius),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
@@ -385,7 +404,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(widget.cornerRadius),
         child: KeyedSubtree(key: ObjectKey(ad), child: _runtime.buildAd(ad)),
       ),
     );

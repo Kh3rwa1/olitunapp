@@ -60,7 +60,7 @@ describe('Sarvam OCR', () => {
     const api = sarvam({
       '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: JOB, status: 'pending', run_id: 'r1' } }],
       [`/doc-ai/v1/job/${JOB}/status`]: [status('running'), status('completed')],
-      [`/doc-ai/v1/job/${JOB}/results?format=md`]: [results],
+      [`/doc-ai/v1/job/${JOB}/results?format=html`]: [results],
     });
 
     const job = await startOcr(deps(api.fetchImpl), file, 'sat-IN');
@@ -85,7 +85,7 @@ describe('Sarvam OCR', () => {
 
     const later = sarvam({
       [`/doc-ai/v1/job/${JOB}/status`]: [status('completed')],
-      [`/doc-ai/v1/job/${JOB}/results?format=md`]: [results],
+      [`/doc-ai/v1/job/${JOB}/results?format=html`]: [results],
     });
     const done = await ocrStatus(deps(later.fetchImpl), job.jobId);
     expect(done.text).toContain('ᱥᱟᱱᱛᱟᱲᱤ');
@@ -108,7 +108,7 @@ describe('Sarvam OCR', () => {
     const api = sarvam({
       '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: LONG, status: 'pending' } }],
       [`/doc-ai/v1/job/${LONG}/status`]: [status('running'), status('completed')],
-      [`/doc-ai/v1/job/${LONG}/results?format=md`]: [results],
+      [`/doc-ai/v1/job/${LONG}/results?format=html`]: [results],
     });
     const job = await startOcr(deps(api.fetchImpl), file, 'sat-IN');
     expect(job.text).toContain('ᱥᱟᱱᱛᱟᱲᱤ');
@@ -134,7 +134,7 @@ describe('Sarvam OCR', () => {
     const empty = sarvam({
       '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: JOB, status: 'pending' } }],
       [`/doc-ai/v1/job/${JOB}/status`]: [status('completed')],
-      [`/doc-ai/v1/job/${JOB}/results?format=md`]: [{ status: 200, body: { documents: [{ pages: [{ content: '' }] }] } }],
+      [`/doc-ai/v1/job/${JOB}/results?format=html`]: [{ status: 200, body: { documents: [{ pages: [{ content: '' }] }] } }],
     });
     await expect(startOcr(deps(empty.fetchImpl), file, 'sat-IN')).rejects.toMatchObject({ code: 'EMPTY_RESULT' });
   });
@@ -152,6 +152,13 @@ describe('Sarvam OCR', () => {
       const api = sarvam({ '/doc-ai/v1/job/digitise': [{ status: httpStatus, body: {} }] });
       await expect(startOcr(deps(api.fetchImpl), file, 'sat-IN')).rejects.toMatchObject({ code });
     }
+  });
+
+  it('turns Sarvam page HTML into plain lines', () => {
+    const html = '<h1>ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ</h1><p>ᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ<br/>ᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ</p><p>ᱥᱟᱱᱛᱟᱲᱤ &amp; &#7376;ᱚᱞ&nbsp;ᱪᱤᱠᱤ</p>';
+    expect(resultText({ documents: [{ pages: [{ content: html }] }] })).toBe(
+      'ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\nᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ\nᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ\nᱥᱟᱱᱛᱟᱲᱤ & \u1cd0ᱚᱞ ᱪᱤᱠᱤ',
+    );
   });
 
   it('strips markup from page content and keeps page order', () => {

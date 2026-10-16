@@ -2,8 +2,10 @@
 //
 // Flow: POST /doc-ai/v1/job/digitise (multipart file + language), poll
 // GET /doc-ai/v1/job/{id}/status until terminal, then
-// GET /doc-ai/v1/job/{id}/results?format=md, whose text is in
-// documents[].pages[].content.
+// GET /doc-ai/v1/job/{id}/results?format=html, whose text is in
+// documents[].pages[].content. Digitise jobs produce HTML by default and
+// Sarvam refuses other formats for them ("job produced html, cannot serve
+// md"), so the HTML is converted to plain text here.
 //
 // A one-page scan usually finishes in seconds, so the start request waits
 // for it and returns the text directly. If Sarvam is still working when the
@@ -93,7 +95,29 @@ export function stripTags(value: string): string {
   return out;
 }
 
-/** Plain text from a digitise result: pages in order, markdown decoration removed. */
+const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ' };
+
+/** Decodes the HTML entities Sarvam may emit (named basics and numeric). */
+export function decodeEntities(value: string): string {
+  return value.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (match, body: string) => {
+    if (body[0] === '#') {
+      const code = body[1] === 'x' || body[1] === 'X' ? parseInt(body.slice(2), 16) : parseInt(body.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : match;
+    }
+    return ENTITIES[body.toLowerCase()] ?? match;
+  });
+}
+
+/** Page HTML to plain text: line and block breaks kept, tags dropped. */
+export function htmlToText(html: string): string {
+  const withBreaks = html
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(p|div|h[1-6]|li|tr|table|section|article|blockquote|pre)\s*>/gi, '\n')
+    .replace(/<\/t[dh]\s*>/gi, ' ');
+  return decodeEntities(stripTags(withBreaks));
+}
+
+/** Plain text from a digitise result: pages in order, markup removed. */
 export function resultText(result: any): string {
   const documents = Array.isArray(result?.documents) ? result.documents : [];
   const pages = documents.flatMap((doc: any) => (Array.isArray(doc?.pages) ? doc.pages : []));
@@ -107,7 +131,7 @@ export function resultText(result: any): string {
         .join('\n');
     })
     .map((content: string) =>
-      stripTags(content)
+      htmlToText(content)
         .split('\n')
         // Heading markers and emphasis are layout, not text.
         .map((line) => line.replace(/^\s{0,3}#{1,6}\s+/, '').replace(/\*\*|__/g, '').trimEnd())
@@ -204,7 +228,7 @@ async function check(deps: Deps, sarvamId: string): Promise<{ status: string; te
   if (!SUCCESS.has(state)) {
     throw new OcrError('OCR_FAILED', 422, `Sarvam could not read this document (${state}).`);
   }
-  const text = resultText(await sarvam(deps, `${path}/results?format=md`));
+  const text = resultText(await sarvam(deps, `${path}/results?format=html`));
   if (!text) throw new OcrError('EMPTY_RESULT', 422, 'No text was found in this document.');
   return { status: state, text };
 }

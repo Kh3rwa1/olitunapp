@@ -258,12 +258,15 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                   ),
                 ),
               ),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                 child: RepaintBoundary(
                   child: NativeAdWidget(
                     placement: 'category_lessons_header_native',
+                    accentColor: themeColor,
+                    backgroundColor: _adSurface(isDark),
+                    cornerRadius: 24,
                   ),
                 ),
               ),
@@ -478,20 +481,26 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 duration: 450.ms,
                               );
 
-                      // One inline ad every 3 lessons: an ad after every
-                      // lesson mostly loaded off-screen and was never seen.
-                      if (lessonIndex % 3 == 2 &&
-                          lessonIndex < orderedLessons.length - 1) {
+                      // A lesson-styled ad between every two lessons. Each
+                      // loads only as it nears the screen.
+                      if (lessonIndex < orderedLessons.length - 1) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             timelineItem,
                             const SizedBox(height: 16),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 48, right: 8),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 48,
+                                right: 8,
+                              ),
                               child: RepaintBoundary(
                                 child: NativeAdWidget(
                                   placement: 'category_lessons_inline',
+                                  height: 116,
+                                  accentColor: themeColor,
+                                  backgroundColor: _adSurface(isDark),
+                                  cornerRadius: 24,
                                 ),
                               ),
                             ),
@@ -564,6 +573,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       ),
     );
   }
+
+  /// Same surface as the lesson cards, so list ads read as part of the page.
+  Color _adSurface(bool isDark) =>
+      isDark ? AppColors.darkSurfaceElevated : Colors.white;
 
   CategoryEntity? _findCategory(List<CategoryEntity> categories, String id) {
     for (final category in categories) {

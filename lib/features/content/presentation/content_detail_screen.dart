@@ -275,11 +275,16 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           blockWidget,
-                          const Padding(
-                            padding: EdgeInsets.only(bottom: 24.0),
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 24.0),
                             child: RepaintBoundary(
                               child: NativeAdWidget(
                                 placement: 'content_detail_inline',
+                                accentColor: accentColor,
+                                backgroundColor: isDark
+                                    ? AppColors.darkSurfaceElevated
+                                    : Colors.white,
+                                cornerRadius: 24,
                               ),
                             ),
                           ),

@@ -9,8 +9,8 @@ import '../../analytics/analytics_service.dart';
 import '../../logging/app_logger.dart';
 import '../../observability/crash_reporting.dart';
 import '../../network/network_info.dart';
-import '../../theme/app_colors.dart';
 import '../ad_service.dart';
+import '../native_ad_pool.dart';
 import '../ad_state.dart';
 import 'ad_widget_runtime.dart';
 import 'near_viewport_loader.dart';
@@ -23,17 +23,40 @@ class NativeAdWidget extends ConsumerStatefulWidget {
   final double height;
   final TemplateType templateType;
 
+  /// Optional styling so the ad matches the surface it sits in (a lesson
+  /// card, a studio panel). The template keeps Google's "Ad" badge.
+  final Color? accentColor;
+  final Color? backgroundColor;
+  final double cornerRadius;
+
+  /// Take a preloaded ad from [NativeAdPool] when one is ready (default
+  /// styling only), so short visits still get an ad.
+  final bool pooled;
+
+  /// Tall enough for the medium template's media, text and CTA button.
+  static const double mediumHeight = 360;
+
   const NativeAdWidget({
     super.key,
     this.placement = 'list_inline',
     this.height = 100,
     this.templateType = TemplateType.small,
+    this.accentColor,
+    this.backgroundColor,
+    this.cornerRadius = 20,
+    this.pooled = false,
   });
 
   /// Larger template with a media view; earns more where there is room.
-  const NativeAdWidget.medium({super.key, required this.placement})
-    : height = 320,
-      templateType = TemplateType.medium;
+  const NativeAdWidget.medium({
+    super.key,
+    required this.placement,
+    this.accentColor,
+    this.backgroundColor,
+    this.cornerRadius = 20,
+    this.pooled = false,
+  }) : height = mediumHeight,
+       templateType = TemplateType.medium;
 
   @override
   ConsumerState<NativeAdWidget> createState() => _NativeAdWidgetState();
@@ -172,6 +195,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     final adState = ref.read(adStateProvider);
     if (!adState.shouldShowAds || _hasPersistentError) return;
 
+    if (_takePooledAd()) return;
+
     // Native demand is paused after repeated no-fills: use the banner slot.
     if (_adService.noFillWait('native') > Duration.zero) {
       _loadFallbackBanner();
@@ -183,31 +208,12 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
 
     try {
       final isDark = Theme.of(context).brightness == Brightness.dark;
-      final templateStyle = NativeTemplateStyle(
+      final templateStyle = olitunNativeTemplateStyle(
         templateType: widget.templateType,
-        mainBackgroundColor: isDark
-            ? AppColors.darkSurfaceElevated
-            : AppColors.lightSurface,
-        cornerRadius: 16.0,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: Colors.white,
-          backgroundColor: const Color(0xFF6C5CE7),
-          style: NativeTemplateFontStyle.bold,
-          size: 13.0,
-        ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white : Colors.black87,
-          style: NativeTemplateFontStyle.bold,
-          size: 13.0,
-        ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white70 : Colors.black54,
-          size: 12.0,
-        ),
-        tertiaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white54 : Colors.black45,
-          size: 11.0,
-        ),
+        isDark: isDark,
+        accentColor: widget.accentColor,
+        backgroundColor: widget.backgroundColor,
+        cornerRadius: widget.cornerRadius,
       );
 
       final nativeAd = _adService.createNativeAd(
@@ -246,6 +252,27 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     }
   }
 
+  Color _background(bool isDark) =>
+      olitunNativeBackground(isDark, widget.backgroundColor);
+
+  bool get _usesPool =>
+      widget.pooled &&
+      widget.accentColor == null &&
+      widget.backgroundColor == null;
+
+  /// Show a preloaded ad if one is ready; refill the pool either way.
+  bool _takePooledAd() {
+    if (!_usesPool) return false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pool = ref.read(nativeAdPoolProvider);
+    final ad = pool.take(widget.templateType, isDark);
+    pool.warm(widget.templateType, isDark);
+    if (ad == null) return false;
+    _clearAd();
+    _onAdLoaded(ad, _generation, 'native');
+    return true;
+  }
+
   /// Fill the slot with a fixed-size banner when native has no ad.
   void _loadFallbackBanner() {
     if (!mounted || !ref.read(adStateProvider).shouldShowAds) return;
@@ -259,7 +286,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     final generation = _generation;
     try {
       final banner = _adService.createBannerAd(
-        size: _isMedium ? AdSize.mediumRectangle : AdSize.largeBanner,
+        // 320x50 is the most widely bought size, so it fills best.
+        size: _isMedium ? AdSize.mediumRectangle : AdSize.banner,
         onLoaded: (ad) => _onAdLoaded(ad, generation, 'banner'),
         onFailed: (ad, error) {
           if (!_accepts(generation)) return;
@@ -369,8 +397,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       height: widget.height,
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface,
-        borderRadius: BorderRadius.circular(20),
+        color: _background(isDark),
+        borderRadius: BorderRadius.circular(widget.cornerRadius),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
@@ -385,7 +413,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(widget.cornerRadius),
         child: KeyedSubtree(key: ObjectKey(ad), child: _runtime.buildAd(ad)),
       ),
     );

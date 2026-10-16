@@ -6,7 +6,6 @@ import 'package:flutter_flip_card/flutter_flip_card.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/ads/interstitial_ad_manager.dart';
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../../core/audio/playback_controller.dart';
 import '../../../../core/motion/motion.dart';
@@ -23,6 +22,7 @@ import 'widgets/studio_status_dock.dart';
 import 'widgets/voice_flip_faces.dart';
 import 'widgets/voice_pickers.dart';
 import 'widgets/voice_spark_overlay.dart';
+import '../widgets/voice_studio_close_button.dart';
 
 /// Santali AI Voice studio — compact single-screen layout.
 ///
@@ -283,28 +283,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
         elevation: 0,
         toolbarHeight: 56,
         leadingWidth: 56,
-        leading: Center(
-          child: CircleAvatar(
-            radius: 22,
-            backgroundColor: (isDark ? Colors.white : Colors.black).withValues(
-              alpha: 0.1,
-            ),
-            child: IconButton(
-              icon: Icon(
-                Icons.close_rounded,
-                color: isDark ? Colors.white : Colors.black,
-                size: 20,
-              ),
-              tooltip: l10n.closeVoiceStudio,
-              onPressed: () async {
-                await ref
-                    .read(interstitialAdManagerProvider)
-                    .showIfAllowed(context, 'voice_exit');
-                if (context.mounted) context.pop();
-              },
-            ),
-          ),
-        ),
+        leading: const VoiceStudioCloseButton(),
         title: Text(
           l10n.santaliAiVoice,
           style: AppTypography.inter(

@@ -7,13 +7,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/sharing/growth_share_service.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../l10n/generated/app_localizations.dart';
-import '../../../shared/widgets/ai_spark_assistant.dart';
 import '../data/ai_studio_service.dart';
 import '../data/studio_input_picker.dart';
 import '../data/studio_recorder.dart';
 import 'ai_studio_input.dart';
 import 'ai_studio_layout.dart';
+import 'ai_studio_processing_overlay.dart';
 import 'ai_studio_result.dart';
 import 'ai_studio_session.dart';
 import 'ai_studio_status.dart';
@@ -529,9 +528,13 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
     );
   }
 
+  /// Scan/transcribe run long enough for an overlay ad to be seen; the
+  /// translate overlay only flashes while typing.
+  bool get _showsProcessingAd =>
+      _isProcessing && !_sparkDismissed && _tool != StudioTool.translate;
+
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final service = ref.watch(aiStudioServiceProvider);
     ref.listen(aiStudioServiceProvider, (previous, next) {
       if (previous != null && !identical(previous, next)) _resetSession();
@@ -545,6 +548,8 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
           ? AppColors.translatorDarkBg
           : AppColors.studioLightBg,
       appBar: StudioAppBar(statusBadge: _statusBadge(service.configured)),
+      // One ad at a time: the bar steps aside while the overlay shows its own.
+      bottomNavigationBar: _showsProcessingAd ? null : const StudioBottomAd(),
       body: Stack(
         children: [
           const StudioAtmosphere(),
@@ -574,23 +579,13 @@ class _AiStudioScreenState extends ConsumerState<AiStudioScreen>
             ),
           ),
           Positioned.fill(
-            child: IgnorePointer(
-              ignoring: !_isProcessing || _sparkDismissed,
-              child: AnimatedOpacity(
-                opacity: (_isProcessing && !_sparkDismissed) ? 1.0 : 0.0,
-                duration: const Duration(milliseconds: 280),
-                curve: Curves.easeInOutCubic,
-                child: (_isProcessing && !_sparkDismissed)
-                    ? AiSparkAssistant(
-                        key: ValueKey('studio-fullscreen-spark-$_tool'),
-                        statusText: studioSparkStatus(_tool, l10n),
-                        subheadText: studioSparkSubhead(_tool, _draft.job),
-                        fullscreen: true,
-                        light: isDark,
-                        onDismiss: () => setState(() => _sparkDismissed = true),
-                      )
-                    : const SizedBox.shrink(),
-              ),
+            child: StudioProcessingOverlay(
+              visible: _isProcessing && !_sparkDismissed,
+              showAd: _showsProcessingAd,
+              tool: _tool,
+              job: _draft.job,
+              isDark: isDark,
+              onDismiss: () => setState(() => _sparkDismissed = true),
             ),
           ),
         ],

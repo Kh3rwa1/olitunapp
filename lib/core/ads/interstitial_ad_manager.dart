@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart' hide AdError;
 import '../analytics/analytics_service.dart';
 import '../logging/app_logger.dart';
 import '../observability/crash_reporting.dart';
+import '../config/ad_config.dart';
 import 'ad_service.dart';
 import 'ad_state.dart';
 
@@ -19,6 +20,7 @@ class InterstitialAdManager with WidgetsBindingObserver {
   Completer<bool>? _presentation;
 
   InterstitialAd? _interstitialAd;
+  DateTime? _loadedAt;
   bool _isLoading = false;
   bool _isCategorySwitchAdShownThisSession = false;
 
@@ -53,6 +55,7 @@ class InterstitialAdManager with WidgetsBindingObserver {
             return;
           }
           _interstitialAd = ad;
+          _loadedAt = DateTime.now();
           _ref.read(adStateProvider.notifier).resetErrors('interstitial');
         },
       );
@@ -102,6 +105,13 @@ class InterstitialAdManager with WidgetsBindingObserver {
         'InterstitialAdManager: Suppressed ($trigger) - Frequency cap active',
       );
       return false;
+    }
+
+    final loadedAt = _loadedAt;
+    if (_interstitialAd != null &&
+        loadedAt != null &&
+        DateTime.now().difference(loadedAt) > AdConfig.fullScreenAdTtl) {
+      clearCachedAd();
     }
 
     if (_interstitialAd == null) {
@@ -168,6 +178,7 @@ class InterstitialAdManager with WidgetsBindingObserver {
       onAdDismissedFullScreenContent: (ad) {
         if (ended) return;
         ended = true;
+        _adService.markFullScreenAdShowing(false);
         AppLogger.debug('InterstitialAdManager: Ad dismissed ($trigger)');
         releasePresentedAd();
         if (_disposed) {
@@ -196,6 +207,7 @@ class InterstitialAdManager with WidgetsBindingObserver {
       onAdFailedToShowFullScreenContent: (ad, error) {
         if (ended) return;
         ended = true;
+        _adService.markFullScreenAdShowing(false);
         AppLogger.debug(
           'InterstitialAdManager: Ad failed to show ($trigger): ${error.message}',
         );
@@ -244,10 +256,12 @@ class InterstitialAdManager with WidgetsBindingObserver {
     );
 
     try {
+      _adService.markFullScreenAdShowing(true);
       await ad.show();
       return await completer.future;
     } catch (error, stack) {
       ended = true;
+      _adService.markFullScreenAdShowing(false);
       releasePresentedAd();
       if (!completer.isCompleted) completer.complete(false);
       CrashReporting.recordError(error, stack);

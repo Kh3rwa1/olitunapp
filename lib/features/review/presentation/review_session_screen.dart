@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/ads/interstitial_ad_manager.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -350,8 +352,17 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
         ),
         centerTitle: true,
       ),
+      bottomNavigationBar: const BannerAdWidget(placement: 'review_bottom'),
       body: SafeArea(child: _buildBody(isDark)),
     );
+  }
+
+  /// Natural break: the session is done, show an interstitial on the way out.
+  Future<void> _leaveAfterSummary() async {
+    await ref
+        .read(interstitialAdManagerProvider)
+        .showIfAllowed(context, 'review_complete');
+    if (mounted) context.pop();
   }
 
   bool get _finished => _loaded && _index >= _cards.length;
@@ -383,7 +394,7 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
         masteredCount: _masteredCount,
         starsAwarded: _masteredCount * starsPerItemMastered,
         isDark: isDark,
-        onDone: () => context.pop(),
+        onDone: _leaveAfterSummary,
       );
     }
     final card = _current!;

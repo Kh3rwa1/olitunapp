@@ -12,6 +12,7 @@ import '../../../../shared/widgets/platform_view_stub.dart'
 import '../../../../shared/widgets/lottie_display.dart';
 import '../../../../shared/widgets/animated_svg_display.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import 'package:itun/core/ads/ad_service.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -561,6 +562,7 @@ class _HtmlHeroMediaState extends State<_HtmlHeroMedia> {
               onPressed: () async {
                 final uri = Uri.parse(widget.url);
                 if (await canLaunchUrl(uri)) {
+                  AdService.instance.skipNextAppOpen();
                   await launchUrl(uri, mode: LaunchMode.externalApplication);
                 }
               },

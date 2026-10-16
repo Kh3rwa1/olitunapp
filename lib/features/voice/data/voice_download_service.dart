@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:share_plus/share_plus.dart';
 
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/ads/ad_service.dart';
 import 'download_io.dart'
     if (dart.library.js_interop) 'download_web.dart'
     as platform;
@@ -43,6 +44,7 @@ class VoiceDownloadService {
       if (!kIsWeb && savedPath != null) {
         // Open the share sheet so the clip can leave the app: save to
         // Files, WhatsApp it, post it — this is the viral loop.
+        AdService.instance.skipNextAppOpen();
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(savedPath, name: fileName, mimeType: 'audio/wav')],

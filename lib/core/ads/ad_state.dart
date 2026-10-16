@@ -16,8 +16,10 @@ class AdState extends Equatable {
   final Map<String, int> adImpressionCounts;
   final DateTime? lastInterstitialShownAt;
   final DateTime? lastRewardedShownAt;
+  final DateTime? lastAppOpenShownAt;
   final int interstitialIntervalMinutes;
   final int rewardedCooldownMinutes;
+  final int appOpenIntervalMinutes;
 
   const AdState({
     this.consentStatus = ConsentStatus.unknown,
@@ -28,9 +30,11 @@ class AdState extends Equatable {
     this.adImpressionCounts = const {},
     this.lastInterstitialShownAt,
     this.lastRewardedShownAt,
+    this.lastAppOpenShownAt,
     this.interstitialIntervalMinutes =
         AdConfig.defaultInterstitialIntervalMinutes,
     this.rewardedCooldownMinutes = AdConfig.defaultRewardedCooldownMinutes,
+    this.appOpenIntervalMinutes = AdConfig.defaultAppOpenIntervalMinutes,
   });
 
   /// Whether ads can be displayed to this user.
@@ -44,6 +48,26 @@ class AdState extends Equatable {
 
     final elapsed = DateTime.now().difference(lastInterstitialShownAt!);
     return elapsed >= Duration(minutes: interstitialIntervalMinutes);
+  }
+
+  /// App open ads keep their own, longer gap and never land within the
+  /// interstitial cap of another full-screen ad.
+  bool canShowAppOpen() {
+    if (!shouldShowAds) return false;
+    final now = DateTime.now();
+    final lastAppOpen = lastAppOpenShownAt;
+    if (lastAppOpen != null &&
+        now.difference(lastAppOpen) <
+            Duration(minutes: appOpenIntervalMinutes)) {
+      return false;
+    }
+    final lastInterstitial = lastInterstitialShownAt;
+    if (lastInterstitial != null &&
+        now.difference(lastInterstitial) <
+            Duration(minutes: interstitialIntervalMinutes)) {
+      return false;
+    }
+    return true;
   }
 
   /// Check if rewarded ad cooldown has elapsed.
@@ -76,8 +100,10 @@ class AdState extends Equatable {
     Map<String, int>? adImpressionCounts,
     DateTime? lastInterstitialShownAt,
     DateTime? lastRewardedShownAt,
+    DateTime? lastAppOpenShownAt,
     int? interstitialIntervalMinutes,
     int? rewardedCooldownMinutes,
+    int? appOpenIntervalMinutes,
   }) {
     return AdState(
       consentStatus: consentStatus ?? this.consentStatus,
@@ -89,10 +115,13 @@ class AdState extends Equatable {
       lastInterstitialShownAt:
           lastInterstitialShownAt ?? this.lastInterstitialShownAt,
       lastRewardedShownAt: lastRewardedShownAt ?? this.lastRewardedShownAt,
+      lastAppOpenShownAt: lastAppOpenShownAt ?? this.lastAppOpenShownAt,
       interstitialIntervalMinutes:
           interstitialIntervalMinutes ?? this.interstitialIntervalMinutes,
       rewardedCooldownMinutes:
           rewardedCooldownMinutes ?? this.rewardedCooldownMinutes,
+      appOpenIntervalMinutes:
+          appOpenIntervalMinutes ?? this.appOpenIntervalMinutes,
     );
   }
 
@@ -106,8 +135,10 @@ class AdState extends Equatable {
     adImpressionCounts,
     lastInterstitialShownAt,
     lastRewardedShownAt,
+    lastAppOpenShownAt,
     interstitialIntervalMinutes,
     rewardedCooldownMinutes,
+    appOpenIntervalMinutes,
   ];
 }
 
@@ -175,6 +206,10 @@ class AdStateNotifier extends Notifier<AdState> {
     state = state.copyWith(rewardedCooldownMinutes: minutes.clamp(1, 60));
   }
 
+  void setAppOpenIntervalMinutes(int minutes) {
+    state = state.copyWith(appOpenIntervalMinutes: minutes.clamp(15, 1440));
+  }
+
   void recordImpression(String adFormat, [String? placement]) {
     final key = placement != null ? '${adFormat}_$placement' : adFormat;
     final counts = Map<String, int>.from(state.adImpressionCounts);
@@ -190,6 +225,11 @@ class AdStateNotifier extends Notifier<AdState> {
       state = state.copyWith(
         adImpressionCounts: counts,
         lastRewardedShownAt: now,
+      );
+    } else if (adFormat == 'app_open') {
+      state = state.copyWith(
+        adImpressionCounts: counts,
+        lastAppOpenShownAt: now,
       );
     } else {
       state = state.copyWith(adImpressionCounts: counts);

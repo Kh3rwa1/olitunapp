@@ -21,6 +21,7 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
   late final TextEditingController _interstitialController;
   late final TextEditingController _rewardedController;
   late final TextEditingController _nativeController;
+  late final TextEditingController _appOpenController;
 
   @override
   void initState() {
@@ -38,6 +39,9 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
     _nativeController = TextEditingController(
       text: state.adMobNativeIdOverride,
     );
+    _appOpenController = TextEditingController(
+      text: state.adMobAppOpenIdOverride,
+    );
   }
 
   @override
@@ -46,6 +50,7 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
     _interstitialController.dispose();
     _rewardedController.dispose();
     _nativeController.dispose();
+    _appOpenController.dispose();
     super.dispose();
   }
 
@@ -289,6 +294,14 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
             hint: 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx',
             prefixIcon: Icons.wysiwyg_rounded,
           ),
+          const SizedBox(height: 12),
+
+          AdminTextField(
+            controller: _appOpenController,
+            label: 'App Open Ad Unit ID (required for app open ads)',
+            hint: 'ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx',
+            prefixIcon: Icons.open_in_new_rounded,
+          ),
           const SizedBox(height: 20),
 
           // Save Button & Ad Inspector Action
@@ -342,6 +355,12 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
                         .saveSetting(
                           'admob_native_id',
                           _nativeController.text.trim(),
+                        ),
+                    ref
+                        .read(adminSettingsControllerProvider.notifier)
+                        .saveSetting(
+                          'admob_app_open_id',
+                          _appOpenController.text.trim(),
                         ),
                   ]);
                   if (context.mounted) {

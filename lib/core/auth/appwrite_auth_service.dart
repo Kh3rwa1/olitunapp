@@ -28,6 +28,7 @@ import 'account_scope.dart';
 import 'admin_functions_client.dart';
 import 'edge_auth.dart';
 import '../api/appwrite_functions_service.dart';
+import 'package:itun/core/ads/ad_service.dart';
 
 class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
@@ -226,6 +227,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
           endpoint: AppwriteConfig.endpoint,
           projectId: AppwriteConfig.projectId,
         );
+        AdService.instance.skipNextAppOpen();
         final result = await _browserAuthenticate(
           url: oauthUrl.toString(),
           callbackUrlScheme: 'appwrite-callback-${AppwriteConfig.projectId}',

@@ -27,7 +27,9 @@ import 'app/sync/content_change_sync.dart';
 import 'features/review/data/review_sync_init.dart';
 import 'core/notifications/notification_tap_router.dart';
 import 'l10n/generated/app_localizations.dart';
+import 'core/ads/ad_remote_config.dart';
 import 'core/ads/ad_service.dart';
+import 'core/ads/app_open_ad_manager.dart';
 import 'core/ads/consent_manager.dart';
 import 'core/ads/rewarded_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
@@ -219,6 +221,13 @@ class OlitunApp extends ConsumerWidget {
     // Paid-but-unverified checkouts are re-verified once per app start.
     ref.watch(pendingPurchaseVerificationRetryProvider);
     final router = ref.watch(routerProvider);
+    // Admin AdMob settings (kill switch, caps, unit IDs) for every learner.
+    ref.watch(adRemoteConfigSyncProvider);
+    ref.watch(appOpenAdManagerProvider).routeAllowsAd = (coldStart) =>
+        appOpenAllowedOn(
+          router.routerDelegate.currentConfiguration.uri.path,
+          coldStart: coldStart,
+        );
     final themeMode = ref.watch(themeModeProvider);
     final languageCode = ref.watch(appLanguageProvider);
 
@@ -318,4 +327,23 @@ class FallbackWidgetsLocalizationsDelegate
 
 class FallbackWidgetsLocalizations extends DefaultWidgetsLocalizations {
   const FallbackWidgetsLocalizations();
+}
+
+/// Routes where an app open ad would interrupt sign-up or an active session.
+@visibleForTesting
+bool appOpenAllowedOn(String path, {required bool coldStart}) {
+  // The splash screen is the intended spot for a launch ad, not a resume one.
+  if (path == '/splash') return coldStart;
+  const blockedPrefixes = [
+    '/welcome',
+    '/onboarding',
+    '/login',
+    '/quiz/',
+    '/review',
+    '/practice/',
+    '/privacy',
+    '/terms',
+    '/admin',
+  ];
+  return !blockedPrefixes.any(path.startsWith);
 }

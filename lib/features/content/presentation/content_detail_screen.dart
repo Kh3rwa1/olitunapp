@@ -17,7 +17,9 @@ import 'package:itun/features/practice/presentation/providers/typing_practice_co
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/features/review/data/review_store_notifier.dart';
 import 'package:itun/features/review/domain/review_item.dart';
+import 'package:itun/core/ads/ad_state.dart';
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
+import 'package:itun/core/ads/rewarded_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 
@@ -362,14 +364,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       _isFinished = true;
     });
 
-    // 5. Trigger interstitial ad if allowed (free tier, frequency cap checked)
-    unawaited(
-      ref
-          .read(interstitialAdManagerProvider)
-          .showIfAllowed(context, 'lesson_complete'),
-    );
-
-    // 6. Show premium celebration sheet with a quiz CTA when available.
+    // 5. Show premium celebration sheet with a quiz CTA when available. The
+    // interstitial waits until the learner leaves the sheet, so it never
+    // covers the celebration itself.
     _showCompletionSheet(context, item, recommendation: recommendation);
   }
 
@@ -383,6 +380,10 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     );
   }
 
+  Future<void> _showLessonCompleteInterstitial() => ref
+      .read(interstitialAdManagerProvider)
+      .showIfAllowed(context, 'lesson_complete');
+
   void _showCompletionSheet(
     BuildContext context,
     ContentItem item, {
@@ -392,9 +393,96 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       showContentCompletionSheet(
         context,
         recommendation: recommendation,
-        onStartQuiz: (quizId) => context.push('/quiz/$quizId'),
+        onStartQuiz: (quizId) async {
+          await _showLessonCompleteInterstitial();
+          if (mounted) this.context.push('/quiz/$quizId');
+        },
         // Same one-step-back rule as the header back button.
-        onStepBack: _handleBack,
+        onStepBack: () async {
+          await _showLessonCompleteInterstitial();
+          if (mounted) _handleBack();
+        },
+        bonusAction: ref.read(adStateProvider).shouldShowAds
+            ? _LessonBonusStarsButton(outerContext: context)
+            : null,
+      ),
+    );
+  }
+}
+
+/// Opt-in rewarded ad on the lesson completion sheet (+50 stars).
+class _LessonBonusStarsButton extends ConsumerStatefulWidget {
+  final BuildContext outerContext;
+
+  const _LessonBonusStarsButton({required this.outerContext});
+
+  @override
+  ConsumerState<_LessonBonusStarsButton> createState() =>
+      _LessonBonusStarsButtonState();
+}
+
+class _LessonBonusStarsButtonState
+    extends ConsumerState<_LessonBonusStarsButton> {
+  bool _claimed = false;
+
+  void _snack(String message, {Color? color}) {
+    final outer = widget.outerContext;
+    if (!outer.mounted) return;
+    ScaffoldMessenger.of(outer).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    if (_claimed) return const SizedBox.shrink();
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: OutlinedButton.icon(
+        onPressed: () async {
+          final shown = await ref
+              .read(rewardedAdManagerProvider)
+              .show(
+                context: context,
+                placement: 'lesson_complete_bonus_stars',
+                rewardType: RewardType.stars,
+                amount: 50,
+                onRewardGranted: () {
+                  if (mounted) setState(() => _claimed = true);
+                  _snack(l10n.bonusStarsEarned, color: AppColors.success);
+                },
+              );
+          if (!shown) _snack(l10n.rewardedAdCooldown);
+        },
+        icon: const Icon(
+          Icons.stars_rounded,
+          color: AppColors.accentGoldDark,
+          size: 22,
+        ),
+        label: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            l10n.watchAdBonusStars,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentGoldDark,
+            ),
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: AppColors.accentGoldDark, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
       ),
     );
   }

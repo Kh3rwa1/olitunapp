@@ -9,12 +9,14 @@ import '../../../../l10n/generated/app_localizations.dart';
 /// content item, with a quiz CTA when [recommendation] is available.
 ///
 /// [onStartQuiz] and [onStepBack] run after the sheet has closed itself and
-/// must navigate with the caller's (detail screen) context.
+/// must navigate with the caller's (detail screen) context. [bonusAction] is
+/// an optional extra button shown above the back action.
 Future<void> showContentCompletionSheet(
   BuildContext context, {
   LessonQuizRecommendation? recommendation,
   required ValueChanged<String> onStartQuiz,
   required VoidCallback onStepBack,
+  Widget? bonusAction,
 }) {
   return showModalBottomSheet<void>(
     useRootNavigator: true,
@@ -26,6 +28,7 @@ Future<void> showContentCompletionSheet(
       recommendation: recommendation,
       onStartQuiz: onStartQuiz,
       onStepBack: onStepBack,
+      bonusAction: bonusAction,
     ),
   );
 }
@@ -37,11 +40,13 @@ class ContentCompletionSheet extends StatelessWidget {
     this.recommendation,
     required this.onStartQuiz,
     required this.onStepBack,
+    this.bonusAction,
   });
 
   final LessonQuizRecommendation? recommendation;
   final ValueChanged<String> onStartQuiz;
   final VoidCallback onStepBack;
+  final Widget? bonusAction;
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +142,10 @@ class ContentCompletionSheet extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+          ],
+          if (bonusAction case final bonusAction?) ...[
+            bonusAction,
             const SizedBox(height: 12),
           ],
           SizedBox(

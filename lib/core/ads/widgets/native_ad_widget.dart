@@ -13,7 +13,11 @@ import '../../theme/app_colors.dart';
 import '../ad_service.dart';
 import '../ad_state.dart';
 import 'ad_widget_runtime.dart';
+import 'near_viewport_loader.dart';
 
+/// Inline native ad. When AdMob has no native ad for the slot, the slot is
+/// filled with a banner of matching size instead of staying empty, and
+/// no-fill responses are not retried back-to-back.
 class NativeAdWidget extends ConsumerStatefulWidget {
   final String placement;
   final double height;
@@ -26,22 +30,32 @@ class NativeAdWidget extends ConsumerStatefulWidget {
     this.templateType = TemplateType.small,
   });
 
+  /// Larger template with a media view; earns more where there is room.
+  const NativeAdWidget.medium({super.key, required this.placement})
+    : height = 320,
+      templateType = TemplateType.medium;
+
   @override
   ConsumerState<NativeAdWidget> createState() => _NativeAdWidgetState();
 }
 
 class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
-    with WidgetsBindingObserver {
-  NativeAd? _nativeAd;
+    with WidgetsBindingObserver, NearViewportLoader {
+  /// Either the native ad or the fallback banner currently on screen.
+  AdWithView? _ad;
   bool _isLoaded = false;
   bool _hasPersistentError = false;
   int _retryCount = 0;
   static const int _maxRetries = 3;
+  static const int _maxNoFillRetries = 2;
+  static const Duration _noFillRetryDelay = Duration(seconds: 60);
   Timer? _retryTimer;
   late final AdService _adService;
   late final AdWidgetRuntime _runtime;
   int _generation = 0;
   bool _refreshScheduled = false;
+
+  bool get _isMedium => widget.templateType == TemplateType.medium;
 
   @override
   void initState() {
@@ -50,7 +64,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     _runtime = ref.read(adWidgetRuntimeProvider);
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _loadNativeAd();
+      if (mounted) loadWhenNearViewport(_loadNativeAd);
     });
   }
 
@@ -70,8 +84,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
   void _clearAd() {
     _generation++;
     _retryTimer?.cancel();
-    final ad = _nativeAd;
-    _nativeAd = null;
+    final ad = _ad;
+    _ad = null;
     _isLoaded = false;
     if (mounted) setState(() {});
     if (ad != null) _releaseAfterFrame(ad);
@@ -107,10 +121,49 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     _generation++;
     WidgetsBinding.instance.removeObserver(this);
     _retryTimer?.cancel();
-    final ad = _nativeAd;
-    _nativeAd = null;
+    final ad = _ad;
+    _ad = null;
     if (ad != null) _adService.releaseAd(ad);
     super.dispose();
+  }
+
+  void _logEvent(AdEventType type, String format, [String? errorCode]) {
+    // A click leaves the app; coming back is not a new visit.
+    if (type == AdEventType.click) _adService.skipNextAppOpen();
+    try {
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .logAdEvent(
+            AdEvent(
+              type: type,
+              adFormat: format,
+              placement: widget.placement,
+              errorCode: errorCode,
+            ),
+          );
+    } catch (e) {
+      AppLogger.warning('NativeAdWidget: failed to log $format event: $e');
+    }
+  }
+
+  void _onAdLoaded(Ad ad, int generation, String format) {
+    _adService.takeOwnership(ad);
+    if (!_accepts(generation)) {
+      _releaseAfterFrame(ad);
+      return;
+    }
+    _adService.recordFill(format);
+    final previous = _ad;
+    if (previous != null && !identical(previous, ad)) {
+      _releaseAfterFrame(previous);
+    }
+    setState(() {
+      _ad = ad as AdWithView;
+      _isLoaded = true;
+      _retryCount = 0;
+      _hasPersistentError = false;
+    });
+    _logEvent(AdEventType.impression, format);
   }
 
   void _loadNativeAd() {
@@ -118,6 +171,12 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
 
     final adState = ref.read(adStateProvider);
     if (!adState.shouldShowAds || _hasPersistentError) return;
+
+    // Native demand is paused after repeated no-fills: use the banner slot.
+    if (_adService.noFillWait('native') > Duration.zero) {
+      _loadFallbackBanner();
+      return;
+    }
 
     _clearAd();
     final generation = _generation;
@@ -151,40 +210,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
         ),
       );
 
-      _nativeAd = _adService.createNativeAd(
+      final nativeAd = _adService.createNativeAd(
         nativeTemplateStyle: templateStyle,
-        onLoaded: (ad) {
-          _adService.takeOwnership(ad);
-          if (!_accepts(generation)) {
-            _releaseAfterFrame(ad);
-            return;
-          }
-          final previous = _nativeAd;
-          if (previous != null && !identical(previous, ad)) {
-            _releaseAfterFrame(previous);
-          }
-          setState(() {
-            _nativeAd = ad as NativeAd;
-            _isLoaded = true;
-            _retryCount = 0;
-            _hasPersistentError = false;
-          });
-          try {
-            ref
-                .read(learningAnalyticsServiceProvider)
-                .logAdEvent(
-                  AdEvent(
-                    type: AdEventType.impression,
-                    adFormat: 'native',
-                    placement: widget.placement,
-                  ),
-                );
-          } catch (e) {
-            AppLogger.warning(
-              'NativeAdWidget: failed to log impression event: $e',
-            );
-          }
-        },
+        onLoaded: (ad) => _onAdLoaded(ad, generation, 'native'),
         onFailed: (ad, error) {
           AppLogger.debug(
             'NativeAdWidget: Failed to load: ${error.message} (code: ${error.code})',
@@ -192,52 +220,89 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
           if (!_accepts(generation)) return;
           _generation++;
           setState(() {
-            _nativeAd = null;
+            _ad = null;
             _isLoaded = false;
           });
-          try {
-            ref
-                .read(learningAnalyticsServiceProvider)
-                .logAdEvent(
-                  AdEvent(
-                    type: AdEventType.loadFail,
-                    adFormat: 'native',
-                    placement: widget.placement,
-                    errorCode: error.code.toString(),
-                  ),
-                );
-          } catch (e) {
-            AppLogger.warning(
-              'NativeAdWidget: failed to log load-fail event: $e',
-            );
+          _logEvent(AdEventType.loadFail, 'native', error.code.toString());
+          if (AdService.isNoFill(error)) {
+            _adService.recordNoFill('native');
+            _loadFallbackBanner();
+          } else {
+            _scheduleRetry();
           }
-          _scheduleRetry();
         },
         onClicked: (ad) {
-          if (!_accepts(generation)) return;
-          try {
-            ref
-                .read(learningAnalyticsServiceProvider)
-                .logAdEvent(
-                  AdEvent(
-                    type: AdEventType.click,
-                    adFormat: 'native',
-                    placement: widget.placement,
-                  ),
-                );
-          } catch (e) {
-            AppLogger.warning('NativeAdWidget: failed to log click event: $e');
-          }
+          if (_accepts(generation)) _logEvent(AdEventType.click, 'native');
         },
       );
+      _ad = nativeAd;
 
-      if (_nativeAd == null) {
+      if (nativeAd == null) {
         _scheduleRetry();
       }
     } catch (error, stack) {
       CrashReporting.recordError(error, stack);
       if (_accepts(generation)) _scheduleRetry();
     }
+  }
+
+  /// Fill the slot with a fixed-size banner when native has no ad.
+  void _loadFallbackBanner() {
+    if (!mounted || !ref.read(adStateProvider).shouldShowAds) return;
+    final bannerWait = _adService.noFillWait('banner');
+    if (bannerWait > Duration.zero) {
+      _scheduleNoFillRetry(bannerWait);
+      return;
+    }
+
+    _clearAd();
+    final generation = _generation;
+    try {
+      final banner = _adService.createBannerAd(
+        size: _isMedium ? AdSize.mediumRectangle : AdSize.largeBanner,
+        onLoaded: (ad) => _onAdLoaded(ad, generation, 'banner'),
+        onFailed: (ad, error) {
+          if (!_accepts(generation)) return;
+          _generation++;
+          setState(() {
+            _ad = null;
+            _isLoaded = false;
+          });
+          _logEvent(AdEventType.loadFail, 'banner', error.code.toString());
+          if (AdService.isNoFill(error)) {
+            _adService.recordNoFill('banner');
+            _scheduleNoFillRetry(_noFillRetryDelay);
+          } else {
+            _scheduleRetry();
+          }
+        },
+        onClicked: (ad) {
+          if (_accepts(generation)) _logEvent(AdEventType.click, 'banner');
+        },
+      );
+      _ad = banner;
+      if (banner == null) _scheduleRetry();
+    } catch (error, stack) {
+      CrashReporting.recordError(error, stack);
+      if (_accepts(generation)) _scheduleRetry();
+    }
+  }
+
+  /// Nothing to show right now: try once more later instead of hammering.
+  void _scheduleNoFillRetry(Duration delay) {
+    if (!mounted || !ref.read(adStateProvider).shouldShowAds) return;
+    if (_retryCount >= _maxNoFillRetries) {
+      setState(() => _hasPersistentError = true);
+      return;
+    }
+    _retryCount++;
+    _retryTimer?.cancel();
+    _retryTimer = Timer(
+      delay < _noFillRetryDelay ? _noFillRetryDelay : delay,
+      () {
+        if (mounted && !_isLoaded) _loadNativeAd();
+      },
+    );
   }
 
   void _scheduleRetry() {
@@ -249,7 +314,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     }
 
     _retryCount++;
-    final delaySeconds = 1 << (_retryCount - 1); // 1s, 2s, 4s
+    // Network/internal errors: 5s, 15s, 45s.
+    final delaySeconds = 5 * [1, 3, 9][_retryCount - 1];
     _retryTimer?.cancel();
     _retryTimer = Timer(Duration(seconds: delaySeconds), () {
       if (mounted && !_isLoaded) {
@@ -280,12 +346,24 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
       },
     );
     final adState = ref.watch(adStateProvider);
-    final ad = _nativeAd;
+    final ad = _ad;
     if (!adState.shouldShowAds || !_isLoaded || ad == null) {
       return const SizedBox.shrink();
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (ad is BannerAd) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        alignment: Alignment.center,
+        child: SizedBox(
+          width: ad.size.width.toDouble(),
+          height: ad.size.height.toDouble(),
+          child: KeyedSubtree(key: ObjectKey(ad), child: _runtime.buildAd(ad)),
+        ),
+      );
+    }
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

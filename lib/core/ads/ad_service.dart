@@ -34,6 +34,71 @@ class AdService with WidgetsBindingObserver {
 
   DateTime? _lastBackgroundedAt;
 
+  // Consecutive no-fill responses per format ('banner', 'native', ...).
+  final Map<String, int> _noFillStreak = {};
+  final Map<String, DateTime> _noFillPausedUntil = {};
+
+  // Full-screen ad bookkeeping so an app open ad never stacks on, or follows
+  // straight after, an interstitial/rewarded ad (clicking one backgrounds
+  // the app, and the return would otherwise look like a fresh resume).
+  bool _fullScreenAdShowing = false;
+  DateTime? _lastFullScreenEndedAt;
+  DateTime? _appOpenSkipUntil;
+
+  bool get isFullScreenAdShowing => _fullScreenAdShowing;
+  DateTime? get lastFullScreenEndedAt => _lastFullScreenEndedAt;
+
+  void markFullScreenAdShowing(bool showing) {
+    _fullScreenAdShowing = showing;
+    if (!showing) _lastFullScreenEndedAt = DateTime.now();
+  }
+
+  /// Call before handing off to another app (share sheet, camera, file
+  /// picker, browser login) so the return is not treated as a new visit.
+  void skipNextAppOpen({Duration window = const Duration(minutes: 10)}) {
+    _appOpenSkipUntil = DateTime.now().add(window);
+  }
+
+  /// True once if a hand-off asked to skip the next app open ad.
+  bool consumeAppOpenSkip() {
+    final until = _appOpenSkipUntil;
+    _appOpenSkipUntil = null;
+    return until != null && DateTime.now().isBefore(until);
+  }
+
+  /// How long [format] must wait before its next request. Zero when free.
+  Duration noFillWait(String format) {
+    final until = _noFillPausedUntil[format];
+    if (until == null) return Duration.zero;
+    final wait = until.difference(DateTime.now());
+    if (wait <= Duration.zero) {
+      _noFillPausedUntil.remove(format);
+      return Duration.zero;
+    }
+    return wait;
+  }
+
+  void recordFill(String format) {
+    _noFillStreak.remove(format);
+    _noFillPausedUntil.remove(format);
+  }
+
+  /// Track an empty response. Returns true if [format] is now paused.
+  bool recordNoFill(String format) {
+    final streak = (_noFillStreak[format] ?? 0) + 1;
+    if (streak >= AdConfig.noFillStreakLimit) {
+      _noFillStreak.remove(format);
+      _noFillPausedUntil[format] = DateTime.now().add(AdConfig.noFillPause);
+      AppLogger.debug('AdService: $format paused after $streak no-fills.');
+      return true;
+    }
+    _noFillStreak[format] = streak;
+    return false;
+  }
+
+  /// AdMob "no fill": the request worked but no ad was available.
+  static bool isNoFill(LoadAdError error) => error.code == 3;
+
   // Only ads not yet claimed by a widget/manager belong to the service.
   // Disposing a claimed ad would leave its owner with an invalid native ID.
   final Set<Ad> _activeAds = {};
@@ -300,6 +365,47 @@ class AdService with WidgetsBindingObserver {
     }
 
     loadWithUnit(primaryUnitId, false);
+    return completer.future;
+  }
+
+  /// Load App Open Ad. Fails fast when no unit ID is configured.
+  Future<Either<AdError, AppOpenAd>> loadAppOpenAd() async {
+    if (kIsWeb) {
+      return left<AdError, AppOpenAd>(const AdPlatformUnsupportedError());
+    }
+    if (!canServeAds) {
+      return left<AdError, AppOpenAd>(
+        const AdConsentError(
+          'Ad consent is not available.',
+          'consent_unavailable',
+        ),
+      );
+    }
+    final unitId = AdConfig.appOpenAdUnitId;
+    if (unitId.isEmpty) {
+      return left<AdError, AppOpenAd>(
+        const AdInitError('App open ad unit ID is empty'),
+      );
+    }
+
+    final completer = Completer<Either<AdError, AppOpenAd>>();
+    AppOpenAd.load(
+      adUnitId: unitId,
+      request: const AdRequest(),
+      adLoadCallback: AppOpenAdLoadCallback(
+        onAdLoaded: (ad) {
+          _activeAds.add(ad);
+          completer.complete(right<AdError, AppOpenAd>(ad));
+        },
+        onAdFailedToLoad: (error) {
+          completer.complete(
+            left<AdError, AppOpenAd>(
+              AdLoadError(error.message, error.code.toString()),
+            ),
+          );
+        },
+      ),
+    );
     return completer.future;
   }
 

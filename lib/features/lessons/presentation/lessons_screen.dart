@@ -248,6 +248,17 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                                 mainAxisExtent: 260,
                               ),
                         ),
+                      if (remaining > 3)
+                        const SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 24),
+                            child: RepaintBoundary(
+                              child: NativeAdWidget(
+                                placement: 'lessons_native_bottom',
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                     const SliverToBoxAdapter(child: SizedBox(height: 120)),
                   ],

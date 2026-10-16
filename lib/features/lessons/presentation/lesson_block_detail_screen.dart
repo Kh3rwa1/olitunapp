@@ -212,6 +212,7 @@ class _LessonBlockDetailScreenState
   Widget build(BuildContext context) {
     final lessonsAsync = ref.watch(learnerLessonsProvider);
     final completedLessonIds = ref.watch(completedLessonIdsProvider);
+    final adUnlockedLessonIds = ref.watch(adUnlockedLessonIdsProvider);
     ref.watch(activeLanguageManifestProvider);
     ref.watch(effectiveTeachingLanguageProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -332,12 +333,14 @@ class _LessonBlockDetailScreenState
           orderedLessons: categoryLessons,
           completedLessonIds: completedLessonIds,
           lessonId: lesson.id,
+          unlockedLessonIds: adUnlockedLessonIds,
         );
         if (progressStatus == LessonProgressStatus.locked) {
           final blocker = LessonProgression.blockingLesson(
             orderedLessons: categoryLessons,
             completedLessonIds: completedLessonIds,
             lessonId: lesson.id,
+            unlockedLessonIds: adUnlockedLessonIds,
           );
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted &&

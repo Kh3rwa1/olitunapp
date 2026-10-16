@@ -1225,5 +1225,9 @@
     "paywallNotConfigured": "Purchases aren't available right now. Please try again later.",
     "paywallVerificationPending": "Payment received. We'll confirm your unlock shortly.",
     "paywallAndroidOnly": "Purchases are available in the Olitun Android app.",
-    "paywallLockedLessonMessage": "This lesson is part of a paid course. Unlock the course to continue."
+    "paywallLockedLessonMessage": "This lesson is part of a paid course. Unlock the course to continue.",
+    "watchAdUnlockLesson": "Watch a short ad to unlock now",
+    "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
+    "dailyBonusTitle": "Free bonus stars",
+    "dailyBonusBody": "Watch a short ad and earn 50 stars."
 }

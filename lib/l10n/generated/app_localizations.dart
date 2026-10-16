@@ -3817,6 +3817,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This lesson is part of a paid course. Unlock the course to continue.'**
   String get paywallLockedLessonMessage;
+
+  /// No description provided for @watchAdUnlockLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch a short ad to unlock now'**
+  String get watchAdUnlockLesson;
+
+  /// No description provided for @lessonUnlockedByAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson unlocked! Enjoy.'**
+  String get lessonUnlockedByAd;
+
+  /// No description provided for @dailyBonusTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Free bonus stars'**
+  String get dailyBonusTitle;
+
+  /// No description provided for @dailyBonusBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch a short ad and earn 50 stars.'**
+  String get dailyBonusBody;
 }
 
 class _AppLocalizationsDelegate

@@ -2102,4 +2102,16 @@ class AppLocalizationsBn extends AppLocalizations {
   @override
   String get paywallLockedLessonMessage =>
       'এই পাঠটি একটি পেইড কোর্সের অংশ। চালিয়ে যেতে কোর্সটি আনলক করুন।';
+
+  @override
+  String get watchAdUnlockLesson => 'এখনই আনলক করতে একটি ছোট বিজ্ঞাপন দেখুন';
+
+  @override
+  String get lessonUnlockedByAd => 'পাঠ আনলক হয়েছে! উপভোগ করুন।';
+
+  @override
+  String get dailyBonusTitle => 'বিনামূল্যে বোনাস তারা';
+
+  @override
+  String get dailyBonusBody => 'একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।';
 }

@@ -20,15 +20,22 @@ abstract final class LessonProgression {
     return List<LessonEntity>.unmodifiable(indexed.map((entry) => entry.$2));
   }
 
+  /// [unlockedLessonIds] are lessons opened early with a rewarded ad: each
+  /// one is available on its own but does not count as completed, so the
+  /// lessons after it stay locked.
   static LessonProgressStatus statusFor({
     required List<LessonEntity> orderedLessons,
     required Set<String> completedLessonIds,
     required String lessonId,
+    Set<String> unlockedLessonIds = const {},
   }) {
     final index = orderedLessons.indexWhere((lesson) => lesson.id == lessonId);
     if (index < 0) return LessonProgressStatus.locked;
     if (completedLessonIds.contains(lessonId)) {
       return LessonProgressStatus.completed;
+    }
+    if (unlockedLessonIds.contains(lessonId)) {
+      return LessonProgressStatus.current;
     }
 
     for (var previousIndex = 0; previousIndex < index; previousIndex++) {
@@ -43,7 +50,9 @@ abstract final class LessonProgression {
     required List<LessonEntity> orderedLessons,
     required Set<String> completedLessonIds,
     required String lessonId,
+    Set<String> unlockedLessonIds = const {},
   }) {
+    if (unlockedLessonIds.contains(lessonId)) return null;
     final index = orderedLessons.indexWhere((lesson) => lesson.id == lessonId);
     if (index <= 0) return null;
 

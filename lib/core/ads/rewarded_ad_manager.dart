@@ -11,7 +11,7 @@ import '../config/ad_config.dart';
 import 'ad_service.dart';
 import 'ad_state.dart';
 
-enum RewardType { stars, quizAttempt, hearts }
+enum RewardType { stars, quizAttempt, hearts, lessonUnlock }
 
 class RewardedAdManager with WidgetsBindingObserver {
   final Ref _ref;
@@ -329,6 +329,7 @@ class RewardedAdManager with WidgetsBindingObserver {
           break;
         case RewardType.quizAttempt:
         case RewardType.hearts:
+        case RewardType.lessonUnlock:
           // User awarded free attempt or hearts refill
           AppLogger.debug(
             'RewardedAdManager: Refilled $amount hearts / quiz attempts',

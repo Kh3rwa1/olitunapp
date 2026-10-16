@@ -1225,5 +1225,9 @@
     "paywallNotConfigured": "खरीदारी अभी उपलब्ध नहीं है। कृपया बाद में फिर कोशिश करें।",
     "paywallVerificationPending": "पेमेंट मिल गया। हम जल्द ही आपका अनलॉक पक्का करेंगे।",
     "paywallAndroidOnly": "खरीदारी Olitun Android ऐप में उपलब्ध है।",
-    "paywallLockedLessonMessage": "यह पाठ एक पेड कोर्स का हिस्सा है। आगे बढ़ने के लिए कोर्स अनलॉक करें।"
+    "paywallLockedLessonMessage": "यह पाठ एक पेड कोर्स का हिस्सा है। आगे बढ़ने के लिए कोर्स अनलॉक करें।",
+    "watchAdUnlockLesson": "अभी अनलॉक करने के लिए छोटा विज्ञापन देखें",
+    "lessonUnlockedByAd": "पाठ अनलॉक हो गया! आनंद लें।",
+    "dailyBonusTitle": "मुफ़्त बोनस स्टार",
+    "dailyBonusBody": "छोटा विज्ञापन देखें और 50 स्टार पाएं।"
 }

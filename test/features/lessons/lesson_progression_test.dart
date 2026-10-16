@@ -124,4 +124,37 @@ void main() {
       LessonProgressStatus.locked,
     );
   });
+
+  test('an ad-unlocked lesson opens on its own; later lessons stay locked', () {
+    const ordered = [lessonOne, lessonTwo, lessonThree];
+    const unlocked = {'lesson_2'};
+    expect(
+      LessonProgression.statusFor(
+        orderedLessons: ordered,
+        completedLessonIds: const {},
+        lessonId: 'lesson_2',
+        unlockedLessonIds: unlocked,
+      ),
+      LessonProgressStatus.current,
+    );
+    expect(
+      LessonProgression.blockingLesson(
+        orderedLessons: ordered,
+        completedLessonIds: const {},
+        lessonId: 'lesson_2',
+        unlockedLessonIds: unlocked,
+      ),
+      isNull,
+    );
+    // Unlocking is not completing: lesson three still waits on lesson one.
+    expect(
+      LessonProgression.statusFor(
+        orderedLessons: ordered,
+        completedLessonIds: const {},
+        lessonId: 'lesson_3',
+        unlockedLessonIds: unlocked,
+      ),
+      LessonProgressStatus.locked,
+    );
+  });
 }

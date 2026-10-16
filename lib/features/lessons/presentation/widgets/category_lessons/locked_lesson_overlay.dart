@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../../core/ads/ad_state.dart';
+import '../../../../../core/ads/rewarded_ad_manager.dart';
 import '../../../../../core/audio/audio_service.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/providers/local_settings_provider.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
+import '../../providers/lesson_progression_provider.dart';
 
 /// Playful full-screen takeover for locked lessons: an oversized peeking
 /// Eyes animation, big friendly typography, and a direct CTA into the
@@ -21,6 +24,8 @@ class LockedLessonOverlay extends StatelessWidget {
     required this.blockingLessonTitle,
     required this.onStartBlockingLesson,
     required this.isDark,
+    this.unlockLessonId,
+    this.onUnlocked,
   });
 
   /// Null-safe display name of the lesson blocking progress.
@@ -28,11 +33,17 @@ class LockedLessonOverlay extends StatelessWidget {
   final VoidCallback onStartBlockingLesson;
   final bool isDark;
 
+  /// When set, a rewarded ad can unlock this lesson early.
+  final String? unlockLessonId;
+  final VoidCallback? onUnlocked;
+
   static Future<void> show(
     BuildContext context, {
     required String? blockingLessonTitle,
     required VoidCallback onStartBlockingLesson,
     required bool isDark,
+    String? unlockLessonId,
+    VoidCallback? onUnlocked,
   }) {
     // showDialog already opens on the root navigator, above the shell.
     return showDialog<void>(
@@ -49,6 +60,13 @@ class LockedLessonOverlay extends StatelessWidget {
             onStartBlockingLesson();
           },
           isDark: isDark,
+          unlockLessonId: unlockLessonId,
+          onUnlocked: onUnlocked == null
+              ? null
+              : () {
+                  Navigator.of(dialogContext).pop();
+                  onUnlocked();
+                },
         ),
       ),
     );
@@ -60,6 +78,8 @@ class LockedLessonOverlay extends StatelessWidget {
       blockingLessonTitle: blockingLessonTitle,
       onPrimary: onStartBlockingLesson,
       onSecondary: () => Navigator.of(context).pop(),
+      unlockLessonId: unlockLessonId,
+      onUnlocked: onUnlocked,
     );
   }
 }
@@ -80,6 +100,8 @@ class LockedLessonCard extends ConsumerStatefulWidget {
     required this.onSecondary,
     this.primaryLabel = 'Take me there',
     this.secondaryLabel = 'Back to learning path',
+    this.unlockLessonId,
+    this.onUnlocked,
   });
 
   /// Null-safe display name of the lesson blocking progress.
@@ -89,11 +111,51 @@ class LockedLessonCard extends ConsumerStatefulWidget {
   final String primaryLabel;
   final String secondaryLabel;
 
+  /// Lesson a rewarded ad may unlock early; [onUnlocked] opens it.
+  final String? unlockLessonId;
+  final VoidCallback? onUnlocked;
+
   @override
   ConsumerState<LockedLessonCard> createState() => _LockedLessonCardState();
 }
 
 class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
+  bool _unlocking = false;
+
+  bool get _offersAdUnlock =>
+      widget.unlockLessonId != null &&
+      widget.onUnlocked != null &&
+      ref.watch(adStateProvider).shouldShowAds;
+
+  Future<void> _unlockWithAd() async {
+    final lessonId = widget.unlockLessonId;
+    if (_unlocking || lessonId == null) return;
+    _unlocking = true;
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final unlocked = await ref
+        .read(rewardedAdManagerProvider)
+        .show(
+          context: context,
+          placement: 'lesson_unlock',
+          rewardType: RewardType.lessonUnlock,
+          amount: 1,
+          onRewardGranted: () {
+            ref.read(adUnlockedLessonIdsProvider.notifier).unlock(lessonId);
+          },
+        );
+    _unlocking = false;
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          unlocked ? l10n.lessonUnlockedByAd : l10n.rewardedAdCooldown,
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    if (unlocked && mounted) widget.onUnlocked?.call();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -226,6 +288,35 @@ class _LockedLessonCardState extends ConsumerState<LockedLessonCard> {
                         ),
                       ),
                     ),
+                    if (_offersAdUnlock) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          key: const ValueKey('locked-overlay-watch-ad'),
+                          onPressed: _unlockWithAd,
+                          icon: const Icon(Icons.ondemand_video_rounded),
+                          label: Text(
+                            AppLocalizations.of(context)!.watchAdUnlockLesson,
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(
+                              color: Colors.white,
+                              width: 1.5,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            textStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: widget.onSecondary,

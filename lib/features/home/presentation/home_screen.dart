@@ -28,6 +28,7 @@ import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
 import 'widgets/santali_voice_promo_card.dart';
 import 'widgets/ai_studio_promo_card.dart';
+import 'widgets/rewarded_bonus_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
@@ -351,6 +352,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onRetry: _onRefresh,
               ),
             ),
+            const SizedBox(height: 20),
+            const RewardedBonusCard(),
             const SizedBox(height: 20),
             // One optional ad, after the learning actions and content grid.
             const RepaintBoundary(

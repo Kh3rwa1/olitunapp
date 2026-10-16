@@ -2108,4 +2108,16 @@ class AppLocalizationsHi extends AppLocalizations {
   @override
   String get paywallLockedLessonMessage =>
       'यह पाठ एक पेड कोर्स का हिस्सा है। आगे बढ़ने के लिए कोर्स अनलॉक करें।';
+
+  @override
+  String get watchAdUnlockLesson => 'अभी अनलॉक करने के लिए छोटा विज्ञापन देखें';
+
+  @override
+  String get lessonUnlockedByAd => 'पाठ अनलॉक हो गया! आनंद लें।';
+
+  @override
+  String get dailyBonusTitle => 'मुफ़्त बोनस स्टार';
+
+  @override
+  String get dailyBonusBody => 'छोटा विज्ञापन देखें और 50 स्टार पाएं।';
 }

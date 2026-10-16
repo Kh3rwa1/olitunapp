@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:itun/core/ads/ad_remote_config.dart';
 import 'package:itun/core/ads/ad_service.dart';
 import 'package:itun/core/ads/ad_state.dart';
+import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 import 'package:itun/core/config/ad_config.dart';
 import 'package:itun/main.dart' show appOpenAllowedOn;
@@ -176,6 +177,44 @@ void main() {
       await tester.pump(const Duration(seconds: 4));
       expect(service.nativeLoads, hasLength(2));
       await tester.pumpWidget(const SizedBox());
+    });
+  });
+
+  group('banner system bar inset', () {
+    Future<double> bannerHeight(WidgetTester tester, bool avoid) async {
+      final service = ControlledAdService();
+      await AdHarness.mount(
+        tester,
+        service,
+        child: MediaQuery(
+          data: const MediaQueryData(
+            size: Size(400, 800),
+            viewPadding: EdgeInsets.only(bottom: 24),
+          ),
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: BannerAdWidget(avoidSystemBar: avoid),
+          ),
+        ),
+        runtime: ControlledAdRuntime(),
+      );
+      await tester.pump();
+      await tester.pump();
+      service.bannerLoads.single.complete();
+      await tester.pump();
+      final height = tester.getSize(find.byType(BannerAdWidget)).height;
+      await tester.pumpWidget(const SizedBox());
+      return height;
+    }
+
+    testWidgets('a bottom-bar banner sits above the gesture bar', (
+      tester,
+    ) async {
+      expect(await bannerHeight(tester, true), AdSize.banner.height + 24);
+    });
+
+    testWidgets('an inline banner keeps its own height', (tester) async {
+      expect(await bannerHeight(tester, false), AdSize.banner.height);
     });
   });
 }

@@ -154,6 +154,21 @@ describe('Sarvam OCR', () => {
     }
   });
 
+  it('reads a raw HTML results body', async () => {
+    const api = sarvam({
+      '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: JOB, status: 'pending' } }],
+      [`/doc-ai/v1/job/${JOB}/status`]: [status('completed')],
+    });
+    const html = '<!doctype html><html><head><style>p{color:red}</style><title>x</title></head>'
+      + '<body><h1>ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ</h1><p>ᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ<br>ᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ</p></body></html>';
+    const fetchImpl = (async (input: any, init: any = {}) => {
+      if (String(input).includes('/results')) return new Response(html, { status: 200, headers: { 'content-type': 'text/html' } });
+      return api.fetchImpl(input, init);
+    }) as typeof fetch;
+    const job = await startOcr(deps(fetchImpl), file, 'sat-IN');
+    expect(job.text).toBe('ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\nᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ\nᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ');
+  });
+
   it('turns Sarvam page HTML into plain lines', () => {
     const html = '<h1>ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ</h1><p>ᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ<br/>ᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ</p><p>ᱥᱟᱱᱛᱟᱲᱤ &amp; &#7376;ᱚᱞ&nbsp;ᱪᱤᱠᱤ</p>';
     expect(resultText({ documents: [{ pages: [{ content: html }] }] })).toBe(

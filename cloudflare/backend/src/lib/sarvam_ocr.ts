@@ -44,7 +44,7 @@ type Deps = {
   pollMs?: number;
 };
 
-async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise<any> {
+async function sarvam(deps: Deps, path: string, init: RequestInit = {}, raw = false): Promise<any> {
   let res: Response;
   try {
     res = await (deps.fetchImpl ?? fetch)(`${ORIGIN}${path}`, {
@@ -72,6 +72,7 @@ async function sarvam(deps: Deps, path: string, init: RequestInit = {}): Promise
   if (!res.ok) {
     throw new OcrError('PROVIDER_UNAVAILABLE', 502, `Sarvam request failed (${res.status}).`);
   }
+  if (raw) return res.text();
   try {
     return await res.json();
   } catch {
@@ -115,6 +116,14 @@ export function htmlToText(html: string): string {
     .replace(/<\/(p|div|h[1-6]|li|tr|table|section|article|blockquote|pre)\s*>/gi, '\n')
     .replace(/<\/t[dh]\s*>/gi, ' ');
   return decodeEntities(stripTags(withBreaks));
+}
+
+/** The <body> of a full HTML document (drops <head>, styles and scripts). */
+export function htmlBody(html: string): string {
+  const open = html.search(/<body[\s>]/i);
+  const close = html.search(/<\/body\s*>/i);
+  const body = open >= 0 ? html.slice(html.indexOf('>', open) + 1, close > open ? close : undefined) : html;
+  return body.replace(/<(script|style)[\s\S]*?<\/\1\s*>/gi, '');
 }
 
 /** Plain text from a digitise result: pages in order, markup removed. */
@@ -228,8 +237,22 @@ async function check(deps: Deps, sarvamId: string): Promise<{ status: string; te
   if (!SUCCESS.has(state)) {
     throw new OcrError('OCR_FAILED', 422, `Sarvam could not read this document (${state}).`);
   }
-  const text = resultText(await sarvam(deps, `${path}/results?format=html`));
-  if (!text) throw new OcrError('EMPTY_RESULT', 422, 'No text was found in this document.');
+  // format=html returns the page HTML itself; other shapes are JSON with
+  // documents[].pages[].content. Accept both.
+  const body: string = await sarvam(deps, `${path}/results?format=html`, {}, true);
+  let parsed: any = null;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    // Not JSON: the HTML document itself.
+  }
+  const text = parsed && typeof parsed === 'object'
+    ? resultText(parsed)
+    : resultText({ documents: [{ pages: [{ content: htmlBody(body) }] }] });
+  if (!text) {
+    console.error(`Sarvam OCR results: no text (${body.length} chars): ${body.slice(0, 300)}`);
+    throw new OcrError('EMPTY_RESULT', 422, 'No text was found in this document.');
+  }
   return { status: state, text };
 }
 

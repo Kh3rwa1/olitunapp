@@ -9,8 +9,8 @@ import '../../analytics/analytics_service.dart';
 import '../../logging/app_logger.dart';
 import '../../observability/crash_reporting.dart';
 import '../../network/network_info.dart';
-import '../../theme/app_colors.dart';
 import '../ad_service.dart';
+import '../native_ad_pool.dart';
 import '../ad_state.dart';
 import 'ad_widget_runtime.dart';
 import 'near_viewport_loader.dart';
@@ -29,6 +29,13 @@ class NativeAdWidget extends ConsumerStatefulWidget {
   final Color? backgroundColor;
   final double cornerRadius;
 
+  /// Take a preloaded ad from [NativeAdPool] when one is ready (default
+  /// styling only), so short visits still get an ad.
+  final bool pooled;
+
+  /// Tall enough for the medium template's media, text and CTA button.
+  static const double mediumHeight = 360;
+
   const NativeAdWidget({
     super.key,
     this.placement = 'list_inline',
@@ -37,6 +44,7 @@ class NativeAdWidget extends ConsumerStatefulWidget {
     this.accentColor,
     this.backgroundColor,
     this.cornerRadius = 20,
+    this.pooled = false,
   });
 
   /// Larger template with a media view; earns more where there is room.
@@ -46,7 +54,8 @@ class NativeAdWidget extends ConsumerStatefulWidget {
     this.accentColor,
     this.backgroundColor,
     this.cornerRadius = 20,
-  }) : height = 320,
+    this.pooled = false,
+  }) : height = mediumHeight,
        templateType = TemplateType.medium;
 
   @override
@@ -186,6 +195,8 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
     final adState = ref.read(adStateProvider);
     if (!adState.shouldShowAds || _hasPersistentError) return;
 
+    if (_takePooledAd()) return;
+
     // Native demand is paused after repeated no-fills: use the banner slot.
     if (_adService.noFillWait('native') > Duration.zero) {
       _loadFallbackBanner();
@@ -197,32 +208,12 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
 
     try {
       final isDark = Theme.of(context).brightness == Brightness.dark;
-      final accent = widget.accentColor ?? const Color(0xFF6C5CE7);
-      final templateStyle = NativeTemplateStyle(
+      final templateStyle = olitunNativeTemplateStyle(
         templateType: widget.templateType,
-        mainBackgroundColor: _background(isDark),
-        cornerRadius: widget.cornerRadius - 4,
-        callToActionTextStyle: NativeTemplateTextStyle(
-          textColor: accent.computeLuminance() > 0.5
-              ? Colors.black87
-              : Colors.white,
-          backgroundColor: accent,
-          style: NativeTemplateFontStyle.bold,
-          size: 13.0,
-        ),
-        primaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white : Colors.black87,
-          style: NativeTemplateFontStyle.bold,
-          size: 13.0,
-        ),
-        secondaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white70 : Colors.black54,
-          size: 12.0,
-        ),
-        tertiaryTextStyle: NativeTemplateTextStyle(
-          textColor: isDark ? Colors.white54 : Colors.black45,
-          size: 11.0,
-        ),
+        isDark: isDark,
+        accentColor: widget.accentColor,
+        backgroundColor: widget.backgroundColor,
+        cornerRadius: widget.cornerRadius,
       );
 
       final nativeAd = _adService.createNativeAd(
@@ -262,8 +253,25 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget>
   }
 
   Color _background(bool isDark) =>
-      widget.backgroundColor ??
-      (isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface);
+      olitunNativeBackground(isDark, widget.backgroundColor);
+
+  bool get _usesPool =>
+      widget.pooled &&
+      widget.accentColor == null &&
+      widget.backgroundColor == null;
+
+  /// Show a preloaded ad if one is ready; refill the pool either way.
+  bool _takePooledAd() {
+    if (!_usesPool) return false;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pool = ref.read(nativeAdPoolProvider);
+    final ad = pool.take(widget.templateType, isDark);
+    pool.warm(widget.templateType, isDark);
+    if (ad == null) return false;
+    _clearAd();
+    _onAdLoaded(ad, _generation, 'native');
+    return true;
+  }
 
   /// Fill the slot with a fixed-size banner when native has no ad.
   void _loadFallbackBanner() {

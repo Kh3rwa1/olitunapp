@@ -22,7 +22,7 @@ class FillSpaceNativeAd extends StatelessWidget {
 
   /// Ad height + the widget's own vertical margin (16) + [_gap] each side.
   static const double _gap = 12;
-  static const double mediumNeeds = 320 + 16 + _gap * 2;
+  static const double mediumNeeds = NativeAdWidget.mediumHeight + 16 + _gap * 2;
   static const double smallNeeds = 100 + 16 + _gap * 2;
 
   @override
@@ -38,6 +38,7 @@ class FillSpaceNativeAd extends StatelessWidget {
             accentColor: accentColor,
             backgroundColor: backgroundColor,
             cornerRadius: cornerRadius,
+            pooled: true,
           );
         } else if (height >= smallNeeds) {
           ad = NativeAdWidget(
@@ -46,6 +47,7 @@ class FillSpaceNativeAd extends StatelessWidget {
             accentColor: accentColor,
             backgroundColor: backgroundColor,
             cornerRadius: cornerRadius,
+            pooled: true,
           );
         } else {
           return const SizedBox.shrink();

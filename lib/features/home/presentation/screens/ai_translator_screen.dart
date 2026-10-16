@@ -412,6 +412,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                   const RepaintBoundary(
                     child: NativeAdWidget.medium(
                       placement: 'translator_native',
+                      pooled: true,
                     ),
                   ),
                   const SizedBox(height: 90),

@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:itun/core/ads/ad_remote_config.dart';
 import 'package:itun/core/ads/ad_service.dart';
 import 'package:itun/core/ads/ad_state.dart';
+import 'package:itun/core/ads/native_ad_pool.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/fill_space_native_ad.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
@@ -260,6 +261,52 @@ void main() {
 
     testWidgets('shows nothing when there is no room', (tester) async {
       expect(await pick(tester, FillSpaceNativeAd.smallNeeds - 1), isNull);
+    });
+  });
+
+  group('native ad pool', () {
+    test('hands out a warmed ad once and refills on demand', () {
+      final service = ControlledAdService();
+      final pool = NativeAdPool(service);
+      expect(pool.take(TemplateType.small, false), isNull);
+
+      pool.warm(TemplateType.small, false);
+      pool.warm(TemplateType.small, false); // already in flight
+      expect(service.nativeLoads, hasLength(1));
+      service.nativeLoads.single.complete();
+
+      final ad = pool.take(TemplateType.small, false);
+      expect(ad, same(service.nativeLoads.single.ad));
+      expect(pool.take(TemplateType.small, false), isNull);
+      expect(pool.take(TemplateType.medium, false), isNull);
+    });
+
+    testWidgets('a pooled slot shows a ready ad without a new request', (
+      tester,
+    ) async {
+      final service = ControlledAdService();
+      final harness = await AdHarness.mount(
+        tester,
+        service,
+        child: const SizedBox(),
+        runtime: ControlledAdRuntime(),
+      );
+      final pool = harness.container.read(nativeAdPoolProvider);
+      pool.warm(TemplateType.small, false);
+      service.nativeLoads.single.complete();
+      final warmed = service.nativeLoads.single.ad;
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: harness.container,
+          child: const MaterialApp(home: NativeAdWidget(pooled: true)),
+        ),
+      );
+      await tester.pump();
+      // The ready ad was used; the only new request is the pool's refill.
+      expect(service.claimed, contains(warmed));
+      expect(service.nativeLoads, hasLength(2));
+      await tester.pumpWidget(const SizedBox());
     });
   });
 }

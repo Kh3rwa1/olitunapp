@@ -30,6 +30,7 @@ import 'l10n/generated/app_localizations.dart';
 import 'core/ads/ad_remote_config.dart';
 import 'core/ads/ad_service.dart';
 import 'core/ads/app_open_ad_manager.dart';
+import 'core/ads/native_ad_pool.dart';
 import 'core/ads/consent_manager.dart';
 import 'core/ads/rewarded_ad_manager.dart';
 import 'core/notifications/notification_service.dart';
@@ -223,6 +224,7 @@ class OlitunApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     // Admin AdMob settings (kill switch, caps, unit IDs) for every learner.
     ref.watch(adRemoteConfigSyncProvider);
+    ref.watch(nativeAdPoolWarmupProvider);
     ref.watch(appOpenAdManagerProvider).routeAllowsAd = (coldStart) =>
         appOpenAllowedOn(
           router.routerDelegate.currentConfiguration.uri.path,

@@ -46,10 +46,8 @@ class AdConfig {
   static const String prodAndroidNativeId =
       'ca-app-pub-7288061764998409/6987939502';
 
-  /// No production App Open unit exists yet. Create one in AdMob and set it
-  /// via the admin `admob_app_open_id` setting; until then app open ads stay
-  /// off in release builds.
-  static const String prodAndroidAppOpenId = '';
+  static const String prodAndroidAppOpenId =
+      'ca-app-pub-7288061764998409/5930225271';
 
   // Unit IDs pushed from the `app_settings` collection (admin AdMob section).
   // A non-empty remote value wins over the bundled production ID, so units can

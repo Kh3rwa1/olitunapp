@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   OcrError,
+  dropBlocks,
   decodeJobToken,
   encodeJobToken,
   ocrStatus,
@@ -152,6 +153,27 @@ describe('Sarvam OCR', () => {
       const api = sarvam({ '/doc-ai/v1/job/digitise': [{ status: httpStatus, body: {} }] });
       await expect(startOcr(deps(api.fetchImpl), file, 'sat-IN')).rejects.toMatchObject({ code });
     }
+  });
+
+  it('reads a raw HTML results body', async () => {
+    const api = sarvam({
+      '/doc-ai/v1/job/digitise': [{ status: 201, body: { job_id: JOB, status: 'pending' } }],
+      [`/doc-ai/v1/job/${JOB}/status`]: [status('completed')],
+    });
+    const html = '<!doctype html><html><head><style>p{color:red}</style><title>x</title></head>'
+      + '<body><h1>ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ</h1><p>ᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ<br>ᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ</p></body></html>';
+    const fetchImpl = (async (input: any, init: any = {}) => {
+      if (String(input).includes('/results')) return new Response(html, { status: 200, headers: { 'content-type': 'text/html' } });
+      return api.fetchImpl(input, init);
+    }) as typeof fetch;
+    const job = await startOcr(deps(fetchImpl), file, 'sat-IN');
+    expect(job.text).toBe('ᱡᱟᱦᱮᱸ ᱥᱮᱨᱮᱧ\nᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ\nᱵᱟᱨ ᱯᱟᱹᱨᱥᱤ');
+  });
+
+  it('drops script and style blocks completely, even when nested or unterminated', () => {
+    expect(dropBlocks('a<script>x</script>b<STYLE>y</style >c', ['script', 'style'])).toBe('abc');
+    expect(dropBlocks('a<scr<script>ipt>evil</script>b', ['script', 'style'])).not.toMatch(/<script/i);
+    expect(dropBlocks('a<script>never closed', ['script'])).toBe('a');
   });
 
   it('turns Sarvam page HTML into plain lines', () => {

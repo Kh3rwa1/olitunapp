@@ -173,15 +173,20 @@ class SantaliVoicePromoCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    Text(
-                      AppLocalizations.of(context)!.k15Styles,
-                      style: TextStyle(
-                        color: Colors.white.withValues(
-                          alpha: isDark ? 0.75 : 0.9,
+                    // Shrinks instead of overflowing at large text sizes.
+                    Flexible(
+                      child: Text(
+                        AppLocalizations.of(context)!.k15Styles,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withValues(
+                            alpha: isDark ? 0.75 : 0.9,
+                          ),
+                          fontFamily: 'OlChiki',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
                         ),
-                        fontFamily: 'OlChiki',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],

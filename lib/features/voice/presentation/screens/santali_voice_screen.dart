@@ -62,7 +62,13 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
   String? _error;
   bool _loginRequired = false;
   bool _isDownloading = false;
-  bool _showingBack = false;
+  // One identity for the flip card across layout changes (the keyboard
+  // opening on a short screen switches the mobile layout), so its side
+  // survives the rebuild instead of resetting to the text face.
+  final GlobalKey _flipCardKey = GlobalKey();
+
+  /// The side the card really shows, read from the card itself.
+  bool get _showingBack => !(_flipController.state?.isFront ?? true);
   PlaybackController? _playback;
 
   static const _samples = [
@@ -136,10 +142,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     });
     // Flip to the player immediately — the back face shows progress
     // while Bodhan renders, then the clip.
-    if (!_showingBack) {
-      setState(() => _showingBack = true);
-      unawaited(_flipController.flipcard());
-    }
+    if (!_showingBack) unawaited(_flipController.flipcard());
     final voice = ref.read(santaliVoiceNameProvider);
     final style = ref.read(santaliVoiceStyleProvider);
     final result = await ref
@@ -154,10 +157,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
         _isLoading = false;
       });
       // Back to the text so the learner can edit and retry.
-      if (_showingBack) {
-        setState(() => _showingBack = false);
-        await _flipController.flipcard();
-      }
+      if (_showingBack) await _flipController.flipcard();
       return;
     }
     setState(() {
@@ -186,8 +186,8 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
   Future<void> _flipTo({required bool showBack}) async {
     if (_showingBack == showBack) return;
     HapticFeedback.lightImpact();
-    setState(() => _showingBack = showBack);
     await _flipController.flipcard();
+    if (mounted) setState(() {});
   }
 
   Future<void> _flipToFront() => _flipTo(showBack: false);
@@ -529,6 +529,7 @@ class _SantaliVoiceScreenState extends ConsumerState<SantaliVoiceScreen> {
     return SizedBox(
       height: height,
       child: FlipCard(
+        key: _flipCardKey,
         controller: _flipController,
         rotateSide: RotateSide.right,
         animationDuration: const Duration(milliseconds: 550),

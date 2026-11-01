@@ -97,6 +97,7 @@ jobs:
             --allow-invisible=lib/app/router/route_names.dart \
             --allow-invisible=lib/app/router/url_strategy.dart \
             --allow-invisible=lib/core/auth/web_redirect.dart \
+            --allow-invisible=lib/core/auth/legacy_appwrite_session.dart \
             --allow-invisible=lib/core/motion/motion.dart \
             --allow-invisible=lib/shared/models/content_models.dart \
             --allow-invisible=lib/shared/models/content_item.dart \

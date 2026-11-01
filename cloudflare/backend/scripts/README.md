@@ -48,3 +48,26 @@ blocked) Appwrite account are skipped.
 Tests: `node --test scripts/import_appwrite_user_data.test.mjs` (needs
 `npm ci`; the end-to-end test uses a mock Appwrite server and a temporary
 local D1).
+
+## enable_worker_auth.sh
+
+Turns on Worker-owned sign-in (`/api/v1/auth/*`, `src/routes/auth_sessions.ts`)
+in production: creates the D1 auth tables, sets `AUTH_SECRET` once (random,
+never printed), deploys, and prints `/api/v1/auth/config`. Safe to re-run.
+
+```sh
+cd cloudflare/backend && bash scripts/enable_worker_auth.sh
+```
+
+Then, when ready:
+
+- Email codes: `npx wrangler email sending enable olitun.in` (adds the
+  sending DNS records; the account's zones include Email Sending).
+- Google: create an OAuth **Web application** client in Google Cloud
+  (project `ol-itun`) with the authorized redirect URI
+  `https://olitun-api.dulalkisku0.workers.dev/api/v1/auth/google/callback`,
+  then `npx wrangler secret put GOOGLE_CLIENT_ID` and
+  `npx wrangler secret put GOOGLE_CLIENT_SECRET`.
+
+`GET /api/v1/auth/config` reports which methods are live; the app hides the
+others.

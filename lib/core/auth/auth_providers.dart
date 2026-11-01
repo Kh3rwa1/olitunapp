@@ -28,3 +28,8 @@ final currentUserProvider = FutureProvider<UserEntity?>((ref) async {
   final result = await repo.getCurrentUser();
   return result.getOrElse((_) => null);
 });
+
+/// Sign-in methods the Worker can serve right now (all shown while unknown).
+final signInOptionsProvider = FutureProvider<WorkerAuthConfig>((ref) {
+  return ref.watch(appwriteAuthServiceProvider).signInOptions();
+});

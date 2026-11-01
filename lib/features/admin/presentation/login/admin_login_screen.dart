@@ -70,7 +70,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       setState(() {
         _isLoading = false;
         _errorMessage =
-            'Sign-in failed, or this account is not in the admin team.';
+            'Sign-in failed, or this Google account is not an admin. '
+            'Admins sign in with Google.';
       });
       HapticFeedback.heavyImpact();
     }

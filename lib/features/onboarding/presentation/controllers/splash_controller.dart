@@ -39,33 +39,29 @@ class SplashController {
         }
       }
 
-      // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)
+      // 1. Check for the Worker's one-time login code in URL params (after
+      // the Google sign-in redirect on web).
       if (kIsWeb) {
-        final uri = Uri.base;
-        var userId =
-            uri.queryParameters['userId'] ?? uri.queryParameters['key'];
-        var secret = uri.queryParameters['secret'];
+        const codeParam = AppwriteAuthService.webLoginCodeParam;
+        var code = Uri.base.queryParameters[codeParam];
 
-        if (userId == null || secret == null) {
+        if (code == null) {
           try {
             final routerState = GoRouterState.of(context);
-            userId ??=
-                routerState.uri.queryParameters['userId'] ??
-                routerState.uri.queryParameters['key'];
-            secret ??= routerState.uri.queryParameters['secret'];
+            code = routerState.uri.queryParameters[codeParam];
           } catch (e) {
             AppLogger.debug('Splash: Could not read GoRouter state: $e');
           }
         }
 
-        if (userId != null && secret != null) {
+        if (code != null && code.isNotEmpty) {
           OAuthSanitizer.sanitizeUrlHistory();
 
           AppLogger.debug(
-            'Splash: Found OAuth token, exchanging for session...',
+            'Splash: Found Google login code, exchanging for session...',
           );
           final authService = ref.read(appwriteAuthServiceProvider);
-          final success = await authService.exchangeOAuthToken(userId, secret);
+          final success = await authService.exchangeLoginCode(code);
 
           if (success) {
             AppLogger.debug('Splash: OAuth token exchange succeeded');
@@ -97,8 +93,10 @@ class SplashController {
         final authRepo = ref.read(authRepositoryProvider);
         bool isLoggedIn = false;
         try {
+          // Usually instant (local session). Longer only for the one-time
+          // move of an Appwrite-era session to Worker sign-in.
           final isLoggedInResult = await authRepo.isLoggedIn().timeout(
-            const Duration(seconds: 4),
+            const Duration(seconds: 10),
           );
           isLoggedIn = isLoggedInResult.getOrElse((_) => false);
         } catch (e) {

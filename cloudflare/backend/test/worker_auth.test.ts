@@ -276,9 +276,11 @@ describe('Appwrite session migration', () => {
     const admin = makeAppwriteSession({ email: email(), admin: true });
     const { body } = await callJson('/api/v1/auth/appwrite/migrate', { method: 'POST', json: { session: admin.session } });
     expect((await callJson('/api/v1/admin/audit', { as: bearer(body.accessToken) })).status).toBe(200);
+    expect((await callJson('/api/v1/auth/me', { as: bearer(body.accessToken) })).body.isAdmin).toBe(true);
 
     const learner = await callJson('/api/v1/auth/guest', { method: 'POST' });
     expect((await callJson('/api/v1/admin/audit', { as: bearer(learner.body.accessToken) })).status).toBe(403);
+    expect((await callJson('/api/v1/auth/me', { as: bearer(learner.body.accessToken) })).body.isAdmin).toBe(false);
   });
 });
 

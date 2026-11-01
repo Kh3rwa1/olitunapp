@@ -16,14 +16,14 @@ import '../../../../core/auth/auth_providers.dart';
 import '../../data/datasources/remote_avatar_datasource.dart';
 import '../../domain/entities/profile_avatar.dart';
 
-/// Real account creation date from Appwrite (null for guests/offline).
+/// Real account creation date (null for guests/offline).
 /// The profile hero hides its "Since ..." line rather than guessing.
 final accountCreatedAtProvider = FutureProvider<DateTime?>((ref) async {
   final authed = await ref.watch(isAuthenticatedProvider.future);
   if (!authed) return null;
   try {
     final authService = ref.watch(appwriteAuthServiceProvider);
-    final account = await authService.account.get();
+    final account = await authService.getMe();
     return DateTime.tryParse(account.registration)?.toLocal();
   } catch (_) {
     return null;

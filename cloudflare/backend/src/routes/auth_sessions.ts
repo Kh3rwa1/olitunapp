@@ -7,6 +7,7 @@ import {
   getActiveUserByEmail,
   getUser,
   insertUser,
+  isWorkerAdmin,
   issueSession,
   mergeUserData,
   normalizeEmail,
@@ -549,7 +550,8 @@ export function registerAuthSessionRoutes(app: App): void {
   app.get('/api/v1/auth/me', requireUser, async (c) => {
     const user = await getUser(c.env.DB, c.get('userId'));
     if (!user || user.status !== 'active') return c.json({ ok: false, error: 'UNAUTHENTICATED' }, 401);
-    return c.json({ ok: true, user: toPublicUser(user) });
+    const isAdmin = await isWorkerAdmin(c.env.DB, user.id, c.env.ADMIN_EMAILS).catch(() => false);
+    return c.json({ ok: true, user: toPublicUser(user), isAdmin });
   });
 
   app.patch('/api/v1/auth/me', requireUser, async (c) => {

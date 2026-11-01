@@ -25,6 +25,7 @@ export default defineConfig({
           RAZORPAY_WEBHOOK_SECRET: 'rzp_webhook_secret',
           RAZORPAY_API_BASE: 'https://razorpay.test',
           MEDIA_SIGNING_SECRET: 'test-media-signing-secret',
+          AUTH_SECRET: 'test-auth-secret-0123456789abcdef0123456789',
           BODHAN_API_KEYS: 'bodhan-key-a,bodhan-key-b,bodhan-key-c',
           BODHAN_API_BASE: 'https://bodhan.test',
         },

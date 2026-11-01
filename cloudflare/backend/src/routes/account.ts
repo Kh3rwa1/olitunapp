@@ -1,5 +1,6 @@
 import { requireUser } from '../auth';
 import { getRequestUserId, stableId, type App, type Bindings } from '../env';
+import { tombstoneUser } from '../lib/worker_users';
 
 // Account deletion (replaces the Appwrite delete-account function). Mirrors
 // the former Appwrite delete_account_core (now removed): purge every per-user D1 row and
@@ -230,10 +231,16 @@ export async function reconcileDeletions(
  * Runs the full deletion for [userId]. Used by the user route and by the
  * admin reconcile job for interrupted requests.
  */
-export async function deleteUserAccount(env: Bindings, userId: string, jwt = ''): Promise<Outcome> {
-  // Without a server key the login can only be removed by blocking it with
-  // the user's own session, which the admin reconcile job does not have.
-  if (!env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID || (!env.APPWRITE_API_KEY && !jwt)) {
+export async function deleteUserAccount(
+  env: Bindings,
+  userId: string,
+  jwt = '',
+  opts: { workerLogin?: boolean } = {},
+): Promise<Outcome> {
+  // Without a server key an Appwrite login can only be removed by blocking
+  // it with the user's own session, which the admin reconcile job does not
+  // have. A Worker login is closed in D1 and needs neither.
+  if (!opts.workerLogin && (!env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID || (!env.APPWRITE_API_KEY && !jwt))) {
     return {
       status: 503,
       body: { ok: false, code: 'server_misconfiguration', message: 'Account deletion is temporarily unavailable.' },
@@ -257,9 +264,14 @@ export async function deleteUserAccount(env: Bindings, userId: string, jwt = '')
     await purgeUserData(env, userId);
     await setRequestState(db, requestId, 'cleanup_complete', null);
 
-    // 4. The Appwrite login, last: hard delete, or block when the server key
-    // cannot delete users.
-    if (!(await deleteAppwriteUser(env, userId))) {
+    // 4. The login, last. A Worker login becomes a tombstone (sessions
+    // revoked, personal fields cleared, id can never be migrated again); the
+    // old Appwrite user is also hard-deleted when a server key allows it.
+    if (opts.workerLogin) {
+      await tombstoneUser(db, userId);
+      await deleteAppwriteUser(env, userId).catch(() => false);
+    } else if (!(await deleteAppwriteUser(env, userId))) {
+      // Appwrite login: hard delete failed or no key, so block it instead.
       if (!jwt) throw new DeletionError('AUTH_DELETE_FAILED', 503);
       await blockAppwriteUser(env, jwt);
       loginBlocked = true;
@@ -311,7 +323,10 @@ export function registerAccountRoutes(app: App): void {
   app.post('/api/v1/user/delete', requireUser, async (c) => {
     const userId = getRequestUserId(c);
     if (!userId) return c.json({ ok: false, code: 'unauthenticated', message: 'Authentication required' }, 401);
-    const outcome = await deleteUserAccount(c.env, userId, c.get('jwt'));
+    const outcome =
+      c.get('authKind') === 'worker'
+        ? await deleteUserAccount(c.env, userId, '', { workerLogin: true })
+        : await deleteUserAccount(c.env, userId, c.get('jwt'));
     return c.json(outcome.body, outcome.status as any);
   });
 }

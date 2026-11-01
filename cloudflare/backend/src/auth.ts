@@ -1,12 +1,20 @@
 import type { Context, MiddlewareHandler } from 'hono';
+import { isWorkerToken, verifyAccessToken } from './lib/worker_tokens';
+import { isSessionLive, isWorkerAdmin } from './lib/worker_users';
 
-// Identity for Worker requests comes only from an Appwrite JWT that Appwrite
-// itself vouches for. Client-supplied user ids (headers, query, body) are
-// never trusted.
+// Identity for Worker requests comes only from a verified token: a Worker
+// access token (signed with AUTH_SECRET, session checked in D1) or a legacy
+// Appwrite JWT that Appwrite itself vouches for. Client-supplied user ids
+// (headers, query, body) are never trusted.
 
 type RateLimit = { limit(options: { key: string }): Promise<{ success: boolean }> };
 
 export type AuthEnv = {
+  DB: D1Database;
+  // HMAC key for Worker access tokens (wrangler secret, >= 32 chars).
+  AUTH_SECRET?: string;
+  // Comma-separated verified emails that are admins on Worker sessions.
+  ADMIN_EMAILS?: string;
   APPWRITE_ENDPOINT: string;
   APPWRITE_PROJECT_ID: string;
   ADMIN_TEAM_ID?: string;
@@ -18,12 +26,14 @@ export type AuthEnv = {
 export type AuthVariables = {
   userId: string;
   jwt: string;
+  // Which verifier accepted the token ('' for anonymous requests).
+  authKind: 'worker' | 'appwrite' | '';
 };
 
 type AuthContext = Context<{ Bindings: AuthEnv; Variables: AuthVariables }>;
 
 type Verification =
-  | { status: 'ok'; userId: string }
+  | { status: 'ok'; userId: string; kind: 'worker' | 'appwrite' }
   | { status: 'invalid' }
   | { status: 'unavailable' };
 
@@ -80,12 +90,38 @@ export async function appwriteGet(env: AuthEnv, jwt: string, path: string): Prom
   return fetch(`${endpoint}${path}`, { headers: appwriteHeaders(env, jwt) });
 }
 
+// Worker sessions are re-checked in D1 at most this often per isolate, which
+// bounds how long a signed-out or deleted session stays usable.
+const WORKER_SESSION_TTL_MS = 60_000;
+
+async function verifyWorkerToken(env: AuthEnv, token: string): Promise<Verification> {
+  const secret = env.AUTH_SECRET || '';
+  if (secret.length < 32) return { status: 'unavailable' };
+  const claims = await verifyAccessToken(secret, token, Math.floor(Date.now() / 1000));
+  if (!claims) return { status: 'invalid' };
+
+  const key = await sha256(`worker:${token}`);
+  const cached = userCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return { status: 'ok', userId: cached.userId, kind: 'worker' };
+
+  let live: boolean;
+  try {
+    live = await isSessionLive(env.DB, claims.sub, claims.sid);
+  } catch (_) {
+    return { status: 'unavailable' };
+  }
+  if (!live) return { status: 'invalid' };
+  remember(userCache, key, { userId: claims.sub, expiresAt: Date.now() + WORKER_SESSION_TTL_MS });
+  return { status: 'ok', userId: claims.sub, kind: 'worker' };
+}
+
 async function verifyJwt(env: AuthEnv, jwt: string): Promise<Verification> {
+  if (isWorkerToken(jwt)) return verifyWorkerToken(env, jwt);
   if (!env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID) return { status: 'unavailable' };
 
   const key = await sha256(jwt);
   const cached = userCache.get(key);
-  if (cached && cached.expiresAt > Date.now()) return { status: 'ok', userId: cached.userId };
+  if (cached && cached.expiresAt > Date.now()) return { status: 'ok', userId: cached.userId, kind: 'appwrite' };
 
   let res: Response;
   try {
@@ -101,7 +137,7 @@ async function verifyJwt(env: AuthEnv, jwt: string): Promise<Verification> {
   if (!userId) return { status: 'invalid' };
 
   remember(userCache, key, { userId, expiresAt: Date.now() + VERIFY_TTL_MS });
-  return { status: 'ok', userId };
+  return { status: 'ok', userId, kind: 'appwrite' };
 }
 
 async function isAdminJwt(env: AuthEnv, jwt: string): Promise<boolean | null> {
@@ -132,8 +168,8 @@ function unauthenticated(c: AuthContext) {
   return c.json({ ok: false, error: 'UNAUTHENTICATED', message: 'Unauthenticated' }, 401);
 }
 
-// 503 (not 401) when Appwrite cannot be reached, so clients fall back to the
-// Appwrite Functions path instead of treating the user as signed out.
+// 503 (not 401) when the verifier cannot be reached (Appwrite down, D1
+// error, AUTH_SECRET missing), so clients do not treat the user as signed out.
 function authUnavailable(c: AuthContext) {
   return c.json({ ok: false, error: 'AUTH_UNAVAILABLE', message: 'Authentication service unavailable' }, 503);
 }
@@ -144,6 +180,7 @@ async function authenticate(c: AuthContext, required: boolean): Promise<Response
     if (required) return unauthenticated(c);
     c.set('userId', '');
     c.set('jwt', '');
+    c.set('authKind', '');
     return null;
   }
 
@@ -153,10 +190,11 @@ async function authenticate(c: AuthContext, required: boolean): Promise<Response
 
   c.set('userId', result.userId);
   c.set('jwt', jwt);
+  c.set('authKind', result.kind);
   return null;
 }
 
-/** Rejects the request unless it carries a valid Appwrite JWT. */
+/** Rejects the request unless it carries a valid Worker or Appwrite token. */
 export const requireUser: MiddlewareHandler = async (c, next) => {
   const denied = await authenticate(c as AuthContext, true);
   if (denied) return denied;
@@ -171,7 +209,8 @@ export const optionalUser: MiddlewareHandler = async (c, next) => {
 };
 
 /**
- * Admin team members (by Appwrite JWT), or scheduled jobs presenting
+ * Admins (Appwrite admins team for Appwrite JWTs; auth_admins / ADMIN_EMAILS
+ * for Worker sessions), or scheduled jobs presenting
  * CRON_SECRET in `x-cron-secret`.
  */
 export const requireAdmin: MiddlewareHandler = async (c, next) => {
@@ -181,6 +220,7 @@ export const requireAdmin: MiddlewareHandler = async (c, next) => {
   if (cronSecret && presented && timingSafeEqualStr(presented, cronSecret)) {
     ctx.set('userId', 'system:cron');
     ctx.set('jwt', '');
+    ctx.set('authKind', '');
     await next();
     return;
   }
@@ -188,7 +228,16 @@ export const requireAdmin: MiddlewareHandler = async (c, next) => {
   const denied = await authenticate(ctx, true);
   if (denied) return denied;
 
-  const isAdmin = await isAdminJwt(ctx.env, ctx.get('jwt'));
+  let isAdmin: boolean | null;
+  if (ctx.get('authKind') === 'worker') {
+    try {
+      isAdmin = await isWorkerAdmin(ctx.env.DB, ctx.get('userId'), ctx.env.ADMIN_EMAILS);
+    } catch (_) {
+      isAdmin = null;
+    }
+  } else {
+    isAdmin = await isAdminJwt(ctx.env, ctx.get('jwt'));
+  }
   if (isAdmin === null) return authUnavailable(ctx);
   if (!isAdmin) return ctx.json({ ok: false, error: 'FORBIDDEN', message: 'Admin access required' }, 403);
   await next();

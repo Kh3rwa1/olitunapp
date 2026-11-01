@@ -520,3 +520,64 @@ CREATE TABLE IF NOT EXISTS admin_restore_jobs (
   updated_at TEXT NOT NULL
 );
 
+
+-- Worker-owned sign-in (replaces Appwrite Auth, whose org went read-only on
+-- 2026-11-01). Users migrated from Appwrite keep their Appwrite $id, so every
+-- existing user_id row stays theirs. status 'deleted' is a tombstone that
+-- blocks a deleted id from being migrated again.
+CREATE TABLE IF NOT EXISTS auth_users (
+  id TEXT PRIMARY KEY,
+  email TEXT,
+  name TEXT NOT NULL DEFAULT '',
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  is_guest INTEGER NOT NULL DEFAULT 0,
+  source TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_users_active_email ON auth_users(email) WHERE email IS NOT NULL AND status = 'active';
+
+-- One row per signed-in device. Only a SHA-256 of the refresh token is kept.
+CREATE TABLE IF NOT EXISTS auth_sessions (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  refresh_hash TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  last_used_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  revoked_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_auth_sessions_user ON auth_sessions(user_id);
+
+-- Pending email sign-in codes, one per address (hashed, short-lived).
+CREATE TABLE IF NOT EXISTS auth_email_codes (
+  email TEXT PRIMARY KEY,
+  code_hash TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 0,
+  sends INTEGER NOT NULL DEFAULT 1,
+  window_started_at TEXT NOT NULL,
+  last_sent_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+
+-- One-time codes handed from the Google OAuth callback to the app.
+CREATE TABLE IF NOT EXISTS auth_login_codes (
+  code_hash TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  expires_at TEXT NOT NULL
+);
+
+-- Admins for Worker sessions (copied from the Appwrite admins team on
+-- migration, or listed in ADMIN_EMAILS).
+CREATE TABLE IF NOT EXISTS auth_admins (
+  user_id TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL
+);
+
+-- Per-user preferences / progress blob (formerly Appwrite account prefs).
+CREATE TABLE IF NOT EXISTS user_prefs (
+  user_id TEXT PRIMARY KEY,
+  prefs TEXT NOT NULL DEFAULT '{}',
+  updated_at TEXT NOT NULL
+);

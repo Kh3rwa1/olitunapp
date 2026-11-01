@@ -68,6 +68,19 @@
         "limit": 5,
         "period": 60
       }
+    },
+    {
+      "name": "AUTH_LIMITER",
+      "namespace_id": "1005",
+      "simple": {
+        "limit": 20,
+        "period": 60
+      }
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL"
     }
   ]
 }

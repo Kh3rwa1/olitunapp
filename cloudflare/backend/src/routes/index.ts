@@ -24,6 +24,7 @@ import { registerAdminMaintenanceRoutes } from './admin_maintenance';
 import { registerAdminAccessRoutes } from './admin_access';
 import { registerAdminReviewRoutes } from './admin_review';
 import { registerAdminDashboardRoutes } from './admin_dashboard';
+import { registerAuthSessionRoutes } from './auth_sessions';
 
 // All route modules. Registration order matters (Hono matches in order) and
 // mirrors the original single-file layout: the core API routes first, then the
@@ -33,6 +34,7 @@ import { registerAdminDashboardRoutes } from './admin_dashboard';
 // Registered before the SPA fallback in index.ts.
 export function registerRoutes(app: App): void {
   registerRootRoutes(app);
+  registerAuthSessionRoutes(app);
   registerContentRoutes(app);
   registerTranslateRoutes(app);
   registerMistakeRoutes(app);

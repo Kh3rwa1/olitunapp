@@ -41,5 +41,5 @@ npx wrangler deploy
 
 echo "4/4 live sign-in methods"
 sleep 3
-curl -fsS https://olitun-api.dulalkisku0.workers.dev/api/v1/auth/config
+curl -fsS https://olitun.in/api/v1/auth/config
 echo

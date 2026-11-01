@@ -65,8 +65,10 @@ Then, when ready:
   sending DNS records; the account's zones include Email Sending).
 - Google: create an OAuth **Web application** client in Google Cloud
   (project `ol-itun`) with the authorized redirect URI
-  `https://olitun-api.dulalkisku0.workers.dev/api/v1/auth/google/callback`,
-  then `npx wrangler secret put GOOGLE_CLIENT_ID` and
+  `https://olitun.in/api/v1/auth/google/callback` (release builds call the
+  Worker at olitun.in; add
+  `https://olitun-api.dulalkisku0.workers.dev/api/v1/auth/google/callback`
+  too for development builds), then `npx wrangler secret put GOOGLE_CLIENT_ID` and
   `npx wrangler secret put GOOGLE_CLIENT_SECRET`.
 
 `GET /api/v1/auth/config` reports which methods are live; the app hides the

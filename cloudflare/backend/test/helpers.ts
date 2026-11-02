@@ -20,6 +20,9 @@ type FakeUser = {
   prefs?: Record<string, unknown>;
 };
 const usersByJwt = new Map<string, FakeUser>();
+
+/** The Appwrite server key tests pass as APPWRITE_API_KEY. */
+export const SERVER_KEY = 'test-appwrite-server-key';
 const usersBySession = new Map<string, FakeUser>();
 
 /**
@@ -111,6 +114,30 @@ async function route(call: OutboundCall): Promise<Response> {
     }
     if (path === '/account/prefs' && call.method === 'GET') {
       return user ? json(user.prefs ?? {}) : json({ type: 'user_jwt_invalid' }, 401);
+    }
+    // Server-key reads used by the Worker's email/Google sign-in lookup.
+    if (call.headers.get('x-appwrite-key') === SERVER_KEY && call.method === 'GET') {
+      const equal = (attribute: string): string | undefined => {
+        for (const raw of url.searchParams.getAll('queries[]')) {
+          const q = JSON.parse(raw);
+          if (q.method === 'equal' && q.attribute === attribute) return q.values[0];
+        }
+        return undefined;
+      };
+      const known = [...usersByJwt.values()];
+      if (path === '/users') {
+        const users = known
+          .filter((u) => u.email && u.email === equal('email'))
+          .map((u) => ({ $id: u.id, name: u.name ?? '', email: u.email }));
+        return json({ total: users.length, users });
+      }
+      const team = path.match(/^\/teams\/([^/]+)\/memberships$/);
+      if (team) {
+        const memberships = known
+          .filter((u) => u.id === equal('userId') && u.teams.some((t) => t.$id === decodeURIComponent(team[1])))
+          .map((u) => ({ userId: u.id, teamId: decodeURIComponent(team[1]), confirm: true }));
+        return json({ total: memberships.length, memberships });
+      }
     }
     if (path === '/teams' && call.method === 'GET') {
       return user ? json({ total: user.teams.length, teams: user.teams }) : json({ type: 'user_jwt_invalid' }, 401);

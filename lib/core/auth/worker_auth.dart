@@ -469,17 +469,41 @@ class WorkerAuth {
 
   Future<String?> _refresh(WorkerSession session) async {
     try {
-      final next = await adopt(await _api.refresh(session.refreshToken));
+      final next = WorkerSession.fromJson(
+        await _api.refresh(session.refreshToken),
+      );
+      if (!_isCurrent(session)) {
+        // Signed out or switched accounts while this was in flight: never
+        // bring the old session back, and end the one the Worker just
+        // extended.
+        _revoke(next.refreshToken);
+        return _session?.accessToken;
+      }
+      await _persist(next);
       return next.accessToken;
     } on AppwriteException catch (e) {
+      if (!_isCurrent(session)) return _session?.accessToken;
       if (e.code == 401 || e.code == 403) {
         // Revoked, expired or deleted: this device is signed out.
-        if (identical(_session, session)) await _persist(null);
+        await _persist(null);
         return null;
       }
       final stillValid = _now().isBefore(session.accessTokenExpiresAt);
       return stillValid ? session.accessToken : null;
     }
+  }
+
+  /// Whether [session] is still this device's session. Compared by refresh
+  /// token, which a profile update ([updateUser]) leaves unchanged.
+  bool _isCurrent(WorkerSession session) =>
+      _session?.refreshToken == session.refreshToken;
+
+  void _revoke(String refreshToken) {
+    unawaited(
+      _api.logout(refreshToken).catchError((Object e) {
+        AppLogger.debug('WorkerAuth: logout call failed ($e)');
+      }),
+    );
   }
 
   /// Replaces the cached user (after a profile update or /me).
@@ -494,13 +518,7 @@ class WorkerAuth {
   Future<void> clear({bool revoke = true}) async {
     final session = await _load();
     await _persist(null);
-    if (revoke && session != null) {
-      unawaited(
-        _api.logout(session.refreshToken).catchError((Object e) {
-          AppLogger.debug('WorkerAuth: logout call failed ($e)');
-        }),
-      );
-    }
+    if (revoke && session != null) _revoke(session.refreshToken);
   }
 
   /// Sign-in methods the Worker supports; cached for the process.

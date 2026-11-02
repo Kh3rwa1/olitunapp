@@ -134,14 +134,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return fragRedirect;
       }
 
-      // On Web: if a Google login code is present, route to /splash to
-      // exchange it for a session.
-      if (kIsWeb) {
-        final code = state.uri.queryParameters['olitun_code'];
-        if (code != null && code.isNotEmpty && state.uri.path != '/splash') {
-          return '/splash';
-        }
-      }
+      // On Web: a Google login code goes to /splash (code kept) to be
+      // exchanged for a session.
+      final codeRedirect = webLoginCodeRedirectFor(
+        isWeb: kIsWeb,
+        uri: state.uri,
+      );
+      if (codeRedirect != null) return codeRedirect;
 
       return authAndOnboardingRedirectFor(
         path: state.uri.path,

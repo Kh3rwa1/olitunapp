@@ -123,6 +123,9 @@ export async function mergeUserData(db: D1Database, fromId: string, toId: string
   ]);
 }
 
+/** The user's old Appwrite account, found by email with a server key. */
+export type LegacyAppwriteUser = { id: string; name: string; admin?: boolean };
+
 /**
  * The account for a verified email address: the active row holding it, else
  * the user's old Appwrite account (looked up when a server key is
@@ -134,7 +137,7 @@ export async function findOrCreateUserByEmail(
     email: string;
     name?: string;
     source: 'google' | 'email';
-    lookupAppwriteId?: (email: string) => Promise<{ id: string; name: string } | null>;
+    lookupAppwriteId?: (email: string) => Promise<LegacyAppwriteUser | null>;
   },
 ): Promise<AuthUserRow> {
   const existing = await getActiveUserByEmail(db, opts.email);
@@ -158,7 +161,7 @@ export async function findOrCreateUserByEmail(
   if (legacy) {
     const row = await getUser(db, legacy.id);
     if (!row) {
-      return insertUser(db, {
+      const user = await insertUser(db, {
         id: legacy.id,
         email: opts.email,
         name: legacy.name || opts.name || '',
@@ -166,6 +169,9 @@ export async function findOrCreateUserByEmail(
         isGuest: false,
         source: 'appwrite',
       });
+      // Same as /appwrite/migrate: an Appwrite admin stays an admin.
+      if (legacy.admin) await grantWorkerAdmin(db, user.id);
+      return user;
     }
     // A deleted (tombstoned) old account is never revived: fall through.
   }
@@ -255,6 +261,10 @@ export async function isSessionLive(db: D1Database, userId: string, sessionId: s
     .first<{ revoked_at: string | null; expires_at: string; status: string }>();
   if (!row || row.revoked_at || row.status !== 'active') return false;
   return new Date(row.expires_at).getTime() > Date.now();
+}
+
+export async function grantWorkerAdmin(db: D1Database, userId: string): Promise<void> {
+  await db.prepare('INSERT OR IGNORE INTO auth_admins (user_id, created_at) VALUES (?, ?)').bind(userId, nowIso()).run();
 }
 
 export async function isWorkerAdmin(db: D1Database, userId: string, adminEmails: string | undefined): Promise<boolean> {

@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
 import 'package:itun/core/auth/account_scope.dart';
 import 'package:itun/core/auth/worker_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -102,6 +104,87 @@ void main() {
       );
       expect(await auth.accessToken(), isNull);
       expect(await auth.cached(), isNull);
+    });
+
+    group('a refresh still in flight', () {
+      late Completer<http.Response> pending;
+      late WorkerAuth auth;
+
+      setUp(() async {
+        pending = Completer<http.Response>();
+        worker.on('POST', '/refresh', (_) => pending.future);
+        worker.on('POST', '/logout', (_) => FakeAuthWorker.json({'ok': true}));
+        auth = worker.auth(prefs);
+        await auth.adopt(
+          FakeAuthWorker.session(
+            'u1',
+            expiresAt: DateTime.now().add(const Duration(minutes: 1)),
+          ),
+        );
+      });
+
+      test('cannot bring a session back after sign-out', () async {
+        final token = auth.accessToken();
+        await Future<void>.delayed(Duration.zero);
+        await auth.clear();
+        pending.complete(
+          FakeAuthWorker.json(FakeAuthWorker.session('u1', access: 'late')),
+        );
+        expect(await token, isNull);
+        expect(await auth.cached(), isNull);
+        expect(prefs.getString(WorkerAuth.storageKey), isNull);
+        expect(await worker.auth(prefs).current(), isNull);
+      });
+
+      test('cannot overwrite the account signed in meanwhile', () async {
+        final token = auth.accessToken();
+        await Future<void>.delayed(Duration.zero);
+        await auth.adopt(
+          FakeAuthWorker.session('u2', access: 'access-u2', refresh: 'sid2.r'),
+        );
+        pending.complete(
+          FakeAuthWorker.json(FakeAuthWorker.session('u1', access: 'late')),
+        );
+        expect(await token, 'access-u2');
+        expect((await auth.cached())?.user.id, 'u2');
+        expect((await worker.auth(prefs).current())?.user.id, 'u2');
+        await Future<void>.delayed(Duration.zero);
+        final revoked = worker
+            .callsTo('/logout')
+            .map((c) => jsonDecode(c.body)['refreshToken']);
+        expect(revoked, contains('sid.refresh'));
+        expect(revoked, isNot(contains('sid2.r')));
+      });
+
+      test('is still adopted after a profile update', () async {
+        final token = auth.accessToken();
+        await Future<void>.delayed(Duration.zero);
+        final current = (await auth.cached())!;
+        await auth.updateUser(
+          WorkerUser.fromJson({...current.user.toJson(), 'name': 'Renamed'}),
+        );
+        pending.complete(
+          FakeAuthWorker.json(FakeAuthWorker.session('u1', access: 'fresh')),
+        );
+        expect(await token, 'fresh');
+        expect((await auth.cached())?.accessToken, 'fresh');
+      });
+
+      test('a late rejection does not sign out the next account', () async {
+        final token = auth.accessToken();
+        await Future<void>.delayed(Duration.zero);
+        await auth.adopt(
+          FakeAuthWorker.session('u2', access: 'access-u2', refresh: 'sid2.r'),
+        );
+        pending.complete(
+          FakeAuthWorker.json({
+            'ok': false,
+            'error': 'INVALID_REFRESH_TOKEN',
+          }, 401),
+        );
+        expect(await token, 'access-u2');
+        expect((await auth.cached())?.user.id, 'u2');
+      });
     });
 
     test('offline keeps a still-valid token and the session', () async {

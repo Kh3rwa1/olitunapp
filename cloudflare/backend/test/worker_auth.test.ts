@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { callJson, env, makeAppwriteSession, outbound, uid } from './helpers';
+import { callJson, env, makeAppwriteSession, outbound, SERVER_KEY, uid } from './helpers';
 
 // Worker-owned sign-in (routes/auth_sessions.ts) and Worker tokens in the
 // shared auth middleware.
@@ -27,13 +27,13 @@ function fakeEmail() {
 const bearer = (accessToken: string) => ({ jwt: accessToken });
 const email = () => `${uid('learner')}@example.com`;
 
-async function signInByEmail(address: string, mail = fakeEmail()) {
+async function signInByEmail(address: string, mail = fakeEmail(), extraEnv: Record<string, unknown> = {}) {
   const start = await callJson('/api/v1/auth/email/start', { method: 'POST', json: { email: address }, env: { EMAIL: mail.binding as any } });
   expect(start.status).toBe(200);
   const verify = await callJson('/api/v1/auth/email/verify', {
     method: 'POST',
     json: { email: address, code: mail.lastCode() },
-    env: { EMAIL: mail.binding as any },
+    env: { EMAIL: mail.binding as any, ...extraEnv },
   });
   expect(verify.status).toBe(200);
   return verify.body;
@@ -281,6 +281,23 @@ describe('Appwrite session migration', () => {
     const learner = await callJson('/api/v1/auth/guest', { method: 'POST' });
     expect((await callJson('/api/v1/admin/audit', { as: bearer(learner.body.accessToken) })).status).toBe(403);
     expect((await callJson('/api/v1/auth/me', { as: bearer(learner.body.accessToken) })).body.isAdmin).toBe(false);
+  });
+
+  it('keeps an Appwrite admin admin on a first email sign-in (no device session)', async () => {
+    const address = email();
+    const admin = makeAppwriteSession({ email: address, admin: true });
+    const body = await signInByEmail(address, fakeEmail(), { APPWRITE_API_KEY: SERVER_KEY });
+    expect(body.user.id).toBe(admin.id);
+    expect((await callJson('/api/v1/auth/me', { as: bearer(body.accessToken) })).body.isAdmin).toBe(true);
+    expect((await callJson('/api/v1/admin/audit', { as: bearer(body.accessToken) })).status).toBe(200);
+  });
+
+  it('keeps the Appwrite id but grants nothing to a plain Appwrite learner', async () => {
+    const address = email();
+    const learner = makeAppwriteSession({ email: address });
+    const body = await signInByEmail(address, fakeEmail(), { APPWRITE_API_KEY: SERVER_KEY });
+    expect(body.user.id).toBe(learner.id);
+    expect((await callJson('/api/v1/auth/me', { as: bearer(body.accessToken) })).body.isAdmin).toBe(false);
   });
 });
 

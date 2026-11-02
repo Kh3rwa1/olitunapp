@@ -6,6 +6,7 @@ import {
   findOrCreateUserByEmail,
   getActiveUserByEmail,
   getUser,
+  grantWorkerAdmin,
   insertUser,
   isWorkerAdmin,
   issueSession,
@@ -15,6 +16,7 @@ import {
   revokeSession,
   toPublicUser,
   type AuthUserRow,
+  type LegacyAppwriteUser,
 } from '../lib/worker_users';
 
 // Worker-owned sign-in: guest, email code, Google OAuth, and a one-time
@@ -191,21 +193,44 @@ function appwriteBase(env: Bindings): string {
   return (env.APPWRITE_ENDPOINT || '').replace(/\/+$/, '');
 }
 
-/** The user's old Appwrite id for an email; needs a users.read server key. */
-async function lookupAppwriteUser(env: Bindings, email: string): Promise<{ id: string; name: string } | null> {
+/**
+ * The user's old Appwrite account for an email, and whether they are in the
+ * admins team; needs a server key with users.read (and teams.read).
+ */
+async function lookupAppwriteUser(env: Bindings, email: string): Promise<LegacyAppwriteUser | null> {
   if (!env.APPWRITE_API_KEY || !env.APPWRITE_ENDPOINT || !env.APPWRITE_PROJECT_ID) return null;
-  const query = JSON.stringify({ method: 'equal', attribute: 'email', values: [email] });
-  const res = await fetch(`${appwriteBase(env)}/users?queries[]=${encodeURIComponent(query)}`, {
-    headers: {
-      'X-Appwrite-Project': env.APPWRITE_PROJECT_ID,
-      'X-Appwrite-Key': env.APPWRITE_API_KEY,
-      Accept: 'application/json',
-    },
-  });
+  const headers = {
+    'X-Appwrite-Project': env.APPWRITE_PROJECT_ID,
+    'X-Appwrite-Key': env.APPWRITE_API_KEY,
+    Accept: 'application/json',
+  };
+  const res = await fetch(`${appwriteBase(env)}/users?queries[]=${equalQuery('email', email)}`, { headers });
   if (!res.ok) return null;
   const data: any = await res.json().catch(() => null);
   const user = Array.isArray(data?.users) ? data.users.find((u: any) => normalizeEmail(u?.email) === email) : null;
-  return user && typeof user.$id === 'string' ? { id: user.$id, name: String(user.name || '') } : null;
+  if (!user || typeof user.$id !== 'string') return null;
+  return { id: user.$id, name: String(user.name || ''), admin: await isAppwriteAdmin(env, headers, user.$id) };
+}
+
+function equalQuery(attribute: string, value: string): string {
+  return encodeURIComponent(JSON.stringify({ method: 'equal', attribute, values: [value] }));
+}
+
+/** Whether [userId] has a confirmed membership in the Appwrite admins team. */
+async function isAppwriteAdmin(env: Bindings, headers: Record<string, string>, userId: string): Promise<boolean> {
+  try {
+    const team = encodeURIComponent(env.ADMIN_TEAM_ID || 'admins');
+    const res = await fetch(`${appwriteBase(env)}/teams/${team}/memberships?queries[]=${equalQuery('userId', userId)}`, {
+      headers,
+    });
+    if (!res.ok) return false;
+    const data: any = await res.json().catch(() => null);
+    const memberships: any[] = Array.isArray(data?.memberships) ? data.memberships : [];
+    return memberships.some((m) => m?.userId === userId && m?.confirm === true);
+  } catch (err) {
+    console.error('appwrite admin lookup failed', err instanceof Error ? err.message : String(err));
+    return false;
+  }
 }
 
 function appwriteSessionHeaders(env: Bindings, credential: { session?: string; jwt?: string }): Record<string, string> {
@@ -631,9 +656,7 @@ async function copyAppwriteAdmin(env: Bindings, headers: Record<string, string>,
     const teams: any[] = Array.isArray(data?.teams) ? data.teams : [];
     const adminTeamId = env.ADMIN_TEAM_ID || 'admins';
     if (!teams.some((t) => t?.$id === adminTeamId)) return;
-    await env.DB.prepare('INSERT OR IGNORE INTO auth_admins (user_id, created_at) VALUES (?, ?)')
-      .bind(userId, nowIso())
-      .run();
+    await grantWorkerAdmin(env.DB, userId);
   } catch (err) {
     console.error('appwrite admin copy failed', err instanceof Error ? err.message : String(err));
   }

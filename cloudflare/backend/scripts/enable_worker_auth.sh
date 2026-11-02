@@ -16,6 +16,8 @@
 #   npx wrangler secret put GOOGLE_CLIENT_ID           # Google sign-in
 #   npx wrangler secret put GOOGLE_CLIENT_SECRET
 #   npx wrangler secret put ADMIN_EMAILS               # extra admins (comma-separated)
+#   APPWRITE_API_KEY needs users.read + teams.read so first email/Google
+#   sign-ins keep the old Appwrite id and admin role.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 

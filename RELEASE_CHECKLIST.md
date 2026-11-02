@@ -70,7 +70,8 @@ Deploy the Worker before (or with) any app release that calls new routes.
   - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
   - `MEDIA_SIGNING_SECRET` (paid media URLs)
   - `BODHAN_API_KEYS` (Santali Voice), `SARVAM_API_KEY` (AI Studio)
-  - `APPWRITE_API_KEY` (users.write; account deletion only), `CRON_SECRET`
+  - `APPWRITE_API_KEY` (users.write for account deletion; users.read +
+    teams.read so Worker sign-in keeps old Appwrite ids and admins), `CRON_SECRET`
 - [ ] **GitHub secrets in place:**
   - `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (Pages/Worker deploys)
   - `ANDROID_KEYSTORE_BASE64`

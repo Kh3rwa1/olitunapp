@@ -71,5 +71,12 @@ Then, when ready:
   too for development builds), then `npx wrangler secret put GOOGLE_CLIENT_ID` and
   `npx wrangler secret put GOOGLE_CLIENT_SECRET`.
 
+- Old Appwrite accounts: with `APPWRITE_API_KEY` set, a first email or
+  Google sign-in reuses the user's Appwrite id (so their progress follows
+  them), and members of the Appwrite admins team stay admins. The key needs
+  `users.read` and `teams.read` for this (plus `users.write` for account
+  deletion). Without it, those users get a fresh account and admins need
+  `ADMIN_EMAILS`.
+
 `GET /api/v1/auth/config` reports which methods are live; the app hides the
 others.

@@ -8,7 +8,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  appwriteClient, appwritePseudonymousId, CONFLICT_SQL, d1DeletionRequestId, dedupeReviewStates,
+  appwriteClient, appwritePseudonymousId, buildUserRemap, CONFLICT_SQL, d1DeletionRequestId, dedupeReviewStates,
   encryptAppwriteUserId, insertSql, makeDeletionGuard, mapAnalyticsEvent, mapBakhedProgress, mapCoursePurchase,
   mapMistakeReviewSession, mapRewardEvent, mapReviewState, mapUserBadge, mapUserMistake, mapWaitlistEntry,
   parseArgs, redactSample, reviewRowIdFor, sqlValue, stableId, statementsFor,
@@ -194,6 +194,36 @@ test('parseArgs validates options', () => {
   assert.throws(() => parseArgs(['key', '--batch', '0']));
   assert.throws(() => parseArgs(['key', '--persist-to', 'x']));
   assert.throws(() => parseArgs([]));
+  assert.equal(parseArgs(['key']).remap, true);
+  assert.equal(parseArgs(['key', '--no-remap']).remap, false);
+});
+
+test('remap: only verified email/Google accounts whose Appwrite id is not in D1', async () => {
+  const appwrite = {
+    'new@x.in': 'awNew', 'google@x.in': 'awGoogle', 'migrated@x.in': 'awMigrated',
+    'guest@x.in': 'awGuest', 'unverified@x.in': 'awUnverified', 'gone@x.in': 'awGone', 'same@x.in': 'sameId',
+  };
+  const row = (id, email, extra = {}) => ({ id, email, email_verified: 1, is_guest: 0, source: 'email', status: 'active', ...extra });
+  const users = [
+    row('w1', 'New@X.in '),
+    row('w2', 'google@x.in', { source: 'google' }),
+    row('w3', 'migrated@x.in'),
+    row('awMigrated', null, { source: 'appwrite', status: 'merged' }),
+    row('w4', 'guest@x.in', { is_guest: 1 }),
+    row('w5', 'unverified@x.in', { email_verified: 0 }),
+    row('w6', 'gone@x.in', { status: 'deleted' }),
+    row('sameId', 'same@x.in'),
+    row('w7', 'nobody@x.in'),
+    row('w8', 'appwrite-source@x.in', { source: 'appwrite' }),
+  ];
+  const asked = [];
+  const remap = await buildUserRemap(users, async (email) => {
+    asked.push(email);
+    return appwrite[email] ?? null;
+  });
+  assert.deepEqual(Object.fromEntries(remap), { awNew: 'w1', awGoogle: 'w2' });
+  assert.ok(asked.includes('new@x.in'), 'emails are normalised before lookup');
+  assert.ok(!asked.includes('guest@x.in') && !asked.includes('gone@x.in') && !asked.includes('appwrite-source@x.in'));
 });
 
 // ------------------------------------------------------------ mock Appwrite
@@ -221,7 +251,11 @@ function fixtures() {
     ],
     mistake_review_sessions: [{ $id: 'sessA', sessionId: 'sessA', userId: 'userA', questionIds: '["q1:q1_0"]', score: 1, total: 1, completedAt: '2025-01-06T00:00:00.000Z' }],
     bakhed_listening_progress: [{ $id: stableId('userA:bk1'), userId: 'userA', bakhedId: 'bk1', listenedPercent: 85, completed80Percent: true, completedAt: '2025-01-07T00:00:00.000Z', lastPositionMs: 1200, updatedAt: '2025-01-07T00:00:00.000Z' }],
-    user_badges: [{ $id: 'ub1', userId: 'userA', badgeId: 'first_steps', progress: 1, target: 1, isUnlocked: true, unlockedAt: '2025-01-08T00:00:00.000Z', updatedAt: '2025-01-08T00:00:00.000Z' }],
+    user_badges: [
+      { $id: 'ub1', userId: 'userA', badgeId: 'first_steps', progress: 1, target: 1, isUnlocked: true, unlockedAt: '2025-01-08T00:00:00.000Z', updatedAt: '2025-01-08T00:00:00.000Z' },
+      // userB later signed in to the Worker by email and got a new id.
+      { $id: 'ub2', userId: 'userB', badgeId: 'first_steps', progress: 1, target: 1, isUnlocked: true, unlockedAt: '2025-01-08T00:00:00.000Z', updatedAt: '2025-01-08T00:00:00.000Z' },
+    ],
     reward_events: [{ $id: 'rw1', rewardEventId: 'rw1', userId: 'userA', sourceType: 'badge', sourceId: 'first_steps', starsAwarded: 10, badgeId: 'first_steps', reason: 'Unlocked', createdAt: '2025-01-08T00:00:00.000Z' }],
     learning_analytics_events: [
       { $id: 'ae1', $createdAt: daysAgo(2), eventId: 'ev-1', eventName: 'lesson_completed', userId: 'userA', sessionId: 's1', platform: 'android', dateKey: daysAgo(2).slice(0, 10), occurredAt: daysAgo(2), metadata: '{"x":1}' },
@@ -243,13 +277,21 @@ function fixtures() {
   };
 }
 
-function startMockAppwrite({ legacyOnly = false, data = fixtures(), users = ['userA', OPEN_DEL_USER, 'deadUser'] } = {}) {
+const EMAILS = { userA: 'a@x.in', userB: 'b@x.in' };
+const WORKER_B = 'wkrb0000000000000000';
+
+function startMockAppwrite({ legacyOnly = false, data = fixtures(), users = ['userA', 'userB', OPEN_DEL_USER, 'deadUser'] } = {}) {
   const seen = { keys: new Set(), paths: [] };
   const server = createServer((req, res) => {
     const url = new URL(req.url, 'http://x');
     seen.keys.add(req.headers['x-appwrite-key']);
     seen.paths.push(url.pathname);
     const send = (status, body) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
+    if (url.pathname === '/v1/users') {
+      const q = url.searchParams.getAll('queries[]').map((x) => JSON.parse(x)).find((x) => x.method === 'equal' && x.attribute === 'email');
+      const found = Object.entries(EMAILS).filter(([id, email]) => users.includes(id) && email === q?.values?.[0]);
+      return send(200, { total: found.length, users: found.map(([id, email]) => ({ $id: id, email, status: true })) });
+    }
     const um = url.pathname.match(/^\/v1\/users\/([^/]+)$/);
     if (um) {
       const id = decodeURIComponent(um[1]);
@@ -335,6 +377,10 @@ test('end to end: mock Appwrite -> local D1', { timeout: 300_000 }, async () => 
     const future = new Date(NOW + 60_000).toISOString();
     d1(persist, [
       `INSERT INTO deletion_requests (id, user_id, status, created_at, updated_at) VALUES ('${d1DeletionRequestId('deadUser')}', 'anonymized_deleted_user', 'completed', '${future}', '${future}')`,
+      // Worker accounts: userA moved its Appwrite session (same id); userB
+      // signed in by email first and got a new Worker id.
+      `INSERT INTO auth_users (id, email, email_verified, is_guest, source, status, created_at, updated_at) VALUES ('userA', 'a@x.in', 1, 0, 'appwrite', 'active', '${future}', '${future}')`,
+      `INSERT INTO auth_users (id, email, email_verified, is_guest, source, status, created_at, updated_at) VALUES ('${WORKER_B}', 'b@x.in', 1, 0, 'email', 'active', '${future}', '${future}')`,
       `INSERT INTO review_states (id, user_id, item_id, item_type, state_json, next_review_at, last_reviewed_at, schema_version, version, write_token, updated_at) VALUES ('${reviewRowIdFor('userA', 'w2')}', 'userA', 'w2', 'word', '{"from":"cloudflare"}', '2026-05-01T00:00:00.000Z', '${future}', 3, 4, 't', '${future}')`,
       `INSERT INTO course_purchases (id, user_id, category_id, course_id, amount_in_cents, currency, status, order_id, payment_id, created_at) VALUES ('${stableId('purch:userA:cat2')}', 'userA', 'cat2', 'cat2', 29900, 'INR', 'refunded', 'order_2', 'pay_2', '${future}')`,
     ].join('; '));
@@ -375,6 +421,8 @@ test('end to end: mock Appwrite -> local D1', { timeout: 300_000 }, async () => 
         assert.equal(summary.collections.learning_analytics_events.skipReasons.expired, 1);
         assert.equal(summary.collections.binti_guru_waitlist.skipReasons.invalid_waitlist_fields, 1);
         assert.equal(summary.collections.course_purchases.skipReasons.not_verified, 1);
+        assert.equal(summary.remappedUsers, 1);
+        assert.equal(summary.collections.user_badges.remapped, 1);
       } else {
         assert.equal(summary.collections.review_states.resumed, 'already_done');
       }
@@ -396,7 +444,11 @@ test('end to end: mock Appwrite -> local D1', { timeout: 300_000 }, async () => 
     assert.deepEqual(mistakes, [{ user_id: 'userA', wrong_answer: "it's", times_missed: 2 }]);
     assert.equal(d1(persist, 'SELECT count(*) AS n FROM mistake_review_sessions')[0].n, 1);
     assert.deepEqual(d1(persist, 'SELECT listened_percent, completed_80_percent FROM bakhed_listening_progress'), [{ listened_percent: 85, completed_80_percent: 1 }]);
-    assert.deepEqual(d1(persist, 'SELECT badge_id, is_unlocked FROM user_badges'), [{ badge_id: 'first_steps', is_unlocked: 1 }]);
+    assert.deepEqual(d1(persist, 'SELECT id, user_id, badge_id, is_unlocked FROM user_badges ORDER BY user_id'), [
+      { id: stableId('userA:first_steps'), user_id: 'userA', badge_id: 'first_steps', is_unlocked: 1 },
+      { id: stableId(`${WORKER_B}:first_steps`), user_id: WORKER_B, badge_id: 'first_steps', is_unlocked: 1 },
+    ]);
+    assert.equal(d1(persist, "SELECT count(*) AS n FROM user_badges WHERE user_id = 'userB'")[0].n, 0, 'not under the Appwrite id');
     assert.equal(d1(persist, 'SELECT count(*) AS n FROM reward_events')[0].n, 1);
     const events = d1(persist, 'SELECT e.id, e.user_id, d.session_id, d.metadata_json FROM learning_analytics_events e JOIN learning_analytics_event_details d ON d.event_id = e.id ORDER BY e.user_id');
     assert.equal(events.length, 2);

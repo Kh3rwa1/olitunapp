@@ -38,6 +38,14 @@ node scripts/import_appwrite_user_data.mjs ~/.appwrite/olitun_server_key \
 | `binti_guru_waitlist` | `binti_waitlist` | Appwrite `$id` |
 | `course_purchases` (status `verified`, with order + payment id, not fully refunded) | `course_purchases` (`completed`) (+ `purchase_refunds` for partial refunds) | stableId(`purch:user:category`) |
 
+Learners who signed in to the Worker by email or Google before it could look
+up their Appwrite account (the server key reads 402 until the quota resets)
+got a new Worker id. The script matches them by verified email and imports
+their Appwrite data under that Worker id instead, so it shows up in their
+account; deletion and account checks still use the Appwrite id. Accounts
+that kept the Appwrite id (moved device sessions) are untouched.
+`--no-remap` turns this off. The dry run prints `remappedUsers`.
+
 Conflict policy: data already in D1 wins. Append-only tables and purchases
 use `ON CONFLICT DO NOTHING`; `review_states` and `user_mistakes` only take
 the imported row when it is strictly newer; Bakhed progress and badges merge

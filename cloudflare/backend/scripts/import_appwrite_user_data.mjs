@@ -39,12 +39,19 @@
 //                              requests exist that cannot be attributed (no
 //                              secret). The users.read check still applies.
 //   --no-user-check            Skip the per-user Appwrite account lookup.
+//   --no-remap                 Import under Appwrite ids only (see below).
 //
 // Users are never resurrected: a user is skipped when D1 has a
 // deletion_requests row for them (any status, matched by the Worker's
 // `del_` + stableId('deletion:<uid>') id or by user_id), when Appwrite has a
 // deletion request for them, or when their Appwrite account no longer exists
 // or is blocked.
+//
+// Learners who signed in to the Worker by email or Google before the Worker
+// could look up their old Appwrite account got a new Worker id. Their
+// Appwrite data is imported under that Worker id (matched by verified email;
+// deletion and account checks still use the Appwrite id), unless D1 already
+// has an account with the Appwrite id itself.
 //
 // Idempotent and safe to re-run. Rows the learner created or changed on
 // Cloudflare after the migration always win (see CONFLICT_SQL). The run ends
@@ -555,6 +562,29 @@ export function makeDeletionGuard({ d1Rows = [], appwriteDocs = [], secrets = []
   };
 }
 
+// ---------------------------------------------------------------- Worker accounts
+
+const normalizeEmail = (v) => (typeof v === 'string' ? v.trim().toLowerCase() : '');
+
+/**
+ * Appwrite id -> Worker id for learners whose Worker account (email or
+ * Google sign-in) did not reuse their Appwrite id. [lookup] resolves an
+ * email to an Appwrite user id (or null).
+ */
+export async function buildUserRemap(authUsers, lookup) {
+  const known = new Set(authUsers.map((u) => u.id));
+  const remap = new Map();
+  for (const u of authUsers) {
+    const email = normalizeEmail(u.email);
+    if (!email || u.status !== 'active' || Number(u.is_guest) === 1 || Number(u.email_verified) !== 1) continue;
+    if (u.source !== 'email' && u.source !== 'google') continue;
+    const appwriteId = await lookup(email);
+    if (!isValidUserId(appwriteId) || appwriteId === u.id || known.has(appwriteId) || remap.has(appwriteId)) continue;
+    remap.set(appwriteId, u.id);
+  }
+  return remap;
+}
+
 // ---------------------------------------------------------------- Appwrite REST
 
 export class QuotaError extends Error {}
@@ -610,6 +640,13 @@ export function appwriteClient({ endpoint, project, key, database }) {
         yield items;
         if (items.length < PAGE_SIZE) return;
       }
+    },
+    /** The Appwrite user id for an email address, or null. */
+    async userIdByEmail(email) {
+      const res = await getJson('/users', [{ method: 'equal', attribute: 'email', values: [email] }]);
+      const users = Array.isArray(res?.users) ? res.users : [];
+      const match = users.find((u) => normalizeEmail(u?.email) === email);
+      return match && typeof match.$id === 'string' ? match.$id : null;
     },
     /** 'ok' | 'missing' | 'blocked' for an Appwrite account. */
     async userStatus(userId) {
@@ -670,6 +707,7 @@ export function parseArgs(argv) {
     keyFile: '', dryRun: false, collections: null, since: null, state: null, d1: 'olitun-db', local: false,
     persistTo: null, endpoint: 'https://sgp.cloud.appwrite.io/v1', project: '699495910038e39622c5',
     database: 'olitun_db', batch: 200, deletionSecretFile: null, allowUnmatchedDeletions: false, userCheck: true,
+    remap: true,
   };
   const rest = [...argv];
   while (rest.length) {
@@ -699,6 +737,7 @@ export function parseArgs(argv) {
     } else if (arg === '--deletion-secret-file') opts.deletionSecretFile = value();
     else if (arg === '--allow-unmatched-deletions') opts.allowUnmatchedDeletions = true;
     else if (arg === '--no-user-check') opts.userCheck = false;
+    else if (arg === '--no-remap') opts.remap = false;
     else if (arg === '-h' || arg === '--help') {
       console.log(readFileSync(new URL(import.meta.url), 'utf8').split('\n').filter((l) => l.startsWith('//')).join('\n'));
       process.exit(0);
@@ -783,6 +822,26 @@ export async function run(opts, log = (m) => process.stderr.write(`${m}\n`)) {
     );
   }
 
+  // 2. Worker accounts that did not keep their Appwrite id.
+  let remap = new Map();
+  if (opts.remap) {
+    let authUsers = [];
+    try {
+      authUsers = d1.query('SELECT id, email, email_verified, is_guest, source, status FROM auth_users');
+    } catch (err) {
+      if (/no such table/i.test(err.message)) {
+        log('D1 has no auth_users table (Worker sign-in not enabled); importing under Appwrite ids');
+      } else if (!opts.dryRun) {
+        throw new Error(`Cannot read D1 auth_users (refusing to import under the wrong ids): ${err.message}`);
+      } else {
+        log(`[dry-run] warning: could not read D1 auth_users: ${err.message}`);
+      }
+    }
+    remap = await buildUserRemap(authUsers, (email) => aw.userIdByEmail(email));
+    log(`${remap.size} Appwrite user(s) map to a newer Worker account`);
+  }
+  summary.remappedUsers = remap.size;
+
   const userCache = new Map();
   async function userSkipReason(userId) {
     if (!userId) return null;
@@ -846,10 +905,16 @@ export async function run(opts, log = (m) => process.stderr.write(`${m}\n`)) {
       for await (const items of aw.pages(name, { since: opts.since, cursor: prior.cursor || null })) {
         for (const doc of items) {
           stats.read += 1;
-          const mapped = name === 'learning_analytics_events' ? mapper(doc, Date.now()) : mapper(doc);
+          const appwriteId = text(doc.userId, 80);
+          const target = appwriteId ? remap.get(appwriteId) : undefined;
+          const source = target ? { ...doc, userId: target } : doc;
+          const mapped = name === 'learning_analytics_events' ? mapper(source, Date.now()) : mapper(source);
           if (mapped.skip) { bump(mapped.skip); continue; }
-          const reason = await userSkipReason(mapped.userId);
+          // Deletion and account checks always use the Appwrite id.
+          let reason = await userSkipReason(target ? appwriteId : mapped.userId);
+          if (!reason && target && guard.isDeleted(target)) reason = 'deletion_requested';
           if (reason) { bump(reason); continue; }
+          if (target) stats.remapped = (stats.remapped || 0) + 1;
           if (name === 'review_states' && mapped.legacy) stats.legacyRewritten = (stats.legacyRewritten || 0) + 1;
           if (samples.length < 3) samples.push(redactSample(mapped));
           pending.push(mapped);

@@ -33,7 +33,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   AuthRemoteDataSourceImpl(this.authService);
 
-  Account get account => authService.account;
+  static UserModel _fromWorker(WorkerUser user) =>
+      UserModel.fromJson(user.toAppwriteUser().toMap());
 
   @override
   Future<UserModel> signUpWithEmail({
@@ -42,13 +43,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     String? name,
   }) async {
     try {
-      await account.create(
-        userId: ID.unique(),
-        email: email,
-        password: password,
-        name: name,
-      );
-      return await signInWithEmail(email: email, password: password);
+      // Password accounts were Appwrite-only; the service explains the
+      // replacement (email code / Google).
+      await authService.signInWithEmail(email: email, password: password);
+      throw ServerException(message: 'Sign up failed');
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Sign up failed',
@@ -65,9 +63,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      await authService.signInWithEmail(email: email, password: password);
-      final user = await account.get();
-      return UserModel.fromJson(user.toMap());
+      final session = await authService.signInWithEmail(
+        email: email,
+        password: password,
+      );
+      return _fromWorker(session.user);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Sign in failed',
@@ -115,16 +115,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> sendVerificationEmail() async {
-    try {
-      await account.createEmailVerification(url: 'https://olitun.app/verify');
-    } on AppwriteException catch (e) {
-      throw ServerException(
-        message: e.message ?? 'Verification failed',
-        code: e.code,
-      );
-    } catch (e) {
-      throw ServerException(message: e.toString());
-    }
+    // Worker accounts are verified by the emailed sign-in code itself, so
+    // there is no separate verification email to send.
+    AppLogger.debug(
+      'sendVerificationEmail: not needed for Worker accounts',
+      name: 'AuthRemoteDataSource',
+    );
   }
 
   @override
@@ -166,11 +162,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return demoReviewerUserId;
     }
     try {
-      final token = await account.createEmailToken(
-        userId: ID.unique(),
-        email: normalized,
-      );
-      return token.userId;
+      return await authService.sendOtpCode(normalized);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to send OTP',
@@ -205,9 +197,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
     }
     try {
-      await authService.verifyOtp(userId: userId, secret: trimmedSecret);
-      final user = await account.get();
-      return UserModel.fromJson(user.toMap());
+      final session = await authService.verifyOtp(
+        userId: userId,
+        secret: trimmedSecret,
+      );
+      return _fromWorker(session.user);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'OTP verification failed',
@@ -235,9 +229,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel> signInAnonymously() async {
     try {
-      await authService.signInAnonymously();
-      final user = await account.get();
-      return UserModel.fromJson(user.toMap());
+      final session = await authService.signInAnonymously();
+      return _fromWorker(session.user);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Anonymous sign in failed',

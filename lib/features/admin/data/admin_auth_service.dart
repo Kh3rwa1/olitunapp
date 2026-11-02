@@ -1,14 +1,13 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/logging/app_logger.dart';
 
 /// Server-side admin authorization.
 ///
-/// Admin rights are granted by membership in the Appwrite Team configured
-/// via [AppwriteConfig.adminTeamId]. There is NO client-side secret. A user
-/// must (a) have a valid Appwrite session and (b) be a member of the admin
-/// team, both of which are verified server-side by Appwrite.
+/// Admin rights are decided by the Cloudflare Worker (`/api/v1/auth/me`
+/// `isAdmin`): members of the Appwrite team [AppwriteConfig.adminTeamId]
+/// keep the role when their session moves to Worker sign-in, and
+/// ADMIN_EMAILS can grant it. There is NO client-side secret.
 ///
 /// The previous client-side admin-secret model has been removed —
 /// it provided no real security because the secret was bundled into the
@@ -24,12 +23,7 @@ class AdminAuthService {
   final AppwriteAuthService _auth;
   final TeamsListFetcher? _teamsListFetcher;
 
-  Future<List<String>> _listTeamIds() async {
-    if (_teamsListFetcher != null) return _teamsListFetcher();
-    final teams = Teams(_auth.client);
-    final result = await teams.list();
-    return result.teams.map((t) => t.$id).toList();
-  }
+  Future<List<String>> _listTeamIds() async => _teamsListFetcher!();
 
   /// Returns true if the currently logged-in user is a member of the admin
   /// team. Returns false if there is no session, or membership lookup fails.
@@ -40,6 +34,7 @@ class AdminAuthService {
   /// is intentionally not supported.
   Future<bool> isCurrentUserAdmin() async {
     try {
+      if (_teamsListFetcher == null) return await _auth.isCurrentUserAdmin();
       final teamIds = await _listTeamIds();
       const adminId = AppwriteConfig.adminTeamId;
       return teamIds.any((id) => id == adminId);
@@ -54,26 +49,20 @@ class AdminAuthService {
     }
   }
 
-  /// Sign the user in via email + password and verify admin team membership.
-  /// Returns true only if the session is created AND the account belongs to
-  /// the admin team. On failure, any partial session is cleaned up.
+  /// Signs an admin in and verifies the role. Appwrite password sessions
+  /// no longer exist, so this reuses the current session when it is already
+  /// an admin, and otherwise signs in with Google ([email] and [password]
+  /// are ignored). On the web the Google redirect leaves the page; the admin
+  /// opens /admin again afterwards. A non-admin session created here is
+  /// signed out again.
   Future<bool> signInAsAdmin({
     required String email,
     required String password,
   }) async {
     try {
-      // Make sure no stale session is in the way
-      try {
-        await _auth.account.deleteSession(sessionId: 'current');
-      } catch (e) {
-        // No existing session — nothing to clear.
-        AppLogger.debug('AdminAuth: no stale session to clear ($e)');
-      }
+      if (await isCurrentUserAdmin()) return true;
 
-      await _auth.account.createEmailPasswordSession(
-        email: email.trim(),
-        password: password,
-      );
+      await _auth.signInWithGoogle();
 
       final isAdmin = await isCurrentUserAdmin();
       if (!isAdmin) {

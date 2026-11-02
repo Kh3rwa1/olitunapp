@@ -21,6 +21,16 @@ export type Bindings = AuthEnv & {
   APPWRITE_API_KEY?: string;
   ANALYTICS_LIMITER?: RateLimit;
   WAITLIST_LIMITER?: RateLimit;
+  // Worker-owned sign-in (routes/auth_sessions.ts).
+  AUTH_LIMITER?: RateLimit;
+  EMAIL?: SendEmail; // Cloudflare Email Sending binding for sign-in codes
+  AUTH_EMAIL_FROM?: string; // default no-reply@olitun.in
+  AUTH_EMAIL_ENABLED?: string; // 'false' hides email sign-in
+  GOOGLE_CLIENT_ID?: string; // Google OAuth web client
+  GOOGLE_CLIENT_SECRET?: string; // secret
+  AUTH_WEB_ORIGINS?: string; // comma-separated origins allowed as web return URLs
+  AUTH_PUBLIC_ORIGIN?: string; // origin used in the Google redirect URI; default request origin
+  APP_CALLBACK_SCHEME?: string; // default appwrite-callback-<project id> (registered in AndroidManifest)
 };
 
 export type AppEnv = { Bindings: Bindings; Variables: AuthVariables };

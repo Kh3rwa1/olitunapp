@@ -134,16 +134,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         return fragRedirect;
       }
 
-      // On Web: if OAuth token is present, route to /splash to exchange it
-      if (kIsWeb) {
-        final userId =
-            state.uri.queryParameters['userId'] ??
-            state.uri.queryParameters['key'];
-        final secret = state.uri.queryParameters['secret'];
-        if (userId != null && secret != null && state.uri.path != '/splash') {
-          return '/splash';
-        }
-      }
+      // On Web: a Google login code goes to /splash (code kept) to be
+      // exchanged for a session.
+      final codeRedirect = webLoginCodeRedirectFor(
+        isWeb: kIsWeb,
+        uri: state.uri,
+      );
+      if (codeRedirect != null) return codeRedirect;
 
       return authAndOnboardingRedirectFor(
         path: state.uri.path,

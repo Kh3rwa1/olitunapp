@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/app/router/route_guards.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
 
 void main() {
   group('adminHostRedirectFor', () {
@@ -26,6 +27,53 @@ void main() {
 
     test('matches the admin host case-insensitively', () {
       expect(adminHostRedirectFor('Admin.Olitun.IN', '/privacy'), '/admin');
+    });
+  });
+
+  group('webLoginCodeRedirectFor', () {
+    Uri at(String location) => Uri.parse(location);
+
+    test('sends a Google login code to /splash and keeps it', () {
+      final target = webLoginCodeRedirectFor(
+        isWeb: true,
+        uri: at('/?olitun_code=abc-123'),
+      );
+      expect(target, '/splash?olitun_code=abc-123');
+      expect(Uri.parse(target!).queryParameters[webLoginCodeParam], 'abc-123');
+    });
+
+    test('keeps a code that needs escaping intact', () {
+      final target = webLoginCodeRedirectFor(
+        isWeb: true,
+        uri: Uri(path: '/welcome', queryParameters: {'olitun_code': 'a+b/c='}),
+      );
+      expect(Uri.parse(target!).queryParameters[webLoginCodeParam], 'a+b/c=');
+    });
+
+    test('leaves /splash itself alone (no redirect loop)', () {
+      expect(
+        webLoginCodeRedirectFor(
+          isWeb: true,
+          uri: at('/splash?olitun_code=abc'),
+        ),
+        isNull,
+      );
+    });
+
+    test('ignores a missing or empty code and non-web platforms', () {
+      expect(webLoginCodeRedirectFor(isWeb: true, uri: at('/')), isNull);
+      expect(
+        webLoginCodeRedirectFor(isWeb: true, uri: at('/?olitun_code=')),
+        isNull,
+      );
+      expect(
+        webLoginCodeRedirectFor(isWeb: false, uri: at('/?olitun_code=abc')),
+        isNull,
+      );
+    });
+
+    test('uses the same parameter the auth service reads', () {
+      expect(webLoginCodeParam, AppwriteAuthService.webLoginCodeParam);
     });
   });
 

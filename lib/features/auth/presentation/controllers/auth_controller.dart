@@ -109,6 +109,9 @@ class AuthController {
       // OAuth sheet closed by the system (e.g. back-navigation) — no noise.
       return null;
     }
+    // Worker messages are already complete sentences ("Google sign-in is
+    // not available right now. …").
+    if (failure.message.startsWith('Google sign-in')) return failure.message;
     return 'Google sign-in failed: ${failure.message}';
   }
 

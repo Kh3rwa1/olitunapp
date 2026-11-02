@@ -3,33 +3,43 @@ import 'dart:async';
 import 'package:appwrite/appwrite.dart';
 
 import 'account_scope.dart';
-import 'appwrite_auth_service.dart';
+import 'worker_auth.dart';
 
-/// Short-lived Appwrite JWTs for Cloudflare Worker requests.
+/// Bearer tokens for Cloudflare Worker requests.
 ///
-/// The Worker derives the caller's identity only from this token (verified
-/// against Appwrite), so every per-user edge call must attach [headers].
-/// Tokens are cached because Appwrite rate-limits JWT creation; the cache is
-/// dropped whenever the local account scope changes.
+/// The Worker derives the caller's identity only from this token, so every
+/// per-user edge call must attach [headers]. The app-wide [instance] uses
+/// Worker sign-in sessions ([WorkerAuth]); the [Account] constructor keeps
+/// the older Appwrite-JWT source (Appwrite JWTs are cached because Appwrite
+/// rate-limits their creation, and dropped when the account scope changes).
 class EdgeAuth {
   EdgeAuth(Account account, {DateTime Function()? now})
     : this.lazy(() => account, now: now);
 
-  /// Resolves the [Account] on first use so merely referencing [instance]
-  /// does not construct the Appwrite client.
-  EdgeAuth.lazy(this._account, {DateTime Function()? now})
-    : _now = now ?? DateTime.now {
+  /// Appwrite-JWT source that resolves the [Account] on first use.
+  EdgeAuth.lazy(Account Function() account, {DateTime Function()? now})
+    : _account = account,
+      _source = null,
+      _now = now ?? DateTime.now {
     AccountScope.changes.listen((_) => clear());
   }
 
-  static final EdgeAuth instance = EdgeAuth.lazy(
-    () => AppwriteAuthService().account,
+  /// Tokens from [source] (already cached and refreshed by its owner).
+  EdgeAuth.source(Future<String?> Function() source)
+    : _account = null,
+      _source = source,
+      _now = DateTime.now;
+
+  /// Worker sign-in sessions; see [WorkerAuth.accessToken].
+  static final EdgeAuth instance = EdgeAuth.source(
+    WorkerAuth.instance.accessToken,
   );
 
   /// Appwrite JWTs live 15 minutes; refresh well before expiry.
   static const Duration tokenLifetime = Duration(minutes: 10);
 
-  final Account Function() _account;
+  final Account Function()? _account;
+  final Future<String?> Function()? _source;
   final DateTime Function() _now;
 
   String? _jwt;
@@ -45,6 +55,10 @@ class EdgeAuth {
   }
 
   Future<String?> token() {
+    final source = _source;
+    if (source != null) {
+      return source().catchError((Object _) => null);
+    }
     final jwt = _jwt;
     final expiresAt = _expiresAt;
     if (jwt != null && expiresAt != null && _now().isBefore(expiresAt)) {
@@ -56,7 +70,7 @@ class EdgeAuth {
   Future<String?> _create() async {
     final generation = _generation;
     try {
-      final created = await _account().createJWT();
+      final created = await _account!().createJWT();
       if (generation != _generation || created.jwt.isEmpty) return null;
       _jwt = created.jwt;
       _expiresAt = _now().add(tokenLifetime);

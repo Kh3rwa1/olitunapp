@@ -6,7 +6,8 @@ void sanitizeWebHistory() {
     if (uri.queryParameters.containsKey('secret') ||
         uri.queryParameters.containsKey('userId') ||
         uri.queryParameters.containsKey('key') ||
-        uri.queryParameters.containsKey('token')) {
+        uri.queryParameters.containsKey('token') ||
+        uri.queryParameters.containsKey('olitun_code')) {
       final cleanedUri = Uri(
         scheme: uri.scheme,
         host: uri.host,

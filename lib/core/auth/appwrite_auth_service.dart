@@ -5,6 +5,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show PlatformException;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:itun/core/logging/app_logger.dart';
@@ -18,20 +19,30 @@ export 'oauth_helpers.dart';
 export 'admin_functions_client.dart';
 export 'session_validator.dart';
 export 'session_persistence.dart';
+export 'worker_auth.dart' show WorkerAuth, WorkerAuthConfig, WorkerUser;
 
 import 'account_deletion_handler.dart';
-import 'oauth_helpers.dart';
-import 'oauth_session_cleanup.dart';
-import 'session_validator.dart';
 import 'session_persistence.dart';
 import 'account_scope.dart';
 import 'admin_functions_client.dart';
 import 'edge_auth.dart';
+import 'worker_auth.dart';
 import '../api/appwrite_functions_service.dart';
 import 'package:itun/core/ads/ad_service.dart';
 
+/// The app's sign-in service.
+///
+/// Sessions are issued by the Cloudflare Worker ([WorkerAuth]): guest,
+/// email code and Google. Appwrite Auth is no longer used to sign in (its
+/// organization is read-only, so every Appwrite write fails); a device that
+/// was signed in to Appwrite is moved to a Worker session once, keeping its
+/// user id. The name and the Appwrite model return types are kept so the
+/// rest of the app is unchanged.
 class AppwriteAuthService with AdminFunctionsMixin {
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
+
+  /// Query key the Worker uses to hand a web Google sign-in back to the app.
+  static const String webLoginCodeParam = 'olitun_code';
 
   // Singleton pattern — one SDK Client shared across the app
   AppwriteAuthService._internal() {
@@ -48,6 +59,7 @@ class AppwriteAuthService with AdminFunctionsMixin {
     }
 
     _account = Account(_client);
+    _worker = WorkerAuth.instance;
     _edgeFunctions = AppwriteFunctionsService(edgeAuth: EdgeAuth.instance);
     _browserAuthenticate = FlutterWebAuth2.authenticate;
     _accountDeletionRequest = edgeAccountDeletionRequest(
@@ -60,11 +72,11 @@ class AppwriteAuthService with AdminFunctionsMixin {
 
   late final Client _client;
   late final Account _account;
+  late final WorkerAuth _worker;
   late final AppwriteFunctionsService _edgeFunctions;
   late final AccountDeletionRequest _accountDeletionRequest;
 
   SharedPreferences? _prefsOverride;
-  DateTime Function()? _nowProvider;
   bool? _isWebOverride;
   Future<List<ConnectivityResult>> Function()? _connectivityOverride;
 
@@ -72,9 +84,9 @@ class AppwriteAuthService with AdminFunctionsMixin {
   AppwriteAuthService.forTesting({
     required Client client,
     required Account account,
+    required WorkerAuth workerAuth,
     AppwriteFunctionsService? edgeFunctions,
     SharedPreferences? prefs,
-    DateTime Function()? nowProvider,
     bool? isWebOverride,
     Future<List<ConnectivityResult>> Function()? connectivity,
     Future<String> Function({
@@ -85,18 +97,22 @@ class AppwriteAuthService with AdminFunctionsMixin {
     AccountDeletionRequest? accountDeletionRequest,
   }) : _client = client,
        _account = account,
+       _worker = workerAuth,
        _edgeFunctions =
            edgeFunctions ??
-           AppwriteFunctionsService(edgeAuth: EdgeAuth(account)),
+           AppwriteFunctionsService(
+             edgeAuth: EdgeAuth.source(workerAuth.accessToken),
+           ),
        _prefsOverride = prefs,
-       _nowProvider = nowProvider,
        _isWebOverride = isWebOverride,
        _connectivityOverride = connectivity,
        _browserAuthenticate =
            browserAuthenticate ?? FlutterWebAuth2.authenticate,
        _accountDeletionRequest =
            accountDeletionRequest ??
-           edgeAccountDeletionRequest(edgeAuth: EdgeAuth(account));
+           edgeAccountDeletionRequest(
+             edgeAuth: EdgeAuth.source(workerAuth.accessToken),
+           );
 
   /// Browser entry-point for the mobile OAuth flow. A field (not a direct
   /// plugin call) so unit tests can inject a canned callback URL instead of
@@ -107,8 +123,12 @@ class AppwriteAuthService with AdminFunctionsMixin {
   })
   _browserAuthenticate;
 
+  /// The Appwrite SDK objects, kept for the remaining Appwrite reads.
   Account get account => _account;
   Client get client => _client;
+
+  /// The Worker session store behind this service.
+  WorkerAuth get worker => _worker;
 
   Future<SharedPreferences> _getPrefs() async =>
       _prefsOverride ?? await SharedPreferences.getInstance();
@@ -119,39 +139,52 @@ class AppwriteAuthService with AdminFunctionsMixin {
     if (!scope.isCurrent) throw AppwriteException('Account changed', 409);
   }
 
-  Future<models.Session> _createSession(
-    Future<models.Session> Function() create,
+  Future<void> _requireOnline() async {
+    final results =
+        await (_connectivityOverride?.call() ??
+            Connectivity().checkConnectivity());
+    if (results.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
+  }
+
+  /// Runs a Worker sign-in call and makes its session this device's account.
+  Future<WorkerSession> _signIn(
+    Future<Map<String, dynamic>> Function() call,
   ) async {
     final prefs = await _getPrefs();
     final scope = await AccountScope.beginSignIn(prefs);
     return AccountScope.dispatch(() async {
       _requireCurrent(scope);
-      final session = await create();
-      final owner = await scope.identify(session.userId);
+      final response = await call();
+      _requireCurrent(scope);
+      final previous = await _worker.cached();
+      final session = await _worker.adopt(response);
+      if (previous != null && previous.refreshToken != session.refreshToken) {
+        // A guest session being replaced: end it on the Worker too.
+        unawaited(
+          _worker.api.logout(previous.refreshToken).catchError((Object _) {}),
+        );
+      }
+      final owner = await scope.identify(session.user.id);
       _requireCurrent(owner);
       await prefs.setBool(_hasLocalSessionKey, true);
-      if (_isWeb) {
-        final secret = SessionPersistence.extractSecret(session);
-        if (secret != null) {
-          await _persistWebSession(secret);
-        } else {
-          await prefs.setInt(
-            SessionPersistence.webSessionTimestampKey,
-            (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-          );
-        }
-      }
-      _requireCurrent(owner);
+      await prefs.setBool(WorkerAuth.legacyMigratedKey, true);
       return session;
     });
   }
 
-  Future<models.Session> signInWithEmail({
+  /// Email + password sign-in no longer exists (Appwrite only).
+  Future<WorkerSession> signInWithEmail({
     required String email,
     required String password,
-  }) => _createSession(
-    () => _account.createEmailPasswordSession(email: email, password: password),
-  );
+  }) async {
+    throw AppwriteException(
+      'Password sign-in is no longer available. Please sign in with an email code or Google.',
+      400,
+      'password_signin_removed',
+    );
+  }
 
   /// Ping Appwrite backend to verify setup
   Future<void> ping() async {
@@ -165,225 +198,93 @@ class AppwriteAuthService with AdminFunctionsMixin {
     }
   }
 
-  /// Sign in anonymously (for guest/offline mode access to remote Appwrite collections)
-  Future<models.Session> signInAnonymously() async {
-    AppLogger.debug('Appwrite: Creating anonymous session');
-    return _createSession(_account.createAnonymousSession);
+  /// Which sign-in methods the Worker serves right now.
+  Future<WorkerAuthConfig> signInOptions() => _worker.config();
+
+  /// Guest session (progress syncs to a Worker account with no email).
+  Future<WorkerSession> signInAnonymously() {
+    AppLogger.debug('Auth: Creating guest session');
+    return _signIn(_worker.api.guest);
   }
 
-  // ─── Email OTP ───
+  // ─── Email code ───
 
-  /// Send OTP code to email. Returns userId needed for session creation.
-  Future<models.Token> sendOtpCode(String email) async {
+  /// Emails a sign-in code. Returns the token id that [verifyOtp] takes as
+  /// `userId` (the normalized email address).
+  Future<String> sendOtpCode(String email) async {
     final trimmedEmail = email.trim().toLowerCase();
-    AppLogger.debug('Appwrite: Sending OTP code');
-    return await _account.createEmailToken(
-      userId: ID.unique(),
-      email: trimmedEmail,
-    );
+    AppLogger.debug('Auth: Sending email code');
+    await _worker.api.startEmail(trimmedEmail);
+    return trimmedEmail;
   }
 
-  /// Verify OTP and create session
-  Future<models.Session> verifyOtp({
+  /// Verifies the emailed code ([userId] is the value [sendOtpCode]
+  /// returned) and signs in.
+  Future<WorkerSession> verifyOtp({
     required String userId,
     required String secret,
-  }) async {
-    AppLogger.debug('Appwrite: Verifying OTP token');
-    return _createSession(
-      () => _account.createSession(userId: userId, secret: secret),
-    );
+  }) {
+    AppLogger.debug('Auth: Verifying email code');
+    return _signIn(() => _worker.api.verifyEmail(userId, secret.trim()));
   }
 
-  // ─── Google OAuth ───
+  // ─── Google ───
 
-  /// Signs this browser/device out of any Appwrite session before an OAuth
-  /// redirect; see [clearSessionsBeforeOAuth]. True when nobody is signed in.
-  Future<bool> clearSessionsForOAuth() => clearSessionsBeforeOAuth(
-    _account,
-    restoreWebSession: _isWeb ? _restoreWebSession : null,
-  );
+  /// Ends any current session before Google sign-in; true when nobody is
+  /// signed in afterwards.
+  Future<bool> clearSessionsForOAuth() async {
+    await _worker.clear();
+    return true;
+  }
 
   Future<void> signInWithGoogle() async {
-    AppLogger.debug('Appwrite: Starting Google OAuth');
-
-    try {
-      if (kIsWeb) {
-        // A session still active at the redirect makes Appwrite attach the
-        // Google identity to that user and fail with user_already_exists.
-        await clearSessionsForOAuth();
-        await _clearLocalSessionState(preserveAccount: true);
-        final oauthUrl = buildWebGoogleOAuthUrl(
-          endpoint: AppwriteConfig.endpoint,
-          projectId: AppwriteConfig.projectId,
-          origin: Uri.base.origin,
-        );
-        redirectToUrl(oauthUrl.toString());
-      } else {
-        // Clear any dangling guest/anonymous session before starting OAuth so the
-        // backend doesn't reject session creation with a 401/409 session conflict.
-        await clearSessionsForOAuth();
-
-        final oauthUrl = buildMobileGoogleOAuthUrl(
-          endpoint: AppwriteConfig.endpoint,
-          projectId: AppwriteConfig.projectId,
-        );
-        AdService.instance.skipNextAppOpen();
-        final result = await _browserAuthenticate(
-          url: oauthUrl.toString(),
-          callbackUrlScheme: 'appwrite-callback-${AppwriteConfig.projectId}',
-        );
-        final completion = parseWebOAuthCompletion(result);
-        final exchanged =
-            completion.kind == WebOAuthCompletionKind.persistSession
-            ? await exchangeOAuthToken(
-                'a_session_callback',
-                completion.secret,
-                throwOnError: true,
-              )
-            : await exchangeOAuthToken(
-                completion.userId!,
-                completion.secret,
-                throwOnError: true,
-              );
-        if (!exchanged) {
-          throw AppwriteException(
-            'Google sign-in failed: session could not be created.',
-          );
-        }
-      }
-    } on AppwriteException catch (e) {
-      AppLogger.debug(
-        'Appwrite OAuth error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
+    AppLogger.debug('Auth: Starting Google sign-in');
+    if (_isWeb) {
+      final url = _worker.api.googleStartUrl(
+        web: true,
+        returnUrl: '${Uri.base.origin}/',
       );
-      throw AppwriteException(
-        // ignore: invalid_use_of_visible_for_testing_member
-        googleOAuthUserMessage(e.message ?? e.toString()),
-        e.code,
-        e.type,
-      );
+      redirectToUrl(url.toString());
+      return;
     }
+
+    AdService.instance.skipNextAppOpen();
+    String result;
+    try {
+      result = await _browserAuthenticate(
+        url: _worker.api.googleStartUrl(web: false).toString(),
+        callbackUrlScheme: 'appwrite-callback-${AppwriteConfig.projectId}',
+      );
+    } on PlatformException catch (e) {
+      if (e.code == 'CANCELED') {
+        throw AppwriteException(
+          'Google sign-in was cancelled.',
+          0,
+          'cancelled',
+        );
+      }
+      rethrow;
+    }
+    final code = parseWorkerOAuthCallback(result);
+    await _signIn(() => _worker.api.exchange(code));
   }
 
-  /// Exchange OAuth token for session (called from splash screen after redirect or mobile OAuth flow).
-  Future<bool> exchangeOAuthToken(
-    String userId,
-    String secret, {
-    bool throwOnError = false,
-  }) async {
-    final prefs = await _getPrefs();
-    final scope = await AccountScope.beginSignIn(prefs);
+  /// Finishes a web Google sign-in from the `olitun_code` redirect param.
+  Future<bool> exchangeLoginCode(String code) async {
     try {
-      await AccountScope.dispatch(() async {
-        _requireCurrent(scope);
-        String ownerId;
-        if (userId.startsWith('a_session_')) {
-          await _persistWebSession(secret);
-          _requireCurrent(scope);
-          final user = await _account.get();
-          ownerId = user.$id;
-        } else {
-          models.Session session;
-          try {
-            session = await _account.createSession(
-              userId: userId,
-              secret: secret,
-            );
-          } on AppwriteException catch (e) {
-            final isSessionConflict =
-                e.code == 401 ||
-                e.code == 409 ||
-                (e.message?.toLowerCase().contains('session is active') ??
-                    false) ||
-                (e.type == 'user_session_already_exists');
-            if (isSessionConflict) {
-              AppLogger.warning(
-                'Appwrite: Active session detected during OAuth token exchange. Deleting current session and retrying.',
-              );
-              try {
-                await _account.deleteSession(sessionId: 'current');
-              } catch (e) {
-                AppLogger.debug(
-                  'Deleting conflicting session before OAuth retry failed: $e',
-                  name: 'AppwriteAuthService',
-                );
-              }
-              session = await _account.createSession(
-                userId: userId,
-                secret: secret,
-              );
-            } else {
-              rethrow;
-            }
-          }
-          _requireCurrent(scope);
-          ownerId = session.userId;
-          final sessionSecret = SessionPersistence.extractSecret(session);
-          if (sessionSecret != null) {
-            await _persistWebSession(sessionSecret);
-          } else if (_isWeb && secret.isNotEmpty) {
-            await _persistWebSession(secret);
-          }
-        }
-        final owner = await scope.identify(ownerId);
-        _requireCurrent(owner);
-        await prefs.setBool(_hasLocalSessionKey, true);
-      });
+      await _signIn(() => _worker.api.exchange(code));
       return true;
     } catch (e) {
       AppLogger.warning(
-        'Appwrite: OAuth session failed: ${RedactionHelper.sanitize(e.toString())}',
+        'Auth: Google sign-in exchange failed: ${RedactionHelper.sanitize(e.toString())}',
       );
-      if (throwOnError) {
-        if (e is AppwriteException) rethrow;
-        throw AppwriteException(e.toString());
-      }
       return false;
     }
   }
 
-  Future<void> _persistWebSession(String secret) async {
-    final prefs = await _getPrefs();
-    await SessionPersistence.persistWebSession(
-      client: _client,
-      prefs: prefs,
-      secret: secret,
-      nowProvider: _nowProvider,
-      isWebOverride: _isWeb,
-    );
-  }
-
-  Future<void> _restoreWebSession() async =>
-      _restoreWebSessionFor(await _getPrefs());
-
-  Future<void> _restoreWebSessionFor(SharedPreferences prefs) {
-    final scope = AccountScope.capture(prefs);
-    if (!scope.isCurrent) return Future<void>.value();
-    return AccountScope.dispatch(() async {
-      if (!scope.isCurrent) return;
-      await SessionPersistence.restoreWebSession(
-        client: _client,
-        prefs: prefs,
-        isWeb: _isWeb,
-        nowProvider: _nowProvider,
-      );
-    });
-  }
-
-  void restoreWebSessionSync(SharedPreferences prefs) {
-    if (!_isWeb) return;
-    // Startup remains non-blocking, but credential mutation shares the same
-    // queue as logins and progress requests instead of clearing a newer login.
-    unawaited(
-      _restoreWebSessionFor(prefs).catchError((Object error) {
-        AppLogger.debug(
-          'Appwrite: Session restoration failed: ${RedactionHelper.sanitize(error.toString())}',
-        );
-      }),
-    );
-  }
-
   Future<void> _clearLocalSessionState({bool preserveAccount = false}) async {
     final prefs = await _getPrefs();
+    await _worker.clear(revoke: false);
     await SessionPersistence.clearLocalSessionState(
       client: _client,
       prefs: prefs,
@@ -393,144 +294,131 @@ class AppwriteAuthService with AdminFunctionsMixin {
 
   // ─── Session Management ───
 
-  /// Check if user has an active session
+  /// Whether this device has a session. Local and fast: the session is
+  /// re-validated by the Worker whenever its access token is refreshed.
   Future<bool> isLoggedIn() async {
     final prefs = await _getPrefs();
-
-    if (AccountScope.capture(prefs).isExplicitlySignedOut) return false;
-    if (_isWeb) {
-      await _restoreWebSession();
-    }
     final scope = AccountScope.capture(prefs);
     if (scope.isExplicitlySignedOut) return false;
 
-    final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-    if (!hasLocal && !_isWeb) {
-      return false;
-    }
-
+    WorkerSession? session;
     try {
-      final session = await _account
-          .getSession(sessionId: 'current')
-          .timeout(const Duration(seconds: 3));
-      final owner = await scope.identify(session.userId);
-      _requireCurrent(owner);
-      AppLogger.debug('Appwrite: Session active ✅');
-      await prefs.setBool(_hasLocalSessionKey, true);
-      return true;
-    } catch (e) {
+      session = await _worker.current();
+    } on AppwriteException catch (e) {
+      // An Appwrite-era session could not be moved yet (offline / Worker
+      // unavailable). Keep the user signed in; it is retried on next use.
       AppLogger.debug(
-        'Appwrite: isLoggedIn error: ${RedactionHelper.sanitize(e.toString())}',
+        'Auth: session migration deferred: ${RedactionHelper.sanitize(e.message ?? '')}',
       );
-
-      if (!scope.isCurrent) return false;
-      final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-      // ignore: invalid_use_of_visible_for_testing_member
-      if (hasLocal && isTransientSessionValidationFailure(e)) {
-        AppLogger.debug(
-          'Appwrite: transient session validation failure; using cached session.',
-        );
-        return true;
-      }
-
-      if (e is AppwriteException && e.code == 401) {
-        AppLogger.debug(
-          'Appwrite: Session expired (401). Clearing local flag.',
-        );
-        await _clearLocalSessionState(preserveAccount: true);
-      }
-
+      return scope.isCurrent && (prefs.getBool(_hasLocalSessionKey) ?? false);
+    }
+    if (session == null) return false;
+    if (!scope.isCurrent) return false;
+    try {
+      final owner = await scope.identify(session.user.id);
+      _requireCurrent(owner);
+    } catch (_) {
       return false;
     }
+    await prefs.setBool(_hasLocalSessionKey, true);
+    return true;
   }
 
-  /// Get current user profile
+  /// Current user profile; the cached copy when the Worker is unreachable.
   Future<models.User> getMe() async {
     final prefs = await _getPrefs();
-    if (AccountScope.capture(prefs).isExplicitlySignedOut) {
+    final scope = AccountScope.capture(prefs);
+    if (scope.isExplicitlySignedOut) {
       throw AppwriteException('Signed out', 401);
     }
-    await _restoreWebSession();
-    final scope = AccountScope.capture(prefs);
-    if (scope.isExplicitlySignedOut) throw AppwriteException('Signed out', 401);
-    final connectivityResults =
-        await (_connectivityOverride?.call() ??
-            Connectivity().checkConnectivity());
-    if (connectivityResults.contains(ConnectivityResult.none)) {
-      throw AppwriteException('No internet connection', 0, 'network_failure');
-    }
+    final session = await _worker.current();
+    if (session == null) throw AppwriteException('Signed out', 401);
     _requireCurrent(scope);
+
+    final token = await _worker.accessToken();
+    if (token == null) {
+      if ((await _worker.cached()) == null) {
+        throw AppwriteException('Signed out', 401);
+      }
+      return session.user.toAppwriteUser();
+    }
     try {
-      final user = await _account.get().timeout(const Duration(seconds: 3));
-      await scope.identify(user.$id);
-      return user;
+      final data = await _worker.api.me(token);
+      final user = WorkerUser.fromJson(
+        Map<String, dynamic>.from(data['user'] as Map),
+      );
+      await _worker.updateUser(user);
+      await scope.identify(user.id);
+      return user.toAppwriteUser();
     } on AppwriteException catch (e) {
       if (e.code == 401 && scope.isCurrent) {
         await _clearLocalSessionState(preserveAccount: true);
+        rethrow;
       }
+      if (e.code == 0) return session.user.toAppwriteUser();
       rethrow;
     }
   }
 
+  /// Whether the signed-in user is an Olitun admin (checked by the Worker).
+  Future<bool> isCurrentUserAdmin() async {
+    final token = await _worker.accessToken();
+    if (token == null) return false;
+    final data = await _worker.api.me(token);
+    return data['isAdmin'] == true;
+  }
+
+  Future<String> _requireToken() async {
+    final token = await _worker.accessToken();
+    if (token == null) throw AppwriteException('Signed out', 401);
+    return token;
+  }
+
   /// Update user display name
   Future<models.User> updateName(String name) async {
-    final connectivityResults =
-        await (_connectivityOverride?.call() ??
-            Connectivity().checkConnectivity());
-    if (connectivityResults.contains(ConnectivityResult.none)) {
-      throw AppwriteException('No internet connection', 0, 'network_failure');
-    }
-    return await _account
-        .updateName(name: name)
-        .timeout(const Duration(seconds: 3));
+    await _requireOnline();
+    final data = await _worker.api.updateName(await _requireToken(), name);
+    final user = WorkerUser.fromJson(
+      Map<String, dynamic>.from(data['user'] as Map),
+    );
+    await _worker.updateUser(user);
+    return user.toAppwriteUser();
   }
 
   /// Update user preferences (for progress sync)
   Future<void> updatePrefs(Map<String, dynamic> prefs) async {
-    final connectivityResults =
-        await (_connectivityOverride?.call() ??
-            Connectivity().checkConnectivity());
-    if (connectivityResults.contains(ConnectivityResult.none)) {
-      throw AppwriteException('No internet connection', 0, 'network_failure');
-    }
-    await AccountScope.dispatch(
-      () => _account
-          .updatePrefs(prefs: prefs)
-          .timeout(const Duration(seconds: 3)),
-    );
+    await _requireOnline();
+    await AccountScope.dispatch(() async {
+      final token = await _requireToken();
+      await _worker.api.putPrefs(token, prefs);
+    });
     AccountScope.checkOperation();
   }
 
   /// Get user preferences
   Future<models.Preferences> getPrefs() async {
-    final connectivityResults =
-        await (_connectivityOverride?.call() ??
-            Connectivity().checkConnectivity());
-    if (connectivityResults.contains(ConnectivityResult.none)) {
-      throw AppwriteException('No internet connection', 0, 'network_failure');
-    }
-    final result = await AccountScope.dispatch(
-      () => _account.getPrefs().timeout(const Duration(seconds: 3)),
-    );
+    await _requireOnline();
+    final result = await AccountScope.dispatch(() async {
+      final token = await _requireToken();
+      return _worker.api.getPrefs(token);
+    });
     AccountScope.checkOperation();
-    return result;
+    return models.Preferences(data: result);
   }
 
-  /// Sign out — delete current session
+  /// Sign out — end the session on the Worker and locally.
   Future<void> signOut() async {
     final prefs = await _getPrefs();
-    // Local sign-out is unconditional, including offline. The tombstone prevents
-    // a surviving SDK/browser cookie from silently restoring the old account.
+    // Local sign-out is unconditional, including offline. The tombstone
+    // prevents a surviving credential from silently restoring the account.
     final scope = await AccountScope.signOut(prefs);
     await AccountScope.dispatch(() async {
       if (!scope.isCurrent) return;
       try {
-        await _account
-            .deleteSession(sessionId: 'current')
-            .timeout(const Duration(seconds: 5));
+        await _worker.clear();
       } catch (e) {
         AppLogger.debug(
-          'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
+          'Auth: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
         );
       } finally {
         if (scope.isCurrent) {
@@ -540,26 +428,68 @@ class AppwriteAuthService with AdminFunctionsMixin {
     });
   }
 
-  /// Permanently delete the account (data + Appwrite login) through the
-  /// Cloudflare Worker and clear all local state.
+  /// Permanently delete the account (data + login) through the Cloudflare
+  /// Worker and clear all local state.
   Future<void> deleteAccount() => executeAccountDeletion(
     requestDeletion: _accountDeletionRequest,
-    restoreWebSession: _restoreWebSession,
+    restoreWebSession: restoreWebSession,
     clearLocalSessionState: _clearLocalSessionState,
   );
 
   @override
   AppwriteFunctionsService get edgeFunctions => _edgeFunctions;
 
+  /// Worker sessions need no web restore step; this only drops the
+  /// Appwrite-era web session secret. Kept for [AdminFunctionsMixin].
   @override
-  Future<void> restoreWebSession() => _restoreWebSession();
+  Future<void> restoreWebSession() async {
+    await SessionPersistence.purgeLegacySessionSecret(await _getPrefs());
+  }
+}
+
+/// The one-time login code from the Worker's Google callback
+/// (`<scheme>://auth?olitun_code=…`), or the Worker's error as an
+/// [AppwriteException].
+String parseWorkerOAuthCallback(String result) {
+  final uri = Uri.parse(result);
+  final error = uri.queryParameters['error'];
+  if (error != null && error.isNotEmpty) {
+    throw AppwriteException(googleSignInErrorMessage(error), 400, error);
+  }
+  final code = uri.queryParameters[AppwriteAuthService.webLoginCodeParam];
+  if (code == null || code.isEmpty) {
+    throw AppwriteException(
+      'Google sign-in failed: no login code was returned.',
+      400,
+      'oauth_missing_code',
+    );
+  }
+  return code;
+}
+
+/// User-facing text for a Worker Google sign-in error id.
+String googleSignInErrorMessage(String error) {
+  switch (error) {
+    case 'GOOGLE_CANCELLED':
+      return 'Google sign-in was cancelled.';
+    case 'GOOGLE_UNAVAILABLE':
+      return 'Google sign-in is not available right now. Please use an email code.';
+    case 'AUTH_NOT_CONFIGURED':
+      return 'Sign-in is being set up. Please try again soon.';
+    case 'ACCOUNT_DELETED':
+      return 'This account was deleted.';
+    case 'OAUTH_STATE_INVALID':
+      return 'Google sign-in took too long. Please try again.';
+    default:
+      return 'Google sign-in failed. Please try again.';
+  }
 }
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
   final service = AppwriteAuthService();
   if (kIsWeb) {
-    final prefs = ref.watch(sharedPreferencesProvider);
-    service.restoreWebSessionSync(prefs);
+    // Touch shared preferences so web startup ordering stays unchanged.
+    ref.watch(sharedPreferencesProvider);
   }
   return service;
 });

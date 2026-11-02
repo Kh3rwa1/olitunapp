@@ -11,8 +11,44 @@ export const ORIGIN = 'https://api.olitun.test';
 // (and never share the auth module's per-isolate verification cache).
 // ---------------------------------------------------------------------------
 
-type FakeUser = { id: string; jwt: string; teams: Array<{ $id: string; name: string }> };
+type FakeUser = {
+  id: string;
+  jwt: string;
+  teams: Array<{ $id: string; name: string }>;
+  email?: string;
+  name?: string;
+  prefs?: Record<string, unknown>;
+};
 const usersByJwt = new Map<string, FakeUser>();
+
+/** The Appwrite server key tests pass as APPWRITE_API_KEY. */
+export const SERVER_KEY = 'test-appwrite-server-key';
+const usersBySession = new Map<string, FakeUser>();
+
+/**
+ * A user still signed in to Appwrite on a device: [session] is the value of
+ * the SDK's a_session_<project> cookie, which the Worker migration checks.
+ */
+export function makeAppwriteSession(
+  opts: { email?: string; name?: string; admin?: boolean; prefs?: Record<string, unknown> } = {},
+): FakeUser & { session: string } {
+  const base = makeUser(opts.admin ? 'admin' : 'learner');
+  const user = { ...base, email: opts.email ?? '', name: opts.name ?? 'Appwrite Learner', prefs: opts.prefs ?? {} };
+  const session = `sess_${crypto.randomUUID().replace(/-/g, '')}`;
+  usersBySession.set(session, user);
+  usersByJwt.set(user.jwt, user);
+  return { ...user, session };
+}
+
+function appwriteSessionUser(headers: Headers): FakeUser | undefined {
+  try {
+    const cookies = JSON.parse(headers.get('x-fallback-cookies') || '{}');
+    const value = cookies['a_session_test-project'];
+    return typeof value === 'string' ? usersBySession.get(value) : undefined;
+  } catch (_) {
+    return undefined;
+  }
+}
 
 export function makeUser(kind: 'learner' | 'admin' | 'fake-admin' = 'learner'): FakeUser {
   const id = `${kind === 'learner' ? 'u' : 'a'}_${crypto.randomUUID().replace(/-/g, '').slice(0, 12)}`;
@@ -45,12 +81,15 @@ export const outbound = {
   bodhan: (_key: string): Response => new Response(new Uint8Array(512), { status: 200 }),
   // Appwrite DELETE /users/:id reply (server-key hard delete).
   deleteUser: (): Response => new Response(null, { status: 204 }),
+  // Google OAuth token endpoint reply for a posted form.
+  googleToken: (_form: URLSearchParams): Response => new Response('{}', { status: 400 }),
   reset() {
     this.calls = [];
     this.appwriteDown = false;
     this.razorpayPayments = new Map();
     this.bodhan = () => new Response(new Uint8Array(512), { status: 200 });
     this.deleteUser = () => new Response(null, { status: 204 });
+    this.googleToken = () => new Response('{}', { status: 400 });
   },
   callsTo(fragment: string): OutboundCall[] {
     return this.calls.filter((c) => c.url.includes(fragment));
@@ -66,10 +105,39 @@ async function route(call: OutboundCall): Promise<Response> {
   if (url.host === 'appwrite.test') {
     if (outbound.appwriteDown) throw new TypeError('network error');
     const jwt = call.headers.get('x-appwrite-jwt') || '';
-    const user = usersByJwt.get(jwt);
+    const user = jwt ? usersByJwt.get(jwt) : appwriteSessionUser(call.headers);
     const path = url.pathname.replace(/^\/v1/, '');
     if (path === '/account' && call.method === 'GET') {
-      return user ? json({ $id: user.id, name: 'Test Learner' }) : json({ type: 'user_jwt_invalid' }, 401);
+      return user
+        ? json({ $id: user.id, name: user.name ?? 'Test Learner', email: user.email ?? '', emailVerification: Boolean(user.email), status: true })
+        : json({ type: 'user_jwt_invalid' }, 401);
+    }
+    if (path === '/account/prefs' && call.method === 'GET') {
+      return user ? json(user.prefs ?? {}) : json({ type: 'user_jwt_invalid' }, 401);
+    }
+    // Server-key reads used by the Worker's email/Google sign-in lookup.
+    if (call.headers.get('x-appwrite-key') === SERVER_KEY && call.method === 'GET') {
+      const equal = (attribute: string): string | undefined => {
+        for (const raw of url.searchParams.getAll('queries[]')) {
+          const q = JSON.parse(raw);
+          if (q.method === 'equal' && q.attribute === attribute) return q.values[0];
+        }
+        return undefined;
+      };
+      const known = [...usersByJwt.values()];
+      if (path === '/users') {
+        const users = known
+          .filter((u) => u.email && u.email === equal('email'))
+          .map((u) => ({ $id: u.id, name: u.name ?? '', email: u.email }));
+        return json({ total: users.length, users });
+      }
+      const team = path.match(/^\/teams\/([^/]+)\/memberships$/);
+      if (team) {
+        const memberships = known
+          .filter((u) => u.id === equal('userId') && u.teams.some((t) => t.$id === decodeURIComponent(team[1])))
+          .map((u) => ({ userId: u.id, teamId: decodeURIComponent(team[1]), confirm: true }));
+        return json({ total: memberships.length, memberships });
+      }
     }
     if (path === '/teams' && call.method === 'GET') {
       return user ? json({ total: user.teams.length, teams: user.teams }) : json({ type: 'user_jwt_invalid' }, 401);
@@ -99,6 +167,10 @@ async function route(call: OutboundCall): Promise<Response> {
       const payment = outbound.razorpayPayments.get(decodeURIComponent(pay[1]));
       return payment ? json(payment) : json({ error: { code: 'BAD_REQUEST_ERROR' } }, 400);
     }
+  }
+
+  if (url.host === 'oauth2.googleapis.com' && url.pathname === '/token' && call.method === 'POST') {
+    return outbound.googleToken(new URLSearchParams(call.body));
   }
 
   if (url.host === 'bodhan.test' && url.pathname === '/v1/audio/speech') {

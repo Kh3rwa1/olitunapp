@@ -11,6 +11,8 @@ import 'package:itun/core/config/cloudflare_config.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../helpers/fake_auth_worker.dart';
+
 class DeletionClient extends Mock implements Client {}
 
 class DeletionAccount extends Mock implements Account {}
@@ -99,6 +101,7 @@ void main() {
       service = AppwriteAuthService.forTesting(
         client: client,
         account: DeletionAccount(),
+        workerAuth: FakeAuthWorker().auth(prefs),
         prefs: prefs,
         isWebOverride: false,
         accountDeletionRequest: () {

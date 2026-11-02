@@ -32,6 +32,22 @@ String? fragmentRedirectFor({
   return null;
 }
 
+/// Query parameter carrying the Worker's one-time Google login code on web.
+const String webLoginCodeParam = 'olitun_code';
+
+/// On web, sends a Google sign-in return (`/?olitun_code=…`) to /splash,
+/// keeping the code in the target: by the time the splash runs, the browser
+/// URL has already moved on, so the router state is where it reads it.
+String? webLoginCodeRedirectFor({required bool isWeb, required Uri uri}) {
+  if (!isWeb || uri.path == '/splash') return null;
+  final code = uri.queryParameters[webLoginCodeParam];
+  if (code == null || code.isEmpty) return null;
+  return Uri(
+    path: '/splash',
+    queryParameters: {webLoginCodeParam: code},
+  ).toString();
+}
+
 String? adminAccessRedirectFor({
   required bool isAdmin,
   required String path,

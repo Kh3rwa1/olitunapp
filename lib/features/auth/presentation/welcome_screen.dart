@@ -8,6 +8,7 @@ import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../presentation/controllers/auth_controller.dart';
 import '../../../core/auth/auth_providers.dart';
+import '../../../core/auth/worker_auth.dart' show WorkerAuthConfig;
 import '../../onboarding/providers/onboarding_provider.dart';
 import 'widgets/oauth_failure_notice.dart';
 import '../../../l10n/generated/app_localizations.dart';
@@ -282,49 +283,60 @@ class WelcomeScreen extends ConsumerWidget {
   }
 
   Widget _buildCTAButtons(BuildContext context, WidgetRef ref, bool isDark) {
+    // Hide a method the backend has not been set up for yet, so nobody taps
+    // into a guaranteed failure. Everything shows while the answer is unknown.
+    final options =
+        ref.watch(signInOptionsProvider).asData?.value ??
+        WorkerAuthConfig.fallback;
     return Column(
       children: [
         // Google Sign-In Button
-        _GoogleSignInButton(
-          isDark: isDark,
-        ).animate().fadeIn(delay: 700.ms, duration: 500.ms).slideY(begin: 0.3),
-
-        const SizedBox(height: 14),
+        if (options.google) ...[
+          _GoogleSignInButton(isDark: isDark)
+              .animate()
+              .fadeIn(delay: 700.ms, duration: 500.ms)
+              .slideY(begin: 0.3),
+          const SizedBox(height: 14),
+        ],
 
         // Email Sign-In Button — PressableScale gives the same scale +
         // haptic feedback as the rest of the app's primary CTAs.
-        PressableScale(
-          onTap: () => context.go('/login'),
-          haptic: HapticIntensity.medium,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            decoration: BoxDecoration(
-              gradient: AppColors.heroGradient,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 25,
-                  offset: const Offset(0, 10),
+        if (options.email)
+          PressableScale(
+                onTap: () => context.go('/login'),
+                haptic: HapticIntensity.medium,
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      AppLocalizations.of(context)!.continueWithEmail,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                AppLocalizations.of(context)!.continueWithEmail,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-        ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
+              )
+              .animate()
+              .fadeIn(delay: 800.ms, duration: 500.ms)
+              .slideY(begin: 0.3),
 
-        const SizedBox(height: 10),
+        if (options.email) const SizedBox(height: 10),
 
         // Explore as Guest Button — allows users & Play Store reviewers instant access
         TextButton.icon(

@@ -1,7 +1,7 @@
 name: itun
 description: Olitun - Premium Ol Chiki (Santali Script) Learning App
 publish_to: 'none'
-version: 1.3.4+26101708
+version: 1.3.4+26110205
 
 environment:
   sdk: ^3.9.0
@@ -45,6 +45,10 @@ dependencies:
   # Auth
   # Constrained to 21.x to match backend server API (TablesDB) and prevent breaking 22+ SDK changes
   appwrite: ^21.1.0
+  # Reads the Appwrite SDK's saved session cookie once, so a device that was
+  # signed in before the move to Worker sign-in keeps its account. Same
+  # version the appwrite package already resolves.
+  cookie_jar: ^4.0.9
 
   # Utils
   uuid: ^4.5.1

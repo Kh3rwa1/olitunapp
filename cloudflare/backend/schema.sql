@@ -250,7 +250,9 @@ CREATE TABLE IF NOT EXISTS learning_analytics_event_details (
 );
 CREATE INDEX IF NOT EXISTS idx_analytics_details_user ON learning_analytics_event_details(user_id);
 CREATE INDEX IF NOT EXISTS idx_analytics_details_date ON learning_analytics_event_details(date_key);
-CREATE INDEX IF NOT EXISTS idx_analytics_details_install ON learning_analytics_event_details(install_id);
+-- idx_analytics_details_install is created at runtime by
+-- src/lib/analytics_schema.ts after it adds install_id to databases that
+-- predate the column; declaring it here fails `d1 execute --file` on them.
 
 -- Waitlist
 CREATE TABLE IF NOT EXISTS binti_waitlist (

@@ -1234,5 +1234,92 @@
     "updateRequiredBody": "यह संस्करण अब साइन इन या सिंक नहीं कर सकता। सीखते रहने के लिए Google Play से नवीनतम अपडेट इंस्टॉल करें।",
     "updateRequiredButton": "Google Play पर अपडेट करें",
     "updateAvailableBanner": "Olitun का नया संस्करण तैयार है।",
-    "updateAvailableAction": "अपडेट करें"
+    "updateAvailableAction": "अपडेट करें",
+    "todayStripStreak": "{count} दिन की स्ट्रीक",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "आज स्ट्रीक शुरू करें",
+    "todayStripGoal": "{minutes} / {goal} मिनट",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "लक्ष्य पूरा",
+    "todayStripReviewsDue": "{count} बाकी",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "आज: {streak} दिन की स्ट्रीक, {goal} में से {minutes} मिनट, {due} रिव्यू बाकी",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "आपकी {count} दिन की स्ट्रीक रीसेट हो गई",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "कोई बात नहीं। आज 5 मिनट का अभ्यास नई स्ट्रीक शुरू करता है।",
+    "streakLostCta": "फिर से शुरू करें",
+    "streakLostDismiss": "हटाएँ",
+    "dailyGoalMetToast": "दैनिक लक्ष्य पूरा: आज {minutes} मिनट। जोहार!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "आज का शब्द",
+    "wordOfDayPlay": "उच्चारण सुनें",
+    "wordOfDayPractice": "इस शब्द का अभ्यास करें",
+    "dailyPracticeTitle": "दैनिक अभ्यास",
+    "dailyPracticeBadge": "दैनिक अभ्यास",
+    "nbaTitleDailyPractice": "अपनी ओल चिकी तेज़ रखें",
+    "nbaSubDailyPractice": "रिव्यू, गलतियों और नए शब्दों का 5 मिनट का मिश्रण।",
+    "nbaCtaDailyPractice": "दैनिक अभ्यास शुरू करें",
+    "nbaSubAllDonePractice": "आपने हर पाठ पूरा कर लिया। दैनिक अभ्यास इसे ताज़ा रखता है, और बाखेड़ भी इंतज़ार कर रहा है।",
+    "dailyPracticeExit": "अभ्यास से बाहर निकलें",
+    "dailyPracticeComplete": "अभ्यास पूरा",
+    "dailyPracticeSummaryStars": "+{stars} स्टार · {minutes} मिनट दर्ज",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

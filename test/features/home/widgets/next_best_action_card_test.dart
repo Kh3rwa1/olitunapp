@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:itun/features/home/presentation/widgets/next_best_action_card.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
+import 'package:itun/features/home/presentation/providers/displayed_streak_provider.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
@@ -132,6 +133,8 @@ void main() {
     SharedPreferences.setMockInitialValues({});
   });
 
+  habitLoopTests();
+
   testWidgets('continue branch uses localized copy, not hardcoded English', (
     tester,
   ) async {
@@ -209,4 +212,159 @@ void main() {
     expect(find.text('Continue'), findsOneWidget);
     expect(find.text('START HERE'), findsNothing);
   });
+}
+
+String _key(DateTime d) =>
+    DateTime(d.year, d.month, d.day).toIso8601String().substring(0, 10);
+
+/// Live 3-day streak (practiced yesterday), nothing practiced today.
+class _LiveStreakStats extends UserStatsNotifier {
+  @override
+  AsyncValue<UserStatsEntity> build() {
+    final now = DateTime(2026, 11, 10, 18);
+    return AsyncValue.data(
+      UserStatsEntity(
+        practicedLetters: const {},
+        completedLessons: const {'alphabet_intro', 'number_intro'},
+        quizHistory: const {},
+        categoryMastery: const {},
+        totalLearningMinutes: 30,
+        lastActiveDate: _key(now.subtract(const Duration(days: 1))),
+        currentStreak: 3,
+        totalStars: 120,
+        practiceDates: {
+          for (var i = 1; i <= 3; i++) _key(now.subtract(Duration(days: i))),
+        },
+      ),
+    );
+  }
+}
+
+class _NotDone extends LessonCompletedTodayNotifier {
+  @override
+  bool build() => false;
+}
+
+class _QuizNotDone extends QuizTakenTodayNotifier {
+  @override
+  bool build() => false;
+}
+
+class _BakhedNotDone extends BakhedListenedTodayNotifier {
+  @override
+  bool build() => false;
+}
+
+Widget _hostNoLesson({required List<Override> overrides}) {
+  return ProviderScope(
+    overrides: overrides,
+    child: const MaterialApp(
+      locale: Locale('en'),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(body: NextBestActionCard()),
+    ),
+  );
+}
+
+void habitLoopTests() {
+  testWidgets('late in the day a live streak at risk comes first', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        locale: const Locale('en'),
+        overrides: [
+          isAuthenticatedProvider.overrideWith((ref) async => true),
+          userStatsProvider.overrideWith(_LiveStreakStats.new),
+          mistakeProvider.overrideWith(_NoMistakes.new),
+          lessonCompletedTodayProvider.overrideWith(_NotDone.new),
+          quizTakenTodayProvider.overrideWith(_QuizNotDone.new),
+          bakhedListenedTodayProvider.overrideWith(_BakhedNotDone.new),
+          lastOpenedLessonIdProvider.overrideWith((ref) => 'lesson_x'),
+          streakClockProvider.overrideWithValue(
+            () => DateTime(2026, 11, 10, 18),
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    // Even with a resumable lesson, the streak nudge wins after 17:00.
+    expect(find.text('STREAK RISK'), findsOneWidget);
+    expect(find.text('Start daily practice'), findsOneWidget);
+    expect(find.text('RESUME JOURNEY'), findsNothing);
+  });
+
+  testWidgets('in the morning the same learner resumes normally', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        locale: const Locale('en'),
+        overrides: [
+          isAuthenticatedProvider.overrideWith((ref) async => true),
+          userStatsProvider.overrideWith(_LiveStreakStats.new),
+          mistakeProvider.overrideWith(_NoMistakes.new),
+          lessonCompletedTodayProvider.overrideWith(_NotDone.new),
+          quizTakenTodayProvider.overrideWith(_QuizNotDone.new),
+          bakhedListenedTodayProvider.overrideWith(_BakhedNotDone.new),
+          lastOpenedLessonIdProvider.overrideWith((ref) => 'lesson_x'),
+          streakClockProvider.overrideWithValue(
+            () => DateTime(2026, 11, 10, 9),
+          ),
+        ],
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('STREAK RISK'), findsNothing);
+    expect(find.text('RESUME JOURNEY'), findsOneWidget);
+  });
+
+  testWidgets('catalogue finished → daily practice is the primary action', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _hostNoLesson(
+        overrides: [
+          isAuthenticatedProvider.overrideWith((ref) async => true),
+          userStatsProvider.overrideWith(_MidJourneyStats.new),
+          mistakeProvider.overrideWith(_NoMistakes.new),
+          lessonCompletedTodayProvider.overrideWith(_DoneMission.new),
+          quizTakenTodayProvider.overrideWith(_QuizNotDone.new),
+          bakhedListenedTodayProvider.overrideWith(_BakhedDoneMission.new),
+          lastOpenedLessonIdProvider.overrideWith((ref) => null),
+        ],
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.text('DAILY PRACTICE'), findsOneWidget);
+    expect(find.text('Keep your Ol Chiki sharp'), findsOneWidget);
+    expect(find.text('Start daily practice'), findsOneWidget);
+    expect(find.text('Explore Bakhed'), findsNothing);
+  });
+
+  testWidgets(
+    'catalogue finished and practiced today → all done, practice CTA',
+    (tester) async {
+      await tester.pumpWidget(
+        _hostNoLesson(
+          overrides: [
+            ..._midJourneyOverrides(),
+            lastOpenedLessonIdProvider.overrideWith((ref) => null),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('ALL COMPLETE'), findsOneWidget);
+      expect(find.text('Start daily practice'), findsOneWidget);
+    },
+  );
 }

@@ -2130,4 +2130,90 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get updateAvailableAction => 'আপডেট করুন';
+
+  @override
+  String todayStripStreak(int count) {
+    return '$count দিনের স্ট্রিক';
+  }
+
+  @override
+  String get todayStripStartStreak => 'আজই স্ট্রিক শুরু করুন';
+
+  @override
+  String todayStripGoal(int minutes, int goal) {
+    return '$minutes / $goal মিনিট';
+  }
+
+  @override
+  String get todayStripGoalDone => 'লক্ষ্য পূরণ';
+
+  @override
+  String todayStripReviewsDue(int count) {
+    return '$count বাকি';
+  }
+
+  @override
+  String todayStripSemantics(int streak, int minutes, int goal, int due) {
+    return 'আজ: $streak দিনের স্ট্রিক, $goal মিনিটের মধ্যে $minutes, $dueটি রিভিউ বাকি';
+  }
+
+  @override
+  String streakLostTitle(int count) {
+    return 'আপনার $count দিনের স্ট্রিক রিসেট হয়েছে';
+  }
+
+  @override
+  String get streakLostBody =>
+      'কোনো সমস্যা নেই। আজ ৫ মিনিটের অনুশীলন নতুন স্ট্রিক শুরু করে।';
+
+  @override
+  String get streakLostCta => 'আবার শুরু করুন';
+
+  @override
+  String get streakLostDismiss => 'সরান';
+
+  @override
+  String dailyGoalMetToast(int minutes) {
+    return 'দৈনিক লক্ষ্য পূরণ: আজ $minutes মিনিট। জোহার!';
+  }
+
+  @override
+  String get wordOfDayEyebrow => 'আজকের শব্দ';
+
+  @override
+  String get wordOfDayPlay => 'উচ্চারণ শুনুন';
+
+  @override
+  String get wordOfDayPractice => 'এই শব্দটি অনুশীলন করুন';
+
+  @override
+  String get dailyPracticeTitle => 'দৈনিক অনুশীলন';
+
+  @override
+  String get dailyPracticeBadge => 'দৈনিক অনুশীলন';
+
+  @override
+  String get nbaTitleDailyPractice => 'আপনার অলচিকি ঝালিয়ে রাখুন';
+
+  @override
+  String get nbaSubDailyPractice =>
+      'রিভিউ, ভুল ও নতুন শব্দের ৫ মিনিটের মিশ্রণ।';
+
+  @override
+  String get nbaCtaDailyPractice => 'দৈনিক অনুশীলন শুরু করুন';
+
+  @override
+  String get nbaSubAllDonePractice =>
+      'আপনি সব পাঠ শেষ করেছেন। দৈনিক অনুশীলন তা তাজা রাখে, আর বাখেড়ও অপেক্ষা করছে।';
+
+  @override
+  String get dailyPracticeExit => 'অনুশীলন থেকে বেরোন';
+
+  @override
+  String get dailyPracticeComplete => 'অনুশীলন সম্পূর্ণ';
+
+  @override
+  String dailyPracticeSummaryStars(int stars, int minutes) {
+    return '+$stars স্টার · $minutes মিনিট লেখা হয়েছে';
+  }
 }

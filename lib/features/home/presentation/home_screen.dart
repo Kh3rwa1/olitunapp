@@ -8,8 +8,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/ads/ad_service.dart';
 import '../../../core/notifications/notification_service.dart';
-import '../../review/data/review_store_notifier.dart';
-import '../../review/domain/memory_scheduler.dart';
 import '../../../core/config/feature_flags.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../../core/theme/app_colors.dart';
@@ -28,7 +26,16 @@ import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
 import 'widgets/santali_voice_promo_card.dart';
 import 'widgets/ai_studio_promo_card.dart';
+import '../../review/data/review_store_notifier.dart';
 import 'widgets/rewarded_bonus_card.dart';
+import 'widgets/home_header.dart';
+import 'widgets/home_skeletons.dart';
+import 'widgets/streak_lost_card.dart';
+import 'widgets/word_of_day_card.dart';
+import 'widgets/update_available_banner.dart';
+import 'widgets/daily_goal_celebration.dart';
+import 'providers/displayed_streak_provider.dart';
+import 'providers/reminder_sync_provider.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
@@ -51,69 +58,36 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(homePrefetchProvider.notifier).prefetch();
-      unawaited(ref.read(adServiceProvider).showConsentFormIfNeeded(context));
-      _requestNotificationPermissionIfNeeded();
-      _syncReviewReminderIfNeeded();
+      unawaited(_runFirstFrameDialogs());
     });
   }
 
-  /// Once/day: point the existing evening reminder at the real learner state
-  /// ("N reviews ready · ~M min"). Same volume, no extra notifications.
-  /// Copy is resolved in the active locale before scheduling.
-  void _syncReviewReminderIfNeeded() {
-    unawaited(() async {
-      try {
-        if (!ref.read(notificationsEnabledProvider)) return;
-        final store = ref.read(reviewStoreProvider).valueOrNull;
-        if (store == null) return;
-        if (!mounted) return;
-        final prefs = ref.read(sharedPreferencesProvider);
-        final today = DateTime.now().toIso8601String().substring(0, 10);
-        if (prefs.getString('review_reminder_synced_date') == today) return;
-        final now = DateTime.now().toUtc();
-        final dueCount = store.dueCount(now);
-        if (dueCount <= 0) return;
-        final minutes = MemoryScheduler.estimateMinutes(dueCount);
-        final struggle = store
-            .due(now, limit: 200)
-            .where((i) => i.failedRecalls > i.successfulRecalls)
-            .length;
-        final l10n = AppLocalizations.of(context);
-        final useStruggle = struggle > 0 && struggle >= dueCount ~/ 2;
-        await NotificationService.instance.syncEveningReminderWithReview(
-          dueCount: dueCount,
-          minutes: minutes,
-          struggleCount: struggle,
-          hour: ref.read(reminderHourProvider),
-          minute: ref.read(reminderMinuteProvider),
-          title: l10n == null
-              ? null
-              : useStruggle
-              ? l10n.notifStruggleTitle
-              : dueCount == 1
-              ? l10n.notifReviewTitleOne
-              : l10n.notifReviewTitleOther(dueCount),
-          body: l10n == null
-              ? null
-              : useStruggle
-              ? (struggle == 1
-                    ? l10n.notifStruggleBodyOne
-                    : l10n.notifStruggleBodyOther(struggle))
-              : dueCount == 1
-              ? l10n.notifReviewBodyOne(minutes)
-              : l10n.notifReviewBodyOther(dueCount, minutes),
-        );
-        await prefs.setString('review_reminder_synced_date', today);
-      } catch (_) {
-        // Reminders must never break home.
-      }
-    }());
+  /// Consent first, then (never in the same frame) the notification
+  /// permission — and only once the learner has actually practiced, so the
+  /// prompt lands on a moment of success instead of a cold first open.
+  Future<void> _runFirstFrameDialogs() async {
+    try {
+      await ref.read(adServiceProvider).showConsentFormIfNeeded(context);
+    } catch (_) {
+      // Consent must never block Home.
+    }
+    if (!mounted) return;
+    await _requestNotificationPermissionIfEligible();
   }
 
-  void _requestNotificationPermissionIfNeeded() {
-    final notificationsEnabled = ref.read(notificationsEnabledProvider);
-    if (notificationsEnabled) {
-      unawaited(NotificationService.instance.requestPermission());
+  Future<void> _requestNotificationPermissionIfEligible() async {
+    if (!ref.read(notificationsEnabledProvider)) return;
+    final stats = ref.read(userStatsProvider).valueOrNull;
+    final hasPracticed =
+        ref.read(practicedTodayProvider) ||
+        (stats?.completedLessons.isNotEmpty ?? false);
+    try {
+      await NotificationService.instance.requestPermissionIfEligible(
+        hasPracticed: hasPracticed,
+        prefs: ref.read(sharedPreferencesProvider),
+      );
+    } catch (_) {
+      // Permission prompts must never break Home.
     }
   }
 
@@ -180,12 +154,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final l10n = AppLocalizations.of(context)!;
+    // Keeps reminder copy honest (streak / due reviews) and celebrates a
+    // met daily goal once per day.
+    ref.watch(reminderSyncProvider);
+    listenForDailyGoalCelebration(context, ref);
 
     final mainContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // (2) Header: Johar + user name only
-        _buildHeader(
+        // (1) Soft update nudge (hard gate for old builds lives in core/update).
+        const UpdateAvailableBanner(),
+        // (2) Header: greeting + Today strip (streak · goal · due reviews)
+        HomeHeader(
               userName: displayUserName,
               isDark: isDark,
               isNewcomer:
@@ -201,6 +181,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               duration: 500.ms,
               curve: Curves.easeOutCubic,
             ),
+        const SizedBox(height: 16),
+        // (2b) Honest streak-loss notice, once per lost streak.
+        const RepaintBoundary(child: StreakLostCard()),
         const SizedBox(height: 20),
 
         // (3) TODAY'S REVIEW — appears only after user left a lesson or couldn't complete
@@ -211,7 +194,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         // (4) CONTINUE LEARNING — NextBestActionCard
         statsLoading
-            ? _buildStatsSkeleton(isDark)
+            ? HomeStatsSkeleton(isDark: isDark)
             : Column(
                 children: [
                   RepaintBoundary(
@@ -234,6 +217,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ],
               ),
+        const SizedBox(height: 16),
+
+        // (4b) Word of the day: a new word every day, with a path into
+        // daily practice.
+        const RepaintBoundary(child: WordOfDayCard()),
         const SizedBox(height: 20),
 
         // (5) Secondary content lives BELOW the learning actions:
@@ -346,7 +334,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   categories: categories,
                 );
               },
-              loading: () => _buildSkeletonGrid(isDark),
+              loading: () => HomeGridSkeleton(isDark: isDark),
               error: (e, st) => AppErrorState(
                 message: l10n.couldNotLoadPaths,
                 onRetry: _onRefresh,
@@ -403,193 +391,5 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildHeader({
-    required String userName,
-    required bool isDark,
-    required bool isNewcomer,
-  }) {
-    final l10n = AppLocalizations.of(context)!;
-    final isDesktop = ResponsiveLayout.isDesktop(context);
-    final now = DateTime.now();
-    final hour = now.hour;
-    final dayPart = hour < 12
-        ? 'Good morning'
-        : hour < 17
-        ? 'Good afternoon'
-        : 'Good evening';
-    final firstName = userName.trim().isEmpty ? 'Olitun' : userName.trim();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.22),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 7),
-                  Text(
-                    AppLocalizations.of(
-                      context,
-                    )!.greetingDayPart(dayPart).toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.4,
-                      color: AppColors.emeraldDeep,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isDesktop) ...[
-              const Spacer(),
-              Text(
-                '${now.day} ${_monthName(now.month)} • ${l10n.homeExploreHint}',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.45)
-                      : AppColors.webSlateLight,
-                ),
-              ),
-            ],
-          ],
-        ),
-        const SizedBox(height: 14),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.joharUser(firstName),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 40 : 30,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1.0,
-                      height: 1.05,
-                      color: isDark ? Colors.white : AppColors.webInk,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    isNewcomer
-                        ? l10n.homeNewcomerSubtitle
-                        : l10n.homePickupSubtitle,
-                    style: TextStyle(
-                      fontSize: isDesktop ? 15 : 14,
-                      height: 1.5,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white60 : AppColors.webSlate,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _monthName(int month) {
-    const names = [
-      '',
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return names[month.clamp(1, 12)];
-  }
-
-  Widget _buildSkeletonGrid(bool isDark) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: ResponsiveLayout.isDesktop(context)
-            ? 4
-            : (ResponsiveLayout.isTablet(context) ? 3 : 2),
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        childAspectRatio: 1.3,
-      ),
-      itemCount: 4,
-      itemBuilder: (context, index) {
-        return Container(
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(20),
-              ),
-            )
-            .animate(onPlay: (controller) => controller.repeat(reverse: true))
-            .fade(begin: 0.4, end: 0.8, duration: 800.ms);
-      },
-    );
-  }
-
-  Widget _buildStatsSkeleton(bool isDark) {
-    return Column(
-          children: [
-            Container(
-              height: 100,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Container(
-              height: 60,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03),
-                borderRadius: BorderRadius.circular(20),
-              ),
-            ),
-          ],
-        )
-        .animate(onPlay: (controller) => controller.repeat(reverse: true))
-        .fade(begin: 0.4, end: 0.8, duration: 800.ms);
   }
 }

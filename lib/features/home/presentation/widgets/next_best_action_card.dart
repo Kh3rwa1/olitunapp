@@ -7,6 +7,8 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
 import '../providers/mission_providers.dart';
+import '../providers/displayed_streak_provider.dart';
+import '../../../practice/daily/presentation/daily_practice_route.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
@@ -25,7 +27,6 @@ class NextBestActionCard extends ConsumerWidget {
       userStatsProvider.select((async) {
         final s = async.value;
         return (
-          streak: s?.currentStreak ?? 0,
           lessons: s?.completedLessons,
           totalStars: s?.totalStars ?? 0,
           alphabetProgress: s?.alphabetProgress ?? 0.0,
@@ -34,7 +35,9 @@ class NextBestActionCard extends ConsumerWidget {
     );
     final mistakeCount = ref.watch(mistakeProvider.select((m) => m.length));
 
-    final streak = stats.streak;
+    // Honest streak (derived from practice dates), not the stored counter.
+    final streak = ref.watch(displayedStreakProvider);
+    final streakAtRisk = ref.watch(streakAtRiskProvider);
 
     // Determine the state and copy
     String badgeText = l10n.continueLearning;
@@ -59,8 +62,19 @@ class NextBestActionCard extends ConsumerWidget {
         (lessons == null || !lessons.contains(lastOpenedId)) &&
         nextLessonId == lastOpenedId;
 
-    // 1. User left a lesson mid-way or couldn't complete it: resume directly.
-    if (isResumingIncompleteLesson) {
+    // 0. Late in the day with a live streak and nothing practiced yet: the
+    // streak is the most time-sensitive thing on screen, so it goes first.
+    if (streakAtRisk) {
+      badgeText = l10n.nbaBadgeStreakRisk;
+      title = l10n.nbaTitleStreakRisk;
+      subtitle = l10n.nbaSubStreakRisk(streak);
+      ctaText = l10n.nbaCtaDailyPractice;
+      icon = Icons.local_fire_department_rounded;
+      onTap = () {
+        context.push(dailyPracticeRoute);
+      };
+    } else if (isResumingIncompleteLesson) {
+      // 1. User left a lesson mid-way or couldn't complete it: resume directly.
       badgeText = l10n.resumeJourney;
       title = l10n.continueLearning;
       subtitle = l10n.readyToLearn;
@@ -116,10 +130,10 @@ class NextBestActionCard extends ConsumerWidget {
       badgeText = l10n.nbaBadgeStreakRisk;
       title = l10n.nbaTitleStreakRisk;
       subtitle = l10n.nbaSubStreakRisk(streak);
-      ctaText = l10n.nbaCtaQuickReview;
+      ctaText = l10n.nbaCtaDailyPractice;
       icon = Icons.local_fire_department_rounded;
       onTap = () {
-        context.push('/quizzes');
+        context.push(dailyPracticeRoute);
       };
     } else if (nextLessonId != null && nextLessonId!.isNotEmpty) {
       // 6. Active learning progression: continue directly to next curriculum lesson.
@@ -131,25 +145,26 @@ class NextBestActionCard extends ConsumerWidget {
       onTap = () {
         context.push('/lesson/$nextLessonId');
       };
-    } else if (!ref.watch(bakhedListenedTodayProvider)) {
-      // 7. Try cultural recitation.
-      badgeText = l10n.nbaBadgeTryBakhed;
-      title = l10n.nbaTitleTryBakhed;
-      subtitle = l10n.nbaSubTryBakhed;
-      ctaText = l10n.nbaCtaListenNow;
-      icon = Icons.music_note_rounded;
+    } else if (!ref.watch(quizTakenTodayProvider)) {
+      // 7. Curriculum finished, no practice yet today: daily practice is the
+      // reason to open the app (content never runs out).
+      badgeText = l10n.dailyPracticeBadge;
+      title = l10n.nbaTitleDailyPractice;
+      subtitle = l10n.nbaSubDailyPractice;
+      ctaText = l10n.nbaCtaDailyPractice;
+      icon = Icons.bolt_rounded;
       onTap = () {
-        context.push('/bakhed');
+        context.push(dailyPracticeRoute);
       };
     } else {
-      // 8. Completed current catalogue.
+      // 8. Completed current catalogue and practiced today.
       badgeText = l10n.nbaBadgeAllDone;
       title = l10n.nbaTitleAllDone;
-      subtitle = l10n.nbaSubAllDone;
-      ctaText = l10n.nbaCtaExploreBakhed;
+      subtitle = l10n.nbaSubAllDonePractice;
+      ctaText = l10n.nbaCtaDailyPractice;
       icon = Icons.celebration_rounded;
       onTap = () {
-        context.push('/bakhed');
+        context.push(dailyPracticeRoute);
       };
     }
 

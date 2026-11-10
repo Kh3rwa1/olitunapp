@@ -2147,4 +2147,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateAvailableAction => 'Update';
+
+  @override
+  String todayStripStreak(int count) {
+    return '$count day streak';
+  }
+
+  @override
+  String get todayStripStartStreak => 'Start a streak today';
+
+  @override
+  String todayStripGoal(int minutes, int goal) {
+    return '$minutes / $goal min';
+  }
+
+  @override
+  String get todayStripGoalDone => 'Goal done';
+
+  @override
+  String todayStripReviewsDue(int count) {
+    return '$count due';
+  }
+
+  @override
+  String todayStripSemantics(int streak, int minutes, int goal, int due) {
+    return 'Today: streak $streak days, $minutes of $goal minutes, $due reviews due';
+  }
+
+  @override
+  String streakLostTitle(int count) {
+    return 'Your $count-day streak reset';
+  }
+
+  @override
+  String get streakLostBody =>
+      'No guilt. A 5-minute practice today starts a new one.';
+
+  @override
+  String get streakLostCta => 'Start again';
+
+  @override
+  String get streakLostDismiss => 'Dismiss';
+
+  @override
+  String dailyGoalMetToast(int minutes) {
+    return 'Daily goal met: $minutes min today. Johar!';
+  }
+
+  @override
+  String get wordOfDayEyebrow => 'WORD OF THE DAY';
+
+  @override
+  String get wordOfDayPlay => 'Play pronunciation';
+
+  @override
+  String get wordOfDayPractice => 'Practice this word';
+
+  @override
+  String get dailyPracticeTitle => 'Daily practice';
+
+  @override
+  String get dailyPracticeBadge => 'DAILY PRACTICE';
+
+  @override
+  String get nbaTitleDailyPractice => 'Keep your Ol Chiki sharp';
+
+  @override
+  String get nbaSubDailyPractice =>
+      'A 5-minute mix of review, mistakes and new words.';
+
+  @override
+  String get nbaCtaDailyPractice => 'Start daily practice';
+
+  @override
+  String get nbaSubAllDonePractice =>
+      'You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.';
+
+  @override
+  String get dailyPracticeExit => 'Exit practice';
+
+  @override
+  String get dailyPracticeComplete => 'Practice complete';
+
+  @override
+  String dailyPracticeSummaryStars(int stars, int minutes) {
+    return '+$stars stars · $minutes min logged';
+  }
 }

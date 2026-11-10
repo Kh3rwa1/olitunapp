@@ -2131,4 +2131,90 @@ class AppLocalizationsSat extends AppLocalizations {
 
   @override
   String get updateAvailableAction => 'ᱟᱯᱰᱮᱴ ᱢᱮ';
+
+  @override
+  String todayStripStreak(int count) {
+    return '$count ᱢᱟᱦᱟᱸ ᱥᱴᱨᱤᱠ';
+  }
+
+  @override
+  String get todayStripStartStreak => 'ᱛᱮᱦᱮᱧ ᱥᱴᱨᱤᱠ ᱮᱦᱚᱵ ᱢᱮ';
+
+  @override
+  String todayStripGoal(int minutes, int goal) {
+    return '$minutes / $goal ᱢᱤᱱᱤᱴ';
+  }
+
+  @override
+  String get todayStripGoalDone => 'ᱞᱟᱠᱪᱟᱨ ᱯᱩᱨᱟᱹᱣ';
+
+  @override
+  String todayStripReviewsDue(int count) {
+    return '$count ᱵᱟᱹᱠᱤ';
+  }
+
+  @override
+  String todayStripSemantics(int streak, int minutes, int goal, int due) {
+    return 'ᱛᱮᱦᱮᱧ: $streak ᱢᱟᱦᱟᱸ ᱥᱴᱨᱤᱠ, $goal ᱢᱤᱱᱤᱴ ᱠᱷᱚᱱ $minutes, $due ᱫᱚᱦᱲᱟ ᱵᱟᱹᱠᱤ';
+  }
+
+  @override
+  String streakLostTitle(int count) {
+    return 'ᱟᱢᱟᱜ $count ᱢᱟᱦᱟᱸ ᱨᱮᱱᱟᱜ ᱥᱴᱨᱤᱠ ᱨᱤᱥᱮᱴ ᱦᱩᱭ ᱮᱱᱟ';
+  }
+
+  @override
+  String get streakLostBody =>
+      'ᱪᱤᱱᱛᱟ ᱵᱟᱝ᱾ ᱛᱮᱦᱮᱧ 5 ᱢᱤᱱᱤᱴ ᱨᱮᱱᱟᱜ ᱟᱵᱷᱭᱟᱥ ᱱᱟᱶᱟ ᱥᱴᱨᱤᱠ ᱮᱦᱚᱵ ᱟ᱾';
+
+  @override
+  String get streakLostCta => 'ᱫᱚᱦᱲᱟ ᱮᱦᱚᱵ ᱢᱮ';
+
+  @override
+  String get streakLostDismiss => 'ᱚᱪᱚᱜ ᱢᱮ';
+
+  @override
+  String dailyGoalMetToast(int minutes) {
+    return 'ᱢᱟᱦᱟᱸ ᱞᱟᱠᱪᱟᱨ ᱯᱩᱨᱟᱹᱣ: ᱛᱮᱦᱮᱧ $minutes ᱢᱤᱱᱤᱴ᱾ ᱡᱚᱦᱟᱨ!';
+  }
+
+  @override
+  String get wordOfDayEyebrow => 'ᱛᱮᱦᱮᱧᱟᱜ ᱟᱹᱲᱟᱹ';
+
+  @override
+  String get wordOfDayPlay => 'ᱩᱪᱪᱟᱨᱚᱱ ᱟᱸᱡᱚᱢ ᱢᱮ';
+
+  @override
+  String get wordOfDayPractice => 'ᱱᱚᱶᱟ ᱟᱹᱲᱟᱹ ᱟᱵᱷᱭᱟᱥ ᱢᱮ';
+
+  @override
+  String get dailyPracticeTitle => 'ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ';
+
+  @override
+  String get dailyPracticeBadge => 'ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ';
+
+  @override
+  String get nbaTitleDailyPractice => 'ᱟᱢᱟᱜ ᱚᱞ ᱪᱤᱠᱤ ᱞᱮᱥᱮᱨ ᱫᱚᱦᱚᱭ ᱢᱮ';
+
+  @override
+  String get nbaSubDailyPractice =>
+      'ᱫᱚᱦᱲᱟ, ᱵᱷᱩᱞ ᱟᱨ ᱱᱟᱶᱟ ᱟᱹᱲᱟᱹ ᱨᱮᱱᱟᱜ 5 ᱢᱤᱱᱤᱴ ᱢᱤᱥᱟᱹᱣ᱾';
+
+  @override
+  String get nbaCtaDailyPractice => 'ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱮᱦᱚᱵ ᱢᱮ';
+
+  @override
+  String get nbaSubAllDonePractice =>
+      'ᱟᱢ ᱡᱚᱛᱚ ᱯᱟᱲᱦᱟᱣ ᱪᱟᱵᱟ ᱠᱮᱫᱟ᱾ ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱱᱚᱶᱟ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭ ᱟ, ᱟᱨ ᱵᱟᱠᱷᱮᱰ ᱦᱚᱸ ᱛᱟᱹᱝᱜᱤ ᱠᱟᱱᱟ᱾';
+
+  @override
+  String get dailyPracticeExit => 'ᱟᱵᱷᱭᱟᱥ ᱠᱷᱚᱱ ᱚᱰᱚᱠ ᱢᱮ';
+
+  @override
+  String get dailyPracticeComplete => 'ᱟᱵᱷᱭᱟᱥ ᱯᱩᱨᱟᱹᱣ';
+
+  @override
+  String dailyPracticeSummaryStars(int stars, int minutes) {
+    return '+$stars ᱤᱯᱤᱞ · $minutes ᱢᱤᱱᱤᱴ ᱚᱞ ᱮᱱᱟ';
+  }
 }

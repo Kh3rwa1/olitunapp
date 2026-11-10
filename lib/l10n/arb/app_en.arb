@@ -1234,5 +1234,92 @@
     "updateRequiredBody": "This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.",
     "updateRequiredButton": "Update on Google Play",
     "updateAvailableBanner": "A new version of Olitun is ready.",
-    "updateAvailableAction": "Update"
+    "updateAvailableAction": "Update",
+    "todayStripStreak": "{count} day streak",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "Start a streak today",
+    "todayStripGoal": "{minutes} / {goal} min",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "Goal done",
+    "todayStripReviewsDue": "{count} due",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "Today: streak {streak} days, {minutes} of {goal} minutes, {due} reviews due",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "Your {count}-day streak reset",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "No guilt. A 5-minute practice today starts a new one.",
+    "streakLostCta": "Start again",
+    "streakLostDismiss": "Dismiss",
+    "dailyGoalMetToast": "Daily goal met: {minutes} min today. Johar!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "WORD OF THE DAY",
+    "wordOfDayPlay": "Play pronunciation",
+    "wordOfDayPractice": "Practice this word",
+    "dailyPracticeTitle": "Daily practice",
+    "dailyPracticeBadge": "DAILY PRACTICE",
+    "nbaTitleDailyPractice": "Keep your Ol Chiki sharp",
+    "nbaSubDailyPractice": "A 5-minute mix of review, mistakes and new words.",
+    "nbaCtaDailyPractice": "Start daily practice",
+    "nbaSubAllDonePractice": "You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.",
+    "dailyPracticeExit": "Exit practice",
+    "dailyPracticeComplete": "Practice complete",
+    "dailyPracticeSummaryStars": "+{stars} stars · {minutes} min logged",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

@@ -27,6 +27,11 @@ import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/content_providers.dart';
 import '../../../shared/providers/learner_content_providers.dart';
+import '../../home/presentation/providers/mission_providers.dart';
+import '../../home/presentation/providers/today_activity_provider.dart';
+import '../../practice/daily/presentation/daily_practice_builder.dart';
+import '../../practice/daily/presentation/daily_practice_outcome.dart';
+import '../../practice/daily/presentation/providers/daily_practice_providers.dart';
 import '../../profile/presentation/providers/profile_providers.dart';
 import '../../quiz/presentation/providers/mistake_provider.dart';
 import '../data/review_store_notifier.dart';
@@ -41,8 +46,18 @@ import 'widgets/review_session_widgets.dart';
 /// ContentDetailScreen; the real reward moved here.)
 const int starsPerItemMastered = 10;
 
+/// What feeds the session. [dailyPractice] reuses this exact card flow for
+/// the mixed daily session (due items, mistakes, unseen content); letter
+/// cards are graded locally and never touch the review store.
+enum ReviewSessionMode { todayReview, dailyPractice }
+
 class ReviewSessionScreen extends ConsumerStatefulWidget {
-  const ReviewSessionScreen({super.key});
+  const ReviewSessionScreen({
+    super.key,
+    this.mode = ReviewSessionMode.todayReview,
+  });
+
+  final ReviewSessionMode mode;
 
   @override
   ConsumerState<ReviewSessionScreen> createState() =>
@@ -67,6 +82,10 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   int _masteredCount = 0;
   DateTime? _sessionStartedAt;
   String _sessionId = '';
+  final List<AnsweredCard> _answeredCards = [];
+  DailyPracticeOutcome? _outcome;
+
+  bool get _isDaily => widget.mode == ReviewSessionMode.dailyPractice;
 
   @override
   void initState() {
@@ -80,9 +99,13 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   /// load, and surface an honest error (with retry) when content fails.
   void _tryStart() {
     if (_started || !mounted) return;
-    final words = ref.read(learnerWordsProvider);
-    final sentences = ref.read(learnerSentencesProvider);
-    if (words.isLoading || sentences.isLoading) return;
+    if (_isDaily) {
+      if (ref.read(dailyPracticeCardsProvider).isLoading) return;
+    } else {
+      final words = ref.read(learnerWordsProvider);
+      final sentences = ref.read(learnerSentencesProvider);
+      if (words.isLoading || sentences.isLoading) return;
+    }
     _started = true;
     // ignore: discarded_futures
     _startSession();
@@ -91,6 +114,9 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   void _retryLoad() {
     ref.invalidate(contentListProvider((ContentKind.word, null)));
     ref.invalidate(contentListProvider((ContentKind.sentence, null)));
+    if (_isDaily) {
+      ref.invalidate(contentListProvider((ContentKind.letter, null)));
+    }
     setState(() {
       _started = false;
       _loaded = false;
@@ -100,6 +126,10 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   }
 
   Future<void> _startSession() async {
+    if (_isDaily) {
+      await _startDailyPractice();
+      return;
+    }
     // Personalized: scheduler urgency re-ranked by onboarding profile.
     final due = ref.read(personalizedDueItemsProvider);
     final wordsAsync = ref.read(learnerWordsProvider);
@@ -140,6 +170,35 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
     }
   }
 
+  /// Daily practice: cards come pre-built; an empty set means the corpus is
+  /// not available (never "caught up" — there is always something to do).
+  Future<void> _startDailyPractice() async {
+    final cards =
+        ref.read(dailyPracticeCardsProvider).valueOrNull ??
+        const <ReviewCard>[];
+    if (!mounted) return;
+    if (cards.isEmpty) {
+      setState(() {
+        _loaded = true;
+        _loadError = true;
+        _dueTotal = 0;
+      });
+      return;
+    }
+    setState(() {
+      _cards = cards;
+      _loaded = true;
+      _dueTotal = cards.length;
+      _cardStartedAt = DateTime.now();
+    });
+    _sessionStartedAt = DateTime.now();
+    _sessionId = '${DateTime.now().millisecondsSinceEpoch}';
+    await _track(LearningAnalyticsEvents.dailyPracticeStarted, {
+      'cardCount': cards.length,
+    });
+    await _presentCurrent();
+  }
+
   ReviewCard? get _current =>
       (_index >= 0 && _index < _cards.length) ? _cards[_index] : null;
 
@@ -151,7 +210,7 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
         .read(learningAnalyticsServiceProvider)
         .track(
           event,
-          source: 'today_review',
+          source: _isDaily ? 'daily_practice' : 'today_review',
           sourceId: _sessionId,
           metadata: metadata,
         );
@@ -220,6 +279,22 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
     required bool correct,
   }) async {
     final responseMs = DateTime.now().difference(_cardStartedAt).inMilliseconds;
+    _answeredCards.add((card: card, correct: correct));
+    if (_isDaily && isLetterCard(card)) {
+      // Letters are not review-store items: grade locally, log, move on.
+      if (correct) _correctCount++;
+      await _track(
+        correct
+            ? LearningAnalyticsEvents.reviewCorrect
+            : LearningAnalyticsEvents.reviewWrong,
+        {
+          'itemId': card.itemId,
+          'exercise': card.kind.name,
+          'responseTimeMs': responseMs,
+        },
+      );
+      return;
+    }
     final result = await ref
         .read(reviewStoreProvider.notifier)
         .recordRecall(
@@ -310,15 +385,41 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   }
 
   Future<void> _finish() async {
-    final minutes = _sessionStartedAt == null
-        ? 0
-        : DateTime.now().difference(_sessionStartedAt!).inMinutes;
-    await _track(LearningAnalyticsEvents.reviewCompleted, {
-      'cardCount': _cards.length,
-      'correct': _correctCount,
-      'mastered': _masteredCount,
-      'minutes': minutes,
-    });
+    final elapsed = _sessionStartedAt == null
+        ? Duration.zero
+        : DateTime.now().difference(_sessionStartedAt!);
+    final minutes = elapsed.inMinutes;
+    if (_isDaily) {
+      final outcome = await ref.read(dailyPracticeFinisherProvider)(
+        answered: List.unmodifiable(_answeredCards),
+        elapsed: elapsed,
+      );
+      _outcome = outcome;
+      await ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
+      ref.read(dailyPracticeSeedWordProvider.notifier).state = null;
+      await _track(LearningAnalyticsEvents.dailyPracticeCompleted, {
+        'cardCount': _cards.length,
+        'correct': outcome.correctCount,
+        'total': outcome.total,
+        'stars': outcome.stars,
+        'minutes': outcome.minutes,
+      });
+    } else {
+      await _track(LearningAnalyticsEvents.reviewCompleted, {
+        'cardCount': _cards.length,
+        'correct': _correctCount,
+        'mastered': _masteredCount,
+        'minutes': minutes,
+      });
+      // Real time spent reviewing counts towards today's goal (rounded up;
+      // a finished session is at least one minute of learning).
+      if (_answeredCards.isNotEmpty) {
+        final logged = elapsed.inSeconds <= 0
+            ? 1
+            : (elapsed.inSeconds / 60).ceil();
+        await ref.read(todayMinutesProvider.notifier).add(logged);
+      }
+    }
     if (!mounted) return;
     setState(() => _index = _cards.length);
   }
@@ -330,6 +431,9 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
     // Corpus may land after first frame (offline cold start): start then.
     ref.listen(learnerWordsProvider, (_, _) => _tryStart());
     ref.listen(learnerSentencesProvider, (_, _) => _tryStart());
+    if (_isDaily) {
+      ref.listen(dailyPracticeCardsProvider, (_, _) => _tryStart());
+    }
     return Scaffold(
       backgroundColor: isDark
           ? AppColors.darkBackground
@@ -339,14 +443,16 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          tooltip: l10n.reviewExit,
+          tooltip: _isDaily ? l10n.dailyPracticeExit : l10n.reviewExit,
           onPressed: () => context.pop(),
         ),
         title: Text(
           _finished
-              ? l10n.reviewComplete
+              ? (_isDaily ? l10n.dailyPracticeComplete : l10n.reviewComplete)
               : _cards.isEmpty
-              ? l10n.reviewSessionTitleBare
+              ? (_isDaily
+                    ? l10n.dailyPracticeTitle
+                    : l10n.reviewSessionTitleBare)
               : l10n.reviewSessionTitle(_index + 1, _cards.length),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
@@ -361,11 +467,14 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
   Future<void> _leaveAfterSummary() async {
     await ref
         .read(interstitialAdManagerProvider)
-        .showIfAllowed(context, 'review_complete');
+        .showIfAllowed(
+          context,
+          _isDaily ? 'daily_practice_complete' : 'review_complete',
+        );
     if (mounted) context.pop();
   }
 
-  bool get _finished => _loaded && _index >= _cards.length;
+  bool get _finished => _loaded && _cards.isNotEmpty && _index >= _cards.length;
 
   Widget _buildBody(bool isDark) {
     if (!_loaded) {
@@ -388,11 +497,21 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
       );
     }
     if (_finished) {
+      final outcome = _outcome;
       return ReviewSummaryView(
         correctCount: _correctCount,
         totalCount: _cards.length,
         masteredCount: _masteredCount,
-        starsAwarded: _masteredCount * starsPerItemMastered,
+        starsAwarded:
+            _masteredCount * starsPerItemMastered + (outcome?.stars ?? 0),
+        title: _isDaily
+            ? AppLocalizations.of(context)!.dailyPracticeComplete
+            : null,
+        extraLine: outcome == null
+            ? null
+            : AppLocalizations.of(
+                context,
+              )!.dailyPracticeSummaryStars(outcome.stars, outcome.minutes),
         isDark: isDark,
         onDone: _leaveAfterSummary,
       );

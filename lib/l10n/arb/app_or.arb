@@ -1234,5 +1234,92 @@
     "updateRequiredBody": "ଏହି ସଂସ୍କରଣ ଆଉ ସାଇନ୍ ଇନ୍ କିମ୍ବା ସିଙ୍କ୍ କରିପାରିବ ନାହିଁ। ଶିଖିବା ଜାରି ରଖିବାକୁ Google Play ରୁ ନୂତନ ଅପଡେଟ୍ ଇନଷ୍ଟଲ୍ କରନ୍ତୁ।",
     "updateRequiredButton": "Google Play ରେ ଅପଡେଟ୍ କରନ୍ତୁ",
     "updateAvailableBanner": "Olitun ର ନୂଆ ସଂସ୍କରଣ ପ୍ରସ୍ତୁତ ଅଛି।",
-    "updateAvailableAction": "ଅପଡେଟ୍ କରନ୍ତୁ"
+    "updateAvailableAction": "ଅପଡେଟ୍ କରନ୍ତୁ",
+    "todayStripStreak": "{count} ଦିନର ଷ୍ଟ୍ରିକ୍",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "ଆଜି ଷ୍ଟ୍ରିକ୍ ଆରମ୍ଭ କରନ୍ତୁ",
+    "todayStripGoal": "{minutes} / {goal} ମିନିଟ୍",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "ଲକ୍ଷ୍ୟ ପୂରଣ",
+    "todayStripReviewsDue": "{count} ବାକି",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "ଆଜି: {streak} ଦିନର ଷ୍ଟ୍ରିକ୍, {goal} ମିନିଟ୍ ମଧ୍ୟରୁ {minutes}, {due} ରିଭ୍ୟୁ ବାକି",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "ଆପଣଙ୍କ {count} ଦିନର ଷ୍ଟ୍ରିକ୍ ରିସେଟ୍ ହୋଇଛି",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "ଚିନ୍ତା ନାହିଁ। ଆଜି 5 ମିନିଟର ଅଭ୍ୟାସ ନୂଆ ଷ୍ଟ୍ରିକ୍ ଆରମ୍ଭ କରେ।",
+    "streakLostCta": "ପୁଣି ଆରମ୍ଭ କରନ୍ତୁ",
+    "streakLostDismiss": "ହଟାନ୍ତୁ",
+    "dailyGoalMetToast": "ଦୈନିକ ଲକ୍ଷ୍ୟ ପୂରଣ: ଆଜି {minutes} ମିନିଟ୍। ଜୋହାର!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "ଆଜିର ଶବ୍ଦ",
+    "wordOfDayPlay": "ଉଚ୍ଚାରଣ ଶୁଣନ୍ତୁ",
+    "wordOfDayPractice": "ଏହି ଶବ୍ଦ ଅଭ୍ୟାସ କରନ୍ତୁ",
+    "dailyPracticeTitle": "ଦୈନିକ ଅଭ୍ୟାସ",
+    "dailyPracticeBadge": "ଦୈନିକ ଅଭ୍ୟାସ",
+    "nbaTitleDailyPractice": "ଆପଣଙ୍କ ଅଲଚିକି ତୀକ୍ଷ୍ଣ ରଖନ୍ତୁ",
+    "nbaSubDailyPractice": "ରିଭ୍ୟୁ, ଭୁଲ ଓ ନୂଆ ଶବ୍ଦର 5 ମିନିଟର ମିଶ୍ରଣ।",
+    "nbaCtaDailyPractice": "ଦୈନିକ ଅଭ୍ୟାସ ଆରମ୍ଭ କରନ୍ତୁ",
+    "nbaSubAllDonePractice": "ଆପଣ ସବୁ ପାଠ ଶେଷ କରିଛନ୍ତି। ଦୈନିକ ଅଭ୍ୟାସ ଏହାକୁ ସତେଜ ରଖେ, ଓ ବାଖେଡ଼ ମଧ୍ୟ ଅପେକ୍ଷା କରୁଛି।",
+    "dailyPracticeExit": "ଅଭ୍ୟାସରୁ ବାହାରନ୍ତୁ",
+    "dailyPracticeComplete": "ଅଭ୍ୟାସ ସମ୍ପୂର୍ଣ୍ଣ",
+    "dailyPracticeSummaryStars": "+{stars} ଷ୍ଟାର · {minutes} ମିନିଟ୍ ଲେଖାଗଲା",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

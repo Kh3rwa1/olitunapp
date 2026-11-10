@@ -51,6 +51,16 @@ final userStatsProvider =
       UserStatsNotifier.new,
     );
 
+/// Last learning-minute write made by [UserStatsNotifier] (lesson
+/// completion). `seq` increments on every write so listeners such as the
+/// daily-goal log see repeated equal amounts. Published, never read, by the
+/// notifier.
+typedef LearningMinutesRecord = ({int minutes, int seq});
+
+final learningMinutesRecordedProvider = StateProvider<LearningMinutesRecord>(
+  (ref) => (minutes: 0, seq: 0),
+);
+
 final userStarsProvider = Provider<int>((ref) {
   final stats = ref.watch(userStatsProvider).value;
   return stats?.totalStars ?? 0;
@@ -402,11 +412,13 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
           originId,
           current,
         );
+        final minutes = estimatedMinutes.clamp(0, 240);
         updated = updated.recordLearningMinutes(
-          estimatedMinutes.clamp(0, 240),
+          minutes,
           originId: originId,
           seq: seq,
         );
+        _publishMinutes(minutes);
       }
 
       // Update category mastery only the first time a lesson is completed.
@@ -493,6 +505,12 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
         AppLogger.debug('Failed to save quiz result: $e\n$st');
       }
     });
+  }
+
+  void _publishMinutes(int minutes) {
+    if (minutes <= 0) return;
+    final notifier = ref.read(learningMinutesRecordedProvider.notifier);
+    notifier.state = (minutes: minutes, seq: notifier.state.seq + 1);
   }
 
   Future<void> resetProgress() {

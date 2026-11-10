@@ -201,6 +201,29 @@ void main() {
       expect(lessons.length, 2);
     });
 
+    test('completeLesson publishes the recorded minutes once', () async {
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      expect(container.read(learningMinutesRecordedProvider).seq, 0);
+      await notifier.completeLesson('l2', estimatedMinutes: 7);
+      expect(container.read(learningMinutesRecordedProvider), (
+        minutes: 7,
+        seq: 1,
+      ));
+
+      // A repeat completion records no minutes, so nothing is published.
+      await notifier.completeLesson('l2', estimatedMinutes: 7);
+      expect(container.read(learningMinutesRecordedProvider).seq, 1);
+    });
+
     test('completeLesson is idempotent for same lessonId', () async {
       when(
         () => mockRepo.getUserStats(),

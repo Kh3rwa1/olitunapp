@@ -10,6 +10,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../core/media/edge_media_url.dart';
 
 class HomeBannersCarousel extends ConsumerStatefulWidget {
   final bool isDark;
@@ -204,7 +205,7 @@ class _BannerSlide extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       CachedNetworkImage(
-                        imageUrl: banner.imageUrl!,
+                        imageUrl: toEdgeMediaUrl(banner.imageUrl!),
                         cacheManager: olitunImageCacheManager,
                         fit: BoxFit.cover,
                         memCacheWidth: 1080,

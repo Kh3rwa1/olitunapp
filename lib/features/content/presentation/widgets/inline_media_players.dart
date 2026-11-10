@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../providers/audio_playback_providers.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../core/media/edge_media_url.dart';
 
 /// Inline video playback embedded inside content detail pages.
 class InlineVideoPlayer extends StatefulWidget {
@@ -25,18 +26,21 @@ class InlineVideoPlayerState extends State<InlineVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.media.url))
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() {
-            _initialized = true;
-            if (widget.media.posterUrl == null) {
-              _controller!.play();
-              _isPlaying = true;
+    _controller =
+        VideoPlayerController.networkUrl(
+            Uri.parse(toEdgeMediaUrl(widget.media.url)),
+          )
+          ..initialize().then((_) {
+            if (mounted) {
+              setState(() {
+                _initialized = true;
+                if (widget.media.posterUrl == null) {
+                  _controller!.play();
+                  _isPlaying = true;
+                }
+              });
             }
           });
-        }
-      });
   }
 
   @override

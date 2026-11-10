@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../models/catalog/category_entity.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../core/media/edge_media_url.dart';
 
 class PaywallHeader extends StatelessWidget {
   final CategoryEntity category;
@@ -77,7 +78,7 @@ class PaywallHeader extends StatelessWidget {
                   if (category.courseHeroImageUrl != null &&
                       category.courseHeroImageUrl!.isNotEmpty)
                     CachedNetworkImage(
-                      imageUrl: category.courseHeroImageUrl!,
+                      imageUrl: toEdgeMediaUrl(category.courseHeroImageUrl!),
                       cacheManager: olitunImageCacheManager,
                       fit: BoxFit.cover,
                       memCacheWidth: 1080,

@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../core/media/authorized_media.dart';
 import 'authorized_media_display.dart';
+import '../../core/media/edge_media_url.dart';
 
 /// A reusable, memory-safe video playback widget.
 ///
@@ -63,7 +64,7 @@ class _VideoDisplayState extends State<VideoDisplay> {
     });
 
     try {
-      final uri = Uri.parse(widget.url);
+      final uri = Uri.parse(toEdgeMediaUrl(widget.url));
       final controller = VideoPlayerController.networkUrl(uri);
       _controller = controller;
 

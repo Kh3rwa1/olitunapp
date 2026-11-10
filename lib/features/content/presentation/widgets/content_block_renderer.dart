@@ -14,6 +14,7 @@ import 'package:itun/shared/widgets/tracing_canvas.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../providers/audio_playback_providers.dart';
 import 'inline_media_players.dart';
+import '../../../../core/media/edge_media_url.dart';
 
 // Renders a single ContentBlock (text/image/video/audio/lottie/quiz/
 // glyph/callout/tracing) inside the content detail scroll view.
@@ -67,7 +68,7 @@ class ContentBlockRenderer extends ConsumerWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: CachedNetworkImage(
-                imageUrl: imageBlock.media.url,
+                imageUrl: toEdgeMediaUrl(imageBlock.media.url),
                 cacheManager: olitunImageCacheManager,
                 fit: BoxFit.cover,
                 memCacheWidth: 1080,

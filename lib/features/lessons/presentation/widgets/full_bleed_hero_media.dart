@@ -13,6 +13,7 @@ import '../../../../shared/widgets/lottie_display.dart';
 import '../../../../shared/widgets/animated_svg_display.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import 'package:itun/core/ads/ad_service.dart';
+import '../../../../core/media/edge_media_url.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -192,7 +193,7 @@ class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
     });
 
     try {
-      final uri = Uri.parse(widget.url);
+      final uri = Uri.parse(toEdgeMediaUrl(widget.url));
       final controller = VideoPlayerController.networkUrl(uri);
       _controller = controller;
 
@@ -461,7 +462,7 @@ class _HeroImage extends StatelessWidget {
     // Disk-cached so lesson artwork survives restarts and offline opens
     // (previously a bare Image.network that re-downloaded every visit).
     return CachedNetworkImage(
-      imageUrl: url,
+      imageUrl: toEdgeMediaUrl(url),
       cacheManager: olitunImageCacheManager,
       width: double.infinity,
       height: double.infinity,

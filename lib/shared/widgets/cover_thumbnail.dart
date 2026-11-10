@@ -5,6 +5,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/media/olitun_image_cache.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/media/edge_media_url.dart';
 
 class CoverThumbnail extends StatefulWidget {
   final ContentMedia? media;
@@ -100,7 +101,9 @@ class _CoverThumbnailState extends State<CoverThumbnail> {
       return;
     }
 
-    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    final controller = VideoPlayerController.networkUrl(
+      Uri.parse(toEdgeMediaUrl(url)),
+    );
     _videoController = controller;
 
     controller
@@ -154,7 +157,7 @@ class _CoverThumbnailState extends State<CoverThumbnail> {
       // Cached + decode-capped: CMS covers are often multi-megapixel;
       // decoding them full-res per card is wasted memory and jank.
       content = CachedNetworkImage(
-        imageUrl: media.url,
+        imageUrl: toEdgeMediaUrl(media.url),
         cacheManager: olitunImageCacheManager,
         fit: widget.fit,
         memCacheWidth: 800,

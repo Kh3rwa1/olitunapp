@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../media/edge_media_url.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
@@ -80,7 +81,10 @@ class DefaultAudioCacheManager implements AudioCacheManager {
       _customCacheManager ?? olitunAudioCacheManager;
 
   @override
-  Future<Uri> getPlayableUri(String url) async {
+  Future<Uri> getPlayableUri(String rawUrl) async {
+    // Appwrite Storage is read-only (402); the same files live in R2 behind
+    // the Worker, so every public Appwrite URL is served from the edge.
+    final url = toEdgeMediaUrl(rawUrl);
     if (url.trim().isEmpty) return Uri.parse(url);
 
     // Already local or asset

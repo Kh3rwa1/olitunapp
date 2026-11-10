@@ -1,8 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/notifications/notification_service.dart';
+import 'package:itun/core/notifications/reminder_scheduler.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUpAll(() {
+    tzdata.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+  });
+  _schedulerHorizonTests();
   group('ReminderCopy', () {
     test('evening copy never mentions a streak when there is none', () {
       final copy = ReminderCopy.evening(ReminderContext.empty);
@@ -203,6 +211,46 @@ void main() {
       expect(a.copyWith(practicedToday: true).practicedToday, isTrue);
       expect(a.copyWith(streak: 5).streak, 5);
       expect(a.toString(), contains('streak: 2'));
+    });
+  });
+}
+
+void _schedulerHorizonTests() {
+  group('ReminderScheduler.dailyFireTimes', () {
+    const slot = ReminderSlot(
+      id: ReminderIds.evening,
+      hour: 20,
+      minute: 0,
+      title: 't',
+      body: 'b',
+      payload: 'daily',
+    );
+
+    test('starts today when the time is still ahead', () {
+      final now = tz.TZDateTime(tz.local, 2026, 11, 10, 7, 49);
+      final times = ReminderScheduler.dailyFireTimes(slot, now);
+      expect(times.length, ReminderIds.dailyHorizonDays);
+      expect(times.first, tz.TZDateTime(tz.local, 2026, 11, 10, 20));
+      expect(times[1], tz.TZDateTime(tz.local, 2026, 11, 11, 20));
+    });
+
+    test('skips today after practice (startFrom tomorrow)', () {
+      final now = tz.TZDateTime(tz.local, 2026, 11, 10, 7, 49);
+      final times = ReminderScheduler.dailyFireTimes(
+        slot,
+        now,
+        startFrom: now.add(const Duration(days: 1)),
+      );
+      expect(times.first, tz.TZDateTime(tz.local, 2026, 11, 11, 20));
+      expect(times.every((t) => t.day != 10 || t.month != 11), isTrue);
+    });
+
+    test('ids are unique per slot and day and all are cancellable', () {
+      final ids = ReminderIds.dailyIds(ReminderIds.evening);
+      expect(ids, [1010, 1011, 1012, 1013, 1014, 1015, 1016]);
+      expect(ReminderIds.all.toSet().length, ReminderIds.all.length);
+      expect(ReminderIds.all, containsAll(ids));
+      expect(ReminderIds.all, containsAll([101, 105, 106, 107]));
     });
   });
 }

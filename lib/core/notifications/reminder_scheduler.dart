@@ -17,7 +17,20 @@ class ReminderIds {
   static const int lapseDay7 = 106;
   static const int lapseDay14 = 107;
 
-  static const List<int> all = [
+  /// Daily slots are armed as dated one-shots, one per day for the next
+  /// [dailyHorizonDays] days: `slotId * 10 + dayOffset`. The plugin's
+  /// time-matching repeat always fires at the next matching time of day, so
+  /// "start tomorrow" (after today's practice) was impossible with it.
+  static const int dailyHorizonDays = 7;
+
+  static const List<int> dailySlots = [evening, morning, afternoon, night];
+
+  static List<int> dailyIds(int slotId) =>
+      List.generate(dailyHorizonDays, (d) => slotId * 10 + d);
+
+  /// Every id this app may have scheduled, including the legacy repeating
+  /// ids 101-104 so an upgrade cancels an old install's alarms.
+  static final List<int> all = [
     evening,
     morning,
     afternoon,
@@ -25,6 +38,7 @@ class ReminderIds {
     lapseDay3,
     lapseDay7,
     lapseDay14,
+    for (final id in dailySlots) ...dailyIds(id),
   ];
 
   /// Days-without-practice for each lapse one-shot.
@@ -153,8 +167,8 @@ class ReminderScheduler {
     }
   }
 
-  /// Cancels everything, then arms [slots] (repeating daily, from today or
-  /// from [startFrom]) plus the lapse series counted from [now].
+  /// Cancels everything, then arms [slots] (dated daily one-shots, from today
+  /// or from [startFrom]) plus the lapse series counted from [now].
   Future<void> arm({
     required List<ReminderSlot> slots,
     required tz.TZDateTime now,
@@ -162,14 +176,20 @@ class ReminderScheduler {
   }) async {
     await cancelAll();
     for (final slot in slots) {
-      await scheduleSlot(slot, startFrom: startFrom);
+      await scheduleSlot(slot, startFrom: startFrom, now: now);
     }
     await scheduleLapseSeries(now);
   }
 
-  /// Arms one repeating slot.
-  Future<void> scheduleSlot(ReminderSlot slot, {tz.TZDateTime? startFrom}) {
-    final when = startFrom != null
+  /// The dated fire times for [slot]: one per day for the next
+  /// [ReminderIds.dailyHorizonDays] days, starting today if the time is
+  /// still ahead, or from [startFrom] (tomorrow after today's practice).
+  static List<tz.TZDateTime> dailyFireTimes(
+    ReminderSlot slot,
+    tz.TZDateTime now, {
+    tz.TZDateTime? startFrom,
+  }) {
+    final first = startFrom != null
         ? tz.TZDateTime(
             tz.local,
             startFrom.year,
@@ -178,17 +198,38 @@ class ReminderScheduler {
             slot.hour,
             slot.minute,
           )
-        : nextInstanceOfTime(slot.hour, slot.minute);
-    return _plugin.zonedSchedule(
-      id: slot.id,
-      title: slot.title,
-      body: slot.body,
-      payload: slot.payload,
-      scheduledDate: when,
-      notificationDetails: _details,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+        : nextInstanceOfTime(slot.hour, slot.minute, now);
+    return List.generate(
+      ReminderIds.dailyHorizonDays,
+      (d) => first.add(Duration(days: d)),
     );
+  }
+
+  /// Arms one daily slot as dated one-shots (see [ReminderIds.dailyIds]).
+  /// Re-armed on every launch and every practice, so the horizon is only a
+  /// safety net for a learner who stops opening the app.
+  Future<void> scheduleSlot(
+    ReminderSlot slot, {
+    tz.TZDateTime? startFrom,
+    tz.TZDateTime? now,
+  }) async {
+    final times = dailyFireTimes(
+      slot,
+      now ?? tz.TZDateTime.now(tz.local),
+      startFrom: startFrom,
+    );
+    final ids = ReminderIds.dailyIds(slot.id);
+    for (var i = 0; i < times.length; i++) {
+      await _plugin.zonedSchedule(
+        id: ids[i],
+        title: slot.title,
+        body: slot.body,
+        payload: slot.payload,
+        scheduledDate: times[i],
+        notificationDetails: _details,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+    }
   }
 
   /// One-shots at 3, 7 and 14 days after [from]. Re-armed on every

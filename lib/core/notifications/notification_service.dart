@@ -47,7 +47,7 @@ class NotificationService {
   static const int lapseDay7NotificationId = ReminderIds.lapseDay7;
   static const int lapseDay14NotificationId = ReminderIds.lapseDay14;
 
-  static const List<int> allReminderNotificationIds = ReminderIds.all;
+  static final List<int> allReminderNotificationIds = ReminderIds.all;
 
   static const String reminderChannelId = 'com.olitun.app.channel.reminders';
   static const String reminderChannelName = 'Daily Study Reminders';

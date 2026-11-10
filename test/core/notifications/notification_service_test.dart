@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/notifications/notification_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -15,10 +16,13 @@ void main() {
       expect(NotificationService.afternoonReminderNotificationId, equals(103));
       expect(NotificationService.nightStreakSaverNotificationId, equals(104));
       expect(NotificationService.inactivityReminderNotificationId, equals(105));
+      expect(NotificationService.lapseDay7NotificationId, equals(106));
+      expect(NotificationService.lapseDay14NotificationId, equals(107));
       expect(
         NotificationService.allReminderNotificationIds,
-        containsAll([101, 102, 103, 104, 105]),
+        containsAll([101, 102, 103, 104, 105, 106, 107]),
       );
+      expect(ReminderIds.lapseDays, {105: 3, 106: 7, 107: 14});
       expect(
         NotificationService.reminderChannelId,
         equals('com.olitun.app.channel.reminders'),
@@ -111,7 +115,51 @@ void main() {
         expect(await service.requestPermission(), isFalse);
         expect(await service.areNotificationsEnabled(), isFalse);
         expect(await service.showInstantTestNotification(), isFalse);
+        await service.scheduleAllReminders(
+          frequency: NotificationFrequency.high,
+          context: const ReminderContext(streak: 3, practicedToday: true),
+        );
+        await service.suppressTodayReminderIfPracticed(
+          context: const ReminderContext(dueReviews: 2),
+        );
+        await service.syncEveningReminderWithReview(dueCount: 2, minutes: 3);
       },
     );
+
+    test('requestPermissionIfEligible never prompts before practice', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final granted = await NotificationService.instance
+          .requestPermissionIfEligible(hasPracticed: false, prefs: prefs);
+      expect(granted, isFalse);
+      expect(
+        prefs.getBool(NotificationService.permissionPromptedPrefKey),
+        isNull,
+      );
+    });
+
+    test('requestPermissionIfEligible prompts once after practice', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final service = NotificationService.instance;
+      await service.requestPermissionIfEligible(
+        hasPracticed: true,
+        prefs: prefs,
+      );
+      expect(
+        prefs.getBool(NotificationService.permissionPromptedPrefKey),
+        isTrue,
+      );
+      // No platform in tests → recorded as not granted.
+      expect(prefs.getBool('notification_permission_granted'), isFalse);
+      // Second call is a no-op.
+      expect(
+        await service.requestPermissionIfEligible(
+          hasPracticed: true,
+          prefs: prefs,
+        ),
+        isFalse,
+      );
+    });
   });
 }

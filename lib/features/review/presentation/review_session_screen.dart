@@ -541,6 +541,7 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
                 }
               }),
               onSubmit: _submitTyping,
+              showSubmit: false,
             )
           else
             ReviewOptionsArea(
@@ -558,6 +559,12 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
     return Column(
       children: [
         Expanded(child: scroll),
+        if (!_answered && card.kind.isTyping)
+          ReviewCheckBar(
+            enabled: _typed.trim().isNotEmpty,
+            isDark: isDark,
+            onSubmit: _submitTyping,
+          ),
         if (_answered)
           ReviewActionBar(
             card: card,

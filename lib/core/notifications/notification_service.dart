@@ -379,6 +379,7 @@ class NotificationService {
         slots: slots,
         now: now,
         startFrom: fromTomorrow ? now.add(const Duration(days: 1)) : null,
+        lastPracticeAt: context.lastPracticeAt,
       );
       AppLogger.debug(
         'NotificationService: $reason armed ${slots.length} daily slot(s) '

@@ -26,10 +26,27 @@ final liveReminderContextProvider = Provider<ReminderContext?>((ref) {
       ref.watch(lessonCompletedTodayProvider) ||
       ref.watch(quizTakenTodayProvider) ||
       ref.watch(bakhedListenedTodayProvider);
+  DateTime? lastPractice;
+  if (practicedToday) {
+    lastPractice = DateTime(now.year, now.month, now.day);
+  } else {
+    final dates = stats.practiceDates
+        .map(DateTime.tryParse)
+        .whereType<DateTime>();
+    for (final d in dates) {
+      if (lastPractice == null || d.isAfter(lastPractice)) lastPractice = d;
+    }
+    final lastActive = DateTime.tryParse(stats.lastActiveDate);
+    if (lastActive != null &&
+        (lastPractice == null || lastActive.isAfter(lastPractice))) {
+      lastPractice = lastActive;
+    }
+  }
   return ReminderContext(
     streak: streak,
     dueReviews: ref.watch(dueReviewCountProvider),
     practicedToday: practicedToday,
+    lastPracticeAt: lastPractice,
   );
 });
 

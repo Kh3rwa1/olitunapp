@@ -173,12 +173,39 @@ class ReminderScheduler {
     required List<ReminderSlot> slots,
     required tz.TZDateTime now,
     tz.TZDateTime? startFrom,
+    DateTime? lastPracticeAt,
   }) async {
     await cancelAll();
     for (final slot in slots) {
       await scheduleSlot(slot, startFrom: startFrom, now: now);
     }
-    await scheduleLapseSeries(now);
+    await scheduleLapseSeries(now, lastPracticeAt: lastPracticeAt);
+  }
+
+  /// Fire times for the lapse series: 3, 7 and 14 days after the last
+  /// practice (or after [now] for a learner who never practised), keeping
+  /// only the ones still ahead. Re-arming on launch therefore never moves
+  /// them; only a new practice does.
+  static Map<int, tz.TZDateTime> lapseFireTimes(
+    tz.TZDateTime now, {
+    DateTime? lastPracticeAt,
+  }) {
+    final anchor = lastPracticeAt == null
+        ? now
+        : tz.TZDateTime(
+            tz.local,
+            lastPracticeAt.year,
+            lastPracticeAt.month,
+            lastPracticeAt.day,
+            now.hour,
+            now.minute,
+          );
+    final result = <int, tz.TZDateTime>{};
+    for (final entry in ReminderIds.lapseDays.entries) {
+      final when = anchor.add(Duration(days: entry.value));
+      if (when.isAfter(now)) result[entry.key] = when;
+    }
+    return result;
   }
 
   /// The dated fire times for [slot]: one per day for the next
@@ -234,15 +261,19 @@ class ReminderScheduler {
 
   /// One-shots at 3, 7 and 14 days after [from]. Re-armed on every
   /// practice, so they only ever fire for a learner who really lapsed.
-  Future<void> scheduleLapseSeries(tz.TZDateTime from) async {
-    for (final entry in ReminderIds.lapseDays.entries) {
-      final copy = ReminderCopy.lapse(entry.value);
+  Future<void> scheduleLapseSeries(
+    tz.TZDateTime now, {
+    DateTime? lastPracticeAt,
+  }) async {
+    final times = lapseFireTimes(now, lastPracticeAt: lastPracticeAt);
+    for (final entry in times.entries) {
+      final copy = ReminderCopy.lapse(ReminderIds.lapseDays[entry.key]!);
       await _plugin.zonedSchedule(
         id: entry.key,
         title: copy.title,
         body: copy.body,
         payload: 'daily',
-        scheduledDate: from.add(Duration(days: entry.value)),
+        scheduledDate: entry.value,
         notificationDetails: _details,
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       );

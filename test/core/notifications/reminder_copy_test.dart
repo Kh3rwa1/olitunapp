@@ -11,6 +11,7 @@ void main() {
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
   });
   _schedulerHorizonTests();
+  _lapseAnchorTests();
   group('ReminderCopy', () {
     test('evening copy never mentions a streak when there is none', () {
       final copy = ReminderCopy.evening(ReminderContext.empty);
@@ -252,5 +253,52 @@ void _schedulerHorizonTests() {
       expect(ReminderIds.all, containsAll(ids));
       expect(ReminderIds.all, containsAll([101, 105, 106, 107]));
     });
+  });
+}
+
+void _lapseAnchorTests() {
+  group('ReminderScheduler.lapseFireTimes', () {
+    final now = tz.TZDateTime(tz.local, 2026, 11, 10, 9);
+
+    test('never practised: counts from now', () {
+      final t = ReminderScheduler.lapseFireTimes(now);
+      expect(t.keys, containsAll([105, 106, 107]));
+      expect(t[105], tz.TZDateTime(tz.local, 2026, 11, 13, 9));
+    });
+
+    test('anchored to the last practice, past dates dropped', () {
+      final t = ReminderScheduler.lapseFireTimes(
+        now,
+        lastPracticeAt: DateTime(2026, 11, 5),
+      );
+      // Day 3 (Nov 8) is already past; day 7 (Nov 12) and 14 (Nov 19) remain.
+      expect(t.containsKey(105), isFalse);
+      expect(t[106], tz.TZDateTime(tz.local, 2026, 11, 12, 9));
+      expect(t[107], tz.TZDateTime(tz.local, 2026, 11, 19, 9));
+    });
+
+    test('relaunching without practice does not move the series', () {
+      final a = ReminderScheduler.lapseFireTimes(
+        now,
+        lastPracticeAt: DateTime(2026, 11, 9),
+      );
+      final b = ReminderScheduler.lapseFireTimes(
+        now.add(const Duration(hours: 6)),
+        lastPracticeAt: DateTime(2026, 11, 9),
+      );
+      expect(a[105]!.day, b[105]!.day);
+    });
+  });
+
+  test('lastPracticeFromPrefs picks the latest practice flag', () async {
+    SharedPreferences.setMockInitialValues({
+      'mission_lesson_completed_date': '2026-11-03',
+      'mission_quiz_taken_date': '2026-11-08',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    expect(ReminderPolicy.lastPracticeFromPrefs(prefs), DateTime(2026, 11, 8));
+    SharedPreferences.setMockInitialValues({});
+    final empty = await SharedPreferences.getInstance();
+    expect(ReminderPolicy.lastPracticeFromPrefs(empty), isNull);
   });
 }

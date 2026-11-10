@@ -151,6 +151,7 @@ Future<void> _startApplication() async {
             minute: minute,
             context: ReminderContext(
               practicedToday: ReminderPolicy.practicedTodayFromPrefs(prefs),
+              lastPracticeAt: ReminderPolicy.lastPracticeFromPrefs(prefs),
             ),
           );
         }

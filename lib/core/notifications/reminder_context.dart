@@ -11,6 +11,7 @@ class ReminderContext {
     this.streak = 0,
     this.dueReviews = 0,
     this.practicedToday = false,
+    this.lastPracticeAt,
   });
 
   /// Nothing known: no streak, no due reviews, not practiced today.
@@ -25,15 +26,22 @@ class ReminderContext {
   /// Whether the learner already practiced today (lesson, quiz or bakhed).
   final bool practicedToday;
 
+  /// Local date of the learner's most recent practice, if any. Lapse
+  /// reminders count from here, not from the current launch, so opening the
+  /// app without practising never pushes them back.
+  final DateTime? lastPracticeAt;
+
   ReminderContext copyWith({
     int? streak,
     int? dueReviews,
     bool? practicedToday,
+    DateTime? lastPracticeAt,
   }) {
     return ReminderContext(
       streak: streak ?? this.streak,
       dueReviews: dueReviews ?? this.dueReviews,
       practicedToday: practicedToday ?? this.practicedToday,
+      lastPracticeAt: lastPracticeAt ?? this.lastPracticeAt,
     );
   }
 
@@ -50,7 +58,7 @@ class ReminderContext {
   @override
   String toString() =>
       'ReminderContext(streak: $streak, dueReviews: $dueReviews, '
-      'practicedToday: $practicedToday)';
+      'practicedToday: $practicedToday, lastPracticeAt: $lastPracticeAt)';
 }
 
 /// Latest known [ReminderContext]. The home layer (which may read feature
@@ -93,6 +101,21 @@ class ReminderPolicy {
       if (prefs.getString(key) == today) return true;
     }
     return false;
+  }
+
+  /// Most recent practice date written by the practice flags (local
+  /// midnight of that UTC date key), or null when the learner never practised.
+  static DateTime? lastPracticeFromPrefs(SharedPreferences prefs) {
+    DateTime? latest;
+    for (final key in practiceDateKeys) {
+      final raw = prefs.getString(key);
+      if (raw == null || raw.length < 10) continue;
+      final parsed = DateTime.tryParse(raw.substring(0, 10));
+      if (parsed == null) continue;
+      final local = DateTime(parsed.year, parsed.month, parsed.day);
+      if (latest == null || local.isAfter(latest)) latest = local;
+    }
+    return latest;
   }
 
   /// Parses a stored frequency name; unknown or missing → [defaultFrequency].

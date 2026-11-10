@@ -2124,6 +2124,9 @@ class AppLocalizationsOr extends AppLocalizations {
   String get dailyBonusBody => 'ଏକ ଛୋଟ ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ ଏବଂ ୫୦ ତାରା ପାଆନ୍ତୁ।';
 
   @override
+  String get watchAd => 'ବିଜ୍ଞାପନ ଦେଖନ୍ତୁ';
+
+  @override
   String get updateRequiredTitle => 'ଜାରି ରଖିବାକୁ Olitun ଅପଡେଟ୍ କରନ୍ତୁ';
 
   @override

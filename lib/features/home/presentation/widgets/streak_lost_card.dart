@@ -12,7 +12,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
-import '../../../practice/daily/presentation/daily_practice_route.dart';
+import '../../../practice/daily/presentation/daily_practice_screen.dart';
 import '../../../profile/presentation/providers/user_stats_provider.dart';
 import '../providers/displayed_streak_provider.dart';
 

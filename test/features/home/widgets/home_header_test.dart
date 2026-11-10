@@ -44,7 +44,7 @@ void main() {
     expect(find.text('Johar, Asha!'), findsOneWidget);
     expect(find.textContaining('GOOD MORNING'), findsOneWidget);
     expect(find.byType(TodayStrip), findsOneWidget);
-    expect(find.text('Start a streak today'), findsOneWidget);
+    expect(find.text('Start a streak'), findsOneWidget);
   });
 
   test('monthName maps and clamps', () {

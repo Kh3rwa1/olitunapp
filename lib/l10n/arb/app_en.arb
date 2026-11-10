@@ -199,8 +199,8 @@
     "couldNotLoadRhymes": "Could not load bakhed",
     "checkConnection": "Check your connection and try again",
     "featured": "FEATURED",
-    "listenNow": "LISTEN NOW",
-    "pause": "PAUSE",
+    "listenNow": "Listen now",
+    "pause": "Pause",
     "getStarted": "Get Started",
     "loading": "Loading...",
     "error": "Error",
@@ -217,7 +217,7 @@
     "streakActiveSubtitle": "Keep learning to grow your flame!",
     "streakIdleSubtitle": "Complete any activity to light your flame!",
     "streakStartLearning": "Start learning",
-    "streakDaysBadge": "{count} DAYS",
+    "streakDaysBadge": "{count, plural, =1{1 day} other{{count} days}}",
     "@streakDaysBadge": {
         "placeholders": {
             "count": {
@@ -1230,12 +1230,13 @@
     "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
     "dailyBonusTitle": "Free bonus stars",
     "dailyBonusBody": "Watch a short ad and earn 50 stars.",
+    "watchAd": "Watch ad",
     "updateRequiredTitle": "Update Olitun to continue",
     "updateRequiredBody": "This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.",
     "updateRequiredButton": "Update on Google Play",
     "updateAvailableBanner": "A new version of Olitun is ready.",
     "updateAvailableAction": "Update",
-    "todayStripStreak": "{count} day streak",
+    "todayStripStreak": "{count}-day streak",
     "@todayStripStreak": {
         "placeholders": {
             "count": {
@@ -1243,7 +1244,7 @@
             }
         }
     },
-    "todayStripStartStreak": "Start a streak today",
+    "todayStripStartStreak": "Start a streak",
     "todayStripGoal": "{minutes} / {goal} min",
     "@todayStripGoal": {
         "placeholders": {

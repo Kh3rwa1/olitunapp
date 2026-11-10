@@ -65,81 +65,6 @@ class CategoryHeroHeader extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Emerald depth orbs
-                  Positioned(
-                    right: -60,
-                    top: -70,
-                    child: Container(
-                      width: 260,
-                      height: 260,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.10),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: 60,
-                    top: 20,
-                    child: Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withValues(alpha: 0.08),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: -60,
-                    bottom: -60,
-                    child: Container(
-                      width: 240,
-                      height: 240,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.06),
-                      ),
-                    ),
-                  ),
-                  // Watermark signature dynamically adapting to active language.
-                  Positioned(
-                    right: isDesktop ? 48 : 16,
-                    bottom: 8,
-                    child: IgnorePointer(
-                      child: () {
-                        final isNotSantali =
-                            manifest != null && manifest!.code != 'sat';
-                        final watermarkText = isNotSantali
-                            ? (manifest!.sampleGlyphs.isNotEmpty
-                                  ? manifest!.sampleGlyphs.take(2).join()
-                                  : (manifest!.nativeName.isNotEmpty
-                                        ? manifest!.nativeName.characters
-                                              .take(2)
-                                              .toString()
-                                        : ''))
-                            : (category.titleOlChiki.isNotEmpty
-                                  ? category.titleOlChiki.characters
-                                        .take(3)
-                                        .toString()
-                                  : 'ᱚᱞ');
-                        final watermarkFont = isNotSantali
-                            ? manifest!.primaryFontFamily
-                            : 'OlChiki';
-
-                        return Text(
-                          watermarkText,
-                          style: TextStyle(
-                            fontFamily: watermarkFont,
-                            fontSize: isDesktop ? 150 : 110,
-                            fontWeight: FontWeight.w900,
-                            height: 1,
-                            color: Colors.white.withValues(alpha: 0.12),
-                          ),
-                        );
-                      }(),
-                    ),
-                  ),
                   // Bottom fade into page canvas
                   Positioned(
                     left: 0,
@@ -295,35 +220,29 @@ class CategoryHeroHeader extends StatelessWidget {
                               ),
                             ],
                             const SizedBox(height: 16),
-                            SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              physics: const BouncingScrollPhysics(),
-                              child: Row(
-                                children: [
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                _buildHeaderBadge(
+                                  icon: Icons.menu_book_rounded,
+                                  label:
+                                      '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                ),
+                                _buildHeaderBadge(
+                                  icon: Icons.stars_rounded,
+                                  label: 'Free Access',
+                                ),
+                                _buildHeaderBadge(
+                                  icon: Icons.cloud_done_rounded,
+                                  label: 'Offline Ready',
+                                ),
+                                if (isDesktop)
                                   _buildHeaderBadge(
-                                    icon: Icons.menu_book_rounded,
-                                    label:
-                                        '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                    icon: Icons.timer_outlined,
+                                    label: '~5 min each',
                                   ),
-                                  const SizedBox(width: 8),
-                                  _buildHeaderBadge(
-                                    icon: Icons.stars_rounded,
-                                    label: 'Free Access',
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _buildHeaderBadge(
-                                    icon: Icons.cloud_done_rounded,
-                                    label: 'Offline Ready',
-                                  ),
-                                  if (isDesktop) ...[
-                                    const SizedBox(width: 8),
-                                    _buildHeaderBadge(
-                                      icon: Icons.timer_outlined,
-                                      label: '~5 min each',
-                                    ),
-                                  ],
-                                ],
-                              ),
+                              ],
                             ),
                           ],
                         ),
@@ -375,18 +294,10 @@ class CategoryHeroHeader extends StatelessWidget {
 
   Widget _buildHeaderBadge({required IconData icon, required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

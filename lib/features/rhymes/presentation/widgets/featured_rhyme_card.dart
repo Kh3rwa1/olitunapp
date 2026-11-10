@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../l10n/generated/app_localizations.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -260,7 +262,11 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                         child: child,
                                       ),
                                   child: Text(
-                                    isPlaying ? 'PAUSE' : 'LISTEN NOW',
+                                    isPlaying
+                                        ? AppLocalizations.of(context)!.pause
+                                        : AppLocalizations.of(
+                                            context,
+                                          )!.listenNow,
                                     key: ValueKey(isPlaying),
                                   ),
                                 ),

@@ -8,6 +8,7 @@ import '../../../../shared/models/catalog/category_entity.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import 'home_tool_tile.dart';
 
 // ═══════════════════════════════════════════════════════════
 // BENTO CONTENT GRID — AI Translate + Category cards
@@ -32,118 +33,37 @@ class HomeContentGrid extends StatelessWidget {
     [AppColors.accentPurple, AppColors.accentPurple],
   ];
 
-  Widget _buildAITranslateCard(BuildContext context) {
+  /// Translate + AI Voice as two quiet tool tiles (same destinations as the
+  /// old gradient banners).
+  Widget _buildToolsRow(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AnimatedBentoChild(
       index: 6,
-      child: PressableScale(
-        onTap: () => context.push('/translate'),
-        child: BentoCell(
-          gradient: const LinearGradient(
-            colors: [AppColors.accentPurpleDark, AppColors.indigoVivid],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.violetGlow,
-              blurRadius: 28,
-              offset: Offset(0, 14),
-              spreadRadius: -12,
+      // IntrinsicHeight: a stretched Row needs a bounded height inside the
+      // scrolling Column, and both tiles should match each other's height.
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: HomeToolTile(
+                icon: Icons.translate_rounded,
+                title: l10n.instantTranslate,
+                subtitle: l10n.anyLanguageToOlChiki,
+                accent: AppColors.indigoVivid,
+                onTap: () => context.push('/translate'),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: HomeToolTile(
+                icon: Icons.mic_rounded,
+                title: l10n.aiVoiceTitle,
+                subtitle: l10n.aiVoicePromoSubtitle,
+                onTap: () => context.push('/voice'),
+              ),
             ),
           ],
-          padding: const EdgeInsets.all(20),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -10,
-                bottom: -18,
-                child: IgnorePointer(
-                  child: Text(
-                    'ᱚ',
-                    style: TextStyle(
-                      fontFamily: 'OlChiki',
-                      fontSize: 92,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                      color: Colors.white.withValues(alpha: 0.10),
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(11),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.25),
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.translate_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          AppLocalizations.of(context)!.instantTranslate,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                            letterSpacing: -0.2,
-                            height: 1.1,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          AppLocalizations.of(context)!.anyLanguageToOlChiki,
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.78),
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context)!.aiBadge,
-                      style: const TextStyle(
-                        color: AppColors.indigoVivid,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
         ),
       ),
     );
@@ -176,7 +96,7 @@ class HomeContentGrid extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(flex: 2, child: _buildAITranslateCard(context)),
+                Expanded(flex: 2, child: _buildToolsRow(context)),
                 ...firstRowCats.map(
                   (card) => Expanded(
                     child: Padding(
@@ -197,7 +117,7 @@ class HomeContentGrid extends StatelessWidget {
     } else {
       return Column(
         children: [
-          _buildAITranslateCard(context),
+          _buildToolsRow(context),
           const SizedBox(height: gap),
           _buildCategoryRows(catCards, 2, gap),
         ],
@@ -210,19 +130,16 @@ class HomeContentGrid extends StatelessWidget {
 
     for (var i = 0; i < cards.length; i += cols) {
       final rowItems = cards.skip(i).take(cols).toList();
+      // A lone last tile spans the row instead of leaving an empty half.
       rows.add(
         SizedBox(
           height: 140,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              for (var j = 0; j < cols; j++) ...[
+              for (var j = 0; j < rowItems.length; j++) ...[
                 if (j > 0) SizedBox(width: gap),
-                Expanded(
-                  child: j < rowItems.length
-                      ? rowItems[j]
-                      : const SizedBox.shrink(),
-                ),
+                Expanded(child: rowItems[j]),
               ],
             ],
           ),
@@ -298,7 +215,7 @@ class _BentoCategoryCard extends ConsumerWidget {
       },
       child: BentoCell(
         padding: const EdgeInsets.all(18),
-        borderRadius: 24,
+        borderRadius: 20,
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.08)
@@ -322,16 +239,10 @@ class _BentoCategoryCard extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(11),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        gradientColors[0].withValues(alpha: 0.16),
-                        gradientColors[0].withValues(alpha: 0.07),
-                      ],
+                    color: gradientColors[0].withValues(
+                      alpha: isDark ? 0.22 : 0.12,
                     ),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: gradientColors[0].withValues(alpha: 0.18),
-                    ),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _getIcon(),
@@ -342,12 +253,6 @@ class _BentoCategoryCard extends ConsumerWidget {
                         : gradientColors[0],
                     size: 21,
                   ),
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_outward_rounded,
-                  size: 16,
-                  color: isDark ? Colors.white24 : AppColors.webSlateFaint,
                 ),
               ],
             ),

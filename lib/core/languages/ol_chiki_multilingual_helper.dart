@@ -22,7 +22,7 @@ class LocalizedItemDisplay {
   /// Hero title shown at the top (strictly the translated Meaning in the user's language).
   final String title;
 
-  /// Action button label (e.g. "শুনুন" / "सुनें" / "ଶୁଣନ୍ତୁ" / "LISTEN").
+  /// Action button label (e.g. "শুনুন" / "सुनें" / "ଶୁଣନ୍ତୁ" / "Listen").
   final String ctaText;
 
   const LocalizedItemDisplay({
@@ -385,7 +385,7 @@ class OlChikiMultilingualHelper {
         'hi' => 'सुनें',
         'or' => 'ଶୁଣନ୍ତୁ',
         'sat' => 'ᱟᱸᱡᱚᱢ',
-        _ => 'LISTEN',
+        _ => 'Listen',
       };
 
       return LocalizedItemDisplay(
@@ -531,7 +531,7 @@ class OlChikiMultilingualHelper {
         break;
       case 'en':
       default:
-        ctaText = 'LISTEN';
+        ctaText = 'Listen';
         break;
     }
 

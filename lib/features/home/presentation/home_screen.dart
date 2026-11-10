@@ -21,11 +21,11 @@ import '../domain/continue_lesson_logic.dart';
 import 'widgets/next_best_action_card.dart';
 import '../../review/presentation/today_review_card.dart';
 import 'widgets/home_content_grid.dart';
+import 'widgets/home_tool_tile.dart';
+import '../../../shared/widgets/eyebrow.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
 import 'widgets/learning_path_card.dart';
-import 'widgets/santali_voice_promo_card.dart';
-import 'widgets/ai_studio_promo_card.dart';
 import '../../review/data/review_store_notifier.dart';
 import 'widgets/rewarded_bonus_card.dart';
 import 'widgets/home_header.dart';
@@ -197,7 +197,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         // (3) TODAY'S REVIEW — appears only after user left a lesson or couldn't complete
         if (showTodayReview) ...[
-          RepaintBoundary(child: TodayReviewCard(nextLessonId: nextLesson?.id)),
+          RepaintBoundary(
+            child: TodayReviewCard(
+              nextLessonId: nextLesson?.id,
+              compact: nextLesson != null,
+            ),
+          ),
           const SizedBox(height: 16),
         ],
 
@@ -296,19 +301,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Flexible(
-                  child: Text(
-                    l10n.homeDiscover,
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.2,
-                      color: isDark ? AppColors.primary : AppColors.primaryDark,
-                    ),
-                  ),
-                ),
+                Flexible(child: Eyebrow(l10n.homeDiscover)),
                 // The grid scrolls vertically on phones, so a "SWIPE" hint
                 // there was misleading; only desktop shows an explore hint.
                 if (isDesktop)
@@ -357,13 +350,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: NativeAdWidget.medium(placement: 'home_native_bottom'),
             ),
             const SizedBox(height: 20),
-            // Santali AI Voice studio promo — bottom of home, the viral
-            // surface. Opens the Bodhan-powered TTS studio (/voice).
-            const RepaintBoundary(child: SantaliVoicePromoCard()),
-            const SizedBox(height: 16),
-            // Santali AI Studio promo — translate / transcribe / scan tools
-            // (Sarvam-powered, paid allowance with consent). Opens /studio.
-            const RepaintBoundary(child: AiStudioPromoCard()),
+            // Santali AI Studio (translate / transcribe / scan) as a quiet
+            // tool tile; AI Voice moved up next to Translate.
+            RepaintBoundary(
+              child: HomeToolTile(
+                icon: Icons.graphic_eq_rounded,
+                title: l10n.aiStudioTitle,
+                subtitle: l10n.aiStudioPromoSubtitle,
+                accent: AppColors.emeraldTeal,
+                onTap: () => context.push('/studio'),
+              ),
+            ),
           ],
         ),
 

@@ -2116,6 +2116,9 @@ class AppLocalizationsSat extends AppLocalizations {
   String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
 
   @override
+  String get watchAd => 'ᱵᱤᱡᱽᱧᱟᱯᱚᱱ ᱧᱮᱞ ᱢᱮ';
+
+  @override
   String get updateRequiredTitle => 'ᱞᱟᱦᱟ ᱥᱮᱱ ᱞᱟᱹᱜᱤᱫ Olitun ᱟᱯᱰᱮᱴ ᱢᱮ';
 
   @override

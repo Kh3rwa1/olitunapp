@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 
 import '../../../review/presentation/review_session_screen.dart';
 
+/// Route of the daily practice session (registered in learning_routes.dart).
+const String dailyPracticeRoute = '/practice/daily';
+
 class DailyPracticeScreen extends StatelessWidget {
   const DailyPracticeScreen({super.key});
 

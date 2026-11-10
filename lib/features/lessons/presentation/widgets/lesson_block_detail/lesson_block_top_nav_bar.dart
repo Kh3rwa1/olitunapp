@@ -27,16 +27,15 @@ class LessonBlockFloatingButton extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.25),
+            color: Colors.black.withValues(alpha: 0.18),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: IconButton(
-            icon: Icon(icon, color: Colors.white, size: 24),
+            icon: Icon(icon, color: Colors.white, size: 22),
             tooltip: tooltip,
             onPressed: onPressed,
-            padding: const EdgeInsets.all(10),
-            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.all(11),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           ),
         ),
       ),

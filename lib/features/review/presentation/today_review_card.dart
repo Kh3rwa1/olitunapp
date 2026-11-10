@@ -12,13 +12,18 @@ import 'package:go_router/go_router.dart';
 import '../../../core/analytics/analytics_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/eyebrow.dart';
 import '../data/review_store_notifier.dart';
 import '../domain/memory_scheduler.dart';
 
 class TodayReviewCard extends ConsumerWidget {
   final String? nextLessonId;
 
-  const TodayReviewCard({super.key, this.nextLessonId});
+  /// One-line variant used when another hero action is on screen, so Home
+  /// never stacks two full-height cards.
+  final bool compact;
+
+  const TodayReviewCard({super.key, this.nextLessonId, this.compact = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,16 +40,37 @@ class TodayReviewCard extends ConsumerWidget {
 
     final minutes = MemoryScheduler.estimateMinutes(due);
 
+    void start() {
+      // Funnel denominator for "returned because they had due
+      // reviews" (numerator: review_started). Never blocks nav.
+      // ignore: discarded_futures
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.todayReviewTapped,
+            source: 'today_review_card',
+            metadata: {'dueCount': due, 'minutes': minutes},
+          );
+      context.push('/review');
+    }
+
+    if (compact) {
+      return _CompactReviewRow(
+        title: due == 1 ? l10n.reviewDueOne : l10n.reviewDueOther(due),
+        subtitle: l10n.reviewDueSubtitle(minutes),
+        cta: l10n.reviewStart,
+        isDark: isDark,
+        onTap: start,
+      );
+    }
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         color: isDark ? AppColors.quizDarkCard : Colors.white,
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.22),
-          width: 1.5,
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
         boxShadow: AppColors.softShadow,
       ),
       child: Column(
@@ -52,25 +78,7 @@ class TodayReviewCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 11,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  l10n.reviewToday,
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.4,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
+              Eyebrow(l10n.reviewToday, color: AppColors.emeraldDeep),
               const Spacer(),
               if (retained > 0)
                 Text(
@@ -83,11 +91,11 @@ class TodayReviewCard extends ConsumerWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(
             due == 1 ? l10n.reviewDueOne : l10n.reviewDueOther(due),
             style: TextStyle(
-              fontSize: 30,
+              fontSize: 26,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.8,
               height: 1.05,
@@ -103,24 +111,12 @@ class TodayReviewCard extends ConsumerWidget {
               color: isDark ? Colors.white60 : AppColors.webSlate,
             ),
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: () {
-                // Funnel denominator for "returned because they had due
-                // reviews" (numerator: review_started). Never blocks nav.
-                // ignore: discarded_futures
-                ref
-                    .read(learningAnalyticsServiceProvider)
-                    .track(
-                      LearningAnalyticsEvents.todayReviewTapped,
-                      source: 'today_review_card',
-                      metadata: {'dueCount': due, 'minutes': minutes},
-                    );
-                context.push('/review');
-              },
+              onPressed: start,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -146,6 +142,100 @@ class TodayReviewCard extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CompactReviewRow extends StatelessWidget {
+  const _CompactReviewRow({
+    required this.title,
+    required this.subtitle,
+    required this.cta,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final String cta;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: isDark ? AppColors.quizDarkCard : Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(16, 14, 12, 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.16),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.replay_rounded,
+                size: 22,
+                color: isDark ? AppColors.primaryLight : AppColors.emeraldDeep,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : AppColors.webInk,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white60 : AppColors.webSlate,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  cta,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.emeraldInk,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

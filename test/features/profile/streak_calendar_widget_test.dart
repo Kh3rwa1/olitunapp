@@ -63,7 +63,7 @@ void main() {
     expect(find.text('Start Your Streak'), findsOneWidget);
     expect(find.text('Weekly Streak Active'), findsNothing);
     expect(find.text('Start learning'), findsOneWidget);
-    expect(find.text('0 DAYS'), findsOneWidget);
+    expect(find.text('0 days'), findsOneWidget);
   });
 
   testWidgets('active state shows Weekly Streak Active with streak count', (
@@ -76,7 +76,7 @@ void main() {
 
     expect(find.text('Weekly Streak Active'), findsOneWidget);
     expect(find.text('Start Your Streak'), findsNothing);
-    expect(find.text('3 DAYS'), findsOneWidget);
+    expect(find.text('3 days'), findsOneWidget);
     expect(find.text('Start learning'), findsNothing);
   });
 

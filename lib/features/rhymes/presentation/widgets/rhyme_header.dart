@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:itun/core/theme/app_typography.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/providers/providers.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../shared/providers/providers.dart';
+import '../../../../shared/widgets/eyebrow.dart';
 
+/// Bakhed header: plain eyebrow, ink title, one quiet subtitle. The old
+/// shimmering green title, grid paper and floating glyphs competed with the
+/// cover art, which is the one thing this screen should show off.
 class RhymeHeader extends ConsumerWidget {
   const RhymeHeader({super.key, required this.isDark});
 
@@ -18,77 +21,39 @@ class RhymeHeader extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final eyebrow = scriptMode == 'olchiki' ? 'ᱥᱟᱱᱛᱟᱲᱤ' : 'Santali';
     final title = scriptMode == 'olchiki' ? l10n.rhymes : 'Bakhed';
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                      eyebrow,
-                      style: AppTypography.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 3,
-                        color: isDark
-                            ? AppColors.primary
-                            : AppColors.primaryDark.withValues(alpha: 0.6),
-                      ),
-                    )
-                    .animate()
-                    .fadeIn(delay: 100.ms, duration: 600.ms)
-                    .slideY(begin: 0.5)
-                    .then()
-                    .shimmer(
-                      delay: 1.seconds,
-                      duration: 1800.ms,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                Text(
-                      title,
-                      style:
-                          (scriptMode == 'olchiki'
-                                  ? const TextStyle(fontFamily: 'OlChiki')
-                                  : AppTypography.inter())
-                              .copyWith(
-                                fontSize: 48,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: 0,
-                                height: 1,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.primaryDark,
-                              ),
-                    )
-                    .animate()
-                    .fadeIn(delay: 200.ms, duration: 600.ms)
-                    .slideX(begin: -0.15, curve: Curves.easeOutCubic)
-                    .blurXY(begin: 4, end: 0, duration: 500.ms),
-              ],
-            ),
-          ],
+        Eyebrow(
+          eyebrow,
+          uppercase: scriptMode != 'olchiki',
+          color: isDark ? AppColors.primaryLight : AppColors.emeraldDeep,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 8),
         Text(
-              AppLocalizations.of(context)!.unlockMagic,
-              style: AppTypography.inter(
-                fontSize: 16,
-                color: isDark ? Colors.white54 : Colors.black45,
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 400.ms, duration: 800.ms)
-            .slideY(begin: 0.3, curve: Curves.easeOutCubic)
-            .then(delay: 500.ms)
-            .shimmer(
-              duration: 2.seconds,
-              color: (isDark ? Colors.white : AppColors.primary).withValues(
-                alpha: 0.15,
-              ),
-            ),
+          title,
+          style:
+              (scriptMode == 'olchiki'
+                      ? const TextStyle(fontFamily: 'OlChiki')
+                      : AppTypography.inter())
+                  .copyWith(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
+                    height: 1.1,
+                    color: isDark ? Colors.white : AppColors.webInk,
+                  ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          l10n.unlockMagic,
+          style: AppTypography.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            height: 1.4,
+            color: isDark ? Colors.white60 : AppColors.webSlate,
+          ),
+        ),
       ],
     );
   }

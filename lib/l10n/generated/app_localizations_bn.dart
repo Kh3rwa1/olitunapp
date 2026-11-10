@@ -2116,6 +2116,9 @@ class AppLocalizationsBn extends AppLocalizations {
   String get dailyBonusBody => 'একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।';
 
   @override
+  String get watchAd => 'বিজ্ঞাপন দেখুন';
+
+  @override
   String get updateRequiredTitle => 'চালিয়ে যেতে Olitun আপডেট করুন';
 
   @override

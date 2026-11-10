@@ -42,13 +42,14 @@ class TodayStrip extends ConsumerWidget {
         onTap: onTap ?? () => context.push('/profile'),
         borderRadius: BorderRadius.circular(18),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(
-            color: isDark ? AppColors.quizDarkCard : Colors.white,
+            // Flat surface, no border: the strip is information, not a card
+            // competing with the action cards below it.
+            color: isDark
+                ? AppColors.darkSurfaceElevated
+                : AppColors.lightSurfaceVariant,
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.14),
-            ),
           ),
           child: Row(
             children: [
@@ -56,22 +57,29 @@ class TodayStrip extends ConsumerWidget {
                 child: Icon(
                   Icons.local_fire_department_rounded,
                   color: streakColor,
-                  size: 26,
+                  size: 22,
                 ),
               ),
               const SizedBox(width: 8),
+              // FittedBox(scaleDown) instead of an ellipsis: "1 day str…"
+              // is worse than a slightly smaller label on narrow phones.
               Expanded(
                 child: ExcludeSemantics(
-                  child: Text(
-                    streak > 0
-                        ? l10n.todayStripStreak(streak)
-                        : l10n.todayStripStartStreak,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                      color: ink,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        streak > 0
+                            ? l10n.todayStripStreak(streak)
+                            : l10n.todayStripStartStreak,
+                        maxLines: 1,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: ink,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -85,7 +93,7 @@ class TodayStrip extends ConsumerWidget {
                     isDark: isDark,
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 8),
               ],
               ExcludeSemantics(
                 child: _GoalRing(
@@ -160,13 +168,13 @@ class _GoalRing extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = met ? AppColors.primary : AppColors.emeraldTeal;
+    final color = met ? AppColors.primary : AppColors.emeraldDeep;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: 28,
-          height: 28,
+          width: 26,
+          height: 26,
           child: Stack(
             alignment: Alignment.center,
             children: [

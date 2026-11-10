@@ -51,7 +51,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('4 day streak'), findsOneWidget);
+    expect(find.text('4-day streak'), findsOneWidget);
     expect(find.text('3 / 5 min'), findsOneWidget);
     expect(find.text('2 due'), findsOneWidget);
   });
@@ -80,7 +80,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Start a streak today'), findsOneWidget);
+    expect(find.text('Start a streak'), findsOneWidget);
     expect(find.textContaining('9 day'), findsNothing);
     expect(find.textContaining('due'), findsNothing);
   });

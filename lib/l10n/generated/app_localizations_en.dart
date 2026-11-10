@@ -392,10 +392,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get featured => 'FEATURED';
 
   @override
-  String get listenNow => 'LISTEN NOW';
+  String get listenNow => 'Listen now';
 
   @override
-  String get pause => 'PAUSE';
+  String get pause => 'Pause';
 
   @override
   String get getStarted => 'Get Started';
@@ -447,7 +447,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String streakDaysBadge(int count) {
-    return '$count DAYS';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2133,6 +2139,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
 
   @override
+  String get watchAd => 'Watch ad';
+
+  @override
   String get updateRequiredTitle => 'Update Olitun to continue';
 
   @override
@@ -2150,11 +2159,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String todayStripStreak(int count) {
-    return '$count day streak';
+    return '$count-day streak';
   }
 
   @override
-  String get todayStripStartStreak => 'Start a streak today';
+  String get todayStripStartStreak => 'Start a streak';
 
   @override
   String todayStripGoal(int minutes, int goal) {

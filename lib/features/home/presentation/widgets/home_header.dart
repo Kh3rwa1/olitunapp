@@ -1,6 +1,6 @@
-// Home header: day-part pill, "Johar, {name}", subtitle, and the Today strip
-// (streak · goal ring · due reviews) — the first thing a returning learner
-// sees, so the habit state is visible in the first frame.
+// Home header: a quiet day-part eyebrow, "Johar, {name}", one subtitle and
+// the Today strip (streak · goal ring · due reviews) — the habit state is
+// visible in the first frame without a pill or badge competing with it.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
+import '../../../../shared/widgets/eyebrow.dart';
 import 'today_strip.dart';
 
 class HomeHeader extends ConsumerWidget {
@@ -62,41 +63,13 @@ class HomeHeader extends ConsumerWidget {
       children: [
         Row(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.22),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 7),
-                  Text(
-                    l10n.greetingDayPart(dayPart).toUpperCase(),
-                    style: const TextStyle(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.4,
-                      color: AppColors.emeraldDeep,
-                    ),
-                  ),
-                ],
+            Expanded(
+              child: Eyebrow(
+                l10n.greetingDayPart(dayPart),
+                color: isDark ? AppColors.primaryLight : AppColors.emeraldDeep,
               ),
             ),
-            if (isDesktop) ...[
-              const Spacer(),
+            if (isDesktop)
               Text(
                 '${current.day} ${monthName(current.month)} • ${l10n.homeExploreHint}',
                 style: TextStyle(
@@ -107,33 +80,34 @@ class HomeHeader extends ConsumerWidget {
                       : AppColors.webSlateLight,
                 ),
               ),
-            ],
           ],
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 8),
         Text(
           l10n.joharUser(firstName),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            fontSize: isDesktop ? 40 : 30,
+            fontSize: isDesktop ? 36 : 28,
             fontWeight: FontWeight.w800,
-            letterSpacing: -1.0,
-            height: 1.05,
+            letterSpacing: -0.8,
+            height: 1.1,
             color: isDark ? Colors.white : AppColors.webInk,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Text(
           isNewcomer ? l10n.homeNewcomerSubtitle : l10n.homePickupSubtitle,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
           style: TextStyle(
             fontSize: isDesktop ? 15 : 14,
-            height: 1.5,
+            height: 1.4,
             fontWeight: FontWeight.w500,
             color: isDark ? Colors.white60 : AppColors.webSlate,
           ),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 16),
         const TodayStrip(),
       ],
     );

@@ -73,7 +73,7 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/main/presentation/main_shell/main_shell_screen.dart": 2,
   "lib/features/profile/presentation/progress_screen.dart": 2,
   "lib/features/profile/presentation/widgets/mastery_chart.dart": 2,
-  "lib/features/profile/presentation/widgets/next_milestone_card.dart": 4,
+  "lib/features/profile/presentation/widgets/next_milestone_card.dart": 1,
   "lib/features/profile/presentation/widgets/streak_calendar.dart": 3,
   "lib/features/quiz/presentation/mistake_review_screen.dart": 1,
   "lib/features/rhymes/presentation/widgets/binti_guru_form_sheet.dart": 1,

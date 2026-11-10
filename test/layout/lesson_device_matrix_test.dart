@@ -78,7 +78,7 @@ void main() {
 
       // Both pages (short letter, long wrapping sentence) keep LISTEN usable.
       for (var page = 0; page < 2; page++) {
-        final listen = find.text('LISTEN');
+        final listen = find.text('Listen');
         await tester.ensureVisible(listen);
         await tester.pump();
         expect(listen.hitTestable(), findsOneWidget, reason: 'page $page');

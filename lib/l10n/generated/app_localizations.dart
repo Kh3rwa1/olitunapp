@@ -821,13 +821,13 @@ abstract class AppLocalizations {
   /// No description provided for @listenNow.
   ///
   /// In en, this message translates to:
-  /// **'LISTEN NOW'**
+  /// **'Listen now'**
   String get listenNow;
 
   /// No description provided for @pause.
   ///
   /// In en, this message translates to:
-  /// **'PAUSE'**
+  /// **'Pause'**
   String get pause;
 
   /// No description provided for @getStarted.
@@ -929,7 +929,7 @@ abstract class AppLocalizations {
   /// No description provided for @streakDaysBadge.
   ///
   /// In en, this message translates to:
-  /// **'{count} DAYS'**
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
   String streakDaysBadge(int count);
 
   /// No description provided for @streakFooterActive.
@@ -3842,6 +3842,12 @@ abstract class AppLocalizations {
   /// **'Watch a short ad and earn 50 stars.'**
   String get dailyBonusBody;
 
+  /// No description provided for @watchAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad'**
+  String get watchAd;
+
   /// No description provided for @updateRequiredTitle.
   ///
   /// In en, this message translates to:
@@ -3875,13 +3881,13 @@ abstract class AppLocalizations {
   /// No description provided for @todayStripStreak.
   ///
   /// In en, this message translates to:
-  /// **'{count} day streak'**
+  /// **'{count}-day streak'**
   String todayStripStreak(int count);
 
   /// No description provided for @todayStripStartStreak.
   ///
   /// In en, this message translates to:
-  /// **'Start a streak today'**
+  /// **'Start a streak'**
   String get todayStripStartStreak;
 
   /// No description provided for @todayStripGoal.

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../../../../shared/widgets/eyebrow.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
@@ -62,40 +64,9 @@ class CategoryBrowseAllCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: themeColor.withValues(alpha: isDark ? 0.15 : 0.08),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: themeColor.withValues(
-                          alpha: isDark ? 0.3 : 0.15,
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.grid_view_rounded,
-                          size: 11,
-                          color: themeColor,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          AppLocalizations.of(context)!.browseView,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: themeColor,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Eyebrow(
+                    AppLocalizations.of(context)!.browseView,
+                    color: themeColor,
                   ),
                   const SizedBox(height: 10),
                   Text(

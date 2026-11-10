@@ -6,7 +6,6 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/features/practice/daily/presentation/daily_practice_builder.dart';
 import 'package:itun/features/practice/daily/presentation/daily_practice_outcome.dart';
-import 'package:itun/features/practice/daily/presentation/daily_practice_route.dart';
 import 'package:itun/features/practice/daily/presentation/daily_practice_screen.dart';
 import 'package:itun/features/practice/daily/presentation/providers/daily_practice_providers.dart';
 import 'package:itun/features/review/domain/review_item.dart';

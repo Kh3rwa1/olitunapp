@@ -182,47 +182,18 @@ class NextMilestoneCard extends ConsumerWidget {
               width: double.infinity,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isDark
-                      ? [const Color(0xFF1E2620), const Color(0xFF121212)]
-                      : [const Color(0xFFE8FDF3), Colors.white],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
                   color: isDark
-                      ? AppColors.primary.withValues(alpha: 0.25)
-                      : AppColors.primary.withValues(alpha: 0.15),
-                  width: 1.5,
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : AppColors.webBorder,
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(
-                      alpha: isDark ? 0.05 : 0.03,
-                    ),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: Stack(
                   children: [
-                    // Stylized absolute decor elements (no purple!)
-                    Positioned(
-                      right: -30,
-                      top: -30,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary.withValues(alpha: 0.06),
-                        ),
-                      ),
-                    ),
                     Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -428,14 +399,9 @@ class NextMilestoneCard extends ConsumerWidget {
                                 );
                               },
                               borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: badge.color.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: badge.color.withValues(alpha: 0.2),
-                                  ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4,
                                 ),
                                 child: Row(
                                   children: [

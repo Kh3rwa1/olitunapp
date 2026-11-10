@@ -2122,6 +2122,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dailyBonusBody => 'छोटा विज्ञापन देखें और 50 स्टार पाएं।';
 
   @override
+  String get watchAd => 'विज्ञापन देखें';
+
+  @override
   String get updateRequiredTitle => 'जारी रखने के लिए Olitun अपडेट करें';
 
   @override

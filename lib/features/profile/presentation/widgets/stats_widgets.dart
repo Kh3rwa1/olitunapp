@@ -60,78 +60,75 @@ class StatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 3 stat pills in a row (streak lives in the streak calendar above)
+    final pills = <Widget>[
+      _pill(
+        1,
+        StatData.counter(
+          Icons.star_rounded,
+          stars,
+          'Stars',
+          AppColors.accentGold,
+        ),
+        80,
+      ),
+      _pill(
+        2,
+        StatData.counter(
+          Icons.quiz_rounded,
+          quizzesCompleted,
+          'Quizzes',
+          AppColors.brandBlue,
+        ),
+        160,
+      ),
+      _pill(
+        3,
+        StatData.counter(
+          Icons.timer_rounded,
+          learningTime,
+          'Time',
+          AppColors.primary,
+          suffix: 'm',
+        ),
+        240,
+      ),
+      if (retainedItems != null)
+        _pill(
+          4,
+          StatData.counter(
+            Icons.psychology_rounded,
+            retainedItems!,
+            'Retained',
+            AppColors.emeraldDeep,
+          ),
+          320,
+        ),
+    ];
+    // Three pills share one row; four become a 2x2 grid so no pill sits
+    // alone and centred on its own row.
+    final perRow = pills.length == 4 ? 2 : pills.length;
+    final rows = <Widget>[];
+    for (var i = 0; i < pills.length; i += perRow) {
+      final slice = pills.sublist(i, (i + perRow).clamp(0, pills.length));
+      if (rows.isNotEmpty) rows.add(const SizedBox(height: 10));
+      rows.add(
         Row(
           children: [
-            Expanded(
-              child: AnimatedBentoChild(
-                index: 1,
-                child: StatPill(
-                  data: StatData.counter(
-                    Icons.star_rounded,
-                    stars,
-                    'Stars',
-                    AppColors.accentGold,
-                  ),
-                  isDark: isDark,
-                  delay: 80,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: AnimatedBentoChild(
-                index: 2,
-                child: StatPill(
-                  data: StatData.counter(
-                    Icons.quiz_rounded,
-                    quizzesCompleted,
-                    'Quizzes',
-                    AppColors.brandBlue,
-                  ),
-                  isDark: isDark,
-                  delay: 160,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: AnimatedBentoChild(
-                index: 3,
-                child: StatPill(
-                  data: StatData.counter(
-                    Icons.timer_rounded,
-                    learningTime,
-                    'Time',
-                    AppColors.primary,
-                    suffix: 'm',
-                  ),
-                  isDark: isDark,
-                  delay: 240,
-                ),
-              ),
-            ),
+            for (var j = 0; j < slice.length; j++) ...[
+              if (j > 0) const SizedBox(width: 10),
+              Expanded(child: slice[j]),
+            ],
           ],
         ),
-        if (retainedItems != null) ...[
-          const SizedBox(height: 10),
-          AnimatedBentoChild(
-            index: 4,
-            child: StatPill(
-              data: StatData.counter(
-                Icons.psychology_rounded,
-                retainedItems!,
-                'Retained',
-                AppColors.emeraldDeep,
-              ),
-              isDark: isDark,
-              delay: 320,
-            ),
-          ),
-        ],
-      ],
+      );
+    }
+    return Column(children: rows);
+  }
+
+  Widget _pill(int index, StatData data, int delay) {
+    return AnimatedBentoChild(
+      index: index,
+      child: StatPill(data: data, isDark: isDark, delay: delay),
     );
   }
 }
@@ -355,8 +352,10 @@ class SkillsGrid extends StatelessWidget {
           children: skills.asMap().entries.map((entry) {
             final i = entry.key;
             final skill = entry.value;
+            final isOrphan =
+                i == skills.length - 1 && skills.length % columns == 1;
             return SizedBox(
-              width: itemWidth,
+              width: isOrphan ? width : itemWidth,
               child: SkillProgressCard(
                 label: skill.label,
                 progress: skill.progress,

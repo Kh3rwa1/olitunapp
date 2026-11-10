@@ -167,14 +167,20 @@ class AudioService {
       if (_player.playing) {
         await _player.pause();
       }
-      if (_currentUrl != url) return false;
+      if (_currentUrl != url) {
+        AppLogger.debug('AudioService: play superseded before load ($url)');
+        return false;
+      }
 
       final boundedArtUri = artUri != null
           ? (notificationArtworkUri(artUri.toString()) ?? artUri)
           : null;
 
       final playableUri = await _cacheManager.getPlayableUri(url);
-      if (_currentUrl != url) return false;
+      if (_currentUrl != url) {
+        AppLogger.debug('AudioService: play superseded after resolve ($url)');
+        return false;
+      }
 
       await _player.setAudioSource(
         AudioSource.uri(
@@ -187,13 +193,29 @@ class AudioService {
           ),
         ),
       );
-      if (_currentUrl != url) return false;
+      if (_currentUrl != url) {
+        AppLogger.debug('AudioService: play superseded after load ($url)');
+        return false;
+      }
 
       await _player.setVolume(1.0);
-      await _player.play();
+      // just_audio's play() future only completes when playback ENDS (or is
+      // paused/stopped). Awaiting it made a 45-second Bakhed track block its
+      // caller until the end, so the UI never showed "playing" and then
+      // treated the natural completion as a failure. Start it and return.
+      unawaited(
+        _player.play().catchError((Object e) {
+          if (_currentUrl == url) {
+            AppLogger.warning('AudioService playback error: $e');
+          }
+        }),
+      );
       return true;
     } catch (e) {
-      if (_currentUrl != url) return false;
+      if (_currentUrl != url) {
+        AppLogger.debug('AudioService: play superseded in error path: $e');
+        return false;
+      }
       AppLogger.warning('AudioService playUrl failed: $e');
       if (kIsWeb) {
         try {

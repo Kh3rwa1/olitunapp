@@ -234,7 +234,10 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
       _loading = false;
       if (_disposed) return;
       if (!started || !_ownsPlayer) {
-        AppLogger.debug('RhymeAudio: Error playing $url');
+        AppLogger.debug(
+          'RhymeAudio: could not start $url '
+          '(started=$started, owns=$_ownsPlayer)',
+        );
         await _audio.stop();
         _reset();
         return;

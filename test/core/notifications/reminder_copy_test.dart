@@ -258,17 +258,17 @@ void _schedulerHorizonTests() {
 
 void _lapseAnchorTests() {
   group('ReminderScheduler.lapseFireTimes', () {
-    final now = tz.TZDateTime(tz.local, 2026, 11, 10, 9);
+    tz.TZDateTime now() => tz.TZDateTime(tz.local, 2026, 11, 10, 9);
 
     test('never practised: counts from now', () {
-      final t = ReminderScheduler.lapseFireTimes(now);
+      final t = ReminderScheduler.lapseFireTimes(now());
       expect(t.keys, containsAll([105, 106, 107]));
       expect(t[105], tz.TZDateTime(tz.local, 2026, 11, 13, 9));
     });
 
     test('anchored to the last practice, past dates dropped', () {
       final t = ReminderScheduler.lapseFireTimes(
-        now,
+        now(),
         lastPracticeAt: DateTime(2026, 11, 5),
       );
       // Day 3 (Nov 8) is already past; day 7 (Nov 12) and 14 (Nov 19) remain.
@@ -279,11 +279,11 @@ void _lapseAnchorTests() {
 
     test('relaunching without practice does not move the series', () {
       final a = ReminderScheduler.lapseFireTimes(
-        now,
+        now(),
         lastPracticeAt: DateTime(2026, 11, 9),
       );
       final b = ReminderScheduler.lapseFireTimes(
-        now.add(const Duration(hours: 6)),
+        now().add(const Duration(hours: 6)),
         lastPracticeAt: DateTime(2026, 11, 9),
       );
       expect(a[105]!.day, b[105]!.day);

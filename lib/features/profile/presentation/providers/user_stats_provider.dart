@@ -381,6 +381,33 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     });
   }
 
+  /// Records real learning minutes from a review or practice session so the
+  /// Profile "Time" stat and today's goal agree (the daily log listens to
+  /// [learningMinutesRecordedProvider]).
+  Future<void> addLearningMinutes(int minutes) {
+    return _runSerialized(() async {
+      try {
+        final current = state.valueOrNull;
+        if (current == null || minutes <= 0) return;
+        final prefs = ref.read(sharedPreferencesProvider);
+        final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+        final seq = ProgressOriginIdentity.nextMinuteSeq(
+          prefs,
+          originId,
+          current,
+        );
+        final clamped = minutes.clamp(1, 240);
+        final updated = _withStreakUpdate(
+          current.recordLearningMinutes(clamped, originId: originId, seq: seq),
+        );
+        await updateStats(updated);
+        _publishMinutes(clamped);
+      } catch (e, st) {
+        AppLogger.debug('Failed to add learning minutes: $e\n$st');
+      }
+    });
+  }
+
   /// Marks a lesson as completed and updates:
   /// - completedLessons set
   /// - categoryMastery percentage

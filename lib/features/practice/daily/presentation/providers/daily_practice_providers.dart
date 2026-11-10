@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../shared/providers/learner_content_providers.dart';
-import '../../../../home/presentation/providers/today_activity_provider.dart';
 import '../../../../home/presentation/providers/word_of_day_provider.dart';
 import '../../../../profile/presentation/providers/user_stats_provider.dart';
 import '../../../../quiz/presentation/providers/mistake_provider.dart';
@@ -78,7 +77,9 @@ final dailyPracticeFinisherProvider = Provider<DailyPracticeFinisher>((ref) {
       await ref.read(userStatsProvider.notifier).addStars(outcome.stars);
     }
     if (outcome.minutes > 0) {
-      await ref.read(todayMinutesProvider.notifier).add(outcome.minutes);
+      await ref
+          .read(userStatsProvider.notifier)
+          .addLearningMinutes(outcome.minutes);
     }
     if (outcome.seenIds.isNotEmpty) {
       await ref.read(recentPracticeLogProvider).markSeen(outcome.seenIds);

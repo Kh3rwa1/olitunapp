@@ -28,7 +28,6 @@ import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/content_providers.dart';
 import '../../../shared/providers/learner_content_providers.dart';
 import '../../home/presentation/providers/mission_providers.dart';
-import '../../home/presentation/providers/today_activity_provider.dart';
 import '../../practice/daily/presentation/daily_practice_builder.dart';
 import '../../practice/daily/presentation/daily_practice_outcome.dart';
 import '../../practice/daily/presentation/providers/daily_practice_providers.dart';
@@ -417,7 +416,7 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
         final logged = elapsed.inSeconds <= 0
             ? 1
             : (elapsed.inSeconds / 60).ceil();
-        await ref.read(todayMinutesProvider.notifier).add(logged);
+        await ref.read(userStatsProvider.notifier).addLearningMinutes(logged);
       }
     }
     if (!mounted) return;

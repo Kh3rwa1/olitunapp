@@ -37,6 +37,15 @@ class _RecordingStats extends UserStatsNotifier {
     ),
   );
 
+  int minutesAdded = 0;
+
+  @override
+  Future<void> addLearningMinutes(int minutes) async {
+    minutesAdded += minutes;
+    final notifier = ref.read(learningMinutesRecordedProvider.notifier);
+    notifier.state = (minutes: minutes, seq: notifier.state.seq + 1);
+  }
+
   @override
   Future<void> addStars(int count) async {
     starsAdded += count;
@@ -166,6 +175,7 @@ void main() {
     expect(outcome.stars, dailyPracticeStarsPerCorrect);
     expect(stats.starsAdded, dailyPracticeStarsPerCorrect);
     expect(outcome.minutes, 2);
+    expect(stats.minutesAdded, 2);
     expect(c.read(todayMinutesProvider), 2);
     expect(c.read(recentPracticeLogProvider).ids(), {
       cards[0].itemId,

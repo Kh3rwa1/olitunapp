@@ -392,10 +392,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get featured => 'FEATURED';
 
   @override
-  String get listenNow => 'LISTEN NOW';
+  String get listenNow => 'Listen now';
 
   @override
-  String get pause => 'PAUSE';
+  String get pause => 'Pause';
 
   @override
   String get getStarted => 'Get Started';
@@ -447,7 +447,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String streakDaysBadge(int count) {
-    return '$count DAYS';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -2131,4 +2137,117 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
+
+  @override
+  String get watchAd => 'Watch ad';
+
+  @override
+  String get updateRequiredTitle => 'Update Olitun to continue';
+
+  @override
+  String get updateRequiredBody =>
+      'This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.';
+
+  @override
+  String get updateRequiredButton => 'Update on Google Play';
+
+  @override
+  String get updateAvailableBanner => 'A new version of Olitun is ready.';
+
+  @override
+  String get updateAvailableAction => 'Update';
+
+  @override
+  String todayStripStreak(int count) {
+    return '$count-day streak';
+  }
+
+  @override
+  String get todayStripStartStreak => 'Start a streak';
+
+  @override
+  String todayStripGoal(int minutes, int goal) {
+    return '$minutes / $goal min';
+  }
+
+  @override
+  String get todayStripGoalDone => 'Goal done';
+
+  @override
+  String todayStripReviewsDue(int count) {
+    return '$count due';
+  }
+
+  @override
+  String todayStripSemantics(int streak, int minutes, int goal, int due) {
+    return 'Today: streak $streak days, $minutes of $goal minutes, $due reviews due';
+  }
+
+  @override
+  String streakLostTitle(int count) {
+    return 'Your $count-day streak reset';
+  }
+
+  @override
+  String get streakLostBody =>
+      'No guilt. A 5-minute practice today starts a new one.';
+
+  @override
+  String get streakLostCta => 'Start again';
+
+  @override
+  String get streakLostDismiss => 'Dismiss';
+
+  @override
+  String dailyGoalMetToast(int minutes) {
+    return 'Daily goal met: $minutes min today. Johar!';
+  }
+
+  @override
+  String get wordOfDayEyebrow => 'WORD OF THE DAY';
+
+  @override
+  String get wordOfDayPlay => 'Play pronunciation';
+
+  @override
+  String get wordOfDayPractice => 'Practice this word';
+
+  @override
+  String get dailyPracticeTitle => 'Daily practice';
+
+  @override
+  String get dailyPracticeBadge => 'DAILY PRACTICE';
+
+  @override
+  String get nbaTitleDailyPractice => 'Keep your Ol Chiki sharp';
+
+  @override
+  String get nbaSubDailyPractice =>
+      'A 5-minute mix of review, mistakes and new words.';
+
+  @override
+  String get nbaCtaDailyPractice => 'Start daily practice';
+
+  @override
+  String get nbaSubAllDonePractice =>
+      'You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.';
+
+  @override
+  String get dailyPracticeExit => 'Exit practice';
+
+  @override
+  String get dailyPracticeComplete => 'Practice complete';
+
+  @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'Daily practice $current of $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'Finish practice';
+
+  @override
+  String dailyPracticeSummaryStars(int stars, int minutes) {
+    return '+$stars stars · $minutes min logged';
+  }
 }

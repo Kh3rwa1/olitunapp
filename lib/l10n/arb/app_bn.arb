@@ -1229,5 +1229,110 @@
     "watchAdUnlockLesson": "এখনই আনলক করতে একটি ছোট বিজ্ঞাপন দেখুন",
     "lessonUnlockedByAd": "পাঠ আনলক হয়েছে! উপভোগ করুন।",
     "dailyBonusTitle": "বিনামূল্যে বোনাস তারা",
-    "dailyBonusBody": "একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।"
+    "dailyBonusBody": "একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।",
+    "watchAd": "বিজ্ঞাপন দেখুন",
+    "updateRequiredTitle": "চালিয়ে যেতে Olitun আপডেট করুন",
+    "updateRequiredBody": "এই সংস্করণটি আর সাইন ইন বা সিঙ্ক করতে পারে না। শেখা চালিয়ে যেতে Google Play থেকে সর্বশেষ আপডেট ইনস্টল করুন।",
+    "updateRequiredButton": "Google Play-তে আপডেট করুন",
+    "updateAvailableBanner": "Olitun-এর নতুন সংস্করণ প্রস্তুত।",
+    "updateAvailableAction": "আপডেট করুন",
+    "todayStripStreak": "{count} দিনের স্ট্রিক",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "আজই স্ট্রিক শুরু করুন",
+    "todayStripGoal": "{minutes} / {goal} মিনিট",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "লক্ষ্য পূরণ",
+    "todayStripReviewsDue": "{count} বাকি",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "আজ: {streak} দিনের স্ট্রিক, {goal} মিনিটের মধ্যে {minutes}, {due}টি রিভিউ বাকি",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "আপনার {count} দিনের স্ট্রিক রিসেট হয়েছে",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "কোনো সমস্যা নেই। আজ ৫ মিনিটের অনুশীলন নতুন স্ট্রিক শুরু করে।",
+    "streakLostCta": "আবার শুরু করুন",
+    "streakLostDismiss": "সরান",
+    "dailyGoalMetToast": "দৈনিক লক্ষ্য পূরণ: আজ {minutes} মিনিট। জোহার!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "আজকের শব্দ",
+    "wordOfDayPlay": "উচ্চারণ শুনুন",
+    "wordOfDayPractice": "এই শব্দটি অনুশীলন করুন",
+    "dailyPracticeTitle": "দৈনিক অনুশীলন",
+    "dailyPracticeBadge": "দৈনিক অনুশীলন",
+    "nbaTitleDailyPractice": "আপনার অলচিকি ঝালিয়ে রাখুন",
+    "nbaSubDailyPractice": "রিভিউ, ভুল ও নতুন শব্দের ৫ মিনিটের মিশ্রণ।",
+    "nbaCtaDailyPractice": "দৈনিক অনুশীলন শুরু করুন",
+    "nbaSubAllDonePractice": "আপনি সব পাঠ শেষ করেছেন। দৈনিক অনুশীলন তা তাজা রাখে, আর বাখেড়ও অপেক্ষা করছে।",
+    "dailyPracticeExit": "অনুশীলন থেকে বেরোন",
+    "dailyPracticeComplete": "অনুশীলন সম্পূর্ণ",
+    "dailyPracticeProgress": "দৈনিক অনুশীলন {current} / {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "অনুশীলন শেষ করুন",
+    "dailyPracticeSummaryStars": "+{stars} স্টার · {minutes} মিনিট লেখা হয়েছে",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

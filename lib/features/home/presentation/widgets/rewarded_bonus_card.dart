@@ -52,70 +52,66 @@ class _RewardedBonusCardState extends ConsumerState<RewardedBonusCard> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.accentGold.withValues(alpha: 0.45),
-          width: 1.5,
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : AppColors.webBorder,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              const Icon(
-                Icons.stars_rounded,
-                color: AppColors.accentGold,
-                size: 28,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
+          const Icon(
+            Icons.stars_rounded,
+            color: AppColors.accentGold,
+            size: 22,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
                   l10n.dailyBonusTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 17,
+                    fontSize: 14.5,
                     fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : Colors.black87,
+                    color: isDark ? Colors.white : AppColors.webInk,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            l10n.dailyBonusBody,
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 14,
-              color: isDark ? Colors.white70 : Colors.black54,
+                const SizedBox(height: 2),
+                Text(
+                  l10n.dailyBonusBody,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white60 : AppColors.webSlate,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              key: const ValueKey('home-bonus-stars'),
-              onPressed: _busy ? null : _watch,
-              icon: const Icon(Icons.ondemand_video_rounded),
-              label: Text(l10n.watchAdBonusStars),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.accentGold,
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-                textStyle: const TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
+          const SizedBox(width: 8),
+          TextButton(
+            key: const ValueKey('home-bonus-stars'),
+            onPressed: _busy ? null : _watch,
+            style: TextButton.styleFrom(
+              foregroundColor: isDark
+                  ? AppColors.primaryLight
+                  : AppColors.emeraldDeep,
+              textStyle: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w800,
               ),
             ),
+            child: Text(l10n.watchAd),
           ),
         ],
       ),

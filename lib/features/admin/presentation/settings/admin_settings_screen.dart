@@ -12,6 +12,7 @@ import 'controllers/admin_maintenance_controller.dart';
 import 'controllers/admin_settings_controller.dart';
 import 'sections/admin_admob_section.dart';
 import 'sections/admin_badge_names_section.dart';
+import 'sections/admin_build_gate_section.dart';
 import 'sections/admin_danger_zone_section.dart';
 import 'sections/admin_desktop_behavior_section.dart';
 import 'sections/admin_onboarding_video_section.dart';
@@ -401,6 +402,16 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       subtitle:
                           'Onboarding video is automatically skipped on desktop screens (width > 900px). Users are redirected directly to the welcome or home screen.',
                       child: AdminDesktopBehaviorSection(),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Build Gate Section (min_supported_build / latest_build)
+                    const AdminSettingsSectionCard(
+                      icon: Icons.system_update_rounded,
+                      title: 'Build Gate',
+                      subtitle:
+                          'Stop builds that can no longer sign in or sync. Learners on a build below the minimum see only an "Update Olitun" screen with a Play Store button.',
+                      child: AdminBuildGateSection(),
                     ),
                     const SizedBox(height: 24),
 

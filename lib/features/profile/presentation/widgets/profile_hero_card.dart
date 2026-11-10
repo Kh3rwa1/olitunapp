@@ -226,17 +226,27 @@ class ProfileHeroCard extends ConsumerWidget {
                       children: [
                         Row(
                           children: [
+                            // One line, scaled down before it ellipsizes:
+                            // "Learner" used to wrap letter by letter.
                             Flexible(
-                              child: Text(
-                                userName,
-                                style: AppTypography.inter(
-                                  fontSize: compact ? 22 : 26,
-                                  fontWeight: FontWeight.w800,
-                                  height: 1.15,
-                                  color: isDark ? Colors.white : Colors.black,
+                              child: Align(
+                                alignment: AlignmentDirectional.centerStart,
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    userName,
+                                    style: AppTypography.inter(
+                                      fontSize: compact ? 20 : 24,
+                                      fontWeight: FontWeight.w800,
+                                      height: 1.15,
+                                      letterSpacing: -0.4,
+                                      color: isDark
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                    maxLines: 1,
+                                  ),
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const SizedBox(width: 8),

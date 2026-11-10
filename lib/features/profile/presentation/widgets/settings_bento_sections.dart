@@ -61,7 +61,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDark: isDark,
                       onTap: () => showThemeDialog(context, ref, themeMode),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     SettingTile(
                       icon: Icons.language_rounded,
                       title: AppLocalizations.of(context)!.appLanguage,
@@ -70,9 +70,9 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       onTap: () =>
                           showLanguageDialog(context, ref, appLanguage),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     const TeachingLanguageTile(),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     const LessonAudioModeTile(),
                   ],
                 ),
@@ -92,7 +92,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDark: isDark,
                       onTap: () => showScriptDialog(context, ref, scriptMode),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     const TargetLanguageTile(),
                   ],
                 ),
@@ -123,7 +123,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDark: isDark,
                       onChanged: (value) => toggleSound(ref),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     ToggleTile(
                       icon: Icons.blur_off_rounded,
                       title: 'Reduce Visual Effects',
@@ -133,7 +133,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDark: isDark,
                       onChanged: (value) => toggleReduceVisualEffects(ref),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     Semantics(
                       label:
                           "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
@@ -169,7 +169,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDark: isDark,
                       onTap: () => showSignOutDialog(context, ref),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     SettingTile(
                       icon: Icons.restart_alt_rounded,
                       title: AppLocalizations.of(context)!.resetProgress,
@@ -180,7 +180,7 @@ class SettingsBentoDesktop extends ConsumerWidget {
                       isDestructive: true,
                       onTap: () => showResetDialog(context, ref),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 0),
                     SettingTile(
                       icon: Icons.delete_forever_rounded,
                       title: AppLocalizations.of(context)!.deleteAccount,
@@ -252,7 +252,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onTap: () => showThemeDialog(context, ref, themeMode),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             SettingTile(
               icon: Icons.language_rounded,
               title: AppLocalizations.of(context)!.appLanguage,
@@ -260,9 +260,9 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onTap: () => showLanguageDialog(context, ref, appLanguage),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             const TeachingLanguageTile(),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             const LessonAudioModeTile(),
           ],
         ),
@@ -280,7 +280,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onTap: () => showScriptDialog(context, ref, scriptMode),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             const TargetLanguageTile(),
           ],
         ),
@@ -299,7 +299,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onChanged: (value) => toggleSound(ref),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             ToggleTile(
               icon: Icons.blur_off_rounded,
               title: 'Reduce Visual Effects',
@@ -309,7 +309,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onChanged: (value) => toggleReduceVisualEffects(ref),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             Semantics(
               label:
                   "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
@@ -353,7 +353,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDark: isDark,
               onTap: () => showSignOutDialog(context, ref),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             SettingTile(
               icon: Icons.restart_alt_rounded,
               title: AppLocalizations.of(context)!.resetProgress,
@@ -362,7 +362,7 @@ class SettingsBentoMobile extends ConsumerWidget {
               isDestructive: true,
               onTap: () => showResetDialog(context, ref),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 0),
             SettingTile(
               icon: Icons.delete_forever_rounded,
               title: AppLocalizations.of(context)!.deleteAccount,
@@ -393,7 +393,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
         isDark: isDark,
         onTap: () => context.push('/privacy'),
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 0),
       SettingTile(
         icon: Icons.description_rounded,
         title: l10n.termsOfUse,
@@ -401,7 +401,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
         isDark: isDark,
         onTap: () => context.push('/terms'),
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 0),
       SettingTile(
         icon: Icons.ads_click_rounded,
         title: 'Ad Privacy Choices',
@@ -430,7 +430,7 @@ Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
           }, (_) {});
         },
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 0),
       const DiagnosticsTile(),
     ],
   );

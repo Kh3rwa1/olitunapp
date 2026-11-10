@@ -140,15 +140,19 @@ Future<void> _startApplication() async {
         if (prefs.getBool('notifications_enabled') ?? true) {
           final hour = (prefs.getInt('reminder_hour') ?? 20).clamp(0, 23);
           final minute = (prefs.getInt('reminder_minute') ?? 0).clamp(0, 59);
-          final name = prefs.getString('notification_frequency') ?? 'high';
-          final frequency = NotificationFrequency.values.firstWhere(
-            (value) => value.name == name,
-            orElse: () => NotificationFrequency.high,
-          );
+          // One reminder a day unless the user opted into more; a launch
+          // after today's practice arms from tomorrow. Streak/review copy is
+          // refreshed by reminderSyncProvider once real stats load.
           await service.scheduleAllReminders(
-            frequency: frequency,
+            frequency: ReminderPolicy.parseFrequency(
+              prefs.getString(ReminderPolicy.frequencyPrefKey),
+            ),
             hour: hour,
             minute: minute,
+            context: ReminderContext(
+              practicedToday: ReminderPolicy.practicedTodayFromPrefs(prefs),
+              lastPracticeAt: ReminderPolicy.lastPracticeFromPrefs(prefs),
+            ),
           );
         }
       },

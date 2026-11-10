@@ -226,7 +226,7 @@ void main() {
       expect(display.scriptText, 'ᱵᱟᱵᱟ');
       expect(display.subtitle, 'Baba');
       expect(display.title, 'Father');
-      expect(display.ctaText, 'LISTEN');
+      expect(display.ctaText, 'Listen');
     });
 
     test('hides subtitle when script mode is olchiki', () {

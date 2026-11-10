@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
@@ -28,16 +27,15 @@ class LessonBlockFloatingButton extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.25),
+            color: Colors.black.withValues(alpha: 0.18),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: IconButton(
-            icon: Icon(icon, color: Colors.white, size: 24),
+            icon: Icon(icon, color: Colors.white, size: 22),
             tooltip: tooltip,
             onPressed: onPressed,
-            padding: const EdgeInsets.all(10),
-            constraints: const BoxConstraints(),
+            padding: const EdgeInsets.all(11),
+            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
           ),
         ),
       ),
@@ -115,18 +113,15 @@ class LessonBlockTopNavBar extends ConsumerWidget {
               LessonBlockFloatingButton(
                 icon: backIcon ?? Icons.arrow_back_rounded,
                 tooltip: 'Go back',
+                // Leaving a lesson early is not a completion: no
+                // interstitial here (completion flows show their own).
                 onPressed:
                     onBackPressed ??
-                    () async {
-                      await ref
-                          .read(interstitialAdManagerProvider)
-                          .showIfAllowed(context, 'lesson_complete');
-                      if (context.mounted) {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go(fallbackLocation ?? '/');
-                        }
+                    () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(fallbackLocation ?? '/');
                       }
                     },
               ),

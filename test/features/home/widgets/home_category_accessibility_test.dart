@@ -130,10 +130,11 @@ void main() {
   for (final key in [LogicalKeyboardKey.enter, LogicalKeyboardKey.space]) {
     testWidgets('keyboard ${key.keyLabel}', (tester) async {
       await _pump(tester, 'words');
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pump();
-      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
-      await tester.pump();
+      // Translate and AI Voice tiles come first in the tab order.
+      for (var i = 0; i < 3; i++) {
+        await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+        await tester.pump();
+      }
       await tester.sendKeyEvent(key);
       await tester.pumpAndSettle();
       expect(find.text('opened:words'), findsOneWidget);

@@ -212,15 +212,6 @@ class LessonBlockCardContent extends ConsumerWidget {
                                   ? manifest.primaryFontFamily
                                   : null,
                               height: 1.3,
-                              shadows: [
-                                Shadow(
-                                  color: isDark
-                                      ? Colors.black.withValues(alpha: 0.3)
-                                      : accentColor.withValues(alpha: 0.15),
-                                  offset: const Offset(0, 2),
-                                  blurRadius: 4,
-                                ),
-                              ],
                             ),
                           ),
 

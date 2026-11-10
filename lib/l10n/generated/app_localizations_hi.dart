@@ -2120,4 +2120,117 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get dailyBonusBody => 'छोटा विज्ञापन देखें और 50 स्टार पाएं।';
+
+  @override
+  String get watchAd => 'विज्ञापन देखें';
+
+  @override
+  String get updateRequiredTitle => 'जारी रखने के लिए Olitun अपडेट करें';
+
+  @override
+  String get updateRequiredBody =>
+      'यह संस्करण अब साइन इन या सिंक नहीं कर सकता। सीखते रहने के लिए Google Play से नवीनतम अपडेट इंस्टॉल करें।';
+
+  @override
+  String get updateRequiredButton => 'Google Play पर अपडेट करें';
+
+  @override
+  String get updateAvailableBanner => 'Olitun का नया संस्करण तैयार है।';
+
+  @override
+  String get updateAvailableAction => 'अपडेट करें';
+
+  @override
+  String todayStripStreak(int count) {
+    return '$count दिन की स्ट्रीक';
+  }
+
+  @override
+  String get todayStripStartStreak => 'आज स्ट्रीक शुरू करें';
+
+  @override
+  String todayStripGoal(int minutes, int goal) {
+    return '$minutes / $goal मिनट';
+  }
+
+  @override
+  String get todayStripGoalDone => 'लक्ष्य पूरा';
+
+  @override
+  String todayStripReviewsDue(int count) {
+    return '$count बाकी';
+  }
+
+  @override
+  String todayStripSemantics(int streak, int minutes, int goal, int due) {
+    return 'आज: $streak दिन की स्ट्रीक, $goal में से $minutes मिनट, $due रिव्यू बाकी';
+  }
+
+  @override
+  String streakLostTitle(int count) {
+    return 'आपकी $count दिन की स्ट्रीक रीसेट हो गई';
+  }
+
+  @override
+  String get streakLostBody =>
+      'कोई बात नहीं। आज 5 मिनट का अभ्यास नई स्ट्रीक शुरू करता है।';
+
+  @override
+  String get streakLostCta => 'फिर से शुरू करें';
+
+  @override
+  String get streakLostDismiss => 'हटाएँ';
+
+  @override
+  String dailyGoalMetToast(int minutes) {
+    return 'दैनिक लक्ष्य पूरा: आज $minutes मिनट। जोहार!';
+  }
+
+  @override
+  String get wordOfDayEyebrow => 'आज का शब्द';
+
+  @override
+  String get wordOfDayPlay => 'उच्चारण सुनें';
+
+  @override
+  String get wordOfDayPractice => 'इस शब्द का अभ्यास करें';
+
+  @override
+  String get dailyPracticeTitle => 'दैनिक अभ्यास';
+
+  @override
+  String get dailyPracticeBadge => 'दैनिक अभ्यास';
+
+  @override
+  String get nbaTitleDailyPractice => 'अपनी ओल चिकी तेज़ रखें';
+
+  @override
+  String get nbaSubDailyPractice =>
+      'रिव्यू, गलतियों और नए शब्दों का 5 मिनट का मिश्रण।';
+
+  @override
+  String get nbaCtaDailyPractice => 'दैनिक अभ्यास शुरू करें';
+
+  @override
+  String get nbaSubAllDonePractice =>
+      'आपने हर पाठ पूरा कर लिया। दैनिक अभ्यास इसे ताज़ा रखता है, और बाखेड़ भी इंतज़ार कर रहा है।';
+
+  @override
+  String get dailyPracticeExit => 'अभ्यास से बाहर निकलें';
+
+  @override
+  String get dailyPracticeComplete => 'अभ्यास पूरा';
+
+  @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'दैनिक अभ्यास $current / $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'अभ्यास पूरा करें';
+
+  @override
+  String dailyPracticeSummaryStars(int stars, int minutes) {
+    return '+$stars स्टार · $minutes मिनट दर्ज';
+  }
 }

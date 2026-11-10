@@ -1,10 +1,15 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../payments/purchased_categories_provider.dart';
 import '../config/ad_config.dart';
 import '../logging/app_logger.dart';
+import '../storage/hive_service.dart';
 import 'ad_service.dart';
 
 class AdState extends Equatable {
@@ -180,7 +185,50 @@ class AdStateNotifier extends Notifier<AdState> {
       consent.adsAllowed.removeListener(onEligibilityChanged);
       service.readiness.removeListener(onEligibilityChanged);
     });
-    return AdState(consentAllowsAds: service.canServeAds);
+    // Full-screen caps survive a cold start: a learner who saw an app open
+    // ad five minutes ago must not see another one just because the process
+    // was restarted.
+    _prefs = _readPrefs();
+    return AdState(
+      consentAllowsAds: service.canServeAds,
+      lastInterstitialShownAt: _restoreShownAt(lastInterstitialShownAtKey),
+      lastAppOpenShownAt: _restoreShownAt(lastAppOpenShownAtKey),
+    );
+  }
+
+  /// Prefs keys for the persisted full-screen caps (epoch milliseconds).
+  static const lastInterstitialShownAtKey = 'ads_last_interstitial_shown_ms';
+  static const lastAppOpenShownAtKey = 'ads_last_app_open_shown_ms';
+
+  SharedPreferences? _prefs;
+
+  SharedPreferences? _readPrefs() {
+    try {
+      return ref.read(sharedPreferencesProvider);
+    } catch (_) {
+      // Headless tests and tooling may not provide prefs; caps then live in
+      // memory only, exactly as before.
+      return null;
+    }
+  }
+
+  DateTime? _restoreShownAt(String key) {
+    final ms = _prefs?.getInt(key);
+    if (ms == null || ms <= 0) return null;
+    final shownAt = DateTime.fromMillisecondsSinceEpoch(ms);
+    // A clock that moved backwards would otherwise hide ads for a long time.
+    if (shownAt.isAfter(DateTime.now())) return null;
+    return shownAt;
+  }
+
+  void _persistShownAt(String key, DateTime shownAt) {
+    final prefs = _prefs;
+    if (prefs == null) return;
+    unawaited(
+      prefs.setInt(key, shownAt.millisecondsSinceEpoch).catchError((_) {
+        return false;
+      }),
+    );
   }
 
   void setConsentStatus(ConsentStatus status) {
@@ -221,6 +269,7 @@ class AdStateNotifier extends Notifier<AdState> {
         adImpressionCounts: counts,
         lastInterstitialShownAt: now,
       );
+      _persistShownAt(lastInterstitialShownAtKey, now);
     } else if (adFormat == 'rewarded') {
       state = state.copyWith(
         adImpressionCounts: counts,
@@ -231,6 +280,7 @@ class AdStateNotifier extends Notifier<AdState> {
         adImpressionCounts: counts,
         lastAppOpenShownAt: now,
       );
+      _persistShownAt(lastAppOpenShownAtKey, now);
     } else {
       state = state.copyWith(adImpressionCounts: counts);
     }

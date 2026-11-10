@@ -182,7 +182,7 @@ void main() {
       await tester.pump();
 
       // Find and tap the LISTEN NOW text button
-      final playButtonFinder = find.text('LISTEN NOW');
+      final playButtonFinder = find.text('Listen now');
       expect(playButtonFinder, findsOneWidget);
       await tester.tap(playButtonFinder);
       await tester.pump();

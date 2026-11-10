@@ -163,6 +163,12 @@ class ReviewSummaryView extends StatelessWidget {
   final bool isDark;
   final VoidCallback onDone;
 
+  /// Heading override (daily practice); defaults to "Review complete".
+  final String? title;
+
+  /// Optional line under the score (e.g. stars and minutes logged).
+  final String? extraLine;
+
   const ReviewSummaryView({
     super.key,
     required this.correctCount,
@@ -171,6 +177,8 @@ class ReviewSummaryView extends StatelessWidget {
     required this.starsAwarded,
     required this.isDark,
     required this.onDone,
+    this.title,
+    this.extraLine,
   });
 
   @override
@@ -191,7 +199,7 @@ class ReviewSummaryView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              l10n.reviewComplete,
+              title ?? l10n.reviewComplete,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
@@ -211,6 +219,18 @@ class ReviewSummaryView extends StatelessWidget {
                 color: isDark ? Colors.white60 : AppColors.webSlate,
               ),
             ),
+            if (extraLine != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                extraLine!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
             if (accuracy < 100) ...[
               const SizedBox(height: 8),
               Text(

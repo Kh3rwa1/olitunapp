@@ -234,8 +234,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Tap LISTEN button
-      expect(find.text('LISTEN'), findsOneWidget);
-      await tester.tap(find.text('LISTEN'));
+      expect(find.text('Listen'), findsOneWidget);
+      await tester.tap(find.text('Listen'));
       await tester.pump();
 
       // Verify playSingle was invoked with active languageCode: 'hoc'

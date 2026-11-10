@@ -9,6 +9,7 @@ import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/presentation/mistake_review_screen.dart';
 import '../../features/review/presentation/review_session_screen.dart';
+import '../../features/practice/daily/presentation/daily_practice_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
 import '../../features/ai_studio/presentation/ai_studio_screen.dart';
 import '../../features/voice/presentation/screens/santali_voice_screen.dart';
@@ -33,6 +34,10 @@ List<RouteBase> buildLearningRoutes({
     drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
     drillRoute(path: '/mistakes', child: (_, _) => const MistakeReviewScreen()),
     drillRoute(path: '/review', child: (_, _) => const ReviewSessionScreen()),
+    drillRoute(
+      path: dailyPracticeRoute,
+      child: (_, _) => const DailyPracticeScreen(),
+    ),
     drillRoute(
       path: '/lessons/:categoryId',
       name: RouteNames.lessons,

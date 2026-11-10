@@ -4,9 +4,16 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:shared_preferences/shared_preferences.dart';
 import '../logging/app_logger.dart';
 import 'notification_types.dart';
+import 'reminder_context.dart';
+import 'reminder_scheduler.dart';
 export 'notification_types.dart';
+export 'reminder_context.dart';
+export 'reminder_copy.dart';
+export 'reminder_scheduler.dart'
+    show ReminderIds, ReminderSlot, buildDailySlots;
 
 /// Service responsible for managing local habit and streak reminders.
 /// Operates 100% offline and respects user privacy without transmitting tokens.
@@ -17,24 +24,30 @@ class NotificationService {
   /// Payload that deep-links to Today's Review ('/review').
   static const String reviewNotificationPayload = 'review';
 
+  /// Payload that opens Home (daily habit reminders and the lapse series).
+  static const String dailyNotificationPayload = 'daily';
+
+  /// Payload that opens Daily Practice ('/practice/daily').
+  static const String practiceNotificationPayload = 'practice';
+
+  /// Prefs flag: the one-time permission prompt has been shown.
+  static const String permissionPromptedPrefKey =
+      'notification_permission_prompted_v1';
+
   /// Tap handler installed by the app root (deep link to Today's Review).
   /// Null in tests / when the router isn't mounted.
   // ignore: avoid_setters_without_getters
   static void Function(String? payload)? onNotificationTap;
 
-  static const int streakReminderNotificationId = 101;
-  static const int morningReminderNotificationId = 102;
-  static const int afternoonReminderNotificationId = 103;
-  static const int nightStreakSaverNotificationId = 104;
-  static const int inactivityReminderNotificationId = 105;
+  static const int streakReminderNotificationId = ReminderIds.evening;
+  static const int morningReminderNotificationId = ReminderIds.morning;
+  static const int afternoonReminderNotificationId = ReminderIds.afternoon;
+  static const int nightStreakSaverNotificationId = ReminderIds.night;
+  static const int inactivityReminderNotificationId = ReminderIds.lapseDay3;
+  static const int lapseDay7NotificationId = ReminderIds.lapseDay7;
+  static const int lapseDay14NotificationId = ReminderIds.lapseDay14;
 
-  static const List<int> allReminderNotificationIds = [
-    streakReminderNotificationId,
-    morningReminderNotificationId,
-    afternoonReminderNotificationId,
-    nightStreakSaverNotificationId,
-    inactivityReminderNotificationId,
-  ];
+  static final List<int> allReminderNotificationIds = ReminderIds.all;
 
   static const String reminderChannelId = 'com.olitun.app.channel.reminders';
   static const String reminderChannelName = 'Daily Study Reminders';
@@ -59,6 +72,10 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+  late final ReminderScheduler _scheduler = ReminderScheduler(
+    _plugin,
+    _notificationDetails,
+  );
   bool _isInitialized = false;
 
   /// Whether notification services are initialized and available.
@@ -279,139 +296,98 @@ class NotificationService {
   /// Calculates the next scheduled instance for [hour]:[minute].
   /// If the time has already passed today, schedules for tomorrow at the same time.
   @visibleForTesting
-  tz.TZDateTime nextInstanceOfTime(int hour, int minute, [tz.TZDateTime? now]) {
-    final current = now ?? tz.TZDateTime.now(tz.local);
-    var scheduledDate = tz.TZDateTime(
-      tz.local,
-      current.year,
-      current.month,
-      current.day,
-      hour,
-      minute,
-    );
+  tz.TZDateTime nextInstanceOfTime(
+    int hour,
+    int minute, [
+    tz.TZDateTime? now,
+  ]) => ReminderScheduler.nextInstanceOfTime(hour, minute, now);
 
-    if (scheduledDate.isBefore(current)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-    return scheduledDate;
-  }
-
-  /// Schedules a specific reminder slot at [hour]:[minute].
-  Future<void> _scheduleSlot({
-    required int id,
-    required int hour,
-    required int minute,
-    required String title,
-    required String body,
-    String? payload,
-    tz.TZDateTime? startFrom,
+  /// Prompts for notification permission at a moment of success: only once
+  /// (prefs flag [permissionPromptedPrefKey]) and only after the learner has
+  /// actually practiced, so the system dialog never greets a newcomer.
+  /// Returns whether permission is granted. Settings keeps using
+  /// [requestPermission] directly.
+  Future<bool> requestPermissionIfEligible({
+    required bool hasPracticed,
+    required SharedPreferences prefs,
   }) async {
-    final scheduledDate = startFrom != null
-        ? tz.TZDateTime(
-            tz.local,
-            startFrom.year,
-            startFrom.month,
-            startFrom.day,
-            hour,
-            minute,
-          )
-        : nextInstanceOfTime(hour, minute);
-
-    await _plugin.zonedSchedule(
-      id: id,
-      title: title,
-      body: body,
-      payload: payload,
-      scheduledDate: scheduledDate,
-      notificationDetails: _notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-      matchDateTimeComponents: DateTimeComponents.time,
+    if (kIsWeb || !hasPracticed) return false;
+    if (prefs.getBool(permissionPromptedPrefKey) ?? false) return false;
+    await prefs.setBool(permissionPromptedPrefKey, true);
+    final granted = await requestPermission();
+    await prefs.setBool('notification_permission_granted', granted);
+    AppLogger.debug(
+      'NotificationService: permission prompt after practice → $granted',
     );
+    return granted;
   }
 
-  /// Schedules an inactivity reminder after 3 days of no learning.
-  Future<void> _scheduleInactivityReminder([tz.TZDateTime? from]) async {
-    final baseTime = from ?? tz.TZDateTime.now(tz.local);
-    final scheduledDate = baseTime.add(const Duration(days: 3));
-
-    await _plugin.zonedSchedule(
-      id: inactivityReminderNotificationId,
-      title: 'We miss you in Olitun! 🪶',
-      body: 'Your Santali learning journey is waiting. Jump back in today!',
-      scheduledDate: scheduledDate,
-      notificationDetails: _notificationDetails,
-      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-    );
-  }
-
-  /// Schedules all configured habit reminders according to [frequency].
-  /// [hour] and [minute] define the main evening study reminder time.
+  /// Schedules every habit reminder for [frequency] with copy built from
+  /// [context]. When the learner already practiced today the slots start
+  /// tomorrow, so a reopen never re-arms a reminder practice just earned.
   Future<void> scheduleAllReminders({
-    NotificationFrequency frequency = NotificationFrequency.high,
+    NotificationFrequency frequency = ReminderPolicy.defaultFrequency,
     int hour = 20,
     int minute = 0,
+    ReminderContext context = ReminderContext.empty,
+  }) => _arm(
+    frequency: frequency,
+    hour: hour,
+    minute: minute,
+    context: context,
+    fromTomorrow: context.practicedToday,
+    reason: 'schedule',
+  );
+
+  /// Suppresses today's reminders after real practice and re-arms them from
+  /// tomorrow (same slots, honest copy, lapse series counted from now).
+  Future<void> suppressTodayReminderIfPracticed({
+    int hour = 20,
+    int minute = 0,
+    NotificationFrequency frequency = ReminderPolicy.defaultFrequency,
+    ReminderContext context = ReminderContext.empty,
+  }) => _arm(
+    frequency: frequency,
+    hour: hour,
+    minute: minute,
+    context: context.copyWith(practicedToday: true),
+    fromTomorrow: true,
+    reason: 'suppress-today',
+  );
+
+  Future<void> _arm({
+    required NotificationFrequency frequency,
+    required int hour,
+    required int minute,
+    required ReminderContext context,
+    required bool fromTomorrow,
+    required String reason,
   }) async {
     if (kIsWeb) return;
     if (!_isInitialized) {
       await initialize();
     }
-
     try {
-      await cancelAllReminders();
-
-      // 1. Main Study Reminder (User-selected evening time)
-      await _scheduleSlot(
-        id: streakReminderNotificationId,
+      final now = tz.TZDateTime.now(tz.local);
+      final slots = buildDailySlots(
+        frequency: frequency,
         hour: hour,
         minute: minute,
-        title: 'Protect your streak! 🔥',
-        body:
-            'Take 2 minutes to practice Ol Chiki today and keep your streak alive.',
+        context: context,
       );
-
-      // 2. Morning Kickstart (9:00 AM) for Balanced and High frequency
-      if (frequency == NotificationFrequency.balanced ||
-          frequency == NotificationFrequency.high) {
-        await _scheduleSlot(
-          id: morningReminderNotificationId,
-          hour: 9,
-          minute: 0,
-          title: 'Start your morning with Ol Chiki! ☀️',
-          body:
-              'A quick 2-minute lesson starts your day with positive momentum.',
-        );
-      }
-
-      // 3. Afternoon Booster (2:30 PM) and Night Streak Saver (9:45 PM) for High frequency
-      if (frequency == NotificationFrequency.high) {
-        await _scheduleSlot(
-          id: afternoonReminderNotificationId,
-          hour: 14,
-          minute: 30,
-          title: 'Midday Ol Chiki boost! 🎯',
-          body: 'Take a short break and master a new Santali word today.',
-        );
-
-        final nightHour = (hour >= 21 && minute >= 30) ? 22 : 21;
-        final nightMinute = (nightHour == 22) ? 30 : 45;
-        await _scheduleSlot(
-          id: nightStreakSaverNotificationId,
-          hour: nightHour,
-          minute: nightMinute,
-          title: 'Don\'t lose your streak! ⏳',
-          body:
-              'Your streak is waiting! Complete a quick lesson before midnight to save your progress.',
-        );
-      }
-
-      // 4. Inactivity Re-engagement reminder (3 days from now)
-      await _scheduleInactivityReminder();
-
+      await _scheduler.arm(
+        slots: slots,
+        now: now,
+        startFrom: fromTomorrow ? now.add(const Duration(days: 1)) : null,
+        lastPracticeAt: context.lastPracticeAt,
+      );
       AppLogger.debug(
-        'NotificationService: Scheduled ${frequency.remindersPerDay} daily reminders (frequency: ${frequency.name}, main time: $hour:${minute.toString().padLeft(2, '0')})',
+        'NotificationService: $reason armed ${slots.length} daily slot(s) '
+        '(${frequency.name}, main $hour:${minute.toString().padLeft(2, '0')}, '
+        'from ${fromTomorrow ? 'tomorrow' : 'today'}, $context)',
       );
     } catch (e) {
-      AppLogger.debug('NotificationService: scheduleAllReminders error: $e');
+      AppLogger.debug('NotificationService: $reason error: $e');
     }
   }
 
@@ -421,7 +397,7 @@ class NotificationService {
     int minute = 0,
     String? title,
     String? body,
-    NotificationFrequency frequency = NotificationFrequency.high,
+    NotificationFrequency frequency = ReminderPolicy.defaultFrequency,
   }) async {
     await scheduleAllReminders(
       frequency: frequency,
@@ -455,13 +431,15 @@ class NotificationService {
           ? NotificationCopy.reviewStruggle(struggleCount: struggleCount)
           : NotificationCopy.reviewDue(dueCount: dueCount, minutes: minutes);
       await _plugin.cancel(id: streakReminderNotificationId);
-      await _scheduleSlot(
-        id: streakReminderNotificationId,
-        hour: hour,
-        minute: minute,
-        title: title ?? copy.title,
-        body: body ?? copy.body,
-        payload: reviewNotificationPayload,
+      await _scheduler.scheduleSlot(
+        ReminderSlot(
+          id: streakReminderNotificationId,
+          hour: hour,
+          minute: minute,
+          title: title ?? copy.title,
+          body: body ?? copy.body,
+          payload: reviewNotificationPayload,
+        ),
       );
       AppLogger.debug(
         'NotificationService: evening reminder synced with review ($dueCount due).',
@@ -473,90 +451,7 @@ class NotificationService {
     }
   }
 
-  /// Suppresses reminders for today if the user has already practiced today.
-  /// Re-arms reminders starting tomorrow according to [frequency].
-  Future<void> suppressTodayReminderIfPracticed({
-    int hour = 20,
-    int minute = 0,
-    NotificationFrequency frequency = NotificationFrequency.high,
-  }) async {
-    if (kIsWeb) return;
-    if (!_isInitialized) {
-      await initialize();
-    }
-
-    try {
-      final now = tz.TZDateTime.now(tz.local);
-      final tomorrow = now.add(const Duration(days: 1));
-
-      // Cancel all active reminder IDs for today
-      for (final id in allReminderNotificationIds) {
-        await _plugin.cancel(id: id);
-      }
-
-      // Re-arm Main Reminder starting tomorrow
-      await _scheduleSlot(
-        id: streakReminderNotificationId,
-        hour: hour,
-        minute: minute,
-        title: 'Keep the momentum going! 🔥',
-        body:
-            'Ready for your daily Ol Chiki practice? Keep your streak shining.',
-        startFrom: tomorrow,
-      );
-
-      // Re-arm Morning Kickstart starting tomorrow
-      if (frequency == NotificationFrequency.balanced ||
-          frequency == NotificationFrequency.high) {
-        await _scheduleSlot(
-          id: morningReminderNotificationId,
-          hour: 9,
-          minute: 0,
-          title: 'Start your morning with Ol Chiki! ☀️',
-          body:
-              'A quick 2-minute lesson starts your day with positive momentum.',
-          startFrom: tomorrow,
-        );
-      }
-
-      // Re-arm Afternoon and Night Streak Saver starting tomorrow
-      if (frequency == NotificationFrequency.high) {
-        await _scheduleSlot(
-          id: afternoonReminderNotificationId,
-          hour: 14,
-          minute: 30,
-          title: 'Midday Ol Chiki boost! 🎯',
-          body: 'Take a short break and master a new Santali word today.',
-          startFrom: tomorrow,
-        );
-
-        final nightHour = (hour >= 21 && minute >= 30) ? 22 : 21;
-        final nightMinute = (nightHour == 22) ? 30 : 45;
-        await _scheduleSlot(
-          id: nightStreakSaverNotificationId,
-          hour: nightHour,
-          minute: nightMinute,
-          title: 'Don\'t lose your streak! ⏳',
-          body:
-              'Your streak is waiting! Complete a quick lesson before midnight to save your progress.',
-          startFrom: tomorrow,
-        );
-      }
-
-      // Re-arm inactivity reminder for 3 days from today
-      await _scheduleInactivityReminder(now);
-
-      AppLogger.debug(
-        'NotificationService: Suppressed today\'s reminders since user practiced. Next armed starting tomorrow.',
-      );
-    } catch (e) {
-      AppLogger.debug(
-        'NotificationService: suppressTodayReminderIfPracticed error: $e',
-      );
-    }
-  }
-
-  /// Cancels all scheduled habit, streak, and inactivity reminders.
+  /// Cancels all scheduled habit, streak, and lapse reminders.
   Future<void> cancelAllReminders() async {
     if (kIsWeb) return;
     if (!_isInitialized) {
@@ -564,9 +459,7 @@ class NotificationService {
     }
 
     try {
-      for (final id in allReminderNotificationIds) {
-        await _plugin.cancel(id: id);
-      }
+      await _scheduler.cancelAll();
       AppLogger.debug('NotificationService: all reminders canceled.');
     } catch (e) {
       AppLogger.debug('NotificationService: cancelAllReminders error: $e');

@@ -390,6 +390,9 @@ Set<String> _usersSince(
 String? _actorId(Map<String, dynamic> event) {
   final userId = _text(event['userId'], fallback: '').trim();
   if (userId.isNotEmpty) return 'u:$userId';
+  // Guests: one install is one learner across its 30-minute sessions.
+  final installId = _text(event['installId'], fallback: '').trim();
+  if (installId.isNotEmpty) return 'i:$installId';
   final sessionId = _text(event['sessionId'], fallback: '').trim();
   if (sessionId.isNotEmpty) return 's:$sessionId';
   return null;

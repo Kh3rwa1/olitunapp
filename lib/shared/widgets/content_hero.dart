@@ -10,6 +10,7 @@ import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/shared/widgets/animated_svg_display.dart';
+import '../../core/media/edge_media_url.dart';
 
 class ContentHero extends ConsumerStatefulWidget {
   final ContentItem item;
@@ -63,14 +64,15 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
   void _initializeVideoIfNecessary() {
     final media = widget.item.heroMedia;
     if (media != null && media.kind == ContentMediaKind.video) {
-      _videoController = VideoPlayerController.networkUrl(Uri.parse(media.url))
-        ..initialize().then((_) {
-          if (mounted) {
-            setState(() {
-              _videoInitialized = true;
+      _videoController =
+          VideoPlayerController.networkUrl(Uri.parse(toEdgeMediaUrl(media.url)))
+            ..initialize().then((_) {
+              if (mounted) {
+                setState(() {
+                  _videoInitialized = true;
+                });
+              }
             });
-          }
-        });
     }
   }
 
@@ -284,7 +286,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
     switch (media.kind) {
       case ContentMediaKind.image:
         return CachedNetworkImage(
-          imageUrl: media.url,
+          imageUrl: toEdgeMediaUrl(media.url),
           cacheManager: olitunImageCacheManager,
           fit: BoxFit.cover,
           memCacheWidth: 1080,
@@ -324,7 +326,7 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
         children: [
           if (media.posterUrl != null)
             CachedNetworkImage(
-              imageUrl: media.posterUrl!,
+              imageUrl: toEdgeMediaUrl(media.posterUrl!),
               cacheManager: olitunImageCacheManager,
               fit: BoxFit.cover,
               memCacheWidth: 800,

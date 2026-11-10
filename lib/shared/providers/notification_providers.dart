@@ -5,7 +5,7 @@ import '../../core/storage/hive_service.dart';
 const String _notificationsEnabledKey = 'notifications_enabled';
 const String _reminderHourKey = 'reminder_hour';
 const String _reminderMinuteKey = 'reminder_minute';
-const String _notificationFrequencyKey = 'notification_frequency';
+const String _notificationFrequencyKey = ReminderPolicy.frequencyPrefKey;
 
 /// Provider for whether daily study notifications are enabled.
 final notificationsEnabledProvider =
@@ -34,6 +34,7 @@ class NotificationsEnabledNotifier extends Notifier<bool> {
         frequency: frequency,
         hour: hour,
         minute: minute,
+        context: ref.read(reminderContextProvider),
       );
     } else {
       await NotificationService.instance.cancelAllReminders();
@@ -65,6 +66,7 @@ class ReminderHourNotifier extends Notifier<int> {
         frequency: frequency,
         hour: hour,
         minute: minute,
+        context: ref.read(reminderContextProvider),
       );
     }
   }
@@ -94,6 +96,7 @@ class ReminderMinuteNotifier extends Notifier<int> {
         frequency: frequency,
         hour: hour,
         minute: minute,
+        context: ref.read(reminderContextProvider),
       );
     }
   }
@@ -109,12 +112,11 @@ class NotificationFrequencyNotifier extends Notifier<NotificationFrequency> {
   @override
   NotificationFrequency build() {
     final prefs = ref.watch(sharedPreferencesProvider);
-    final val = prefs.getString(_notificationFrequencyKey);
-    // Production default is balanced (morning + evening): high's 4x/day
-    // cadence (incl. a 21:45 night slot) is opt-in only.
-    return NotificationFrequency.values.firstWhere(
-      (f) => f.name == val,
-      orElse: () => NotificationFrequency.balanced,
+    // Default is one reminder a day (ReminderPolicy.defaultFrequency); the
+    // 2x `balanced` and 4x `high` cadences are opt-in from Settings. Same
+    // parser as startup (main.dart), so the two can never disagree.
+    return ReminderPolicy.parseFrequency(
+      prefs.getString(_notificationFrequencyKey),
     );
   }
 
@@ -130,6 +132,7 @@ class NotificationFrequencyNotifier extends Notifier<NotificationFrequency> {
         frequency: frequency,
         hour: hour,
         minute: minute,
+        context: ref.read(reminderContextProvider),
       );
     }
   }

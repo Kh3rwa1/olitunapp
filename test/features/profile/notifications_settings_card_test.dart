@@ -46,12 +46,12 @@ void main() {
         expect(find.text('NOTIFICATIONS & HABITS'), findsOneWidget);
         expect(find.text('Daily Study Reminder'), findsOneWidget);
         expect(find.text('Reminder Frequency'), findsOneWidget);
-        // Production default is balanced (morning + evening); high is opt-in.
-        expect(find.text('Balanced (2x daily)'), findsOneWidget);
+        // Production default is one reminder a day; balanced/high opt-in.
+        expect(find.text('Relaxed (1x daily)'), findsOneWidget);
         expect(find.text('Reminder Time'), findsOneWidget);
         expect(find.text('8:00 PM'), findsOneWidget);
         expect(find.text('Daily Schedule Preview'), findsOneWidget);
-        expect(find.text('Morning Kickstart'), findsOneWidget);
+        expect(find.text('Morning Kickstart'), findsNothing);
         expect(find.text('Night Streak Saver'), findsNothing);
 
         final switchWidget = tester.widget<Switch>(find.byType(Switch));
@@ -95,10 +95,11 @@ void main() {
         await tester.tap(find.text('Reminder Frequency'));
         await tester.pumpAndSettle();
 
-        // Modal bottom sheet should be displayed ('High' is unambiguous:
-        // 'Balanced' already shows on the card behind the sheet).
+        // Modal bottom sheet should be displayed ('Relaxed' is the default
+        // and already shows on the card behind the sheet).
         expect(find.text('High (4x daily)'), findsOneWidget);
-        expect(find.text('Relaxed (1x daily)'), findsOneWidget);
+        expect(find.text('Balanced (2x daily)'), findsOneWidget);
+        expect(find.text('Relaxed (1x daily)'), findsWidgets);
 
         // Select High (opt-in to 4x/day incl. night slot)
         await tester.tap(find.text('High (4x daily)'));

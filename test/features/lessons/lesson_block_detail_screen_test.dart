@@ -302,7 +302,7 @@ void main() {
       // Verify first page renders details (LISTEN CTA is the single
       // audio affordance; the redundant TAP TO HEAR pill was removed).
       expect(find.text('At'), findsNWidgets(2));
-      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
       expect(find.text('TAP TO HEAR'), findsNothing);
 
       // Slide/Swipe to the second page
@@ -314,7 +314,7 @@ void main() {
 
       // Verify second page renders details
       expect(find.text('Ot'), findsNWidgets(2));
-      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 2));
     },
@@ -377,7 +377,7 @@ void main() {
       // Verify first page renders image visual media details
       expect(find.byType(FullBleedHeroMedia), findsOneWidget);
       expect(find.text('Image Block'), findsNWidgets(3));
-      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
 
       // Swipe to second page (SVG block)
       final pageViewFinder = find.byType(PageView);
@@ -387,7 +387,7 @@ void main() {
       // Verify second page renders SVG visual media details
       expect(find.byType(FullBleedHeroMedia), findsOneWidget);
       expect(find.text('SVG Block'), findsNWidgets(3));
-      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
     },
   );
 
@@ -521,11 +521,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify BOTH LISTEN and PRACTICE TYPING buttons are present
-      expect(find.text('LISTEN'), findsOneWidget);
+      expect(find.text('Listen'), findsOneWidget);
       expect(find.text('PRACTICE TYPING'), findsOneWidget);
 
       // Verify audio playback can be triggered
-      await tester.tap(find.text('LISTEN'));
+      await tester.tap(find.text('Listen'));
       await tester.pump();
       await tester.pump(const Duration(seconds: 2));
     },

@@ -115,6 +115,19 @@ class LearningAnalyticsEvents {
   static const purchaseSucceeded = 'purchase_succeeded';
   static const purchaseFailed = 'purchase_failed';
 
+  // App lifecycle and daily-habit loop (retention measurement). `app_open`
+  // is the DAU denominator; `session_start` fires when the 30-minute
+  // activity session rotates.
+  static const appOpen = 'app_open';
+  static const sessionStart = 'session_start';
+  static const notificationOpened = 'notification_opened';
+  static const wordOfDayPlayed = 'word_of_day_played';
+  static const dailyGoalMet = 'daily_goal_met';
+  static const streakLostSeen = 'streak_lost_seen';
+  static const dailyPracticeStarted = 'daily_practice_started';
+  static const dailyPracticeCompleted = 'daily_practice_completed';
+  static const updateRequiredShown = 'update_required_shown';
+
   // Ad events
   static const adImpression = 'ad_impression';
   static const adClick = 'ad_click';
@@ -183,6 +196,7 @@ class LearningAnalyticsService {
   static const collectionId = 'learning_analytics_events';
   static const _pendingKey = 'pending_learning_analytics_events_v1';
   static const _sessionKey = 'learning_analytics_session_id';
+  static const installIdKey = 'learning_analytics_install_id';
   static const _maxPendingEvents = 80;
   static const _metadataMaxChars = 4096;
 
@@ -205,11 +219,24 @@ class LearningAnalyticsService {
 
     final eventId = _safeId(_idFactory());
     final now = _now().toUtc();
+    final session = _sessionId();
+    if (session.isNew &&
+        normalizedName != LearningAnalyticsEvents.sessionStart) {
+      // A rotated session is announced before the event that started it, so
+      // the Worker sees session_start first and session counts stay exact.
+      await track(
+        LearningAnalyticsEvents.sessionStart,
+        source: source,
+        learnerLevel: learnerLevel,
+        scriptMode: scriptMode,
+      );
+    }
     final payload = <String, dynamic>{
       'eventId': eventId,
       'eventName': normalizedName,
       'eventVersion': 1,
-      'sessionId': _sessionId(),
+      'sessionId': session.id,
+      'installId': installId,
       'source': _safeString(source, max: 80),
       'sourceId': _safeString(sourceId, max: 120),
       'userId': await _safeUserId(),
@@ -332,7 +359,18 @@ class LearningAnalyticsService {
       'learning_analytics_session_last_activity_ts';
   static const Duration _sessionInactivityTimeout = Duration(minutes: 30);
 
-  String _sessionId() {
+  /// Stable per-install identifier (UUID v4, created once). The Worker uses
+  /// it to count guests as one learner across sessions; it never identifies
+  /// a person and is cleared with the app's data.
+  String get installId {
+    final existing = _prefs.getString(installIdKey);
+    if (existing != null && existing.isNotEmpty) return existing;
+    final created = _safeId(const Uuid().v4());
+    _prefs.setString(installIdKey, created);
+    return created;
+  }
+
+  ({String id, bool isNew}) _sessionId() {
     final nowMs = _now().millisecondsSinceEpoch;
     final existingSession = _prefs.getString(_sessionKey);
     final lastActivityMs = _prefs.getInt(_sessionLastActivityKey) ?? 0;
@@ -342,13 +380,13 @@ class LearningAnalyticsService {
 
     if (existingSession != null && existingSession.isNotEmpty && !isExpired) {
       _prefs.setInt(_sessionLastActivityKey, nowMs);
-      return existingSession;
+      return (id: existingSession, isNew: false);
     }
 
     final newSessionId = _safeId(_idFactory());
     _prefs.setString(_sessionKey, newSessionId);
     _prefs.setInt(_sessionLastActivityKey, nowMs);
-    return newSessionId;
+    return (id: newSessionId, isNew: true);
   }
 
   Future<String?> _safeUserId() async {

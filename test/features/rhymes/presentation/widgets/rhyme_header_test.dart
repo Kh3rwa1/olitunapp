@@ -32,7 +32,7 @@ void main() {
   ) async {
     await pumpHeader(tester, prefs: {'app_language': 'en'});
 
-    expect(find.text('Santali'), findsOneWidget);
+    expect(find.text('SANTALI'), findsOneWidget);
     expect(find.text('Bakhed'), findsOneWidget);
     expect(find.text('Unlock the magic of stories & songs'), findsOneWidget);
   });
@@ -51,7 +51,7 @@ void main() {
   testWidgets('renders in dark mode', (tester) async {
     await pumpHeader(tester, prefs: {}, isDark: true);
 
-    expect(find.text('Santali'), findsOneWidget);
+    expect(find.text('SANTALI'), findsOneWidget);
     expect(find.text('Bakhed'), findsOneWidget);
   });
 }

@@ -6,6 +6,7 @@ import '../../../../../core/ads/ad_remote_config.dart';
 import '../../../../../core/ads/ad_state.dart';
 import '../../../../../core/api/admin_content_client.dart';
 import '../../../../../core/config/ad_config.dart';
+import '../../../../../core/config/app_update_config.dart';
 import '../../../../../core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -42,6 +43,8 @@ class AdminSettingsState {
     this.adMobInterstitialCapMinutes = 3,
     this.adMobRewardedCooldownMinutes = AdConfig.defaultRewardedCooldownMinutes,
     this.translationEngine = 'cloudflare',
+    this.minSupportedBuild,
+    this.latestBuild,
     this.savingKey,
     this.failure,
     this.isDirty = false,
@@ -65,6 +68,11 @@ class AdminSettingsState {
   final int adMobInterstitialCapMinutes;
   final int adMobRewardedCooldownMinutes;
   final String translationEngine;
+
+  /// Build gate (app_settings `min_supported_build` / `latest_build`):
+  /// Android versionCodes; null means not set.
+  final int? minSupportedBuild;
+  final int? latestBuild;
   final String? savingKey;
   final AdminFailure? failure;
   final bool isDirty;
@@ -97,12 +105,16 @@ class AdminSettingsState {
     int? adMobInterstitialCapMinutes,
     int? adMobRewardedCooldownMinutes,
     String? translationEngine,
+    int? minSupportedBuild,
+    int? latestBuild,
     String? savingKey,
     AdminFailure? failure,
     bool? isDirty,
     AdminSettingsState? lastConfirmedState,
     bool clearFailure = false,
     bool clearSavingKey = false,
+    bool clearMinSupportedBuild = false,
+    bool clearLatestBuild = false,
   }) {
     return AdminSettingsState(
       status: status ?? this.status,
@@ -131,6 +143,10 @@ class AdminSettingsState {
       adMobRewardedCooldownMinutes:
           adMobRewardedCooldownMinutes ?? this.adMobRewardedCooldownMinutes,
       translationEngine: translationEngine ?? this.translationEngine,
+      minSupportedBuild: clearMinSupportedBuild
+          ? null
+          : (minSupportedBuild ?? this.minSupportedBuild),
+      latestBuild: clearLatestBuild ? null : (latestBuild ?? this.latestBuild),
       savingKey: clearSavingKey ? null : (savingKey ?? this.savingKey),
       failure: clearFailure ? null : (failure ?? this.failure),
       isDirty: isDirty ?? this.isDirty,
@@ -284,6 +300,12 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         translationEngine:
             (settings['translation_engine'] as String?)?.toLowerCase().trim() ??
             'google',
+        minSupportedBuild: AppUpdatePolicy.parseBuild(
+          settings[AppUpdatePolicy.minSupportedBuildKey],
+        ),
+        latestBuild: AppUpdatePolicy.parseBuild(
+          settings[AppUpdatePolicy.latestBuildKey],
+        ),
       );
 
       if (seq != _loadSeq) return;
@@ -379,6 +401,18 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(cd);
       } else if (key == 'translation_engine') {
         updated = updated.copyWith(translationEngine: value);
+      } else if (key == AppUpdatePolicy.minSupportedBuildKey) {
+        final build = AppUpdatePolicy.parseBuild(value);
+        updated = updated.copyWith(
+          minSupportedBuild: build,
+          clearMinSupportedBuild: build == null,
+        );
+      } else if (key == AppUpdatePolicy.latestBuildKey) {
+        final build = AppUpdatePolicy.parseBuild(value);
+        updated = updated.copyWith(
+          latestBuild: build,
+          clearLatestBuild: build == null,
+        );
       }
 
       state = updated.copyWith(lastConfirmedState: updated);

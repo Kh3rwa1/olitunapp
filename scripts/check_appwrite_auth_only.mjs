@@ -74,6 +74,10 @@ export const ALLOW_LIST = {
   // notificationArtworkUri rewrites legacy stored Appwrite Storage
   // /view URLs to /preview for notification thumbnails; it makes no call.
   'lib/core/audio/notification_artwork_uri.dart': ['storage-path'],
+  // toEdgeMediaUrl recognises legacy Appwrite Storage URLs still present in
+  // bundled seed content and maps them onto the Worker's R2 assets route;
+  // it never calls Appwrite.
+  'lib/core/media/edge_media_url.dart': ['storage-path'],
 };
 
 /**

@@ -243,10 +243,14 @@ CREATE TABLE IF NOT EXISTS learning_analytics_event_details (
   script_mode TEXT,
   platform TEXT,
   event_version INTEGER DEFAULT 1,
-  metadata_json TEXT
+  metadata_json TEXT,
+  -- Stable per-install id so guests count as one learner across sessions.
+  -- Added after launch: src/lib/analytics_schema.ts adds it to older DBs.
+  install_id TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_analytics_details_user ON learning_analytics_event_details(user_id);
 CREATE INDEX IF NOT EXISTS idx_analytics_details_date ON learning_analytics_event_details(date_key);
+CREATE INDEX IF NOT EXISTS idx_analytics_details_install ON learning_analytics_event_details(install_id);
 
 -- Waitlist
 CREATE TABLE IF NOT EXISTS binti_waitlist (

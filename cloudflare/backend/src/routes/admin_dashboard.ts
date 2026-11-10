@@ -1,4 +1,5 @@
 import type { App } from '../env';
+import { ANALYTICS_ACTOR_SQL, ensureAnalyticsInstallColumn } from '../lib/analytics_schema';
 
 // Read-only admin dashboards over D1 (replaces direct Appwrite reads by the
 // admin dashboard, analytics screen and gamification ops views).
@@ -95,14 +96,16 @@ export function registerAdminDashboardRoutes(app: App): void {
     }
     try {
       const db = c.env.DB;
+      await ensureAnalyticsInstallColumn(db);
       const from = 'FROM learning_analytics_events e LEFT JOIN learning_analytics_event_details d ON d.event_id = e.id WHERE e.date_key BETWEEN ? AND ?';
-      const actor = "CASE WHEN e.user_id != '' THEN 'u:' || e.user_id WHEN d.session_id IS NOT NULL THEN 's:' || d.session_id END";
+      // One learner = signed-in user, else install, else 30-minute session.
+      const actor = ANALYTICS_ACTOR_SQL;
       const [totals, sources, platforms, actors] = await db.batch([
         db.prepare(`SELECT e.date_key AS dateKey, e.event_name AS eventName, count(*) AS total, count(DISTINCT ${actor}) AS users ${from} GROUP BY 1, 2`).bind(start, end),
         db.prepare(`SELECT e.date_key AS dateKey, e.event_name AS eventName, COALESCE(d.source, 'app') AS k, count(*) AS n ${from} GROUP BY 1, 2, 3`).bind(start, end),
         db.prepare(`SELECT e.date_key AS dateKey, e.event_name AS eventName, COALESCE(d.platform, 'unknown') AS k, count(*) AS n ${from} GROUP BY 1, 2, 3`).bind(start, end),
         db.prepare(
-          `SELECT DISTINCT e.date_key AS dateKey, NULLIF(e.user_id, '') AS userId, CASE WHEN e.user_id = '' THEN d.session_id END AS sessionId ${from} AND (e.user_id != '' OR d.session_id IS NOT NULL) LIMIT ?`
+          `SELECT DISTINCT e.date_key AS dateKey, NULLIF(e.user_id, '') AS userId, CASE WHEN e.user_id = '' THEN NULLIF(d.install_id, '') END AS installId, CASE WHEN e.user_id = '' AND (d.install_id IS NULL OR d.install_id = '') THEN d.session_id END AS sessionId ${from} AND (e.user_id != '' OR d.install_id IS NOT NULL OR d.session_id IS NOT NULL) LIMIT ?`
         ).bind(start, end, MAX_ACTOR_DAYS + 1),
       ]);
       const rollups = new Map<string, any>();

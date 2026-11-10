@@ -1229,5 +1229,110 @@
     "watchAdUnlockLesson": "Watch a short ad to unlock now",
     "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
     "dailyBonusTitle": "Free bonus stars",
-    "dailyBonusBody": "Watch a short ad and earn 50 stars."
+    "dailyBonusBody": "Watch a short ad and earn 50 stars.",
+    "watchAd": "ᱵᱤᱡᱽᱧᱟᱯᱚᱱ ᱧᱮᱞ ᱢᱮ",
+    "updateRequiredTitle": "ᱞᱟᱦᱟ ᱥᱮᱱ ᱞᱟᱹᱜᱤᱫ Olitun ᱟᱯᱰᱮᱴ ᱢᱮ",
+    "updateRequiredBody": "ᱱᱚᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱫᱚ ᱟᱨ ᱥᱟᱭᱤᱱ ᱤᱱ ᱟᱨ ᱵᱟᱝ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜ-ᱟ᱾ ᱪᱮᱫ ᱞᱟᱦᱟ ᱤᱫᱤ ᱞᱟᱹᱜᱤᱫ Google Play ᱠᱷᱚᱱ ᱱᱟᱶᱟ ᱟᱯᱰᱮᱴ ᱤᱱᱥᱴᱚᱞ ᱢᱮ᱾",
+    "updateRequiredButton": "Google Play ᱨᱮ ᱟᱯᱰᱮᱴ ᱢᱮ",
+    "updateAvailableBanner": "Olitun ᱨᱮᱭᱟᱜ ᱱᱟᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜ-ᱟ᱾",
+    "updateAvailableAction": "ᱟᱯᱰᱮᱴ ᱢᱮ",
+    "todayStripStreak": "{count} ᱢᱟᱦᱟᱸ ᱥᱴᱨᱤᱠ",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "ᱛᱮᱦᱮᱧ ᱥᱴᱨᱤᱠ ᱮᱦᱚᱵ ᱢᱮ",
+    "todayStripGoal": "{minutes} / {goal} ᱢᱤᱱᱤᱴ",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "ᱞᱟᱠᱪᱟᱨ ᱯᱩᱨᱟᱹᱣ",
+    "todayStripReviewsDue": "{count} ᱵᱟᱹᱠᱤ",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "ᱛᱮᱦᱮᱧ: {streak} ᱢᱟᱦᱟᱸ ᱥᱴᱨᱤᱠ, {goal} ᱢᱤᱱᱤᱴ ᱠᱷᱚᱱ {minutes}, {due} ᱫᱚᱦᱲᱟ ᱵᱟᱹᱠᱤ",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "ᱟᱢᱟᱜ {count} ᱢᱟᱦᱟᱸ ᱨᱮᱱᱟᱜ ᱥᱴᱨᱤᱠ ᱨᱤᱥᱮᱴ ᱦᱩᱭ ᱮᱱᱟ",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "ᱪᱤᱱᱛᱟ ᱵᱟᱝ᱾ ᱛᱮᱦᱮᱧ 5 ᱢᱤᱱᱤᱴ ᱨᱮᱱᱟᱜ ᱟᱵᱷᱭᱟᱥ ᱱᱟᱶᱟ ᱥᱴᱨᱤᱠ ᱮᱦᱚᱵ ᱟ᱾",
+    "streakLostCta": "ᱫᱚᱦᱲᱟ ᱮᱦᱚᱵ ᱢᱮ",
+    "streakLostDismiss": "ᱚᱪᱚᱜ ᱢᱮ",
+    "dailyGoalMetToast": "ᱢᱟᱦᱟᱸ ᱞᱟᱠᱪᱟᱨ ᱯᱩᱨᱟᱹᱣ: ᱛᱮᱦᱮᱧ {minutes} ᱢᱤᱱᱤᱴ᱾ ᱡᱚᱦᱟᱨ!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "ᱛᱮᱦᱮᱧᱟᱜ ᱟᱹᱲᱟᱹ",
+    "wordOfDayPlay": "ᱩᱪᱪᱟᱨᱚᱱ ᱟᱸᱡᱚᱢ ᱢᱮ",
+    "wordOfDayPractice": "ᱱᱚᱶᱟ ᱟᱹᱲᱟᱹ ᱟᱵᱷᱭᱟᱥ ᱢᱮ",
+    "dailyPracticeTitle": "ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ",
+    "dailyPracticeBadge": "ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ",
+    "nbaTitleDailyPractice": "ᱟᱢᱟᱜ ᱚᱞ ᱪᱤᱠᱤ ᱞᱮᱥᱮᱨ ᱫᱚᱦᱚᱭ ᱢᱮ",
+    "nbaSubDailyPractice": "ᱫᱚᱦᱲᱟ, ᱵᱷᱩᱞ ᱟᱨ ᱱᱟᱶᱟ ᱟᱹᱲᱟᱹ ᱨᱮᱱᱟᱜ 5 ᱢᱤᱱᱤᱴ ᱢᱤᱥᱟᱹᱣ᱾",
+    "nbaCtaDailyPractice": "ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱮᱦᱚᱵ ᱢᱮ",
+    "nbaSubAllDonePractice": "ᱟᱢ ᱡᱚᱛᱚ ᱯᱟᱲᱦᱟᱣ ᱪᱟᱵᱟ ᱠᱮᱫᱟ᱾ ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱱᱚᱶᱟ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭ ᱟ, ᱟᱨ ᱵᱟᱠᱷᱮᱰ ᱦᱚᱸ ᱛᱟᱹᱝᱜᱤ ᱠᱟᱱᱟ᱾",
+    "dailyPracticeExit": "ᱟᱵᱷᱭᱟᱥ ᱠᱷᱚᱱ ᱚᱰᱚᱠ ᱢᱮ",
+    "dailyPracticeComplete": "ᱟᱵᱷᱭᱟᱥ ᱯᱩᱨᱟᱹᱣ",
+    "dailyPracticeProgress": "ᱫᱤᱱᱟᱹᱢ ᱟᱹᱨᱩ {current} / {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "ᱟᱹᱨᱩ ᱪᱟᱵᱟ ᱢᱮ",
+    "dailyPracticeSummaryStars": "+{stars} ᱤᱯᱤᱞ · {minutes} ᱢᱤᱱᱤᱴ ᱚᱞ ᱮᱱᱟ",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

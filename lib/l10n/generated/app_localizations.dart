@@ -821,13 +821,13 @@ abstract class AppLocalizations {
   /// No description provided for @listenNow.
   ///
   /// In en, this message translates to:
-  /// **'LISTEN NOW'**
+  /// **'Listen now'**
   String get listenNow;
 
   /// No description provided for @pause.
   ///
   /// In en, this message translates to:
-  /// **'PAUSE'**
+  /// **'Pause'**
   String get pause;
 
   /// No description provided for @getStarted.
@@ -929,7 +929,7 @@ abstract class AppLocalizations {
   /// No description provided for @streakDaysBadge.
   ///
   /// In en, this message translates to:
-  /// **'{count} DAYS'**
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
   String streakDaysBadge(int count);
 
   /// No description provided for @streakFooterActive.
@@ -3841,6 +3841,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch a short ad and earn 50 stars.'**
   String get dailyBonusBody;
+
+  /// No description provided for @watchAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad'**
+  String get watchAd;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Olitun to continue'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateRequiredButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Update on Google Play'**
+  String get updateRequiredButton;
+
+  /// No description provided for @updateAvailableBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Olitun is ready.'**
+  String get updateAvailableBanner;
+
+  /// No description provided for @updateAvailableAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateAvailableAction;
+
+  /// No description provided for @todayStripStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}-day streak'**
+  String todayStripStreak(int count);
+
+  /// No description provided for @todayStripStartStreak.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a streak'**
+  String get todayStripStartStreak;
+
+  /// No description provided for @todayStripGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} / {goal} min'**
+  String todayStripGoal(int minutes, int goal);
+
+  /// No description provided for @todayStripGoalDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal done'**
+  String get todayStripGoalDone;
+
+  /// No description provided for @todayStripReviewsDue.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} due'**
+  String todayStripReviewsDue(int count);
+
+  /// No description provided for @todayStripSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Today: streak {streak} days, {minutes} of {goal} minutes, {due} reviews due'**
+  String todayStripSemantics(int streak, int minutes, int goal, int due);
+
+  /// No description provided for @streakLostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your {count}-day streak reset'**
+  String streakLostTitle(int count);
+
+  /// No description provided for @streakLostBody.
+  ///
+  /// In en, this message translates to:
+  /// **'No guilt. A 5-minute practice today starts a new one.'**
+  String get streakLostBody;
+
+  /// No description provided for @streakLostCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Start again'**
+  String get streakLostCta;
+
+  /// No description provided for @streakLostDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get streakLostDismiss;
+
+  /// No description provided for @dailyGoalMetToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal met: {minutes} min today. Johar!'**
+  String dailyGoalMetToast(int minutes);
+
+  /// No description provided for @wordOfDayEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'WORD OF THE DAY'**
+  String get wordOfDayEyebrow;
+
+  /// No description provided for @wordOfDayPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play pronunciation'**
+  String get wordOfDayPlay;
+
+  /// No description provided for @wordOfDayPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice this word'**
+  String get wordOfDayPractice;
+
+  /// No description provided for @dailyPracticeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily practice'**
+  String get dailyPracticeTitle;
+
+  /// No description provided for @dailyPracticeBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'DAILY PRACTICE'**
+  String get dailyPracticeBadge;
+
+  /// No description provided for @nbaTitleDailyPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your Ol Chiki sharp'**
+  String get nbaTitleDailyPractice;
+
+  /// No description provided for @nbaSubDailyPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'A 5-minute mix of review, mistakes and new words.'**
+  String get nbaSubDailyPractice;
+
+  /// No description provided for @nbaCtaDailyPractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Start daily practice'**
+  String get nbaCtaDailyPractice;
+
+  /// No description provided for @nbaSubAllDonePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.'**
+  String get nbaSubAllDonePractice;
+
+  /// No description provided for @dailyPracticeExit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit practice'**
+  String get dailyPracticeExit;
+
+  /// No description provided for @dailyPracticeComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice complete'**
+  String get dailyPracticeComplete;
+
+  /// No description provided for @dailyPracticeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily practice {current} of {total}'**
+  String dailyPracticeProgress(int current, int total);
+
+  /// No description provided for @dailyPracticeFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish practice'**
+  String get dailyPracticeFinish;
+
+  /// No description provided for @dailyPracticeSummaryStars.
+  ///
+  /// In en, this message translates to:
+  /// **'+{stars} stars · {minutes} min logged'**
+  String dailyPracticeSummaryStars(int stars, int minutes);
 }
 
 class _AppLocalizationsDelegate

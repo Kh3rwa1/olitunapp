@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/motion/motion.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../quiz/data/quizzes_provider.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
@@ -61,53 +60,6 @@ class StreakCalendar extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? AppColors.accentOchre.withValues(alpha: 0.15)
-                          : (isDark
-                                ? Colors.white.withValues(alpha: 0.06)
-                                : Colors.black.withValues(alpha: 0.04)),
-                      shape: BoxShape.circle,
-                    ),
-                    child: isActive
-                        ? SpringPop(
-                            // Replays the spring pop whenever the streak
-                            // ignites, turning a new milestone into a moment.
-                            trigger: isActive,
-                            enabled: !reduceEffects,
-                            child:
-                                const Icon(
-                                      Icons.local_fire_department_rounded,
-                                      color: AppColors.accentOchre,
-                                      size: 20,
-                                    )
-                                    .animate(
-                                      onPlay: reduceEffects
-                                          ? null
-                                          : (c) => c.repeat(),
-                                    )
-                                    .shimmer(
-                                      duration: 2000.ms,
-                                      color: Colors.white,
-                                    ),
-                          )
-                        : Icon(
-                                Icons.local_fire_department_outlined,
-                                color: isDark ? Colors.white54 : Colors.black45,
-                                size: 20,
-                              )
-                              .animate(
-                                // Gentle breathing pulse invites the first
-                                // session without pretending a streak exists.
-                                onPlay: reduceEffects
-                                    ? null
-                                    : (c) => c.repeat(reverse: true),
-                              )
-                              .fadeIn(duration: 900.ms, begin: 0.55),
-                  ),
-                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,27 +294,11 @@ class StreakCalendar extends ConsumerWidget {
               ),
 
               const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.03)
-                      : Colors.black.withValues(alpha: 0.02),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(
-                      Icons.stars_rounded,
-                      color: AppColors.accentGold,
-                      size: 14,
-                    ),
-                    const SizedBox(width: 6),
                     Flexible(
                       child: Text(
                         isActive
@@ -488,43 +424,37 @@ class _StreakBadge extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            gradient: active
-                ? const LinearGradient(
-                    colors: [AppColors.accentOchre, AppColors.accentGold],
-                  )
-                : null,
+            // Flat tinted chip: the calendar highlight already carries the
+            // warm accent, so the badge no longer needs a gradient and glow.
             color: active
-                ? null
+                ? AppColors.accentOchre.withValues(alpha: isDark ? 0.22 : 0.14)
                 : (isDark
                       ? Colors.white10
                       : Colors.black.withValues(alpha: 0.05)),
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: active
-                ? [
-                    BoxShadow(
-                      color: AppColors.accentOchre.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [],
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (active) ...[
-                const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
+                const Icon(
+                  Icons.local_fire_department_rounded,
+                  color: AppColors.accentOchreDark,
+                  size: 14,
+                ),
                 const SizedBox(width: 4),
               ],
               Text(
                 AppLocalizations.of(context)!.streakDaysBadge(count),
                 style: AppTypography.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w900,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w800,
                   color: active
-                      ? Colors.white
+                      ? (isDark
+                            ? AppColors.santaliOchreLight
+                            : AppColors.accentOchreDark)
                       : (isDark ? Colors.white54 : Colors.black45),
-                  letterSpacing: 0.5,
+                  letterSpacing: 0.3,
                 ),
               ),
             ],

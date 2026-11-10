@@ -51,6 +51,16 @@ final userStatsProvider =
       UserStatsNotifier.new,
     );
 
+/// Last learning-minute write made by [UserStatsNotifier] (lesson
+/// completion). `seq` increments on every write so listeners such as the
+/// daily-goal log see repeated equal amounts. Published, never read, by the
+/// notifier.
+typedef LearningMinutesRecord = ({int minutes, int seq});
+
+final learningMinutesRecordedProvider = StateProvider<LearningMinutesRecord>(
+  (ref) => (minutes: 0, seq: 0),
+);
+
 final userStarsProvider = Provider<int>((ref) {
   final stats = ref.watch(userStatsProvider).value;
   return stats?.totalStars ?? 0;
@@ -371,6 +381,33 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     });
   }
 
+  /// Records real learning minutes from a review or practice session so the
+  /// Profile "Time" stat and today's goal agree (the daily log listens to
+  /// [learningMinutesRecordedProvider]).
+  Future<void> addLearningMinutes(int minutes) {
+    return _runSerialized(() async {
+      try {
+        final current = state.valueOrNull;
+        if (current == null || minutes <= 0) return;
+        final prefs = ref.read(sharedPreferencesProvider);
+        final originId = ProgressOriginIdentity.getOrCreateOriginId(prefs);
+        final seq = ProgressOriginIdentity.nextMinuteSeq(
+          prefs,
+          originId,
+          current,
+        );
+        final clamped = minutes.clamp(1, 240);
+        final updated = _withStreakUpdate(
+          current.recordLearningMinutes(clamped, originId: originId, seq: seq),
+        );
+        await updateStats(updated);
+        _publishMinutes(clamped);
+      } catch (e, st) {
+        AppLogger.debug('Failed to add learning minutes: $e\n$st');
+      }
+    });
+  }
+
   /// Marks a lesson as completed and updates:
   /// - completedLessons set
   /// - categoryMastery percentage
@@ -402,11 +439,13 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
           originId,
           current,
         );
+        final minutes = estimatedMinutes.clamp(0, 240);
         updated = updated.recordLearningMinutes(
-          estimatedMinutes.clamp(0, 240),
+          minutes,
           originId: originId,
           seq: seq,
         );
+        _publishMinutes(minutes);
       }
 
       // Update category mastery only the first time a lesson is completed.
@@ -493,6 +532,12 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
         AppLogger.debug('Failed to save quiz result: $e\n$st');
       }
     });
+  }
+
+  void _publishMinutes(int minutes) {
+    if (minutes <= 0) return;
+    final notifier = ref.read(learningMinutesRecordedProvider.notifier);
+    notifier.state = (minutes: minutes, seq: notifier.state.seq + 1);
   }
 
   Future<void> resetProgress() {

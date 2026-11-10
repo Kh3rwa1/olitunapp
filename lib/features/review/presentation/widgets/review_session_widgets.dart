@@ -244,6 +244,11 @@ class ReviewTypingArea extends StatelessWidget {
   final VoidCallback onDelete;
   final Future<void> Function() onSubmit;
 
+  /// When false the Check button is rendered by the caller (pinned below the
+  /// scrolling card) instead of under the keyboard, where a tall keyboard
+  /// pushed it off screen behind the banner ad.
+  final bool showSubmit;
+
   const ReviewTypingArea({
     super.key,
     required this.card,
@@ -254,6 +259,7 @@ class ReviewTypingArea extends StatelessWidget {
     required this.onKey,
     required this.onDelete,
     required this.onSubmit,
+    this.showSubmit = true,
   });
 
   @override
@@ -295,29 +301,49 @@ class ReviewTypingArea extends StatelessWidget {
             onDelete: onDelete,
             showDigits: needsDigits,
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 52,
-            child: ElevatedButton(
-              onPressed: typed.trim().isEmpty ? null : onSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.reviewCheck,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
+          if (showSubmit) ...[
+            const SizedBox(height: 12),
+            ReviewCheckButton(
+              enabled: typed.trim().isNotEmpty,
+              onSubmit: onSubmit,
             ),
-          ),
+          ],
         ],
       ],
+    );
+  }
+}
+
+/// The typing card's Check button, shared by the inline and pinned layouts.
+class ReviewCheckButton extends StatelessWidget {
+  final bool enabled;
+  final Future<void> Function() onSubmit;
+
+  const ReviewCheckButton({
+    super.key,
+    required this.enabled,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 52,
+      child: ElevatedButton(
+        key: const ValueKey('review-check'),
+        onPressed: enabled ? onSubmit : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: Text(
+          AppLocalizations.of(context)!.reviewCheck,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        ),
+      ),
     );
   }
 }
@@ -424,5 +450,117 @@ class ReviewFeedbackCard extends StatelessWidget {
       return l10n.reviewHintListening;
     }
     return l10n.reviewHintRecognition;
+  }
+}
+
+/// Feedback plus the Continue/Finish button, pinned under the scrolling card
+/// so it is always reachable (long sentence cards used to push it below the
+/// fold, behind the banner ad, and the session looked stuck).
+class ReviewActionBar extends StatelessWidget {
+  final ReviewCard card;
+  final bool wasCorrect;
+  final bool isDark;
+  final bool isLast;
+  final bool isDaily;
+  final VoidCallback onReplay;
+  final VoidCallback onNext;
+
+  const ReviewActionBar({
+    super.key,
+    required this.card,
+    required this.wasCorrect,
+    required this.isDark,
+    required this.isLast,
+    required this.isDaily,
+    required this.onReplay,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final label = isLast
+        ? (isDaily ? l10n.dailyPracticeFinish : l10n.reviewFinish)
+        : l10n.continueButton;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        border: Border(
+          top: BorderSide(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.06,
+            ),
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ReviewFeedbackCard(
+            card: card,
+            wasCorrect: wasCorrect,
+            isDark: isDark,
+            onReplay: onReplay,
+            showReplay: card.audioUrl.isNotEmpty,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              key: const ValueKey('review-action-next'),
+              onPressed: onNext,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Pinned bar with the Check button for typing cards (see [ReviewActionBar]).
+class ReviewCheckBar extends StatelessWidget {
+  final bool enabled;
+  final bool isDark;
+  final Future<void> Function() onSubmit;
+
+  const ReviewCheckBar({
+    super.key,
+    required this.enabled,
+    required this.isDark,
+    required this.onSubmit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        border: Border(
+          top: BorderSide(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.06,
+            ),
+          ),
+        ),
+      ),
+      child: ReviewCheckButton(enabled: enabled, onSubmit: onSubmit),
+    );
   }
 }

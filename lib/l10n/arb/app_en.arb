@@ -199,8 +199,8 @@
     "couldNotLoadRhymes": "Could not load bakhed",
     "checkConnection": "Check your connection and try again",
     "featured": "FEATURED",
-    "listenNow": "LISTEN NOW",
-    "pause": "PAUSE",
+    "listenNow": "Listen now",
+    "pause": "Pause",
     "getStarted": "Get Started",
     "loading": "Loading...",
     "error": "Error",
@@ -217,7 +217,7 @@
     "streakActiveSubtitle": "Keep learning to grow your flame!",
     "streakIdleSubtitle": "Complete any activity to light your flame!",
     "streakStartLearning": "Start learning",
-    "streakDaysBadge": "{count} DAYS",
+    "streakDaysBadge": "{count, plural, =1{1 day} other{{count} days}}",
     "@streakDaysBadge": {
         "placeholders": {
             "count": {
@@ -1229,5 +1229,110 @@
     "watchAdUnlockLesson": "Watch a short ad to unlock now",
     "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
     "dailyBonusTitle": "Free bonus stars",
-    "dailyBonusBody": "Watch a short ad and earn 50 stars."
+    "dailyBonusBody": "Watch a short ad and earn 50 stars.",
+    "watchAd": "Watch ad",
+    "updateRequiredTitle": "Update Olitun to continue",
+    "updateRequiredBody": "This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.",
+    "updateRequiredButton": "Update on Google Play",
+    "updateAvailableBanner": "A new version of Olitun is ready.",
+    "updateAvailableAction": "Update",
+    "todayStripStreak": "{count}-day streak",
+    "@todayStripStreak": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripStartStreak": "Start a streak",
+    "todayStripGoal": "{minutes} / {goal} min",
+    "@todayStripGoal": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripGoalDone": "Goal done",
+    "todayStripReviewsDue": "{count} due",
+    "@todayStripReviewsDue": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "todayStripSemantics": "Today: streak {streak} days, {minutes} of {goal} minutes, {due} reviews due",
+    "@todayStripSemantics": {
+        "placeholders": {
+            "streak": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            },
+            "goal": {
+                "type": "int"
+            },
+            "due": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostTitle": "Your {count}-day streak reset",
+    "@streakLostTitle": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "streakLostBody": "No guilt. A 5-minute practice today starts a new one.",
+    "streakLostCta": "Start again",
+    "streakLostDismiss": "Dismiss",
+    "dailyGoalMetToast": "Daily goal met: {minutes} min today. Johar!",
+    "@dailyGoalMetToast": {
+        "placeholders": {
+            "minutes": {
+                "type": "int"
+            }
+        }
+    },
+    "wordOfDayEyebrow": "WORD OF THE DAY",
+    "wordOfDayPlay": "Play pronunciation",
+    "wordOfDayPractice": "Practice this word",
+    "dailyPracticeTitle": "Daily practice",
+    "dailyPracticeBadge": "DAILY PRACTICE",
+    "nbaTitleDailyPractice": "Keep your Ol Chiki sharp",
+    "nbaSubDailyPractice": "A 5-minute mix of review, mistakes and new words.",
+    "nbaCtaDailyPractice": "Start daily practice",
+    "nbaSubAllDonePractice": "You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.",
+    "dailyPracticeExit": "Exit practice",
+    "dailyPracticeComplete": "Practice complete",
+    "dailyPracticeProgress": "Daily practice {current} of {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "Finish practice",
+    "dailyPracticeSummaryStars": "+{stars} stars · {minutes} min logged",
+    "@dailyPracticeSummaryStars": {
+        "placeholders": {
+            "stars": {
+                "type": "int"
+            },
+            "minutes": {
+                "type": "int"
+            }
+        }
+    }
 }

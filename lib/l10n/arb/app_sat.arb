@@ -1311,6 +1311,18 @@
     "nbaSubAllDonePractice": "ᱟᱢ ᱡᱚᱛᱚ ᱯᱟᱲᱦᱟᱣ ᱪᱟᱵᱟ ᱠᱮᱫᱟ᱾ ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱱᱚᱶᱟ ᱱᱟᱶᱟ ᱫᱚᱦᱚᱭ ᱟ, ᱟᱨ ᱵᱟᱠᱷᱮᱰ ᱦᱚᱸ ᱛᱟᱹᱝᱜᱤ ᱠᱟᱱᱟ᱾",
     "dailyPracticeExit": "ᱟᱵᱷᱭᱟᱥ ᱠᱷᱚᱱ ᱚᱰᱚᱠ ᱢᱮ",
     "dailyPracticeComplete": "ᱟᱵᱷᱭᱟᱥ ᱯᱩᱨᱟᱹᱣ",
+    "dailyPracticeProgress": "ᱫᱤᱱᱟᱹᱢ ᱟᱹᱨᱩ {current} / {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "ᱟᱹᱨᱩ ᱪᱟᱵᱟ ᱢᱮ",
     "dailyPracticeSummaryStars": "+{stars} ᱤᱯᱤᱞ · {minutes} ᱢᱤᱱᱤᱴ ᱚᱞ ᱮᱱᱟ",
     "@dailyPracticeSummaryStars": {
         "placeholders": {

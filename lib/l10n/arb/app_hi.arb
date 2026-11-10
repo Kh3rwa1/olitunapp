@@ -1311,6 +1311,18 @@
     "nbaSubAllDonePractice": "आपने हर पाठ पूरा कर लिया। दैनिक अभ्यास इसे ताज़ा रखता है, और बाखेड़ भी इंतज़ार कर रहा है।",
     "dailyPracticeExit": "अभ्यास से बाहर निकलें",
     "dailyPracticeComplete": "अभ्यास पूरा",
+    "dailyPracticeProgress": "दैनिक अभ्यास {current} / {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "अभ्यास पूरा करें",
     "dailyPracticeSummaryStars": "+{stars} स्टार · {minutes} मिनट दर्ज",
     "@dailyPracticeSummaryStars": {
         "placeholders": {

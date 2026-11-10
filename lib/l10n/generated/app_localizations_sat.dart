@@ -2214,6 +2214,14 @@ class AppLocalizationsSat extends AppLocalizations {
   String get dailyPracticeComplete => 'ᱟᱵᱷᱭᱟᱥ ᱯᱩᱨᱟᱹᱣ';
 
   @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'ᱫᱤᱱᱟᱹᱢ ᱟᱹᱨᱩ $current / $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'ᱟᱹᱨᱩ ᱪᱟᱵᱟ ᱢᱮ';
+
+  @override
   String dailyPracticeSummaryStars(int stars, int minutes) {
     return '+$stars ᱤᱯᱤᱞ · $minutes ᱢᱤᱱᱤᱴ ᱚᱞ ᱮᱱᱟ';
   }

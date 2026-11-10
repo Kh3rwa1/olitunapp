@@ -137,6 +137,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final showTodayReview = dueReviews > 0;
 
     // Seamless automatic background data sync when recovering connection
+    // The first real practice of the day is the moment to ask for the
+    // notification permission (once ever); Home stays mounted under the
+    // practice route, so listen for the flip instead of only checking at mount.
+    ref.listen<bool>(practicedTodayProvider, (previous, next) {
+      if (next && previous != true) {
+        unawaited(_requestNotificationPermissionIfEligible());
+      }
+    });
+
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
       previous,
       next,

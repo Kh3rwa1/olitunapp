@@ -453,6 +453,8 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
               ? (_isDaily
                     ? l10n.dailyPracticeTitle
                     : l10n.reviewSessionTitleBare)
+              : _isDaily
+              ? l10n.dailyPracticeProgress(_index + 1, _cards.length)
               : l10n.reviewSessionTitle(_index + 1, _cards.length),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
         ),
@@ -517,8 +519,8 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
       );
     }
     final card = _current!;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+    final scroll = SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -549,42 +551,25 @@ class _ReviewSessionScreenState extends ConsumerState<ReviewSessionScreen> {
               isDark: isDark,
               onSelect: _submitMcq,
             ),
-          if (_answered) ...[
-            const SizedBox(height: 16),
-            ReviewFeedbackCard(
-              card: card,
-              wasCorrect: _wasCorrect,
-              isDark: isDark,
-              onReplay: () =>
-                  _playAudio(card.audioUrl.isNotEmpty ? card.audioUrl : ''),
-              showReplay: card.audioUrl.isNotEmpty,
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 54,
-              child: ElevatedButton(
-                onPressed: _next,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: Text(
-                  _index + 1 >= _cards.length
-                      ? AppLocalizations.of(context)!.reviewFinish
-                      : AppLocalizations.of(context)!.continueButton,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
+    );
+    // The action bar stays pinned below the scrolling card so Continue is
+    // always on screen, however long the prompt and options are.
+    return Column(
+      children: [
+        Expanded(child: scroll),
+        if (_answered)
+          ReviewActionBar(
+            card: card,
+            wasCorrect: _wasCorrect,
+            isDark: isDark,
+            isLast: _index + 1 >= _cards.length,
+            isDaily: _isDaily,
+            onReplay: () => _playAudio(card.audioUrl),
+            onNext: _next,
+          ),
+      ],
     );
   }
 }

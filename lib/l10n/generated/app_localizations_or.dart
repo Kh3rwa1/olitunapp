@@ -2220,6 +2220,14 @@ class AppLocalizationsOr extends AppLocalizations {
   String get dailyPracticeComplete => 'ଅଭ୍ୟାସ ସମ୍ପୂର୍ଣ୍ଣ';
 
   @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'ଦୈନିକ ଅଭ୍ୟାସ $current / $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'ଅଭ୍ୟାସ ଶେଷ କରନ୍ତୁ';
+
+  @override
   String dailyPracticeSummaryStars(int stars, int minutes) {
     return '+$stars ଷ୍ଟାର · $minutes ମିନିଟ୍ ଲେଖାଗଲା';
   }

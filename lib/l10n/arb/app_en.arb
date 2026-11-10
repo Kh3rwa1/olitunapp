@@ -1311,6 +1311,18 @@
     "nbaSubAllDonePractice": "You finished every lesson. Daily practice keeps it fresh, and Bakhed is waiting too.",
     "dailyPracticeExit": "Exit practice",
     "dailyPracticeComplete": "Practice complete",
+    "dailyPracticeProgress": "Daily practice {current} of {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "Finish practice",
     "dailyPracticeSummaryStars": "+{stars} stars · {minutes} min logged",
     "@dailyPracticeSummaryStars": {
         "placeholders": {

@@ -2213,6 +2213,14 @@ class AppLocalizationsBn extends AppLocalizations {
   String get dailyPracticeComplete => 'অনুশীলন সম্পূর্ণ';
 
   @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'দৈনিক অনুশীলন $current / $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'অনুশীলন শেষ করুন';
+
+  @override
   String dailyPracticeSummaryStars(int stars, int minutes) {
     return '+$stars স্টার · $minutes মিনিট লেখা হয়েছে';
   }

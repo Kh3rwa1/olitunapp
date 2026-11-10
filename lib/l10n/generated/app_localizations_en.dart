@@ -2230,6 +2230,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyPracticeComplete => 'Practice complete';
 
   @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'Daily practice $current of $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'Finish practice';
+
+  @override
   String dailyPracticeSummaryStars(int stars, int minutes) {
     return '+$stars stars · $minutes min logged';
   }

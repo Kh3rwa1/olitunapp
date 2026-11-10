@@ -2219,6 +2219,14 @@ class AppLocalizationsHi extends AppLocalizations {
   String get dailyPracticeComplete => 'अभ्यास पूरा';
 
   @override
+  String dailyPracticeProgress(int current, int total) {
+    return 'दैनिक अभ्यास $current / $total';
+  }
+
+  @override
+  String get dailyPracticeFinish => 'अभ्यास पूरा करें';
+
+  @override
   String dailyPracticeSummaryStars(int stars, int minutes) {
     return '+$stars स्टार · $minutes मिनट दर्ज';
   }

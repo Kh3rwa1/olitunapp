@@ -113,7 +113,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.byType(ReviewSessionScreen), findsOneWidget);
-    expect(find.text("Today's Review 1 of 2"), findsOneWidget);
+    expect(find.text('Daily practice 1 of 2'), findsOneWidget);
     expect(
       analytics.names,
       contains(LearningAnalyticsEvents.dailyPracticeStarted),
@@ -133,8 +133,8 @@ void main() {
     await tester.tap(find.text('sound-b-0'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    await tester.ensureVisible(find.text('Finish review'));
-    await tester.tap(find.text('Finish review'));
+    await tester.ensureVisible(find.text('Finish practice'));
+    await tester.tap(find.text('Finish practice'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 

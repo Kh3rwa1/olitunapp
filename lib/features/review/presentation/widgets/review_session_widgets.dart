@@ -426,3 +426,83 @@ class ReviewFeedbackCard extends StatelessWidget {
     return l10n.reviewHintRecognition;
   }
 }
+
+/// Feedback plus the Continue/Finish button, pinned under the scrolling card
+/// so it is always reachable (long sentence cards used to push it below the
+/// fold, behind the banner ad, and the session looked stuck).
+class ReviewActionBar extends StatelessWidget {
+  final ReviewCard card;
+  final bool wasCorrect;
+  final bool isDark;
+  final bool isLast;
+  final bool isDaily;
+  final VoidCallback onReplay;
+  final VoidCallback onNext;
+
+  const ReviewActionBar({
+    super.key,
+    required this.card,
+    required this.wasCorrect,
+    required this.isDark,
+    required this.isLast,
+    required this.isDaily,
+    required this.onReplay,
+    required this.onNext,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final label = isLast
+        ? (isDaily ? l10n.dailyPracticeFinish : l10n.reviewFinish)
+        : l10n.continueButton;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+        border: Border(
+          top: BorderSide(
+            color: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.06,
+            ),
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ReviewFeedbackCard(
+            card: card,
+            wasCorrect: wasCorrect,
+            isDark: isDark,
+            onReplay: onReplay,
+            showReplay: card.audioUrl.isNotEmpty,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 54,
+            child: ElevatedButton(
+              key: const ValueKey('review-action-next'),
+              onPressed: onNext,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

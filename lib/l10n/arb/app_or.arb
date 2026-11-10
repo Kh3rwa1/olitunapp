@@ -1311,6 +1311,18 @@
     "nbaSubAllDonePractice": "ଆପଣ ସବୁ ପାଠ ଶେଷ କରିଛନ୍ତି। ଦୈନିକ ଅଭ୍ୟାସ ଏହାକୁ ସତେଜ ରଖେ, ଓ ବାଖେଡ଼ ମଧ୍ୟ ଅପେକ୍ଷା କରୁଛି।",
     "dailyPracticeExit": "ଅଭ୍ୟାସରୁ ବାହାରନ୍ତୁ",
     "dailyPracticeComplete": "ଅଭ୍ୟାସ ସମ୍ପୂର୍ଣ୍ଣ",
+    "dailyPracticeProgress": "ଦୈନିକ ଅଭ୍ୟାସ {current} / {total}",
+    "@dailyPracticeProgress": {
+        "placeholders": {
+            "current": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyPracticeFinish": "ଅଭ୍ୟାସ ଶେଷ କରନ୍ତୁ",
     "dailyPracticeSummaryStars": "+{stars} ଷ୍ଟାର · {minutes} ମିନିଟ୍ ଲେଖାଗଲା",
     "@dailyPracticeSummaryStars": {
         "placeholders": {

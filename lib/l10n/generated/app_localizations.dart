@@ -4004,6 +4004,18 @@ abstract class AppLocalizations {
   /// **'Practice complete'**
   String get dailyPracticeComplete;
 
+  /// No description provided for @dailyPracticeProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily practice {current} of {total}'**
+  String dailyPracticeProgress(int current, int total);
+
+  /// No description provided for @dailyPracticeFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish practice'**
+  String get dailyPracticeFinish;
+
   /// No description provided for @dailyPracticeSummaryStars.
   ///
   /// In en, this message translates to:

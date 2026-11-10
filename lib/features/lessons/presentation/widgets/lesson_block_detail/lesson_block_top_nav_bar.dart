@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import '../../../../../l10n/generated/app_localizations.dart';
 
@@ -115,18 +114,15 @@ class LessonBlockTopNavBar extends ConsumerWidget {
               LessonBlockFloatingButton(
                 icon: backIcon ?? Icons.arrow_back_rounded,
                 tooltip: 'Go back',
+                // Leaving a lesson early is not a completion: no
+                // interstitial here (completion flows show their own).
                 onPressed:
                     onBackPressed ??
-                    () async {
-                      await ref
-                          .read(interstitialAdManagerProvider)
-                          .showIfAllowed(context, 'lesson_complete');
-                      if (context.mounted) {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go(fallbackLocation ?? '/');
-                        }
+                    () {
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(fallbackLocation ?? '/');
                       }
                     },
               ),

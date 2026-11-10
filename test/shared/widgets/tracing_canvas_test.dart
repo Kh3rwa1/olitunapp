@@ -40,6 +40,9 @@ class MockAudioService extends AudioService {
 
 class MockAnalyticsService implements LearningAnalyticsService {
   @override
+  String get installId => 'test-install';
+
+  @override
   Future<void> track(
     String eventName, {
     String? source,

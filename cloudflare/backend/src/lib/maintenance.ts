@@ -1,3 +1,5 @@
+import { ANALYTICS_ACTOR_SQL, ensureAnalyticsInstallColumn } from './analytics_schema';
+
 // Maintenance jobs shared by the admin HTTP routes and the Cron Trigger
 // handler (src/scheduled.ts). Each takes the D1 handle plus an explicit
 // clock so tests and both callers run the same code.
@@ -15,16 +17,21 @@ export const CACHE_RETENTION_DAYS = {
 
 export type AnalyticsRollup = { dateKey: string; totalEvents: number; uniqueUsers: number; counts: Record<string, number> };
 
-/** Rolls up learning_analytics_events for one UTC day (YYYY-MM-DD). */
+/**
+ * Rolls up learning_analytics_events for one UTC day (YYYY-MM-DD).
+ * `uniqueUsers` counts learners, not accounts: a signed-in user, else an
+ * install, else a session (guests used to be dropped entirely).
+ */
 export async function aggregateAnalytics(db: D1Database, dateKey: string, now = new Date()): Promise<AnalyticsRollup> {
+  await ensureAnalyticsInstallColumn(db).catch(() => undefined);
   const events: any = await db.prepare(
-    'SELECT user_id, event_name FROM learning_analytics_events WHERE date_key = ?'
+    `SELECT e.event_name AS event_name, ${ANALYTICS_ACTOR_SQL} AS actor FROM learning_analytics_events e LEFT JOIN learning_analytics_event_details d ON d.event_id = e.id WHERE e.date_key = ?`
   ).bind(dateKey).all().catch(() => ({ results: [] }));
 
   const uniqueUsers = new Set<string>();
   const counts: Record<string, number> = {};
   for (const row of events.results || []) {
-    if (row.user_id) uniqueUsers.add(row.user_id);
+    if (row.actor) uniqueUsers.add(row.actor);
     counts[row.event_name] = (counts[row.event_name] || 0) + 1;
   }
   const totalEvents = (events.results || []).length;

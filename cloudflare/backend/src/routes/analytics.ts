@@ -1,5 +1,6 @@
 import { optionalUser } from '../auth';
 import { getRequestUserId, stableId, type App } from '../env';
+import { INSTALL_ID, ensureAnalyticsInstallColumn } from '../lib/analytics_schema';
 
 // Learner analytics ingest (replaces direct client writes to the Appwrite
 // learning_analytics_events collection). Guests may log; the user id comes
@@ -20,6 +21,7 @@ type IngestEvent = {
   sourceId: string | null;
   source: string | null;
   sessionId: string | null;
+  installId: string | null;
   learnerLevel: string | null;
   scriptMode: string | null;
   platform: string | null;
@@ -81,6 +83,9 @@ export function validateEvent(raw: unknown, now: number): IngestEvent {
     throw new Error('eventVersion is invalid');
   }
 
+  const installId = optionalText(e.installId, 64, 'installId');
+  if (installId !== null && !INSTALL_ID.test(installId)) throw new Error('installId is invalid');
+
   const occurredAt = resolveTimestamp(e.occurredAt, now);
   return {
     eventId,
@@ -88,6 +93,7 @@ export function validateEvent(raw: unknown, now: number): IngestEvent {
     sourceId: optionalText(e.sourceId, 120, 'sourceId'),
     source: optionalText(e.source, 80, 'source'),
     sessionId: optionalText(e.sessionId, 64, 'sessionId'),
+    installId,
     learnerLevel: optionalText(e.learnerLevel, 40, 'learnerLevel'),
     scriptMode: optionalText(e.scriptMode, 40, 'scriptMode'),
     platform: optionalText(e.platform, 20, 'platform'),
@@ -157,12 +163,13 @@ export function registerAnalyticsRoutes(app: App): void {
           'INSERT OR IGNORE INTO learning_analytics_events (id, user_id, event_name, date_key, source_id, occurred_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)'
         ).bind(rowId, userId, event.eventName, event.dateKey, event.sourceId, event.occurredAt, createdAt),
         c.env.DB.prepare(
-          'INSERT OR IGNORE INTO learning_analytics_event_details (event_id, user_id, date_key, session_id, source, learner_level, script_mode, platform, event_version, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
-        ).bind(rowId, userId, event.dateKey, event.sessionId, event.source, event.learnerLevel, event.scriptMode, event.platform, event.eventVersion, event.metadata),
+          'INSERT OR IGNORE INTO learning_analytics_event_details (event_id, user_id, date_key, session_id, source, learner_level, script_mode, platform, event_version, metadata_json, install_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        ).bind(rowId, userId, event.dateKey, event.sessionId, event.source, event.learnerLevel, event.scriptMode, event.platform, event.eventVersion, event.metadata, event.installId),
       );
     }
 
     try {
+      await ensureAnalyticsInstallColumn(c.env.DB);
       await c.env.DB.batch(statements);
     } catch (err: any) {
       console.error(`analytics ingest failed: ${err?.message || err}`);

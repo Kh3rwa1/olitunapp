@@ -3841,6 +3841,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch a short ad and earn 50 stars.'**
   String get dailyBonusBody;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Olitun to continue'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.'**
+  String get updateRequiredBody;
+
+  /// No description provided for @updateRequiredButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Update on Google Play'**
+  String get updateRequiredButton;
+
+  /// No description provided for @updateAvailableBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'A new version of Olitun is ready.'**
+  String get updateAvailableBanner;
+
+  /// No description provided for @updateAvailableAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get updateAvailableAction;
 }
 
 class _AppLocalizationsDelegate

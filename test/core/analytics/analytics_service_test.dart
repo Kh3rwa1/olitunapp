@@ -65,11 +65,19 @@ void main() {
         },
       );
 
-      expect(writes, hasLength(1));
-      final payload = writes.single;
+      // A fresh session announces itself before the event that opened it.
+      expect(writes, hasLength(2));
+      expect(writes.first['eventName'], LearningAnalyticsEvents.sessionStart);
+      expect(writes.first['sessionId'], 'event_2');
+      final payload = writes.last;
       expect(payload['eventName'], LearningAnalyticsEvents.lessonCompleted);
       expect(payload['eventId'], 'event_1');
       expect(payload['sessionId'], 'event_2');
+      expect(payload['installId'], service.installId);
+      expect(
+        payload['installId'],
+        prefs.getString(LearningAnalyticsService.installIdKey),
+      );
       expect(payload['userId'], 'user_123');
       expect(payload['dateKey'], '2026-05-22');
 
@@ -98,7 +106,8 @@ void main() {
 
       shouldFail = false;
       await service.flushPending();
-      expect(writes, ['event_1']);
+      // session_start (event_3) was queued first, then the quiz event.
+      expect(writes, ['event_3', 'event_1']);
 
       writes.clear();
       await service.flushPending();
@@ -127,16 +136,18 @@ void main() {
 
       await service.track(LearningAnalyticsEvents.lessonStarted);
 
-      expect(sent, hasLength(1));
+      // One request per event: session_start, then the lesson event.
+      expect(sent, hasLength(2));
       expect(
-        sent.single.url.toString(),
+        sent.last.url.toString(),
         CloudflareConfig.analyticsEventsEndpoint,
       );
-      expect(sent.single.headers['Authorization'], 'Bearer jwt-1');
-      final body = jsonDecode(sent.single.body) as Map<String, dynamic>;
+      expect(sent.last.headers['Authorization'], 'Bearer jwt-1');
+      final body = jsonDecode(sent.last.body) as Map<String, dynamic>;
       final events = body['events'] as List;
       expect(events, hasLength(1));
       expect(events.single['eventName'], LearningAnalyticsEvents.lessonStarted);
+      expect(events.single['installId'], isNotEmpty);
       // Identity comes from the JWT on the server, never the payload.
       expect(events.single, isNot(contains('userId')));
     });
@@ -179,7 +190,8 @@ void main() {
         status = 400;
         await service.flushPending();
         expect(prefs.getString('pending_learning_analytics_events_v1'), isNull);
-        expect(calls, 2);
+        // session_start + quiz event: two failed posts, two rejected retries.
+        expect(calls, 4);
       },
     );
   });

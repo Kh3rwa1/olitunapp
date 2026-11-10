@@ -2114,4 +2114,21 @@ class AppLocalizationsSat extends AppLocalizations {
 
   @override
   String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
+
+  @override
+  String get updateRequiredTitle => 'ᱞᱟᱦᱟ ᱥᱮᱱ ᱞᱟᱹᱜᱤᱫ Olitun ᱟᱯᱰᱮᱴ ᱢᱮ';
+
+  @override
+  String get updateRequiredBody =>
+      'ᱱᱚᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱫᱚ ᱟᱨ ᱥᱟᱭᱤᱱ ᱤᱱ ᱟᱨ ᱵᱟᱝ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜ-ᱟ᱾ ᱪᱮᱫ ᱞᱟᱦᱟ ᱤᱫᱤ ᱞᱟᱹᱜᱤᱫ Google Play ᱠᱷᱚᱱ ᱱᱟᱶᱟ ᱟᱯᱰᱮᱴ ᱤᱱᱥᱴᱚᱞ ᱢᱮ᱾';
+
+  @override
+  String get updateRequiredButton => 'Google Play ᱨᱮ ᱟᱯᱰᱮᱴ ᱢᱮ';
+
+  @override
+  String get updateAvailableBanner =>
+      'Olitun ᱨᱮᱭᱟᱜ ᱱᱟᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜ-ᱟ᱾';
+
+  @override
+  String get updateAvailableAction => 'ᱟᱯᱰᱮᱴ ᱢᱮ';
 }

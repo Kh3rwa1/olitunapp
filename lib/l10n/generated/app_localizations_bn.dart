@@ -2114,4 +2114,20 @@ class AppLocalizationsBn extends AppLocalizations {
 
   @override
   String get dailyBonusBody => 'একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।';
+
+  @override
+  String get updateRequiredTitle => 'চালিয়ে যেতে Olitun আপডেট করুন';
+
+  @override
+  String get updateRequiredBody =>
+      'এই সংস্করণটি আর সাইন ইন বা সিঙ্ক করতে পারে না। শেখা চালিয়ে যেতে Google Play থেকে সর্বশেষ আপডেট ইনস্টল করুন।';
+
+  @override
+  String get updateRequiredButton => 'Google Play-তে আপডেট করুন';
+
+  @override
+  String get updateAvailableBanner => 'Olitun-এর নতুন সংস্করণ প্রস্তুত।';
+
+  @override
+  String get updateAvailableAction => 'আপডেট করুন';
 }

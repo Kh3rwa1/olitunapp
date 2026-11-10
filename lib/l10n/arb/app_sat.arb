@@ -1229,5 +1229,10 @@
     "watchAdUnlockLesson": "Watch a short ad to unlock now",
     "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
     "dailyBonusTitle": "Free bonus stars",
-    "dailyBonusBody": "Watch a short ad and earn 50 stars."
+    "dailyBonusBody": "Watch a short ad and earn 50 stars.",
+    "updateRequiredTitle": "ᱞᱟᱦᱟ ᱥᱮᱱ ᱞᱟᱹᱜᱤᱫ Olitun ᱟᱯᱰᱮᱴ ᱢᱮ",
+    "updateRequiredBody": "ᱱᱚᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱫᱚ ᱟᱨ ᱥᱟᱭᱤᱱ ᱤᱱ ᱟᱨ ᱵᱟᱝ ᱥᱤᱝᱠ ᱫᱟᱲᱮᱭᱟᱜ-ᱟ᱾ ᱪᱮᱫ ᱞᱟᱦᱟ ᱤᱫᱤ ᱞᱟᱹᱜᱤᱫ Google Play ᱠᱷᱚᱱ ᱱᱟᱶᱟ ᱟᱯᱰᱮᱴ ᱤᱱᱥᱴᱚᱞ ᱢᱮ᱾",
+    "updateRequiredButton": "Google Play ᱨᱮ ᱟᱯᱰᱮᱴ ᱢᱮ",
+    "updateAvailableBanner": "Olitun ᱨᱮᱭᱟᱜ ᱱᱟᱶᱟ ᱵᱷᱚᱨᱥᱚᱱ ᱛᱮᱭᱟᱨ ᱢᱮᱱᱟᱜ-ᱟ᱾",
+    "updateAvailableAction": "ᱟᱯᱰᱮᱴ ᱢᱮ"
 }

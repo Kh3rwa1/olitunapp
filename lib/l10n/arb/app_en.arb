@@ -1229,5 +1229,10 @@
     "watchAdUnlockLesson": "Watch a short ad to unlock now",
     "lessonUnlockedByAd": "Lesson unlocked! Enjoy.",
     "dailyBonusTitle": "Free bonus stars",
-    "dailyBonusBody": "Watch a short ad and earn 50 stars."
+    "dailyBonusBody": "Watch a short ad and earn 50 stars.",
+    "updateRequiredTitle": "Update Olitun to continue",
+    "updateRequiredBody": "This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.",
+    "updateRequiredButton": "Update on Google Play",
+    "updateAvailableBanner": "A new version of Olitun is ready.",
+    "updateAvailableAction": "Update"
 }

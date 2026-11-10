@@ -2131,4 +2131,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyBonusBody => 'Watch a short ad and earn 50 stars.';
+
+  @override
+  String get updateRequiredTitle => 'Update Olitun to continue';
+
+  @override
+  String get updateRequiredBody =>
+      'This version can no longer sign in or sync. Install the latest update from Google Play to keep learning.';
+
+  @override
+  String get updateRequiredButton => 'Update on Google Play';
+
+  @override
+  String get updateAvailableBanner => 'A new version of Olitun is ready.';
+
+  @override
+  String get updateAvailableAction => 'Update';
 }

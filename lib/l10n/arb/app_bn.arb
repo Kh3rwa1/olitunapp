@@ -1229,5 +1229,10 @@
     "watchAdUnlockLesson": "এখনই আনলক করতে একটি ছোট বিজ্ঞাপন দেখুন",
     "lessonUnlockedByAd": "পাঠ আনলক হয়েছে! উপভোগ করুন।",
     "dailyBonusTitle": "বিনামূল্যে বোনাস তারা",
-    "dailyBonusBody": "একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।"
+    "dailyBonusBody": "একটি ছোট বিজ্ঞাপন দেখুন এবং ৫০টি তারা পান।",
+    "updateRequiredTitle": "চালিয়ে যেতে Olitun আপডেট করুন",
+    "updateRequiredBody": "এই সংস্করণটি আর সাইন ইন বা সিঙ্ক করতে পারে না। শেখা চালিয়ে যেতে Google Play থেকে সর্বশেষ আপডেট ইনস্টল করুন।",
+    "updateRequiredButton": "Google Play-তে আপডেট করুন",
+    "updateAvailableBanner": "Olitun-এর নতুন সংস্করণ প্রস্তুত।",
+    "updateAvailableAction": "আপডেট করুন"
 }

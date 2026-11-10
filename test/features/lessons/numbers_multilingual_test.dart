@@ -179,7 +179,7 @@ void main() {
       expect(display.title, 'One (1)');
       expect(display.scriptText, '᱑');
       expect(display.subtitle, 'Mit');
-      expect(display.ctaText, 'LISTEN');
+      expect(display.ctaText, 'Listen');
     });
 
     test('resolves complete number display for block 21 in Bengali', () {
@@ -253,7 +253,7 @@ void main() {
         expect(displayEn.title, 'Twenty');
         expect(displayEn.scriptText, '᱒᱐');
         expect(displayEn.subtitle, 'Bar gel');
-        expect(displayEn.ctaText, 'LISTEN');
+        expect(displayEn.ctaText, 'Listen');
       },
     );
 
